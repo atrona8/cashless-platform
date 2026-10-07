@@ -1,0 +1,24 @@
+# Banc de mesure NFC — NON TESTÉ (aucun SDK Flutter disponible lors de l'écriture).
+# Versions indicatives : vérifier avec `flutter pub outdated` au premier build.
+name: nfcbench   # doit correspondre au nom donné à `flutter create` (package Android sn.cashless.nfcbench)
+description: Banc de mesure NFC (MIFARE Ultralight EV1) pour le système cashless.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path_provider: ^2.1.4
+  # 10.x : API Share.shareXFiles utilisée dans main.dart (la 11.x introduit SharePlus.instance.share).
+  share_plus: ^10.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

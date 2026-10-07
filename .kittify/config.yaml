@@ -1,0 +1,17 @@
+project:
+  uuid: a5d6170b-2d63-4c2c-8ae1-9d747d40eea4
+  slug: cashless-platform
+  node_id: 8fdd0288adcb
+  build_id: 11334802-e83a-5942-bec8-26a60b280cb5
+mission_type_activations:
+- software-dev
+- documentation
+- research
+- plan
+vcs:
+  type: git
+agents:
+  available:
+  - claude
+  auto_commit: true
+  lint_on_edit: false

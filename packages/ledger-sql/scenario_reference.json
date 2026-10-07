@@ -1,0 +1,1706 @@
+{
+ "name": "Festival Sons 2026 — scénario de référence",
+ "status": "NORMATIF pour les tests : tout changement du moteur d'écritures doit laisser ce scénario vert, ou le modifier explicitement.",
+ "currency": "XOF",
+ "minor_units": 0,
+ "parameters": {
+  "Devise de l'événement": "XOF",
+  "Frais PSP Wave": 0.01,
+  "Frais PSP Orange Money": 0.015,
+  "Frais PSP carte bancaire": 0.025,
+  "Payeur des frais PSP": "ORGANIZER",
+  "Frais d'activation par bracelet (festivalier)": 1000,
+  "Frais de remboursement du solde": 500,
+  "Commission Food truck": 0.12,
+  "Commission Tee-shirts": 0.1,
+  "Commission Bar de l'organisateur": 0,
+  "Droit de place Food truck": 15000,
+  "Droit de place Tee-shirts": 10000,
+  "Frais prestataire : % des recharges payées": 0.03,
+  "Frais prestataire : par bracelet activé": 500,
+  "Nombre de bracelets activés": 6,
+  "Redevance plateforme : % des frais du prestataire": 0.2,
+  "Taxe sur commissions et frais (TVA)": 0.18,
+  "Part de la casse revenant à l'organisateur": 0.8,
+  "Caution par bracelet (lots avec caution)": 2000,
+  "Espèces comptées à la fermeture de la caisse C1": 36800,
+  "Balance arrêtée à la transaction n° (vide = toutes)": null,
+  "Transaction de fin effective (calculé)": 48
+ },
+ "parties": {
+  "PLT": {
+   "id": "00000000-0000-0000-0000-00000000a001",
+   "kind": "PLATFORM",
+   "name": "Plateforme Cashless"
+  },
+  "OPE": {
+   "id": "00000000-0000-0000-0000-00000000a002",
+   "kind": "OPERATOR",
+   "name": "Prestataire Sénégal"
+  },
+  "ORG": {
+   "id": "00000000-0000-0000-0000-00000000a003",
+   "kind": "ORGANIZER",
+   "name": "Association Festival Sons"
+  },
+  "BAR": {
+   "id": "00000000-0000-0000-0000-00000000a004",
+   "kind": "MERCHANT",
+   "name": "Bar de l'organisateur"
+  },
+  "FOOD": {
+   "id": "00000000-0000-0000-0000-00000000a005",
+   "kind": "MERCHANT",
+   "name": "Food truck"
+  },
+  "TEE": {
+   "id": "00000000-0000-0000-0000-00000000a006",
+   "kind": "MERCHANT",
+   "name": "Vendeur de tee-shirts"
+  }
+ },
+ "accounts": [
+  {
+   "code": "A-PSP-WAVE",
+   "label": "Créance sur Wave",
+   "family": "ASSET",
+   "purpose": "PSP",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "A-PSP-OM",
+   "label": "Créance sur Orange Money",
+   "family": "ASSET",
+   "purpose": "PSP",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "A-PSP-CARTE",
+   "label": "Créance sur PSP carte",
+   "family": "ASSET",
+   "purpose": "PSP",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "A-CAISSE-C1",
+   "label": "Caisse de recharge C1 (espèces)",
+   "family": "ASSET",
+   "purpose": "CASH_DESK",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "A-TRANSIT",
+   "label": "Espèces en transit vers la banque",
+   "family": "ASSET",
+   "purpose": "CASH_TRANSIT",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "A-BANQUE",
+   "label": "Banque — compte cantonné du pool",
+   "family": "ASSET",
+   "purpose": "BANK",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W01-P",
+   "label": "Portefeuille W01 Awa — crédits payés",
+   "family": "CLAIM",
+   "purpose": "WALLET_PAID",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W02-P",
+   "label": "Portefeuille W02 Moussa — crédits payés",
+   "family": "CLAIM",
+   "purpose": "WALLET_PAID",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W03-P",
+   "label": "Portefeuille W03 Fatou — crédits payés",
+   "family": "CLAIM",
+   "purpose": "WALLET_PAID",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W04-P",
+   "label": "Portefeuille W04 Jean — crédits payés",
+   "family": "CLAIM",
+   "purpose": "WALLET_PAID",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W05-P",
+   "label": "Portefeuille W05 Aminata — crédits payés",
+   "family": "CLAIM",
+   "purpose": "WALLET_PAID",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-WAL-W06-X",
+   "label": "Portefeuille W06 Ibou — crédits offerts",
+   "family": "CLAIM",
+   "purpose": "WALLET_PROMO",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-MCH-BAR",
+   "label": "Commerçant interne — Bar de l'organisateur",
+   "family": "CLAIM",
+   "purpose": "MERCHANT",
+   "owner": "BAR",
+   "normal_side": "C",
+   "allow_negative": true
+  },
+  {
+   "code": "L-MCH-FOOD",
+   "label": "Commerçant externe — Food truck",
+   "family": "CLAIM",
+   "purpose": "MERCHANT",
+   "owner": "FOOD",
+   "normal_side": "C",
+   "allow_negative": true
+  },
+  {
+   "code": "L-MCH-TEE",
+   "label": "Commerçant externe — Tee-shirts",
+   "family": "CLAIM",
+   "purpose": "MERCHANT",
+   "owner": "TEE",
+   "normal_side": "C",
+   "allow_negative": true
+  },
+  {
+   "code": "L-ORG-COM",
+   "label": "Organisateur — commissions",
+   "family": "CLAIM",
+   "purpose": "ORG_COM",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-PLACE",
+   "label": "Organisateur — droits de place",
+   "family": "CLAIM",
+   "purpose": "ORG_PLACE",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-FFEST",
+   "label": "Organisateur — frais festivaliers",
+   "family": "CLAIM",
+   "purpose": "ORG_FFEST",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-TVA",
+   "label": "Organisateur — taxe collectée (à reverser à l'État)",
+   "family": "CLAIM",
+   "purpose": "ORG_TAX",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-CASSE",
+   "label": "Organisateur — casse (soldes non réclamés)",
+   "family": "CLAIM",
+   "purpose": "ORG_CASSE",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-CAUTION",
+   "label": "Organisateur — cautions détenues (à rendre)",
+   "family": "CLAIM",
+   "purpose": "ORG_DEPOSIT",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-CAUTION-ACQ",
+   "label": "Organisateur — cautions acquises (bracelets non rendus)",
+   "family": "CLAIM",
+   "purpose": "ORG_DEPOSIT_FORFEIT",
+   "owner": "ORG",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-ORG-PROMO",
+   "label": "Organisateur — financement des crédits offerts",
+   "family": "CLAIM",
+   "purpose": "ORG_PROMO",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-ORG-FPSP",
+   "label": "Organisateur — frais PSP supportés",
+   "family": "CLAIM",
+   "purpose": "ORG_FPSP",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-ORG-FPREST",
+   "label": "Organisateur — frais du prestataire",
+   "family": "CLAIM",
+   "purpose": "ORG_FPREST",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-ORG-PERTES",
+   "label": "Organisateur — pertes (fraude, écarts de caisse)",
+   "family": "CLAIM",
+   "purpose": "ORG_PERTES",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-ORG-VERS",
+   "label": "Organisateur — versements reçus",
+   "family": "CLAIM",
+   "purpose": "ORG_VERS",
+   "owner": "ORG",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-OPE-FRAIS",
+   "label": "Prestataire — frais facturés",
+   "family": "CLAIM",
+   "purpose": "OPE_FRAIS",
+   "owner": "OPE",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-OPE-TVA",
+   "label": "Prestataire — taxe collectée",
+   "family": "CLAIM",
+   "purpose": "OPE_TAX",
+   "owner": "OPE",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-OPE-CASSE",
+   "label": "Prestataire — part de casse (contrat)",
+   "family": "CLAIM",
+   "purpose": "OPE_CASSE",
+   "owner": "OPE",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-OPE-REDEV",
+   "label": "Prestataire — redevance due à la plateforme",
+   "family": "CLAIM",
+   "purpose": "OPE_REDEV",
+   "owner": "OPE",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-OPE-VERS",
+   "label": "Prestataire — versements reçus",
+   "family": "CLAIM",
+   "purpose": "OPE_VERS",
+   "owner": "OPE",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-PLT-REDEV",
+   "label": "Plateforme — redevance",
+   "family": "CLAIM",
+   "purpose": "PLT_REDEV",
+   "owner": "PLT",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-PLT-TVA",
+   "label": "Plateforme — taxe collectée",
+   "family": "CLAIM",
+   "purpose": "PLT_TAX",
+   "owner": "PLT",
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "L-PLT-VERS",
+   "label": "Plateforme — versements reçus",
+   "family": "CLAIM",
+   "purpose": "PLT_VERS",
+   "owner": "PLT",
+   "normal_side": "D",
+   "allow_negative": true
+  },
+  {
+   "code": "L-VERS-ENCOURS",
+   "label": "Versements en cours (initiés, non confirmés)",
+   "family": "CLAIM",
+   "purpose": "PAYOUT_PENDING",
+   "owner": null,
+   "normal_side": "C",
+   "allow_negative": false
+  },
+  {
+   "code": "S-ATTENTE",
+   "label": "Compte d'attente — anomalies",
+   "family": "SUSPENSE",
+   "purpose": "SUSPENSE",
+   "owner": null,
+   "normal_side": "D",
+   "allow_negative": true
+  }
+ ],
+ "transactions": [
+  {
+   "no": 1,
+   "occurred_at": "2026-12-01T10:12:00+00:00",
+   "label": "Recharge",
+   "type": "TOPUP",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "wave:WV-88121",
+   "lines": [
+    {
+     "account": "A-PSP-WAVE",
+     "amount": 20000,
+     "memo": "Recharge WAVE — Awa (prévente en ligne)"
+    },
+    {
+     "account": "L-WAL-W01-P",
+     "amount": -20000,
+     "memo": "Recharge WAVE — Awa (prévente en ligne)"
+    },
+    {
+     "account": "L-ORG-FPSP",
+     "amount": 200,
+     "memo": "Commission WAVE supportée par l'organisateur"
+    },
+    {
+     "account": "A-PSP-WAVE",
+     "amount": -200,
+     "memo": "Commission WAVE déduite du versement"
+    }
+   ]
+  },
+  {
+   "no": 2,
+   "occurred_at": "2026-12-11T17:05:00+00:00",
+   "label": "Recharge",
+   "type": "TOPUP",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "om:OM-55310",
+   "lines": [
+    {
+     "account": "A-PSP-OM",
+     "amount": 15000,
+     "memo": "Recharge OM — Moussa"
+    },
+    {
+     "account": "L-WAL-W02-P",
+     "amount": -15000,
+     "memo": "Recharge OM — Moussa"
+    },
+    {
+     "account": "L-ORG-FPSP",
+     "amount": 225,
+     "memo": "Commission OM supportée par l'organisateur"
+    },
+    {
+     "account": "A-PSP-OM",
+     "amount": -225,
+     "memo": "Commission OM déduite du versement"
+    }
+   ]
+  },
+  {
+   "no": 3,
+   "occurred_at": "2026-12-11T17:40:00+00:00",
+   "label": "Recharge",
+   "type": "TOPUP",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "psp:CB-10492",
+   "lines": [
+    {
+     "account": "A-PSP-CARTE",
+     "amount": 30000,
+     "memo": "Recharge CARTE — Fatou"
+    },
+    {
+     "account": "L-WAL-W03-P",
+     "amount": -30000,
+     "memo": "Recharge CARTE — Fatou"
+    },
+    {
+     "account": "L-ORG-FPSP",
+     "amount": 750,
+     "memo": "Commission CARTE supportée par l'organisateur"
+    },
+    {
+     "account": "A-PSP-CARTE",
+     "amount": -750,
+     "memo": "Commission CARTE déduite du versement"
+    }
+   ]
+  },
+  {
+   "no": 4,
+   "occurred_at": "2026-12-11T18:02:00+00:00",
+   "label": "Recharge espèces",
+   "type": "TOPUP_CASH",
+   "source": "ONLINE",
+   "idempotency_key": "C1-TPE:0001",
+   "lines": [
+    {
+     "account": "A-CAISSE-C1",
+     "amount": 10000,
+     "memo": "Recharge espèces caisse C1 — Jean"
+    },
+    {
+     "account": "L-WAL-W04-P",
+     "amount": -10000,
+     "memo": "Recharge espèces caisse C1 — Jean"
+    }
+   ]
+  },
+  {
+   "no": 5,
+   "occurred_at": "2026-12-11T18:03:00+00:00",
+   "label": "Caution",
+   "type": "DEPOSIT_TAKEN",
+   "source": "ONLINE",
+   "idempotency_key": "deposit:W04:1",
+   "lines": [
+    {
+     "account": "A-CAISSE-C1",
+     "amount": 2000,
+     "memo": "Caution bracelet payée en espèces (mode D) — Jean"
+    },
+    {
+     "account": "L-ORG-CAUTION",
+     "amount": -2000,
+     "memo": "Caution détenue pour le bracelet de Jean"
+    }
+   ]
+  },
+  {
+   "no": 6,
+   "occurred_at": "2026-12-11T18:15:00+00:00",
+   "label": "Recharge espèces",
+   "type": "TOPUP_CASH",
+   "source": "ONLINE",
+   "idempotency_key": "C1-TPE:0002",
+   "lines": [
+    {
+     "account": "A-CAISSE-C1",
+     "amount": 25000,
+     "memo": "Recharge espèces caisse C1 — Aminata"
+    },
+    {
+     "account": "L-WAL-W05-P",
+     "amount": -25000,
+     "memo": "Recharge espèces caisse C1 — Aminata"
+    }
+   ]
+  },
+  {
+   "no": 7,
+   "occurred_at": "2026-12-11T18:16:00+00:00",
+   "label": "Caution",
+   "type": "DEPOSIT_TAKEN",
+   "source": "ONLINE",
+   "idempotency_key": "deposit:W05:1",
+   "lines": [
+    {
+     "account": "L-WAL-W05-P",
+     "amount": 2000,
+     "memo": "Caution prélevée sur le solde (mode C) — Aminata"
+    },
+    {
+     "account": "L-ORG-CAUTION",
+     "amount": -2000,
+     "memo": "Caution détenue pour le bracelet d'Aminata"
+    }
+   ]
+  },
+  {
+   "no": 8,
+   "occurred_at": "2026-12-11T18:20:00+00:00",
+   "label": "Crédits offerts",
+   "type": "PROMO_CREDIT",
+   "source": "BACKOFFICE",
+   "idempotency_key": "promo:STAFF-2026-014",
+   "lines": [
+    {
+     "account": "L-ORG-PROMO",
+     "amount": 6000,
+     "memo": "Crédits staff offerts par l'organisateur — Ibou"
+    },
+    {
+     "account": "L-WAL-W06-X",
+     "amount": -6000,
+     "memo": "Crédits staff offerts par l'organisateur — Ibou"
+    }
+   ]
+  },
+  {
+   "no": 9,
+   "occurred_at": "2026-12-11T18:30:00+00:00",
+   "label": "Frais d'activation",
+   "type": "ACTIVATION_FEE",
+   "source": "BATCH",
+   "idempotency_key": "activation:EVT-2026:lot1",
+   "lines": [
+    {
+     "account": "L-WAL-W01-P",
+     "amount": 1000,
+     "memo": "Frais d'activation bracelet W01"
+    },
+    {
+     "account": "L-WAL-W02-P",
+     "amount": 1000,
+     "memo": "Frais d'activation bracelet W02"
+    },
+    {
+     "account": "L-WAL-W03-P",
+     "amount": 1000,
+     "memo": "Frais d'activation bracelet W03"
+    },
+    {
+     "account": "L-WAL-W04-P",
+     "amount": 1000,
+     "memo": "Frais d'activation bracelet W04"
+    },
+    {
+     "account": "L-WAL-W05-P",
+     "amount": 1000,
+     "memo": "Frais d'activation bracelet W05"
+    },
+    {
+     "account": "L-ORG-FFEST",
+     "amount": -4237,
+     "memo": "Frais d'activation perçus (5 bracelets) (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -763,
+     "memo": "Frais d'activation perçus (5 bracelets) (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 10,
+   "occurred_at": "2026-12-11T19:10:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-FOOD-01:0001",
+   "lines": [
+    {
+     "account": "L-WAL-W01-P",
+     "amount": 6000,
+     "memo": "Achat FOOD — Awa"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": -6000,
+     "memo": "Vente FOOD — Awa"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 720,
+     "memo": "Commission TTC sur vente FOOD"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -610,
+     "memo": "Commission sur vente FOOD (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -110,
+     "memo": "Commission sur vente FOOD (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 11,
+   "occurred_at": "2026-12-11T20:05:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0001",
+   "lines": [
+    {
+     "account": "L-WAL-W01-P",
+     "amount": 4000,
+     "memo": "Achat BAR — Awa"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": -4000,
+     "memo": "Vente BAR — Awa"
+    }
+   ]
+  },
+  {
+   "no": 12,
+   "occurred_at": "2026-12-11T20:30:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-TEE-01:0001",
+   "lines": [
+    {
+     "account": "L-WAL-W02-P",
+     "amount": 12000,
+     "memo": "Achat TEE — Moussa"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": -12000,
+     "memo": "Vente TEE — Moussa"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": 1200,
+     "memo": "Commission TTC sur vente TEE"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -1017,
+     "memo": "Commission sur vente TEE (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -183,
+     "memo": "Commission sur vente TEE (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 13,
+   "occurred_at": "2026-12-11T21:00:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-FOOD-01:0002",
+   "lines": [
+    {
+     "account": "L-WAL-W03-P",
+     "amount": 9000,
+     "memo": "Achat FOOD — Fatou"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": -9000,
+     "memo": "Vente FOOD — Fatou"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 1080,
+     "memo": "Commission TTC sur vente FOOD"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -915,
+     "memo": "Commission sur vente FOOD (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -165,
+     "memo": "Commission sur vente FOOD (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 14,
+   "occurred_at": "2026-12-11T22:15:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0002",
+   "lines": [
+    {
+     "account": "L-WAL-W03-P",
+     "amount": 7500,
+     "memo": "Achat BAR — Fatou"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": -7500,
+     "memo": "Vente BAR — Fatou"
+    }
+   ]
+  },
+  {
+   "no": 15,
+   "occurred_at": "2026-12-12T19:00:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0003",
+   "lines": [
+    {
+     "account": "L-WAL-W04-P",
+     "amount": 6000,
+     "memo": "Achat BAR — Jean"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": -6000,
+     "memo": "Vente BAR — Jean"
+    }
+   ]
+  },
+  {
+   "no": 16,
+   "occurred_at": "2026-12-12T19:03:00+00:00",
+   "label": "Annulation vente",
+   "type": "REVERSAL",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0004",
+   "lines": [
+    {
+     "account": "L-MCH-BAR",
+     "amount": 6000,
+     "memo": "Contre-passation de T15 (erreur de saisie)"
+    },
+    {
+     "account": "L-WAL-W04-P",
+     "amount": -6000,
+     "memo": "Contre-passation de T15 (erreur de saisie)"
+    }
+   ],
+   "reverses_key": "TPE-BAR-01:0003"
+  },
+  {
+   "no": 17,
+   "occurred_at": "2026-12-12T19:04:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0005",
+   "lines": [
+    {
+     "account": "L-WAL-W04-P",
+     "amount": 3000,
+     "memo": "Achat BAR — Jean (montant corrigé)"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": -3000,
+     "memo": "Vente BAR — Jean (montant corrigé)"
+    }
+   ]
+  },
+  {
+   "no": 18,
+   "occurred_at": "2026-12-12T20:20:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-TEE-01:0002",
+   "lines": [
+    {
+     "account": "L-WAL-W05-P",
+     "amount": 8000,
+     "memo": "Achat TEE — Aminata"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": -8000,
+     "memo": "Vente TEE — Aminata"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": 800,
+     "memo": "Commission TTC sur vente TEE"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -678,
+     "memo": "Commission sur vente TEE (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -122,
+     "memo": "Commission sur vente TEE (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 19,
+   "occurred_at": "2026-12-12T21:45:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-FOOD-01:0003",
+   "lines": [
+    {
+     "account": "L-WAL-W05-P",
+     "amount": 5000,
+     "memo": "Achat FOOD — Aminata"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": -5000,
+     "memo": "Vente FOOD — Aminata"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 600,
+     "memo": "Commission TTC sur vente FOOD"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -508,
+     "memo": "Commission sur vente FOOD (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -92,
+     "memo": "Commission sur vente FOOD (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 20,
+   "occurred_at": "2026-12-12T22:00:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-BAR-01:0006",
+   "lines": [
+    {
+     "account": "L-WAL-W06-X",
+     "amount": 4000,
+     "memo": "Achat BAR — Ibou (crédits offerts)"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": -4000,
+     "memo": "Vente BAR — Ibou (crédits offerts)"
+    }
+   ]
+  },
+  {
+   "no": 21,
+   "occurred_at": "2026-12-13T13:00:00+00:00",
+   "label": "Vente",
+   "type": "PURCHASE",
+   "source": "ONLINE",
+   "idempotency_key": "TPE-FOOD-01:0004",
+   "lines": [
+    {
+     "account": "L-WAL-W06-X",
+     "amount": 1000,
+     "memo": "Achat FOOD — Ibou (crédits offerts)"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": -1000,
+     "memo": "Vente FOOD — Ibou (crédits offerts)"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 120,
+     "memo": "Commission TTC sur vente FOOD"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -102,
+     "memo": "Commission sur vente FOOD (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -18,
+     "memo": "Commission sur vente FOOD (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 22,
+   "occurred_at": "2026-12-13T21:30:00+00:00",
+   "label": "Vente hors ligne",
+   "type": "PURCHASE",
+   "source": "OFFLINE_SYNC",
+   "idempotency_key": "TPE-FOOD-02:0087",
+   "lines": [
+    {
+     "account": "L-WAL-W04-P",
+     "amount": 6000,
+     "memo": "Achat FOOD hors ligne — Jean (synchro : solde insuffisant)"
+    },
+    {
+     "account": "S-ATTENTE",
+     "amount": 3000,
+     "memo": "Part non couverte → compte d'attente (anomalie)"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": -9000,
+     "memo": "Vente FOOD hors ligne — Jean (commerçant garanti)"
+    },
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 1080,
+     "memo": "Commission TTC sur vente FOOD"
+    },
+    {
+     "account": "L-ORG-COM",
+     "amount": -915,
+     "memo": "Commission sur vente FOOD (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -165,
+     "memo": "Commission sur vente FOOD (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 23,
+   "occurred_at": "2026-12-13T23:30:00+00:00",
+   "label": "Caution rendue",
+   "type": "DEPOSIT_REFUNDED",
+   "source": "ONLINE",
+   "idempotency_key": "deposit-refund:W05:1",
+   "lines": [
+    {
+     "account": "L-ORG-CAUTION",
+     "amount": 2000,
+     "memo": "Bracelet rendu : caution recréditée sur le solde (mode C) — Aminata"
+    },
+    {
+     "account": "L-WAL-W05-P",
+     "amount": -2000,
+     "memo": "Caution recréditée — Aminata"
+    }
+   ]
+  },
+  {
+   "no": 24,
+   "occurred_at": "2026-12-14T01:00:00+00:00",
+   "label": "Fermeture caisse",
+   "type": "CASH_CLOSE",
+   "source": "BACKOFFICE",
+   "idempotency_key": "cash-session:C1:2026-12-13",
+   "lines": [
+    {
+     "account": "A-TRANSIT",
+     "amount": 36800,
+     "memo": "Espèces comptées, mises en transit"
+    },
+    {
+     "account": "L-ORG-PERTES",
+     "amount": 200,
+     "memo": "Écart de caisse (manque / surplus)"
+    },
+    {
+     "account": "A-CAISSE-C1",
+     "amount": -37000,
+     "memo": "Solde théorique de la caisse C1"
+    }
+   ]
+  },
+  {
+   "no": 25,
+   "occurred_at": "2026-12-14T10:00:00+00:00",
+   "label": "Résolution anomalie",
+   "type": "ANOMALY_RESOLUTION",
+   "source": "BACKOFFICE",
+   "idempotency_key": "anomaly:AN-0001",
+   "lines": [
+    {
+     "account": "L-ORG-PERTES",
+     "amount": 3000,
+     "memo": "Perte hors ligne supportée par l'organisateur (offline_loss_bearer)"
+    },
+    {
+     "account": "S-ATTENTE",
+     "amount": -3000,
+     "memo": "Solde du compte d'attente"
+    }
+   ]
+  },
+  {
+   "no": 26,
+   "occurred_at": "2026-12-15T09:00:00+00:00",
+   "label": "Dépôt espèces",
+   "type": "CASH_DEPOSIT",
+   "source": "BATCH",
+   "idempotency_key": "bank:DEP-771",
+   "lines": [
+    {
+     "account": "A-BANQUE",
+     "amount": 36800,
+     "memo": "Dépôt des espèces en banque"
+    },
+    {
+     "account": "A-TRANSIT",
+     "amount": -36800,
+     "memo": "Dépôt des espèces en banque"
+    }
+   ]
+  },
+  {
+   "no": 27,
+   "occurred_at": "2026-12-15T12:00:00+00:00",
+   "label": "Versement PSP",
+   "type": "PSP_SETTLEMENT",
+   "source": "BATCH",
+   "idempotency_key": "stmt:wave:2026-12-15",
+   "lines": [
+    {
+     "account": "A-BANQUE",
+     "amount": 19800,
+     "memo": "Versement net WAVE (rapproché avec le relevé)"
+    },
+    {
+     "account": "A-PSP-WAVE",
+     "amount": -19800,
+     "memo": "Versement net WAVE"
+    }
+   ]
+  },
+  {
+   "no": 28,
+   "occurred_at": "2026-12-15T12:05:00+00:00",
+   "label": "Versement PSP",
+   "type": "PSP_SETTLEMENT",
+   "source": "BATCH",
+   "idempotency_key": "stmt:om:2026-12-15",
+   "lines": [
+    {
+     "account": "A-BANQUE",
+     "amount": 14775,
+     "memo": "Versement net OM (rapproché avec le relevé)"
+    },
+    {
+     "account": "A-PSP-OM",
+     "amount": -14775,
+     "memo": "Versement net OM"
+    }
+   ]
+  },
+  {
+   "no": 29,
+   "occurred_at": "2026-12-16T09:00:00+00:00",
+   "label": "Versement PSP",
+   "type": "PSP_SETTLEMENT",
+   "source": "BATCH",
+   "idempotency_key": "stmt:psp:2026-12-16",
+   "lines": [
+    {
+     "account": "A-BANQUE",
+     "amount": 29250,
+     "memo": "Versement net CARTE (rapproché avec le relevé)"
+    },
+    {
+     "account": "A-PSP-CARTE",
+     "amount": -29250,
+     "memo": "Versement net CARTE"
+    }
+   ]
+  },
+  {
+   "no": 30,
+   "occurred_at": "2026-12-16T12:00:00+00:00",
+   "label": "Droits de place",
+   "type": "PITCH_FEE",
+   "source": "BATCH",
+   "idempotency_key": "closing:EVT-2026:place",
+   "lines": [
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 15000,
+     "memo": "Droit de place TTC Food truck"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": 10000,
+     "memo": "Droit de place TTC Tee-shirts"
+    },
+    {
+     "account": "L-ORG-PLACE",
+     "amount": -21186,
+     "memo": "Droits de place perçus (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -3814,
+     "memo": "Droits de place perçus (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 31,
+   "occurred_at": "2026-12-16T12:05:00+00:00",
+   "label": "Frais prestataire",
+   "type": "OPERATOR_FEE",
+   "source": "BATCH",
+   "idempotency_key": "closing:EVT-2026:operator-fee",
+   "lines": [
+    {
+     "account": "L-ORG-FPREST",
+     "amount": 3000,
+     "memo": "Frais TTC : % des recharges payées"
+    },
+    {
+     "account": "L-ORG-FPREST",
+     "amount": 3000,
+     "memo": "Frais TTC : par bracelet activé"
+    },
+    {
+     "account": "L-OPE-FRAIS",
+     "amount": -5085,
+     "memo": "Frais facturés à l'organisateur (HT)"
+    },
+    {
+     "account": "L-OPE-TVA",
+     "amount": -915,
+     "memo": "Frais facturés à l'organisateur (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 32,
+   "occurred_at": "2026-12-16T12:10:00+00:00",
+   "label": "Redevance plateforme",
+   "type": "PLATFORM_FEE",
+   "source": "BATCH",
+   "idempotency_key": "closing:EVT-2026:platform-fee",
+   "lines": [
+    {
+     "account": "L-OPE-REDEV",
+     "amount": 1017,
+     "memo": "Redevance TTC sur les frais HT du prestataire"
+    },
+    {
+     "account": "L-PLT-REDEV",
+     "amount": -862,
+     "memo": "Redevance plateforme (HT)"
+    },
+    {
+     "account": "L-PLT-TVA",
+     "amount": -155,
+     "memo": "Redevance plateforme (taxe collectée)"
+    }
+   ]
+  },
+  {
+   "no": 33,
+   "occurred_at": "2026-12-20T10:00:00+00:00",
+   "label": "Versements initiés",
+   "type": "PAYOUT_INITIATED",
+   "source": "BATCH",
+   "idempotency_key": "payout-batch:2026-12-20",
+   "lines": [
+    {
+     "account": "L-MCH-FOOD",
+     "amount": 11400,
+     "memo": "Versement initié — Food truck"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": 8000,
+     "memo": "Versement initié — Tee-shirts"
+    },
+    {
+     "account": "L-MCH-BAR",
+     "amount": 18500,
+     "memo": "Versement initié — Bar interne → organisateur"
+    },
+    {
+     "account": "L-OPE-VERS",
+     "amount": 4983,
+     "memo": "Versement initié — Prestataire (frais TTC − redevance)"
+    },
+    {
+     "account": "L-PLT-VERS",
+     "amount": 1017,
+     "memo": "Versement initié — Plateforme (redevance TTC)"
+    },
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": -43900,
+     "memo": "Versements en cours (lot du 20/12)"
+    }
+   ]
+  },
+  {
+   "no": 34,
+   "occurred_at": "2026-12-20T10:05:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1001",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 11400,
+     "memo": "Versement confirmé — Food truck"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -11400,
+     "memo": "Versement confirmé — Food truck"
+    }
+   ]
+  },
+  {
+   "no": 35,
+   "occurred_at": "2026-12-20T10:06:00+00:00",
+   "label": "Versement échoué",
+   "type": "PAYOUT_FAILED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "wave:PAY-1002:failed",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 8000,
+     "memo": "Échec : numéro mobile money invalide — Tee-shirts"
+    },
+    {
+     "account": "L-MCH-TEE",
+     "amount": -8000,
+     "memo": "Échec : montant recrédité au commerçant"
+    }
+   ]
+  },
+  {
+   "no": 36,
+   "occurred_at": "2026-12-20T10:07:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1003",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 18500,
+     "memo": "Versement confirmé — Bar interne → organisateur"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -18500,
+     "memo": "Versement confirmé — Bar interne → organisateur"
+    }
+   ]
+  },
+  {
+   "no": 37,
+   "occurred_at": "2026-12-20T10:08:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1004",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 4983,
+     "memo": "Versement confirmé — Prestataire"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -4983,
+     "memo": "Versement confirmé — Prestataire"
+    }
+   ]
+  },
+  {
+   "no": 38,
+   "occurred_at": "2026-12-20T10:09:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1005",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 1017,
+     "memo": "Versement confirmé — Plateforme"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -1017,
+     "memo": "Versement confirmé — Plateforme"
+    }
+   ]
+  },
+  {
+   "no": 39,
+   "occurred_at": "2026-12-22T09:00:00+00:00",
+   "label": "Versement initié",
+   "type": "PAYOUT_INITIATED",
+   "source": "BACKOFFICE",
+   "idempotency_key": "payout:PAY-1006",
+   "lines": [
+    {
+     "account": "L-MCH-TEE",
+     "amount": 8000,
+     "memo": "Versement initié (2e tentative, numéro corrigé) — Tee-shirts"
+    },
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": -8000,
+     "memo": "Versement en cours"
+    }
+   ]
+  },
+  {
+   "no": 40,
+   "occurred_at": "2026-12-22T09:05:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "wave:PAY-1006",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 8000,
+     "memo": "Versement confirmé — Tee-shirts"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -8000,
+     "memo": "Versement confirmé — Tee-shirts"
+    }
+   ]
+  },
+  {
+   "no": 41,
+   "occurred_at": "2026-12-22T14:00:00+00:00",
+   "label": "Remboursement",
+   "type": "WALLET_REFUND",
+   "source": "ONLINE",
+   "idempotency_key": "refund:RF-0001",
+   "lines": [
+    {
+     "account": "L-WAL-W02-P",
+     "amount": 500,
+     "memo": "Frais de remboursement TTC — Moussa"
+    },
+    {
+     "account": "L-ORG-FFEST",
+     "amount": -424,
+     "memo": "Frais de remboursement — Moussa (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -76,
+     "memo": "Frais de remboursement — Moussa (taxe collectée)"
+    },
+    {
+     "account": "L-WAL-W02-P",
+     "amount": 1500,
+     "memo": "Remboursement du solde — Moussa"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -1500,
+     "memo": "Virement mobile money — Moussa"
+    }
+   ]
+  },
+  {
+   "no": 42,
+   "occurred_at": "2027-01-05T11:00:00+00:00",
+   "label": "Remboursement",
+   "type": "WALLET_REFUND",
+   "source": "ONLINE",
+   "idempotency_key": "refund:RF-0002",
+   "lines": [
+    {
+     "account": "L-WAL-W03-P",
+     "amount": 500,
+     "memo": "Frais de remboursement TTC — Fatou"
+    },
+    {
+     "account": "L-ORG-FFEST",
+     "amount": -424,
+     "memo": "Frais de remboursement — Fatou (HT)"
+    },
+    {
+     "account": "L-ORG-TVA",
+     "amount": -76,
+     "memo": "Frais de remboursement — Fatou (taxe collectée)"
+    },
+    {
+     "account": "L-WAL-W03-P",
+     "amount": 12000,
+     "memo": "Remboursement du solde — Fatou"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -12000,
+     "memo": "Virement mobile money — Fatou"
+    }
+   ]
+  },
+  {
+   "no": 43,
+   "occurred_at": "2027-02-15T00:00:00+00:00",
+   "label": "Casse",
+   "type": "BREAKAGE",
+   "source": "BATCH",
+   "idempotency_key": "closing:EVT-2026:breakage",
+   "lines": [
+    {
+     "account": "L-WAL-W01-P",
+     "amount": 9000,
+     "memo": "Solde non réclamé à l'échéance — Awa"
+    },
+    {
+     "account": "L-WAL-W05-P",
+     "amount": 11000,
+     "memo": "Solde non réclamé à l'échéance — Aminata"
+    },
+    {
+     "account": "L-ORG-CASSE",
+     "amount": -16000,
+     "memo": "Casse — part de l'organisateur (contrat)"
+    },
+    {
+     "account": "L-OPE-CASSE",
+     "amount": -4000,
+     "memo": "Casse — part du prestataire (contrat)"
+    }
+   ]
+  },
+  {
+   "no": 44,
+   "occurred_at": "2027-02-15T00:02:00+00:00",
+   "label": "Caution acquise",
+   "type": "DEPOSIT_FORFEITED",
+   "source": "BATCH",
+   "idempotency_key": "deposit-forfeit:W04",
+   "lines": [
+    {
+     "account": "L-ORG-CAUTION",
+     "amount": 2000,
+     "memo": "Bracelet jamais rendu à la clôture du lot — Jean"
+    },
+    {
+     "account": "L-ORG-CAUTION-ACQ",
+     "amount": -2000,
+     "memo": "Caution acquise par l'organisateur"
+    }
+   ]
+  },
+  {
+   "no": 45,
+   "occurred_at": "2027-02-15T00:05:00+00:00",
+   "label": "Expiration crédits offerts",
+   "type": "PROMO_EXPIRY",
+   "source": "BATCH",
+   "idempotency_key": "closing:EVT-2026:promo-expiry",
+   "lines": [
+    {
+     "account": "L-WAL-W06-X",
+     "amount": 1000,
+     "memo": "Crédits offerts non utilisés — Ibou"
+    },
+    {
+     "account": "L-ORG-PROMO",
+     "amount": -1000,
+     "memo": "Annulation du financement non consommé"
+    }
+   ]
+  },
+  {
+   "no": 46,
+   "occurred_at": "2027-02-16T10:00:00+00:00",
+   "label": "Versements initiés",
+   "type": "PAYOUT_INITIATED",
+   "source": "BATCH",
+   "idempotency_key": "payout-batch:2027-02-16",
+   "lines": [
+    {
+     "account": "L-ORG-VERS",
+     "amount": 39225,
+     "memo": "Versement final initié — organisateur (droit net)"
+    },
+    {
+     "account": "L-OPE-VERS",
+     "amount": 4000,
+     "memo": "Versement final initié — prestataire (part de casse)"
+    },
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": -43225,
+     "memo": "Versements en cours"
+    }
+   ]
+  },
+  {
+   "no": 47,
+   "occurred_at": "2027-02-16T10:05:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1007",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 39225,
+     "memo": "Versement confirmé — organisateur"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -39225,
+     "memo": "Versement confirmé — organisateur"
+    }
+   ]
+  },
+  {
+   "no": 48,
+   "occurred_at": "2027-02-16T10:06:00+00:00",
+   "label": "Versement confirmé",
+   "type": "PAYOUT_CONFIRMED",
+   "source": "PSP_WEBHOOK",
+   "idempotency_key": "bank:PAY-1008",
+   "lines": [
+    {
+     "account": "L-VERS-ENCOURS",
+     "amount": 4000,
+     "memo": "Versement confirmé — prestataire"
+    },
+    {
+     "account": "A-BANQUE",
+     "amount": -4000,
+     "memo": "Versement confirmé — prestataire"
+    }
+   ]
+  }
+ ],
+ "expected": {
+  "after_festival": {
+   "after_tx": 23,
+   "balances": {
+    "A-PSP-WAVE": 19800,
+    "A-PSP-OM": 14775,
+    "A-PSP-CARTE": 29250,
+    "A-CAISSE-C1": 37000,
+    "A-TRANSIT": 0,
+    "A-BANQUE": 0,
+    "L-WAL-W01-P": -9000,
+    "L-WAL-W02-P": -2000,
+    "L-WAL-W03-P": -12500,
+    "L-WAL-W04-P": 0,
+    "L-WAL-W05-P": -11000,
+    "L-WAL-W06-X": -1000,
+    "L-MCH-BAR": -18500,
+    "L-MCH-FOOD": -26400,
+    "L-MCH-TEE": -18000,
+    "L-ORG-COM": -4745,
+    "L-ORG-PLACE": 0,
+    "L-ORG-FFEST": -4237,
+    "L-ORG-TVA": -1618,
+    "L-ORG-CASSE": 0,
+    "L-ORG-CAUTION": -2000,
+    "L-ORG-CAUTION-ACQ": 0,
+    "L-ORG-PROMO": 6000,
+    "L-ORG-FPSP": 1175,
+    "L-ORG-FPREST": 0,
+    "L-ORG-PERTES": 0,
+    "L-ORG-VERS": 0,
+    "L-OPE-FRAIS": 0,
+    "L-OPE-TVA": 0,
+    "L-OPE-CASSE": 0,
+    "L-OPE-REDEV": 0,
+    "L-OPE-VERS": 0,
+    "L-PLT-REDEV": 0,
+    "L-PLT-TVA": 0,
+    "L-PLT-VERS": 0,
+    "L-VERS-ENCOURS": 0,
+    "S-ATTENTE": 3000
+   }
+  },
+  "after_closing": {
+   "after_tx": 48,
+   "balances": {
+    "A-PSP-WAVE": 0,
+    "A-PSP-OM": 0,
+    "A-PSP-CARTE": 0,
+    "A-CAISSE-C1": 0,
+    "A-TRANSIT": 0,
+    "A-BANQUE": 0,
+    "L-WAL-W01-P": 0,
+    "L-WAL-W02-P": 0,
+    "L-WAL-W03-P": 0,
+    "L-WAL-W04-P": 0,
+    "L-WAL-W05-P": 0,
+    "L-WAL-W06-X": 0,
+    "L-MCH-BAR": 0,
+    "L-MCH-FOOD": 0,
+    "L-MCH-TEE": 0,
+    "L-ORG-COM": -4745,
+    "L-ORG-PLACE": -21186,
+    "L-ORG-FFEST": -5085,
+    "L-ORG-TVA": -5584,
+    "L-ORG-CASSE": -16000,
+    "L-ORG-CAUTION": 0,
+    "L-ORG-CAUTION-ACQ": -2000,
+    "L-ORG-PROMO": 5000,
+    "L-ORG-FPSP": 1175,
+    "L-ORG-FPREST": 6000,
+    "L-ORG-PERTES": 3200,
+    "L-ORG-VERS": 39225,
+    "L-OPE-FRAIS": -5085,
+    "L-OPE-TVA": -915,
+    "L-OPE-CASSE": -4000,
+    "L-OPE-REDEV": 1017,
+    "L-OPE-VERS": 8983,
+    "L-PLT-REDEV": -862,
+    "L-PLT-TVA": -155,
+    "L-PLT-VERS": 1017,
+    "L-VERS-ENCOURS": 0,
+    "S-ATTENTE": 0
+   }
+  }
+ }
+}

@@ -1,0 +1,36 @@
+# .github/workflows/ledger-tests.yml — charge le schéma et lance les deux suites pgTAP à chaque push / PR.
+name: ledger-tests
+on: [push, pull_request]
+jobs:
+  pgtap:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer pgTAP dans le conteneur et pg_prove sur le runner
+        run: |
+          docker exec ${{ job.services.postgres.id }} bash -c "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
+          sudo apt-get update -qq && sudo apt-get install -y -qq libtap-parser-sourcehandler-pgtap-perl postgresql-client
+      - name: Vérifier que les suites générées sont à jour
+        working-directory: packages/ledger-sql
+        run: |
+          python3 gen_tests.py && python3 gen_golden.py
+          git diff --exit-code tests_grand_livre_cashless.sql scenario_reference_test.sql
+      - name: Calculs de référence du moteur d'écritures
+        run: python3 packages/ledger-sql/moteur_ecritures_reference.py
+      - name: Charger le schéma
+        run: |
+          createdb cashless
+          psql -q -d cashless -v ON_ERROR_STOP=1 -f packages/ledger-sql/schema_grand_livre_cashless.sql -f packages/ledger-sql/roles.sql
+      - name: Lancer les tests (échec du job si une assertion échoue)
+        run: pg_prove -d cashless packages/ledger-sql/tests_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql

@@ -1,0 +1,87 @@
+# Diagramme d'architecture globale
+
+> Statut de complétude : voir `06-docs-status.md`. Notation C4 "Conteneur"
+> (niveau 2), supportée nativement par Mermaid (`C4Container`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
+> Dernière mise à jour : initialisation du 07/10/2026. **Architecture cible** (`SPECIFICATION.md` §1.2, §2) :
+> aucun conteneur n'est encore déployé.
+
+## Vue d'ensemble (cible V1)
+
+```mermaid
+C4Container
+    title Architecture cible V1 — Cashless Platform
+
+    Person(fest, "Festivalier")
+    Person(staff, "Staff terrain")
+    Person(admins, "Administrateurs")
+
+    Container_Boundary(central, "Central (AWS)") {
+        Container(bo, "Back-office", "Next.js", "Interfaces d'administration")
+        Container(api, "API centrale", "NestJS", "API, moteur d'écritures, synchro, tâches")
+        Container(tagkeys, "Service clés bracelets", "NestJS", "Mots de passe, snapshots")
+        ContainerDb(db, "Base centrale", "PostgreSQL 17", "Grand livre, RLS")
+    }
+
+    Container_Boundary(site, "Site de l'événement") {
+        Container(term, "App terminal", "Flutter", "Caisse, TPE, guichet")
+        Container(edge, "Passerelle locale", "NestJS, Docker", "Autorité pendant coupure")
+        ContainerDb(edgedb, "Base locale", "PostgreSQL", "Copie des soldes")
+    }
+
+    Container(app, "App festivalier", "Flutter", "Solde, recharge, QR")
+
+    System_Ext(kms, "AWS KMS")
+    System_Ext(psp, "PSP")
+
+    Rel(admins, bo, "Utilise", "HTTPS")
+    Rel(fest, app, "Utilise")
+    Rel(staff, term, "Utilise")
+    Rel(bo, api, "Appelle", "REST")
+    Rel(app, api, "Appelle", "REST")
+    Rel(term, api, "Appelle, lots", "REST signé")
+    Rel(term, edge, "Appelle en coupure", "LAN")
+    Rel(edge, api, "Réplique, rejoue", "mTLS")
+    Rel(edge, edgedb, "Lit/écrit")
+    Rel(api, db, "Lit/écrit")
+    Rel(tagkeys, db, "Lit")
+    Rel(tagkeys, kms, "Decrypt, Sign")
+    Rel(api, psp, "Paiements, webhooks")
+```
+
+## Organisation du code (monorepo imposé, §2.1)
+
+| Dossier | Contenu |
+|---|---|
+| `apps/api` | NestJS : API publique, API terminaux, moteur d'écritures, synchronisation, tâches |
+| `apps/gateway` | Passerelle locale (réutilise les modules de l'API) |
+| `apps/backoffice` | Next.js : plateforme, prestataire, organisateur, commerçant |
+| `apps/terminal` | Flutter : caisse catalogue, TPE clavier, recharge |
+| `apps/customer` | Flutter : app festivalier |
+| `packages/contracts` | `openapi.yaml` et types générés (TypeScript, Dart) |
+| `packages/ledger-sql` | Schéma, migrations, tests pgTAP et générateurs |
+| `packages/tag-format` | Format B, CRC, dérivation, vecteurs de test (TypeScript et Dart) |
+| `tools/nfc-bench` | Banc de mesure NFC (prototype) |
+
+## Détail par mission
+
+| Mission | Conteneur(s) concerné(s) | Lien vers détail local |
+|---|---|---|
+| (aucune mission lancée à ce jour) | — | — |
+
+## Décisions d'architecture notables
+(Décisions déjà prises dans `DECISIONS_ADR.md`, avant toute mission.)
+
+| Décision | Justification | Mission source |
+|---|---|---|
+| Seule la fonction SQL `post_transaction` écrit le grand livre ; règles métier des bracelets, lots et cautions en fonctions SQL | Un seul point de contrôle des invariants (§2.2) | Spécification (avant missions) |
+| Isolation par prestataire via RLS forcée et `set_config('app.operator_id', …, true)` par transaction | Pas de fuite entre requêtes d'un pool de connexions (§2.2, §13.1) | Spécification |
+| Comptes chauds sans solde en cache ; comptes commerçants chauds par défaut | Pas d'attente entre ventes simultanées (ADR-62) | Spécification |
+| Mot de passe des bracelets dérivé une fois par KMS, stocké chiffré ; terminaux sans clé maître | Pas d'appel KMS par passage ; vol de terminal borné (§7.3, §7.4) | Spécification |
+| Une seule autorité de débit par grand livre (central ou passerelle), bascule par époque | Pas de double dépense pendant une coupure (§9.7) | Spécification |
+| Scellement chaîné du journal toutes les 5 min, copié hors base | Détection de toute altération (ADR-46) | Spécification |
+| Types partagés générés depuis `openapi.yaml` | Pas de divergence entre clients et serveur (§2.2) | Spécification |
+
+## Questions de nécessité/complétude posées lors de la dernière révision
+- Nécessaire pour ce projet ? Voir `06-docs-status.md`.
+- Complet au vu de tous les conteneurs réellement déployés à ce jour ? Voir `06-docs-status.md`.
+- Validé par : en attente.
