@@ -91,6 +91,9 @@
       "last_event_id": "01M4BGAVF5J2HC3RKNFYCR952W",
       "last_transition_at": "2026-10-07T15:39:54.213102+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "464/464 pgTAP sur base par migrations ; rejeu idempotent ; somme vérifiée ; ops inaccessible à cashless_app ; check:generated vert ; schéma identique à la base brute (FR-024 : aucun écart). Scripts npm ajoutés à packages/ledger-sql/package.json (hors owned_files, demandés par la fiche)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 960,
