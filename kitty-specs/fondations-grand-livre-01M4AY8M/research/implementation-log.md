@@ -9,3 +9,4 @@ Une ligne par démarrage ou fin de work package (horodatage UTC).
 - 2026-10-07T16:15:29Z — WP03 implémenté, revu et approuvé (464/464). Démarrage WP04 (table d'idempotence S21).
 - 2026-10-07T16:17:13Z — démarrage WP04 (nouvelle tentative après réenregistrement de l'analyse).
 - 2026-10-07T16:19:34Z — démarrage WP04 (table d'idempotence S21).
+- 2026-10-07T16:22:43Z — démarrage WP04 (lane-d créée, lanes c fusionnée).
