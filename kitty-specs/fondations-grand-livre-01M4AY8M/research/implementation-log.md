@@ -4,3 +4,5 @@ Une ligne par démarrage ou fin de work package (horodatage UTC).
 
 - 2026-10-07T13:49:15Z — démarrage WP03 (migrations et suites pgTAP) ; WP01 et WP02 approuvés.
 - 2026-10-07T13:50:03Z — démarrage WP03 (nouvelle tentative).
+- 2026-10-07T13:54:15Z — démarrage WP03 (lanes a et b fusionnées dans lane-c).
+- 2026-10-07T13:55:47Z — pause demandée par le porteur ; WP03 pris en charge (lane-c), non commencé.
