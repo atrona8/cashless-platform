@@ -154,6 +154,9 @@
       "last_event_id": "01M4BM2MY7GAMNGATACNTRF2RG",
       "last_transition_at": "2026-10-07T16:45:19.687216+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "generate + check verts, git status propre après génération ; 89 codes ; tsc et eslint OK. Scripts npm ajoutés à packages/contracts/package.json (lane-a, approuvé). FR-024 : LATE_CLAIM_INVALID sans puce dans la description de ProblemCode, statut 409 tiré des autres mentions du contrat."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 9568,
