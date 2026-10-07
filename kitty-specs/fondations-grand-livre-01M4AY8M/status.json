@@ -1,19 +1,19 @@
 {
-  "event_count": 33,
-  "last_event_id": "01M4BK3R25Z9FNGVMW2JQ2YEGJ",
-  "materialized_at": "2026-10-07T16:28:27.077674+00:00",
+  "event_count": 34,
+  "last_event_id": "01M4BK66PG24PGDY3MWNSQ8F8X",
+  "materialized_at": "2026-10-07T16:29:47.601056+00:00",
   "mission_number": "",
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_type": "",
   "summary": {
-    "approved": 3,
+    "approved": 4,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 10
   },
   "work_packages": {
@@ -114,19 +114,25 @@
       }
     },
     "WP04": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M4BK3R25Z9FNGVMW2JQ2YEGJ",
-      "last_transition_at": "2026-10-07T16:28:27.077674+00:00",
+      "lane": "approved",
+      "last_event_id": "01M4BK66PG24PGDY3MWNSQ8F8X",
+      "last_transition_at": "2026-10-07T16:29:47.601056+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "505/505 pgTAP (464 + 41). Écart à la fiche : api_idempotency_completed exige aussi response_status IS NOT NULL (un CHECK laisse passer NULL) ; trouvé par l'assertion 20."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\fondations-grand-livre-01M4AY8M\\tasks\\WP04-table-idempotence-s21\\review-cycle-1.md",
+        "reference": "review-cycle://fondations-grand-livre-01M4AY8M/WP04-table-idempotence-s21/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 3668,
       "shell_pid_created_at": "1791390492.6528943",
