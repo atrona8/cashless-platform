@@ -185,7 +185,8 @@
       "last_transition_at": "2026-10-07T16:58:44.020616+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "42 tests verts (19 cas normatifs + cas 17 + garde de parité) ; ESLint et tsc OK. Correction de eslint.config.mjs (lane-a, WP01) : la règle anti-décimaux bloquait tout chemin d'import ; restreinte aux littéraux numériques."
+        "42 tests verts (19 cas normatifs + cas 17 + garde de parité) ; ESLint et tsc OK. Correction de eslint.config.mjs (lane-a, WP01) : la règle anti-décimaux bloquait tout chemin d'import ; restreinte aux littéraux numériques.",
+        "Review passed: portage fidèle de moteur_ecritures_reference.py (ordre min puis max, roundDiv sur négatifs cas 6), aucun number dans les signatures, garde de parité active. Checklist 1-8 PASS ; point 1 : consommateurs de production en WP07 ; point 7 : eslint.config.mjs (lane-a) corrigé, défaut de WP01 signalé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
