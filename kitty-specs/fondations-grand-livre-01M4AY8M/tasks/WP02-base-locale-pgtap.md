@@ -6,7 +6,7 @@ requirement_refs:
 - FR-003
 planning_base_branch: feat/fondations-grand-livre
 merge_target_branch: feat/fondations-grand-livre
-branch_strategy: Planning artifacts were generated on feat/fondations-grand-livre; completed changes must merge back into feat/fondations-grand-livre.
+branch_strategy: Planning artifacts for this mission were generated on feat/fondations-grand-livre. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/fondations-grand-livre unless the human explicitly redirects the landing branch.
 subtasks:
 - T006
 - T007
