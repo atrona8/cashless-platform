@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: fondations-grand-livre-01M4AY8M
 mission_id: 01M4AY8MPQ5JPN1DBF8D7SMZYX
-generated_at: '2026-10-07T16:32:23.216377+00:00'
+generated_at: '2026-10-07T16:35:46.106406+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -21,10 +21,10 @@ input_artifacts:
     sha256:
 verdict: ready
 issue_counts:
-  low: 4
   high: 0
-  critical: 0
   medium: 4
+  critical: 0
+  low: 4
   info: 0
 findings:
 - id: I1
