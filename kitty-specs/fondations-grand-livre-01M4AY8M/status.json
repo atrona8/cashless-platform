@@ -1,7 +1,7 @@
 {
   "event_count": 23,
-  "last_event_id": "01M4B9FR9C6Q09WFNHAJZ6AJDC",
-  "materialized_at": "2026-10-07T13:40:14.764447+00:00",
+  "last_event_id": "01M4B9JG9JXCKTDZXY09733D1A",
+  "materialized_at": "2026-10-07T13:41:44.882401+00:00",
   "mission_number": "",
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_type": "",
@@ -56,16 +56,16 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "in_review",
-      "last_event_id": "01M4B9FR9C6Q09WFNHAJZ6AJDC",
-      "last_transition_at": "2026-10-07T13:40:14.764447+00:00",
+      "last_event_id": "01M4B9JG9JXCKTDZXY09733D1A",
+      "last_transition_at": "2026-10-07T13:41:44.882401+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for review: cluster privé 5433, pgTAP 1.3.4, pg_prove 3.37 ; 464/464 en 4 s"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "reviewer",
-      "shell_pid": 7784,
-      "shell_pid_created_at": "1791380399.9526007",
+      "shell_pid": 4804,
+      "shell_pid_created_at": "1791380490.7613173",
       "subtasks": {
         "T006": "done",
         "T007": "done",
