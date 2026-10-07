@@ -218,7 +218,8 @@
       "last_transition_at": "2026-10-07T17:11:43.845969+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "83 tests verts (23 transactions du scénario reproduites ligne à ligne + cas limites), ESLint et tsc OK. FR-024 : REVERSAL en ordre inverse (scénario T16) et non « même ordre » (fiche)."
+        "83 tests verts (23 transactions du scénario reproduites ligne à ligne + cas limites), ESLint et tsc OK. FR-024 : REVERSAL en ordre inverse (scénario T16) et non « même ordre » (fiche).",
+        "Review passed: constructeurs purs (aucun import NestJS ni base dans builders/), somme nulle vérifiée sur chaque sortie, T9 (5 débits puis 2 crédits) et T22 (S-ATTENTE) conformes. Checklist 1-8 PASS ; point 1 : consommateur de production = registre (WP08) et service (WP12)."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
