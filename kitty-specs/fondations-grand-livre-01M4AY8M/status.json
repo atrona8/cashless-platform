@@ -27,6 +27,9 @@
       "last_event_id": "01M4B6T5WXWJCQGBNX4YQ3TFDD",
       "last_transition_at": "2026-10-07T12:53:30.653800+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: monorepo, deps exactes, ESLint no-float, Jest/SWC"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 16776,
