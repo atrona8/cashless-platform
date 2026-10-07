@@ -123,6 +123,9 @@
       "last_event_id": "01M4BK1TFV6PA56N6DHD6ZQF6Y",
       "last_transition_at": "2026-10-07T16:27:24.027292+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "505/505 pgTAP (464 + 41). Écart à la fiche : api_idempotency_completed exige aussi response_status IS NOT NULL (un CHECK laisse passer NULL) ; trouvé par l'assertion 20."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 18608,
