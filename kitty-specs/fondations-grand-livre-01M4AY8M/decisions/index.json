@@ -1,128 +1,128 @@
-{
-  "entries": [
-    {
-      "created_at": "2026-10-07T10:26:18.698331Z",
-      "decision_id": "01M4AYCMYA8NFD6SRQRGD0BBMC",
-      "final_answer": "pgTAP charg\u00e9 en SQL dans le PostgreSQL 17 Windows + pg_prove via Perl de Git Bash (script du d\u00e9p\u00f4t, sans make ni droits admin)",
-      "input_key": "local_pgtap_strategy",
-      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-      "mission_slug": "fondations-grand-livre-01M4AY8M",
-      "opened_by": "cli",
-      "options": [
-        "pgTAP charg\u00e9 en SQL dans le PostgreSQL 17 Windows + pg_prove via Perl de Git Bash",
-        "PostgreSQL 17 + pgTAP install\u00e9s dans WSL Ubuntu 24.04",
-        "CI GitHub seulement, pas de pgTAP local",
-        "Other"
-      ],
-      "origin_flow": "specify",
-      "other_answer": false,
-      "question": "Comment faire tourner les 464 assertions pgTAP en local (pgTAP absent du PostgreSQL 17 Windows, pas de Docker) ?",
-      "rationale": null,
-      "resolved_at": "2026-10-07T10:28:55.182597Z",
-      "resolved_by": null,
-      "slot_key": "specify.tooling.local-pgtap",
-      "status": "resolved",
-      "step_id": null,
-      "summary_json": null
-    },
-    {
-      "created_at": "2026-10-07T10:29:48.601573Z",
-      "decision_id": "01M4AYK1XSZGG2FA7S99ABQ7DT",
-      "final_answer": "Les 26 types de la liste ferm\u00e9e, chacun test\u00e9 unitairement ; les types BACKOFFICE re\u00e7oivent created_by/approved_by en param\u00e8tres, endpoints et flux d'approbation dans les missions suivantes",
-      "input_key": "builder_scope",
-      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-      "mission_slug": "fondations-grand-livre-01M4AY8M",
-      "opened_by": "cli",
-      "options": [
-        "Les 26 types de la liste ferm\u00e9e",
-        "Seulement les 22 types du sc\u00e9nario de r\u00e9f\u00e9rence",
-        "Other"
-      ],
-      "origin_flow": "specify",
-      "other_answer": false,
-      "question": "Quels constructeurs du moteur d'\u00e9critures livrer dans cette mission ?",
-      "rationale": null,
-      "resolved_at": "2026-10-07T10:39:55.733841Z",
-      "resolved_by": null,
-      "slot_key": "specify.engine.builder-scope",
-      "status": "resolved",
-      "step_id": null,
-      "summary_json": null
-    },
-    {
-      "created_at": "2026-10-07T10:40:42.290992Z",
-      "decision_id": "01M4AZ709J8FBX2FZZKC2445YF",
-      "final_answer": "npm workspaces",
-      "input_key": "package_manager",
-      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-      "mission_slug": "fondations-grand-livre-01M4AY8M",
-      "opened_by": "cli",
-      "options": [
-        "npm workspaces",
-        "pnpm workspaces",
-        "Other"
-      ],
-      "origin_flow": "specify",
-      "other_answer": false,
-      "question": "npm workspaces ou pnpm workspaces pour le monorepo ?",
-      "rationale": null,
-      "resolved_at": "2026-10-07T10:42:28.646633Z",
-      "resolved_by": null,
-      "slot_key": "specify.repo.package-manager",
-      "status": "resolved",
-      "step_id": null,
-      "summary_json": null
-    },
-    {
-      "created_at": "2026-10-07T10:40:53.905422Z",
-      "decision_id": "01M4AZ7BMHCTMSW57GTFMKSJJ1",
-      "final_answer": "Aucune route m\u00e9tier : route de sant\u00e9 seulement ; garanties transverses test\u00e9es via une route de test non publi\u00e9e, absente d'openapi.yaml",
-      "input_key": "api_route_scope",
-      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-      "mission_slug": "fondations-grand-livre-01M4AY8M",
-      "opened_by": "cli",
-      "options": [
-        "Aucune route m\u00e9tier : sant\u00e9 + garanties transverses test\u00e9es sur une route de test",
-        "Une route d \u00e9criture g\u00e9n\u00e9rique au grand livre",
-        "Other"
-      ],
-      "origin_flow": "specify",
-      "other_answer": false,
-      "question": "Quelles routes HTTP m\u00e9tier l'API expose-t-elle \u00e0 la fin de cette mission ?",
-      "rationale": null,
-      "resolved_at": "2026-10-07T10:42:38.858614Z",
-      "resolved_by": null,
-      "slot_key": "specify.api.route-scope",
-      "status": "resolved",
-      "step_id": null,
-      "summary_json": null
-    },
-    {
-      "created_at": "2026-10-07T11:00:32.725269Z",
-      "decision_id": "01M4B0BATNKGG1QASEV327NEWZ",
-      "final_answer": "Cluster PostgreSQL 17 priv\u00e9 : copie des binaires install\u00e9s dans le profil utilisateur (hors d\u00e9p\u00f4t), pgTAP ajout\u00e9, cluster de test sur le port 5433 en auth trust locale ; affine la d\u00e9cision specify 01M4AYCMYA8NFD6SRQRGD0BBMC",
-      "input_key": "pgtap_extension_install",
-      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-      "mission_slug": "fondations-grand-livre-01M4AY8M",
-      "opened_by": "cli",
-      "options": [
-        "Cluster PostgreSQL 17 priv\u00e9 (copie des binaires dans le dossier utilisateur, port 5433)",
-        "Copie unique des fichiers pgTAP dans Program Files depuis un terminal administrateur",
-        "PostgreSQL 17 + pgTAP dans WSL",
-        "Other"
-      ],
-      "origin_flow": "plan",
-      "other_answer": false,
-      "question": "Les suites font CREATE EXTENSION pgtap et share/extension de Program Files n'est pas modifiable sans admin : comment rendre l'extension disponible en local ?",
-      "rationale": null,
-      "resolved_at": "2026-10-07T11:26:41.668108Z",
-      "resolved_by": null,
-      "slot_key": "plan.tooling.pgtap-extension",
-      "status": "resolved",
-      "step_id": null,
-      "summary_json": null
-    }
-  ],
-  "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
-  "version": 1
-}
+{
+  "entries": [
+    {
+      "created_at": "2026-10-07T10:26:18.698331Z",
+      "decision_id": "01M4AYCMYA8NFD6SRQRGD0BBMC",
+      "final_answer": "pgTAP charg\u00e9 en SQL dans le PostgreSQL 17 Windows + pg_prove via Perl de Git Bash (script du d\u00e9p\u00f4t, sans make ni droits admin)",
+      "input_key": "local_pgtap_strategy",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "pgTAP charg\u00e9 en SQL dans le PostgreSQL 17 Windows + pg_prove via Perl de Git Bash",
+        "PostgreSQL 17 + pgTAP install\u00e9s dans WSL Ubuntu 24.04",
+        "CI GitHub seulement, pas de pgTAP local",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Comment faire tourner les 464 assertions pgTAP en local (pgTAP absent du PostgreSQL 17 Windows, pas de Docker) ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T10:28:55.182597Z",
+      "resolved_by": null,
+      "slot_key": "specify.tooling.local-pgtap",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-07T10:29:48.601573Z",
+      "decision_id": "01M4AYK1XSZGG2FA7S99ABQ7DT",
+      "final_answer": "Les 26 types de la liste ferm\u00e9e, chacun test\u00e9 unitairement ; les types BACKOFFICE re\u00e7oivent created_by/approved_by en param\u00e8tres, endpoints et flux d'approbation dans les missions suivantes",
+      "input_key": "builder_scope",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "Les 26 types de la liste ferm\u00e9e",
+        "Seulement les 22 types du sc\u00e9nario de r\u00e9f\u00e9rence",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quels constructeurs du moteur d'\u00e9critures livrer dans cette mission ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T10:39:55.733841Z",
+      "resolved_by": null,
+      "slot_key": "specify.engine.builder-scope",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-07T10:40:42.290992Z",
+      "decision_id": "01M4AZ709J8FBX2FZZKC2445YF",
+      "final_answer": "npm workspaces",
+      "input_key": "package_manager",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "npm workspaces",
+        "pnpm workspaces",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "npm workspaces ou pnpm workspaces pour le monorepo ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T10:42:28.646633Z",
+      "resolved_by": null,
+      "slot_key": "specify.repo.package-manager",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-07T10:40:53.905422Z",
+      "decision_id": "01M4AZ7BMHCTMSW57GTFMKSJJ1",
+      "final_answer": "Aucune route m\u00e9tier : route de sant\u00e9 seulement ; garanties transverses test\u00e9es via une route de test non publi\u00e9e, absente d'openapi.yaml",
+      "input_key": "api_route_scope",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "Aucune route m\u00e9tier : sant\u00e9 + garanties transverses test\u00e9es sur une route de test",
+        "Une route d \u00e9criture g\u00e9n\u00e9rique au grand livre",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quelles routes HTTP m\u00e9tier l'API expose-t-elle \u00e0 la fin de cette mission ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T10:42:38.858614Z",
+      "resolved_by": null,
+      "slot_key": "specify.api.route-scope",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-07T11:00:32.725269Z",
+      "decision_id": "01M4B0BATNKGG1QASEV327NEWZ",
+      "final_answer": "Cluster PostgreSQL 17 priv\u00e9 : copie des binaires install\u00e9s dans le profil utilisateur (hors d\u00e9p\u00f4t), pgTAP ajout\u00e9, cluster de test sur le port 5433 en auth trust locale ; affine la d\u00e9cision specify 01M4AYCMYA8NFD6SRQRGD0BBMC",
+      "input_key": "pgtap_extension_install",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "Cluster PostgreSQL 17 priv\u00e9 (copie des binaires dans le dossier utilisateur, port 5433)",
+        "Copie unique des fichiers pgTAP dans Program Files depuis un terminal administrateur",
+        "PostgreSQL 17 + pgTAP dans WSL",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Les suites font CREATE EXTENSION pgtap et share/extension de Program Files n'est pas modifiable sans admin : comment rendre l'extension disponible en local ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T11:26:41.668108Z",
+      "resolved_by": null,
+      "slot_key": "plan.tooling.pgtap-extension",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+  "version": 1
+}
