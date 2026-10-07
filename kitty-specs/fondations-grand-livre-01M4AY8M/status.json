@@ -217,6 +217,9 @@
       "last_event_id": "01M4BNESMGKB1DZZ8JVADTQEKP",
       "last_transition_at": "2026-10-07T17:09:26.288771+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "83 tests verts (23 transactions du scénario reproduites ligne à ligne + cas limites), ESLint et tsc OK. FR-024 : REVERSAL en ordre inverse (scénario T16) et non « même ordre » (fiche)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 7268,
