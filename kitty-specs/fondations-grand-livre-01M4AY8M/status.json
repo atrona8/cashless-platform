@@ -92,7 +92,8 @@
       "last_transition_at": "2026-10-07T16:12:40.741811+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "464/464 pgTAP sur base par migrations ; rejeu idempotent ; somme vérifiée ; ops inaccessible à cashless_app ; check:generated vert ; schéma identique à la base brute (FR-024 : aucun écart). Scripts npm ajoutés à packages/ledger-sql/package.json (hors owned_files, demandés par la fiche)."
+        "464/464 pgTAP sur base par migrations ; rejeu idempotent ; somme vérifiée ; ops inaccessible à cashless_app ; check:generated vert ; schéma identique à la base brute (FR-024 : aucun écart). Scripts npm ajoutés à packages/ledger-sql/package.json (hors owned_files, demandés par la fiche).",
+        "Review passed: 464/464 pgTAP sur base par migrations, rejeu idempotent, refus si somme modifiée (vérifié), ops sans USAGE pour cashless_app, check:generated vert, schéma identique à la base brute (FR-024 : aucun écart). Checklist 1-8 PASS ; point 7 : packages/ledger-sql/package.json (lane-a, WP01 approuvé) reçoit les scripts npm demandés par la fiche."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
