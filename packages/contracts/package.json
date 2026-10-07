@@ -1,0 +1,13 @@
+{
+  "name": "@cashless/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Contrat de l'API (openapi.yaml) et types générés — ne jamais écrire les types à la main",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {},
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "yaml": "2.9.1"
+  }
+}
