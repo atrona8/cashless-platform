@@ -1,7 +1,7 @@
 {
-  "event_count": 17,
-  "last_event_id": "01M4B6T5WXWJCQGBNX4YQ3TFDD",
-  "materialized_at": "2026-10-07T12:53:30.653800+00:00",
+  "event_count": 19,
+  "last_event_id": "01M4B7JM89B2QA0D9C2RMZ8PAG",
+  "materialized_at": "2026-10-07T13:06:51.610694+00:00",
   "mission_number": "",
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 1,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 13
+    "planned": 12
   },
   "work_packages": {
     "WP01": {
@@ -43,11 +43,19 @@
       }
     },
     "WP02": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M4B5AEPE705X6QRXEMSZM39P",
-      "last_transition_at": "2026-10-07T12:27:26.798855+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M4B7JM89B2QA0D9C2RMZ8PAG",
+      "last_transition_at": "2026-10-07T13:06:51.610694+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 12004,
+      "shell_pid_created_at": "1791378399.653206"
     },
     "WP03": {
       "actor": "finalize-tasks",
