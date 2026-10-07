@@ -1,7 +1,7 @@
 {
-  "event_count": 8,
-  "last_event_id": "01M4B5ARXZXPC5GJ7SXK8KDXGQ",
-  "materialized_at": "2026-10-07T12:27:37.279466+00:00",
+  "event_count": 9,
+  "last_event_id": "01M4B5ATH0HAMAA2K7AZWM6X3S",
+  "materialized_at": "2026-10-07T12:27:38.912842+00:00",
   "mission_number": "",
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_type": "",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 8
+    "planned": 9
   },
   "work_packages": {
     "WP01": {
@@ -72,6 +72,13 @@
       "lane": "planned",
       "last_event_id": "01M4B5ARXZXPC5GJ7SXK8KDXGQ",
       "last_transition_at": "2026-10-07T12:27:37.279466+00:00"
+    },
+    "WP09": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M4B5ATH0HAMAA2K7AZWM6X3S",
+      "last_transition_at": "2026-10-07T12:27:38.912842+00:00"
     }
   }
 }
