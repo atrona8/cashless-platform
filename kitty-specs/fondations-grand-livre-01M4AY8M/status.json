@@ -1,7 +1,7 @@
 {
   "event_count": 21,
-  "last_event_id": "01M4B938SEA0RKFQ37Y8V2W62P",
-  "materialized_at": "2026-10-07T13:33:25.678848+00:00",
+  "last_event_id": "01M4B94VAW08J1TM04SRM39YAM",
+  "materialized_at": "2026-10-07T13:34:17.436848+00:00",
   "mission_number": "",
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_type": "",
@@ -24,16 +24,16 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "in_review",
-      "last_event_id": "01M4B938SEA0RKFQ37Y8V2W62P",
-      "last_transition_at": "2026-10-07T13:33:25.678848+00:00",
+      "last_event_id": "01M4B94VAW08J1TM04SRM39YAM",
+      "last_transition_at": "2026-10-07T13:34:17.436848+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for review: monorepo, deps exactes, ESLint no-float, Jest/SWC"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "reviewer",
-      "shell_pid": 20304,
-      "shell_pid_created_at": "1791379990.6555908",
+      "shell_pid": 20288,
+      "shell_pid_created_at": "1791380043.8138256",
       "subtasks": {
         "T001": "done",
         "T002": "done",
