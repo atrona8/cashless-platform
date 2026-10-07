@@ -4,15 +4,15 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: fondations-grand-livre-01M4AY8M
 mission_id: 01M4AY8MPQ5JPN1DBF8D7SMZYX
-generated_at: '2026-10-07T12:28:58.519407+00:00'
+generated_at: '2026-10-07T12:57:43.372322+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: kitty-specs\fondations-grand-livre-01M4AY8M\spec.md
-    sha256: 3b7e04906950f3257f98194eccc0fe38f7e928a5b2a21409109f9c9a250cf719
+    sha256: fedc305788cb966a4bbbb135d919702147ecbde1ab81f902e5328a13409ff274
   plan.md:
     path: kitty-specs\fondations-grand-livre-01M4AY8M\plan.md
-    sha256: 638ea44ed6c7cfe48176220a0b73d43028d8814edebd4dfe91e5d33e753c6636
+    sha256: c8fb78b6f8e263692cd251d25e856008271e6cf9f8efaf9cb4c3e061172def01
   tasks.md:
     path: kitty-specs\fondations-grand-livre-01M4AY8M\tasks.md
     sha256: 2951fde5082514e57c7f28053b1d4453f66950526617250054986fd61dd7d95d
@@ -21,10 +21,10 @@ input_artifacts:
     sha256:
 verdict: ready
 issue_counts:
-  high: 0
-  low: 4
   medium: 4
   critical: 0
+  high: 0
+  low: 4
   info: 0
 findings:
 - id: I1
