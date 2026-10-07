@@ -124,7 +124,8 @@
       "last_transition_at": "2026-10-07T16:29:47.601056+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "505/505 pgTAP (464 + 41). Écart à la fiche : api_idempotency_completed exige aussi response_status IS NOT NULL (un CHECK laisse passer NULL) ; trouvé par l'assertion 20."
+        "505/505 pgTAP (464 + 41). Écart à la fiche : api_idempotency_completed exige aussi response_status IS NOT NULL (un CHECK laisse passer NULL) ; trouvé par l'assertion 20.",
+        "Review passed: 505/505 pgTAP ; diff limité aux 2 fichiers possédés ; chaque contrainte testée par une valeur fautive ; RLS forcée et WITH CHECK vérifiés sous cashless_app ; pas de DELETE. Checklist 1-8 PASS. Écart justifié à la fiche : IS NOT NULL ajouté à api_idempotency_completed."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
