@@ -105,17 +105,17 @@ tracker_refs: []
 
 
 
-# Work Package Prompt: WP01 â€“ Monorepo et outillage TypeScript
+# Work Package Prompt: WP01 – Monorepo et outillage TypeScript
 
 
 
-## âš¡ Do This First: Load Agent Profile
+## ⚡ Do This First: Load Agent Profile
 
 
 
-Avant toute autre lecture, charge le profil assignÃ© : `/ad-hoc-profile-load node-norris` (rÃ´le `implementer`).
+Avant toute autre lecture, charge le profil assigné : `/ad-hoc-profile-load node-norris` (rôle `implementer`).
 
-Puis lis `README.md` (racine), `docs/SPECIFICATION.md` Â§2.1 et `kitty-specs/fondations-grand-livre-01M4AY8M/plan.md`
+Puis lis `README.md` (racine), `docs/SPECIFICATION.md` §2.1 et `kitty-specs/fondations-grand-livre-01M4AY8M/plan.md`
 
 (sections Technical Context, Supply-chain, Project Structure).
 
@@ -125,9 +125,9 @@ Puis lis `README.md` (racine), `docs/SPECIFICATION.md` Â§2.1 et `kitty-specs/f
 
 
 
-CrÃ©er la racine du monorepo (npm workspaces) et l'outillage commun, et installer **en une fois** toutes les
+Créer la racine du monorepo (npm workspaces) et l'outillage commun, et installer **en une fois** toutes les
 
-dÃ©pendances npm dont la mission a besoin, avec versions exactes, pour que les WP suivants n'aient jamais Ã  toucher
+dépendances npm dont la mission a besoin, avec versions exactes, pour que les WP suivants n'aient jamais à toucher
 
 `package.json` ni le lockfile.
 
@@ -143,7 +143,7 @@ dÃ©pendances npm dont la mission a besoin, avec versions exactes, pour que les
 
 - Les dossiers existants (`packages/ledger-sql`, `packages/contracts`, `packages/tag-format`, `tools/nfc-bench`,
 
-  `reference`, `docs`) ne sont pas dÃ©placÃ©s. Seuls `apps/api`, `packages/contracts`, `packages/ledger-sql`
+  `reference`, `docs`) ne sont pas déplacés. Seuls `apps/api`, `packages/contracts`, `packages/ledger-sql`
 
   deviennent des workspaces npm (`packages/tag-format` reste hors workspace : mission 4).
 
@@ -153,7 +153,7 @@ dÃ©pendances npm dont la mission a besoin, avec versions exactes, pour que les
 
 
 
-Planification et merge sur `feat/fondations-grand-livre`. Le worktree d'exÃ©cution est attribuÃ© par lane
+Planification et merge sur `feat/fondations-grand-livre`. Le worktree d'exécution est attribué par lane
 
 (`lanes.json`) ; commande : `spec-kitty agent action implement WP01 --agent claude`.
 
@@ -163,7 +163,7 @@ Planification et merge sur `feat/fondations-grand-livre`. Le worktree d'exÃ©cu
 
 
 
-### T001 â€” Racine npm workspaces et scripts
+### T001 — Racine npm workspaces et scripts
 
 
 
@@ -177,11 +177,11 @@ Planification et merge sur `feat/fondations-grand-livre`. Le worktree d'exÃ©cu
 
 - Paquets : `@cashless/api` (`apps/api`), `@cashless/contracts`, `@cashless/ledger-sql`, tous `private`.
 
-- `.gitignore` : ajouter `.env.test`, `*.tsbuildinfo`, `apps/api/dist/` (dÃ©jÃ  `dist/`), sans retirer l'existant.
+- `.gitignore` : ajouter `.env.test`, `*.tsbuildinfo`, `apps/api/dist/` (déjà `dist/`), sans retirer l'existant.
 
 
 
-### T002 â€” TypeScript strict partagÃ©
+### T002 — TypeScript strict partagé
 
 
 
@@ -191,15 +191,15 @@ Planification et merge sur `feat/fondations-grand-livre`. Le worktree d'exÃ©cu
 
   `esModuleInterop`, `skipLibCheck`, `resolveJsonModule`.
 
-- `apps/api/tsconfig.json` (Ã©tend la base, `include: ["src", "test"]`) et `tsconfig.build.json` (`src` seul,
+- `apps/api/tsconfig.json` (étend la base, `include: ["src", "test"]`) et `tsconfig.build.json` (`src` seul,
 
   `outDir: dist`). `packages/*/tsconfig.json` idem pour `src`/`scripts`.
 
-- Chemins : `@cashless/contracts` rÃ©solu via le workspace (pas d'alias `paths` nÃ©cessaire).
+- Chemins : `@cashless/contracts` résolu via le workspace (pas d'alias `paths` nécessaire).
 
 
 
-### T003 â€” DÃ©pendances exactes, lockfile, `--ignore-scripts`
+### T003 — Dépendances exactes, lockfile, `--ignore-scripts`
 
 
 
@@ -213,41 +213,41 @@ Installer (versions **exactes**, `npm install --save-exact --ignore-scripts`) :
 
 - `packages/contracts` : dev `openapi-typescript` (7.x).
 
-- `packages/ledger-sql` : `pg` ; dev `@types/pg`, `tsx` (exÃ©cution des scripts TS).
+- `packages/ledger-sql` : `pg` ; dev `@types/pg`, `tsx` (exécution des scripts TS).
 
 - Racine (dev) : `typescript` (5.x), `jest` (29.x), `@swc/core`, `@swc/jest`, `@types/jest`, `@types/node` (22.x),
 
   `eslint` (9.x), `typescript-eslint`, `@eslint/js`.
 
-- VÃ©rifier : `rm -rf node_modules && npm ci --ignore-scripts` puis `npx swc --version` / un test Jest qui compile ;
+- Vérifier : `rm -rf node_modules && npm ci --ignore-scripts` puis `npx swc --version` / un test Jest qui compile ;
 
-  si le binaire SWC manque sans script, basculer sur `ts-jest` et l'Ã©crire dans `research.md` (R-11 A1).
+  si le binaire SWC manque sans script, basculer sur `ts-jest` et l'écrire dans `research.md` (R-11 A1).
 
 - Registre officiel uniquement (`npm config get registry` = `https://registry.npmjs.org/`).
 
 
 
-### T004 â€” ESLint
+### T004 — ESLint
 
 
 
 - `eslint.config.mjs` (flat config) : `@eslint/js` recommended + `typescript-eslint` recommended.
 
-- RÃ¨gle locale pour `apps/api/src/ledger/**` : `no-restricted-syntax` interdisant `Number(`, `parseFloat(`,
+- Règle locale pour `apps/api/src/ledger/**` : `no-restricted-syntax` interdisant `Number(`, `parseFloat(`,
 
-  `parseInt(`, `Math.round`/`Math.floor`/`Math.ceil` et les littÃ©raux dÃ©cimaux (`Literal[raw=/\./]`) â€” message :
+  `parseInt(`, `Math.round`/`Math.floor`/`Math.ceil` et les littéraux décimaux (`Literal[raw=/\./]`) — message :
 
-  Â« montants en bigint uniquement (SPECIFICATION Â§5.5) Â».
+  « montants en bigint uniquement (SPECIFICATION §5.5) ».
 
 - Ignorer `**/dist/**`, `packages/contracts/generated/**`, `tools/nfc-bench/**`.
 
 
 
-### T005 â€” Jest + SWC et test fumÃ©e
+### T005 — Jest + SWC et test fumée
 
 
 
-- `jest.preset.cjs` (racine) : transform `@swc/jest` avec dÃ©corateurs (`jsc.parser.decorators: true`,
+- `jest.preset.cjs` (racine) : transform `@swc/jest` avec décorateurs (`jsc.parser.decorators: true`,
 
   `jsc.transform.legacyDecorator: true`, `decoratorMetadata: true`), `testEnvironment: node`.
 
@@ -255,7 +255,7 @@ Installer (versions **exactes**, `npm install --save-exact --ignore-scripts`) :
 
   `npm test -w @cashless/api -- money` doit filtrer.
 
-- `apps/api/test/smoke.spec.ts` : vÃ©rifie `typeof 1n === "bigint"` et l'import de `@nestjs/core`.
+- `apps/api/test/smoke.spec.ts` : vérifie `typeof 1n === "bigint"` et l'import de `@nestjs/core`.
 
 - Scripts `apps/api` : `test` (`jest`), `typecheck` (`tsc -p tsconfig.json --noEmit`), `build`, `start`.
 
@@ -265,11 +265,11 @@ Installer (versions **exactes**, `npm install --save-exact --ignore-scripts`) :
 
 
 
-- `npm ci --ignore-scripts`, `npm run lint`, `npm run typecheck`, `npm test` passent Ã  la racine.
+- `npm ci --ignore-scripts`, `npm run lint`, `npm run typecheck`, `npm test` passent à la racine.
 
-- Lockfile commitÃ© ; toutes les versions exactes (aucun `^`/`~`).
+- Lockfile commité ; toutes les versions exactes (aucun `^`/`~`).
 
-- Aucun fichier V2 ; aucun fichier du kit modifiÃ© hors `.gitignore`.
+- Aucun fichier V2 ; aucun fichier du kit modifié hors `.gitignore`.
 
 
 
@@ -277,7 +277,7 @@ Installer (versions **exactes**, `npm install --save-exact --ignore-scripts`) :
 
 
 
-- VÃ©rifier l'absence de `^` dans les trois `package.json`. VÃ©rifier que la rÃ¨gle ESLint Â« pas de flottant Â» cible
+- Vérifier l'absence de `^` dans les trois `package.json`. Vérifier que la règle ESLint « pas de flottant » cible
 
   bien `apps/api/src/ledger/**` (tester en introduisant `Number(x)` puis retirer).
 
