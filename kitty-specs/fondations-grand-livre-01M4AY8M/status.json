@@ -28,7 +28,8 @@
       "last_transition_at": "2026-10-07T13:39:22.069761+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for review: monorepo, deps exactes, ESLint no-float, Jest/SWC"
+        "Ready for review: monorepo, deps exactes, ESLint no-float, Jest/SWC",
+        "Review passed: npm ci --ignore-scripts, lint, typecheck, tests verts ; aucune version ^/~ ; aucun fichier normatif touché. Checklist : 1 N/A (config), 2 PASS, 3 N/A, 4 PASS (FR-001), 5 PASS, 6 PASS (rien de V2), 7 PASS, 8 N/A. Écart assumé : NestJS 11/TS 5.9/ESLint 9/Jest 30 (NestJS 12 ESM-only, TS7 non supporté par typescript-eslint)."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
