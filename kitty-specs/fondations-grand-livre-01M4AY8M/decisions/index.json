@@ -96,6 +96,31 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-10-07T11:00:32.725269Z",
+      "decision_id": "01M4B0BATNKGG1QASEV327NEWZ",
+      "final_answer": "Cluster PostgreSQL 17 priv\u00e9 : copie des binaires install\u00e9s dans le profil utilisateur (hors d\u00e9p\u00f4t), pgTAP ajout\u00e9, cluster de test sur le port 5433 en auth trust locale ; affine la d\u00e9cision specify 01M4AYCMYA8NFD6SRQRGD0BBMC",
+      "input_key": "pgtap_extension_install",
+      "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
+      "mission_slug": "fondations-grand-livre-01M4AY8M",
+      "opened_by": "cli",
+      "options": [
+        "Cluster PostgreSQL 17 priv\u00e9 (copie des binaires dans le dossier utilisateur, port 5433)",
+        "Copie unique des fichiers pgTAP dans Program Files depuis un terminal administrateur",
+        "PostgreSQL 17 + pgTAP dans WSL",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Les suites font CREATE EXTENSION pgtap et share/extension de Program Files n'est pas modifiable sans admin : comment rendre l'extension disponible en local ?",
+      "rationale": null,
+      "resolved_at": "2026-10-07T11:26:41.668108Z",
+      "resolved_by": null,
+      "slot_key": "plan.tooling.pgtap-extension",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M4AY8MPQ5JPN1DBF8D7SMZYX",
