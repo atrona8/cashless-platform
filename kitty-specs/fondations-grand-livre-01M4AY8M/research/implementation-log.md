@@ -17,3 +17,5 @@ Une ligne par démarrage ou fin de work package (horodatage UTC).
 - 2026-10-07T16:38:59Z — démarrage WP05 (lane-e).
 - 2026-10-07T16:49:15Z — démarrage WP06 (lane-f).
 - 2026-10-07T16:51:36Z — démarrage WP06 (lane-f).
+- 2026-10-07T17:00:58Z — démarrage WP07 (lane-g).
+- 2026-10-07T17:03:35Z — démarrage WP07 (lane-g).
