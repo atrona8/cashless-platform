@@ -30,8 +30,8 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
   calculs entiers des frais, taxes et partages ; erreurs métier stables (§5).
-- Statut : 📋 planifié (schéma de référence et tests pgTAP fournis par le kit)
-- Mission(s) associée(s) : à définir
+- Statut : 🚧 plan finalisé (07/10/2026) — moteur d'écritures, migrations, CI et garanties transverses de l'API
+- Mission(s) associée(s) : `fondations-grand-livre-01M4AY8M` (Fondations du grand livre et de l'API)
 
 ### Configuration, contrats et détenteur des fonds
 - Description : cascade versionnée plateforme → prestataire → organisateur → événement → commerçant, bornée par
