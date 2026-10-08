@@ -2,247 +2,247 @@
   "mission_slug": "fondations-grand-livre-01M4AY8M",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "npm workspaces apps/api, packages/contracts, packages/ledger-sql ; lint et typecheck verts sur les 3 workspaces (r\u00e9p\u00e9tition CI 2026-10-08)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-002",
       "description": "Verify FR-002 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Migrations 0001 et 0002 appliqu\u00e9es par npm run migrate (ops.schema_migrations, roles.sql rejou\u00e9) ; base de CI et de test cr\u00e9\u00e9es par les migrations",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "tools/dev-db (cluster PostgreSQL 17.4 priv\u00e9, pgTAP 1.3.4, pg_prove) : npm run test:pgtap = 505 assertions PASS en local",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-004",
       "description": "Verify FR-004 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "\u00c9tape 9 de .github/workflows/ledger-tests.yml : npm run test:pgtap ; r\u00e9p\u00e9t\u00e9e en local (505 assertions PASS)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Pas encore ex\u00e9cut\u00e9 sur GitHub (C-010 caduque, aucun push effectu\u00e9) ; voir .github/CI.md"
     },
     {
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "npm run check:generated -w @cashless/ledger-sql vert (g\u00e9n\u00e9rateurs = fichiers commit\u00e9s) ; \u00e9tape 4 de la CI",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-006",
       "description": "Verify FR-006 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "TenantTx.run (set_config(..., true)) seul acc\u00e8s base ; test d'architecture ; isolation.spec.ts : m\u00eame connexion A puis B sans fuite, sans set_config 0 ligne",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Port TENANT_CONTEXT : refus 401 par d\u00e9faut (authentification en mission 2) ; fournisseur de test par en-t\u00eate dans test/support/app.ts uniquement",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Identit\u00e9 r\u00e9elle hors mission (mission 2)"
     },
     {
       "criterion_id": "FR-008",
       "description": "Verify FR-008 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "errors.spec.ts : chaque SQLSTATE de la table \u2192 bon code et statut, sentinelle SQL absente des r\u00e9ponses ; 23514 double validation \u2192 403 FORBIDDEN",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-009",
       "description": "Verify FR-009 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Migration 0002 + 41 assertions pgTAP ; idempotency.spec.ts : cl\u00e9 requise, rejeu identique (Idempotency-Replayed), REUSED, IN_PROGRESS en concurrence r\u00e9elle, bail expir\u00e9, 5xx rel\u00e2ch\u00e9e, 4xx rejou\u00e9e, cl\u00e9s par prestataire",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Cl\u00e9 COMPLETED expir\u00e9e jamais r\u00e9utilis\u00e9e (research R-13 C-7)"
     },
     {
       "criterion_id": "FR-010",
       "description": "Verify FR-010 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "health.spec.ts : X-Request-Id g\u00e9n\u00e9r\u00e9 si absent ou invalide, repris s'il est un UUID ; instance problem+json = X-Request-Id",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-011",
       "description": "Verify FR-011 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "health.spec.ts : Accept-Language en \u2192 titre anglais ; catalogues fr/en complets pour les 89 ProblemCode (test unitaire)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-012",
       "description": "Verify FR-012 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "GET /v1/health \u2192 200 {status, db} ; npm run start v\u00e9rifi\u00e9 (hors openapi.yaml, C-009)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-013",
       "description": "Verify FR-013 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Registre des 26 types (satisfies Record<TransactionType, \u2026>) ; tests unitaires des constructeurs ligne \u00e0 ligne contre le sc\u00e9nario",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-014",
       "description": "Verify FR-014 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "engine.spec.ts : take_deposit d\u00e9l\u00e9gu\u00e9 puis seconde demande sans effet ; replay.spec.ts T5, T7, T23, T44 par take/refund/forfeit_deposit, lignes identiques",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-015",
       "description": "Verify FR-015 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "LedgerEngineService : validation, idempotence, grand livre/\u00e9v\u00e9nement/devise, matrice, configuration, soldes, constructeur, comptes, un seul appel d'\u00e9criture ; engine.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Idempotence plac\u00e9e avant la matrice et les soldes (rejeu apr\u00e8s cl\u00f4ture, research R-13 C-9)"
     },
     {
       "criterion_id": "FR-016",
       "description": "Verify FR-016 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "money/ en bigint, aucune conversion number (r\u00e8gle ESLint + lecture SQL en ::text) ; tests unitaires d'arrondi",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-017",
       "description": "Verify FR-017 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "moteur_ecritures_reference.py : 19 cas OK ; reference-cases.spec.ts : 21 tests verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-018",
       "description": "Verify FR-018 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "status-matrix.spec.ts (cellules de \u00a712.1) ; engine.spec.ts : DRAFT + PURCHASE \u2192 VALIDATION_FAILED sans \u00e9criture",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Cellules ambigu\u00ebs tranch\u00e9es : research R-13 C-5"
     },
     {
       "criterion_id": "FR-019",
       "description": "Verify FR-019 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "BACKOFFICE : auteur et valideur distincts exig\u00e9s par le moteur (engine.spec.ts) et par la base (23514 \u2192 FORBIDDEN, errors.spec.ts)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-020",
       "description": "Verify FR-020 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "replay.spec.ts : 48 transactions identiques ligne \u00e0 ligne, soldes exacts apr\u00e8s T23 et T48, CLOSED, LOCKED, invariant nul, balance_drift vide",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-021",
       "description": "Verify FR-021 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "replay.spec.ts : second rejeu des 48 commandes sur grand livre LOCKED : 0 transaction, 0 ligne ; post_transaction rejou\u00e9 sur LOCKED \u2192 existant",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-022",
       "description": "Verify FR-022 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "packages/contracts/generated depuis openapi.yaml ; npm run check -w @cashless/contracts vert (\u00e9tape 6 de la CI)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     },
     {
       "criterion_id": "FR-023",
       "description": "Verify FR-023 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "\u00c9tape 10 de la CI : base recr\u00e9\u00e9e puis npm test (15 suites, 505 tests) ; r\u00e9p\u00e9t\u00e9e en local",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": "Pas encore ex\u00e9cut\u00e9 sur GitHub ; voir .github/CI.md"
     },
     {
       "criterion_id": "FR-024",
       "description": "Verify FR-024 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "research.md R-13 : contradictions C-1 \u00e0 C-15 consign\u00e9es avec la r\u00e8gle \u00a70.3 appliqu\u00e9e",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-08T11:03:07Z",
+      "notes": null
     }
   ],
   "negative_invariants": []
