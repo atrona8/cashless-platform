@@ -59,7 +59,8 @@
       "last_transition_at": "2026-10-08T14:25:06.603939+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Migration 0004 (journal d'audit chaîné, scellements, vérification) ; 41 assertions pgTAP ; 611 au total vertes."
+        "Migration 0004 (journal d'audit chaîné, scellements, vérification) ; 41 assertions pgTAP ; 611 au total vertes.",
+        "Revue : format canonique conforme au contrat, verrou de chaîne pris avant la lecture de la dernière ligne, ajout seul pour tout rôle, 4 altérations simulées détectées (NFR-007), RLS vérifiée sous cashless_app ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
