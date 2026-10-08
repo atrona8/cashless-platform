@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-10-08T11:03:52.632334+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "57b0f2b8c096df207d1715fb8cfb424c6987713f"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-10-08T11:03:52.632334+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "57b0f2b8c096df207d1715fb8cfb424c6987713f",
   "coordination_branch": "kitty/mission-fondations-grand-livre-01M4AY8M",
   "created_at": "2026-10-07T10:24:07.960732+00:00",
   "flattened": false,
