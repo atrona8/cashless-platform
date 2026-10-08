@@ -351,7 +351,8 @@
       "last_transition_at": "2026-10-08T10:12:08.185209+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Idempotence S21 et preuves transverses ; 127 tests (dont 51 d'intégration, 3 passages stables), tsc, eslint verts ; démarrage vérifié."
+        "Idempotence S21 et preuves transverses ; 127 tests (dont 51 d'intégration, 3 passages stables), tsc, eslint verts ; démarrage vérifié.",
+        "Revue : complete() dans la transaction métier (IdempotentTx.run), concurrence réellement testée (deux requêtes en vol, verrou consultatif), aucun texte SQL dans les réponses (sentinelle) ; clé COMPLETED expirée non réutilisable (garde de la table) documentée ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
