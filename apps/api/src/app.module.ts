@@ -1,14 +1,15 @@
-// Module racine : accès base, santé, X-Request-Id, filtre problem+json, contexte de prestataire (refus par défaut).
+// Module racine : accès base, santé, idempotence, X-Request-Id, filtre problem+json, contexte de prestataire (refus par défaut).
 import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { DbModule } from './db/db.module';
 import { ProblemFilter } from './errors/problem.filter';
 import { HealthModule } from './health/health.controller';
+import { IdempotencyModule } from './idempotency/idempotency.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 import { TENANT_CONTEXT, UnauthenticatedTenantContext } from './tenancy/tenant-context';
 
 @Module({
-  imports: [DbModule, HealthModule],
+  imports: [DbModule, HealthModule, IdempotencyModule],
   providers: [
     { provide: APP_FILTER, useClass: ProblemFilter },
     { provide: TENANT_CONTEXT, useClass: UnauthenticatedTenantContext },

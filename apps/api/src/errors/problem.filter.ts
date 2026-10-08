@@ -1,5 +1,7 @@
 // Filtre global : toute erreur devient une réponse application/problem+json (SPECIFICATION §10.1, research R-04).
 // Le message d'une erreur SQL n'atteint jamais le client : il est journalisé côté serveur avec le X-Request-Id.
+// `resolveProblem`, `problemBody` et `logProblem` sont aussi utilisés par l'idempotence (WP11), qui enregistre la
+// réponse d'erreur 4xx telle que ce filtre l'aurait produite.
 import { Catch, HttpException, Inject, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
 import type { ProblemCode } from '@cashless/contracts';
 import type { Request, Response } from 'express';
@@ -9,13 +11,24 @@ import { requestIdOf } from '../http/request-id.middleware';
 import { ProblemException } from './problem';
 import { isSqlError, mapSqlState } from './sqlstate-map';
 
-interface Resolved {
+export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
+
+export interface ResolvedProblem {
   code: ProblemCode;
   status: number;
   detail?: string;
 }
 
-function resolve(error: unknown): Resolved {
+export interface ProblemBody {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  code: ProblemCode;
+  instance: string;
+}
+
+export function resolveProblem(error: unknown): ResolvedProblem {
   if (error instanceof ProblemException) return { code: error.code, status: error.status, detail: error.detail };
   if (isSqlError(error)) return mapSqlState(error.code, error.constraint);
   if (error instanceof HttpException) {
@@ -29,6 +42,32 @@ function resolve(error: unknown): Resolved {
   return { code: 'INTERNAL_ERROR', status: 500 };
 }
 
+export function problemBody(problem: ResolvedProblem, req: Request, config: AppConfig): ProblemBody {
+  const message = messageFor(problem.code, pickLanguage(req.header('Accept-Language')));
+  return {
+    type: `${config.problemTypeBase}${problem.code}`,
+    title: message.title,
+    status: problem.status,
+    detail: problem.detail ?? message.detail,
+    code: problem.code,
+    instance: requestIdOf(req),
+  };
+}
+
+/** Journal serveur des erreurs 5xx et SQL (le client ne reçoit que le code). */
+export function logProblem(error: unknown, problem: ResolvedProblem, req: Request): void {
+  if (problem.status < 500 && !isSqlError(error)) return;
+  process.stderr.write(
+    `${JSON.stringify({
+      level: 'error',
+      requestId: requestIdOf(req),
+      code: problem.code,
+      sqlstate: isSqlError(error) ? error.code : undefined,
+      message: error instanceof Error ? error.message : String(error),
+    })}\n`,
+  );
+}
+
 @Catch()
 export class ProblemFilter implements ExceptionFilter {
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
@@ -37,33 +76,8 @@ export class ProblemFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const req = http.getRequest<Request>();
     const res = http.getResponse<Response>();
-    const requestId = requestIdOf(req);
-    const { code, status, detail } = resolve(error);
-    if (status >= 500 || isSqlError(error)) {
-      // Journal serveur seulement (le client ne reçoit que le code).
-      process.stderr.write(
-        `${JSON.stringify({
-          level: 'error',
-          requestId,
-          code,
-          sqlstate: isSqlError(error) ? error.code : undefined,
-          message: error instanceof Error ? error.message : String(error),
-        })}\n`,
-      );
-    }
-    const message = messageFor(code, pickLanguage(req.header('Accept-Language')));
-    res
-      .status(status)
-      .type('application/problem+json')
-      .send(
-        JSON.stringify({
-          type: `${this.config.problemTypeBase}${code}`,
-          title: message.title,
-          status,
-          detail: detail ?? message.detail,
-          code,
-          instance: requestId,
-        }),
-      );
+    const problem = resolveProblem(error);
+    logProblem(error, problem, req);
+    res.status(problem.status).type(PROBLEM_CONTENT_TYPE).send(JSON.stringify(problemBody(problem, req, this.config)));
   }
 }
