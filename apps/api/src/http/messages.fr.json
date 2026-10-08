@@ -1,0 +1,358 @@
+{
+  "VALIDATION_FAILED": {
+    "title": "Requête invalide",
+    "detail": "La requête ou une donnée qu'elle contient n'est pas valide."
+  },
+  "UNAUTHENTICATED": {
+    "title": "Authentification requise",
+    "detail": "Jeton ou certificat absent, expiré ou invalide."
+  },
+  "FORBIDDEN": {
+    "title": "Accès refusé",
+    "detail": "Vos droits ne permettent pas cette action, ou une seconde personne distincte est requise."
+  },
+  "NOT_FOUND": {
+    "title": "Introuvable",
+    "detail": "L'objet demandé n'existe pas."
+  },
+  "RATE_LIMITED": {
+    "title": "Trop de requêtes",
+    "detail": "Trop de requêtes ou d'essais ; réessayez après le délai indiqué."
+  },
+  "INTERNAL_ERROR": {
+    "title": "Erreur interne",
+    "detail": "Une erreur interne s'est produite ; réessayez avec la même clé d'idempotence."
+  },
+  "SERVICE_UNAVAILABLE": {
+    "title": "Service indisponible",
+    "detail": "Le service est momentanément indisponible ; réessayez avec la même clé."
+  },
+  "IDEMPOTENCY_KEY_REQUIRED": {
+    "title": "Clé d'idempotence requise",
+    "detail": "Une écriture exige l'en-tête Idempotency-Key."
+  },
+  "IDEMPOTENCY_KEY_REUSED": {
+    "title": "Clé d'idempotence déjà utilisée",
+    "detail": "Cette clé a déjà servi pour une requête au contenu différent."
+  },
+  "IDEMPOTENCY_KEY_IN_PROGRESS": {
+    "title": "Requête en cours",
+    "detail": "Une requête avec la même clé est encore en cours de traitement."
+  },
+  "ENROLLMENT_CODE_INVALID": {
+    "title": "Code d'enrôlement invalide",
+    "detail": "Code d'enrôlement inconnu ou déjà utilisé."
+  },
+  "ENROLLMENT_CODE_EXPIRED": {
+    "title": "Code d'enrôlement expiré",
+    "detail": "Le code d'enrôlement a expiré."
+  },
+  "ATTESTATION_FAILED": {
+    "title": "Attestation refusée",
+    "detail": "L'attestation de clé du terminal n'est pas conforme."
+  },
+  "REFRESH_TOKEN_INVALID": {
+    "title": "Jeton de rafraîchissement invalide",
+    "detail": "Jeton de rafraîchissement inconnu, déjà consommé ou preuve de possession invalide."
+  },
+  "DEVICE_SUSPENDED": {
+    "title": "Terminal suspendu",
+    "detail": "Ce terminal est suspendu."
+  },
+  "DEVICE_REVOKED": {
+    "title": "Terminal révoqué",
+    "detail": "Ce terminal est révoqué."
+  },
+  "DEVICE_NOT_ASSIGNED": {
+    "title": "Terminal non affecté",
+    "detail": "Ce terminal n'est affecté à aucun événement ou point de vente pour cette action."
+  },
+  "DEVICE_MODE_NOT_ALLOWED": {
+    "title": "Mode de terminal non permis",
+    "detail": "Le mode d'application de ce terminal n'est pas permis."
+  },
+  "CLOCK_SKEW_TOO_LARGE": {
+    "title": "Horloge du terminal décalée",
+    "detail": "L'horloge du terminal est hors de la tolérance permise."
+  },
+  "CURRENCY_MISMATCH": {
+    "title": "Devise incorrecte",
+    "detail": "La devise diffère de celle de l'événement."
+  },
+  "AMOUNT_OUT_OF_RANGE": {
+    "title": "Montant hors limites",
+    "detail": "Le montant est hors des bornes permises pour cette opération."
+  },
+  "INSUFFICIENT_FUNDS": {
+    "title": "Solde insuffisant",
+    "detail": "Le solde disponible ne couvre pas le montant demandé."
+  },
+  "WALLET_BLOCKED": {
+    "title": "Portefeuille bloqué",
+    "detail": "Le portefeuille est bloqué ou clos."
+  },
+  "WALLET_LIMIT_EXCEEDED": {
+    "title": "Plafond du portefeuille dépassé",
+    "detail": "L'opération dépasserait le plafond de solde du portefeuille."
+  },
+  "MONTHLY_TOPUP_LIMIT_EXCEEDED": {
+    "title": "Plafond mensuel de recharge dépassé",
+    "detail": "Le plafond mensuel de recharge est atteint."
+  },
+  "MEDIA_UNKNOWN": {
+    "title": "Bracelet inconnu",
+    "detail": "Ce bracelet ou cet identifiant est inconnu."
+  },
+  "MEDIA_BLOCKED": {
+    "title": "Bracelet bloqué",
+    "detail": "Ce bracelet est suspendu ou en liste noire."
+  },
+  "MEDIA_NOT_ACTIVATED": {
+    "title": "Bracelet non activé",
+    "detail": "Ce bracelet n'est pas encore rattaché à un portefeuille."
+  },
+  "MEDIA_RETIRED": {
+    "title": "Bracelet retiré",
+    "detail": "Ce bracelet est retiré ou détruit."
+  },
+  "MEDIA_REPLACED": {
+    "title": "Bracelet remplacé",
+    "detail": "Ce bracelet a été remplacé par un autre."
+  },
+  "MEDIA_RELEASED": {
+    "title": "Bracelet restitué",
+    "detail": "Ce bracelet a été restitué."
+  },
+  "MEDIA_UID_MISMATCH": {
+    "title": "Identité du bracelet incohérente",
+    "detail": "L'identité lue ne correspond pas à l'identifiant enregistré."
+  },
+  "MEDIA_CLONE_SUSPECTED": {
+    "title": "Clone suspecté",
+    "detail": "Ce bracelet semble cloné ; il a été mis en liste noire."
+  },
+  "MEDIA_SIGNATURE_MISMATCH": {
+    "title": "Signature du bracelet incorrecte",
+    "detail": "La signature d'originalité ne correspond pas ; le bracelet a été mis en liste noire."
+  },
+  "MEDIA_SIGNATURE_MISSING": {
+    "title": "Signature du bracelet absente",
+    "detail": "La signature d'originalité est absente ; relisez le bracelet."
+  },
+  "MEDIA_STATE_INVALID": {
+    "title": "État du bracelet incompatible",
+    "detail": "L'état du bracelet ou du lot ne permet pas cette action."
+  },
+  "MEDIA_WRONG_EVENT": {
+    "title": "Bracelet d'un autre événement",
+    "detail": "Ce bracelet appartient à un lot d'un autre événement."
+  },
+  "MEDIA_BATCH_INACTIVE": {
+    "title": "Lot inactif",
+    "detail": "Le lot de ce bracelet n'est pas actif."
+  },
+  "MEDIA_CLAIM_INVALID": {
+    "title": "Code de rattachement invalide",
+    "detail": "Code de rattachement inconnu ou déjà utilisé."
+  },
+  "TAP_EXPIRED": {
+    "title": "Lecture expirée",
+    "detail": "La lecture du bracelet est trop ancienne ; relisez le bracelet."
+  },
+  "TAP_ALREADY_USED": {
+    "title": "Lecture déjà utilisée",
+    "detail": "Cette lecture a déjà servi à une autre opération."
+  },
+  "TAP_UNUSABLE": {
+    "title": "Lecture inutilisable",
+    "detail": "Cette lecture ne peut plus servir ; relisez le bracelet."
+  },
+  "ACTIVATION_MODE_NOT_ALLOWED": {
+    "title": "Mode d'activation non permis",
+    "detail": "Ce mode d'activation n'est pas permis pour l'événement."
+  },
+  "ACCOUNT_REQUIRED": {
+    "title": "Compte client requis",
+    "detail": "Cet événement exige un compte client."
+  },
+  "DEPOSIT_OUTSTANDING": {
+    "title": "Caution non rendue",
+    "detail": "La caution doit être rendue avant la restitution."
+  },
+  "BALANCE_OUTSTANDING": {
+    "title": "Solde restant",
+    "detail": "Le portefeuille n'est pas soldé ; restitution impossible."
+  },
+  "DEPOSIT_PAYMENT_REQUIRED": {
+    "title": "Paiement de la caution requis",
+    "detail": "La caution exige un moyen de paiement."
+  },
+  "EVENT_CLOSING": {
+    "title": "Événement en clôture",
+    "detail": "L'événement est en clôture : recharges et ventes en ligne refusées."
+  },
+  "LEDGER_LOCKED": {
+    "title": "Grand livre verrouillé",
+    "detail": "Le grand livre de l'événement est verrouillé."
+  },
+  "PERIOD_CLOSED": {
+    "title": "Période close",
+    "detail": "La date de l'opération tombe dans une période close."
+  },
+  "DEBIT_AUTHORITY_EDGE": {
+    "title": "Débits gérés par la passerelle",
+    "detail": "Les débits sont autorisés par la passerelle ; rejouez la même requête vers elle."
+  },
+  "DEBIT_AUTHORITY_MOVING": {
+    "title": "Bascule d'autorité en cours",
+    "detail": "L'autorité de débit change ; gardez la même clé et réessayez."
+  },
+  "STALE_AUTHORITY_EPOCH": {
+    "title": "Époque d'autorité périmée",
+    "detail": "L'époque d'autorité est périmée ; cessez de débiter."
+  },
+  "HANDOVER_INVALID_STATE": {
+    "title": "Bascule impossible",
+    "detail": "L'état de la bascule ne permet pas cette action."
+  },
+  "EDGE_NOT_CAUGHT_UP": {
+    "title": "Passerelle en retard",
+    "detail": "La passerelle n'a pas encore tout remonté."
+  },
+  "REVERSAL_NOT_ALLOWED": {
+    "title": "Annulation impossible",
+    "detail": "Cette transaction ne peut pas être annulée."
+  },
+  "REVERSAL_WINDOW_EXPIRED": {
+    "title": "Délai d'annulation dépassé",
+    "detail": "Le délai d'annulation de cette transaction est dépassé."
+  },
+  "ALREADY_REVERSED": {
+    "title": "Déjà annulée",
+    "detail": "Cette transaction a déjà été annulée."
+  },
+  "OFFLINE_NOT_ALLOWED": {
+    "title": "Hors ligne désactivé",
+    "detail": "Le hors ligne est désactivé pour ce terminal."
+  },
+  "SNAPSHOT_VERSION_UNKNOWN": {
+    "title": "Version de snapshot inconnue",
+    "detail": "Version de snapshot inconnue ; demandez un snapshot complet."
+  },
+  "BATCH_IN_PROGRESS": {
+    "title": "Lot en cours",
+    "detail": "Un lot est déjà en cours pour ce terminal ; attendez son résultat."
+  },
+  "BATCH_TOO_LARGE": {
+    "title": "Lot trop volumineux",
+    "detail": "Le lot est vide ou dépasse la taille permise."
+  },
+  "BATCH_SIGNATURE_INVALID": {
+    "title": "Signature du lot invalide",
+    "detail": "La signature de l'en-tête du lot est invalide ; lot non traité."
+  },
+  "CHAIN_BROKEN": {
+    "title": "Chaîne rompue",
+    "detail": "La chaîne de hachage est rompue ; un examen manuel est nécessaire."
+  },
+  "SEQ_OUT_OF_ORDER": {
+    "title": "Numéro hors séquence",
+    "detail": "Le numéro de séquence n'est pas celui attendu."
+  },
+  "SEQ_GAP_NOT_FOUND": {
+    "title": "Trou de numérotation inconnu",
+    "detail": "Ce numéro n'est pas un trou connu."
+  },
+  "SEQ_OUT_OF_RANGE": {
+    "title": "Numéro hors plage",
+    "detail": "Le numéro est trop éloigné du dernier numéro acquitté."
+  },
+  "PAYMENT_REQUEST_EXPIRED": {
+    "title": "Demande de paiement expirée",
+    "detail": "La demande de paiement a expiré."
+  },
+  "PAYMENT_REQUEST_NOT_PENDING": {
+    "title": "Demande de paiement close",
+    "detail": "La demande de paiement est déjà payée, annulée ou expirée."
+  },
+  "QR_TOKEN_INVALID": {
+    "title": "QR invalide",
+    "detail": "Jeton de QR inconnu, expiré ou déjà utilisé."
+  },
+  "PAYMENT_INTENT_INVALID_STATE": {
+    "title": "Intention de paiement incompatible",
+    "detail": "L'état de l'intention de paiement ne permet pas cette action."
+  },
+  "PAYMENT_INTENT_EXPIRED": {
+    "title": "Intention de paiement expirée",
+    "detail": "L'intention de paiement a expiré."
+  },
+  "PSP_UNAVAILABLE": {
+    "title": "Prestataire de paiement indisponible",
+    "detail": "Le prestataire de paiement est injoignable ; réessayez avec la même clé."
+  },
+  "PSP_NOT_CONFIGURED": {
+    "title": "Paiement non configuré",
+    "detail": "Aucune configuration de paiement valide pour ce moyen et cet événement."
+  },
+  "PSP_REJECTED": {
+    "title": "Paiement refusé",
+    "detail": "Le paiement a été refusé par le prestataire."
+  },
+  "WEBHOOK_SIGNATURE_INVALID": {
+    "title": "Signature du webhook invalide",
+    "detail": "La signature du webhook entrant est invalide."
+  },
+  "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE": {
+    "title": "Webhook hors délai",
+    "detail": "L'horodatage du webhook est hors tolérance."
+  },
+  "REFUND_NOT_ALLOWED": {
+    "title": "Remboursement impossible",
+    "detail": "Le remboursement n'est pas possible pour ce portefeuille."
+  },
+  "REFUND_WINDOW_CLOSED": {
+    "title": "Fenêtre de remboursement close",
+    "detail": "La fenêtre de remboursement est close."
+  },
+  "REFUND_ALREADY_OPEN": {
+    "title": "Remboursement déjà demandé",
+    "detail": "Une demande de remboursement est déjà ouverte pour ce portefeuille."
+  },
+  "OTP_INVALID": {
+    "title": "Code invalide",
+    "detail": "Code à usage unique faux, expiré ou déjà utilisé."
+  },
+  "OTP_RATE_LIMITED": {
+    "title": "Trop de codes demandés",
+    "detail": "Trop de demandes ou d'essais de code ; réessayez plus tard."
+  },
+  "CONFLICT_STATE": {
+    "title": "État incompatible",
+    "detail": "L'état de l'objet ne permet pas cette action."
+  },
+  "EVENT_TRANSITION_INVALID": {
+    "title": "Changement de statut impossible",
+    "detail": "Ce passage de statut de l'événement n'est pas prévu."
+  },
+  "CLOSING_CONDITION_NOT_MET": {
+    "title": "Condition de clôture non remplie",
+    "detail": "Une condition de clôture n'est pas remplie."
+  },
+  "APPROVAL_REQUIRED": {
+    "title": "Seconde validation requise",
+    "detail": "Cette opération exige la validation d'une seconde personne."
+  },
+  "APPROVAL_INVALID": {
+    "title": "Validation refusée",
+    "detail": "La seconde validation n'est pas valable."
+  },
+  "LATE_CLAIM_INVALID": {
+    "title": "Réclamation tardive hors bornes",
+    "detail": "La réclamation tardive ou l'annulation de casse dépasse les bornes permises."
+  },
+  "CARD_DAILY_LIMIT": {
+    "title": "Plafond journalier de la carte atteint",
+    "detail": "Le plafond de recharge par carte et par jour est atteint."
+  }
+}
