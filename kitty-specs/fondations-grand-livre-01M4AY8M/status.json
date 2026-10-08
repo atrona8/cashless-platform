@@ -450,7 +450,8 @@
       "last_transition_at": "2026-10-08T10:56:23.947151+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "CI complète (ledger-tests.yml) et .github/CI.md ; répétition locale des étapes 3-10 verte en 152 s ; pgTAP 505 assertions, Jest 505 tests."
+        "CI complète (ledger-tests.yml) et .github/CI.md ; répétition locale des étapes 3-10 verte en 152 s ; pgTAP 505 assertions, Jest 505 tests.",
+        "Revue : base de CI créée par les migrations (pas le fichier brut), npm ci --ignore-scripts, YAML valide, scripts présents ; critères 1 à 3 vérifiés sur base fraîche ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
