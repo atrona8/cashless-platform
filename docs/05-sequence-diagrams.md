@@ -151,7 +151,7 @@ sequenceDiagram
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
 | Double validation au back-office | Back-office, API, base | à définir |
-| Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario ; pas encore de back-office) |
+| Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

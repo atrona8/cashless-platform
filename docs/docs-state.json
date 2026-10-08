@@ -1,11 +1,11 @@
 {
-  "derniere_verification_globale": "2026-10-07T12:09:59Z",
+  "derniere_verification_globale": "2026-10-08T10:59:41Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
-      "statut": "planifiée",
-      "verifie_le": "2026-10-07T12:09:59Z",
+      "statut": "en cours",
+      "verifie_le": "2026-10-08T10:59:41Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }

@@ -12,7 +12,9 @@ pour la procédure.
   (`mission create`). Remplace-le dans les commandes suivantes de la mission s'il diffère.
 - `/spec-kitty.review` s'applique à un work package (`WP##`) ; la boucle `spec-kitty next` enchaîne implémentation
   et review des WP. Lance `/spec-kitty.review` à la main pour un WP en attente de review si besoin.
-- Le dépôt n'a pas encore de remote : `spec-kitty merge` sans `--push` tant qu'aucun remote n'est configuré.
+- Le dépôt a désormais un remote (`github.com/atrona8/cashless-platform`, constaté le 08/10/2026 ; la contrainte
+  C-010 de la mission 1 est caduque) : `spec-kitty merge` reste local, sans `--push`, tant que le porteur n'a pas
+  explicitement demandé de pousser (action extérieure).
 - Chaque mission lit d'abord `README.md` (kit), `docs/SPECIFICATION.md`, `PRD.md` ; la règle de priorité de
   SPECIFICATION §0.3 s'applique, et les fichiers `.sql` générés ne se modifient jamais à la main.
 

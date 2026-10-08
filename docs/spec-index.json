@@ -2,7 +2,7 @@
   {
     "mission": "fondations-grand-livre-01M4AY8M",
     "titre_cas_usage": "Fondations du grand livre et de l'API",
-    "statut": "planifiée",
+    "statut": "en cours",
     "user_stories": [
       {
         "titre": "Base vérifiée partout",
@@ -34,7 +34,7 @@
       "Prestataire",
       "Fixture du scénario"
     ],
-    "resultat_mesurable": "464/464 assertions pgTAP vertes, 19/19 cas normatifs, 0 unité d'écart sur les comptes du scénario aux deux points de contrôle, 0 transaction au second rejeu",
+    "resultat_mesurable": "505/505 assertions pgTAP (400 référence + 64 scénario + 41 S21), 19/19 cas normatifs, 48 transactions du scénario identiques ligne à ligne, 0 unité d'écart aux deux points de contrôle, CLOSED/LOCKED, 0 transaction et 0 ligne au second rejeu ; 505 tests Jest ; CI répétée en local en 152 s",
     "hypotheses": [
       "Fixture du scénario posée par un rôle de préparation distinct de cashless_app (configuration réelle en mission 3)",
       "Prestataire fourni par un contexte remplaçable tant que l'authentification réelle (mission 2) n'existe pas",

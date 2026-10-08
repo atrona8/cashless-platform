@@ -23,12 +23,12 @@
 
 | Document | Nécessaire ? | Justification | Complet ? | Ce qui manque | Dernière mission ayant motivé une MAJ | Date | Validé par |
 |---|---|---|---|---|---|---|---|
-| 01-product-overview.md | Oui | Vision, personas, domaines et glossaire : point d'entrée fonctionnel | Partiel | Aucun domaine implémenté ; domaine Grand livre en 🚧 plan finalisé ; frustrations des personas déduites du contexte | `fondations-grand-livre-01M4AY8M` (plan) | 07/10/2026 | Porteur du projet (07/10/2026) |
-| 02-use-case-diagram.md | Oui | Nombreux acteurs terrain et administration | Partiel | Cas d'usage tirés de la spécification, aucun implémenté ; ligne de détail de la mission 1 au stade plan | `fondations-grand-livre-01M4AY8M` (plan) | 07/10/2026 | Porteur du projet (07/10/2026) |
+| 01-product-overview.md | Oui | Vision, personas, domaines et glossaire : point d'entrée fonctionnel | Partiel | Seul le socle du domaine Grand livre est implémenté ; frustrations des personas déduites du contexte | `fondations-grand-livre-01M4AY8M` (review) | 08/10/2026 | Agent, par délégation du porteur (08/10/2026) |
+| 02-use-case-diagram.md | Oui | Nombreux acteurs terrain et administration | Partiel | Cas d'usage terrain tirés de la spécification, aucun implémenté ; mission 1 = socle technique | `fondations-grand-livre-01M4AY8M` (review) | 08/10/2026 | Agent, par délégation du porteur (08/10/2026) |
 | 03-context-diagram.md | Oui | 11 systèmes externes (PSP, KMS, OTP, OIDC, S3…) | Partiel | Fournisseurs OTP non choisis (ADR-66) ; aucune intégration réelle à ce jour | Initialisation | 07/10/2026 | Porteur du projet (07/10/2026) |
-| 04-architecture-diagram.md | Oui | Central, passerelle, apps Flutter, back-office | Partiel | Décrit la cible : aucun conteneur déployé ; décisions de la mission 1 au stade plan, à confirmer à la review ; région AWS provisoire (OP-N11) | `fondations-grand-livre-01M4AY8M` (plan) | 07/10/2026 | Porteur du projet (07/10/2026) |
-| 05-sequence-diagrams.md | Oui | Flux critiques multi-composants (en ligne, hors ligne, passerelle, PSP, double validation, clôture) | Partiel | Flux cibles, non implémentés ; Clôture rattachée à la mission 1 (rejeu), à confronter au code | `fondations-grand-livre-01M4AY8M` (plan) | 07/10/2026 | Porteur du projet (07/10/2026) |
-| 07-api-reference.md | Oui | Le projet expose une API (73 chemins dans `openapi.yaml`) | Partiel | Endpoints du back-office absents du contrat (§10.4) ; API non implémentée ; `GET /v1/health` publiée par la mission 1 mais absente d'openapi.yaml (C-009) | `fondations-grand-livre-01M4AY8M` (plan) | 07/10/2026 | Porteur du projet (07/10/2026) |
+| 04-architecture-diagram.md | Oui | Central, passerelle, apps Flutter, back-office | Partiel | Décrit la cible : seuls l'API centrale (squelette, moteur) et la base existent ; région AWS provisoire (OP-N11) | `fondations-grand-livre-01M4AY8M` (review) | 08/10/2026 | Agent, par délégation du porteur (08/10/2026) |
+| 05-sequence-diagrams.md | Oui | Flux critiques multi-composants (en ligne, hors ligne, passerelle, PSP, double validation, clôture) | Partiel | Flux cibles non implémentés, sauf les passages de statut de la clôture (exercés par le rejeu) | `fondations-grand-livre-01M4AY8M` (review) | 08/10/2026 | Agent, par délégation du porteur (08/10/2026) |
+| 07-api-reference.md | Oui | Le projet expose une API (73 chemins dans `openapi.yaml`) | Partiel | Endpoints du back-office absents du contrat (§10.4) ; aucune route métier implémentée ; `GET /v1/health` hors contrat (C-009) | `fondations-grand-livre-01M4AY8M` (review) | 08/10/2026 | Agent, par délégation du porteur (08/10/2026) |
 
 ## Surfaces dérivées (hors des 5 documents globaux)
 
@@ -52,7 +52,7 @@
 
 | Mission | use-case.md | architecture-notes.md | sequence.md |
 |---|---|---|---|
-| `fondations-grand-livre-01M4AY8M` | Nécessaire : Oui · Complet : Partiel (plan) · Porteur du projet (07/10/2026) | Nécessaire : Oui · Complet : Partiel (plan) · Porteur du projet (07/10/2026) | Nécessaire : Oui · Complet : Partiel (plan) · Porteur du projet (07/10/2026) |
+| `fondations-grand-livre-01M4AY8M` | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) |
 
 ## Légende
 - **Nécessaire ?** : Oui / Non / Non applicable à cette mission
@@ -74,6 +74,7 @@
 |---|---|---|---|---|---|
 | 07/10/2026 | Initialisation | — | A | 01,02,03,04,05,07 | Mis à jour |
 | 07/10/2026 | /spec-kitty.plan | `fondations-grand-livre-01M4AY8M` | B-plan | 01,02,04,05,07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json | Mis à jour |
+| 08/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP08-WP14, 14/14 approuvés) | `fondations-grand-livre-01M4AY8M` | B-review | 01,02,04,05,07 ; docs locaux recalés ; spec-index.json ; PROMPTS-A-ENVOYER.md (C-010 caduque) | Mis à jour |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
@@ -90,5 +91,7 @@ ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-ro
 ### Missions en attente de doc-check (à surveiller)
 (Liste des missions dont l'addendum post-plan ou post-review n'a pas encore été
 appliqué)
-- `fondations-grand-livre-01M4AY8M` : addendum post-plan appliqué le 07/10/2026 ; **addendum post-review en
-  attente** (à appliquer avant `spec-kitty accept` / `merge`).
+- Aucune. `fondations-grand-livre-01M4AY8M` : post-plan le 07/10/2026, post-review le 08/10/2026 (avant accept).
+  Écarts plan / implémentation signalés : accès base par `TenantTx.run` (et non `withTenantTx`) ; idempotence du
+  moteur vérifiée avant la matrice et les soldes ; lignes du scénario comparées après écriture ; second rejeu sur le
+  grand livre `LOCKED` (et non sur une seconde base) ; démarrage par le hook `tsx` ; détail dans `research.md` R-13.

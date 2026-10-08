@@ -23,14 +23,16 @@ en partie double, de l'argent encaissé et dû à chaque intervenant (§1.1).
 *(Frustrations déduites du contexte : la spécification décrit les exigences, pas les irritants actuels.)*
 
 ## Périmètre fonctionnel actuel
-Aucun domaine n'est encore implémenté au 07/10/2026 : seuls existent la spécification, le schéma SQL de référence
-avec ses tests pgTAP, le contrat OpenAPI et le banc NFC prototype. Les missions associées seront renseignées au
+Au 08/10/2026, seul le socle du domaine « Grand livre et moteur d'écritures » est implémenté (mission 1) : aucune
+route métier n'est encore publiée (seule `GET /v1/health`). Les missions associées seront renseignées au
 fil du découpage (`PROMPTS-A-ENVOYER.md`).
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
   calculs entiers des frais, taxes et partages ; erreurs métier stables (§5).
-- Statut : 🚧 plan finalisé (07/10/2026) — moteur d'écritures, migrations, CI et garanties transverses de l'API
+- Statut : ✅ implémentée, 14/14 WP approuvés (08/10/2026), acceptation et merge en cours — moteur d'écritures (26 types, matrice des statuts, idempotence par clé), migrations `0001`/`0002`,
+  CI complète, garanties transverses de l'API (S21, problem+json, isolation, `X-Request-Id`, langue) ; scénario de
+  référence rejoué au centime près jusqu'à `CLOSED`/`LOCKED`
 - Mission(s) associée(s) : `fondations-grand-livre-01M4AY8M` (Fondations du grand livre et de l'API)
 
 ### Configuration, contrats et détenteur des fonds
