@@ -317,7 +317,8 @@
       "last_transition_at": "2026-10-08T09:57:12.752103+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Squelette NestJS et garanties transverses ; 80 tests (unitaires + intégration santé sur la base locale), tsc, eslint verts ; npm run start répond sur /v1/health."
+        "Squelette NestJS et garanties transverses ; 80 tests (unitaires + intégration santé sur la base locale), tsc, eslint verts ; npm run start répond sur /v1/health.",
+        "Revue : aucune erreur SQL brute vers le client, set_config(…, true) uniquement, pool non exporté hors db/ (test d'architecture) ; corrigé en cours de route l'import de main.ts depuis les tests (serveur lancé pendant jest) ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
