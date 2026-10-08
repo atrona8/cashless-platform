@@ -6,7 +6,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/main.js",
+    "start": "node --require tsx/cjs dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest"
   },
@@ -24,6 +24,7 @@
     "@types/express": "5.0.6",
     "@types/pg": "8.23.1",
     "@types/supertest": "7.2.1",
-    "supertest": "7.3.1"
+    "supertest": "7.3.1",
+    "tsx": "4.23.15"
   }
 }
