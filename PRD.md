@@ -99,6 +99,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 ### 2.10 Double validation et rôles (§3.2)
 - Rôles humains de `PLATFORM_ADMIN` à `CUSTOMER`. Actions à deux personnes : jeton sur place au guichet,
   demande puis approbation au back-office (`approval_request`, 24 h).
+- Personnes du personnel authentifiées par le serveur d'identité OIDC (jeton court ; connexion et rafraîchissement
+  chez le serveur d'identité) ; prestataire et rôles déduits des données de la plateforme, jamais du jeton.
+- Gestion des personnes et des rôles par portée (plateforme, prestataire, organisateur, événement, commerçant) via
+  des routes du back-office ajoutées au contrat, chaque action journalisée ; amorçage du premier
+  `PLATFORM_ADMIN` par une commande d'exploitation. (décidé le 08/10/2026, mission 2)
 
 ### 2.11 Sécurité et données personnelles (§13)
 - RLS par prestataire, `assert_tenant`, clés dans KMS, journal d'audit, scellement du journal toutes les 5 min.
@@ -125,7 +130,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   S3 Object Lock (copie des scellements). (§1.2, §13)
 - PSP : Wave Business, Orange Money, PayDunya, Stripe (webhooks signés, relevés). (§11.1)
 - Envoi des codes à usage unique : WhatsApp puis deux fournisseurs SMS (fournisseurs à choisir sur devis). (§8.5, ADR-66)
-- Serveur d'identité OIDC pour les jetons d'approbation. (§3.2)
+- Serveur d'identité OIDC pour l'authentification du personnel et les jetons d'approbation ; produit à choisir. (§3.2, §10.3)
 - Banque (virements, relevés), fournisseur d'impression des bracelets (fichier de commande, correspondance code ↔ UID). (§7.8, §11)
 - Passerelle locale sur site (mini-PC, Docker). (§9.7)
 

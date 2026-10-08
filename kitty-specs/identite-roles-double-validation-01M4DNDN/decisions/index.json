@@ -1,0 +1,127 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-08T11:49:00.263952Z",
+      "decision_id": "01M4DNGS77DS2DX1QEMX68HPT7",
+      "final_answer": "Serveur OIDC standard derri\u00e8re une interface (v\u00e9rification des JWT par cl\u00e9s publiques, \u00e9metteur et audience configur\u00e9s) ; faux fournisseur qui signe ses jetons en test ; le jeton de rafra\u00eechissement et la connexion restent chez le serveur d'identit\u00e9 ; choix du produit diff\u00e9r\u00e9 (non bloquant, consign\u00e9). Raison : contrat humanBearer = JWT OIDC ; aucune ADR n'a choisi de produit.\r (d\u00e9cid\u00e9 par l'agent, d\u00e9l\u00e9gation du porteur du projet)",
+      "input_key": "identity_provider",
+      "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+      "mission_slug": "identite-roles-double-validation-01M4DNDN",
+      "opened_by": "cli",
+      "options": [
+        "Serveur OIDC standard derri\u00e8re une interface, faux fournisseur en test, choix du produit diff\u00e9r\u00e9",
+        "Choisir maintenant un produit (Cognito, Keycloak)",
+        "Comptes et mots de passe g\u00e9r\u00e9s par l'API",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quel serveur d'identit\u00e9 pour les personnes (back-office, guichet) ?",
+      "rationale": null,
+      "resolved_at": "2026-10-08T11:49:10.158738Z",
+      "resolved_by": null,
+      "slot_key": "specify.auth.identity-provider",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-08T11:49:20.603838Z",
+      "decision_id": "01M4DNHD2V0GAB6G8M864E82B9",
+      "final_answer": "De la base : le sub du jeton d\u00e9signe un app_user actif ; prestataire et r\u00f4les viennent de app_user et role_assignment (retrait imm\u00e9diat d'un r\u00f4le) ; un claim operator_id diff\u00e9rent du prestataire de l'utilisateur est refus\u00e9. Raison : \u00a710.3 prestataire d\u00e9duit de l'identit\u00e9, r\u00f4le v\u00e9rifi\u00e9 pour chaque validation.\r (d\u00e9cid\u00e9 par l'agent, d\u00e9l\u00e9gation du porteur du projet)",
+      "input_key": "roles_source",
+      "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+      "mission_slug": "identite-roles-double-validation-01M4DNDN",
+      "opened_by": "cli",
+      "options": [
+        "De la base (app_user + role_assignment), le jeton ne fait que prouver l'identit\u00e9",
+        "Des claims du jeton",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "D'o\u00f9 viennent les r\u00f4les et le prestataire d'une personne authentifi\u00e9e ?",
+      "rationale": null,
+      "resolved_at": "2026-10-08T11:49:30.460218Z",
+      "resolved_by": null,
+      "slot_key": "specify.auth.roles-source",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-08T11:49:40.787199Z",
+      "decision_id": "01M4DNJ0SK9M8KTHSQB14VB1KB",
+      "final_answer": "Oui : routes minimales ajout\u00e9es \u00e0 openapi.yaml (cr\u00e9er, lister, consulter, d\u00e9sactiver un utilisateur ; attribuer, retirer un r\u00f4le), chaque action journalis\u00e9e dans audit_log ; amor\u00e7age du premier PLATFORM_ADMIN par une commande d'exploitation. Raison : sans elles aucun r\u00f4le ne peut \u00eatre donn\u00e9 ; \u00a710.4 demande d'ajouter les routes back-office au contrat.\r (d\u00e9cid\u00e9 par l'agent, d\u00e9l\u00e9gation du porteur du projet)",
+      "input_key": "user_admin_routes",
+      "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+      "mission_slug": "identite-roles-double-validation-01M4DNDN",
+      "opened_by": "cli",
+      "options": [
+        "Oui, routes minimales ajout\u00e9es au contrat (utilisateurs, attribution et retrait de r\u00f4le), journalis\u00e9es, plus un amor\u00e7age du premier administrateur",
+        "Non, seulement la base et un script d'amor\u00e7age",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Faut-il publier dans cette mission des routes de gestion des utilisateurs et de leurs r\u00f4les ?",
+      "rationale": null,
+      "resolved_at": "2026-10-08T11:49:50.817744Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.user-admin",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-08T11:50:02.102805Z",
+      "decision_id": "01M4DNJNKN36NRV75PGP62H4KH",
+      "final_answer": "Aucune action m\u00e9tier : registre g\u00e9n\u00e9rique o\u00f9 chaque mission branche son action (param\u00e8tres fig\u00e9s, r\u00f4le exig\u00e9, ex\u00e9cution unique) ; routes listApprovalRequests, getApprovalRequest, approveApprovalRequest, rejectApprovalRequest publi\u00e9es ; action de d\u00e9monstration enregistr\u00e9e seulement dans les tests. Raison : toutes les actions du contrat appartiennent aux missions suivantes.\r (d\u00e9cid\u00e9 par l'agent, d\u00e9l\u00e9gation du porteur du projet)",
+      "input_key": "approval_actions",
+      "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+      "mission_slug": "identite-roles-double-validation-01M4DNDN",
+      "opened_by": "cli",
+      "options": [
+        "Aucune action m\u00e9tier : m\u00e9canisme g\u00e9n\u00e9rique d'ex\u00e9cution, les 4 routes /approval-requests publi\u00e9es, action de test seulement en test",
+        "Brancher d\u00e8s maintenant une action r\u00e9elle (ex. ADJUSTMENT)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quelles actions d'approbation cette mission ex\u00e9cute-t-elle r\u00e9ellement ?",
+      "rationale": null,
+      "resolved_at": "2026-10-08T11:50:13.673704Z",
+      "resolved_by": null,
+      "slot_key": "specify.approval.actions",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-08T11:50:24.896509Z",
+      "decision_id": "01M4DNKBW0SHRVT152WFN1XAQV",
+      "final_answer": "V\u00e9rification compl\u00e8te c\u00f4t\u00e9 API, offerte comme garde r\u00e9utilisable par op\u00e9ration (operationId, r\u00f4le exig\u00e9) ; usage unique m\u00e9moris\u00e9 en base jusqu'\u00e0 l'expiration ; \u00e9mission par le serveur d'identit\u00e9 (faux fournisseur en test). Les op\u00e9rations qui l'exigent (refundCashDue, releaseMedia) arrivent avec les missions bracelets et recharges.\r (d\u00e9cid\u00e9 par l'agent, d\u00e9l\u00e9gation du porteur du projet)",
+      "input_key": "onsite_token_scope",
+      "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+      "mission_slug": "identite-roles-double-validation-01M4DNDN",
+      "opened_by": "cli",
+      "options": [
+        "V\u00e9rification compl\u00e8te c\u00f4t\u00e9 API (signature, expiration, jti \u00e0 usage unique, act, act_hash, sub \u2260 appelant, r\u00f4le) expos\u00e9e comme garde r\u00e9utilisable, \u00e9mise par le faux fournisseur en test",
+        "Seulement l'interface, v\u00e9rification plus tard",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Jusqu'o\u00f9 va le jeton d'approbation sur place (X-Approval-Token) dans cette mission ?",
+      "rationale": null,
+      "resolved_at": "2026-10-08T11:50:36.201071Z",
+      "resolved_by": null,
+      "slot_key": "specify.approval.onsite-token",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+  "version": 1
+}
