@@ -1,0 +1,20 @@
+{
+  "name": "@cashless/ledger-sql",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Schéma du grand livre, migrations, tests pgTAP et générateurs (SPECIFICATION §0.2)",
+  "scripts": {
+    "migrate": "tsx src/migrate.ts",
+    "reset-db": "bash scripts/reset-db.sh",
+    "test:pgtap": "bash scripts/test-pgtap.sh",
+    "check:generated": "bash scripts/check-generated.sh",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.15"
+  }
+}
