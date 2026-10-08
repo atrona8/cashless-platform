@@ -29,3 +29,4 @@ Une ligne par démarrage ou fin de work package (horodatage UTC).
 - 2026-10-08T09:58:14Z — démarrage WP11 (lane-k).
 - 2026-10-08T10:00:03Z — démarrage WP11 (lane-k).
 - 2026-10-08T10:14:54Z — démarrage WP12 (lane-l).
+- 2026-10-08T10:17:05Z — démarrage WP12 (lane-l).
