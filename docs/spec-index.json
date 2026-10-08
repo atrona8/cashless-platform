@@ -2,7 +2,7 @@
   {
     "mission": "fondations-grand-livre-01M4AY8M",
     "titre_cas_usage": "Fondations du grand livre et de l'API",
-    "statut": "en cours",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "Base vérifiée partout",

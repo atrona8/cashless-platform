@@ -30,7 +30,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
   calculs entiers des frais, taxes et partages ; erreurs métier stables (§5).
-- Statut : ✅ implémentée, 14/14 WP approuvés (08/10/2026), acceptation et merge en cours — moteur d'écritures (26 types, matrice des statuts, idempotence par clé), migrations `0001`/`0002`,
+- Statut : ✅ mergée le 08/10/2026 (14/14 WP, acceptée) — moteur d'écritures (26 types, matrice des statuts, idempotence par clé), migrations `0001`/`0002`,
   CI complète, garanties transverses de l'API (S21, problem+json, isolation, `X-Request-Id`, langue) ; scénario de
   référence rejoué au centime près jusqu'à `CLOSED`/`LOCKED`
 - Mission(s) associée(s) : `fondations-grand-livre-01M4AY8M` (Fondations du grand livre et de l'API)

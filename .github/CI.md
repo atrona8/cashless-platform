@@ -49,6 +49,10 @@ npm run test:pgtap -w @cashless/ledger-sql
 npm run reset-db -w @cashless/ledger-sql && npm test
 ```
 
+Les suites pgTAP exigent une base fraîchement migrée : les tests Jest laissent des données (fixtures validées),
+d'où l'ordre du job (pgTAP, puis base recréée, puis Jest). Relancer `npm run reset-db -w @cashless/ledger-sql` avant
+`test:pgtap` si Jest a déjà tourné sur la base.
+
 Sous Windows (Git Bash), ne pas `source tools/dev-db/env.sh` dans le shell qui lance ensuite `npm run test:pgtap` :
 la variable `PERL5LIB` traverse `cmd.exe`, revient sous la forme `C:/…`, et Perl la coupe sur `:` (`pg_prove` ne
 trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
