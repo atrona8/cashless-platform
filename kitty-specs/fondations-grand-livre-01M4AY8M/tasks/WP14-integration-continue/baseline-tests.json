@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP14",
+  "captured_at": "2026-10-08T10:41:03Z",
+  "base_branch": "feat/fondations-grand-livre",
+  "base_commit": "cc641e303a991ad952c71ac98cd658d30d8c9c76",
+  "test_runner": "pytest",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<gate-coverage-junit>",
+      "error": "no JUnit XML artifact produced by the scoped run",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
