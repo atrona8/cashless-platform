@@ -28,7 +28,8 @@
       "last_transition_at": "2026-10-08T14:13:46.642169+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Migration 0003 (personnes, attributions, identify_person) et 65 assertions pgTAP ; 570 assertions au total vertes."
+        "Migration 0003 (personnes, attributions, identify_person) et 65 assertions pgTAP ; 570 assertions au total vertes.",
+        "Revue : chaque contrainte a un cas refusé, RLS forcée vérifiée sous cashless_app, gardes SECURITY DEFINER avec search_path fixé et comparaison explicite des prestataires, identify_person n'expose que la personne demandée ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
