@@ -316,6 +316,9 @@
       "last_event_id": "01M4DF1J8N27B6BV1AZCZ5B79R",
       "last_transition_at": "2026-10-08T09:55:50.165091+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Squelette NestJS et garanties transverses ; 80 tests (unitaires + intégration santé sur la base locale), tsc, eslint verts ; npm run start répond sur /v1/health."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 16592,
