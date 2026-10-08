@@ -58,6 +58,9 @@
       "last_event_id": "01M4DYBVQQNEZY4RY5JGKTP1NH",
       "last_transition_at": "2026-10-08T14:23:36.183212+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0004 (journal d'audit chaîné, scellements, vérification) ; 41 assertions pgTAP ; 611 au total vertes."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 6704,
