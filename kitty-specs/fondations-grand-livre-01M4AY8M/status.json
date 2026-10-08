@@ -286,7 +286,8 @@
       "last_transition_at": "2026-10-08T09:48:22.257772+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Matrice des statuts (§12.1) et ports du moteur ; 302 tests unitaires, tsc et eslint verts."
+        "Matrice des statuts (§12.1) et ports du moteur ; 302 tests unitaires, tsc et eslint verts.",
+        "Revue : matrice exhaustive testée cellule par cellule contre §12.1, ports sans dépendance d'infrastructure ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
