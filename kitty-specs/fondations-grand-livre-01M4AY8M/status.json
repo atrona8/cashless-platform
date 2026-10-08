@@ -415,6 +415,9 @@
       "last_event_id": "01M4DH9JJVZW409QV5NXE2B8RY",
       "last_transition_at": "2026-10-08T10:35:09.787669+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Rejeu du scénario de référence : 48 transactions identiques ligne à ligne, soldes exacts aux deux points de contrôle, CLOSED/LOCKED, second rejeu 0/0 ; 458 tests, tsc, eslint verts ; scénario en 8 s."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 20660,
