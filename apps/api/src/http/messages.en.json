@@ -1,0 +1,358 @@
+{
+  "VALIDATION_FAILED": {
+    "title": "Invalid request",
+    "detail": "The request or some of its data is not valid."
+  },
+  "UNAUTHENTICATED": {
+    "title": "Authentication required",
+    "detail": "Missing, expired or invalid token or certificate."
+  },
+  "FORBIDDEN": {
+    "title": "Forbidden",
+    "detail": "You are not allowed to perform this action, or a distinct second person is required."
+  },
+  "NOT_FOUND": {
+    "title": "Not found",
+    "detail": "The requested object does not exist."
+  },
+  "RATE_LIMITED": {
+    "title": "Too many requests",
+    "detail": "Too many requests or attempts; retry after the indicated delay."
+  },
+  "INTERNAL_ERROR": {
+    "title": "Internal error",
+    "detail": "An internal error occurred; retry with the same idempotency key."
+  },
+  "SERVICE_UNAVAILABLE": {
+    "title": "Service unavailable",
+    "detail": "The service is temporarily unavailable; retry with the same key."
+  },
+  "IDEMPOTENCY_KEY_REQUIRED": {
+    "title": "Idempotency key required",
+    "detail": "A write request requires the Idempotency-Key header."
+  },
+  "IDEMPOTENCY_KEY_REUSED": {
+    "title": "Idempotency key reused",
+    "detail": "This key was already used for a request with different content."
+  },
+  "IDEMPOTENCY_KEY_IN_PROGRESS": {
+    "title": "Request in progress",
+    "detail": "A request with the same key is still being processed."
+  },
+  "ENROLLMENT_CODE_INVALID": {
+    "title": "Invalid enrollment code",
+    "detail": "Unknown or already used enrollment code."
+  },
+  "ENROLLMENT_CODE_EXPIRED": {
+    "title": "Enrollment code expired",
+    "detail": "The enrollment code has expired."
+  },
+  "ATTESTATION_FAILED": {
+    "title": "Attestation failed",
+    "detail": "The device key attestation is not compliant."
+  },
+  "REFRESH_TOKEN_INVALID": {
+    "title": "Invalid refresh token",
+    "detail": "Unknown or already consumed refresh token, or invalid proof of possession."
+  },
+  "DEVICE_SUSPENDED": {
+    "title": "Device suspended",
+    "detail": "This device is suspended."
+  },
+  "DEVICE_REVOKED": {
+    "title": "Device revoked",
+    "detail": "This device has been revoked."
+  },
+  "DEVICE_NOT_ASSIGNED": {
+    "title": "Device not assigned",
+    "detail": "This device is not assigned to an event or point of sale for this action."
+  },
+  "DEVICE_MODE_NOT_ALLOWED": {
+    "title": "Device mode not allowed",
+    "detail": "This device's application mode is not allowed."
+  },
+  "CLOCK_SKEW_TOO_LARGE": {
+    "title": "Clock skew too large",
+    "detail": "The device clock is outside the allowed tolerance."
+  },
+  "CURRENCY_MISMATCH": {
+    "title": "Currency mismatch",
+    "detail": "The currency differs from the event currency."
+  },
+  "AMOUNT_OUT_OF_RANGE": {
+    "title": "Amount out of range",
+    "detail": "The amount is outside the limits allowed for this operation."
+  },
+  "INSUFFICIENT_FUNDS": {
+    "title": "Insufficient funds",
+    "detail": "The available balance does not cover the requested amount."
+  },
+  "WALLET_BLOCKED": {
+    "title": "Wallet blocked",
+    "detail": "The wallet is blocked or closed."
+  },
+  "WALLET_LIMIT_EXCEEDED": {
+    "title": "Wallet limit exceeded",
+    "detail": "The operation would exceed the wallet balance limit."
+  },
+  "MONTHLY_TOPUP_LIMIT_EXCEEDED": {
+    "title": "Monthly top-up limit exceeded",
+    "detail": "The monthly top-up limit has been reached."
+  },
+  "MEDIA_UNKNOWN": {
+    "title": "Unknown wristband",
+    "detail": "This wristband or identifier is unknown."
+  },
+  "MEDIA_BLOCKED": {
+    "title": "Wristband blocked",
+    "detail": "This wristband is suspended or blacklisted."
+  },
+  "MEDIA_NOT_ACTIVATED": {
+    "title": "Wristband not activated",
+    "detail": "This wristband is not yet linked to a wallet."
+  },
+  "MEDIA_RETIRED": {
+    "title": "Wristband retired",
+    "detail": "This wristband is retired or destroyed."
+  },
+  "MEDIA_REPLACED": {
+    "title": "Wristband replaced",
+    "detail": "This wristband has been replaced by another one."
+  },
+  "MEDIA_RELEASED": {
+    "title": "Wristband released",
+    "detail": "This wristband has been returned."
+  },
+  "MEDIA_UID_MISMATCH": {
+    "title": "Wristband identity mismatch",
+    "detail": "The identity read does not match the registered identifier."
+  },
+  "MEDIA_CLONE_SUSPECTED": {
+    "title": "Clone suspected",
+    "detail": "This wristband appears to be cloned; it has been blacklisted."
+  },
+  "MEDIA_SIGNATURE_MISMATCH": {
+    "title": "Wristband signature mismatch",
+    "detail": "The originality signature does not match; the wristband has been blacklisted."
+  },
+  "MEDIA_SIGNATURE_MISSING": {
+    "title": "Wristband signature missing",
+    "detail": "The originality signature is missing; read the wristband again."
+  },
+  "MEDIA_STATE_INVALID": {
+    "title": "Invalid wristband state",
+    "detail": "The wristband or batch state does not allow this action."
+  },
+  "MEDIA_WRONG_EVENT": {
+    "title": "Wristband from another event",
+    "detail": "This wristband belongs to a batch of another event."
+  },
+  "MEDIA_BATCH_INACTIVE": {
+    "title": "Inactive batch",
+    "detail": "This wristband's batch is not active."
+  },
+  "MEDIA_CLAIM_INVALID": {
+    "title": "Invalid claim code",
+    "detail": "Unknown or already used claim code."
+  },
+  "TAP_EXPIRED": {
+    "title": "Tap expired",
+    "detail": "The wristband read is too old; read the wristband again."
+  },
+  "TAP_ALREADY_USED": {
+    "title": "Tap already used",
+    "detail": "This read has already been used by another operation."
+  },
+  "TAP_UNUSABLE": {
+    "title": "Tap unusable",
+    "detail": "This read can no longer be used; read the wristband again."
+  },
+  "ACTIVATION_MODE_NOT_ALLOWED": {
+    "title": "Activation mode not allowed",
+    "detail": "This activation mode is not allowed for the event."
+  },
+  "ACCOUNT_REQUIRED": {
+    "title": "Customer account required",
+    "detail": "This event requires a customer account."
+  },
+  "DEPOSIT_OUTSTANDING": {
+    "title": "Deposit outstanding",
+    "detail": "The deposit must be refunded before the return."
+  },
+  "BALANCE_OUTSTANDING": {
+    "title": "Balance outstanding",
+    "detail": "The wallet still has a balance; return not possible."
+  },
+  "DEPOSIT_PAYMENT_REQUIRED": {
+    "title": "Deposit payment required",
+    "detail": "The deposit requires a payment method."
+  },
+  "EVENT_CLOSING": {
+    "title": "Event closing",
+    "detail": "The event is closing: online top-ups and sales are refused."
+  },
+  "LEDGER_LOCKED": {
+    "title": "Ledger locked",
+    "detail": "The event ledger is locked."
+  },
+  "PERIOD_CLOSED": {
+    "title": "Period closed",
+    "detail": "The operation date falls within a closed period."
+  },
+  "DEBIT_AUTHORITY_EDGE": {
+    "title": "Debits handled by the gateway",
+    "detail": "Debits are authorized by the gateway; replay the same request to it."
+  },
+  "DEBIT_AUTHORITY_MOVING": {
+    "title": "Debit authority moving",
+    "detail": "The debit authority is changing; keep the same key and retry."
+  },
+  "STALE_AUTHORITY_EPOCH": {
+    "title": "Stale authority epoch",
+    "detail": "The authority epoch is stale; stop debiting."
+  },
+  "HANDOVER_INVALID_STATE": {
+    "title": "Invalid handover state",
+    "detail": "The handover state does not allow this action."
+  },
+  "EDGE_NOT_CAUGHT_UP": {
+    "title": "Gateway not caught up",
+    "detail": "The gateway has not yet reported everything."
+  },
+  "REVERSAL_NOT_ALLOWED": {
+    "title": "Reversal not allowed",
+    "detail": "This transaction cannot be reversed."
+  },
+  "REVERSAL_WINDOW_EXPIRED": {
+    "title": "Reversal window expired",
+    "detail": "The reversal window for this transaction has expired."
+  },
+  "ALREADY_REVERSED": {
+    "title": "Already reversed",
+    "detail": "This transaction has already been reversed."
+  },
+  "OFFLINE_NOT_ALLOWED": {
+    "title": "Offline not allowed",
+    "detail": "Offline mode is disabled for this device."
+  },
+  "SNAPSHOT_VERSION_UNKNOWN": {
+    "title": "Unknown snapshot version",
+    "detail": "Unknown snapshot version; request a full snapshot."
+  },
+  "BATCH_IN_PROGRESS": {
+    "title": "Batch in progress",
+    "detail": "A batch is already in progress for this device; wait for its result."
+  },
+  "BATCH_TOO_LARGE": {
+    "title": "Batch too large",
+    "detail": "The batch is empty or exceeds the allowed size."
+  },
+  "BATCH_SIGNATURE_INVALID": {
+    "title": "Invalid batch signature",
+    "detail": "The batch header signature is invalid; batch not processed."
+  },
+  "CHAIN_BROKEN": {
+    "title": "Chain broken",
+    "detail": "The hash chain is broken; manual review is required."
+  },
+  "SEQ_OUT_OF_ORDER": {
+    "title": "Sequence out of order",
+    "detail": "The sequence number is not the expected one."
+  },
+  "SEQ_GAP_NOT_FOUND": {
+    "title": "Sequence gap not found",
+    "detail": "This number is not a known gap."
+  },
+  "SEQ_OUT_OF_RANGE": {
+    "title": "Sequence out of range",
+    "detail": "The number is too far from the last acknowledged number."
+  },
+  "PAYMENT_REQUEST_EXPIRED": {
+    "title": "Payment request expired",
+    "detail": "The payment request has expired."
+  },
+  "PAYMENT_REQUEST_NOT_PENDING": {
+    "title": "Payment request not pending",
+    "detail": "The payment request is already paid, cancelled or expired."
+  },
+  "QR_TOKEN_INVALID": {
+    "title": "Invalid QR token",
+    "detail": "Unknown, expired or already used QR token."
+  },
+  "PAYMENT_INTENT_INVALID_STATE": {
+    "title": "Invalid payment intent state",
+    "detail": "The payment intent state does not allow this action."
+  },
+  "PAYMENT_INTENT_EXPIRED": {
+    "title": "Payment intent expired",
+    "detail": "The payment intent has expired."
+  },
+  "PSP_UNAVAILABLE": {
+    "title": "Payment provider unavailable",
+    "detail": "The payment provider is unreachable; retry with the same key."
+  },
+  "PSP_NOT_CONFIGURED": {
+    "title": "Payment not configured",
+    "detail": "No valid payment configuration for this method and event."
+  },
+  "PSP_REJECTED": {
+    "title": "Payment rejected",
+    "detail": "The payment was rejected by the provider."
+  },
+  "WEBHOOK_SIGNATURE_INVALID": {
+    "title": "Invalid webhook signature",
+    "detail": "The incoming webhook signature is invalid."
+  },
+  "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE": {
+    "title": "Webhook timestamp out of tolerance",
+    "detail": "The webhook timestamp is outside the tolerance."
+  },
+  "REFUND_NOT_ALLOWED": {
+    "title": "Refund not allowed",
+    "detail": "A refund is not possible for this wallet."
+  },
+  "REFUND_WINDOW_CLOSED": {
+    "title": "Refund window closed",
+    "detail": "The refund window is closed."
+  },
+  "REFUND_ALREADY_OPEN": {
+    "title": "Refund already open",
+    "detail": "A refund request is already open for this wallet."
+  },
+  "OTP_INVALID": {
+    "title": "Invalid code",
+    "detail": "Wrong, expired or already used one-time code."
+  },
+  "OTP_RATE_LIMITED": {
+    "title": "Too many code requests",
+    "detail": "Too many code requests or attempts; try again later."
+  },
+  "CONFLICT_STATE": {
+    "title": "Conflicting state",
+    "detail": "The object state does not allow this action."
+  },
+  "EVENT_TRANSITION_INVALID": {
+    "title": "Invalid event transition",
+    "detail": "This event status transition is not allowed."
+  },
+  "CLOSING_CONDITION_NOT_MET": {
+    "title": "Closing condition not met",
+    "detail": "A closing condition is not met."
+  },
+  "APPROVAL_REQUIRED": {
+    "title": "Approval required",
+    "detail": "This operation requires approval by a second person."
+  },
+  "APPROVAL_INVALID": {
+    "title": "Approval invalid",
+    "detail": "The second approval is not valid."
+  },
+  "LATE_CLAIM_INVALID": {
+    "title": "Late claim out of bounds",
+    "detail": "The late claim or breakage reversal exceeds the allowed bounds."
+  },
+  "CARD_DAILY_LIMIT": {
+    "title": "Card daily limit reached",
+    "detail": "The daily top-up limit for this card has been reached."
+  }
+}
