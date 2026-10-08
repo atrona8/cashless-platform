@@ -1,0 +1,4 @@
+-- Migration 0001 : schéma de référence du grand livre, repris sans copie (research R-02).
+-- L'exécuteur (src/migrate.ts) remplace la directive ci-dessous par le contenu du fichier avant de calculer la
+-- somme de contrôle : toute modification du schéma normatif est donc détectée.
+-- @include ../schema_grand_livre_cashless.sql
