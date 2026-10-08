@@ -40,7 +40,9 @@ export default tseslint.config(
         { selector: "CallExpression[callee.name='parseFloat']", message: NO_FLOAT_MESSAGE },
         { selector: "CallExpression[callee.name='parseInt']", message: NO_FLOAT_MESSAGE },
         { selector: "MemberExpression[object.name='Math']", message: NO_FLOAT_MESSAGE },
-        { selector: 'Literal[raw=/\\./]', message: NO_FLOAT_MESSAGE },
+        // Littéraux numériques décimaux ou à exposant négatif seulement (pas les chaînes : chemins d'import, textes).
+        { selector: 'Literal[raw=/^[0-9_]*\\.[0-9]/]', message: NO_FLOAT_MESSAGE },
+        { selector: 'Literal[raw=/^[0-9_]+[eE]-/]', message: NO_FLOAT_MESSAGE },
       ],
     },
   },
