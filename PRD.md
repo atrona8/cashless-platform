@@ -104,6 +104,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Gestion des personnes et des rôles par portée (plateforme, prestataire, organisateur, événement, commerçant) via
   des routes du back-office ajoutées au contrat, chaque action journalisée ; amorçage du premier
   `PLATFORM_ADMIN` par une commande d'exploitation. (décidé le 08/10/2026, mission 2)
+- Journal d'audit chaîné par empreintes (une chaîne par prestataire) et scellé périodiquement, sur le modèle du
+  scellement du grand livre ; copie des scellements d'audit hors de la base avec celle du grand livre (mission 9).
+  (décidé par le porteur du projet le 08/10/2026)
 
 ### 2.11 Sécurité et données personnelles (§13)
 - RLS par prestataire, `assert_tenant`, clés dans KMS, journal d'audit, scellement du journal toutes les 5 min.

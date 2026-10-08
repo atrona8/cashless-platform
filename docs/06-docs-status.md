@@ -19,6 +19,7 @@
 |---|---|---|---|
 | 07/10/2026 | Découpage initial (structuration de SPECIFICATION.md v1.2) ; décisions de cadrage : toute la V1, pas de code préexistant, app terminal en dernier | (toutes) ; §9 Notes non classées | Oui (Étape 6 initiale) |
 | 08/10/2026 | Mission 2 `identite-roles-double-validation-01M4DNDN` : routes de gestion des personnes et des rôles, amorçage du premier administrateur, OIDC pour l'authentification du personnel | §2.10 Double validation et rôles ; intégrations externes (serveur d'identité) | Oui (slug réel reporté, specify coché) |
+| 08/10/2026 | Question du porteur sur l'intégrité du journal d'audit : chaîne d'empreintes et scellements (mission 2), copie externe (mission 9) | §2.10 ; §2.11 Sécurité | Oui (mission 9 complétée) |
 
 ## Documents globaux
 
