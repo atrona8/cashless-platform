@@ -285,6 +285,9 @@
       "last_event_id": "01M4DEHCXKYJ7ZH2GNP92J6GFR",
       "last_transition_at": "2026-10-08T09:47:00.403743+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Matrice des statuts (§12.1) et ports du moteur ; 302 tests unitaires, tsc et eslint verts."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 8732,
