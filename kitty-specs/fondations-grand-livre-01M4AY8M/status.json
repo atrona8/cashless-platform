@@ -251,6 +251,9 @@
       "last_event_id": "01M4DDR994SRFFMPJAD44R4H1R",
       "last_transition_at": "2026-10-08T09:33:17.476158+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Constructeurs clôture/back-office et registre ; 144 tests unitaires, tsc et eslint verts."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 17376,
