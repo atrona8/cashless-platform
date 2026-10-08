@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "mission": "fondations-grand-livre-01M4AY8M",
+    "titre_cas_usage": "Fondations du grand livre et de l'API",
+    "statut": "planifiée",
+    "user_stories": [
+      {
+        "titre": "Base vérifiée partout",
+        "detail": "En tant que développeur ou agent de mission, je veux lancer les 400 + 64 assertions pgTAP sur mon poste (sans admin ni Docker) et les voir tourner en CI à chaque commit, afin que toute évolution du schéma soit vérifiée."
+      },
+      {
+        "titre": "Calculs identiques à la référence",
+        "detail": "En tant qu'équipe, je veux un constructeur pour chacun des 26 types de transaction et les 19 cas normatifs en tests, afin qu'aucun frais, taxe ou partage ne s'écarte d'une unité du moteur de référence."
+      },
+      {
+        "titre": "Festival rejoué au centime",
+        "detail": "En tant qu'équipe, je veux rejouer les 48 transactions du scénario de référence par les constructeurs jusqu'à CLOSED/LOCKED, avec des soldes exacts après T23 et en fin de clôture, et aucun effet au second rejeu."
+      },
+      {
+        "titre": "Garanties transverses héritées",
+        "detail": "En tant que mission suivante, je veux que chaque route hérite de l'isolation par prestataire, des erreurs problem+json, de l'idempotence, de X-Request-Id et d'Accept-Language."
+      },
+      {
+        "titre": "Types issus du contrat",
+        "detail": "En tant que développeur, je veux des types TypeScript générés depuis openapi.yaml et un contrôle CI qui échoue s'ils sont périmés."
+      }
+    ],
+    "entites_cles": [
+      "Grand livre",
+      "Compte",
+      "Transaction et lignes",
+      "Clé d'idempotence (S21)",
+      "Commande d'écriture",
+      "Prestataire",
+      "Fixture du scénario"
+    ],
+    "resultat_mesurable": "464/464 assertions pgTAP vertes, 19/19 cas normatifs, 0 unité d'écart sur les comptes du scénario aux deux points de contrôle, 0 transaction au second rejeu",
+    "hypotheses": [
+      "Fixture du scénario posée par un rôle de préparation distinct de cashless_app (configuration réelle en mission 3)",
+      "Prestataire fourni par un contexte remplaçable tant que l'authentification réelle (mission 2) n'existe pas",
+      "Bracelets et lots des cautions posés dans la fixture (gestion réelle en mission 4)",
+      "Latence p95 serveur seul mesurée par les missions qui publient les routes métier",
+      "Entrées d'idempotence valables 24 h par défaut, paramétrable"
+    ],
+    "contraintes": [
+      "Seule post_transaction écrit journal_transaction, posting et account_balance",
+      "Aucun fichier .sql généré modifié à la main",
+      "Fonctions internes §13.1 jamais rendues au rôle applicatif",
+      "Aucun flottant pour l'argent",
+      "Windows 10, Node 22, PostgreSQL 17 sans pgTAP, sans Docker ni droits admin",
+      "Aucune route ajoutée à openapi.yaml ; rien de V2"
+    ],
+    "cas_limites": [
+      "Moitié négative −100,5 arrondie à −101",
+      "Taxe à 0 % : aucune ligne de taxe",
+      "Plusieurs frais au même bénéficiaire et au même taux : taxe extraite une fois",
+      "Vente hors ligne au-delà du solde : part non couverte en S-ATTENTE",
+      "Grand livre en clôture ou verrouillé : EVENT_CLOSING / LEDGER_LOCKED",
+      "SQLSTATE inconnu : INTERNAL_ERROR sans texte SQL",
+      "Requête interrompue : clé IN_PROGRESS reprise après expiration du bail",
+      "Connexion du pool réutilisée par un autre prestataire : aucun contexte ne fuit"
+    ],
+    "fonctionnel": [
+      "Monorepo npm workspaces et migrations depuis le schéma de référence",
+      "Outillage pgTAP local et CI PostgreSQL 17",
+      "Connexion cashless_app avec set_config transactionnel",
+      "Erreurs problem+json traduites par SQLSTATE",
+      "Magasin d'idempotence applicatif S21",
+      "X-Request-Id, Accept-Language, route de santé",
+      "26 constructeurs, 19 cas normatifs, matrice statut → types acceptés",
+      "Rejeu du scénario de référence et second rejeu sans effet",
+      "Types TypeScript générés depuis openapi.yaml"
+    ],
+    "non_fonctionnel": [
+      "0 unité d'écart comptable",
+      "0 fuite de texte SQL ; 0 objet d'un autre prestataire visible",
+      "Boucle locale pgTAP < 5 min ; CI < 15 min",
+      "Durées du rôle applicatif (60 s / 30 s / 10 s) vérifiées"
+    ],
+    "source": "kitty-specs/fondations-grand-livre-01M4AY8M/spec.md"
+  }
+]
