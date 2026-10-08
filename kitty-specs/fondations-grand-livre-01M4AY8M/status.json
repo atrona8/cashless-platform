@@ -449,6 +449,9 @@
       "last_event_id": "01M4DJD26AV0RXG01536MPG6WC",
       "last_transition_at": "2026-10-08T10:54:32.650600+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "CI complète (ledger-tests.yml) et .github/CI.md ; répétition locale des étapes 3-10 verte en 152 s ; pgTAP 505 assertions, Jest 505 tests."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 12180,
