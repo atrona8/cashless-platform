@@ -1,9 +1,17 @@
-# .github/workflows/ledger-tests.yml — charge le schéma et lance les deux suites pgTAP à chaque push / PR.
+# .github/workflows/ledger-tests.yml — vérifie à chaque push / PR tout ce que livre la mission « fondations du grand
+# livre », sous PostgreSQL 17 : générateurs, calculs de référence, types du contrat, lint, types, migrations, suites
+# pgTAP, puis tests Jest (unitaires, intégration, rejeu du scénario). Détail et répétition locale : .github/CI.md.
 name: ledger-tests
 on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  pgtap:
+  ledger:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17
@@ -12,25 +20,56 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
     env:
+      # Lus par psql/createdb/pg_prove, par tools/dev-db/env.sh (valeurs gardées) et par les tests.
       PGHOST: localhost
+      PGPORT: "5432"
       PGUSER: postgres
       PGPASSWORD: postgres
+      PGDATABASE: cashless_test
+      CASHLESS_APP_PASSWORD: cashless_app_ci
+      DATABASE_URL_OWNER: postgres://postgres:postgres@localhost:5432/cashless_test
+      DATABASE_URL_APP: postgres://cashless_app:cashless_app_ci@localhost:5432/cashless_test
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Installer pgTAP dans le conteneur et pg_prove sur le runner
         run: |
           docker exec ${{ job.services.postgres.id }} bash -c "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
           sudo apt-get update -qq && sudo apt-get install -y -qq libtap-parser-sourcehandler-pgtap-perl postgresql-client
-      - name: Vérifier que les suites générées sont à jour
-        working-directory: packages/ledger-sql
-        run: |
-          python3 gen_tests.py && python3 gen_golden.py
-          git diff --exit-code tests_grand_livre_cashless.sql scenario_reference_test.sql
+
+      - name: Dépendances (sans scripts d'installation)
+        run: npm ci --ignore-scripts
+
+      - name: Suites pgTAP générées à jour
+        run: npm run check:generated -w @cashless/ledger-sql
+
       - name: Calculs de référence du moteur d'écritures
-        run: python3 packages/ledger-sql/moteur_ecritures_reference.py
-      - name: Charger le schéma
+        run: python packages/ledger-sql/moteur_ecritures_reference.py
+
+      - name: Types du contrat à jour
+        run: npm run check -w @cashless/contracts
+
+      - name: Lint et vérification des types
         run: |
-          createdb cashless
-          psql -q -d cashless -v ON_ERROR_STOP=1 -f packages/ledger-sql/schema_grand_livre_cashless.sql -f packages/ledger-sql/roles.sql
-      - name: Lancer les tests (échec du job si une assertion échoue)
-        run: pg_prove -d cashless packages/ledger-sql/tests_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql
+          npm run lint
+          npm run typecheck
+
+      - name: Base par les migrations
+        run: |
+          createdb cashless_test
+          npm run migrate -w @cashless/ledger-sql
+
+      - name: Suites pgTAP (référence, scénario, S21)
+        run: npm run test:pgtap -w @cashless/ledger-sql
+
+      - name: Tests Jest sur base recréée (unitaires, intégration, scénario)
+        run: |
+          npm run reset-db -w @cashless/ledger-sql
+          npm test

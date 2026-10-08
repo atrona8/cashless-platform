@@ -55,22 +55,23 @@ export async function readSignedBalances(
   ledgerId: string,
   where: { purpose: string; walletId?: string; participationId?: string }[],
 ): Promise<bigint[]> {
-  return Promise.all(
-    where.map(async ({ purpose, walletId, participationId }) => {
-      const { rows } = await client.query<{ balance: string | null }>(
-        `SELECT CASE WHEN a.hot
-                     THEN (SELECT tb.signed_balance FROM trial_balance tb WHERE tb.ledger_id = a.ledger_id AND tb.code = a.code)
-                     ELSE coalesce(ab.balance, 0) END::text AS balance
-           FROM account a LEFT JOIN account_balance ab ON ab.account_id = a.id
-          WHERE a.ledger_id = $1 AND a.purpose = $2
-            AND ($3::uuid IS NULL OR a.wallet_id = $3::uuid)
-            AND ($4::uuid IS NULL OR a.participation_id = $4::uuid)`,
-        [ledgerId, purpose, walletId ?? null, participationId ?? null],
-      );
-      // Compte absent : aucun solde (le constructeur refusera s'il en a besoin pour écrire).
-      return rows[0]?.balance ? BigInt(rows[0].balance) : 0n;
-    }),
-  );
+  // Une requête après l'autre : un client `pg` n'exécute qu'une requête à la fois (pg@9 refusera le chevauchement).
+  const balances: bigint[] = [];
+  for (const { purpose, walletId, participationId } of where) {
+    const { rows } = await client.query<{ balance: string | null }>(
+      `SELECT CASE WHEN a.hot
+                   THEN (SELECT tb.signed_balance FROM trial_balance tb WHERE tb.ledger_id = a.ledger_id AND tb.code = a.code)
+                   ELSE coalesce(ab.balance, 0) END::text AS balance
+         FROM account a LEFT JOIN account_balance ab ON ab.account_id = a.id
+        WHERE a.ledger_id = $1 AND a.purpose = $2
+          AND ($3::uuid IS NULL OR a.wallet_id = $3::uuid)
+          AND ($4::uuid IS NULL OR a.participation_id = $4::uuid)`,
+      [ledgerId, purpose, walletId ?? null, participationId ?? null],
+    );
+    // Compte absent : aucun solde (le constructeur refusera s'il en a besoin pour écrire).
+    balances.push(rows[0]?.balance ? BigInt(rows[0].balance) : 0n);
+  }
+  return balances;
 }
 
 /** Marge sous le plafond du portefeuille (verrouille son solde jusqu'à la fin de la transaction) ; null = sans plafond. */

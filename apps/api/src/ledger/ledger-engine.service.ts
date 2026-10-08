@@ -338,6 +338,13 @@ async function readExisting(
 
 const available = (signed: bigint): bigint => -signed;
 
+/** `map` asynchrone, un élément après l'autre : le client `pg` de la transaction n'exécute qu'une requête à la fois. */
+async function sequentially<T, R>(items: readonly T[], fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = [];
+  for (const item of items) results.push(await fn(item));
+  return results;
+}
+
 /** Soldes nécessaires à la répartition et au découpage (SPECIFICATION §5.4) ; ajoutés à la commande ou au contexte. */
 async function enrich(client: Queryable, command: LedgerCommand): Promise<{ command: LedgerCommand; balances?: WalletBalances }> {
   const ledgerId = command.ledgerId;
@@ -373,19 +380,19 @@ async function enrich(client: Queryable, command: LedgerCommand): Promise<{ comm
     }
     case 'PITCH_FEE': {
       const items = Array.isArray(payload.items) ? (payload.items as Record<string, unknown>[]) : [];
-      const filled = await Promise.all(
-        items.map(async (item) => {
+      const filled = await sequentially(
+        items, async (item) => {
           if (item.mode !== 'DEDUCT_CAPPED' || item.merchantBalance !== undefined || typeof item.participationId !== 'string') return item;
           const [signed] = await readSignedBalances(client, ledgerId, [{ purpose: 'MERCHANT', participationId: item.participationId }]);
           return { ...item, merchantBalance: available(signed!) };
-        }),
+        },
       );
       return { command: withPayload({ items: filled }) };
     }
     case 'BREAKAGE': {
       const wallets = Array.isArray(payload.wallets) ? (payload.wallets as Record<string, unknown>[]) : [];
-      const filled = await Promise.all(
-        wallets.map(async (item) => {
+      const filled = await sequentially(
+        wallets, async (item) => {
           if (typeof item.walletId !== 'string' || (item.paid !== undefined && item.cashDue !== undefined)) return item;
           const [paid, due] = await readSignedBalances(client, ledgerId, [
             { purpose: 'WALLET_PAID', walletId: item.walletId },
@@ -396,7 +403,7 @@ async function enrich(client: Queryable, command: LedgerCommand): Promise<{ comm
             paid: item.paid ?? available(paid!),
             ...(item.cashDue === undefined && available(due!) !== 0n ? { cashDue: available(due!) } : {}),
           };
-        }),
+        },
       );
       return { command: withPayload({ wallets: filled }) };
     }
