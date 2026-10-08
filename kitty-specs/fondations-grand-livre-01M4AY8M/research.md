@@ -151,3 +151,25 @@ Mission `fondations-grand-livre-01M4AY8M` · 2026-10-07. Format : décision, jus
 - Surveillance `pg_stat_activity` des transactions > 60 s (§13.7) : tâche d'exploitation, mission ultérieure.
 - Mesure du p95 « serveur seul » : missions qui publient `POST /payments` et les recharges.
 - Types Dart : mission 4. Authentification réelle : mission 2. Purge des entrées S21 expirées : tâche future.
+
+## R-13 — Contradictions constatées à l'implémentation (FR-024)
+
+Consignées par WP13 (T071) pour toute la mission. Règle appliquée partout : SPECIFICATION §0.3 (tests exécutables >
+schéma SQL, `openapi.yaml` > SPECIFICATION > fiches) ; aucune n'a été tranchée en silence.
+
+| # | Lieu | Constat | Décision |
+|---|---|---|---|
+| C-1 | Contrat (`openapi.yaml`) | `LATE_CLAIM_INVALID` figure dans l'énumération `ProblemCode` sans puce de description (donc sans statut HTTP) | Statut 409, repris des autres passages du contrat qui le citent (WP05) |
+| C-2 | Fiche WP07 / scénario T16 | La fiche demandait une contre-passation « dans le même ordre » ; le scénario (normatif) inverse l'ordre des lignes | Ordre inverse, comme le scénario (WP07) ; confirmé par le rejeu de bout en bout (WP13) |
+| C-3 | Fiche WP04 | Le `CHECK` dicté pour `api_idempotency_completed` laissait passer `response_status` NULL (NULL BETWEEN … vaut NULL) | `IS NOT NULL` explicite ajouté ; test pgTAP qui l'a révélé conservé (WP04) |
+| C-4 | Règle ESLint de WP01 | La règle anti-décimaux bloquait aussi les chemins d'import | Restreinte aux littéraux numériques (WP06) ; les décimaux restent refusés |
+| C-5 | Matrice §12.1 (WP09) | Cellules ambiguës : `CHARGEBACK` accepté en `CLOSED`/`CLOSING` ; `PAYOUT_CONFIRMED`/`PAYOUT_FAILED` acceptés en `CLOSED`/`CLOSING` ; `REVERSAL` seulement synchronisé en `RECONCILING` ; `BREAKAGE_REVERSAL` accepté en `LIVE` | Lecture retenue documentée dans `status-matrix.ts` et ses tests (WP09) |
+| C-6 | `contracts/problem-mapping.md` | `42501` → `DEVICE_REVOKED` : le SQLSTATE seul ne distingue pas un refus de politique RLS | Correspondance gardée (seul usage prévu en V1) ; un refus RLS ne peut venir que d'un défaut de l'API, toute requête passant par `TenantTx` (WP10) |
+| C-7 | `contracts/idempotency.md` règle 5 / garde de `api_idempotency` | Le contrat traite une clé expirée « comme neuve » ; la garde interdit `COMPLETED → IN_PROGRESS` et l'identité de la requête est immuable, sans `DELETE` pour le rôle applicatif | Une clé `COMPLETED` n'est jamais réutilisée : rejeu si même empreinte, `IDEMPOTENCY_KEY_REUSED` sinon ; la purge planifiée future supprimera les lignes expirées (WP11) |
+| C-8 | Démarrage de l'API (WP10) | `@cashless/contracts` est livré en sources TypeScript ; `node dist/main.js` ne peut pas le charger | `npm run start` = `node --require tsx/cjs dist/main.js` (tsx 4.23.15, déjà épinglé par `@cashless/ledger-sql`) ; l'API reste compilée par `tsc` (métadonnées de décorateurs) |
+| C-9 | Fiche WP13 (T070) | La fiche prévoyait un second rejeu sur une seconde base avant `CLOSED`, la matrice du moteur refusant après `LOCKED` | Inutile : le moteur vérifie l'idempotence **avant** la matrice et les soldes, comme `post_transaction` (WP12). Second rejeu fait sur le grand livre `LOCKED` : 0 transaction, 0 ligne ; test séparé du comportement de la base (`post_transaction` rejoué sur `LOCKED` → existant) |
+| C-10 | R-07 (cautions) | Confirmé : clés, dates et mémos des cautions sont ceux des fonctions (`deposit:<uuid>:<n>`, `now()`), pas ceux du JSON | Comparaison des seuls (compte, montant) pour T5, T7, T23, T44 : identiques |
+| C-11 | Moteur (WP12), découvert par WP13 | Rejouer une prise de caution après la confiscation (T5 après T44) ne la voyait plus comme faite (statut `FORFEITED` ≠ `HELD`) | Correctif hors carte dans `ledger-engine.service.ts` : une caution déjà écrite sous la clé interne de sa fonction est faite, quel que soit le statut actuel |
+| C-12 | Fixture du scénario (WP13) | `gen_golden.py` pose des UUID fixes | Identifiants neufs à chaque exécution (mêmes codes, montants, clés) : la suite se relance sans recréer la base partagée avec les autres suites |
+| C-13 | Projection R-08 | — | Confirmée : aucun `CL019` ; chaque passage de statut accepté au point prévu |
+| C-14 | Contrainte C-010 (« pas de dépôt distant ») | Un dépôt distant existe désormais (`github.com/atrona8/cashless-platform`) | Contrainte caduque, à mettre à jour dans la documentation et `PROMPTS-A-ENVOYER.md` |
