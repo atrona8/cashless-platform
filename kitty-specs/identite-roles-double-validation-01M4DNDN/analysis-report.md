@@ -4,15 +4,15 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: identite-roles-double-validation-01M4DNDN
 mission_id: 01M4DNDN9WFH5S3TH3QX5TC3JS
-generated_at: '2026-10-08T14:14:31.333489+00:00'
+generated_at: '2026-10-08T14:15:35.759605+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: kitty-specs\identite-roles-double-validation-01M4DNDN\spec.md
-    sha256: ff3fcba3cdcde1415bd9bc4b421313354d47746b346dc4e06884585338a87158
+    sha256: e1f8ccaa01d920f3f1d8416c483b834724182760789974bc9b6534e853e2bfe4
   plan.md:
     path: kitty-specs\identite-roles-double-validation-01M4DNDN\plan.md
-    sha256: 86fd49aa785c624d42fc37f52be0577cc008956930381f85add68a0d1242f71c
+    sha256: 10a29f8655c391719821617eb37211df1358822bcce689c755797d02cac13543
   tasks.md:
     path: kitty-specs\identite-roles-double-validation-01M4DNDN\tasks.md
     sha256: c91e7e4aaafd741c79e3952680528efd1d6c7ed59488d3b2aecffdffe8af287a
@@ -21,10 +21,10 @@ input_artifacts:
     sha256:
 verdict: ready
 issue_counts:
-  critical: 0
-  medium: 4
-  low: 3
   high: 0
+  critical: 0
+  low: 3
+  medium: 4
   info: 0
 findings:
 - id: I1
