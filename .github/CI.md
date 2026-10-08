@@ -4,9 +4,10 @@ Workflow : [`.github/workflows/ledger-tests.yml`](workflows/ledger-tests.yml). U
 `ubuntu-24.04` avec un service `postgres:17`, déclenché à chaque `push` et `pull_request` (une exécution par branche :
 la précédente est annulée), arrêté au bout de 20 minutes. Le job échoue à la première étape rouge.
 
-> **État** : pas encore exécuté sur GitHub. Il a été écrit le 2026-10-08, sans dépôt distant à ce moment-là
-> (contrainte C-010, depuis caduque : le dépôt `github.com/atrona8/cashless-platform` existe). Toutes les étapes ont
-> été répétées en local, dans l'ordre, sur le cluster privé (voir plus bas).
+> **État** : exécuté avec succès sur GitHub le 2026-10-08 (run
+> [37771506938](https://github.com/atrona8/cashless-platform/actions/runs/37771506938), commit `ea20434`, toutes
+> les étapes vertes). Les étapes avaient d'abord été répétées en local, dans l'ordre, sur le cluster privé (voir plus
+> bas).
 
 ## Étapes
 

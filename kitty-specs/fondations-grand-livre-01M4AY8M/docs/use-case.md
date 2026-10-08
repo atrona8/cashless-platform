@@ -37,7 +37,7 @@ flowchart LR
 | Cas d'usage | Ce qui le prouve |
 |---|---|
 | Vérifier la base en local | 505 assertions pgTAP vertes (400 + 64 + 41 S21) sur le cluster privé (port 5433), sans admin ni Docker |
-| Vérifier la base à chaque commit | Job CI `ledger-tests` (12 étapes) répété en local en 152 s ; pas encore exécuté sur GitHub |
+| Vérifier la base à chaque commit | Job CI `ledger-tests` (12 étapes) répété en local en 152 s, puis vert sur GitHub (2026-10-08) |
 | Écrire au grand livre par le moteur | 26 constructeurs, 19 cas normatifs, refus selon le statut de l'événement |
 | Rejouer le festival de référence | 48 transactions identiques ligne à ligne ; soldes exacts après T23 et en fin de clôture ; `CLOSED`/`LOCKED` ; second rejeu sur grand livre verrouillé = 0 transaction, 0 ligne |
 | Hériter des garanties de l'API | Idempotence S21, problem+json, `X-Request-Id`, `Accept-Language`, cloisonnement par prestataire |
