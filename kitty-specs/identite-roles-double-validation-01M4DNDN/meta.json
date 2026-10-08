@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-identite-roles-double-validation-01M4DNDN",
+  "created_at": "2026-10-08T11:47:20.744268+00:00",
+  "flattened": false,
+  "friendly_name": "Identité, rôles et double validation",
+  "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+  "mission_number": null,
+  "mission_slug": "identite-roles-double-validation-01M4DNDN",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Le socle de la mission 1 refuse toute requête faute d'identité. Cette mission apporte l'authentification des personnes, les rôles par portée (plateforme, prestataire, organisateur, événement, commerçant), le journal d'audit en ajout seul et les deux formes de double validation (jeton d'approbation sur place, demande puis approbation au back-office), sur lesquelles les missions suivantes brancheront leurs actions sensibles.",
+  "purpose_tldr": "Donner une identité réelle aux personnes, leurs rôles par périmètre, un journal d'audit et la double validation des actions sensibles.",
+  "retain_branches": true,
+  "retain_worktrees": true,
+  "slug": "identite-roles-double-validation-01M4DNDN",
+  "target_branch": "feat/identite-roles",
+  "topology": "coord"
+}
