@@ -384,7 +384,8 @@
       "last_transition_at": "2026-10-08T10:23:33.306429+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Service du moteur d'écritures ; 454 tests (11 d'intégration moteur), tsc, eslint verts."
+        "Service du moteur d'écritures ; 454 tests (11 d'intégration moteur), tsc, eslint verts.",
+        "Revue : un seul appel d'écriture par commande, aucun montant en number (lecture ::text, JSON exact), post_transaction appelé seulement depuis ledger/ (test d'architecture) ; idempotence vérifiée avant matrice et soldes (rejeu après clôture, US3 n° 3) ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
