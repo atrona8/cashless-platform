@@ -173,3 +173,4 @@ schéma SQL, `openapi.yaml` > SPECIFICATION > fiches) ; aucune n'a été tranch�
 | C-12 | Fixture du scénario (WP13) | `gen_golden.py` pose des UUID fixes | Identifiants neufs à chaque exécution (mêmes codes, montants, clés) : la suite se relance sans recréer la base partagée avec les autres suites |
 | C-13 | Projection R-08 | — | Confirmée : aucun `CL019` ; chaque passage de statut accepté au point prévu |
 | C-14 | Contrainte C-010 (« pas de dépôt distant ») | Un dépôt distant existe désormais (`github.com/atrona8/cashless-platform`) | Contrainte caduque, à mettre à jour dans la documentation et `PROMPTS-A-ENVOYER.md` |
+| C-15 | Moteur (WP12), révélé par la répétition CI (WP14) | Lectures de soldes lancées en `Promise.all` sur le même client `pg` : requêtes chevauchantes, dépréciées (refusées par `pg@9`) | Correctif hors carte : lectures l'une après l'autre (`readSignedBalances`, `sequentially`) |
