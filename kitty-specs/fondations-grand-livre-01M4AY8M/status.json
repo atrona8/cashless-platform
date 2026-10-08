@@ -416,7 +416,8 @@
       "last_transition_at": "2026-10-08T10:36:37.270466+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Rejeu du scénario de référence : 48 transactions identiques ligne à ligne, soldes exacts aux deux points de contrôle, CLOSED/LOCKED, second rejeu 0/0 ; 458 tests, tsc, eslint verts ; scénario en 8 s."
+        "Rejeu du scénario de référence : 48 transactions identiques ligne à ligne, soldes exacts aux deux points de contrôle, CLOSED/LOCKED, second rejeu 0/0 ; 458 tests, tsc, eslint verts ; scénario en 8 s.",
+        "Revue : aucune ligne du JSON passée à post_transaction (comparaison seulement), statuts par la connexion applicative, aucun CL019 ; contradictions consignées dans research.md R-13 ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
