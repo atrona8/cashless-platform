@@ -24,6 +24,7 @@
   "purpose_context": "Toutes les missions suivantes (identité, configuration, bracelets, terminaux, recharges) s'appuient sur un grand livre en partie double fiable. Cette mission met en place le dépôt, l'intégration continue qui fait tourner les tests du grand livre, le squelette de l'API avec ses garanties transverses (cloisonnement par prestataire, erreurs normalisées, idempotence) et le moteur d'écritures, validé par rejeu du scénario de référence.",
   "purpose_tldr": "Poser le socle technique du cashless : monorepo, CI, grand livre en base, API et moteur d'écritures fidèles au modèle de référence.",
   "slug": "fondations-grand-livre-01M4AY8M",
+  "status_phase": "1",
   "target_branch": "feat/fondations-grand-livre",
   "topology": "coord",
   "vcs": "git",
