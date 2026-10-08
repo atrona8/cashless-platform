@@ -162,12 +162,18 @@ export class LedgerEngineService {
     await lockIdempotencyKey(client, command.ledgerId, internalKey);
     const before = await findTransactionId(client, command.ledgerId, internalKey);
 
-    // Idempotence d'abord : une opération déjà faite ne repasse ni par la matrice ni par la fonction.
+    // Idempotence d'abord : une opération déjà faite ne repasse ni par la matrice ni par la fonction. Une caution est
+    // déjà faite si son statut le dit, ou si la fonction a déjà écrit sous sa clé interne pour ce détenteur (une prise
+    // de caution rejouée après la confiscation ne doit pas en reprendre une).
+    const isDeposit = fn === 'take_deposit' || fn === 'refund_deposit' || fn === 'forfeit_deposit';
     const alreadyDone =
+      (isDeposit && before !== undefined) ||
       (fn === 'take_deposit' && media.depositStatus === 'HELD') ||
       (fn === 'refund_deposit' && media.depositStatus === 'REFUNDED') ||
       (fn === 'forfeit_deposit' && media.depositStatus === 'FORFEITED');
-    if (alreadyDone) return { transactionId: null, replayed: false, outcome: fn === 'take_deposit' ? 'HELD' : 'NOOP' };
+    if (alreadyDone) {
+      return { transactionId: null, replayed: false, outcome: fn === 'take_deposit' ? media.depositStatus : 'NOOP' };
+    }
     if (before && (fn === 'preload_media' || fn === 'refund_cash_due')) {
       return { transactionId: before, replayed: true, outcome: 'WRITTEN' };
     }
