@@ -350,6 +350,9 @@
       "last_event_id": "01M4DFWVA5XF3YAZR63F1BPFZ6",
       "last_transition_at": "2026-10-08T10:10:44.165774+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Idempotence S21 et preuves transverses ; 127 tests (dont 51 d'intégration, 3 passages stables), tsc, eslint verts ; démarrage vérifié."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 260,
