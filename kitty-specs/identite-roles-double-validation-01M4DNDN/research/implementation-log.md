@@ -1,1 +1,5 @@
 - 2026-10-08T14:02:06Z — démarrage WP01 (lane-a).
+- 2026-10-08T14:14:39Z — démarrage WP02 (lane-b).
+- 2026-10-08T14:16:04Z — démarrage WP02 (lane-b).
+- 2026-10-08T14:17:16Z — démarrage WP02 (lane-b).
+- 2026-10-08T14:18:08Z — démarrage WP02 (lane-b).
