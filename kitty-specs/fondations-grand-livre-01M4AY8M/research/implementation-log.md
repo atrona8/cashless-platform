@@ -32,3 +32,18 @@ Une ligne par démarrage ou fin de work package (horodatage UTC).
 - 2026-10-08T10:17:05Z — démarrage WP12 (lane-l).
 - 2026-10-08T10:27:13Z — démarrage WP13 (lane-m).
 - 2026-10-08T10:28:45Z — démarrage WP13 (lane-m).
+- 2026-10-08T10:37:34Z — démarrage WP14 (lane-n).
+- 2026-10-08T10:40:16Z — démarrage WP14 (lane-n).
+
+### WP14 — répétition locale de la CI (T073) et contrôle final des critères 1 à 3 (T075), 2026-10-08
+
+Lane WP14 (toutes les lanes fusionnées), cluster privé PostgreSQL 17.4 + pgTAP 1.3.4, Node 22.14, Windows 10.
+Étapes 3 à 10 de `.github/workflows/ledger-tests.yml` exécutées dans l'ordre : toutes vertes, 152 s au total.
+YAML analysé avec le paquet `yaml` : 12 étapes, `timeout-minutes: 20` ; chaque script npm appelé existe.
+
+- Critère 1 (suites pgTAP) : 3 fichiers, 505 assertions (400 référence + 64 scénario + 41 S21), PASS, base créée par
+  les migrations `0001` et `0002`.
+- Critère 2 (calculs) : 19 cas de `moteur_ecritures_reference.py` OK ; 21 tests Jest des cas normatifs verts.
+- Critère 3 (scénario) : 48 transactions identiques ligne à ligne au JSON, soldes exacts après T23 et T48, `CLOSED`,
+  `LOCKED`, invariant nul, aucun écart de cache ; second rejeu : 0 transaction, 0 ligne.
+- Jest : 15 suites, 505 tests verts (unitaires, intégration transverse et moteur, scénario).
