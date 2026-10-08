@@ -106,7 +106,7 @@ flowchart LR
 
 | Mission | Cas d'usage propres | Lien vers détail local |
 |---|---|---|
-| (aucune mission lancée à ce jour) | — | — |
+| `fondations-grand-livre-01M4AY8M` — Fondations du grand livre et de l'API (🚧 plan finalisé) | Domaine « Grand livre et moteur d'écritures » : vérifier la base (local, CI), écrire au grand livre par le moteur, rejouer le festival de référence, garanties transverses de l'API. Aucun cas d'usage terrain nouveau | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/use-case.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/use-case.md) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.
