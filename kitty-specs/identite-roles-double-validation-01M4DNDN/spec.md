@@ -158,6 +158,8 @@ Toute route d'écriture idempotente enregistre sa réponse dans la même transac
 | FR-014 | Vérification du jeton d'approbation sur place | En tant que plateforme, je veux une garde réutilisable, déclarée par opération (nom de l'opération, rôle exigé du valideur), qui exige `X-Approval-Token` (`403 APPROVAL_REQUIRED` sinon) et vérifie signature, expiration, `act` = opération, `act_hash` = SHA-256 de la requête canonique (méthode, chemin, corps JCS, sans le jeton), `sub` ≠ appelant, rôle du sujet sur la même portée et usage unique du `jti` (mémorisé jusqu'à l'expiration, consommé atomiquement) ; tout défaut donne `403 APPROVAL_INVALID` ; le valideur transmis à la base est le `sub`. | High | Open |
 | FR-015 | Garde de la transaction idempotente | En tant qu'équipe, je veux qu'une route d'écriture marquée idempotente qui écrit hors de la transaction idempotente soit détectée par un test automatique (RISK-2 de la revue de la mission 1). | Medium | Open |
 | FR-016 | Faux serveur d'identité de test | En tant qu'équipe, je veux un faux serveur d'identité de test (clés publiques publiées, jetons d'accès et d'approbation signés à la demande, jetons volontairement défectueux) afin de tester toutes les règles sans dépendre d'un service externe. | High | Open |
+| FR-018 | Journal d'audit chaîné | En tant que contrôleur, je veux que chaque ligne du journal d'audit porte l'empreinte de la ligne précédente de la même chaîne (une chaîne par prestataire, une pour la plateforme), avec un numéro d'ordre sans trou, afin que toute modification, suppression ou insertion au milieu du journal soit détectable, même par quelqu'un qui a les droits de la base. | High | Open |
+| FR-019 | Scellement et vérification du journal d'audit | En tant que contrôleur, je veux pouvoir sceller la tête de chaque chaîne d'audit (scellements numérotés, chaînés entre eux, en ajout seul, référence externe renseignée une seule fois) et vérifier une chaîne et ses scellements (lignes modifiées, supprimées, insérées, chaîne rompue) ; le scellement et la vérification ne sont pas accessibles à la connexion de l'application. La tâche planifiée et la copie des scellements hors de la base (stockage en écriture unique) relèvent de la mission « Remboursements, versements et clôture », avec celles du grand livre (§13.7). | High | Open |
 | FR-017 | Signalement des contradictions | En tant qu'équipe, je veux que toute contradiction constatée entre sources normatives soit consignée avec la règle de priorité appliquée, jamais tranchée en silence. | Medium | Open |
 
 ### Non-Functional Requirements
@@ -169,6 +171,7 @@ Toute route d'écriture idempotente enregistre sa réponse dans la même transac
 | NFR-003 | Couverture du jeton d'approbation | 100 % des conditions de FR-014 couvertes par un test, dont l'usage concurrent du même jeton (exactement 1 succès sur 2 requêtes simultanées). | Security | High | Open |
 | NFR-004 | Journal sans trou | 100 % des actions d'administration et des étapes d'action à deux exercées par les tests ont exactement une ligne d'audit correspondante ; 0 ligne d'audit modifiable ou supprimable par la connexion de l'application. | Security | High | Open |
 | NFR-005 | Coût de l'authentification | La vérification d'un jeton d'accès ajoute au plus 5 ms au p95 d'une requête, clés publiques en cache (aucun appel au serveur d'identité par requête). | Performance | Medium | Open |
+| NFR-007 | Détection d'altération du journal | 100 % des altérations simulées par le propriétaire de la base (modification d'un champ, suppression, insertion au milieu, scellement falsifié) sont détectées par la vérification ; testé par pgTAP. | Security | High | Open |
 | NFR-006 | Non-régression | 100 % des tests de la mission 1 (505 assertions pgTAP, tests unitaires et d'intégration, rejeu du scénario) restent verts. | Reliability | High | Open |
 
 ### Constraints
@@ -188,8 +191,9 @@ Toute route d'écriture idempotente enregistre sa réponse dans la même transac
 
 - **Personne (`app_user`)** : identifiant chez le serveur d'identité (unique par émetteur), e-mail ou téléphone, statut (actif, désactivé), prestataire de rattachement (aucun pour la plateforme), dates.
 - **Attribution de rôle (`role_assignment`)** : personne, rôle de §3.2, type de portée et objet de la portée (prestataire, organisateur, événement ou commerçant), auteur, date d'attribution, date de retrait.
-- **Ligne d'audit (`audit_log`)** : acteur, rôle exercé, action, type et identifiant de l'objet, valeurs avant et après, valideur, date, origine (adresse IP ou terminal), identifiant de requête ; ajout seul.
+- **Ligne d'audit (`audit_log`)** : acteur, rôle exercé, action, type et identifiant de l'objet, valeurs avant et après, valideur, date, origine (adresse IP ou terminal), identifiant de requête, numéro d'ordre et empreintes (précédente, propre) dans sa chaîne ; ajout seul.
 - **Demande d'approbation (`approval_request`, existante)** : action, objet visé, paramètres figés, auteur, expiration, statut, valideur, note, résultat ou échec.
+- **Scellement d'audit (`audit_seal`)** : chaîne (prestataire ou plateforme), numéro, première et dernière ligne couvertes, empreinte des lignes, empreinte du scellement précédent, empreinte du scellement, date, référence externe (renseignée une fois, par la mission de clôture).
 - **Utilisation d'un jeton d'approbation** : identifiant unique du jeton (`jti`), opération, sujet, date d'expiration ; mémorisée jusqu'à l'expiration pour garantir l'usage unique.
 - **Action à deux enregistrée** : nom (`ApprovalAction`), rôle exigé, portée, exécution ; déclarée par chaque mission qui la branche (pas une table).
 
@@ -222,3 +226,4 @@ Décisions de cadrage prises par l'agent sur délégation du porteur du projet (
 | Gestion des personnes et des rôles | Routes minimales ajoutées au contrat, journalisées, plus une commande d'amorçage |
 | Actions d'approbation | Aucune action métier ; mécanisme générique et 4 routes `/approval-requests` ; action de démonstration en test |
 | Jeton d'approbation sur place | Vérification complète côté API, garde réutilisable ; émission par le serveur d'identité |
+| Intégrité du journal d'audit (choix du porteur du projet) | Chaîne d'empreintes et scellements en base dès cette mission ; tâche planifiée et copie externe en écriture unique avec la mission de clôture |
