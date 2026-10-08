@@ -27,6 +27,9 @@
       "last_event_id": "01M4DXP1ZXMNKPCKZNGWWFN402",
       "last_transition_at": "2026-10-08T14:11:41.693451+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0003 (personnes, attributions, identify_person) et 65 assertions pgTAP ; 570 assertions au total vertes."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 9956,
