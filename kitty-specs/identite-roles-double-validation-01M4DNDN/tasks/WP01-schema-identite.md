@@ -8,6 +8,9 @@ requirement_refs:
 planning_base_branch: feat/identite-roles
 merge_target_branch: feat/identite-roles
 branch_strategy: Planning artifacts for this mission were generated on feat/identite-roles. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/identite-roles unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-identite-roles-double-validation-01M4DNDN
+base_commit: 1d0059560fdebd8fd4bf1982ee369b358ce33f0a
+created_at: '2026-10-08T14:02:46.907170+00:00'
 subtasks:
 - T001
 - T002
