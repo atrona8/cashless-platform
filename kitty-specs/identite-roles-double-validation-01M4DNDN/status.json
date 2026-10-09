@@ -250,7 +250,8 @@
       "last_transition_at": "2026-10-09T11:29:02.439943+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Registre d'actions, demande 202, approbation en une transaction (SAVEPOINT, EXECUTED/FAILED, EXPIRED validé), refus, routes /approval-requests ; défaut idempotence 30 jours (ADR-79) ; suite API 644/644, pgTAP 676, lint vert."
+        "Registre d'actions, demande 202, approbation en une transaction (SAVEPOINT, EXECUTED/FAILED, EXPIRED validé), refus, routes /approval-requests ; défaut idempotence 30 jours (ADR-79) ; suite API 644/644, pgTAP 676, lint vert.",
+        "Revue : décision, exécution, statut et audit dans une seule transaction (lu dans approve), failure_reason sans texte SQL, auteur 409, sans rôle ou autre portée 403, rejeu sans seconde exécution, aucune demande APPROVED résiduelle ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
