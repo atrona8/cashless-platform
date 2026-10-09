@@ -11,15 +11,18 @@ import { ProblemException } from '../errors/problem';
 export interface IdempotencySettings {
   /** Bail d'une exécution en cours (= transaction_timeout du rôle). */
   leaseSeconds: number;
-  /** Durée de vie d'une clé (`IDEMPOTENCY_TTL_HOURS`, 24 h par défaut). */
+  /** Durée de vie d'une clé (`IDEMPOTENCY_TTL_HOURS`, 30 jours par défaut : contrat, ADR-79). */
   ttlHours: number;
 }
 
 export const IDEMPOTENCY_SETTINGS = Symbol('IDEMPOTENCY_SETTINGS');
 
+/** 30 jours : « conservée au moins 30 jours » (openapi.yaml, paramètre IdempotencyKey ; ADR-79). */
+export const DEFAULT_TTL_HOURS = 720;
+
 export function loadIdempotencySettings(env: NodeJS.ProcessEnv = process.env): IdempotencySettings {
   const raw = env.IDEMPOTENCY_TTL_HOURS;
-  const ttlHours = raw === undefined || raw === '' ? 24 : Number.parseInt(raw, 10);
+  const ttlHours = raw === undefined || raw === '' ? DEFAULT_TTL_HOURS : Number.parseInt(raw, 10);
   if (!Number.isInteger(ttlHours) || ttlHours <= 0) {
     throw new Error(`IDEMPOTENCY_TTL_HOURS : entier positif attendu (reçu « ${raw} »)`);
   }

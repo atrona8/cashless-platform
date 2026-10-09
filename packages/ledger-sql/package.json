@@ -5,6 +5,7 @@
   "description": "Schéma du grand livre, migrations, tests pgTAP et générateurs (SPECIFICATION §0.2)",
   "scripts": {
     "migrate": "tsx src/migrate.ts",
+    "bootstrap-admin": "tsx src/bootstrap-admin.ts",
     "reset-db": "bash scripts/reset-db.sh",
     "test:pgtap": "bash scripts/test-pgtap.sh",
     "check:generated": "bash scripts/check-generated.sh",

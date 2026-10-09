@@ -20,8 +20,8 @@ la précédente est annulée), arrêté au bout de 20 minutes. Le job échoue à
 | 5 | Calculs de référence | `python packages/ledger-sql/moteur_ecritures_reference.py` | Les 19 cas normatifs de l'implémentation de référence |
 | 6 | Types du contrat | `npm run check -w @cashless/contracts` | Les types générés depuis `openapi.yaml` sont à jour (FR-022) |
 | 7 | Lint et types | `npm run lint` ; `npm run typecheck` | ESLint (dont l'interdiction des décimaux dans le moteur) ; `tsc` strict sur les trois workspaces |
-| 8 | Base par les migrations | `createdb cashless_test` ; `npm run migrate -w @cashless/ledger-sql` | La base de test est construite **par les migrations** (`0001`, `0002`), jamais par le fichier de schéma brut ; `roles.sql` rejoué |
-| 9 | Suites pgTAP | `npm run test:pgtap -w @cashless/ledger-sql` | Référence (400), scénario (64), S21 (`tests/*.sql`) |
+| 8 | Base par les migrations | `createdb cashless_test` ; `npm run migrate -w @cashless/ledger-sql` | La base de test est construite **par les migrations** (`0001` à `0006`), jamais par le fichier de schéma brut ; `roles.sql` puis `post-roles.sql` rejoués |
+| 9 | Suites pgTAP | `npm run test:pgtap -w @cashless/ledger-sql` | Référence (400), scénario (64), suites du dépôt (`tests/*.sql` : S21, identité, audit, approbations, administrateurs de la plateforme) |
 | 10 | Tests Jest | `npm run reset-db -w @cashless/ledger-sql` ; `npm test` | Base recréée, puis unitaires, intégration (garanties transverses, moteur) et rejeu du scénario de référence |
 
 Variables du job : `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` (outils PostgreSQL et
@@ -57,6 +57,22 @@ d'où l'ordre du job (pgTAP, puis base recréée, puis Jest). Relancer `npm run 
 Sous Windows (Git Bash), ne pas `source tools/dev-db/env.sh` dans le shell qui lance ensuite `npm run test:pgtap` :
 la variable `PERL5LIB` traverse `cmd.exe`, revient sous la forme `C:/…`, et Perl la coupe sur `:` (`pg_prove` ne
 trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
+
+## Répétition locale du 2026-10-09 (mission identite-roles, WP10)
+
+Mêmes poste et cluster, branche de la lane WP10 (toutes les lanes de la mission 2 fusionnées). Étapes 3 à 10 vertes,
+**192 s** au total.
+
+| Étape | Durée | Résultat |
+|---|---|---|
+| 3. `npm ci --ignore-scripts` | 29 s | à jour (ajout : `jose` 6.2.12) |
+| 4. Suites générées | 9 s | à jour |
+| 5. Calculs de référence | < 1 s | 19 cas OK |
+| 6. Types du contrat | 13 s | à jour |
+| 7. Lint, types | 20 s + 29 s | 0 erreur |
+| 8. Base, migrations | 1 s + 11 s | `0001` à `0006` appliquées, `roles.sql` et `post-roles.sql` rejoués |
+| 9. Suites pgTAP | 11 s | 7 fichiers, **676 assertions**, PASS |
+| 10. Base recréée, Jest | 69 s | 29 suites, **670 tests** verts |
 
 ## Répétition locale du 2026-10-08
 
