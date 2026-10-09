@@ -8,10 +8,11 @@ import { ProblemFilter } from './errors/problem.filter';
 import { HealthModule } from './health/health.controller';
 import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdentityModule } from './identity/identity.module';
+import { UsersModule } from './identity/users/users.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 
 @Module({
-  imports: [DbModule, HealthModule, IdempotencyModule, IdentityModule, AuditModule],
+  imports: [DbModule, HealthModule, IdempotencyModule, IdentityModule, AuditModule, UsersModule],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }],
   exports: [IdentityModule],
 })

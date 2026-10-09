@@ -65,6 +65,26 @@ export class TenantTx {
     });
   }
 
+  /**
+   * Transaction SANS prestataire (mission identite-roles, WP06) : `app.operator_id` n'est pas positionné, donc
+   * aucune ligne d'un prestataire n'est visible ni insérable sous RLS. Seul usage : appeler une fonction SECURITY
+   * DEFINER qui contrôle elle-même ses droits (`create_platform_admin`). Troisième exception documentée.
+   */
+  async withoutTenant<T>(fn: (client: TxClient) => Promise<T>): Promise<T> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await fn(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   private async readOnly<T>(fn: (client: TxClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     try {
