@@ -1,7 +1,7 @@
 {
-  "event_count": 55,
-  "last_event_id": "01M4G78TRRXJB4TXGPRB02DAF2",
-  "materialized_at": "2026-10-09T11:37:42.936842+00:00",
+  "event_count": 57,
+  "last_event_id": "01M4G7E4TMD81P23K39JRGJ7D3",
+  "materialized_at": "2026-10-09T11:40:36.468981+00:00",
   "mission_number": "",
   "mission_slug": "identite-roles-double-validation-01M4DNDN",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -304,11 +304,19 @@
       }
     },
     "WP10": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M4DWC0E9V67YP152R4FS7TBC",
-      "last_transition_at": "2026-10-08T13:48:43.849834+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M4G7E4TMD81P23K39JRGJ7D3",
+      "last_transition_at": "2026-10-09T11:40:36.468981+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 17156,
+      "shell_pid_created_at": "1791546012.881478"
     }
   }
 }
