@@ -1,15 +1,17 @@
 // Exécuteur de migrations du grand livre (research R-02, data-model `ops.schema_migrations`).
 // Rôle d'exécution : le propriétaire des tables (DATABASE_URL_OWNER), jamais `cashless_app`.
 // Chaque migration s'exécute dans sa propre transaction ; une migration déjà appliquée dont la somme de contrôle
-// a changé provoque un refus. Après la série, `roles.sql` est rejoué (idempotent).
+// a changé provoque un refus. Après la série, `roles.sql` est rejoué (idempotent), puis `post-roles.sql` s'il existe
+// (droits que `roles.sql`, fichier du kit, ne peut pas poser : mission identite-roles).
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { Client } from 'pg';
 
 const PACKAGE_DIR = resolve(__dirname, '..');
 export const MIGRATIONS_DIR = join(PACKAGE_DIR, 'migrations');
 export const ROLES_FILE = join(PACKAGE_DIR, 'roles.sql');
+export const POST_ROLES_FILE = join(PACKAGE_DIR, 'post-roles.sql');
 
 // Directive d'inclusion : `-- @include <chemin relatif au fichier de migration>` (seule sur sa ligne).
 const INCLUDE_DIRECTIVE = /^--\s*@include\s+(\S+)\s*$/;
@@ -50,6 +52,7 @@ export function loadMigrations(dir: string = MIGRATIONS_DIR): Migration[] {
 export interface MigrationReport {
   applied: string[];
   skipped: string[];
+  postRoles?: boolean;
 }
 
 export async function migrate(client: Client, migrations: Migration[] = loadMigrations()): Promise<MigrationReport> {
@@ -96,6 +99,9 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
 
   // Droits du rôle applicatif, rejoués à chaque série (donne leurs droits aux tables nouvelles).
   await client.query(readFileSync(ROLES_FILE, 'utf8'));
+  // Retraits et droits par colonne posés après roles.sql (qui rend INSERT, UPDATE et EXECUTE sur tout).
+  report.postRoles = existsSync(POST_ROLES_FILE);
+  if (report.postRoles) await client.query(readFileSync(POST_ROLES_FILE, 'utf8'));
   const password = process.env.CASHLESS_APP_PASSWORD;
   if (password) {
     // roles.sql ne fixe volontairement aucun mot de passe : réglage local / CI seulement.
@@ -117,6 +123,7 @@ async function main(): Promise<void> {
     for (const version of report.applied) console.log(`[migrate] appliquée : ${version}`);
     for (const version of report.skipped) console.log(`[migrate] déjà appliquée : ${version}`);
     console.log('[migrate] roles.sql rejoué');
+    if (report.postRoles) console.log('[migrate] post-roles.sql rejoué');
   } finally {
     await client.end();
   }

@@ -69,6 +69,12 @@ C4Container
 | `fondations-grand-livre-01M4AY8M` (✅ mergée le 08/10/2026) | API centrale (`apps/api` : squelette, moteur d'écritures), base de données (migrations `packages/ledger-sql`), `packages/contracts` (types générés), CI, base locale (`tools/dev-db`) | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md) |
 | `identite-roles-double-validation-01M4DNDN` (🚧 plan finalisé) | API centrale (`identity/`, `approval/`, `audit/`), base de données (migrations `0003`-`0005`, `post-roles.sql`), contrat (`openapi.yaml`), serveur d'identité OIDC (externe) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md) |
 
+## Pile logicielle
+
+Logiciels, versions et choix d'implémentation : [`08-pile-logicielle.md`](./08-pile-logicielle.md), référence
+arrêtée le 09/10/2026 (ADR-78 : l'existant prime). Redis, Fastify, Prisma et Nginx, proposés par le porteur, sont
+écartés ; WAF, `@nestjs/throttler`, pino et OpenTelemetry s'ajouteront avec les missions concernées.
+
 ## Décisions d'architecture notables
 (Décisions déjà prises dans `DECISIONS_ADR.md`, avant toute mission.)
 

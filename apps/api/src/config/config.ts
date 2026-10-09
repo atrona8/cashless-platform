@@ -6,6 +6,50 @@ export interface AppConfig {
   poolSize: number;
   problemTypeBase: string;
   production: boolean;
+  oidc: OidcConfig;
+}
+
+/** Serveur d'identité (contracts/identity.md, research R-01) : les quatre valeurs sont obligatoires en production. */
+export interface OidcConfig {
+  issuer: string;
+  audience: string;
+  /** Audience des jetons d'approbation sur place (R-09), distincte de celle des jetons d'accès. */
+  approvalAudience: string;
+  jwksUri: string;
+  clockToleranceSeconds: number;
+}
+
+/** Valeurs hors production (tests, poste local) : émetteur du faux serveur d'identité. */
+const TEST_OIDC = {
+  OIDC_ISSUER: 'https://idp.test',
+  OIDC_AUDIENCE: 'cashless-api',
+  OIDC_APPROVAL_AUDIENCE: 'cashless-approval',
+  OIDC_JWKS_URI: 'https://idp.test/.well-known/jwks.json',
+} as const;
+
+function loadOidc(env: NodeJS.ProcessEnv, production: boolean): OidcConfig {
+  const read = (name: keyof typeof TEST_OIDC): string => {
+    const value = env[name];
+    if (value) return value;
+    if (production) throw new Error(`${name} manquant : configuration du serveur d'identité obligatoire en production`);
+    return TEST_OIDC[name];
+  };
+  const jwksUri = read('OIDC_JWKS_URI');
+  let protocol: string;
+  try {
+    protocol = new URL(jwksUri).protocol;
+  } catch {
+    throw new Error(`OIDC_JWKS_URI : URL invalide (reçu « ${jwksUri} »)`);
+  }
+  // Une JWKS servie en clair permettrait de substituer les clés (R-11 A2).
+  if (production && protocol !== 'https:') throw new Error('OIDC_JWKS_URI : https obligatoire en production');
+  return {
+    issuer: read('OIDC_ISSUER'),
+    audience: read('OIDC_AUDIENCE'),
+    approvalAudience: read('OIDC_APPROVAL_AUDIENCE'),
+    jwksUri,
+    clockToleranceSeconds: 10,
+  };
 }
 
 const LOCAL_DATABASE_URL = 'postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test';
@@ -30,6 +74,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     poolSize: positiveInt('DB_POOL_SIZE', env.DB_POOL_SIZE, 10),
     problemTypeBase: base.endsWith('/') ? base : `${base}/`,
     production,
+    oidc: loadOidc(env, production),
   };
 }
 
