@@ -87,6 +87,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-75 | Bornes des réclamations tardives contrôlées par la base | Acceptée |
 | ADR-76 | Remboursement mobile vers un autre numéro que le numéro vérifié | Acceptée |
 | ADR-77 | Contestations carte : payeur fixé par contrat, contestation tardive dans le grand livre verrouillé | Acceptée |
+| ADR-78 | Pile logicielle : l'existant prime sur le document du porteur | Acceptée |
+| ADR-79 | Clés d'idempotence conservées 30 jours | Acceptée |
 
 ---
 
@@ -850,3 +852,20 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Le grand livre reste complet : la sortie d'argent chez le PSP y figure et se rapproche sans écart. Le compte PSP peut devenir négatif tant que le payeur n'a pas rapporté l'argent (compte chaud, sans contrôle de sens).
 - **Alternatives écartées.** Payeur fixe (organisateur seul ou prestataire seul) : pas assez souple. Part au commerçant : inapplicable, une recharge se dépense chez plusieurs. Règlement hors du grand livre : écart permanent sur le compte PSP.
 - **Références.** SPEC §4.2, §4.3, §5.3, §11.1, §12.1, §12.2 ; openapi `receivePspWebhook` ; schéma `contract.chargeback_bearer`, `event.card_topup_daily_max_per_card`, `event.card_alert_cards_per_wallet`, `check_late_claim`, `post_transaction`.
+
+## ADR-78 — Pile logicielle : l'existant prime sur le document du porteur
+
+- **Statut** : Acceptée, 9 octobre 2026 (tranche OP-N39, décision du porteur : « priorise l'existant »).
+- **Contexte.** Le porteur a transmis un document « Pile logicielle » (versions et choix d'implémentation). Confronté aux sources normatives et au code des missions 1 et 2, il divergeait sur dix-neuf points (D1-D19), dont six contredisaient la SPEC ou `openapi.yaml`.
+- **Décision.** L'existant est retenu partout où il y avait divergence : PostgreSQL 17, erreurs RFC 9457, pagination par curseur, idempotence en base (clé du terminal = clé du grand livre), aucun ORM, Express, `jose` 6.2.12, TypeScript 5.9.3, clé SQLCipher enveloppée par l'Android Keystore. Le reste du document est repris comme cible : versions du back-office (Next.js 15, React 19, Tailwind 4) et des apps Flutter (3.32 / Dart 3.8), TLS, HSTS (posé devant l'application, sans Nginx), HTTP/2 public (webhooks PSP acceptés en HTTP/1.1), WAF et `@nestjs/throttler` avec `429` + `Retry-After`, observabilité (pino, OpenTelemetry, CloudWatch). Écartés : Redis, Prisma, Fastify, `@nestjs/jwt`, `@nestjs/passport`, limitation par clé API, Nginx. Référence : `docs/08-pile-logicielle.md`.
+- **Conséquences.** Aucun changement du code livré ni du contrat. Les missions à venir introduisent les dépendances cibles à la version indiquée, après la vérification de provenance habituelle. Une seule couche SQLCipher à choisir au plan de la mission 12.
+- **Alternatives écartées.** Adopter le document tel quel : réécriture du contrat (erreurs, pagination), du filtre d'erreurs, de l'idempotence et de l'accès aux données ; perte de `transaction_timeout` (PostgreSQL 16) ; journal hors ligne lié au PIN d'un vendeur.
+- **Références.** `docs/08-pile-logicielle.md` ; SPEC §1.2, §2.2, §8.2, §13.7 ; ADR-55 ; `openapi.yaml` (conventions, `Problem`, `Cursor`, `IdempotencyKey`, `TooManyRequests`).
+
+## ADR-79 — Clés d'idempotence conservées 30 jours
+
+- **Statut** : Acceptée, 9 octobre 2026 (tranche OP-N40, décision du porteur : « garde les 30 jours »).
+- **Contexte.** `openapi.yaml` (paramètre `IdempotencyKey`) annonce une conservation d'au moins 30 jours ; la mission 1 avait codé 24 h par défaut pour les clés applicatives. Contradiction relevée lors de l'examen de la pile logicielle (ADR-78, D19).
+- **Décision.** Durée de vie par défaut d'une clé applicative : 30 jours (`IDEMPOTENCY_TTL_HOURS` = 720 par défaut, toujours paramétrable). Les clés des terminaux restent la clé du grand livre, conservées pour toujours. Le contrat est inchangé.
+- **Conséquences.** Table `api_idempotency` plus volumineuse (une ligne par écriture du back-office et des apps sur 30 jours) ; la purge planifiée future supprimera les lignes expirées.
+- **Références.** `openapi.yaml` (`IdempotencyKey`) ; `apps/api/src/idempotency/idempotency.repository.ts` ; mission 1 (spec, research R-05, `contracts/idempotency.md` : 24 h, remplacé).
