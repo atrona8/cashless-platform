@@ -88,6 +88,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-76 | Remboursement mobile vers un autre numéro que le numéro vérifié | Acceptée |
 | ADR-77 | Contestations carte : payeur fixé par contrat, contestation tardive dans le grand livre verrouillé | Acceptée |
 | ADR-78 | Pile logicielle : l'existant prime sur le document du porteur | Acceptée |
+| ADR-79 | Clés d'idempotence conservées 30 jours | Acceptée |
 
 ---
 
@@ -860,3 +861,11 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Aucun changement du code livré ni du contrat. Les missions à venir introduisent les dépendances cibles à la version indiquée, après la vérification de provenance habituelle. Une seule couche SQLCipher à choisir au plan de la mission 12.
 - **Alternatives écartées.** Adopter le document tel quel : réécriture du contrat (erreurs, pagination), du filtre d'erreurs, de l'idempotence et de l'accès aux données ; perte de `transaction_timeout` (PostgreSQL 16) ; journal hors ligne lié au PIN d'un vendeur.
 - **Références.** `docs/08-pile-logicielle.md` ; SPEC §1.2, §2.2, §8.2, §13.7 ; ADR-55 ; `openapi.yaml` (conventions, `Problem`, `Cursor`, `IdempotencyKey`, `TooManyRequests`).
+
+## ADR-79 — Clés d'idempotence conservées 30 jours
+
+- **Statut** : Acceptée, 9 octobre 2026 (tranche OP-N40, décision du porteur : « garde les 30 jours »).
+- **Contexte.** `openapi.yaml` (paramètre `IdempotencyKey`) annonce une conservation d'au moins 30 jours ; la mission 1 avait codé 24 h par défaut pour les clés applicatives. Contradiction relevée lors de l'examen de la pile logicielle (ADR-78, D19).
+- **Décision.** Durée de vie par défaut d'une clé applicative : 30 jours (`IDEMPOTENCY_TTL_HOURS` = 720 par défaut, toujours paramétrable). Les clés des terminaux restent la clé du grand livre, conservées pour toujours. Le contrat est inchangé.
+- **Conséquences.** Table `api_idempotency` plus volumineuse (une ligne par écriture du back-office et des apps sur 30 jours) ; la purge planifiée future supprimera les lignes expirées.
+- **Références.** `openapi.yaml` (`IdempotencyKey`) ; `apps/api/src/idempotency/idempotency.repository.ts` ; mission 1 (spec, research R-05, `contracts/idempotency.md` : 24 h, remplacé).

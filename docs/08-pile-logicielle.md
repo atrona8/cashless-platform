@@ -61,7 +61,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 | Style d'API | REST, ressources et champs en snake_case, version dans l'URL (`/v1/`). Nouvelle version majeure annoncée 3 mois à l'avance, ancienne dépréciée sur 6 mois | contrat + document du porteur |
 | Format | JSON (`application/json`) ; erreurs en **RFC 9457 `application/problem+json`** avec un `code` stable en SCREAMING_SNAKE_CASE (`ProblemCode`) | contrat (en place) |
 | Pagination | **Curseur opaque** : `cursor`, `limit` (≤ 200, défaut 50) ; réponse `data`, `next_cursor`, `has_more` ; pas de total | contrat (en place) |
-| Idempotence | `Idempotency-Key` sur toute écriture comptable ou création ; terminaux : `<serial>:<seq>`, qui devient la clé de l'écriture au grand livre ; autres clients : clé libre (UUID conseillé), préfixée par le serveur ; **stockée en base** (`api_idempotency`), réponse enregistrée dans la même transaction que le travail | contrat + mission 1 (en place) |
+| Idempotence | `Idempotency-Key` sur toute écriture comptable ou création ; terminaux : `<serial>:<seq>`, qui devient la clé de l'écriture au grand livre ; autres clients : clé libre (UUID conseillé), préfixée par le serveur ; **stockée en base** (`api_idempotency`, 30 jours par défaut, ADR-79), réponse enregistrée dans la même transaction que le travail | contrat + mission 1 (en place) |
 | Accès aux données | aucun ORM ; règles métier en fonctions SQL ; `set_config('app.operator_id', …, true)` par transaction (`TenantTx`) | SPEC §2.2 + mission 1 (en place) |
 | HTTP | HTTP/2 sur les points d'entrée publics ; HTTP/1.1 accepté pour les rappels internes **et pour les webhooks entrants des PSP** (appels externes) | document du porteur, ajusté |
 | TLS | 1.3 préféré, 1.2 minimum ; 1.0 et 1.1 désactivés ; certificats AWS Certificate Manager | document du porteur |
@@ -87,8 +87,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 | Throttling AWS API Gateway par clé API et par organisateur | Pas de clé API pour les personnes ni les terminaux (jetons OIDC, jetons d'appareil, mTLS) |
 | Nginx pour HSTS | Absent de l'architecture AWS cible |
 
-## 6. Reste ouvert
+## 6. Conservation des clés d'idempotence
 
-- **OP-N40 — Durée de conservation des clés d'idempotence** : le contrat dit « au moins 30 jours » (paramètre
-  `IdempotencyKey`), la mission 1 a codé 24 h par défaut (`IDEMPOTENCY_TTL_HOURS`). Contradiction entre deux
-  existants : non tranchée par ADR-78 (voir `POINTS_OUVERTS.md`).
+Tranché le 09/10/2026 (ADR-79, ex-OP-N40) : 30 jours par défaut (`IDEMPOTENCY_TTL_HOURS` = 720), conformément au
+contrat ; les clés des terminaux, qui sont aussi la clé du grand livre, sont conservées pour toujours.

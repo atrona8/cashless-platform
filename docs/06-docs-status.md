@@ -82,6 +82,7 @@
 | 08/10/2026 | /spec-kitty.plan | `identite-roles-double-validation-01M4DNDN` | B-plan | 01 (domaine Identité ajouté), 02, 04, 05, 07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json | Mis à jour |
 | 09/10/2026 | — (demande du porteur : pile logicielle) | transverse | Hors commande | 08 (nouveau), 00, 04, PRD §5, POINTS_OUVERTS (OP-N39) | Mis à jour — divergences D1-D19 signalées, arbitrage en attente |
 | 09/10/2026 | — (décision du porteur : « priorise l'existant ») | transverse | Hors commande | 08 (réécrit en référence arrêtée), DECISIONS_ADR (ADR-78), POINTS_OUVERTS (OP-N39 tranché, OP-N40 ouvert), 00, 04, PRD §5 | Mis à jour |
+| 09/10/2026 | — (décision du porteur : « garde les 30 jours ») | transverse | Hors commande | DECISIONS_ADR (ADR-79), POINTS_OUVERTS (OP-N40 tranché), 08 §4 et §6 ; code dans WP08 (défaut 720 h) | Mis à jour |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
