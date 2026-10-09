@@ -38,4 +38,4 @@ BEGIN
   RETURN result;
 END $$;
 REVOKE ALL ON FUNCTION create_platform_admin(uuid, text, text, text, text, text, text, uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION create_platform_admin(uuid, text, text, text, text, text, text, uuid) TO cashless_app;
+-- EXECUTE accordé au rôle applicatif par post-roles.sql (le rôle n'existe qu'après roles.sql, rejoué après la série).

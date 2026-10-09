@@ -20,3 +20,8 @@ REVOKE EXECUTE ON FUNCTION active_platform_admins(uuid, uuid) FROM cashless_app,
 
 -- Résultat de l'action exécutée (R-02) : écrit au passage APPROVED -> EXECUTED.
 GRANT UPDATE (result) ON approval_request TO cashless_app;
+
+-- Fonctions d'API SECURITY DEFINER retirées à PUBLIC par leur migration : accordées explicitement ici (les migrations
+-- ne nomment jamais cashless_app, qui n'existe qu'après roles.sql sur une base neuve).
+GRANT EXECUTE ON FUNCTION identify_person(text, text) TO cashless_app;
+GRANT EXECUTE ON FUNCTION create_platform_admin(uuid, text, text, text, text, text, text, uuid) TO cashless_app;

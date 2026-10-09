@@ -175,4 +175,4 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
    WHERE u.issuer = p_issuer AND u.subject = p_subject
 $$;
 REVOKE ALL ON FUNCTION identify_person(text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION identify_person(text, text) TO cashless_app;
+-- EXECUTE accordé au rôle applicatif par post-roles.sql (le rôle n'existe qu'après roles.sql, rejoué après la série).
