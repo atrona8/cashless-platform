@@ -93,7 +93,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 - Description : personnes du personnel authentifiées par le serveur d'identité OIDC, rôles par portée
   (plateforme, prestataire, organisateur, événement, commerçant), journal d'audit en ajout seul chaîné et scellé,
   double validation (jeton sur place au guichet, demande puis approbation au back-office) (§3.2, §10.3, §13.3).
-- Statut : 🚧 plan finalisé (08/10/2026)
+- Statut : 🚧 revue terminée, 10/10 WP approuvés (09/10/2026)
 - Mission(s) associée(s) : `identite-roles-double-validation-01M4DNDN` (Identité, rôles et double validation)
 
 ## Hors périmètre (confirmé)

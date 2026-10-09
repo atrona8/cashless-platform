@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-10-08T12:25:04Z",
+  "derniere_verification_globale": "2026-10-09T11:54:39Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -9,10 +9,10 @@
       "spec_index_a_jour": true
     },
     "identite-roles-double-validation-01M4DNDN": {
-      "statut": "en cours",
-      "verifie_le": "2026-10-08T12:25:04Z",
+      "statut": "revue terminée",
+      "verifie_le": "2026-10-09T11:54:39Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }

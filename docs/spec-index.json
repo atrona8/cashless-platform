@@ -82,7 +82,7 @@
   {
     "mission": "identite-roles-double-validation-01M4DNDN",
     "titre_cas_usage": "Identité, rôles et double validation",
-    "statut": "en cours",
+    "statut": "revue terminée",
     "user_stories": [
       {
         "titre": "Agir dans son seul prestataire",
@@ -111,7 +111,8 @@
       "Journal d'audit chaîné",
       "Scellement d'audit",
       "Demande d'approbation",
-      "Jeton d'approbation"
+      "Jeton d'approbation",
+      "Utilisation de jeton d'approbation (approval_token_use)"
     ],
     "resultat_mesurable": "100 % des requêtes sans identité valide refusées ; 0 accès inter-prestataires ; 0 action à deux exécutée par une seule personne ; 100 % des actions d'administration et étapes d'action à deux journalisées ; 100 % des altérations simulées du journal détectées",
     "hypotheses": [
@@ -129,7 +130,7 @@
     ],
     "cas_limites": [
       "Personne désactivée avec un jeton encore valide",
-      "Retrait du dernier PLATFORM_ADMIN refusé",
+      "Retrait du dernier PLATFORM_ADMIN refusé par la base (aucune route n'atteint un PLATFORM_ADMIN dans cette mission)",
       "Auto-attribution refusée",
       "Approbation d'une demande expirée : EXPIRED validé puis 409",
       "Même jeton d'approbation en double requête simultanée : un seul succès",
@@ -139,7 +140,7 @@
       "Authentification OIDC",
       "Rôles par portée",
       "Gestion des personnes et des rôles",
-      "Amorçage du premier administrateur",
+      "Amorçage du premier administrateur, puis création par POST /platform-admins",
       "Journal d'audit chaîné et scellé",
       "Demandes d'approbation et exécution unique",
       "Jeton d'approbation sur place",

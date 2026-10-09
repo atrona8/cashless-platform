@@ -107,7 +107,7 @@ flowchart LR
 | Mission | Cas d'usage propres | Lien vers détail local |
 |---|---|---|
 | `fondations-grand-livre-01M4AY8M` — Fondations du grand livre et de l'API (✅ mergée le 08/10/2026) | Domaine « Grand livre et moteur d'écritures » : vérifier la base (local, CI), écrire au grand livre par le moteur, rejouer le festival de référence, garanties transverses de l'API. Aucun cas d'usage terrain nouveau | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/use-case.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/use-case.md) |
-| `identite-roles-double-validation-01M4DNDN` — Identité, rôles et double validation (🚧 plan finalisé) | Vue administration : se connecter et agir dans son prestataire, gérer personnes et rôles, demander / approuver / refuser une action à deux, valider sur place au guichet, amorcer le premier administrateur, vérifier le journal d'audit | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/use-case.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/use-case.md) |
+| `identite-roles-double-validation-01M4DNDN` — Identité, rôles et double validation (🚧 revue terminée, 10/10 WP approuvés (09/10/2026)) | Vue administration : se connecter et agir dans son prestataire, gérer personnes et rôles (sauf retrait d'un `PLATFORM_ADMIN`, sans route), demander / approuver / refuser une action à deux, valider sur place au guichet, amorcer le premier administrateur, vérifier le journal d'audit | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/use-case.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/use-case.md) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

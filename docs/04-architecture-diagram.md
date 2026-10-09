@@ -67,7 +67,7 @@ C4Container
 | Mission | Conteneur(s) concerné(s) | Lien vers détail local |
 |---|---|---|
 | `fondations-grand-livre-01M4AY8M` (✅ mergée le 08/10/2026) | API centrale (`apps/api` : squelette, moteur d'écritures), base de données (migrations `packages/ledger-sql`), `packages/contracts` (types générés), CI, base locale (`tools/dev-db`) | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md) |
-| `identite-roles-double-validation-01M4DNDN` (🚧 plan finalisé) | API centrale (`identity/`, `approval/`, `audit/`), base de données (migrations `0003`-`0005`, `post-roles.sql`), contrat (`openapi.yaml`), serveur d'identité OIDC (externe) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md) |
+| `identite-roles-double-validation-01M4DNDN` (🚧 revue terminée, 10/10 WP approuvés (09/10/2026)) | API centrale (`identity/`, `identity/users/`, `approval/`, `approval/onsite/`, `audit/` ; `TenantTx.identify`/`withoutTenant`), base de données (migrations `0003`-`0006`, `post-roles.sql`, `bootstrap-admin`), contrat (`openapi.yaml`, tag `Personnes`), serveur d'identité OIDC (externe) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md) |
 
 ## Pile logicielle
 
@@ -96,6 +96,8 @@ arrêtée le 09/10/2026 (ADR-78 : l'existant prime). Redis, Fastify, Prisma et N
 | Personnes : jeton OIDC vérifié par `jose`, prestataire et rôles lus en base (`identify_person`) | Retrait de rôle immédiat, prestataire jamais tiré du jeton | `identite-roles-double-validation-01M4DNDN` (plan) |
 | Approbation : décision et exécution dans une seule transaction (échec dans un point de sauvegarde) | Aucune demande orpheline ni écriture partielle | `identite-roles-double-validation-01M4DNDN` (plan) |
 | Journal d'audit chaîné par prestataire et scellé ; `post-roles.sql` après `roles.sql` | Altération détectable ; droits trop larges retirés sans modifier le kit | `identite-roles-double-validation-01M4DNDN` (plan) |
+| Administrateur de la plateforme créé par une fonction SECURITY DEFINER (`create_platform_admin`), seule transaction sans prestataire de l'API | Personne de plateforme invisible et non insérable sous RLS ; droit vérifié en base | `identite-roles-double-validation-01M4DNDN` (implémentation) |
+| Actions à deux enregistrées par module dynamique `registerApprovalActions(...)` ; jeton sur place consommé dans la transaction métier | Mécanisme générique sans modification par les missions suivantes (SC-005) ; jeton non consommé si le travail échoue | `identite-roles-double-validation-01M4DNDN` (implémentation) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.
