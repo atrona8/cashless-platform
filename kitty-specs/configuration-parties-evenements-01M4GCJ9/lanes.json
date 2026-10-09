@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+  "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+  "mission_branch": "kitty/mission-configuration-parties-evenements-01M4GCJ9",
+  "target_branch": "feat/configuration-parties-evenements",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0007_configuration.sql",
+        "packages/ledger-sql/tests/tests_configuration.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0008_event_ledger.sql",
+        "packages/ledger-sql/tests/tests_event_ledger.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/configuration/bounds-validator.ts",
+        "apps/api/src/configuration/cascade.service.ts",
+        "apps/api/src/configuration/configuration-core.module.ts",
+        "apps/api/src/configuration/messages.ts",
+        "apps/api/src/configuration/provisional-defaults.ts",
+        "apps/api/src/configuration/settings-catalog.ts",
+        "apps/api/test/integration/configuration/cascade.spec.ts",
+        "apps/api/test/unit/configuration/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-d"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        ".github/workflows/ledger-tests.yml",
+        "packages/ledger-sql/migrations/0009_platform_scope.sql",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/src/migrate.ts",
+        "packages/ledger-sql/tests/tests_platform_scope.sql",
+        "tools/dev-db/env.sh"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/**",
+        "apps/api/src/config/config.ts",
+        "apps/api/src/db/**",
+        "apps/api/src/idempotency/**",
+        "apps/api/test/integration/platform/**",
+        "apps/api/test/support/app.ts",
+        "apps/api/test/support/db.ts",
+        "apps/api/test/unit/architecture.spec.ts",
+        "apps/api/test/unit/config.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "apps/api/src/app.module.ts",
+        "apps/api/src/configuration/jurisdiction.service.ts",
+        "apps/api/src/configuration/platform-config.controller.ts",
+        "apps/api/src/organization/platform/**",
+        "apps/api/test/integration/organization/platform*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/organization/tenant/**",
+        "apps/api/test/integration/organization/tenant*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-g"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/events/event-approval-actions.ts",
+        "apps/api/src/events/events.*",
+        "apps/api/src/events/events.module.ts",
+        "apps/api/test/integration/events/events*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-h"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/events/participations/**",
+        "apps/api/test/integration/events/fee-rules*.spec.ts",
+        "apps/api/test/integration/events/participations*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-i"
+      ],
+      "parallel_group": 7
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/events/status/**",
+        "apps/api/test/integration/events/status*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 8
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "apps/api/src/configuration/config-resolver.module.ts",
+        "apps/api/src/configuration/sql-config-resolver.ts",
+        "apps/api/test/integration/configuration/sql-config-resolver.spec.ts",
+        "apps/api/test/scenario/api-config-fixture.ts",
+        "apps/api/test/scenario/api-config-replay.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-k"
+      ],
+      "parallel_group": 9
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        ".github/CI.md",
+        "apps/api/test/integration/end-to-end/configuration-isolation.spec.ts",
+        "apps/api/test/integration/end-to-end/configuration-journey.spec.ts",
+        "apps/api/test/integration/end-to-end/configuration-latency.spec.ts",
+        "docs/DECISIONS_ADR.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-l"
+      ],
+      "parallel_group": 10
+    }
+  ],
+  "computed_at": "2026-10-09T13:38:05.923898+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "c1e877bdce7f13fbf119ae25e5bdcb520ec0e808"
+}
