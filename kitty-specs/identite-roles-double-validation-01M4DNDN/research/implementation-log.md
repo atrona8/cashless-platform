@@ -9,3 +9,4 @@
 - 2026-10-09T10:13:45Z — démarrage WP04 (lane-d).
 - 2026-10-09T10:22:55Z — démarrage WP07 (lane-g).
 - 2026-10-09T10:24:09Z — démarrage WP07 (lane-g).
+- 2026-10-09T10:30:55Z — démarrage WP05 (lane-e).
