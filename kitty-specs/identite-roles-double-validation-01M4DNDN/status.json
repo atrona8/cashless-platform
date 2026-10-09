@@ -122,7 +122,8 @@
       "last_transition_at": "2026-10-09T10:21:59.570555+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "jose 6.2.12, vérifieur OIDC (RS256/ES256, approbation ≤ 300 s), garde globale + IdentityTenantContext, faux serveur d'identité ; 32 tests identité, suite API 537/537, lint/typecheck verts, démarrage compilé vérifié."
+        "jose 6.2.12, vérifieur OIDC (RS256/ES256, approbation ≤ 300 s), garde globale + IdentityTenantContext, faux serveur d'identité ; 32 tests identité, suite API 537/537, lint/typecheck verts, démarrage compilé vérifié.",
+        "Revue : seule la santé est publique, rôles du jeton ignorés, JWKS injoignable → 503, chaque défaut de jeton → 401 (NFR-002), 404 sur prestataire étranger, TenantTx.identify justifié (test d'architecture) ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
