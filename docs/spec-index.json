@@ -153,5 +153,105 @@
       "Non-régression de la mission 1"
     ],
     "source": "kitty-specs/identite-roles-double-validation-01M4DNDN/spec.md"
+  },
+  {
+    "mission": "configuration-parties-evenements-01M4GCJ9",
+    "titre_cas_usage": "Configuration, parties et événements",
+    "statut": "plan finalisé",
+    "user_stories": [
+      {
+        "titre": "Ouvrir un prestataire",
+        "detail": "En tant qu'administrateur de la plateforme, je crée un profil de législation (valeurs provisoires signalées), un prestataire et son contrat PLATFORM_OPERATOR ; un changement de plafond réglementaire passe à deux."
+      },
+      {
+        "titre": "Ouvrir un organisateur",
+        "detail": "En tant qu'administrateur de prestataire, je crée un organisateur, son contrat OPERATOR_ORGANIZER, ma configuration (plafonds maximaux) et mes règles de frais ; une nouvelle version de contrat passe à deux."
+      },
+      {
+        "titre": "Créer et régler un événement",
+        "detail": "En tant qu'administrateur d'organisateur, je crée un événement (détenteur des fonds obligatoire) dont le grand livre et les comptes sont créés aussitôt ; un réglage hors bornes est refusé avec la règle citée."
+      },
+      {
+        "titre": "Accueillir des commerçants",
+        "detail": "En tant qu'administrateur d'organisateur, j'inscris un commerçant (INTERNAL/EXTERNAL, droit de place et son mode, commission), son compte commerçant est créé, puis ses points de vente."
+      },
+      {
+        "titre": "Faire avancer l'événement",
+        "detail": "En tant qu'administrateur, je lis les conditions du passage de statut et leur état ; LIVE passe à deux ; les autres passages par set_event_status, refus nommant la condition."
+      },
+      {
+        "titre": "Modifier pendant LIVE",
+        "detail": "En tant qu'organisateur ou prestataire, je modifie un réglage ou une règle de frais d'un événement LIVE par une demande à deux ; la nouvelle version ne vaut que pour la suite."
+      }
+    ],
+    "entites_cles": [
+      "Partie",
+      "Profil de législation",
+      "Contrat",
+      "Version de configuration",
+      "Règle de frais",
+      "Événement",
+      "Participation",
+      "Point de vente",
+      "Grand livre"
+    ],
+    "resultat_mesurable": "Hiérarchie complète construite par l'API avec une seule approbation pour LIVE ; 100 % des réglages hors bornes refusés avec la règle citée ; 0 fuite entre deux prestataires ; scénario de référence rejoué sur une configuration construite par l'API ; 0 passage de statut hors route dédiée",
+    "hypotheses": [
+      "Contrat applicable = contrat OPERATOR_ORGANIZER désigné à la création de l'événement",
+      "Émetteur porté par le grand livre",
+      "Maximums du prestataire = réglages de sa configuration",
+      "Commission = règle de frais PARTICIPATION ; droit de place porté par la participation",
+      "Conditions de clôture dépendant de missions futures listées comme externes",
+      "Rôle de base plateforme créé par post-roles.sql"
+    ],
+    "contraintes": [
+      "Statut seulement par set_event_status",
+      "Rien ne se modifie, tout se versionne",
+      "Détenteur des fonds obligatoire, hors cascade",
+      "Migrations + RLS + pgTAP par contrainte",
+      "Prestataire déduit de l'identité",
+      "Valeurs de §17.2 jamais présentées comme validées",
+      "Pas d'écran, de PSP, de catalogue, de hors ligne, de wallet_scope ORGANIZER",
+      "Contrat d'API d'abord, types générés"
+    ],
+    "cas_limites": [
+      "Devise inconnue",
+      "ends_at avant starts_at",
+      "refund_deadline absente : fin + 30 jours provisoire",
+      "Nouvelle version du profil pendant LIVE",
+      "THIRD_PARTY sans tiers désigné",
+      "Commerçant d'un autre prestataire",
+      "Versions concurrentes : 409",
+      "Approbation LIVE après changement de configuration : FAILED",
+      "Rejeu d'une création : même réponse",
+      "Participation sur un événement CLOSED"
+    ],
+    "fonctionnel": [
+      "Rôle de base distinct pour la plateforme",
+      "Profils de législation versionnés",
+      "Valeurs provisoires signalées",
+      "Prestataires, organisateurs, commerçants",
+      "Contrats versionnés",
+      "Règles de frais des quatre flux",
+      "Événements et réglages par qui de droit",
+      "Grand livre et comptes à la création",
+      "Participations et points de vente",
+      "Cascade versionnée et configuration résolue",
+      "Bornes de la législation à l'enregistrement",
+      "Version de configuration pour les écritures",
+      "Conditions de passage visibles et passage par set_event_status",
+      "Double validation des actions de configuration",
+      "Audit",
+      "Contrat d'API et types générés"
+    ],
+    "non_fonctionnel": [
+      "Isolation à deux prestataires sur chaque route",
+      "Rôle plateforme cloisonné",
+      "p95 ≤ 200 ms (création d'événement ≤ 500 ms)",
+      "Atomicité : 0 grand livre ou participation orphelin",
+      "Messages de refus FR/EN citant la règle",
+      "Suites existantes vertes"
+    ],
+    "source": "kitty-specs/configuration-parties-evenements-01M4GCJ9/spec.md"
   }
 ]

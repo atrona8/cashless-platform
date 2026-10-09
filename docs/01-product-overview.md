@@ -37,9 +37,12 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 
 ### Configuration, contrats et détenteur des fonds
 - Description : cascade versionnée plateforme → prestataire → organisateur → événement → commerçant, bornée par
-  le profil de législation ; contrats ; détenteur des fonds par événement (§4).
-- Statut : 📋 planifié
-- Mission(s) associée(s) : à définir
+  le profil de législation ; contrats ; détenteur des fonds par événement (§4). La mission couvre aussi
+  l'organisation des parties (prestataires, organisateurs, commerçants, participations, points de vente), les
+  profils de législation (gérés par la plateforme), les règles de frais des quatre flux, la création du grand livre
+  d'un événement et le passage de ses statuts, par l'API du back-office (sans écran).
+- Statut : 🚧 plan finalisé (09/10/2026)
+- Mission(s) associée(s) : `configuration-parties-evenements-01M4GCJ9` (Configuration, parties et événements)
 
 ### Portefeuilles, identification et plafonds
 - Description : portefeuille séparé du bracelet, crédits payés et offerts, plafonds réglementaires, identification
