@@ -154,6 +154,9 @@
       "last_event_id": "01M4G49MNXAMJYB6S2JYG6VEV4",
       "last_transition_at": "2026-10-09T10:45:43.741740+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "ScopeResolver (RLS), @Roles + RolesGuard (rôle exercé), AuditService dans la transaction de l'action, auditContext ; 52 tests identité, suite API 557/557, lint vert."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 8788,
