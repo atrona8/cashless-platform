@@ -8,6 +8,14 @@ import { PG_POOL } from './pool.token';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Personne d'un jeton, rendue par `identify_person` (migration 0003). */
+export interface IdentifiedPerson {
+  user_id: string;
+  operator_id: string | null;
+  status: 'ACTIVE' | 'DISABLED';
+  assignments: Array<{ role: string; scope_type: string; scope_id: string | null }>;
+}
+
 /** Client fourni à l'intérieur d'une transaction : sa durée de vie est celle de `run`. */
 export type TxClient = Pick<PoolClient, 'query'>;
 
@@ -39,11 +47,31 @@ export class TenantTx {
    * seule. Seule exception documentée à la règle « aucune requête hors `run` » ; ne lit aucune table.
    */
   async ping(): Promise<void> {
+    await this.readOnly((client) => client.query('SELECT 1'));
+  }
+
+  /**
+   * Personne d'un jeton (mission identite-roles, research R-04), avant que le prestataire soit connu : seconde
+   * exception documentée, en lecture seule et sans prestataire. Ne lit que par `identify_person` (SECURITY DEFINER),
+   * qui ne rend que la personne demandée ; aucune table n'est lue directement hors `run`.
+   */
+  async identify(issuer: string, subject: string): Promise<IdentifiedPerson | null> {
+    return this.readOnly(async (client) => {
+      const { rows } = await client.query<IdentifiedPerson>(
+        'SELECT user_id, operator_id, status, assignments FROM identify_person($1, $2)',
+        [issuer, subject],
+      );
+      return rows[0] ?? null;
+    });
+  }
+
+  private async readOnly<T>(fn: (client: TxClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN READ ONLY');
-      await client.query('SELECT 1');
+      const result = await fn(client);
       await client.query('COMMIT');
+      return result;
     } catch (error) {
       await client.query('ROLLBACK').catch(() => undefined);
       throw error;
