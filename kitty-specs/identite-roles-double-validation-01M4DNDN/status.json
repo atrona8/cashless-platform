@@ -313,6 +313,9 @@
       "last_event_id": "01M4G80WBETXXTMECK31JNHT6R",
       "last_transition_at": "2026-10-09T11:50:50.990545+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Parcours complet (amorçage → rôles → action à deux → jeton sur place → audit vérifié et scellé), balayage d'isolation dérivé du contrat (11 routes ; a révélé et corrigé les routes Personnes placées sous webhooks), CI rejouée en 192 s (pgTAP 676, Jest 670), contradictions C-01 à C-15 consignées."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 17156,
