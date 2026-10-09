@@ -1,20 +1,331 @@
 {
-  "event_count": 0,
-  "last_event_id": null,
-  "materialized_at": "",
+  "event_count": 59,
+  "last_event_id": "01M4G81PKPV09HQJ3F19AKF6EY",
+  "materialized_at": "2026-10-09T11:51:17.878030+00:00",
   "mission_number": "",
-  "mission_slug": "",
+  "mission_slug": "identite-roles-double-validation-01M4DNDN",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 0,
+    "approved": 9,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
-  "work_packages": {}
+  "work_packages": {
+    "WP01": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4DXSW0J7FB9QZNRFYF1615N",
+      "last_transition_at": "2026-10-08T14:13:46.642169+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0003 (personnes, attributions, identify_person) et 65 assertions pgTAP ; 570 assertions au total vertes.",
+        "Revue : chaque contrainte a un cas refusé, RLS forcée vérifiée sous cashless_app, gardes SECURITY DEFINER avec search_path fixé et comparaison explicite des prestataires, identify_person n'expose que la personne demandée ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP01-schema-identite\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP01-schema-identite/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 7048,
+      "shell_pid_created_at": "1791468720.2493997",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
+    },
+    "WP02": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4DYEM1BNC284GRHVDNJ2YC0",
+      "last_transition_at": "2026-10-08T14:25:06.603939+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0004 (journal d'audit chaîné, scellements, vérification) ; 41 assertions pgTAP ; 611 au total vertes.",
+        "Revue : format canonique conforme au contrat, verrou de chaîne pris avant la lecture de la dernière ligne, ajout seul pour tout rôle, 4 altérations simulées détectées (NFR-007), RLS vérifiée sous cashless_app ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP02-journal-audit-chaine\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP02-journal-audit-chaine/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 2764,
+      "shell_pid_created_at": "1791469434.2866845",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G26KRVF4438YF1CNE473P1",
+      "last_transition_at": "2026-10-09T10:09:07.355612+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0005 (result, approval_token_use), post-roles.sql rejoué par migrate.ts, bootstrap-admin idempotent, 49 assertions pgTAP (660 au total, vertes).",
+        "Revue : droits effectifs vérifiés par has_*_privilege après post-roles.sql, result limité à EXECUTED (garde inchangée), approval_token_use ajout seul + RLS + consommation unique, amorçage idempotent vérifié deux fois ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP03-approbations-base-post-roles\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP03-approbations-base-post-roles/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 3196,
+      "shell_pid_created_at": "1791540455.4461844",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
+    },
+    "WP04": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G2Y5WJAC0A08D28JS7PZSZ",
+      "last_transition_at": "2026-10-09T10:21:59.570555+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "jose 6.2.12, vérifieur OIDC (RS256/ES256, approbation ≤ 300 s), garde globale + IdentityTenantContext, faux serveur d'identité ; 32 tests identité, suite API 537/537, lint/typecheck verts, démarrage compilé vérifié.",
+        "Revue : seule la santé est publique, rôles du jeton ignorés, JWKS injoignable → 503, chaque défaut de jeton → 401 (NFR-002), 404 sur prestataire étranger, TenantTx.identify justifié (test d'architecture) ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP04-authentification-oidc\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP04-authentification-oidc/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 11936,
+      "shell_pid_created_at": "1791541249.5315156",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done",
+        "T018": "done",
+        "T019": "done"
+      }
+    },
+    "WP05": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G4C4G94V1B22VYM6AMRM1J",
+      "last_transition_at": "2026-10-09T10:47:05.482858+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ScopeResolver (RLS), @Roles + RolesGuard (rôle exercé), AuditService dans la transaction de l'action, auditContext ; 52 tests identité, suite API 557/557, lint vert.",
+        "Revue : chaque ligne d'englobement a un test positif et négatif, participation seulement si déclarée, 404 sur objet étranger, audit écrit avec le client de l'action (échec/refus = aucune ligne), seq chaîné ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP05-roles-portees-audit\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP05-roles-portees-audit/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 21752,
+      "shell_pid_created_at": "1791542758.8381023",
+      "subtasks": {
+        "T020": "done",
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
+    },
+    "WP06": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G5B52DXCKD1ETT8YQ4BHKZ",
+      "last_transition_at": "2026-10-09T11:04:01.869104+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "7 routes Personnes au contrat (types régénérés), create_platform_admin (0006), règles d attribution, service et contrôleurs idempotents avec audit ; 70 tests, suite API 627/627, pgTAP 676, lint vert.",
+        "Revue : table de vérité canGrant complète (positif et négatif), aucune escalade ORGANIZER_ADMIN, auto-attribution 403, doublons 409, 404 hors prestataire, audit exact par action et aucun sur refus, create_platform_admin ne croit que la base ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP06-gestion-personnes-roles\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP06-gestion-personnes-roles/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 16352,
+      "shell_pid_created_at": "1791543774.5956328",
+      "subtasks": {
+        "T025": "done",
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
+    },
+    "WP07": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G3B9ZKQ3VRAEBR14CEKX0Z",
+      "last_transition_at": "2026-10-09T10:29:09.747370+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "CommittedProblem validé avec le travail, garde writes (500 + clé relâchée), test d'architecture RISK-2 par le compilateur TS ; suite API 512/512, lint vert.",
+        "Revue : CommittedProblem limité à la transaction métier et documenté (pas de travail partiel), erreurs ordinaires toujours annulées, garde writes journalise IDEMPOTENT_ROUTE_WITHOUT_TX et relâche la clé, test RISK-2 démontré sur fixture fautive ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP07-idempotence-extensions\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP07-idempotence-extensions/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15896,
+      "shell_pid_created_at": "1791541680.3495128",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    },
+    "WP08": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G6RYF7G0J0A31DEJ98QCSJ",
+      "last_transition_at": "2026-10-09T11:29:02.439943+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Registre d'actions, demande 202, approbation en une transaction (SAVEPOINT, EXECUTED/FAILED, EXPIRED validé), refus, routes /approval-requests ; défaut idempotence 30 jours (ADR-79) ; suite API 644/644, pgTAP 676, lint vert.",
+        "Revue : décision, exécution, statut et audit dans une seule transaction (lu dans approve), failure_reason sans texte SQL, auteur 409, sans rôle ou autre portée 403, rejeu sans seconde exécution, aucune demande APPROVED résiduelle ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP08-approbations-back-office\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP08-approbations-back-office/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 9164,
+      "shell_pid_created_at": "1791545276.8600028",
+      "subtasks": {
+        "T034": "done",
+        "T035": "done",
+        "T036": "done",
+        "T037": "done",
+        "T038": "done",
+        "T039": "done"
+      }
+    },
+    "WP09": {
+      "actor": "user",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M4G78TRRXJB4TXGPRB02DAF2",
+      "last_transition_at": "2026-10-09T11:37:42.936842+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "act_hash, garde @RequiresOnsiteApproval, consommation dans la transaction métier + audit ; tableau des refus couvert à 100 %, concurrence NFR-003 ; suite API 664/664, lint vert.",
+        "Revue : consommation seulement dans IdempotentTx.run (jeton non consommé si le travail échoue), comparaison en temps constant, réponse neutre APPROVAL_INVALID, valideur jamais lu du corps, une seule réussite sur trois requêtes simultanées ; approuvé."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP09-jeton-approbation-sur-place\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP09-jeton-approbation-sur-place/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 17244,
+      "shell_pid_created_at": "1791545796.0940332",
+      "subtasks": {
+        "T040": "done",
+        "T041": "done",
+        "T042": "done",
+        "T043": "done"
+      }
+    },
+    "WP10": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "in_review",
+      "last_event_id": "01M4G81PKPV09HQJ3F19AKF6EY",
+      "last_transition_at": "2026-10-09T11:51:17.878030+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Parcours complet (amorçage → rôles → action à deux → jeton sur place → audit vérifié et scellé), balayage d'isolation dérivé du contrat (11 routes ; a révélé et corrigé les routes Personnes placées sous webhooks), CI rejouée en 192 s (pgTAP 676, Jest 670), contradictions C-01 à C-15 consignées."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "reviewer",
+      "shell_pid": 16096,
+      "shell_pid_created_at": "1791546666.6964257",
+      "subtasks": {
+        "T044": "done",
+        "T045": "done",
+        "T046": "done",
+        "T047": "done"
+      }
+    }
+  }
 }
