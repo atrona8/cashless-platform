@@ -80,6 +80,7 @@
 | 08/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP08-WP14, 14/14 approuvés) | `fondations-grand-livre-01M4AY8M` | B-review | 01,02,04,05,07 ; docs locaux recalés ; spec-index.json ; PROMPTS-A-ENVOYER.md (C-010 caduque) | Mis à jour |
 | 08/10/2026 | spec-kitty accept (local) puis spec-kitty merge (squash, local, sans push) | `fondations-grand-livre-01M4AY8M` | Vérification pré-conclusion | 01,02,04,07 (statut « mergée ») ; spec-index.json ; docs-state.json | Mis à jour |
 | 08/10/2026 | /spec-kitty.plan | `identite-roles-double-validation-01M4DNDN` | B-plan | 01 (domaine Identité ajouté), 02, 04, 05, 07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json | Mis à jour |
+| 09/10/2026 | — (demande du porteur : pile logicielle) | transverse | Hors commande | 08 (nouveau), 00, 04, PRD §5, POINTS_OUVERTS (OP-N39) | Mis à jour — divergences D1-D19 signalées, arbitrage en attente |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
