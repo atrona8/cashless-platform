@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "mission_slug": "identite-roles-double-validation-01M4DNDN",
+  "mission_id": "01M4DNDN9WFH5S3TH3QX5TC3JS",
+  "mission_branch": "kitty/mission-identite-roles-double-validation-01M4DNDN",
+  "target_branch": "feat/identite-roles",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0003_identity.sql",
+        "packages/ledger-sql/tests/tests_identity.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "apps/api/src/idempotency/**",
+        "apps/api/test/integration/transverse/committed-problem.spec.ts",
+        "apps/api/test/unit/idempotency-guard.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0004_audit_log.sql",
+        "packages/ledger-sql/tests/tests_audit_log.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "apps/api/jest.config.cjs",
+        "apps/api/package.json",
+        "apps/api/src/app.module.ts",
+        "apps/api/src/config/config.ts",
+        "apps/api/src/health/health.controller.ts",
+        "apps/api/src/identity/authentication.guard.ts",
+        "apps/api/src/identity/identity-tenant-context.ts",
+        "apps/api/src/identity/identity.module.ts",
+        "apps/api/src/identity/oidc-verifier.ts",
+        "apps/api/src/identity/principal.ts",
+        "apps/api/src/identity/public.decorator.ts",
+        "apps/api/src/tenancy/tenant-context.ts",
+        "apps/api/test/integration/identity/authentication.spec.ts",
+        "apps/api/test/support/app.ts",
+        "apps/api/test/support/fake-idp.ts",
+        "apps/api/test/unit/identity/oidc-verifier.spec.ts",
+        "package-lock.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0005_approvals.sql",
+        "packages/ledger-sql/package.json",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/src/bootstrap-admin.ts",
+        "packages/ledger-sql/src/migrate.ts",
+        "packages/ledger-sql/tests/tests_approvals.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/audit/**",
+        "apps/api/src/identity/roles.decorator.ts",
+        "apps/api/src/identity/roles.guard.ts",
+        "apps/api/src/identity/scope-resolver.ts",
+        "apps/api/test/integration/identity/roles-audit.spec.ts",
+        "apps/api/test/unit/identity/scope.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/identity/users/**",
+        "apps/api/test/integration/identity/users.spec.ts",
+        "apps/api/test/unit/identity/role-rules.spec.ts",
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml",
+        "packages/ledger-sql/migrations/0006_platform_admin.sql",
+        "packages/ledger-sql/tests/tests_platform_admin.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/*.ts",
+        "apps/api/test/integration/approval/back-office.spec.ts",
+        "apps/api/test/support/demo-approval-action.ts",
+        "apps/api/test/unit/approval/action-registry.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-f",
+        "lane-g"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/onsite/**",
+        "apps/api/test/integration/approval/onsite.spec.ts",
+        "apps/api/test/unit/approval/act-hash.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/test/integration/end-to-end/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-i"
+      ],
+      "parallel_group": 6
+    }
+  ],
+  "computed_at": "2026-10-08T13:49:39.256548+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "fa6e17b6d2ab7cd46f6114d3d6e3b1c4a72d5d94"
+}

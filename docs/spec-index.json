@@ -1,1 +1,157 @@
-[]
+[
+  {
+    "mission": "fondations-grand-livre-01M4AY8M",
+    "titre_cas_usage": "Fondations du grand livre et de l'API",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Base vérifiée partout",
+        "detail": "En tant que développeur ou agent de mission, je veux lancer les 400 + 64 assertions pgTAP sur mon poste (sans admin ni Docker) et les voir tourner en CI à chaque commit, afin que toute évolution du schéma soit vérifiée."
+      },
+      {
+        "titre": "Calculs identiques à la référence",
+        "detail": "En tant qu'équipe, je veux un constructeur pour chacun des 26 types de transaction et les 19 cas normatifs en tests, afin qu'aucun frais, taxe ou partage ne s'écarte d'une unité du moteur de référence."
+      },
+      {
+        "titre": "Festival rejoué au centime",
+        "detail": "En tant qu'équipe, je veux rejouer les 48 transactions du scénario de référence par les constructeurs jusqu'à CLOSED/LOCKED, avec des soldes exacts après T23 et en fin de clôture, et aucun effet au second rejeu."
+      },
+      {
+        "titre": "Garanties transverses héritées",
+        "detail": "En tant que mission suivante, je veux que chaque route hérite de l'isolation par prestataire, des erreurs problem+json, de l'idempotence, de X-Request-Id et d'Accept-Language."
+      },
+      {
+        "titre": "Types issus du contrat",
+        "detail": "En tant que développeur, je veux des types TypeScript générés depuis openapi.yaml et un contrôle CI qui échoue s'ils sont périmés."
+      }
+    ],
+    "entites_cles": [
+      "Grand livre",
+      "Compte",
+      "Transaction et lignes",
+      "Clé d'idempotence (S21)",
+      "Commande d'écriture",
+      "Prestataire",
+      "Fixture du scénario"
+    ],
+    "resultat_mesurable": "505/505 assertions pgTAP (400 référence + 64 scénario + 41 S21), 19/19 cas normatifs, 48 transactions du scénario identiques ligne à ligne, 0 unité d'écart aux deux points de contrôle, CLOSED/LOCKED, 0 transaction et 0 ligne au second rejeu ; 505 tests Jest ; CI répétée en local en 152 s",
+    "hypotheses": [
+      "Fixture du scénario posée par un rôle de préparation distinct de cashless_app (configuration réelle en mission 3)",
+      "Prestataire fourni par un contexte remplaçable tant que l'authentification réelle (mission 2) n'existe pas",
+      "Bracelets et lots des cautions posés dans la fixture (gestion réelle en mission 4)",
+      "Latence p95 serveur seul mesurée par les missions qui publient les routes métier",
+      "Entrées d'idempotence valables 24 h par défaut, paramétrable"
+    ],
+    "contraintes": [
+      "Seule post_transaction écrit journal_transaction, posting et account_balance",
+      "Aucun fichier .sql généré modifié à la main",
+      "Fonctions internes §13.1 jamais rendues au rôle applicatif",
+      "Aucun flottant pour l'argent",
+      "Windows 10, Node 22, PostgreSQL 17 sans pgTAP, sans Docker ni droits admin",
+      "Aucune route ajoutée à openapi.yaml ; rien de V2"
+    ],
+    "cas_limites": [
+      "Moitié négative −100,5 arrondie à −101",
+      "Taxe à 0 % : aucune ligne de taxe",
+      "Plusieurs frais au même bénéficiaire et au même taux : taxe extraite une fois",
+      "Vente hors ligne au-delà du solde : part non couverte en S-ATTENTE",
+      "Grand livre en clôture ou verrouillé : EVENT_CLOSING / LEDGER_LOCKED",
+      "SQLSTATE inconnu : INTERNAL_ERROR sans texte SQL",
+      "Requête interrompue : clé IN_PROGRESS reprise après expiration du bail",
+      "Connexion du pool réutilisée par un autre prestataire : aucun contexte ne fuit"
+    ],
+    "fonctionnel": [
+      "Monorepo npm workspaces et migrations depuis le schéma de référence",
+      "Outillage pgTAP local et CI PostgreSQL 17",
+      "Connexion cashless_app avec set_config transactionnel",
+      "Erreurs problem+json traduites par SQLSTATE",
+      "Magasin d'idempotence applicatif S21",
+      "X-Request-Id, Accept-Language, route de santé",
+      "26 constructeurs, 19 cas normatifs, matrice statut → types acceptés",
+      "Rejeu du scénario de référence et second rejeu sans effet",
+      "Types TypeScript générés depuis openapi.yaml"
+    ],
+    "non_fonctionnel": [
+      "0 unité d'écart comptable",
+      "0 fuite de texte SQL ; 0 objet d'un autre prestataire visible",
+      "Boucle locale pgTAP < 5 min ; CI < 15 min",
+      "Durées du rôle applicatif (60 s / 30 s / 10 s) vérifiées"
+    ],
+    "source": "kitty-specs/fondations-grand-livre-01M4AY8M/spec.md"
+  },
+  {
+    "mission": "identite-roles-double-validation-01M4DNDN",
+    "titre_cas_usage": "Identité, rôles et double validation",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Agir dans son seul prestataire",
+        "detail": "En tant que personne du personnel connectée par le serveur d'identité, je veux que l'API me reconnaisse, déduise mon prestataire et mes rôles de la plateforme et ne m'expose que les données de mon prestataire."
+      },
+      {
+        "titre": "Gérer personnes et rôles, tout tracé",
+        "detail": "En tant qu'administrateur, je veux créer et désactiver des personnes et leur attribuer ou retirer un rôle sur une portée, chaque action étant inscrite au journal d'audit."
+      },
+      {
+        "titre": "Action à deux au back-office",
+        "detail": "En tant qu'auteur, je veux qu'une action sensible crée une demande figée (202) qu'une seconde personne au bon rôle approuve (exécution unique) ou refuse avec une note."
+      },
+      {
+        "titre": "Validation sur place au guichet",
+        "detail": "En tant que caissier, je veux qu'une seconde personne présente valide une opération sensible par un jeton d'approbation à usage unique lié à cette requête."
+      },
+      {
+        "titre": "Réponse enregistrée avec le travail",
+        "detail": "En tant qu'équipe, je veux qu'une route d'écriture idempotente qui écrit hors de la transaction idempotente soit détectée par un test (RISK-2)."
+      }
+    ],
+    "entites_cles": [
+      "Personne (app_user)",
+      "Attribution de rôle",
+      "Journal d'audit chaîné",
+      "Scellement d'audit",
+      "Demande d'approbation",
+      "Jeton d'approbation",
+      "Utilisation de jeton d'approbation (approval_token_use)"
+    ],
+    "resultat_mesurable": "100 % des requêtes sans identité valide refusées ; 0 accès inter-prestataires ; 0 action à deux exécutée par une seule personne ; 100 % des actions d'administration et étapes d'action à deux journalisées ; 100 % des altérations simulées du journal détectées",
+    "hypotheses": [
+      "Produit de serveur d'identité choisi plus tard (OIDC standard)",
+      "Personnes créées par un administrateur à partir de leur identifiant OIDC",
+      "Festivaliers et vendeurs hors mission",
+      "Actions métier à deux branchées par les missions suivantes"
+    ],
+    "contraintes": [
+      "Valideur jamais pris dans la requête (ADR-74)",
+      "Contraintes valideur ≠ auteur de la base intactes",
+      "Aucun mot de passe dans l'API",
+      "Migrations avec RLS forcée et pgTAP",
+      "Aucune fonction interne rendue au rôle applicatif"
+    ],
+    "cas_limites": [
+      "Personne désactivée avec un jeton encore valide",
+      "Retrait du dernier PLATFORM_ADMIN refusé par la base (aucune route n'atteint un PLATFORM_ADMIN dans cette mission)",
+      "Auto-attribution refusée",
+      "Approbation d'une demande expirée : EXPIRED validé puis 409",
+      "Même jeton d'approbation en double requête simultanée : un seul succès",
+      "Clés publiques du serveur d'identité injoignables : 503"
+    ],
+    "fonctionnel": [
+      "Authentification OIDC",
+      "Rôles par portée",
+      "Gestion des personnes et des rôles",
+      "Amorçage du premier administrateur, puis création par POST /platform-admins",
+      "Journal d'audit chaîné et scellé",
+      "Demandes d'approbation et exécution unique",
+      "Jeton d'approbation sur place",
+      "Garde de la transaction idempotente"
+    ],
+    "non_fonctionnel": [
+      "Isolation entre prestataires",
+      "Vérification d'un jeton ≤ 5 ms au p95",
+      "Détection de 100 % des altérations simulées du journal",
+      "Non-régression de la mission 1"
+    ],
+    "source": "kitty-specs/identite-roles-double-validation-01M4DNDN/spec.md"
+  }
+]

@@ -9,10 +9,12 @@ info:
     et le protocole hors ligne / passerelle est décrit dans `sync_protocol.md` (normatif).
 
     ## Conventions générales
-    - **Multi-tenant** : le prestataire (`operator_id`) n'est JAMAIS passé en paramètre ; il est dérivé du jeton
-      (JWT humain, jeton d'appareil, certificat mTLS, client POS). L'API positionne `app.operator_id` pour la
-      Row Level Security avant toute requête. Un objet d'un autre prestataire répond `404 NOT_FOUND`
-      (réponse neutre, identique à « n'existe pas »).
+    - **Multi-tenant** : le prestataire (`operator_id`) n'est JAMAIS passé en paramètre ; il est dérivé de la
+      personne ou de l'appareil authentifié (JWT humain, jeton d'appareil, certificat mTLS, client POS). L'API
+      positionne `app.operator_id` pour la Row Level Security avant toute requête. Un objet d'un autre prestataire
+      répond `404 NOT_FOUND` (réponse neutre, identique à « n'existe pas »). Exception : les routes de gestion
+      `/operators/{operator_id}/…` (tag `Personnes`) nomment le prestataire visé, pour qu'un `PLATFORM_ADMIN` (sans
+      prestataire) puisse agir ; pour toute autre personne, ce prestataire DOIT être le sien (sinon `404`).
     - **Montants** : entiers en unités mineures (`int64`) + devise ISO 4217 ; une seule devise par événement.
       Un montant envoyé dans une autre devise que celle de l'événement est refusé (`CURRENCY_MISMATCH`).
     - **Horodatage** : RFC 3339 en UTC. `occurred_at` = heure réelle au terminal ; `recorded_at` = heure serveur.
@@ -55,6 +57,10 @@ info:
         `force = true`.
       - Règle des statuts : `403` quand la preuve jointe à la requête (le jeton) manque ou ne vaut rien ;
         `409` quand une demande enregistrée n'est plus dans un état qui permet la décision.
+      - Empreinte de la requête liée au jeton sur place :
+        `act_hash = hex(SHA-256(METHOD ‖ LF ‖ PATH ‖ LF ‖ JCS(body ?? null)))`, LF = saut de ligne (`\n`) ;
+        `METHOD` en majuscules, `PATH` = chemin réel avec le préfixe `/v1`, sans chaîne de requête, corps en JSON canonique RFC 8785 (`null` si
+        absent) ; l'en-tête du jeton n'entre pas dans le calcul.
 
     ## Statut de l'événement et écritures acceptées
     Résumé de ce que la base impose (`set_event_status`, `post_transaction`, `lock_settled_ledger`) ; le détail
@@ -74,9 +80,12 @@ info:
       `BACKOFFICE`, à deux personnes, jusqu'à `ledger.late_claims_until` (voir `postLateClaim`).
 
     ## Sécurité
-    - `humanBearer` : JWT (OIDC) pour les humains ; rôles (claim `roles`, liste de SPECIFICATION §3.2) :
-      `PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN`,
-      `VENDOR`, `CUSTOMER` ; prestataire dans le claim `operator_id`.
+    - `humanBearer` : JWT (OIDC) pour les humains ; rôles de SPECIFICATION §3.2 : `PLATFORM_ADMIN`,
+      `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN`, `VENDOR`, `CUSTOMER`.
+    - **Authentification des personnes** : le jeton prouve seulement l'identité (`iss`, `sub`, signature,
+      audience, expiration). Le prestataire, le statut et les rôles (avec leur portée) sont tirés de la plateforme
+      à chaque requête, jamais du jeton : un claim `roles` est ignoré ; un claim `operator_id`, s'il est présent,
+      doit être celui de la personne (sinon `401`).
     - `deviceToken` : jeton d'appareil (JWT court, 15 min) délivré à l'enrôlement / au rafraîchissement,
       lié à la clé de l'appareil (claim `cnf`). `deviceMtls` : certificat client délivré à l'enrôlement.
       Un terminal utilise l'un OU l'autre ; en production, mTLS + jeton lié est RECOMMANDÉ.
@@ -117,6 +126,8 @@ tags:
     description: Traitement des demandes de remboursement et des réclamations tardives par le back-office.
   - name: Approbations
     description: Demandes d'approbation du back-office (deux personnes, ADR-74) — liste, consultation, approbation et exécution, refus.
+  - name: Personnes
+    description: Personnes du personnel, attributions de rôles par portée, administrateurs de la plateforme.
   - name: Guichet
     description: Sessions de caisse et identification des festivaliers (KYC) au guichet.
   - name: Passerelle
@@ -4557,6 +4568,287 @@ paths:
         '413':
           $ref: '#/components/responses/PayloadTooLarge'
 
+  # ---------------------------------------------------------------- Personnes
+  /operators/{operator_id}/users:
+    get:
+      tags: [Personnes]
+      operationId: listUsers
+      summary: Lister les personnes du personnel d'un prestataire
+      description: |
+        Personnes du prestataire du chemin, triées par date de création. Rôles : `PLATFORM_ADMIN`,
+        `OPERATOR_ADMIN` du prestataire, `ORGANIZER_ADMIN` (limité aux personnes qui ont une attribution sur son
+        organisateur ou ses événements, et à celles qu'il a créées).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de personnes.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StaffUser'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Personnes]
+      operationId: createUser
+      summary: Créer une personne du personnel
+      description: |
+        Enregistre une personne connue du serveur d'identité (émetteur et sujet du jeton) dans le prestataire du
+        chemin, sans rôle ; les rôles sont donnés ensuite par `grantRole`. (Émetteur, sujet) déjà connu :
+        `409 CONFLICT_STATE`. Journalisé (`USER_CREATED`). Rôles : comme `listUsers`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffUserCreate'
+      responses:
+        '201':
+          description: Personne créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/users/{user_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/users/{user_id}:
+    get:
+      tags: [Personnes]
+      operationId: getUser
+      summary: Consulter une personne et ses attributions actives
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Personne.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/users/{user_id}/disable:
+    post:
+      tags: [Personnes]
+      operationId: disableUser
+      summary: Désactiver une personne
+      description: |
+        Définitif : la personne ne peut plus s'authentifier (`401` dès la requête suivante) ; ses attributions sont
+        conservées pour l'historique. Désactiver le dernier `PLATFORM_ADMIN` : `403 FORBIDDEN`. Déjà désactivée :
+        `409 CONFLICT_STATE`. Journalisé (`USER_DISABLED`). Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Personne désactivée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/users/{user_id}/role-assignments:
+    post:
+      tags: [Personnes]
+      operationId: grantRole
+      summary: Attribuer un rôle sur une portée
+      description: |
+        Qui peut attribuer quoi : `PLATFORM_ADMIN` → `OPERATOR_ADMIN` (prestataire) ; `OPERATOR_ADMIN` →
+        `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN` dans son prestataire ;
+        `ORGANIZER_ADMIN` → `SUPERVISOR`, `CASHIER` sur son organisateur ou ses événements, `MERCHANT_ADMIN` sur les
+        commerçants qui participent à ses événements. Jamais à soi-même (`403`). Droit insuffisant : `403`. Rôle et
+        portée incompatibles, `VENDOR` ou `CUSTOMER` : `422 VALIDATION_FAILED`. Attribution active identique :
+        `409 CONFLICT_STATE`. `PLATFORM_ADMIN` se donne par `createPlatformAdmin`. Journalisé (`ROLE_GRANTED`).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleGrant'
+      responses:
+        '201':
+          description: Attribution créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/users/{user_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleAssignment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/role-assignments/{assignment_id}/revoke:
+    post:
+      tags: [Personnes]
+      operationId: revokeRole
+      summary: Retirer une attribution de rôle
+      description: |
+        Même droit que pour attribuer ce rôle sur cette portée ; jamais sa propre attribution (`403`). Déjà retirée :
+        `409 CONFLICT_STATE`. Retirer le dernier `PLATFORM_ADMIN` : `403 FORBIDDEN`. Journalisé (`ROLE_REVOKED`).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/AssignmentId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Attribution retirée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleAssignment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /platform-admins:
+    post:
+      tags: [Personnes]
+      operationId: createPlatformAdmin
+      summary: Créer un administrateur de la plateforme
+      description: |
+        Crée une personne de la plateforme (sans prestataire) et son attribution `PLATFORM_ADMIN`. Réservé à un
+        `PLATFORM_ADMIN`, vérifié en base sur l'attribution active de l'appelant. Le premier administrateur est
+        créé par la commande d'amorçage (`bootstrap-admin`), hors API. (Émetteur, sujet) déjà connu :
+        `409 CONFLICT_STATE`. Journalisé (`PLATFORM_ADMIN_CREATED`). Sans `Idempotency-Key` : une personne de la
+        plateforme n'a pas de prestataire, auquel toute clé d'idempotence est rattachée ; un rejeu est sans effet,
+        puisque (émetteur, sujet) est unique (`409 CONFLICT_STATE`).
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffUserCreate'
+      responses:
+        '201':
+          description: Administrateur de la plateforme créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
 webhooks:
   paymentIntentSucceeded:
     post:
@@ -4733,6 +5025,28 @@ components:
         maxLength: 4096
     ApprovalRequestId:
       name: approval_request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OperatorId:
+      name: operator_id
+      in: path
+      required: true
+      description: Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`).
+      schema:
+        type: string
+        format: uuid
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AssignmentId:
+      name: assignment_id
       in: path
       required: true
       schema:
@@ -7915,3 +8229,163 @@ components:
           $ref: '#/components/schemas/Timestamp'
         reject_reason:
           type: string
+    StaffRole:
+      type: string
+      description: |
+        Rôles du personnel (SPECIFICATION §3.2). `VENDOR` et `CUSTOMER` existent mais ne sont pas attribuables par
+        `grantRole` dans cette version.
+      enum: [PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR, CASHIER, MERCHANT_ADMIN, VENDOR, CUSTOMER]
+    RoleScopeType:
+      type: string
+      description: |
+        Portée d'une attribution. Englobement : `PLATFORM` ⊃ `OPERATOR` ⊃ `ORGANIZER` ⊃ `EVENT` ; `OPERATOR` ⊃
+        `MERCHANT` ; un événement englobe les commerçants qui y participent.
+      enum: [PLATFORM, OPERATOR, ORGANIZER, EVENT, MERCHANT]
+    RoleAssignment:
+      type: object
+      required: [assignment_id, role, scope_type, scope_id, granted_by, granted_at, revoked_at]
+      properties:
+        assignment_id:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/StaffRole'
+        scope_type:
+          $ref: '#/components/schemas/RoleScopeType'
+        scope_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Objet de la portée ; `null` pour `PLATFORM`.
+        granted_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Personne qui a attribué le rôle ; `null` pour l'amorçage.
+        granted_at:
+          $ref: '#/components/schemas/Timestamp'
+        revoked_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      example:
+        assignment_id: 2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f
+        role: CASHIER
+        scope_type: EVENT
+        scope_id: 9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d
+        granted_by: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+        granted_at: '2026-12-10T08:30:00Z'
+        revoked_at: null
+    RoleGrant:
+      type: object
+      required: [role, scope_type]
+      description: Un champ `approved_by` ou tout autre champ inconnu est ignoré.
+      properties:
+        role:
+          $ref: '#/components/schemas/StaffRole'
+        scope_type:
+          $ref: '#/components/schemas/RoleScopeType'
+        scope_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+      example:
+        role: CASHIER
+        scope_type: EVENT
+        scope_id: 9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d
+    StaffUserCreate:
+      type: object
+      required: [issuer, subject, display_name]
+      description: |
+        Personne connue du serveur d'identité : `issuer` et `subject` sont les claims `iss` et `sub` de ses jetons.
+        `email` ou `phone` (E.164) obligatoire. Tout champ inconnu est ignoré.
+      properties:
+        issuer:
+          type: string
+          minLength: 1
+          maxLength: 512
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        phone:
+          type: string
+          pattern: '^\+[1-9][0-9]{6,14}$'
+      example:
+        issuer: https://id.cashless.test
+        subject: 6f1c2b8e-3d4a-4f5b-8c9d-0e1f2a3b4c5d
+        display_name: Awa Ndiaye
+        email: awa.ndiaye@festival.test
+    StaffUser:
+      type: object
+      required: [user_id, operator_id, issuer, subject, display_name, status, created_at, disabled_at, role_assignments]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        operator_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Prestataire ; `null` pour une personne de la plateforme.
+        issuer:
+          type: string
+        subject:
+          type: string
+        email:
+          type:
+            - string
+            - 'null'
+        phone:
+          type:
+            - string
+            - 'null'
+        display_name:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, DISABLED]
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        disabled_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        role_assignments:
+          type: array
+          description: Attributions actives.
+          items:
+            $ref: '#/components/schemas/RoleAssignment'
+      example:
+        user_id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+        operator_id: 7c0e1a52-0000-4000-8000-000000000001
+        issuer: https://id.cashless.test
+        subject: 6f1c2b8e-3d4a-4f5b-8c9d-0e1f2a3b4c5d
+        email: awa.ndiaye@festival.test
+        phone: null
+        display_name: Awa Ndiaye
+        status: ACTIVE
+        created_at: '2026-12-10T08:00:00Z'
+        disabled_at: null
+        role_assignments:
+          - assignment_id: 2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f
+            role: CASHIER
+            scope_type: EVENT
+            scope_id: 9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d
+            granted_by: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+            granted_at: '2026-12-10T08:30:00Z'
+            revoked_at: null
