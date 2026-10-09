@@ -1895,81 +1895,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-};
-export type webhooks = {
-    paymentIntentSucceeded: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * payment_intent.succeeded (sortant)
-         * @description Envoyé au POS tiers quand la vente est écrite. En-tête `X-Cashless-Signature: t=<unix>,v1=<hex>` où
-         *     `v1 = HMAC-SHA256(secret, t + "." + corps_brut)`. Répondre 2xx en moins de 5 s ; dédoublonner par
-         *     `event_id`.
-         */
-        post: operations["onPaymentIntentSucceeded"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    paymentIntentAuthorized: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** payment_intent.authorized (sortant, capture MANUAL) */
-        post: operations["onPaymentIntentAuthorized"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    paymentIntentCancelled: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** payment_intent.cancelled / payment_intent.expired / payment_intent.failed (sortant) */
-        post: operations["onPaymentIntentCancelled"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    paymentIntentReversed: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** payment_intent.reversed (sortant) */
-        post: operations["onPaymentIntentReversed"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/operators/{operator_id}/users": {
         parameters: {
             query?: never;
@@ -2102,6 +2027,81 @@ export type webhooks = {
          *     puisque (émetteur, sujet) est unique (`409 CONFLICT_STATE`).
          */
         post: operations["createPlatformAdmin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+};
+export type webhooks = {
+    paymentIntentSucceeded: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * payment_intent.succeeded (sortant)
+         * @description Envoyé au POS tiers quand la vente est écrite. En-tête `X-Cashless-Signature: t=<unix>,v1=<hex>` où
+         *     `v1 = HMAC-SHA256(secret, t + "." + corps_brut)`. Répondre 2xx en moins de 5 s ; dédoublonner par
+         *     `event_id`.
+         */
+        post: operations["onPaymentIntentSucceeded"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    paymentIntentAuthorized: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** payment_intent.authorized (sortant, capture MANUAL) */
+        post: operations["onPaymentIntentAuthorized"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    paymentIntentCancelled: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** payment_intent.cancelled / payment_intent.expired / payment_intent.failed (sortant) */
+        post: operations["onPaymentIntentCancelled"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    paymentIntentReversed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** payment_intent.reversed (sortant) */
+        post: operations["onPaymentIntentReversed"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8652,125 +8652,6 @@ export interface operations {
             413: components["responses"]["PayloadTooLarge"];
         };
     };
-    onPaymentIntentSucceeded: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "event_id": "evt_9Kd2",
-                 *       "type": "payment_intent.succeeded",
-                 *       "created_at": "2026-12-12T20:01:12Z",
-                 *       "data": {
-                 *         "payment_intent_id": "pi_7Hq2xN4mR8",
-                 *         "status": "SUCCEEDED",
-                 *         "amount": 7500,
-                 *         "amount_capturable": 0,
-                 *         "amount_captured": 7500,
-                 *         "currency": "XOF",
-                 *         "capture_method": "AUTOMATIC",
-                 *         "pos_id": "0c6f0d7e-11aa-4b8b-9c3e-5d2f1a7b8c90",
-                 *         "device_id": "3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f",
-                 *         "external_reference": "POSX-TCK-000981",
-                 *         "qr_payload": null,
-                 *         "transaction_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
-                 *         "created_at": "2026-12-12T20:00:00Z",
-                 *         "expires_at": "2026-12-12T20:05:00Z"
-                 *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["OutboundEvent"];
-            };
-        };
-        responses: {
-            /** @description Reçu. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    onPaymentIntentAuthorized: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OutboundEvent"];
-            };
-        };
-        responses: {
-            /** @description Reçu. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    onPaymentIntentCancelled: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OutboundEvent"];
-            };
-        };
-        responses: {
-            /** @description Reçu. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    onPaymentIntentReversed: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OutboundEvent"];
-            };
-        };
-        responses: {
-            /** @description Reçu. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     listUsers: {
         parameters: {
             query?: {
@@ -9071,6 +8952,125 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    onPaymentIntentSucceeded: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "event_id": "evt_9Kd2",
+                 *       "type": "payment_intent.succeeded",
+                 *       "created_at": "2026-12-12T20:01:12Z",
+                 *       "data": {
+                 *         "payment_intent_id": "pi_7Hq2xN4mR8",
+                 *         "status": "SUCCEEDED",
+                 *         "amount": 7500,
+                 *         "amount_capturable": 0,
+                 *         "amount_captured": 7500,
+                 *         "currency": "XOF",
+                 *         "capture_method": "AUTOMATIC",
+                 *         "pos_id": "0c6f0d7e-11aa-4b8b-9c3e-5d2f1a7b8c90",
+                 *         "device_id": "3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f",
+                 *         "external_reference": "POSX-TCK-000981",
+                 *         "qr_payload": null,
+                 *         "transaction_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
+                 *         "created_at": "2026-12-12T20:00:00Z",
+                 *         "expires_at": "2026-12-12T20:05:00Z"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["OutboundEvent"];
+            };
+        };
+        responses: {
+            /** @description Reçu. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    onPaymentIntentAuthorized: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutboundEvent"];
+            };
+        };
+        responses: {
+            /** @description Reçu. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    onPaymentIntentCancelled: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutboundEvent"];
+            };
+        };
+        responses: {
+            /** @description Reçu. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    onPaymentIntentReversed: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Cashless-Signature": components["parameters"]["OutboundSignature"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutboundEvent"];
+            };
+        };
+        responses: {
+            /** @description Reçu. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
 }
