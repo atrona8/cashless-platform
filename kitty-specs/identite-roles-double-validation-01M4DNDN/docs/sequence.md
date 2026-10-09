@@ -1,6 +1,6 @@
 # Séquences — mission identite-roles-double-validation-01M4DNDN
 
-> État : **review terminée** (2026-10-09), recalé sur le code livré. Source : `contracts/`, `apps/api/src/`.
+> État : **mergée** (2026-10-09, squash `c2f3934`) ; review terminée (2026-10-09), recalé sur le code livré. Source : `contracts/`, `apps/api/src/`.
 
 ## Flux internes propres à cette mission
 

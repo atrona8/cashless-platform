@@ -1,6 +1,6 @@
 # Cas d'usage — mission identite-roles-double-validation-01M4DNDN
 
-> État : **review terminée** (2026-10-09, 10/10 WP approuvés), recalé sur le code livré.
+> État : **mergée** (2026-10-09, squash `c2f3934`) ; review terminée (2026-10-09, 10/10 WP approuvés), recalé sur le code livré.
 
 ## Cas d'usage propres à cette mission
 

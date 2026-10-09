@@ -1,6 +1,6 @@
 # Notes d'architecture — mission identite-roles-double-validation-01M4DNDN
 
-> État : **review terminée** (2026-10-09, 10/10 WP approuvés), recalé sur le code livré. Sources : `plan.md`,
+> État : **mergée** (2026-10-09, squash `c2f3934`) ; review terminée (2026-10-09, 10/10 WP approuvés), recalé sur le code livré. Sources : `plan.md`,
 > `research.md` (dont « Contradictions constatées à l'implémentation »), code des lanes.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission

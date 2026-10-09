@@ -82,7 +82,7 @@
   {
     "mission": "identite-roles-double-validation-01M4DNDN",
     "titre_cas_usage": "Identité, rôles et double validation",
-    "statut": "revue terminée",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "Agir dans son seul prestataire",

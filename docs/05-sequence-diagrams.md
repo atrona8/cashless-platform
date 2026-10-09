@@ -150,7 +150,7 @@ sequenceDiagram
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
-| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (🚧 revue terminée, 10/10 WP approuvés (09/10/2026) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) |
+| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) |
 | Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
