@@ -1,7 +1,9 @@
 // Intercepteur d'idempotence (SPECIFICATION §10.2, contracts/idempotency.md) : ne s'applique qu'aux routes marquées
 // `@Idempotent`. Réserve la clé (transaction 1), fournit au contrôleur la transaction métier qui enregistre la réponse
 // avant son COMMIT (transaction 2), rejoue les réponses enregistrées, enregistre les erreurs 4xx et relâche la clé
-// sur une erreur 5xx.
+// sur une erreur 5xx. Deux extensions (mission identite-roles, WP07) : `CommittedProblem` levé dans la transaction
+// métier valide le travail fait et enregistre le problème comme réponse ; une route `writes` (défaut) qui rend sa
+// valeur sans `IdempotentTx.run` échoue en 500 (RISK-2).
 import { Inject, Injectable, type CallHandler, type ExecutionContext, type NestInterceptor } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
@@ -12,12 +14,17 @@ import { TenantTx } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { logProblem, PROBLEM_CONTENT_TYPE, problemBody, resolveProblem } from '../errors/problem.filter';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
+import { CommittedProblem } from './committed-problem';
 import { IdempotencyRepository, LeaseLostError, type Reservation, type StoredResponse } from './idempotency.repository';
 import { IDEMPOTENT, type IdempotentOptions, type IdempotentRequest } from './idempotent.decorator';
 import { requestHash, routeTemplate } from './request-hash';
 
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
 export const REPLAYED_HEADER = 'Idempotency-Replayed';
+/** Code interne journalisé quand une route d'écriture n'a pas ouvert sa transaction métier (client : INTERNAL_ERROR). */
+export const ROUTE_WITHOUT_TX = 'IDEMPOTENT_ROUTE_WITHOUT_TX';
+/** Marqueur rendu par la transaction métier quand un `CommittedProblem` y a été enregistré. */
+const COMMITTED = Symbol('COMMITTED');
 /** En-têtes rejoués (liste blanche du data-model). */
 const REPLAYED_HEADERS = ['Location', 'Content-Type'] as const;
 
@@ -59,20 +66,36 @@ export class IdempotencyInterceptor implements NestInterceptor {
       run: async <T>(fn: (client: TxClient) => Promise<T>): Promise<T> => {
         if (recorded) throw new Error('IdempotentTx.run : une seule transaction métier par requête');
         let response: StoredResponse | undefined;
+        let committed: CommittedProblem | undefined;
         const result = await this.tenantTx.run(operatorId, async (client) => {
-          const value = await fn(client);
+          let value: T;
+          try {
+            value = await fn(client);
+          } catch (error) {
+            if (!(error instanceof CommittedProblem)) throw error;
+            // Le travail fait est l'état voulu : le problème devient la réponse, validée avec lui (COMMIT).
+            committed = error;
+            response = this.problemResponse(error, req);
+            await this.repository.complete(client, reservation, response);
+            return COMMITTED;
+          }
           response = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
           await this.repository.complete(client, reservation, response);
           return value;
         });
         recorded = response;
-        return result;
+        if (committed) throw committed;
+        return result as T;
       },
     };
 
     return next.handle().pipe(
       mergeMap(async (value) => {
-        // Le contrôleur n'a pas ouvert de transaction métier : la réponse est enregistrée seule.
+        if (!recorded && options.writes !== false) {
+          // Route d'écriture sans transaction métier : ce qu'elle a écrit n'est pas lié à la clé (RISK-2).
+          throw new Error(`${ROUTE_WITHOUT_TX} : ${req.method} ${routeTemplate(req)} a rendu sa valeur sans IdempotentTx.run`);
+        }
+        // Route déclarée sans écriture : la réponse est enregistrée seule.
         if (!recorded) {
           const response: StoredResponse = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
           await this.repository.completeAlone(reservation, response);
@@ -92,6 +115,8 @@ export class IdempotencyInterceptor implements NestInterceptor {
     reservation: Reservation,
     recorded: StoredResponse | undefined,
   ): Promise<unknown> {
+    // Problème validé avec le travail métier : déjà journalisé et enregistré, il part tel quel.
+    if (error instanceof CommittedProblem && recorded) return send(res, recorded);
     const problem = resolveProblem(error);
     if (recorded) {
       // Le travail métier et sa réponse sont validés : la réponse enregistrée fait foi.
@@ -106,14 +131,20 @@ export class IdempotencyInterceptor implements NestInterceptor {
       throw error;
     }
     // Erreur 4xx : réponse définitive, enregistrée telle que le filtre l'aurait produite, puis rejouée à l'identique.
+    const response = this.problemResponse(error, req);
+    await this.repository.completeAlone(reservation, response);
+    return send(res, response);
+  }
+
+  /** Réponse problème enregistrée (même forme que le filtre), après journalisation. */
+  private problemResponse(error: unknown, req: Request): StoredResponse {
+    const problem = resolveProblem(error);
     logProblem(error, problem, req);
-    const response: StoredResponse = {
+    return {
       status: problem.status,
       body: problemBody(problem, req, this.config),
       headers: { 'Content-Type': PROBLEM_CONTENT_TYPE },
     };
-    await this.repository.completeAlone(reservation, response);
-    return send(res, response);
   }
 
   private tenant(): TenantContextProvider {

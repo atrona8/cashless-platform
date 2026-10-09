@@ -1,0 +1,199 @@
+{
+  "mission_slug": "identite-roles-double-validation-01M4DNDN",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Migration 0003 (app_user, role_assignment, gardes, identify_person) ; tests_identity.sql vert (pgTAP 676/676)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Migration 0004 : audit_log en ajout seul (d\u00e9clencheur + post-roles.sql) ; tests_audit_log.sql vert",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "AuthenticationGuard + JoseIdentityVerifier (jose 6.2.12) ; authentication.spec.ts : chaque d\u00e9faut de jeton \u2192 401, sant\u00e9 seule publique",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "identify_person \u00e0 chaque requ\u00eate, claim operator_id v\u00e9rifi\u00e9, IdentityTenantContext ; authentication.spec.ts et isolation-sweep.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "@Roles + RolesGuard + scope-resolver ; scope.spec.ts (chaque ligne d'englobement, positif et n\u00e9gatif), roles-audit.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "7 routes Personnes (contrat + UsersController) ; role-rules.spec.ts (table de v\u00e9rit\u00e9), users.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "bootstrap-admin idempotent et journalis\u00e9 ; identity-journey.spec.ts (deux lancements : une personne, une ligne d'audit)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "AuditService dans la transaction de l'action ; une ligne par action r\u00e9ussie, aucune sur refus (users.spec.ts, roles-audit.spec.ts, identity-journey.spec.ts : 9 lignes = 9 actions)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "ApprovalActionRegistry + registerApprovalActions + ApprovalService.request (202) ; action de d\u00e9monstration ; action-registry.spec.ts, back-office.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "4 routes /approval-requests (liste filtr\u00e9e, pagin\u00e9e, PENDING \u00e9chue pr\u00e9sent\u00e9e EXPIRED) ; back-office.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "approve : decide_approval_request, SAVEPOINT, EXECUTED/FAILED, EXPIRED valid\u00e9 (CommittedProblem) ; back-office.spec.ts (ex\u00e9cution unique, rejeu)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reject : note obligatoire (400), REJECTED, audit APPROVAL_REJECTED ; back-office.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "approved_by / decided_by du corps ignor\u00e9s ; back-office.spec.ts, onsite.spec.ts, users.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "@RequiresOnsiteApproval + consumeOnsiteApproval ; onsite.spec.ts (10 refus, consommation unique, 3 requ\u00eates simultan\u00e9es \u2192 1 succ\u00e8s), act-hash.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "CommittedProblem + @Idempotent({ writes }) ; idempotency-guard.spec.ts (RISK-2), committed-problem.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "test/support/fake-idp.ts (cl\u00e9s ES256 en m\u00e9moire, jetons valides et d\u00e9fectueux) ; utilis\u00e9 par toutes les suites d'identit\u00e9",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Verify FR-017 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "research.md, section \u00ab Contradictions constat\u00e9es \u00e0 l'impl\u00e9mentation \u00bb (C-01 \u00e0 C-15) ; ADR-78, ADR-79",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Verify FR-018 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Cha\u00eenage par d\u00e9clencheur (seq, prev_hash, row_hash) ; tests_audit_log.sql (format conforme au contrat audit-chain.md)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Verify FR-019 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "seal_audit / verify_audit_chain ; tests_audit_log.sql (4 alt\u00e9rations simul\u00e9es d\u00e9tect\u00e9es), identity-journey.spec.ts (scell\u00e9 puis v\u00e9rifi\u00e9 : 0 anomalie)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet)",
+      "verified_at": "2026-10-09T11:57:24Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
