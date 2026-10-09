@@ -1970,6 +1970,144 @@ export type webhooks = {
         patch?: never;
         trace?: never;
     };
+    "/operators/{operator_id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les personnes du personnel d'un prestataire
+         * @description Personnes du prestataire du chemin, triées par date de création. Rôles : `PLATFORM_ADMIN`,
+         *     `OPERATOR_ADMIN` du prestataire, `ORGANIZER_ADMIN` (limité aux personnes qui ont une attribution sur son
+         *     organisateur ou ses événements, et à celles qu'il a créées).
+         */
+        get: operations["listUsers"];
+        put?: never;
+        /**
+         * Créer une personne du personnel
+         * @description Enregistre une personne connue du serveur d'identité (émetteur et sujet du jeton) dans le prestataire du
+         *     chemin, sans rôle ; les rôles sont donnés ensuite par `grantRole`. (Émetteur, sujet) déjà connu :
+         *     `409 CONFLICT_STATE`. Journalisé (`USER_CREATED`). Rôles : comme `listUsers`.
+         */
+        post: operations["createUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consulter une personne et ses attributions actives */
+        get: operations["getUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/users/{user_id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Désactiver une personne
+         * @description Définitif : la personne ne peut plus s'authentifier (`401` dès la requête suivante) ; ses attributions sont
+         *     conservées pour l'historique. Désactiver le dernier `PLATFORM_ADMIN` : `403 FORBIDDEN`. Déjà désactivée :
+         *     `409 CONFLICT_STATE`. Journalisé (`USER_DISABLED`). Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["disableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/users/{user_id}/role-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attribuer un rôle sur une portée
+         * @description Qui peut attribuer quoi : `PLATFORM_ADMIN` → `OPERATOR_ADMIN` (prestataire) ; `OPERATOR_ADMIN` →
+         *     `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN` dans son prestataire ;
+         *     `ORGANIZER_ADMIN` → `SUPERVISOR`, `CASHIER` sur son organisateur ou ses événements, `MERCHANT_ADMIN` sur les
+         *     commerçants qui participent à ses événements. Jamais à soi-même (`403`). Droit insuffisant : `403`. Rôle et
+         *     portée incompatibles, `VENDOR` ou `CUSTOMER` : `422 VALIDATION_FAILED`. Attribution active identique :
+         *     `409 CONFLICT_STATE`. `PLATFORM_ADMIN` se donne par `createPlatformAdmin`. Journalisé (`ROLE_GRANTED`).
+         */
+        post: operations["grantRole"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/role-assignments/{assignment_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retirer une attribution de rôle
+         * @description Même droit que pour attribuer ce rôle sur cette portée ; jamais sa propre attribution (`403`). Déjà retirée :
+         *     `409 CONFLICT_STATE`. Retirer le dernier `PLATFORM_ADMIN` : `403 FORBIDDEN`. Journalisé (`ROLE_REVOKED`).
+         */
+        post: operations["revokeRole"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Créer un administrateur de la plateforme
+         * @description Crée une personne de la plateforme (sans prestataire) et son attribution `PLATFORM_ADMIN`. Réservé à un
+         *     `PLATFORM_ADMIN`, vérifié en base sur l'attribution active de l'appelant. Le premier administrateur est
+         *     créé par la commande d'amorçage (`bootstrap-admin`), hors API. (Émetteur, sujet) déjà connu :
+         *     `409 CONFLICT_STATE`. Journalisé (`PLATFORM_ADMIN_CREATED`). Sans `Idempotency-Key` : une personne de la
+         *     plateforme n'a pas de prestataire, auquel toute clé d'idempotence est rattachée ; un rejeu est sans effet,
+         *     puisque (émetteur, sujet) est unique (`409 CONFLICT_STATE`).
+         */
+        post: operations["createPlatformAdmin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type components = {
     schemas: {
@@ -3732,6 +3870,126 @@ export type components = {
             created_at: components["schemas"]["Timestamp"];
             reject_reason?: string;
         };
+        /**
+         * @description Rôles du personnel (SPECIFICATION §3.2). `VENDOR` et `CUSTOMER` existent mais ne sont pas attribuables par
+         *     `grantRole` dans cette version.
+         * @enum {string}
+         */
+        StaffRole: "PLATFORM_ADMIN" | "OPERATOR_ADMIN" | "ORGANIZER_ADMIN" | "SUPERVISOR" | "CASHIER" | "MERCHANT_ADMIN" | "VENDOR" | "CUSTOMER";
+        /**
+         * @description Portée d'une attribution. Englobement : `PLATFORM` ⊃ `OPERATOR` ⊃ `ORGANIZER` ⊃ `EVENT` ; `OPERATOR` ⊃
+         *     `MERCHANT` ; un événement englobe les commerçants qui y participent.
+         * @enum {string}
+         */
+        RoleScopeType: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "EVENT" | "MERCHANT";
+        /**
+         * @example {
+         *       "assignment_id": "2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f",
+         *       "role": "CASHIER",
+         *       "scope_type": "EVENT",
+         *       "scope_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+         *       "granted_by": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+         *       "granted_at": "2026-12-10T08:30:00Z",
+         *       "revoked_at": null
+         *     }
+         */
+        RoleAssignment: {
+            /** Format: uuid */
+            assignment_id: string;
+            role: components["schemas"]["StaffRole"];
+            scope_type: components["schemas"]["RoleScopeType"];
+            /**
+             * Format: uuid
+             * @description Objet de la portée ; `null` pour `PLATFORM`.
+             */
+            scope_id: string | null;
+            /**
+             * Format: uuid
+             * @description Personne qui a attribué le rôle ; `null` pour l'amorçage.
+             */
+            granted_by: string | null;
+            granted_at: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            revoked_at: string | null;
+        };
+        /**
+         * @description Un champ `approved_by` ou tout autre champ inconnu est ignoré.
+         * @example {
+         *       "role": "CASHIER",
+         *       "scope_type": "EVENT",
+         *       "scope_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d"
+         *     }
+         */
+        RoleGrant: {
+            role: components["schemas"]["StaffRole"];
+            scope_type: components["schemas"]["RoleScopeType"];
+            /** Format: uuid */
+            scope_id?: string | null;
+        };
+        /**
+         * @description Personne connue du serveur d'identité : `issuer` et `subject` sont les claims `iss` et `sub` de ses jetons.
+         *     `email` ou `phone` (E.164) obligatoire. Tout champ inconnu est ignoré.
+         * @example {
+         *       "issuer": "https://id.cashless.test",
+         *       "subject": "6f1c2b8e-3d4a-4f5b-8c9d-0e1f2a3b4c5d",
+         *       "display_name": "Awa Ndiaye",
+         *       "email": "awa.ndiaye@festival.test"
+         *     }
+         */
+        StaffUserCreate: {
+            issuer: string;
+            subject: string;
+            display_name: string;
+            /** Format: email */
+            email?: string;
+            phone?: string;
+        };
+        /**
+         * @example {
+         *       "user_id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+         *       "operator_id": "7c0e1a52-0000-4000-8000-000000000001",
+         *       "issuer": "https://id.cashless.test",
+         *       "subject": "6f1c2b8e-3d4a-4f5b-8c9d-0e1f2a3b4c5d",
+         *       "email": "awa.ndiaye@festival.test",
+         *       "phone": null,
+         *       "display_name": "Awa Ndiaye",
+         *       "status": "ACTIVE",
+         *       "created_at": "2026-12-10T08:00:00Z",
+         *       "disabled_at": null,
+         *       "role_assignments": [
+         *         {
+         *           "assignment_id": "2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f",
+         *           "role": "CASHIER",
+         *           "scope_type": "EVENT",
+         *           "scope_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+         *           "granted_by": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+         *           "granted_at": "2026-12-10T08:30:00Z",
+         *           "revoked_at": null
+         *         }
+         *       ]
+         *     }
+         */
+        StaffUser: {
+            /** Format: uuid */
+            user_id: string;
+            /**
+             * Format: uuid
+             * @description Prestataire ; `null` pour une personne de la plateforme.
+             */
+            operator_id: string | null;
+            issuer: string;
+            subject: string;
+            email?: string | null;
+            phone?: string | null;
+            display_name: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "DISABLED";
+            created_at: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            disabled_at: string | null;
+            /** @description Attributions actives. */
+            role_assignments: components["schemas"]["RoleAssignment"][];
+        };
     };
     responses: {
         /** @description Requête invalide (`VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REQUIRED`…). */
@@ -3954,6 +4212,10 @@ export type components = {
          */
         ApprovalToken: string;
         ApprovalRequestId: string;
+        /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+        OperatorId: string;
+        UserId: string;
+        AssignmentId: string;
         /**
          * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
          *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
@@ -8507,6 +8769,308 @@ export interface operations {
                 };
                 content?: never;
             };
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de personnes. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StaffUser"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createUser: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffUserCreate"];
+            };
+        };
+        responses: {
+            /** @description Personne créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/users/{user_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUser"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getUser: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Personne. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUser"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    disableUser: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Personne désactivée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUser"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    grantRole: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleGrant"];
+            };
+        };
+        responses: {
+            /** @description Attribution créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/users/{user_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAssignment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    revokeRole: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                assignment_id: components["parameters"]["AssignmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attribution retirée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAssignment"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createPlatformAdmin: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffUserCreate"];
+            };
+        };
+        responses: {
+            /** @description Administrateur de la plateforme créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUser"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
         };
     };
 }
