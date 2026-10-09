@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP10",
+  "captured_at": "2026-10-09T11:41:36Z",
+  "base_branch": "feat/identite-roles",
+  "base_commit": "e74eb0d81a281f6f71df721e861948df0e4f1808",
+  "test_runner": "pytest",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<gate-coverage-junit>",
+      "error": "no JUnit XML artifact produced by the scoped run",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
