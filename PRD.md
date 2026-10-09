@@ -144,8 +144,8 @@ interface commune ; types TypeScript et Dart générés depuis `openapi.yaml`.
 
 - **Stack** (§1.2) : API NestJS (TypeScript) ; PostgreSQL ≥ 17 sur AWS RDS ; back-office React/Next.js ;
   apps terminal et festivalier en Flutter ; passerelle NestJS en Docker ; monorepo imposé (§2.1).
-  Versions et choix d'implémentation : `docs/08-pile-logicielle.md` (document du porteur du 09/10/2026, en partie
-  divergent des sources normatives : arbitrage en attente, OP-N39).
+  Versions et choix d'implémentation : `docs/08-pile-logicielle.md` (référence arrêtée le 09/10/2026, ADR-78 :
+  l'existant prime ; Redis, Prisma, Fastify et Nginx écartés).
 - **Architecture** (§2.2) : point d'écriture unique `post_transaction` ; fonctions métier en base ;
   `set_config('app.operator_id', …, true)` par transaction ; idempotence partout ; types générés ; région paramétrable ; UTC.
 - **Performance** (§15) : 200 terminaux, 50 ventes/s site, 20/s stand, démontrés à deux fois ; serveur seul p95 ≤ 200 ms ;

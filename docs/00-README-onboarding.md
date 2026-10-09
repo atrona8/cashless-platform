@@ -32,8 +32,7 @@ Le besoin est résumé dans `PRD.md` à la racine.
    vue d'ensemble par domaine et conventions transverses (complète Swagger/
    OpenAPI sans le dupliquer).
 7. **[Pile logicielle](./08-pile-logicielle.md)** — logiciels et versions retenus, choix d'implémentation
-   (HTTP, erreurs, pagination, idempotence, limitation de débit, base locale mobile) et divergences avec les
-   sources normatives en attente d'arbitrage.
+   (HTTP, erreurs, pagination, idempotence, limitation de débit, base locale mobile), arrêtés par ADR-78.
 
 ## Vue visuelle par mission
 

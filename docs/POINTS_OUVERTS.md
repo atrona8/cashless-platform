@@ -19,7 +19,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N13 | Algorithme de signature des snapshots | Non | Non | Agent (vérification technique) |
 | OP-N36 | Capture différée dans la cible V2 (reporté au cadrage V2) | Non | Non | Porteur du projet, avec le premier partenaire de caisse |
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
-| OP-N39 | Pile logicielle du porteur (09/10/2026) : divergences D1-D19 avec les sources normatives et le code | Non | Non | Porteur du projet |
+| OP-N40 | Durée de conservation des clés d'idempotence : 30 jours au contrat, 24 h codées | Non | Non | Porteur du projet |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -58,19 +58,12 @@ Aucun depuis le 2 octobre 2026 (OP-B1 : ADR-70 ; OP-B2 : ADR-66).
 - **Question.** Combien de temps garder les historiques des festivaliers identifiés, pays par pays ?
 - **Défaut codé.** Écritures comptables : 5 ans (à confirmer) ; données personnelles anonymisées 13 mois après la dernière activité. Paramètre `rules.retention_days`. **Bloque la production.**
 
-### OP-N39 — Pile logicielle transmise par le porteur (9 octobre 2026)
+### OP-N40 — Durée de conservation des clés d'idempotence
 
-- **Question.** Le document « Pile logicielle » du porteur (reproduit dans `08-pile-logicielle.md`) contredit des
-  sources normatives : PostgreSQL 16 au lieu de 17 (D1), erreurs `{ success, error }` au lieu de RFC 9457 (D2),
-  pagination `page`/`per_page` au lieu du curseur (D3), idempotence en Redis 24 h au lieu de la base (D4), Prisma
-  au lieu des fonctions SQL sans ORM (D6), clé de la base locale tirée du PIN au lieu de l'Android Keystore (D11) ;
-  et des choix déjà livrés : Express au lieu de Fastify (D7, le document se trompe aussi sur Fastify 5 et
-  NestJS 11), `jose` 6 au lieu de 5 (D8), TypeScript 5.9 au lieu de 5.8 (D9). Points à préciser : D12, D15 à D18.
-  Constat lié : rétention de l'idempotence, 30 jours au contrat contre 24 h codées (D19).
-- **Défaut codé.** Les sources normatives et les versions déjà épinglées (règle §0.3). Recommandation : garder
-  D1-D11 tels que codés, adopter le reste du document (versions des fronts et de Flutter, observabilité, TLS).
-- **Qui décide.** Porteur du projet. Une décision qui retient une option du document pour D1 à D11 exige une fiche
-  ADR et une mise à jour de la SPEC ou du contrat avant le code.
+- **Question.** `openapi.yaml` (paramètre `IdempotencyKey`) dit « conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre) » ; la mission 1 a codé 24 h par défaut pour les clés applicatives (`IDEMPOTENCY_TTL_HOURS`, `api_idempotency.expires_at`). Contradiction entre le contrat et le code, relevée le 9 octobre 2026 (ADR-78, D19).
+- **Défaut codé.** 24 h, paramétrable. Les clés des terminaux ne sont pas concernées (clé du grand livre, conservée).
+- **Options.** (A) passer le défaut à 30 jours (720 h) pour suivre le contrat ; (B) corriger le contrat à 24 h. Recommandation : A (le contrat fait foi, coût de stockage faible).
+- **Qui décide.** Porteur du projet.
 
 ### OP-N13 — Algorithme de signature des snapshots
 
@@ -123,6 +116,7 @@ Aucun depuis le 2 octobre 2026 (OP-B1 : ADR-70 ; OP-B2 : ADR-66).
 
 | Point | Décision | Date | Fiche |
 |---|---|---|---|
+| OP-N39 Pile logicielle | L'existant prime : PostgreSQL 17, RFC 9457, curseur, idempotence en base, sans ORM, Express, jose 6 ; le reste du document du porteur devient la cible (`08-pile-logicielle.md`) | 9 octobre 2026 | ADR-78 |
 | OP-N1 Catalogue | Option B : prix TTC fixe, catégories, un taux de taxe par article ; ni variantes, ni remises, ni stock en V1 | 30 septembre 2026 | ADR-35 |
 | OP-B1 Paiements | Comptes marchands au détenteur des fonds (A) ; Wave et Orange Money en direct (M3) ; carte configurée par organisateur : agrégateur local (PayDunya) ou PSP international (Stripe) | 2 octobre 2026 | ADR-70 |
 | OP-B2 Codes à usage unique | WhatsApp d'abord, SMS en repli avec deux fournisseurs SMS (options C et D combinées) ; fournisseurs à choisir sur devis | 2 octobre 2026 | ADR-66 |

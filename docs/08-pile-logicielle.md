@@ -1,108 +1,94 @@
 # Pile logicielle et choix d'implémentation
 
-> Source : document transmis par le porteur du projet le 09/10/2026 (reproduit ci-dessous), confronté le même jour
-> aux sources normatives (`SPECIFICATION.md`, `openapi.yaml`, schéma SQL) et au code déjà livré (missions 1 et 2).
+> **Référence arrêtée le 09/10/2026** (ADR-78). Origine : document « Pile logicielle » du porteur du projet,
+> confronté aux sources normatives et au code livré ; le porteur a décidé de **prioriser l'existant** : là où son
+> document divergeait de la SPECIFICATION, du contrat `openapi.yaml` ou du code déjà livré, c'est l'existant qui
+> est retenu. Les éléments du document sans conflit sont repris tels quels comme cible des missions à venir.
 >
-> **Statut : référence cible, à arbitrer.** La règle de priorité de SPECIFICATION §0.3 s'applique : tests
-> exécutables > schéma SQL, `openapi.yaml`, `sync_protocol.md` > SPECIFICATION > `PRD.md`. Ce document, apporté
-> après coup, n'a pas plus de poids que `PRD.md` : là où il contredit une source normative (divergences D1 à D8
-> ci-dessous), **la source normative reste appliquée** jusqu'à décision du porteur (point ouvert OP-N39). Là où il
-> ne contredit rien (versions des fronts et des apps Flutter, observabilité…), il devient la référence des missions
-> concernées.
+> Toute nouvelle dépendance reste soumise à la vérification faite pour `jose` (registre officiel, mainteneur,
+> scripts d'installation, ancienneté de la version, intégrité dans le lockfile) et est épinglée à la version exacte.
 
-Légende de la colonne « Dépôt » : ✅ conforme · ⚠️ écart mineur · ❌ divergence (voir §3) · ➕ ajout compatible
-(pas encore utilisé) · — sans objet pour l'instant.
+Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à introduire par la mission indiquée) ·
+**écarté** (proposé puis écarté par ADR-78, avec la raison).
 
-## 1. Pile logicielle du serveur (backend)
+## 1. Serveur (API centrale et passerelle locale)
 
-| Domaine | Logiciel | Version demandée | Dans le dépôt (09/10/2026) | Dépôt |
+| Domaine | Logiciel | Version | Statut | Remarque |
 |---|---|---|---|---|
-| Runtime | Node.js | 22 LTS | `engines: >=22 <23` ; Node 22.14 | ✅ |
-| Runtime | TypeScript | 5.8 | 5.9.3 (épinglé, mission 1) | ⚠️ D9 |
-| Framework | @nestjs/core | 11.2 | 11.2.7 | ✅ |
-| Framework | @nestjs/platform-fastify / fastify | 11.2 / 4.29 | `@nestjs/platform-express` 11.2.7 (Express) | ❌ D7 |
-| Framework | @nestjs/swagger | 11 | non utilisé (le contrat `openapi.yaml` est écrit à la main et fait foi) | ➕ |
-| Framework | @nestjs/jwt, @nestjs/passport | 11 / 11 | non utilisés : vérification OIDC par `jose` (mission 2, R-01) | ⚠️ D10 |
-| Framework | @nestjs/throttler | 6 | non utilisé | ➕ |
-| Base de données | PostgreSQL | 16 | **17** (SPECIFICATION §1.2 « 17 au minimum », ADR-55) | ❌ D1 |
-| Base de données | @prisma/client, prisma | 6.19 | aucun ORM : migrations SQL pures, fonctions SQL appelées par `TenantTx` | ❌ D6 |
-| Base de données | pg | 8.23 | 8.23.1 | ✅ |
-| Cache | Redis / ioredis | 7.2 / 5 | absent | ➕ (voir D4) |
-| Authentification | jose | 5 | **6.2.12** (épinglée et vérifiée, plan de la mission 2) | ⚠️ D8 |
-| Authentification | argon2 | 0.45 | pas encore utilisé ; conforme à S2 (code PIN des vendeurs en argon2id) | ✅ |
-| Validation | zod / class-transformer | 3.25 / 0.5 | non utilisés (validation explicite par route) | ➕ |
-| HTTP sortant | axios | 1 | non utilisé (PSP : mission 6) | ➕ |
-| Observabilité | pino / nestjs-pino | 9.14 / 4 | journal JSON maison (une ligne par requête, `X-Request-Id`) | ➕ |
-| Observabilité | @opentelemetry/sdk-node / auto-instrumentations-node | 0.222 / « 0 » | absent ; « 0 » n'est pas une version exploitable | ⚠️ D18 |
-| Observabilité | AWS CloudWatch | service managé | — | — |
+| Runtime | Node.js | 22 LTS (`engines: >=22 <23`) | en place | |
+| Runtime | TypeScript | 5.9.3 | en place | le document proposait 5.8 |
+| Framework | @nestjs/core, @nestjs/common, @nestjs/platform-express | 11.2.7 | en place | Express ; Fastify écarté (§4) |
+| Base de données | PostgreSQL | **17** (minimum) | en place | SPEC §1.2, ADR-55 (`transaction_timeout`) ; le document proposait 16 |
+| Base de données | pg (pilote) | 8.23.1 | en place | aucun ORM : fonctions SQL appelées par `TenantTx` (SPEC §2.2) |
+| Base de données | pgTAP | — | en place | tests de la base (CI et base locale) |
+| Authentification | jose | 6.2.12 | en place | vérification des jetons OIDC (mission 2) ; le document proposait 5 |
+| Authentification | argon2 | 0.45 | cible (vendeurs, S2) | empreinte argon2id du code PIN des vendeurs |
+| Limitation de débit | @nestjs/throttler | 6 | cible | compteurs en mémoire ; stockage partagé à décider avec le déploiement multi-instance |
+| Validation | zod | 3.25 | cible (facultatif) | les routes livrées valident explicitement ; à adopter route par route si utile |
+| HTTP sortant | axios | 1 | cible (PSP, mission 6) | |
+| Observabilité | pino / nestjs-pino | 9.14 / 4 | cible | remplace le journal JSON maison sans changer son contenu (`X-Request-Id`, une ligne par requête) |
+| Observabilité | @opentelemetry/sdk-node, auto-instrumentations-node | à fixer à l'introduction | cible | le document ne donnait pas de version exploitable pour la seconde |
+| Observabilité | AWS CloudWatch | service managé | cible | |
+| Documentation d'API | @nestjs/swagger | 11 | facultatif | le contrat `openapi.yaml` écrit à la main fait foi ; Swagger ne peut servir qu'à l'afficher |
 
-## 2. Fronts et terminaux
+## 2. Back-office (mission 11)
 
-| Domaine | Logiciel | Version demandée | Dépôt |
-|---|---|---|---|
-| Back-office | Next.js / react, react-dom | 15 / 19 | — (mission 11) ; conforme à SPECIFICATION §1.2 (React, Next.js) |
-| Back-office | tailwindcss / shadcn/ui | 4 / copié dans le projet | — |
-| Back-office | @tanstack/react-query / axios | 5 / 1 | — |
-| Terminaux et app festivalier | Flutter SDK / Dart SDK | 3.32 / 3.8 | — (missions 10, 12) ; conforme à §1.2 (Flutter) |
-| Terminaux | sqflite_sqlcipher / drift | 2 / 2 | — ; voir D12 (deux accès SQLite) |
-| Terminaux | flutter_secure_storage / dio / riverpod | 9 / 5 / 2 | — |
-
-Rubriques « Frontend : framework SPA, composants visuels, framework CSS » du document source : laissées vides par le
-porteur (à compléter).
-
-## 3. Choix d'implémentation demandés
-
-Repris du document source, avec l'état de conformité.
-
-| Sujet | Demandé | Source normative / dépôt | État |
-|---|---|---|---|
-| HTTP | HTTP/2 obligatoire sur les endpoints publics ; HTTP/1.1 seulement pour les rappels internes | rien dans la SPEC ; webhooks PSP entrants = appels externes | ⚠️ D17 |
-| TLS | 1.3 préféré, 1.2 minimum ; certificats AWS Certificate Manager | compatible | ✅ |
-| HSTS | `max-age=31536000; includeSubDomains`, posé par Nginx | Nginx absent de l'architecture (`04-architecture-diagram.md`) | ⚠️ D16 |
-| Style d'API | REST, snake_case, version dans l'URL (`/v1/`) ; préavis 3 mois, dépréciation 6 mois | conforme à `openapi.yaml` | ✅ |
-| Format | JSON exclusivement, `Content-Type: application/json` | erreurs en `application/problem+json` (RFC 9457) | ❌ D2 |
-| Idempotence | `Idempotency-Key` UUID v4 sur les créations, stockée dans Redis 24 h | `openapi.yaml` : clé `<serial>:<seq>` des terminaux = clé du grand livre, conservée au moins 30 jours (terminaux : toujours) ; stockée en base (`api_idempotency`, mission 1) | ❌ D4 |
-| Pagination | `page` / `per_page` (20, max 100), objet `meta` (`total`, `total_pages`) | curseur opaque (`cursor`, `limit` ≤ 200, `next_cursor`, `has_more`) | ❌ D3 |
-| Erreurs | `{ success: false, error: { code, message, details } }` | RFC 9457 `problem+json` avec `code` stable (`ProblemCode`) ; codes SCREAMING_SNAKE_CASE ✅ | ❌ D2 |
-| Limitation de débit | AWS WAF (2000 req / 5 min / IP), API Gateway (100 req/min par clé API, par organisateur), `@nestjs/throttler` (Redis) ; en-têtes `X-RateLimit-*`, `429` + `Retry-After` | `openapi.yaml` : `429` (`RATE_LIMITED`) avec `Retry-After` en `problem+json` ; pas d'en-têtes `X-RateLimit-*` ; pas de clé API pour les personnes ni les terminaux | ⚠️ D15 |
-| Base locale mobile | SQLCipher ; clé dérivée du PIN de l'utilisateur (PBKDF2, 100 000 itérations, sel par appareil) | SPECIFICATION §8.2 (« Stockage local ») : clé SQLCipher **enveloppée par une clé AES-GCM de l'Android Keystore** | ❌ D11 |
-
-## 4. Divergences
-
-### Divergences avec une source normative (la source normative reste appliquée en attendant)
-
-| # | Sujet | Écart | Conséquence si on suivait le document | Recommandation |
-|---|---|---|---|---|
-| D1 | PostgreSQL 16 | SPEC §1.2 et ADR-55 : 17 au minimum, pour `transaction_timeout = 60s` du rôle applicatif (SPEC §13.7), dont dépend la sûreté du scellement ; CI et base locale en 17 | Perte de la borne de durée des transactions (seule la surveillance resterait) | **Garder 17** |
-| D2 | Format des erreurs et « JSON exclusivement » | `openapi.yaml` impose RFC 9457 `application/problem+json` ; déjà implémenté (mission 1) et testé sur toutes les routes | Réécrire le contrat, le filtre d'erreurs et les clients | **Garder problem+json** |
-| D3 | Pagination `page`/`per_page` + `total` | `openapi.yaml` impose le curseur ; un total exact coûte un `count(*)` sous RLS à chaque page | Contrat à changer ; pages instables quand des lignes arrivent | **Garder le curseur** |
-| D4 | Idempotence en Redis, UUID v4, 24 h | Pour un terminal, la clé est `<serial>:<seq>` et devient `journal_transaction.idempotency_key` (conservée pour toujours) ; la réponse doit être enregistrée dans la même transaction que l'écriture (sinon une écriture validée peut perdre sa réponse) | Double écriture possible après une panne entre la base et Redis | **Garder la base** ; Redis possible pour le seul débit (D15) |
-| D6 | Prisma | SPEC §2.2 : les règles sont en fonctions SQL, NestJS les appelle sans les réimplémenter ; `set_config('app.operator_id', …, true)` par transaction ; mission 1 : accès par `TenantTx` seulement (test d'architecture), `int8` en `BigInt` | Réécrire l'accès aux données ; RLS par transaction plus difficile à garantir | **Pas d'ORM** (décision de la mission 1) |
-| D11 | Clé de la base locale tirée du PIN | SPEC : clé enveloppée par l'Android Keystore. Un terminal sert plusieurs vendeurs et doit conserver son journal hors ligne (de l'argent) quel que soit le vendeur connecté | Journal illisible après un changement ou un oubli de PIN, donc ventes hors ligne perdues ; 100 000 itérations PBKDF2 à chaque ouverture sur un terminal d'entrée de gamme | **Garder le Keystore** ; le PIN sert à identifier le vendeur, pas à chiffrer |
-
-### Écarts avec le code déjà livré (sans source normative contraire)
-
-| # | Sujet | Écart | Recommandation |
-|---|---|---|---|
-| D7 | Fastify au lieu d'Express | Le dépôt utilise Express (mission 1). **Point factuel à corriger dans le document** : NestJS 11 utilise **Fastify 5** (`@nestjs/platform-fastify` 11 dépend de `fastify` 5) ; c'est Fastify 4 qui n'est plus pris en charge par NestJS 11, pas l'inverse. Passer à Fastify : changement d'adaptateur, middlewares et tests à reprendre | Rester sur Express en V1, sauf besoin de débit démontré par le test de charge (§15) |
-| D8 | jose 5 au lieu de 6 | 6.2.12 retenue et vérifiée (provenance, aucune dépendance) dans le plan de la mission 2 ; la 5 est la branche précédente | Garder 6.2.12 |
-| D9 | TypeScript 5.8 au lieu de 5.9.3 | Version mineure supérieure, compatible | Garder 5.9.3 (ou fixer 5.8 si une contrainte existe) |
-| D10 | @nestjs/jwt + passport | Les jetons sont émis par le serveur d'identité externe (C-005) ; l'API ne fait que vérifier, avec `jose` | Inutiles en V1 |
-
-### Points à préciser
-
-| # | Sujet | Question |
+| Logiciel | Version | Statut |
 |---|---|---|
-| D12 | `sqflite_sqlcipher` **et** `drift` | Deux couches d'accès SQLite différentes ; avec `drift`, SQLCipher passe d'ordinaire par `sqlcipher_flutter_libs`. Laquelle retenir ? |
-| D15 | Limitation de débit | Ajouter `X-RateLimit-*` au contrat : compatible. « API Gateway par clé API, ajustable par organisateur » : les personnes et les terminaux n'ont pas de clé API (jetons OIDC, jetons d'appareil, mTLS) ; à préciser |
-| D16 | Nginx | L'architecture cible (AWS) ne prévoit pas de Nginx ; HSTS peut être posé par le répartiteur de charge ou l'application |
-| D17 | HTTP/2 obligatoire | Les webhooks des PSP (Wave, Orange Money…) sont des appels externes, souvent en HTTP/1.1 : à exclure de l'obligation, comme les rappels internes |
-| D18 | OpenTelemetry | « auto-instrumentations-node : 0 » n'est pas une version ; à fixer avec sdk-node |
-| D19 | Rétention de l'idempotence (constat indépendant du document) | `openapi.yaml` (paramètre `IdempotencyKey`) dit « conservée au moins 30 jours » ; la mission 1 a retenu 24 h par défaut (`IDEMPOTENCY_TTL_HOURS`), comme ce document. **Contradiction non signalée jusqu'ici** : soit le contrat passe à 24 h, soit le défaut passe à 30 jours (720 h) |
+| Next.js | 15 | cible |
+| react / react-dom | 19 | cible |
+| tailwindcss | 4 | cible |
+| shadcn/ui | copié dans le projet (pas de paquet npm) | cible |
+| @tanstack/react-query | 5 | cible |
+| axios | 1 | cible |
+| Types de l'API | générés depuis `openapi.yaml` (`packages/contracts`) | en place |
 
-## 5. Ce qui ne change pas en attendant la décision
+## 3. App terminal et app festivalier (missions 10 et 12)
 
-Les missions en cours et suivantes appliquent les sources normatives pour D1 à D11 et les versions déjà épinglées
-du dépôt. Les versions du §2 (fronts, Flutter) et les ajouts compatibles (➕) servent de référence aux missions qui
-les introduiront ; chaque ajout de dépendance reste soumis à la vérification de provenance faite pour `jose`
-(registre officiel, scripts d'installation, ancienneté de la version, intégrité dans le lockfile).
+| Logiciel | Version | Statut | Remarque |
+|---|---|---|---|
+| Flutter SDK / Dart SDK | 3.32 / 3.8 | cible | |
+| Base locale chiffrée | SQLCipher | cible | une seule couche d'accès à choisir au plan de la mission 12 (`drift` + `sqlcipher_flutter_libs`, ou `sqflite_sqlcipher`) ; pas les deux |
+| flutter_secure_storage | 9 | cible | |
+| dio | 5 | cible | |
+| riverpod | 2 | cible | |
+| Types de l'API | générés en Dart depuis `openapi.yaml` | cible | |
+
+## 4. Choix d'implémentation
+
+| Sujet | Règle retenue | Origine |
+|---|---|---|
+| Style d'API | REST, ressources et champs en snake_case, version dans l'URL (`/v1/`). Nouvelle version majeure annoncée 3 mois à l'avance, ancienne dépréciée sur 6 mois | contrat + document du porteur |
+| Format | JSON (`application/json`) ; erreurs en **RFC 9457 `application/problem+json`** avec un `code` stable en SCREAMING_SNAKE_CASE (`ProblemCode`) | contrat (en place) |
+| Pagination | **Curseur opaque** : `cursor`, `limit` (≤ 200, défaut 50) ; réponse `data`, `next_cursor`, `has_more` ; pas de total | contrat (en place) |
+| Idempotence | `Idempotency-Key` sur toute écriture comptable ou création ; terminaux : `<serial>:<seq>`, qui devient la clé de l'écriture au grand livre ; autres clients : clé libre (UUID conseillé), préfixée par le serveur ; **stockée en base** (`api_idempotency`), réponse enregistrée dans la même transaction que le travail | contrat + mission 1 (en place) |
+| Accès aux données | aucun ORM ; règles métier en fonctions SQL ; `set_config('app.operator_id', …, true)` par transaction (`TenantTx`) | SPEC §2.2 + mission 1 (en place) |
+| HTTP | HTTP/2 sur les points d'entrée publics ; HTTP/1.1 accepté pour les rappels internes **et pour les webhooks entrants des PSP** (appels externes) | document du porteur, ajusté |
+| TLS | 1.3 préféré, 1.2 minimum ; 1.0 et 1.1 désactivés ; certificats AWS Certificate Manager | document du porteur |
+| HSTS | `Strict-Transport-Security: max-age=31536000; includeSubDomains`, posé devant l'application (répartiteur de charge) ; pas de Nginx dans l'architecture | document du porteur, ajusté |
+| Limitation de débit | AWS WAF (2000 requêtes / 5 min / IP) devant le répartiteur ; `@nestjs/throttler` par route (ex. 20 paiements initiés / min, 200 lectures / min) ; dépassement : `429` (`RATE_LIMITED`) en `problem+json` avec `Retry-After`. En-têtes `X-RateLimit-Limit`, `-Remaining`, `-Reset` à ajouter au contrat lors de leur mise en place. Pas de limitation « par clé API » : les personnes et les terminaux n'en ont pas | contrat + document du porteur, ajusté |
+| Base locale mobile | SQLCipher ; clé de la base **enveloppée par une clé AES-GCM de l'Android Keystore** (non exportable), `journal_mode = WAL`, `synchronous = FULL`. Le code PIN identifie le vendeur ; il ne chiffre pas la base | SPEC §8.2 |
+
+## 5. Propositions écartées (ADR-78)
+
+| Proposition du document | Raison |
+|---|---|
+| PostgreSQL 16 | `transaction_timeout` (PostgreSQL 17) exigé pour le rôle applicatif (SPEC §13.7, ADR-55) |
+| Erreurs `{ success: false, error: { code, message, details } }` | Contrat RFC 9457 déjà implémenté et testé sur toutes les routes |
+| Pagination `page` / `per_page` avec `meta.total` | Contrat par curseur ; un total exact coûte un comptage sous RLS à chaque page |
+| Idempotence dans Redis (UUID v4, 24 h) | Une écriture validée doit garder sa réponse : enregistrement dans la même transaction ; la clé d'un terminal est la clé du grand livre |
+| Redis, ioredis | Plus nécessaire sans l'idempotence ; à reconsidérer seulement pour des compteurs de débit partagés |
+| Prisma (ORM et migrations) | Règles en fonctions SQL (SPEC §2.2), migrations SQL pures, accès par `TenantTx` vérifié par un test d'architecture |
+| Fastify 4 (`@nestjs/platform-fastify`) | Express en place. Le document se trompait : NestJS 11 utilise Fastify **5** ; Fastify 4 n'est plus pris en charge |
+| @nestjs/jwt, @nestjs/passport | Les jetons sont émis par le serveur d'identité externe ; l'API ne fait que les vérifier (`jose`) |
+| jose 5 | 6.2.12 en place et vérifiée |
+| TypeScript 5.8 | 5.9.3 en place |
+| Clé SQLCipher dérivée du PIN (PBKDF2) | Un terminal sert plusieurs vendeurs et garde un journal hors ligne qui vaut de l'argent : un PIN changé ou oublié le rendrait illisible |
+| Throttling AWS API Gateway par clé API et par organisateur | Pas de clé API pour les personnes ni les terminaux (jetons OIDC, jetons d'appareil, mTLS) |
+| Nginx pour HSTS | Absent de l'architecture AWS cible |
+
+## 6. Reste ouvert
+
+- **OP-N40 — Durée de conservation des clés d'idempotence** : le contrat dit « au moins 30 jours » (paramètre
+  `IdempotencyKey`), la mission 1 a codé 24 h par défaut (`IDEMPOTENCY_TTL_HOURS`). Contradiction entre deux
+  existants : non tranchée par ADR-78 (voir `POINTS_OUVERTS.md`).

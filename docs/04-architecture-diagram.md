@@ -71,9 +71,9 @@ C4Container
 
 ## Pile logicielle
 
-Logiciels, versions et choix d'implémentation : [`08-pile-logicielle.md`](./08-pile-logicielle.md). Le document du
-porteur (09/10/2026) propose notamment Redis, Fastify, Prisma et Nginx, absents de l'architecture ci-dessus : ils
-n'y entreront qu'après l'arbitrage des divergences (OP-N39).
+Logiciels, versions et choix d'implémentation : [`08-pile-logicielle.md`](./08-pile-logicielle.md), référence
+arrêtée le 09/10/2026 (ADR-78 : l'existant prime). Redis, Fastify, Prisma et Nginx, proposés par le porteur, sont
+écartés ; WAF, `@nestjs/throttler`, pino et OpenTelemetry s'ajouteront avec les missions concernées.
 
 ## Décisions d'architecture notables
 (Décisions déjà prises dans `DECISIONS_ADR.md`, avant toute mission.)
