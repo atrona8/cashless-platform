@@ -31,6 +31,8 @@ Le besoin est résumé dans `PRD.md` à la racine.
 6. **[Référence API](./07-api-reference.md)** — si le projet expose une API,
    vue d'ensemble par domaine et conventions transverses (complète Swagger/
    OpenAPI sans le dupliquer).
+7. **[Pile logicielle](./08-pile-logicielle.md)** — logiciels et versions retenus, choix d'implémentation
+   (HTTP, erreurs, pagination, idempotence, limitation de débit, base locale mobile), arrêtés par ADR-78.
 
 ## Vue visuelle par mission
 
