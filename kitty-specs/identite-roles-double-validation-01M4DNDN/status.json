@@ -121,6 +121,9 @@
       "last_event_id": "01M4G2VG5H9XMNED3G5R94CFSR",
       "last_transition_at": "2026-10-09T10:20:31.793308+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "jose 6.2.12, vérifieur OIDC (RS256/ES256, approbation ≤ 300 s), garde globale + IdentityTenantContext, faux serveur d'identité ; 32 tests identité, suite API 537/537, lint/typecheck verts, démarrage compilé vérifié."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 14324,
