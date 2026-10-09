@@ -155,7 +155,8 @@
       "last_transition_at": "2026-10-09T10:47:05.482858+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ScopeResolver (RLS), @Roles + RolesGuard (rôle exercé), AuditService dans la transaction de l'action, auditContext ; 52 tests identité, suite API 557/557, lint vert."
+        "ScopeResolver (RLS), @Roles + RolesGuard (rôle exercé), AuditService dans la transaction de l'action, auditContext ; 52 tests identité, suite API 557/557, lint vert.",
+        "Revue : chaque ligne d'englobement a un test positif et négatif, participation seulement si déclarée, 404 sur objet étranger, audit écrit avec le client de l'action (échec/refus = aucune ligne), seq chaîné ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
