@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: identite-roles-double-validation-01M4DNDN
 mission_id: 01M4DNDN9WFH5S3TH3QX5TC3JS
-generated_at: '2026-10-09T11:40:01.924740+00:00'
+generated_at: '2026-10-09T11:55:20.799150+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -21,10 +21,10 @@ input_artifacts:
     sha256:
 verdict: ready
 issue_counts:
-  medium: 4
+  low: 3
   high: 0
   critical: 0
-  low: 3
+  medium: 4
   info: 0
 findings:
 - id: I1
