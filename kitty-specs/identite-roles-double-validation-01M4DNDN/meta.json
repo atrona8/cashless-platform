@@ -27,6 +27,7 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "identite-roles-double-validation-01M4DNDN",
+  "status_phase": "1",
   "target_branch": "feat/identite-roles",
   "topology": "coord",
   "vcs": "git",
