@@ -90,6 +90,9 @@
       "last_event_id": "01M4G233TFRN8CJR7Y0MJGRZY1",
       "last_transition_at": "2026-10-09T10:07:12.719469+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0005 (result, approval_token_use), post-roles.sql rejoué par migrate.ts, bootstrap-admin idempotent, 49 assertions pgTAP (660 au total, vertes)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5736,
