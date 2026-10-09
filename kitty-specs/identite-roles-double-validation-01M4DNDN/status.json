@@ -283,7 +283,8 @@
       "last_transition_at": "2026-10-09T11:37:42.936842+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "act_hash, garde @RequiresOnsiteApproval, consommation dans la transaction métier + audit ; tableau des refus couvert à 100 %, concurrence NFR-003 ; suite API 664/664, lint vert."
+        "act_hash, garde @RequiresOnsiteApproval, consommation dans la transaction métier + audit ; tableau des refus couvert à 100 %, concurrence NFR-003 ; suite API 664/664, lint vert.",
+        "Revue : consommation seulement dans IdempotentTx.run (jeton non consommé si le travail échoue), comparaison en temps constant, réponse neutre APPROVAL_INVALID, valideur jamais lu du corps, une seule réussite sur trois requêtes simultanées ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
