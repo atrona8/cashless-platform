@@ -169,7 +169,8 @@
       "last_transition_at": "2026-10-09T10:29:09.747370+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "CommittedProblem validé avec le travail, garde writes (500 + clé relâchée), test d'architecture RISK-2 par le compilateur TS ; suite API 512/512, lint vert."
+        "CommittedProblem validé avec le travail, garde writes (500 + clé relâchée), test d'architecture RISK-2 par le compilateur TS ; suite API 512/512, lint vert.",
+        "Revue : CommittedProblem limité à la transaction métier et documenté (pas de travail partiel), erreurs ordinaires toujours annulées, garde writes journalise IDEMPOTENT_ROUTE_WITHOUT_TX et relâche la clé, test RISK-2 démontré sur fixture fautive ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
