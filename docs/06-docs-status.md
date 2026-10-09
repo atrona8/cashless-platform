@@ -18,6 +18,8 @@
 | Date | Mission / besoin à l'origine de l'ajout | Section de PRD.md enrichie | Entrée correspondante ajoutée à PROMPTS-A-ENVOYER.md ? |
 |---|---|---|---|
 | 07/10/2026 | Découpage initial (structuration de SPECIFICATION.md v1.2) ; décisions de cadrage : toute la V1, pas de code préexistant, app terminal en dernier | (toutes) ; §9 Notes non classées | Oui (Étape 6 initiale) |
+| 08/10/2026 | Mission 2 `identite-roles-double-validation-01M4DNDN` : routes de gestion des personnes et des rôles, amorçage du premier administrateur, OIDC pour l'authentification du personnel | §2.10 Double validation et rôles ; intégrations externes (serveur d'identité) | Oui (slug réel reporté, specify coché) |
+| 08/10/2026 | Question du porteur sur l'intégrité du journal d'audit : chaîne d'empreintes et scellements (mission 2), copie externe (mission 9) | §2.10 ; §2.11 Sécurité | Oui (mission 9 complétée) |
 
 ## Documents globaux
 
@@ -53,6 +55,7 @@
 | Mission | use-case.md | architecture-notes.md | sequence.md |
 |---|---|---|---|
 | `fondations-grand-livre-01M4AY8M` | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) |
+| `identite-roles-double-validation-01M4DNDN` | Nécessaire : Oui · Complet : Partiel (plan) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Partiel (plan) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Partiel (plan) · Agent, par délégation du porteur (08/10/2026) |
 
 ## Légende
 - **Nécessaire ?** : Oui / Non / Non applicable à cette mission
@@ -76,6 +79,7 @@
 | 07/10/2026 | /spec-kitty.plan | `fondations-grand-livre-01M4AY8M` | B-plan | 01,02,04,05,07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json | Mis à jour |
 | 08/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP08-WP14, 14/14 approuvés) | `fondations-grand-livre-01M4AY8M` | B-review | 01,02,04,05,07 ; docs locaux recalés ; spec-index.json ; PROMPTS-A-ENVOYER.md (C-010 caduque) | Mis à jour |
 | 08/10/2026 | spec-kitty accept (local) puis spec-kitty merge (squash, local, sans push) | `fondations-grand-livre-01M4AY8M` | Vérification pré-conclusion | 01,02,04,07 (statut « mergée ») ; spec-index.json ; docs-state.json | Mis à jour |
+| 08/10/2026 | /spec-kitty.plan | `identite-roles-double-validation-01M4DNDN` | B-plan | 01 (domaine Identité ajouté), 02, 04, 05, 07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json | Mis à jour |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
@@ -92,7 +96,8 @@ ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-ro
 ### Missions en attente de doc-check (à surveiller)
 (Liste des missions dont l'addendum post-plan ou post-review n'a pas encore été
 appliqué)
-- Aucune. `fondations-grand-livre-01M4AY8M` : post-plan le 07/10/2026, post-review le 08/10/2026 (avant accept).
+- `identite-roles-double-validation-01M4DNDN` : addendum post-plan appliqué le 08/10/2026 ; **addendum post-review en attente** (avant `spec-kitty accept` / `merge`).
+- `fondations-grand-livre-01M4AY8M` : post-plan le 07/10/2026, post-review le 08/10/2026 (avant accept).
   Écarts plan / implémentation signalés : accès base par `TenantTx.run` (et non `withTenantTx`) ; idempotence du
   moteur vérifiée avant la matrice et les soldes ; lignes du scénario comparées après écriture ; second rejeu sur le
   grand livre `LOCKED` (et non sur une seconde base) ; démarrage par le hook `tsx` ; détail dans `research.md` R-13.
