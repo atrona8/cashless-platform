@@ -1,11 +1,18 @@
 {
-  "derniere_verification_globale": "2026-10-08T11:29:53Z",
+  "derniere_verification_globale": "2026-10-08T12:25:04Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
       "verifie_le": "2026-10-08T11:29:53Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "identite-roles-double-validation-01M4DNDN": {
+      "statut": "en cours",
+      "verifie_le": "2026-10-08T12:25:04Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
       "spec_index_a_jour": true
     }
   }
