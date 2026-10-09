@@ -2,6 +2,7 @@
 // contexte de prestataire tiré de la personne authentifiée (IdentityModule).
 import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { AuditModule } from './audit/audit.module';
 import { DbModule } from './db/db.module';
 import { ProblemFilter } from './errors/problem.filter';
 import { HealthModule } from './health/health.controller';
@@ -10,7 +11,7 @@ import { IdentityModule } from './identity/identity.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 
 @Module({
-  imports: [DbModule, HealthModule, IdempotencyModule, IdentityModule],
+  imports: [DbModule, HealthModule, IdempotencyModule, IdentityModule, AuditModule],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }],
   exports: [IdentityModule],
 })
