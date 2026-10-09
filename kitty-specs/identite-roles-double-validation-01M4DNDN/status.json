@@ -1,19 +1,19 @@
 {
-  "event_count": 44,
-  "last_event_id": "01M4G59EN0JEKAP6Q0C7JYTFTD",
-  "materialized_at": "2026-10-09T11:03:06.144020+00:00",
+  "event_count": 45,
+  "last_event_id": "01M4G5B52DXCKD1ETT8YQ4BHKZ",
+  "materialized_at": "2026-10-09T11:04:01.869104+00:00",
   "mission_number": "",
   "mission_slug": "identite-roles-double-validation-01M4DNDN",
   "mission_type": "",
   "summary": {
-    "approved": 6,
+    "approved": 7,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 3
   },
   "work_packages": {
@@ -177,19 +177,25 @@
       }
     },
     "WP06": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M4G59EN0JEKAP6Q0C7JYTFTD",
-      "last_transition_at": "2026-10-09T11:03:06.144020+00:00",
+      "lane": "approved",
+      "last_event_id": "01M4G5B52DXCKD1ETT8YQ4BHKZ",
+      "last_transition_at": "2026-10-09T11:04:01.869104+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "7 routes Personnes au contrat (types régénérés), create_platform_admin (0006), règles d attribution, service et contrôleurs idempotents avec audit ; 70 tests, suite API 627/627, pgTAP 676, lint vert."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\identite-roles-double-validation-01M4DNDN\\tasks\\WP06-gestion-personnes-roles\\review-cycle-1.md",
+        "reference": "review-cycle://identite-roles-double-validation-01M4DNDN/WP06-gestion-personnes-roles/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 16352,
       "shell_pid_created_at": "1791543774.5956328",
