@@ -14,5 +14,7 @@
   "retain_worktrees": true,
   "slug": "identite-roles-double-validation-01M4DNDN",
   "target_branch": "feat/identite-roles",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-08T14:02:35.873815+00:00"
 }
