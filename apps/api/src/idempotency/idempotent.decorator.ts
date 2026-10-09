@@ -8,6 +8,12 @@ export const IDEMPOTENT = Symbol('IDEMPOTENT');
 export interface IdempotentOptions {
   /** Portée de la clé : `app:`, `bo:`, `pos:<client_id>:` ou `device:<serial>` (calculée depuis la requête). */
   scope: string | ((req: Request) => string);
+  /**
+   * Route qui écrit (défaut : `true`) : elle doit passer par `IdempotentTx.run`. Si le contrôleur rend sa valeur sans
+   * l'avoir appelé, la requête échoue en 500 et la clé est relâchée (RISK-2 de la mission 1). `false` : la réponse
+   * est enregistrée seule, sans transaction métier.
+   */
+  writes?: boolean;
 }
 
 /** Route d'écriture : `Idempotency-Key` obligatoire, réponse enregistrée et rejouée (SPECIFICATION §10.2). */
