@@ -187,7 +187,8 @@
       "last_transition_at": "2026-10-09T11:04:01.869104+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "7 routes Personnes au contrat (types régénérés), create_platform_admin (0006), règles d attribution, service et contrôleurs idempotents avec audit ; 70 tests, suite API 627/627, pgTAP 676, lint vert."
+        "7 routes Personnes au contrat (types régénérés), create_platform_admin (0006), règles d attribution, service et contrôleurs idempotents avec audit ; 70 tests, suite API 627/627, pgTAP 676, lint vert.",
+        "Revue : table de vérité canGrant complète (positif et négatif), aucune escalade ORGANIZER_ADMIN, auto-attribution 403, doublons 409, 404 hors prestataire, audit exact par action et aucun sur refus, create_platform_admin ne croit que la base ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
