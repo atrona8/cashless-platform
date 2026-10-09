@@ -282,6 +282,9 @@
       "last_event_id": "01M4G76A7441NTJW5TZYES8A0V",
       "last_transition_at": "2026-10-09T11:36:20.452058+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "act_hash, garde @RequiresOnsiteApproval, consommation dans la transaction métier + audit ; tableau des refus couvert à 100 %, concurrence NFR-003 ; suite API 664/664, lint vert."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 18460,
