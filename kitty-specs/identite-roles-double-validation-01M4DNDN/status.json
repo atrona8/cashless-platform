@@ -91,7 +91,8 @@
       "last_transition_at": "2026-10-09T10:09:07.355612+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Migration 0005 (result, approval_token_use), post-roles.sql rejoué par migrate.ts, bootstrap-admin idempotent, 49 assertions pgTAP (660 au total, vertes)."
+        "Migration 0005 (result, approval_token_use), post-roles.sql rejoué par migrate.ts, bootstrap-admin idempotent, 49 assertions pgTAP (660 au total, vertes).",
+        "Revue : droits effectifs vérifiés par has_*_privilege après post-roles.sql, result limité à EXECUTED (garde inchangée), approval_token_use ajout seul + RLS + consommation unique, amorçage idempotent vérifié deux fois ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
