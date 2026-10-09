@@ -78,5 +78,79 @@
       "Durées du rôle applicatif (60 s / 30 s / 10 s) vérifiées"
     ],
     "source": "kitty-specs/fondations-grand-livre-01M4AY8M/spec.md"
+  },
+  {
+    "mission": "identite-roles-double-validation-01M4DNDN",
+    "titre_cas_usage": "Identité, rôles et double validation",
+    "statut": "en cours",
+    "user_stories": [
+      {
+        "titre": "Agir dans son seul prestataire",
+        "detail": "En tant que personne du personnel connectée par le serveur d'identité, je veux que l'API me reconnaisse, déduise mon prestataire et mes rôles de la plateforme et ne m'expose que les données de mon prestataire."
+      },
+      {
+        "titre": "Gérer personnes et rôles, tout tracé",
+        "detail": "En tant qu'administrateur, je veux créer et désactiver des personnes et leur attribuer ou retirer un rôle sur une portée, chaque action étant inscrite au journal d'audit."
+      },
+      {
+        "titre": "Action à deux au back-office",
+        "detail": "En tant qu'auteur, je veux qu'une action sensible crée une demande figée (202) qu'une seconde personne au bon rôle approuve (exécution unique) ou refuse avec une note."
+      },
+      {
+        "titre": "Validation sur place au guichet",
+        "detail": "En tant que caissier, je veux qu'une seconde personne présente valide une opération sensible par un jeton d'approbation à usage unique lié à cette requête."
+      },
+      {
+        "titre": "Réponse enregistrée avec le travail",
+        "detail": "En tant qu'équipe, je veux qu'une route d'écriture idempotente qui écrit hors de la transaction idempotente soit détectée par un test (RISK-2)."
+      }
+    ],
+    "entites_cles": [
+      "Personne (app_user)",
+      "Attribution de rôle",
+      "Journal d'audit chaîné",
+      "Scellement d'audit",
+      "Demande d'approbation",
+      "Jeton d'approbation"
+    ],
+    "resultat_mesurable": "100 % des requêtes sans identité valide refusées ; 0 accès inter-prestataires ; 0 action à deux exécutée par une seule personne ; 100 % des actions d'administration et étapes d'action à deux journalisées ; 100 % des altérations simulées du journal détectées",
+    "hypotheses": [
+      "Produit de serveur d'identité choisi plus tard (OIDC standard)",
+      "Personnes créées par un administrateur à partir de leur identifiant OIDC",
+      "Festivaliers et vendeurs hors mission",
+      "Actions métier à deux branchées par les missions suivantes"
+    ],
+    "contraintes": [
+      "Valideur jamais pris dans la requête (ADR-74)",
+      "Contraintes valideur ≠ auteur de la base intactes",
+      "Aucun mot de passe dans l'API",
+      "Migrations avec RLS forcée et pgTAP",
+      "Aucune fonction interne rendue au rôle applicatif"
+    ],
+    "cas_limites": [
+      "Personne désactivée avec un jeton encore valide",
+      "Retrait du dernier PLATFORM_ADMIN refusé",
+      "Auto-attribution refusée",
+      "Approbation d'une demande expirée : EXPIRED validé puis 409",
+      "Même jeton d'approbation en double requête simultanée : un seul succès",
+      "Clés publiques du serveur d'identité injoignables : 503"
+    ],
+    "fonctionnel": [
+      "Authentification OIDC",
+      "Rôles par portée",
+      "Gestion des personnes et des rôles",
+      "Amorçage du premier administrateur",
+      "Journal d'audit chaîné et scellé",
+      "Demandes d'approbation et exécution unique",
+      "Jeton d'approbation sur place",
+      "Garde de la transaction idempotente"
+    ],
+    "non_fonctionnel": [
+      "Isolation entre prestataires",
+      "Vérification d'un jeton ≤ 5 ms au p95",
+      "Détection de 100 % des altérations simulées du journal",
+      "Non-régression de la mission 1"
+    ],
+    "source": "kitty-specs/identite-roles-double-validation-01M4DNDN/spec.md"
   }
 ]
