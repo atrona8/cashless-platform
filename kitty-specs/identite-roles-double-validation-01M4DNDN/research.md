@@ -123,3 +123,26 @@ consignés en Decision Moments (`decisions/`).
 
 - Terminaux, vendeurs, codes PIN (S2, S5) ; festivaliers et OTP (S17, `/customer-auth`) ; produit de serveur
   d'identité de production ; tâche de scellement et copie externe (mission 9) ; actions métier à deux.
+
+## Contradictions constatées à l'implémentation (FR-017)
+
+Signalées sans choix silencieux (SPECIFICATION §0.3). « Décision » = ce qui est appliqué dans le code.
+
+| # | Constat | Sources en présence | Décision |
+|---|---|---|---|
+| C-01 | `result` de la demande d'approbation | `openapi.yaml` (`ApprovalRequest.result`) / schéma (`approval_request` sans colonne) | Colonne `result jsonb` ajoutée (migration `0005`, R-02) ; NULL sauf `EXECUTED` |
+| C-02 | « `requested_by` = `sub` de la session » alors que la colonne est un UUID | `openapi.yaml` / schéma | `app_user.id` est l'identité interne écrite partout ; `sub` relie au serveur d'identité (R-03) |
+| C-03 | « le prestataire n'est JAMAIS passé en paramètre » contre les routes `/operators/{operator_id}/…` | Description générale du contrat / R-06 | Exception écrite dans la description du contrat (WP06) : le prestataire du chemin vaut pour un `PLATFORM_ADMIN`, sinon il doit être celui de la personne (404) |
+| C-04 | Rôles et prestataire « dans le claim » du jeton | Section Sécurité du contrat / R-04, R-11 A3 | Rôles et prestataire lus en base à chaque requête ; claim `roles` ignoré, claim `operator_id` seulement vérifié ; section Sécurité corrigée (WP06) |
+| C-05 | « Toute création exige `Idempotency-Key` » contre `POST /platform-admins` | Description du contrat / table `api_idempotency` (`operator_id` NOT NULL) | `createPlatformAdmin` sans clé ; rejeu sans effet grâce à l'unicité (émetteur, sujet) → 409 ; écrit dans le contrat |
+| C-06 | Conservation des clés d'idempotence : « au moins 30 jours » contre 24 h codées | `openapi.yaml` / mission 1 (spec, R-05) | 30 jours par défaut (`IDEMPOTENCY_TTL_HOURS` = 720), ADR-79 (décision du porteur du 09/10/2026) |
+| C-07 | Pile logicielle transmise par le porteur (PostgreSQL 16, erreurs `{success,error}`, pagination par page, idempotence Redis, Prisma, clé SQLCipher tirée du PIN…) | Document du porteur / SPEC, contrat, code | L'existant prime (ADR-78, `docs/08-pile-logicielle.md`) |
+| C-08 | « NestJS : multi-fournisseur `APPROVAL_ACTIONS` » (fiche WP08) | Nest n'a pas de multi-fournisseur | Module dynamique `registerApprovalActions(...)` qui enregistre dans le registre global ; doublon = démarrage refusé |
+| C-09 | « Aucune requête hors `TenantTx.run` » (mission 1) | Besoins de la mission 2 | Deux exceptions documentées dans `TenantTx` : `identify` (lecture seule, `identify_person`) et `withoutTenant` (seulement `create_platform_admin`) |
+| C-10 | Retrait et désactivation d'un `PLATFORM_ADMIN` | FR-006 (dernier administrateur) / routes du contrat | Aucune route ne les atteint (personne de plateforme invisible des routes d'un prestataire : 404) ; la règle du dernier administrateur reste garantie en base ; route de gestion de la plateforme à prévoir |
+| C-11 | Rôle propriétaire des migrations et de l'amorçage | Kit (RLS forcée + fonctions SECURITY DEFINER) | Le propriétaire des tables doit contourner la RLS (super-utilisateur ou `BYPASSRLS`), comme le suppose déjà le schéma ; vrai aussi pour `bootstrap-admin` |
+| C-12 | `CL001` traduit `422 VALIDATION_FAILED` partout | Table SQLSTATE de la mission 1 / contrat (`FORBIDDEN` pour le dernier `PLATFORM_ADMIN`, l'acteur non autorisé de `create_platform_admin`) | Traduction locale en `403` aux seuls appels concernés |
+| C-13 | Garde de `approval_request` avant la contrainte `result` | Schéma | Un `result` posé hors passage est refusé par la garde (`CL023`) avant la contrainte (`23514`) ; tests ajustés, rien à changer |
+| C-14 | Suites pgTAP de référence et données des tests Jest | Kit / mission 1 | Les 400 assertions de référence exigent une base vide : pgTAP avant Jest (ordre de la CI) ; rappelé dans `.github/CI.md` |
+| C-15 | Contrat : routes « Personnes » insérées sous `webhooks:` (défaut de WP06) | `openapi.yaml` | Révélé par le balayage d'isolation de WP10 (routes lues dans le contrat), déplacées sous `paths:` |
+
