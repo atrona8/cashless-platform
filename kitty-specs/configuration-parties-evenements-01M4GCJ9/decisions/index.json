@@ -1,0 +1,105 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-09T13:11:35.525486Z",
+      "decision_id": "01M4GCMQB52DJ4KAEWZYW98SXE",
+      "final_answer": "API seule, hors PSP (S26/S26b), catalogues (S18) et politiques hors ligne",
+      "input_key": "scope_boundaries",
+      "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+      "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+      "opened_by": "cli",
+      "options": [
+        "API seule, hors PSP/catalogues/hors ligne",
+        "API + configuration PSP",
+        "API + catalogues",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "P\u00e9rim\u00e8tre de la mission 3 : API back-office seule (sans \u00e9cran), hors configuration PSP (S26/S26b), catalogues (S18) et politiques hors ligne ?",
+      "rationale": null,
+      "resolved_at": "2026-10-09T13:15:20.738647Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.boundaries",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-09T13:11:39.300336Z",
+      "decision_id": "01M4GCMV14591C0GYDNPANNYF6",
+      "final_answer": "R\u00f4le de base distinct (lettre de \u00a72.2) : second r\u00f4le PostgreSQL et pool r\u00e9serv\u00e9s aux tables de niveau plateforme",
+      "input_key": "platform_writes",
+      "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+      "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+      "opened_by": "cli",
+      "options": [
+        "R\u00f4le de base distinct",
+        "Fonctions SECURITY DEFINER",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "\u00c9critures de niveau plateforme (prestataires, profils de l\u00e9gislation) : r\u00f4le de base distinct (\u00a72.2) ou fonctions SECURITY DEFINER comme create_platform_admin ?",
+      "rationale": null,
+      "resolved_at": "2026-10-09T13:15:24.447830Z",
+      "resolved_by": null,
+      "slot_key": "specify.security.platform-writes",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-09T13:11:43.057664Z",
+      "decision_id": "01M4GCMYPHPAB696PZ3EZ0628N",
+      "final_answer": "Grand livre et comptes cr\u00e9\u00e9s \u00e0 la cr\u00e9ation de l'\u00e9v\u00e9nement (DRAFT) ; wallet_scope EVENT seul, ORGANIZER report\u00e9",
+      "input_key": "ledger_creation",
+      "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+      "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+      "opened_by": "cli",
+      "options": [
+        "\u00c0 la cr\u00e9ation, EVENT seul",
+        "\u00c0 la cr\u00e9ation, EVENT et ORGANIZER",
+        "Au passage LIVE",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Cr\u00e9ation du grand livre et des comptes : \u00e0 la cr\u00e9ation de l'\u00e9v\u00e9nement (DRAFT) ; wallet_scope ORGANIZER inclus ou seulement EVENT ?",
+      "rationale": null,
+      "resolved_at": "2026-10-09T13:15:28.146727Z",
+      "resolved_by": null,
+      "slot_key": "specify.ledger.creation",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-09T13:11:46.743681Z",
+      "decision_id": "01M4GCN29QWQWEYZH13F7T51HG",
+      "final_answer": "Double validation : passage DRAFT\u2192LIVE, nouvelle version de contrat, toute modification de frais ou de configuration d'un \u00e9v\u00e9nement LIVE",
+      "input_key": "double_validation_actions",
+      "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+      "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+      "opened_by": "cli",
+      "options": [
+        "Passage LIVE + contrats + frais pendant LIVE",
+        "Aucune en mission 3",
+        "Toute modif pendant LIVE",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quelles actions de configuration exigent une double validation ?",
+      "rationale": null,
+      "resolved_at": "2026-10-09T13:15:31.905343Z",
+      "resolved_by": null,
+      "slot_key": "specify.rules.double-validation",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+  "version": 1
+}

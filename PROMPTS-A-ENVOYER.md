@@ -34,22 +34,23 @@ pour la procédure.
 ## Mission 2 — Identité, rôles et double validation
 
 - [x] /spec-kitty.specify Identité des personnes, rôles et double validation (SPECIFICATION §3.2, §10.3, §13.3, §14.2 S1 et S3, ADR-74). Tables `app_user` et `role_assignment` (rôles `PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN`, `VENDOR`, `CUSTOMER`, avec portée plateforme, prestataire, organisateur, événement, commerçant) ; journal d'audit en ajout seul (`audit_log` : acteur, rôle, action, objet, avant, après, valideur, date, origine) pour toute action d'administration et toute action à deux. Authentification par JWT court et jeton de rafraîchissement ; le prestataire est toujours déduit de l'identité. Jeton d'approbation sur place au guichet (`X-Approval-Token` : 5 min, usage unique par `jti`, `act` = operationId, `act_hash` = SHA-256 de la requête canonique JCS, `sub` ≠ appelant, rôle vérifié ; `403 APPROVAL_REQUIRED` / `APPROVAL_INVALID`). Demande puis approbation au back-office (`approval_request` déjà au schéma, `decide_approval_request`, `202 Accepted`, `/approval-requests` liste, consultation, approbation avec exécution unique, refus avec note ; `409 APPROVAL_INVALID` sur `CL023`) ; un `approved_by` reçu dans un corps est ignoré. Le mécanisme d'exécution des actions est générique : chaque mission suivante y branche ses actions (`PAYOUT`, `WAIVE_SEQ_GAP`, etc.).
-- [ ] /spec-kitty.plan Serveur d'identité OIDC derrière une interface (authentification renforcée pour le jeton d'approbation), faux fournisseur pour les tests. Migrations avec RLS forcée, `operator_id` et tests pgTAP par contrainte (§14.2). Rôles et valideur ≠ auteur déjà imposés par la base pour plusieurs actions : ne pas affaiblir ces contraintes. Test de cloisonnement entre prestataires dès cette mission.
-- [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission identite-roles-double-validation-01M4DNDN
-- [ ] /spec-kitty.review --mission identite-roles-double-validation-01M4DNDN
-- [ ] /spec-kitty.accept --mission identite-roles-double-validation-01M4DNDN
-- [ ] spec-kitty merge --mission identite-roles-double-validation-01M4DNDN
+- [x] /spec-kitty.plan Serveur d'identité OIDC derrière une interface (authentification renforcée pour le jeton d'approbation), faux fournisseur pour les tests. Migrations avec RLS forcée, `operator_id` et tests pgTAP par contrainte (§14.2). Rôles et valideur ≠ auteur déjà imposés par la base pour plusieurs actions : ne pas affaiblir ces contraintes. Test de cloisonnement entre prestataires dès cette mission.
+- [x] /spec-kitty.tasks
+- [x] spec-kitty next --agent claude --mission identite-roles-double-validation-01M4DNDN
+- [x] /spec-kitty.review --mission identite-roles-double-validation-01M4DNDN
+- [x] /spec-kitty.accept --mission identite-roles-double-validation-01M4DNDN
+- [x] spec-kitty merge --mission identite-roles-double-validation-01M4DNDN
+- [x] Revue post-merge (`mission-review-report.md` : PASS WITH NOTES) ; PR #1 mergée sur `main` (09/10/2026)
 
 ## Mission 3 — Configuration, parties et événements
 
-- [ ] /spec-kitty.specify Configuration et organisation des parties (SPECIFICATION §3.1, §4, §5.6, §12.1, §10.4). Gestion des prestataires (plateforme), organisateurs, commerçants et participations (`INTERNAL`/`EXTERNAL`, commission, droit de place et `pitch_fee_mode`), points de vente, événements (devise, `funds_holder` obligatoire, `issuer`, `identity_mode`, `activation_modes`, réglages des terminaux bornés §9.8, `cash_refund_single_max`, `refund_deadline`, `sync_deadline_hours`, plafonds carte, remboursement vers un autre numéro). Cascade de configuration versionnée plateforme → prestataire → organisateur → événement → participation, bornée par le profil de législation (refus à l'enregistrement avec un message qui cite la règle). Contrats versionnés `PLATFORM_OPERATOR` et `OPERATOR_ORGANIZER`. Règles de frais `fee_rule` pour les quatre flux. Création des grands livres et des comptes à la demande (§5.2). Passage des statuts d'événement par `set_event_status` uniquement, avec affichage des conditions et de leur état. Ajouter au contrat `openapi.yaml` les endpoints back-office correspondants (§10.4), puis régénérer les types.
+- [x] /spec-kitty.specify Configuration et organisation des parties (SPECIFICATION §3.1, §4, §5.6, §12.1, §10.4). Gestion des prestataires (plateforme), organisateurs, commerçants et participations (`INTERNAL`/`EXTERNAL`, commission, droit de place et `pitch_fee_mode`), points de vente, événements (devise, `funds_holder` obligatoire, `issuer`, `identity_mode`, `activation_modes`, réglages des terminaux bornés §9.8, `cash_refund_single_max`, `refund_deadline`, `sync_deadline_hours`, plafonds carte, remboursement vers un autre numéro). Cascade de configuration versionnée plateforme → prestataire → organisateur → événement → participation, bornée par le profil de législation (refus à l'enregistrement avec un message qui cite la règle). Contrats versionnés `PLATFORM_OPERATOR` et `OPERATOR_ORGANIZER`. Règles de frais `fee_rule` pour les quatre flux. Création des grands livres et des comptes à la demande (§5.2). Passage des statuts d'événement par `set_event_status` uniquement, avec affichage des conditions et de leur état. Ajouter au contrat `openapi.yaml` les endpoints back-office correspondants (§10.4), puis régénérer les types.
 - [ ] /spec-kitty.plan Les tâches de niveau plateforme (prestataires, profils de législation) utilisent un rôle de base distinct (§2.2). Valeurs par défaut provisoires (§17.2) codées et paramétrables, jamais présentées comme validées (plafonds Sénégal, TVA 18 %). Chaque transaction enregistre `config_version_id`, chaque ligne de frais `fee_rule_id`. Un contrat ne se modifie pas : nouvelle version.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission configuration-parties-evenements
-- [ ] /spec-kitty.review --mission configuration-parties-evenements
-- [ ] /spec-kitty.accept --mission configuration-parties-evenements
-- [ ] spec-kitty merge --mission configuration-parties-evenements
+- [ ] spec-kitty next --agent claude --mission configuration-parties-evenements-01M4GCJ9
+- [ ] /spec-kitty.review --mission configuration-parties-evenements-01M4GCJ9
+- [ ] /spec-kitty.accept --mission configuration-parties-evenements-01M4GCJ9
+- [ ] spec-kitty merge --mission configuration-parties-evenements-01M4GCJ9
 
 ## Mission 4 — Bracelets NFC (format, clés, lots, cycle de vie)
 
