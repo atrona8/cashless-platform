@@ -89,6 +89,13 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 - Statut : 📋 planifié
 - Mission(s) associée(s) : à définir
 
+### Identité, rôles et double validation
+- Description : personnes du personnel authentifiées par le serveur d'identité OIDC, rôles par portée
+  (plateforme, prestataire, organisateur, événement, commerçant), journal d'audit en ajout seul chaîné et scellé,
+  double validation (jeton sur place au guichet, demande puis approbation au back-office) (§3.2, §10.3, §13.3).
+- Statut : 🚧 plan finalisé (08/10/2026)
+- Mission(s) associée(s) : `identite-roles-double-validation-01M4DNDN` (Identité, rôles et double validation)
+
 ## Hors périmètre (confirmé)
 - Caisses tierces : intentions de paiement, TPE associé (`PAIRED_TPE`), webhooks sortants, SDK (V2, ADR-43).
 - Contrôle d'accès, billetterie, bracelet-billet (ADR-41).

@@ -91,6 +91,7 @@ POST /v1/approval-requests/{approval_request_id}/approve  → demande EXECUTED (
 | Mission | Domaines/endpoints touchés | Lien vers détail local |
 |---|---|---|
 | `fondations-grand-livre-01M4AY8M` (✅ mergée le 08/10/2026) | Aucun endpoint métier ; `GET /v1/health` seulement. Conventions transverses mises en œuvre : problem+json (SQLSTATE → `ProblemCode`), `Idempotency-Key` / `Idempotency-Replayed`, `X-Request-Id`, `Accept-Language` | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/sequence.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/sequence.md) |
+| `identite-roles-double-validation-01M4DNDN` (🚧 plan finalisé) | `/approval-requests` (4 routes existantes) ; 7 routes ajoutées au contrat : `/operators/{operator_id}/users…`, `role-assignments`, `/platform-admins` ; `Authorization: Bearer` (OIDC) sur toutes les routes sauf la santé ; `X-Approval-Token` (formule `act_hash` ajoutée à la description) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/sequence.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/sequence.md) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.
