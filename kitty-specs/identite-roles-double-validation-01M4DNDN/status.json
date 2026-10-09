@@ -314,7 +314,8 @@
       "last_transition_at": "2026-10-09T11:52:15.735919+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Parcours complet (amorçage → rôles → action à deux → jeton sur place → audit vérifié et scellé), balayage d'isolation dérivé du contrat (11 routes ; a révélé et corrigé les routes Personnes placées sous webhooks), CI rejouée en 192 s (pgTAP 676, Jest 670), contradictions C-01 à C-15 consignées."
+        "Parcours complet (amorçage → rôles → action à deux → jeton sur place → audit vérifié et scellé), balayage d'isolation dérivé du contrat (11 routes ; a révélé et corrigé les routes Personnes placées sous webhooks), CI rejouée en 192 s (pgTAP 676, Jest 670), contradictions C-01 à C-15 consignées.",
+        "Revue : liste des routes lue dans openapi.yaml (pas en dur), aucune route 2xx inter-prestataires, 1 ligne d'audit par action réussie, chaînes intactes après scellement, CI < 15 min ; approuvé."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
