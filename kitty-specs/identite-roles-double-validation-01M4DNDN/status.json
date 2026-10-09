@@ -1,10 +1,10 @@
 {
-  "event_count": 40,
-  "last_event_id": "01M4G4C4G94V1B22VYM6AMRM1J",
-  "materialized_at": "2026-10-09T10:47:05.482858+00:00",
+  "event_count": 42,
+  "last_event_id": "01M4G4JHV6AD9MNHESJKF1MX4R",
+  "materialized_at": "2026-10-09T10:50:35.490983+00:00",
   "mission_number": "",
   "mission_slug": "identite-roles-double-validation-01M4DNDN",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 6,
     "blocked": 0,
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -177,11 +177,19 @@
       }
     },
     "WP06": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M4DVVKAHJ5547DEV050RPQDV",
-      "last_transition_at": "2026-10-08T13:39:46.129922+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M4G4JHV6AD9MNHESJKF1MX4R",
+      "last_transition_at": "2026-10-09T10:50:35.490983+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 13536,
+      "shell_pid_created_at": "1791543021.3103728"
     },
     "WP07": {
       "actor": "user",
