@@ -1,18 +1,21 @@
 ---
 work_package_id: WP04
-title: 'Contrat d''API : routes et schémas back-office, types régénérés'
+title: "Contrat d'API : routes et schémas back-office, types régénérés"
 dependencies: []
 requirement_refs:
 - FR-021
 planning_base_branch: feat/configuration-parties-evenements
 merge_target_branch: feat/configuration-parties-evenements
 branch_strategy: Planning artifacts for this mission were generated on feat/configuration-parties-evenements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/configuration-parties-evenements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-configuration-parties-evenements-01M4GCJ9
+base_commit: 1125df52c361eb06bc7920b3e6f4720ec799867b
+created_at: '2026-10-12T10:06:28.663977+00:00'
 subtasks:
 - T014
 - T015
 - T016
 - T017
-phase: 'Phase 1 - Contrat'
+phase: Phase 1 - Contrat
 history:
 - timestamp: '2026-10-09T15:00:00Z'
   agent: claude
