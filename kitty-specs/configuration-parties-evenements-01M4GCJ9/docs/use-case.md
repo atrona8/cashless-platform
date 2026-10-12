@@ -1,6 +1,6 @@
 # Cas d'usage — mission configuration-parties-evenements-01M4GCJ9
 
-> État : **plan finalisé** (2026-10-09) ; à recaler sur le code livré après la review.
+> État : **review terminée** (2026-10-12) — 13/13 WP approuvés ; recalé sur le code livré (lane finale, avant acceptation et fusion).
 
 ## Cas d'usage propres à cette mission
 
@@ -53,5 +53,8 @@ Contribue à : `docs/02-use-case-diagram.md`, section « Vue d'ensemble — admi
 « Gérer les prestataires », « Gérer les organisateurs », « Configurer l'événement »).
 
 ## Nécessaire pour cette mission ? Oui — la mission introduit neuf cas d'usage d'administration.
-## Complet ? Oui au stade du plan ; à recaler après la review.
-## Validé par : Agent, par délégation du porteur (09/10/2026)
+## Complet ? Oui — les neuf cas d'usage sont servis par l'API et couverts par le parcours de bout en bout
+(`configuration-journey.spec.ts`). Précisions issues du code : un réglage n'est modifiable que par le rôle que le
+catalogue désigne ; après `LIVE`, toute modification passe par une demande à deux ; le remplacement d'une règle de
+frais de plateforme revient à l'administrateur de la plateforme.
+## Validé par : Agent, par délégation du porteur (12/10/2026, « ok tu peux continuer par toi mm maintenant »)

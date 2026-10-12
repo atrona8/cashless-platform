@@ -1,6 +1,6 @@
 # Séquences — mission configuration-parties-evenements-01M4GCJ9
 
-> État : **plan finalisé** (2026-10-09).
+> État : **review terminée** (2026-10-12) — 13/13 WP approuvés ; recalé sur le code livré (lane finale, avant acceptation et fusion).
 
 ## Flux internes propres à cette mission
 
@@ -60,5 +60,7 @@ Voir `docs/05-sequence-diagrams.md`, flux : « Double validation au back-office 
 « Clôture d'un événement » (passages de statut exposés par l'API).
 
 ## Nécessaire pour cette mission ? Oui — interactions back-office, API, base (deux rôles).
-## Complet ? Oui au stade du plan.
-## Validé par : Agent, par délégation du porteur (09/10/2026)
+## Complet ? Oui — flux conformes au code livré. Précisions : la date d'effet d'une version est posée par l'horloge
+de la base ; deux écritures concurrentes d'une même portée donnent 409 à la perdante ; `LIVE` passe par l'action à
+deux `EVENT_GO_LIVE`, qui échoue (`FAILED`) si la configuration a changé depuis la demande.
+## Validé par : Agent, par délégation du porteur (12/10/2026, « ok tu peux continuer par toi mm maintenant »)

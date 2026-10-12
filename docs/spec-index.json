@@ -157,7 +157,7 @@
   {
     "mission": "configuration-parties-evenements-01M4GCJ9",
     "titre_cas_usage": "Configuration, parties et événements",
-    "statut": "plan finalisé",
+    "statut": "review terminée",
     "user_stories": [
       {
         "titre": "Ouvrir un prestataire",
@@ -195,14 +195,15 @@
       "Point de vente",
       "Grand livre"
     ],
-    "resultat_mesurable": "Hiérarchie complète construite par l'API avec une seule approbation pour LIVE ; 100 % des réglages hors bornes refusés avec la règle citée ; 0 fuite entre deux prestataires ; scénario de référence rejoué sur une configuration construite par l'API ; 0 passage de statut hors route dédiée",
+    "resultat_mesurable": "Hiérarchie complète construite par l'API avec une seule approbation pour LIVE ; 100 % des réglages hors bornes refusés avec la règle citée ; 0 fuite entre deux prestataires ; scénario de référence rejoué sur une configuration construite par l'API ; 0 passage de statut hors route dédiée — constaté le 12/10/2026 : 13/13 WP approuvés, 48 opérations servies, 947 assertions pgTAP et 873 tests Jest verts, 48 transactions du scénario rejouées à l'identique",
     "hypotheses": [
       "Contrat applicable = contrat OPERATOR_ORGANIZER désigné à la création de l'événement",
       "Émetteur porté par le grand livre",
       "Maximums du prestataire = réglages de sa configuration",
       "Commission = règle de frais PARTICIPATION ; droit de place porté par la participation",
       "Conditions de clôture dépendant de missions futures listées comme externes",
-      "Rôle de base plateforme créé par post-roles.sql"
+      "Rôle de base plateforme créé par post-roles.sql",
+      "Frais du PSP = règle de frais EVENT à bénéficiaire PSP:<canal> (ADR-82)"
     ],
     "contraintes": [
       "Statut seulement par set_event_status",
@@ -212,7 +213,8 @@
       "Prestataire déduit de l'identité",
       "Valeurs de §17.2 jamais présentées comme validées",
       "Pas d'écran, de PSP, de catalogue, de hors ligne, de wallet_scope ORGANIZER",
-      "Contrat d'API d'abord, types générés"
+      "Contrat d'API d'abord, types générés",
+      "Un réglage n'est modifiable que par le rôle que le catalogue désigne (ADR-81)"
     ],
     "cas_limites": [
       "Devise inconnue",

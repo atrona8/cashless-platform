@@ -25,12 +25,12 @@
 
 | Document | Nécessaire ? | Justification | Complet ? | Ce qui manque | Dernière mission ayant motivé une MAJ | Date | Validé par |
 |---|---|---|---|---|---|---|---|
-| 01-product-overview.md | Oui | Vision, personas, domaines et glossaire : point d'entrée fonctionnel | Partiel | Socle du Grand livre et domaine Identité implémentés ; autres domaines à venir ; frustrations des personas déduites du contexte | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (plan) | 09/10/2026
-| 02-use-case-diagram.md | Oui | Nombreux acteurs terrain et administration | Partiel | Cas d'usage terrain non implémentés ; administration (personnes, rôles, double validation) implémentée | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (plan) | 09/10/2026
+| 01-product-overview.md | Oui | Vision, personas, domaines et glossaire : point d'entrée fonctionnel | Partiel | Socle du Grand livre et domaine Identité implémentés ; autres domaines à venir ; frustrations des personas déduites du contexte | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (review) | 12/10/2026
+| 02-use-case-diagram.md | Oui | Nombreux acteurs terrain et administration | Partiel | Cas d'usage terrain non implémentés ; administration (personnes, rôles, double validation) implémentée | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (review) | 12/10/2026
 | 03-context-diagram.md | Oui | 11 systèmes externes (PSP, KMS, OTP, OIDC, S3…) | Partiel | Fournisseurs OTP non choisis (ADR-66) ; aucune intégration réelle à ce jour | Initialisation | 07/10/2026 | Porteur du projet (07/10/2026) |
-| 04-architecture-diagram.md | Oui | Central, passerelle, apps Flutter, back-office | Partiel | Décrit la cible : seuls l'API centrale (squelette, moteur, identité, double validation, audit) et la base existent ; région AWS provisoire (OP-N11) | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (plan) | 09/10/2026
-| 05-sequence-diagrams.md | Oui | Flux critiques multi-composants (en ligne, hors ligne, passerelle, PSP, double validation, clôture) | Partiel | Flux cibles non implémentés, sauf la clôture (rejeu) et le mécanisme de double validation | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (plan) | 09/10/2026
-| 07-api-reference.md | Oui | Le projet expose une API (73 chemins dans `openapi.yaml`) | Partiel | Endpoints du back-office absents du contrat (§10.4) ; routes Personnes et Approbations implémentées (mission 2), aucune route métier de paiement ; `GET /v1/health` hors contrat (C-009) | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (plan) | 09/10/2026
+| 04-architecture-diagram.md | Oui | Central, passerelle, apps Flutter, back-office | Partiel | Décrit la cible : seuls l'API centrale (squelette, moteur, identité, double validation, audit) et la base existent ; région AWS provisoire (OP-N11) | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (review) | 12/10/2026
+| 05-sequence-diagrams.md | Oui | Flux critiques multi-composants (en ligne, hors ligne, passerelle, PSP, double validation, clôture) | Partiel | Flux cibles non implémentés, sauf la clôture (rejeu) et le mécanisme de double validation | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (review) | 12/10/2026
+| 07-api-reference.md | Oui | Le projet expose une API (107 chemins dans `openapi.yaml`) | Partiel | Back-office de configuration au contrat et servi (mission 3, avant fusion) ; autres endpoints du back-office absents (§10.4) ; routes Personnes et Approbations implémentées (mission 2), aucune route métier de paiement ; `GET /v1/health` hors contrat (C-009) | `identite-roles-double-validation-01M4DNDN` (review) | `configuration-parties-evenements-01M4GCJ9` (review) | 12/10/2026
 
 ## Surfaces dérivées (hors des 5 documents globaux)
 
@@ -56,7 +56,7 @@
 |---|---|---|---|
 | `fondations-grand-livre-01M4AY8M` | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (08/10/2026) |
 | `identite-roles-double-validation-01M4DNDN` | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (09/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (09/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (09/10/2026) |
-| `configuration-parties-evenements-01M4GCJ9` | Nécessaire : Oui · Complet : Oui (stade plan) · Agent, par délégation du porteur (09/10/2026) | Nécessaire : Oui · Complet : Oui (stade plan) · Agent, par délégation du porteur (09/10/2026) | Nécessaire : Oui · Complet : Oui (stade plan) · Agent, par délégation du porteur (09/10/2026) |
+| `configuration-parties-evenements-01M4GCJ9` | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (12/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (12/10/2026) | Nécessaire : Oui · Complet : Oui (recalé après review) · Agent, par délégation du porteur (12/10/2026) |
 
 ## Légende
 - **Nécessaire ?** : Oui / Non / Non applicable à cette mission
@@ -87,6 +87,7 @@
 | 09/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP01-WP10, 10/10 approuvés) | `identite-roles-double-validation-01M4DNDN` | B-review | 01,02,04,05,07 ; docs locaux recalés (use-case, architecture-notes, sequence) ; spec-index.json ; docs-state.json | Mis à jour — écarts plan/implémentation signalés : migration `0006` (`create_platform_admin`), `POST /platform-admins` sans clé d'idempotence, exceptions `TenantTx.identify`/`withoutTenant`, enregistrement des actions par module dynamique, modules globaux, aucune route de retrait d'un `PLATFORM_ADMIN`, routes « Personnes » d'abord placées sous `webhooks:` (corrigé en WP10) ; diagrammes en repli Mermaid (skills externes absents) |
 | 09/10/2026 | spec-kitty accept (local, matrice 19/19 FR) puis spec-kitty merge (squash, local, `c2f3934`) | `identite-roles-double-validation-01M4DNDN` | Vérification pré-conclusion | 01,02,04,05,07 (statut « mergée ») ; spec-index.json ; docs-state.json | Mis à jour |
 | 09/10/2026 | /spec-kitty.plan (pilotage autonome par délégation du porteur) | `configuration-parties-evenements-01M4GCJ9` | B-plan | 01 (domaine Configuration : plan finalisé), 02, 04, 05, 07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json ; docs-state.json | Mis à jour — diagrammes en repli Mermaid (skills externes absents) |
+| 12/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP01-WP13, 13/13 approuvés ; un cycle de rejet sur WP03) | `configuration-parties-evenements-01M4GCJ9` | B-review | 01,02,04,05,07 ; docs locaux recalés (use-case, architecture-notes, sequence) ; spec-index.json ; docs-state.json | Mis à jour — écarts plan/implémentation signalés : `EXECUTE` via `PUBLIC` pour `cashless_platform` (accepté par le porteur, ADR-80), politiques restrictives ajoutées (WP03), idempotence `'principal'`, `fee_rule_id` ajouté au moteur (WP12), un réglage par rôle (ADR-81), frais PSP par règle `PSP:<canal>` (ADR-82), 48 opérations au lieu de ~45. ADR-80 à 82 et `.github/CI.md` arrivent avec la fusion des lanes |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
@@ -103,7 +104,10 @@ ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-ro
 ### Missions en attente de doc-check (à surveiller)
 (Liste des missions dont l'addendum post-plan ou post-review n'a pas encore été
 appliqué)
-- `configuration-parties-evenements-01M4GCJ9` : addendum post-plan appliqué le 09/10/2026 ; **addendum post-review en attente** (avant `spec-kitty accept` / `merge`).
+- `configuration-parties-evenements-01M4GCJ9` : post-plan le 09/10/2026, post-review le 12/10/2026 (avant `spec-kitty accept` / `merge`, non encore lancés).
+  Écarts plan / implémentation signalés : `EXECUTE` hérité de `PUBLIC` par `cashless_platform` (limite acceptée, ADR-80) ;
+  politiques restrictives ajoutées en review (WP03) ; option d'idempotence `'principal'` ; `fee_rule_id` ajouté au moteur
+  (WP12) ; un réglage par rôle (ADR-81) ; convention `PSP:<canal>` (ADR-82) ; 48 opérations au lieu de ~45.
 - `identite-roles-double-validation-01M4DNDN` : post-plan le 08/10/2026, post-review le 09/10/2026 (avant accept), mergée (ligne périmée corrigée le 09/10/2026).
 - `fondations-grand-livre-01M4AY8M` : post-plan le 07/10/2026, post-review le 08/10/2026 (avant accept).
   Écarts plan / implémentation signalés : accès base par `TenantTx.run` (et non `withTenantTx`) ; idempotence du
