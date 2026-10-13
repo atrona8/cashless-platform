@@ -4,49 +4,37 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: bracelets-nfc-01M4TD3W
 mission_id: 01M4TD3WS72DHMSH9TB2TS5E8W
-generated_at: '2026-10-13T12:14:41.056265+00:00'
+generated_at: '2026-10-13T12:27:01.138921+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: kitty-specs/bracelets-nfc-01M4TD3W/spec.md
-    sha256: 1d065a9ae6af9d47c09c8d75cc4b2a5efb90da7e1e9f916694caaf840ad431c4
+    sha256: d181c42f86355ae53d0df6ee60437b3802f012db9a27aee420009e326987d306
   plan.md:
     path: kitty-specs/bracelets-nfc-01M4TD3W/plan.md
-    sha256: 91eedf75ae49edabb90b50f424d01be377a5a7aa3285f4839bec1b5def031e24
+    sha256: 6c76173ecdaf6cce6e84313281a1f64ce1c6d19dae32c2d16901d83c3de53a07
   tasks.md:
     path: kitty-specs/bracelets-nfc-01M4TD3W/tasks.md
-    sha256: 84c83068512c038e1bfd7707cb613396afd32823d6e8c1003af726962e1a6f1b
+    sha256: f51a3fdb1e912a0a826ec23ebdcae7b6a1a9be900ebb97201f642485a3477078
   charter:
     path:
     sha256:
-verdict: blocked
+verdict: ready
 issue_counts:
-  medium: 4
+  medium: 2
+  high: 0
+  low: 4
   critical: 0
-  low: 3
-  high: 1
   info: 0
 findings:
-- id: U1
-  severity: high
-  category: underspecification
-  summary: "Le processus de personnalisation n'a pas le droit de déchiffrer une clé de données : le plan ne dit pas comment il scelle le mot de passe d'un nouveau bracelet sous la clé de données active."
-- id: I1
-  severity: medium
-  category: inconsistency
-  summary: La décision 5 (clé de données en clair dans le seul processus des clés) peut être contredite par la solution retenue pour U1.
-- id: U2
-  severity: medium
-  category: underspecification
-  summary: Aucune sorte d'anomalie de la liste fermée (§12.2) n'est désignée pour un écart du contrôle quotidien.
-- id: U3
-  severity: medium
-  category: underspecification
-  summary: Les routes existantes listMyMedia et reportMyMediaLost ne sont rattachées à aucune exigence de la spec ; le WP17 les sert « si elles tiennent dans le périmètre ».
 - id: C1
   severity: medium
   category: coverage
   summary: Les exigences non fonctionnelles et les contraintes ne figurent pas dans requirement_refs des lots ; leur couverture n'est lisible que dans le texte des prompts.
+- id: A1
+  severity: medium
+  category: ambiguity
+  summary: Deux choix secondaires (alerte du contrôle quotidien par l'audit seul ; routes listMyMedia et reportMyMediaLost laissées à la mission 10) ont été proposés au porteur et appliqués sans confirmation explicite.
 - id: U4
   severity: low
   category: underspecification
@@ -59,64 +47,62 @@ findings:
   severity: low
   category: underspecification
   summary: Le générateur de types Dart n'est pas éprouvé sur le contrat OpenAPI 3.1 ; un repli est prévu mais non vérifié.
+- id: U6
+  severity: low
+  category: underspecification
+  summary: La clé de données de session multiplie les versions par index ; aucun seuil ne déclenche une rotation de consolidation.
 ---
 
 ## Specification Analysis Report
 
-Mission `bracelets-nfc-01M4TD3W` — analyse du 2026-10-13, après `/spec-kitty.tasks` (20 lots, 87 sous-tâches).
-Aucune charte dans le projet ; les règles de `CLAUDE.md` en tiennent lieu (sources normatives, §0.3, écarts de sécurité).
+Mission `bracelets-nfc-01M4TD3W` — seconde analyse du 2026-10-13, après la décision du porteur n° 7.
+
+**Constats levés depuis la première analyse** : U1 (HIGH) — le porteur a retenu une clé de données par session de
+personnalisation, sans droit de déchiffrement pour ce processus ; `research.md` (R-05 bis), `contracts/key-services.md`,
+`data-model.md`, `spec.md` (NFR-003, FR-008, décisions) et les lots WP10, WP11, WP13 sont alignés ; le travail
+`CREATE_DEK` a disparu. I1 — NFR-003 et R-05 amendés. U2 et U3 — tranchés par les choix proposés (voir A1).
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| U1 | Underspecification | HIGH | plan.md IC-09 ; research.md R-04 ; contracts/key-services.md ; tasks/WP13 (sous-tâche « Clé de données pour la personnalisation ») ; SPECIFICATION §3.2, §7.4 | La personnalisation a `GenerateMac` et `GenerateDataKey`, pas `Decrypt`. Elle ne peut donc pas rouvrir la clé de données active d'un index pour sceller un nouveau mot de passe. Le plan (CREATE_DEK puis clair mis à zéro) rend la personnalisation impossible telle quelle. | Décision du porteur requise avant le WP13 (règle C-011) : (A) une clé de données par session de personnalisation, obtenue par `GenerateDataKey` et gardée en mémoire le temps de la session ; (B) donner `Decrypt` à la personnalisation ; (C) faire sceller par le processus des clés. Puis corriger research R-04/R-05, key-services, data-model, WP11 et WP13. |
-| I1 | Inconsistency | MEDIUM | research.md R-05 ; spec.md NFR-003 | NFR-003 et R-05 disent qu'une clé de données en clair ne vit que dans le processus des clés. L'option A de U1 en fait vivre une dans le processus de personnalisation. | Aligner NFR-003 et R-05 sur la décision prise pour U1. |
-| U2 | Underspecification | MEDIUM | data-model.md (0012) ; tasks/WP19 | Un écart du contrôle quotidien doit « alerter », mais aucune sorte d'anomalie existante ne lui correspond clairement. | Laisser le WP19 soumettre le choix au porteur (déjà prévu) ou le trancher maintenant. |
-| U3 | Underspecification | MEDIUM | tasks/WP17 ; spec.md FR-030 à FR-033 | `listMyMedia` et `reportMyMediaLost` existent au contrat mais ne sont couvertes par aucune FR. | Décider : dans la mission (ajouter une FR) ou laissées à la mission 10 (le dire dans la spec). |
-| C1 | Coverage | MEDIUM | tasks/WP*.md (frontmatter) | `requirement_refs` ne porte que des FR ; NFR-001 à NFR-010 et C-001 à C-012 sont couvertes dans le texte (voir tableau) mais pas tracées. | Acceptable ; le WP20 vérifie chaque NFR. Ajouter les NFR aux refs si une traçabilité outillée est voulue. |
-| U4 | Underspecification | LOW | tasks/WP15 ; WP05 | Retouche possible de la migration 0013 hors du lot propriétaire. | Annoncée comme retouche hors carte ; à défaut, créer une migration 0014. |
-| I2 | Inconsistency | LOW | plan.md Summary, IC-06 | « Quatre processus » pour cinq points d'entrée. | Dire « quatre processus et une commande » partout (déjà le cas dans IC-06). |
-| U5 | Underspecification | LOW | research.md R-10 ; tasks/WP07 | Outil de génération Dart non éprouvé sur ce contrat. | Essai en début de WP07, repli documenté. |
+| C1 | Coverage | MEDIUM | tasks/WP*.md (frontmatter) | `requirement_refs` ne porte que des FR ; les NFR et les contraintes sont couvertes dans le texte des prompts. | Acceptable ; le WP20 vérifie chaque NFR. |
+| A1 | Ambiguity | MEDIUM | spec.md (Assumptions) ; research.md (décisions) ; tasks/WP17, WP19 | Deux choix proposés avec la question 7 ont été appliqués sur la seule réponse « A ». | Les rappeler au porteur dans le compte rendu ; ils se rouvrent sans coût avant WP17 et WP19. |
+| U4 | Underspecification | LOW | tasks/WP15 ; WP05 | Retouche possible de la migration 0013 hors du lot propriétaire. | Retouche annoncée, ou migration 0014. |
+| I2 | Inconsistency | LOW | plan.md Summary | « Quatre processus » pour cinq points d'entrée. | Formulation ; IC-06 est exact. |
+| U5 | Underspecification | LOW | research.md R-10 ; tasks/WP07 | Outil de génération Dart non éprouvé sur ce contrat. | Essai en début de WP07. |
+| U6 | Underspecification | LOW | research.md R-05 bis ; tasks/WP11 | Les versions de clé de données s'accumulent, une par session. | Mesurer au WP20 ; proposer au porteur un seuil de rotation si besoin. |
 
 **Coverage Summary Table:**
 
-| Requirement Key | Has Task? | Task IDs / lots | Notes |
-|-----------------|-----------|-----------------|-------|
-| FR-001 à FR-005 (bibliothèques) | Oui | WP01, WP02 | Vecteurs du kit et test croisé |
-| FR-006 (service de clés substituable) | Oui | WP08, WP09 | |
-| FR-007 à FR-009 (clés) | Oui | WP04, WP10, WP11 | |
-| FR-010 (contrôle quotidien) | Oui | WP04, WP19 | U2 |
-| FR-011 à FR-015 (lots, codes) | Oui | WP03, WP05, WP12 | |
-| FR-016, FR-017 (personnalisation) | Oui | WP05, WP12, WP13 | **U1** |
-| FR-018 à FR-020 (mot de passe, lecture) | Oui | WP14 | |
-| FR-021 à FR-024 (activation, caution, consultation) | Oui | WP15 | U4 |
-| FR-025 à FR-028 (retour) | Oui | WP16 | |
-| FR-029 (liste noire) | Oui | WP04, WP05, WP18 | |
-| FR-030 à FR-033 (rattachement) | Oui | WP03, WP17 | U3 |
-| FR-034 (identités substituables) | Oui | WP08, WP20 | |
-| FR-035 (audit) | Oui | WP05, WP10, WP18, WP20 | |
-| FR-036 (contrat) | Oui | WP07, WP20 | U5 |
-| NFR-001 | Oui | WP01, WP02, WP20 | |
-| NFR-002, NFR-003 | Oui | WP11, WP12, WP13, WP14, WP20 | I1 |
-| NFR-004, NFR-005 | Oui | WP06, WP09, WP20 | |
-| NFR-006, NFR-007, NFR-008 | Oui | WP20, WP17, WP11/WP12 | |
-| NFR-009, NFR-010 | Oui | tous, WP08/WP09 | |
-| C-011, C-012 | Oui | tous les prompts, WP08, WP20 | |
+| Requirement Key | Has Task? | Lots | Notes |
+|-----------------|-----------|------|-------|
+| FR-001 à FR-005 | Oui | WP01, WP02 | |
+| FR-006 | Oui | WP08, WP09 | |
+| FR-007 à FR-009 | Oui | WP04, WP10, WP11 | Clé de session : WP11 |
+| FR-010 | Oui | WP04, WP19 | A1 |
+| FR-011 à FR-015 | Oui | WP03, WP05, WP12 | |
+| FR-016, FR-017 | Oui | WP05, WP12, WP13 | |
+| FR-018 à FR-020 | Oui | WP14 | |
+| FR-021 à FR-024 | Oui | WP15 | U4 |
+| FR-025 à FR-028 | Oui | WP16 | |
+| FR-029 | Oui | WP04, WP05, WP18 | |
+| FR-030 à FR-033 | Oui | WP03, WP17 | A1 |
+| FR-034 à FR-036 | Oui | WP07, WP08, WP20 | U5 |
+| NFR-001 à NFR-010 | Oui | voir prompts ; WP20 | C1 |
 
-**Charter Alignment Issues:** sans objet (pas de charte). Règle de `CLAUDE.md` sur les écarts de sécurité : U1 en relève directement.
+**Charter Alignment Issues:** sans objet (pas de charte).
 
-**Unmapped Tasks:** aucune ; les 87 sous-tâches appartiennent chacune à un lot.
+**Unmapped Tasks:** aucune.
 
 **Metrics:**
 
 - Total Requirements : 36 FR, 10 NFR, 12 contraintes
 - Total Tasks : 87 sous-tâches, 20 lots
-- Coverage % : 100 % des FR ont au moins un lot
-- Ambiguity Count : 0
+- Coverage % : 100 % des FR
+- Ambiguity Count : 1
 - Duplication Count : 0
-- Critical Issues Count : 0 (1 HIGH)
+- Critical Issues Count : 0
 
 ## Next Actions
 
-- U1 bloque l'implémentation : obtenir la décision du porteur, corriger le plan et les lots concernés, puis relancer l'analyse.
-- U2 et U3 peuvent être tranchés dans le même échange.
-- Les autres constats n'empêchent pas de commencer.
+- Aucun constat bloquant : l'implémentation peut commencer.
+- A1 : rappeler les deux choix au porteur ; U6 : mesurer en fin de mission.
