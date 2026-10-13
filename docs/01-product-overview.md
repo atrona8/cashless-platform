@@ -55,8 +55,9 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Bracelets NFC
 - Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
-- Statut : 📋 planifié
-- Mission(s) associée(s) : à définir
+- Statut : 🚧 plan finalisé le 13/10/2026 — bibliothèque de format en TypeScript et en Dart, quatre processus à droits séparés sur les
+  clés, rôles de base distincts, routes de terminal et de festivalier derrière un port d'identité (faux en test)
+- Mission(s) associée(s) : `bracelets-nfc-01M4TD3W` (Bracelets NFC : format, clés, lots, cycle de vie)
 
 ### Terminaux et encaissement
 - Description : caisse à catalogue, TPE clavier, guichet de recharge ; enrôlement sans MDM ; paiement QR ;

@@ -146,7 +146,7 @@ sequenceDiagram
 
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
-| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | à définir |
+| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (🚧 plan finalisé : demande de mot de passe au processus des clés et lecture `POST /taps` ; le paiement lui-même vient en mission 5) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
