@@ -4,6 +4,8 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { AuditService } from '../../../src/audit/audit.service';
+import { ParticipationsService } from '../../../src/events/participations/participations.service';
 import { createTestApp } from '../../support/app';
 import { withOwner } from '../../support/db';
 import { FakeIdp, type TestPerson } from '../../support/fake-idp';
@@ -148,6 +150,21 @@ describe('participations et points de vente', () => {
       expect([first.status, replay.status, replay.headers['idempotency-replayed']]).toEqual([201, 201, 'true']);
       expect(replay.body).toEqual(first.body);
       expect(await rows(`SELECT count(*)::int AS n FROM account WHERE ledger_id = $1 AND purpose = 'MERCHANT'`, [event.ledger_id])).toEqual([{ n: 1 }]);
+    });
+
+    it.each([
+      ['après l’insertion et l’ouverture du compte (relecture)', () => jest.spyOn(app.get(ParticipationsService), 'row')],
+      ['à la dernière étape (ligne d’audit)', () => jest.spyOn(app.get(AuditService), 'record')],
+    ])('atomicité (NFR-004), panne %s : ni participation, ni compte commerçant', async (_step, inject) => {
+      const event = await newEvent();
+      const spy = inject().mockRejectedValueOnce(new Error('panne injectée'));
+      const res = await post(organizerAdmin, `${A()}/events/${event.event_id}/participations`, { merchant_id: ids.m1, link_type: 'EXTERNAL' });
+      spy.mockRestore();
+      expect(res.status).toBe(500);
+      expect(await rows('SELECT count(*)::int AS n FROM merchant_participation WHERE event_id = $1', [event.event_id])).toEqual([{ n: 0 }]);
+      expect(await rows(`SELECT count(*)::int AS n FROM account WHERE ledger_id = $1 AND purpose = 'MERCHANT'`, [event.ledger_id])).toEqual([{ n: 0 }]);
+      // La même inscription réussit ensuite : rien n'est resté de la tentative.
+      expect((await post(organizerAdmin, `${A()}/events/${event.event_id}/participations`, { merchant_id: ids.m1, link_type: 'EXTERNAL' })).status).toBe(201);
     });
   });
 

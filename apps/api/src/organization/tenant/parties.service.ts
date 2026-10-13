@@ -61,14 +61,17 @@ export class PartiesService {
   async update(client: TxClient, kind: TenantPartyKind, operatorId: string, id: string, fields: PartyFields, actor: AuditContext) {
     const previous = await this.row(client, kind, id);
     const { rows } = await client.query<PartyRow>(
-      `UPDATE party SET legal_name = $2, country_code = $3, tax_id = $4 WHERE id = $1 RETURNING ${COLUMNS}`,
+      `UPDATE party SET legal_name = $2, country_code = $3, tax_id = $4
+          WHERE id = $1 AND kind = $5 AND operator_id = current_setting('app.operator_id')::uuid RETURNING ${COLUMNS}`,
       [
         id,
         fields.legal_name ?? previous.legal_name,
         fields.country_code !== undefined ? fields.country_code : previous.country_code,
         fields.tax_id !== undefined ? fields.tax_id : previous.tax_id,
+        kind,
       ],
     );
+    if (!rows[0]) throw notFound();
     const after = dto(kind, rows[0]!);
     await this.audit.record(client, { ...actor, operatorId, action: AUDIT[kind].updated, objectType: 'party', objectId: id, before: dto(kind, previous), after });
     return after;

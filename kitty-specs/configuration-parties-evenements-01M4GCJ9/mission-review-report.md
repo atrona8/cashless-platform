@@ -214,3 +214,19 @@ Séquence après fusion : revue de mission → rétrospective → constats. `ret
 - `spec-kitty retrospect summary` — vue d'ensemble des missions (lecture seule)
 - `spec-kitty agent retrospect synthesize --mission configuration-parties-evenements-01M4GCJ9` — propositions
   (à blanc par défaut ; `--apply` pour les appliquer)
+
+---
+
+## Suites données aux constats (2026-10-13)
+
+Corrigés après la revue, à la demande du porteur, dans un commit distinct de la mission :
+
+| Constat | Correction | Preuve |
+|---|---|---|
+| DRIFT-1 (NFR-004) | Pannes injectées à deux étapes de la création d'un événement (version de configuration, audit) et de la création d'une participation (relecture après ouverture du compte, audit) ; contrôle des grands livres, comptes et versions orphelins | `events.spec.ts`, `participations.spec.ts` |
+| DRIFT-2 (NFR-003) | En CI, la mesure de latence tourne seule, dans son propre pas, sans nouvel essai (`SKIP_LATENCY`, variable `CI`) | `configuration-latency.spec.ts`, `jest.config`, `ledger-tests.yml` ; répétition locale : p95 créations 45 ms, lectures 19 ms, écritures 40 ms |
+| RISK-4 | Décalage d'un curseur borné à 100 000, sinon 400 | `platform.dto.ts`, `platform.spec.ts` |
+| RISK-5 | `UPDATE party` rappelle le type et le prestataire, 404 si aucune ligne | `parties.service.ts` |
+
+Jest après correction : 47 suites, 876 tests. RISK-1 (relecture indépendante) et RISK-2 (limite acceptée) restent
+ouverts ; RISK-3 se lève à la première exécution GitHub Actions.

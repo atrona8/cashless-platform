@@ -6,6 +6,8 @@
 // Les suites Jest tournent en parallèle sur la même machine et la même base : une série mesurée pendant le démarrage
 // des autres suites peut dépasser le seuil sans que le code y soit pour rien. Une série au-dessus du seuil est donc
 // refaite, trois fois au plus ; le test échoue si aucune ne tient le seuil, et toutes les séries sont consignées.
+// En CI (variable `CI`), la suite tourne seule, dans son propre pas, et sans nouvel essai : une seule série par
+// mesure, le seuil s'applique tel quel.
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -133,11 +135,12 @@ describe('latence des routes de configuration', () => {
       },
     };
     const thresholds = { creations: 500, lectures: 200, ecritures: 200 } as const;
-    /** Meilleure série (p95 le plus bas) parmi trois au plus ; s'arrête dès qu'une série tient le seuil. */
+    const maxSeries = process.env.CI ? 1 : 3;
+    /** Meilleure série (p95 le plus bas) parmi `maxSeries` au plus ; s'arrête dès qu'une série tient le seuil. */
     const measure = async (name: keyof typeof series) => {
       const attempts: number[][] = [];
       do attempts.push(await series[name]());
-      while (attempts.length < 3 && p95(attempts[attempts.length - 1]!) > thresholds[name]);
+      while (attempts.length < maxSeries && p95(attempts[attempts.length - 1]!) > thresholds[name]);
       const best = attempts.reduce((a, b) => (p95(b) < p95(a) ? b : a));
       return { n: best.length, median_ms: median(best), p95_ms: p95(best), max_ms: Math.round(Math.max(...best)), seuil_ms: thresholds[name], series_p95_ms: attempts.map(p95) };
     };

@@ -4,6 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { AuditService } from '../../../src/audit/audit.service';
 import { CascadeService } from '../../../src/configuration/cascade.service';
 import { createTestApp } from '../../support/app';
 import { withOwner } from '../../support/db';
@@ -194,14 +195,24 @@ describe('événements', () => {
       expect(await rows(`SELECT count(*)::int AS n FROM ledger WHERE scope_id = $1`, [first.body.event_id])).toEqual([{ n: 1 }]);
     });
 
-    it('atomicité : une erreur après l’insertion ne laisse ni événement, ni grand livre, ni compte', async () => {
+    it.each([
+      ['après l’insertion et l’ouverture du grand livre (version de configuration)', () => jest.spyOn(app.get(CascadeService), 'writeVersion')],
+      ['à la dernière étape (ligne d’audit)', () => jest.spyOn(app.get(AuditService), 'record')],
+    ])('atomicité, panne %s : ni événement, ni grand livre, ni compte, ni version de configuration', async (_step, inject) => {
       const body = base();
-      const spy = jest.spyOn(app.get(CascadeService), 'writeVersion').mockRejectedValueOnce(new Error('panne injectée'));
+      const orphans = () =>
+        rows(
+          `SELECT (SELECT count(*) FROM ledger l WHERE l.scope_type = 'EVENT' AND l.operator_id = $1 AND NOT EXISTS (SELECT 1 FROM event e WHERE e.id = l.scope_id))::int AS ledgers,
+                  (SELECT count(*) FROM config_version c WHERE c.scope_type = 'EVENT' AND c.operator_id = $1 AND NOT EXISTS (SELECT 1 FROM event e WHERE e.id = c.scope_id))::int AS versions,
+                  (SELECT count(*) FROM account a WHERE a.operator_id = $1 AND NOT EXISTS (SELECT 1 FROM ledger l WHERE l.id = a.ledger_id))::int AS accounts`,
+          [ops.a],
+        );
+      const spy = inject().mockRejectedValueOnce(new Error('panne injectée'));
       const res = await post(organizerAdmin, EVENTS(), body);
       spy.mockRestore();
       expect(res.status).toBe(500);
       expect(await rows('SELECT count(*)::int AS n FROM event WHERE name = $1', [body.name])).toEqual([{ n: 0 }]);
-      expect(await rows(`SELECT count(*)::int AS n FROM ledger l WHERE l.scope_type = 'EVENT' AND NOT EXISTS (SELECT 1 FROM event e WHERE e.id = l.scope_id) AND l.operator_id = $1`, [ops.a])).toEqual([{ n: 0 }]);
+      expect(await orphans()).toEqual([{ ledgers: 0, versions: 0, accounts: 0 }]);
     });
   });
 

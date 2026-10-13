@@ -105,6 +105,9 @@ export interface PageRequest {
   limit: number;
 }
 
+/** Décalage maximal d'un curseur : au-delà, le curseur n'a pas pu être émis par une liste d'administration. */
+const MAX_OFFSET = 100_000;
+
 /** Curseur opaque : position dans la liste triée (listes d'administration, courtes et en ajout seul). */
 export function pageRequest(cursor: string | undefined, rawLimit: string | undefined): PageRequest {
   let limit = 50;
@@ -116,7 +119,7 @@ export function pageRequest(cursor: string | undefined, rawLimit: string | undef
   try {
     const value: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
     const offset = (value as { o?: unknown }).o;
-    if (typeof offset === 'number' && Number.isInteger(offset) && offset >= 0) return { offset, limit };
+    if (typeof offset === 'number' && Number.isInteger(offset) && offset >= 0 && offset <= MAX_OFFSET) return { offset, limit };
   } catch {
     // illisible : refusé ci-dessous
   }

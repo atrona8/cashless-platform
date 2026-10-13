@@ -219,6 +219,8 @@ describe('routes de plateforme', () => {
       const ids = [...first.body.data, ...second.body.data].map((p: { profile_id: string }) => p.profile_id);
       expect(new Set(ids).size).toBe(ids.length);
       expect((await get(admin1, '/v1/jurisdiction-profiles?cursor=pas-un-curseur')).status).toBe(400);
+      const farAway = Buffer.from(JSON.stringify({ o: 100_001 })).toString('base64url');
+      expect((await get(admin1, `/v1/jurisdiction-profiles?cursor=${farAway}`)).status).toBe(400);
       expect((await get(admin1, '/v1/jurisdiction-profiles?limit=0')).status).toBe(400);
     });
   });

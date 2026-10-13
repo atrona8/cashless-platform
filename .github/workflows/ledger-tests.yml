@@ -74,4 +74,7 @@ jobs:
       - name: Tests Jest sur base recréée (unitaires, intégration, scénario)
         run: |
           npm run reset-db -w @cashless/ledger-sql
-          npm test
+          SKIP_LATENCY=1 npm test
+
+      - name: Latence des routes de configuration (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- configuration-latency
