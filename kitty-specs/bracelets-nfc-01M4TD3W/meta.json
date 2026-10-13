@@ -12,5 +12,7 @@
   "purpose_tldr": "Gérer les bracelets NFC côté serveur : format et clés, lots, rattachement, activation, caution, remplacement et liste noire.",
   "slug": "bracelets-nfc-01M4TD3W",
   "target_branch": "feat/bracelets-nfc",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-13T12:27:11.526949+00:00"
 }
