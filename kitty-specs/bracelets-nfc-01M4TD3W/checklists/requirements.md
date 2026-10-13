@@ -39,5 +39,6 @@
   et le contrat d'API. Ce ne sont pas des choix de conception de la mission mais son objet même (demande du porteur :
   deux bibliothèques conformes aux vecteurs du kit) et les sources normatives du projet (SPECIFICATION §0.2, §2.2).
   Aucun choix d'architecture, de bibliothèque tierce ni de structure de code n'y figure ; ils relèvent du plan.
-- 36 exigences fonctionnelles, 9 non fonctionnelles, 10 contraintes, 8 critères de réussite ; identifiants uniques.
+- 36 exigences fonctionnelles, 10 non fonctionnelles, 12 contraintes, 9 critères de réussite ; identifiants uniques.
+- Ajout du 13/10/2026 (demande du porteur) : NFR-010, C-011, C-012, SC-009 sur les écarts de sécurité.
 - Trois décisions de cadrage résolues avec le porteur le 13/10/2026, aucune reportée.

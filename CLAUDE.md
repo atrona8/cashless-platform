@@ -59,6 +59,23 @@ l'audit périodique de `spec-kitty-docs-maintain`, qui compare l'état réel des
 missions à la documentation mais ne peut pas détecter une mission qui n'a
 jamais été consignée nulle part avant son lancement.
 
+## Écarts qui affaiblissent la sécurité (règle du porteur, 13/10/2026)
+
+Vaut pour toutes les missions, quel que soit le degré d'autonomie accordé par ailleurs :
+
+1. **Jamais en silence.** Tout écart au plan ou à la spécification qui affaiblit la sécurité (droit plus large, contrôle
+   retiré ou reporté, secret plus exposé, faux ou bouchon gardé plus longtemps que prévu) est soumis au porteur **avant
+   d'être codé**, avec le risque et les options. S'arrêter sur ce point et attendre sa réponse ; continuer le reste.
+   Un écart qui renforce la sécurité se fait, puis se consigne.
+2. **Aucun faux en production.** Un faux (serveur d'identité, KMS, terminal, festivalier…) fait refuser le démarrage en
+   configuration de production, et un test le prouve.
+3. **Dette nommée.** Chaque écart accepté a une entrée dans `docs/POINTS_OUVERTS.md` et un ADR dans
+   `docs/DECISIONS_ADR.md` (risque, raison, mission qui le lève, condition de levée), un test qui échoue si la limite
+   s'élargit, et un report dans `PROMPTS-A-ENVOYER.md` et `PRD.md` pour la mission qui en hérite.
+4. **Revue.** La revue post-fusion liste les écarts de sécurité ouverts ; un écart non consigné est un constat bloquant.
+   Signaler au porteur les fichiers à faire relire par une personne (clés, droits de la base, cryptographie) : l'agent
+   qui a écrit le code ne vaut pas relecture indépendante.
+
 ## Sources normatives du projet
 
 Avant toute mission, lire `README.md` (kit de départ, à la racine) puis `docs/SPECIFICATION.md`. En cas de
