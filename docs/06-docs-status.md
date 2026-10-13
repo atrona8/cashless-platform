@@ -88,6 +88,7 @@
 | 09/10/2026 | spec-kitty accept (local, matrice 19/19 FR) puis spec-kitty merge (squash, local, `c2f3934`) | `identite-roles-double-validation-01M4DNDN` | Vérification pré-conclusion | 01,02,04,05,07 (statut « mergée ») ; spec-index.json ; docs-state.json | Mis à jour |
 | 09/10/2026 | /spec-kitty.plan (pilotage autonome par délégation du porteur) | `configuration-parties-evenements-01M4GCJ9` | B-plan | 01 (domaine Configuration : plan finalisé), 02, 04, 05, 07 ; docs locaux (use-case, architecture-notes, sequence) ; spec-index.json ; docs-state.json | Mis à jour — diagrammes en repli Mermaid (skills externes absents) |
 | 12/10/2026 | review (boucle CLI : `spec-kitty agent action review` WP01-WP13, 13/13 approuvés ; un cycle de rejet sur WP03) | `configuration-parties-evenements-01M4GCJ9` | B-review | 01,02,04,05,07 ; docs locaux recalés (use-case, architecture-notes, sequence) ; spec-index.json ; docs-state.json | Mis à jour — écarts plan/implémentation signalés : `EXECUTE` via `PUBLIC` pour `cashless_platform` (accepté par le porteur, ADR-80), politiques restrictives ajoutées (WP03), idempotence `'principal'`, `fee_rule_id` ajouté au moteur (WP12), un réglage par rôle (ADR-81), frais PSP par règle `PSP:<canal>` (ADR-82), 48 opérations au lieu de ~45. ADR-80 à 82 et `.github/CI.md` arrivent avec la fusion des lanes |
+| 13/10/2026 | spec-kitty accept (local, matrice 21/21 FR) ; `spec-kitty merge` non exécuté (en attente d'autorisation) | `configuration-parties-evenements-01M4GCJ9` | Vérification pré-conclusion | 01,02,04,07 (statut « acceptée, fusion en attente ») ; spec-index.json ; docs-state.json | Mis à jour |
 
 Note : les diagrammes (02 à 05) sont rendus en **repli Mermaid**, faute d'outil : ni `excalidraw-diagram-skill`
 ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-routing.md`).
@@ -104,7 +105,7 @@ ni `/illustre` ne sont installés dans cette session (`.docmeta/diagram-style-ro
 ### Missions en attente de doc-check (à surveiller)
 (Liste des missions dont l'addendum post-plan ou post-review n'a pas encore été
 appliqué)
-- `configuration-parties-evenements-01M4GCJ9` : post-plan le 09/10/2026, post-review le 12/10/2026 (avant `spec-kitty accept` / `merge`, non encore lancés).
+- `configuration-parties-evenements-01M4GCJ9` : post-plan le 09/10/2026, post-review le 12/10/2026 (avant acceptation) ; acceptée le 13/10/2026 ; **fusion (`spec-kitty merge`) en attente**.
   Écarts plan / implémentation signalés : `EXECUTE` hérité de `PUBLIC` par `cashless_platform` (limite acceptée, ADR-80) ;
   politiques restrictives ajoutées en review (WP03) ; option d'idempotence `'principal'` ; `fee_rule_id` ajouté au moteur
   (WP12) ; un réglage par rôle (ADR-81) ; convention `PSP:<canal>` (ADR-82) ; 48 opérations au lieu de ~45.
