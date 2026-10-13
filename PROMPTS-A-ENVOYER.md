@@ -60,8 +60,14 @@ mission 5, les comptes festivaliers avec leur mission) ; bibliothèque Dart livr
 3.8 installé sur le poste) ; KMS : ports et faux seulement, adaptateur AWS réel plus tard ; caution payée à part en
 espèces seulement.
 
+Décisions de plan du 13/10/2026 : un seul code et quatre processus à droits séparés sur les clés ; rôles de base
+distincts ; rôle `PERSONALIZER` ; mot de passe jamais transmis en clair, y compris au poste ; clé de données en mémoire
+5 minutes au plus ; création et désactivation d'une clé du KMS par une commande d'administration séparée. Dettes de
+sécurité à reprendre : mission 5 (identité réelle du terminal, requêtes signées), mission 10 (identité réelle du
+festivalier), adaptateur AWS KMS (après OP-N11).
+
 - [x] /spec-kitty.specify Bracelets NFC côté serveur et bibliothèques de format (SPECIFICATION §7, §6.1, §6.4, §14.2 S19, ADR-36, ADR-56, ADR-57, ADR-59). `packages/tag-format` en TypeScript et en Dart : format B 1.0 (28 octets, CRC-32/ISO-HDLC, majeur inconnu refusé), message de dérivation SP 800-108, AAD et chiffrement AES-256-GCM de PWD‖PACK, code de rattachement (10 caractères, alphabet de 32) ; les deux implémentations reproduisent `vecteurs_test_bracelet.py`. Ports KMS (GenerateMac, GenerateDataKey, Decrypt) avec faux pour les tests. Service des clés de bracelet (`POST /media/auth-keys`, un seul Decrypt de DEK, effacement en mémoire), service de personnalisation (enregistrement `token_hash`, UID, signature d'originalité et son empreinte, chiffré, lot), contrôle quotidien sur 100 bracelets, rotation de DEK, `tag_key` et `retire_dedicated_key` puis désactivation KMS. Lots (`media_batch` : kind, clé partagée ou dédiée, préchargement, caution, réutilisation, cycle de vie, inventaire). Codes de rattachement générés à la commande, empreinte seule conservée, association à la personnalisation, limites d'essais, demandes en attente pour un bracelet approvisionné (`media_claim`, confirmation au guichet). `POST /taps` (`register_tap`, effets de sécurité validés dans une transaction séparée), activation, consultation, caution et rendu, restitution, remplacement (la caution suit le bracelet), espèces dues (`refund_cash_due`), liste noire et `reinstate_media` à deux.
-- [ ] /spec-kitty.plan Rôles IAM séparés (§3.2, §13.2) : l'API publique n'a ni `kms:Decrypt` ni `kms:GenerateMac`. Les fonctions SQL des bracelets, lots et cautions font les règles ; NestJS les appelle sans les réimplémenter (§2.2). Mots de passe déchiffrés en mémoire seulement, puis effacés. Types Dart générés depuis `openapi.yaml`. Le code de lecture NFC du terminal n'est PAS dans cette mission.
+- [x] /spec-kitty.plan Rôles IAM séparés (§3.2, §13.2) : l'API publique n'a ni `kms:Decrypt` ni `kms:GenerateMac`. Les fonctions SQL des bracelets, lots et cautions font les règles ; NestJS les appelle sans les réimplémenter (§2.2). Mots de passe déchiffrés en mémoire seulement, puis effacés. Types Dart générés depuis `openapi.yaml`. Le code de lecture NFC du terminal n'est PAS dans cette mission.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission bracelets-nfc-01M4TD3W
 - [ ] /spec-kitty.review --mission bracelets-nfc-01M4TD3W
