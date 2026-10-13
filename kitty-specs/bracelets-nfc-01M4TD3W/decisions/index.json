@@ -1,0 +1,81 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-13T10:32:51.891283Z",
+      "decision_id": "01M4TD4YXK6XBM48XPR6DJAWFK",
+      "final_answer": "A. Mission 4 livre les services et les routes derri\u00e8re un port d'identit\u00e9 du terminal, avec un faux terminal pour les tests ; la mission 5 branche l'enr\u00f4lement r\u00e9el",
+      "input_key": "terminal_authentication",
+      "mission_id": "01M4TD3WS72DHMSH9TB2TS5E8W",
+      "mission_slug": "bracelets-nfc-01M4TD3W",
+      "opened_by": "cli",
+      "options": [
+        "A. Mission 4 livre les services et les routes derri\u00e8re un port d identit\u00e9 du terminal, avec un faux terminal pour les tests ; la mission 5 branche l enr\u00f4lement r\u00e9el",
+        "B. Mission 4 livre seulement les services (sans routes de terminal) ; les routes arrivent en mission 5",
+        "C. Mission 4 inclut un enr\u00f4lement minimal des terminaux",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Les routes des bracelets appel\u00e9es par un terminal (POST /taps, /media/auth-keys, activation, caution, restitution, remplacement) exigent au contrat un terminal authentifi\u00e9, livr\u00e9 par la mission 5. Comment la mission 4 les sert-elle ?",
+      "rationale": null,
+      "resolved_at": "2026-10-13T10:34:18.952390Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.terminal-authentication",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-13T10:34:22.703917Z",
+      "decision_id": "01M4TD7QKFKA2MTXBVAWPK50T6",
+      "final_answer": "A. Dart livr\u00e9 dans cette mission, prouv\u00e9 en CI GitHub et en local ; installation du SDK Dart sur le poste autoris\u00e9e par le porteur",
+      "input_key": "dart_library",
+      "mission_id": "01M4TD3WS72DHMSH9TB2TS5E8W",
+      "mission_slug": "bracelets-nfc-01M4TD3W",
+      "opened_by": "cli",
+      "options": [
+        "A. Dart livr\u00e9 dans cette mission, prouv\u00e9 en CI GitHub et en local apr\u00e8s installation du SDK Dart",
+        "B. Dart livr\u00e9 dans cette mission, prouv\u00e9 en CI seulement",
+        "C. TypeScript seulement ; Dart report\u00e9 \u00e0 la mission 12 (app terminal)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "La biblioth\u00e8que de format en Dart doit reproduire les vecteurs du kit, mais le SDK Dart n'est pas install\u00e9 sur ce poste. Comment la livrer et la prouver ?",
+      "rationale": null,
+      "resolved_at": "2026-10-13T10:37:30.356516Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.dart-library",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-13T10:37:34.136367Z",
+      "decision_id": "01M4TDDJHR1D0FFF4XA1HSFGET",
+      "final_answer": "A. Ports et faux KMS seulement ; adaptateur AWS r\u00e9el dans une mission ult\u00e9rieure",
+      "input_key": "kms_adapter",
+      "mission_id": "01M4TD3WS72DHMSH9TB2TS5E8W",
+      "mission_slug": "bracelets-nfc-01M4TD3W",
+      "opened_by": "cli",
+      "options": [
+        "A. Ports et faux KMS seulement ; adaptateur AWS r\u00e9el dans une mission ult\u00e9rieure, quand la r\u00e9gion et les comptes AWS seront arr\u00eat\u00e9s",
+        "B. Ports, faux KMS et adaptateur AWS r\u00e9el \u00e9crit maintenant, non exerc\u00e9 contre AWS",
+        "C. Ports, faux KMS et adaptateur AWS r\u00e9el v\u00e9rifi\u00e9 contre un vrai compte AWS",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Le KMS (GenerateMac, GenerateDataKey, Decrypt, d\u00e9sactivation de cl\u00e9) : la mission 4 livre-t-elle aussi l'adaptateur AWS r\u00e9el, ou seulement les ports et un faux KMS ?",
+      "rationale": null,
+      "resolved_at": "2026-10-13T10:43:09.403859Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.kms-adapter",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4TD3WS72DHMSH9TB2TS5E8W",
+  "version": 1
+}

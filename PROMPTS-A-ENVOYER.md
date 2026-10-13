@@ -54,13 +54,19 @@ pour la procédure.
 
 ## Mission 4 — Bracelets NFC (format, clés, lots, cycle de vie)
 
-- [ ] /spec-kitty.specify Bracelets NFC côté serveur et bibliothèques de format (SPECIFICATION §7, §6.1, §6.4, §14.2 S19, ADR-36, ADR-56, ADR-57, ADR-59). `packages/tag-format` en TypeScript et en Dart : format B 1.0 (28 octets, CRC-32/ISO-HDLC, majeur inconnu refusé), message de dérivation SP 800-108, AAD et chiffrement AES-256-GCM de PWD‖PACK, code de rattachement (10 caractères, alphabet de 32) ; les deux implémentations reproduisent `vecteurs_test_bracelet.py`. Ports KMS (GenerateMac, GenerateDataKey, Decrypt) avec faux pour les tests. Service des clés de bracelet (`POST /media/auth-keys`, un seul Decrypt de DEK, effacement en mémoire), service de personnalisation (enregistrement `token_hash`, UID, signature d'originalité et son empreinte, chiffré, lot), contrôle quotidien sur 100 bracelets, rotation de DEK, `tag_key` et `retire_dedicated_key` puis désactivation KMS. Lots (`media_batch` : kind, clé partagée ou dédiée, préchargement, caution, réutilisation, cycle de vie, inventaire). Codes de rattachement générés à la commande, empreinte seule conservée, association à la personnalisation, limites d'essais, demandes en attente pour un bracelet approvisionné (`media_claim`, confirmation au guichet). `POST /taps` (`register_tap`, effets de sécurité validés dans une transaction séparée), activation, consultation, caution et rendu, restitution, remplacement (la caution suit le bracelet), espèces dues (`refund_cash_due`), liste noire et `reinstate_media` à deux.
+Cadrage arrêté avec le porteur le 13/10/2026 (slug réel `bracelets-nfc-01M4TD3W`, branche `feat/bracelets-nfc`) : routes de
+terminal et de festivalier servies derrière un port d'identité avec un faux pour les tests (l'enrôlement réel vient en
+mission 5, les comptes festivaliers avec leur mission) ; bibliothèque Dart livrée et prouvée dès cette mission (SDK Dart
+3.8 installé sur le poste) ; KMS : ports et faux seulement, adaptateur AWS réel plus tard ; caution payée à part en
+espèces seulement.
+
+- [x] /spec-kitty.specify Bracelets NFC côté serveur et bibliothèques de format (SPECIFICATION §7, §6.1, §6.4, §14.2 S19, ADR-36, ADR-56, ADR-57, ADR-59). `packages/tag-format` en TypeScript et en Dart : format B 1.0 (28 octets, CRC-32/ISO-HDLC, majeur inconnu refusé), message de dérivation SP 800-108, AAD et chiffrement AES-256-GCM de PWD‖PACK, code de rattachement (10 caractères, alphabet de 32) ; les deux implémentations reproduisent `vecteurs_test_bracelet.py`. Ports KMS (GenerateMac, GenerateDataKey, Decrypt) avec faux pour les tests. Service des clés de bracelet (`POST /media/auth-keys`, un seul Decrypt de DEK, effacement en mémoire), service de personnalisation (enregistrement `token_hash`, UID, signature d'originalité et son empreinte, chiffré, lot), contrôle quotidien sur 100 bracelets, rotation de DEK, `tag_key` et `retire_dedicated_key` puis désactivation KMS. Lots (`media_batch` : kind, clé partagée ou dédiée, préchargement, caution, réutilisation, cycle de vie, inventaire). Codes de rattachement générés à la commande, empreinte seule conservée, association à la personnalisation, limites d'essais, demandes en attente pour un bracelet approvisionné (`media_claim`, confirmation au guichet). `POST /taps` (`register_tap`, effets de sécurité validés dans une transaction séparée), activation, consultation, caution et rendu, restitution, remplacement (la caution suit le bracelet), espèces dues (`refund_cash_due`), liste noire et `reinstate_media` à deux.
 - [ ] /spec-kitty.plan Rôles IAM séparés (§3.2, §13.2) : l'API publique n'a ni `kms:Decrypt` ni `kms:GenerateMac`. Les fonctions SQL des bracelets, lots et cautions font les règles ; NestJS les appelle sans les réimplémenter (§2.2). Mots de passe déchiffrés en mémoire seulement, puis effacés. Types Dart générés depuis `openapi.yaml`. Le code de lecture NFC du terminal n'est PAS dans cette mission.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission bracelets-nfc
-- [ ] /spec-kitty.review --mission bracelets-nfc
-- [ ] /spec-kitty.accept --mission bracelets-nfc
-- [ ] spec-kitty merge --mission bracelets-nfc
+- [ ] spec-kitty next --agent claude --mission bracelets-nfc-01M4TD3W
+- [ ] /spec-kitty.review --mission bracelets-nfc-01M4TD3W
+- [ ] /spec-kitty.accept --mission bracelets-nfc-01M4TD3W
+- [ ] spec-kitty merge --mission bracelets-nfc-01M4TD3W
 
 ## Mission 5 — Terminaux et paiement en ligne
 

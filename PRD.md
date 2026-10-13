@@ -65,6 +65,12 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Lots (kind, clé partagée ou dédiée, préchargement, caution, politique de réutilisation), cycle de vie. (§7.7)
 - Cycle de vie du bracelet, activation (`DESK`, `SELF_APP`, `FIRST_TOPUP`), code de rattachement imprimé, remplacement. (§7.8)
 - Caution en mode C (sur le solde) ou D (à part) ; ordre imposé au guichet de retour. (§7.9)
+- Cadrage de la mission 4 (porteur, 13/10/2026) : la bibliothèque de format existe en TypeScript et en Dart dès la
+  mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
+  des terminaux venant en mission 5 et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
+  l'adaptateur AWS réel venant quand la région et les comptes seront arrêtés (OP-N11) ; la caution payée à part se
+  règle en espèces tant que la mission 6 (PSP) n'est pas livrée. Les routes back-office des lots, des clés, de la
+  personnalisation et de la liste noire sont à ajouter au contrat.
 
 ### 2.5 Terminaux et encaissement (§8)
 - Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` (`PAIRED_TPE` refusé en V1). Catalogue à prix TTC fixe. (§8.1)
