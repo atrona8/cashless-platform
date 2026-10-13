@@ -1,6 +1,6 @@
 # Notes d'architecture — mission configuration-parties-evenements-01M4GCJ9
 
-> État : **review terminée** (2026-10-12) — 13/13 WP approuvés ; recalé sur le code livré (lane finale, avant acceptation et fusion).
+> État : **mergée** (2026-10-13, squash `d9e3779`) — 13/13 WP ; recalé sur le code livré à la review du 2026-10-12.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
 - Base centrale : migrations `0007` (intégrité et immuabilité de la configuration), `0008` (`open_event_ledger`,

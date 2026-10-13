@@ -151,7 +151,7 @@ sequenceDiagram
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
 | Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (🚧 plan finalisé : huit actions de configuration, dont deux de niveau plateforme) |
-| Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (🔎 review terminée le 12/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
+| Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.
