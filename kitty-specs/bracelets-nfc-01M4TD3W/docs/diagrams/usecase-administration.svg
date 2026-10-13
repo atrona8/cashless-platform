@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1174" viewBox="0 0 1960 1174">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(20,50)">
+<ellipse cx="275.0" cy="252.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="416.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="580.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="744.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="908.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="196.33333333333331" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="332.99999999999994" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="469.66666666666663" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="606.3333333333334" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="743.0" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="879.6666666666666" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="448,252.0 1000,238.33333333333331" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,238.33333333333331 980.9601546509006,249.35532449112222 980.4380419004202,228.26706315464818" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,416.0 1000,238.33333333333331" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,238.33333333333331 984.853184625361,254.2887081019371 978.3901558070074,234.20845346179937" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,416.0 1000,374.99999999999994" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,374.99999999999994 981.5274775550193,386.9484691287078 979.9649634430954,365.91169376817123" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,580.0 1000,511.66666666666663" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,511.66666666666663 982.1352296383577,524.5060583939171 979.543647778736,503.5711337132663" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,580.0 1000,648.3333333333334" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,648.3333333333334 979.543647778736,656.4288662867338 982.1352296383577,635.4939416060829" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,744.0 1000,785.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,785.0 979.9649634430954,794.0883062318287 981.5274775550193,773.0515308712921" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,908.0 1000,921.6666666666666" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,921.6666666666666 980.4380419004202,931.7329368453518 980.9601546509006,910.6446755088778" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Bracelets NFC — administration</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui prépare les bracelets et garde les clés</text>
+<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
+<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
+<text x="275.0" y="256.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin prestataire</text>
+<text x="275.0" y="420.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Exploitant</text>
+<text x="275.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin organisateur</text>
+<text x="275.0" y="748.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Agent de personnalisation</text>
+<text x="275.0" y="912.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Superviseur</text>
+<text x="1225.0" y="243.2833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Gérer les clés (à deux)</text>
+<text x="1225.0" y="379.94999999999993" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Contrôler les clés</text>
+<text x="1225.0" y="516.6166666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Gérer un lot</text>
+<text x="1225.0" y="653.2833333333334" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Commander les codes</text>
+<text x="1225.0" y="789.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Personnaliser un bracelet</text>
+<text x="1225.0" y="926.6166666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Sortir de liste noire (à deux)</text>
+<text x="60" y="1031.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">En bleu : action validée par une seconde personne. En orange : seule opération où un mot de passe de bracelet est remis (chiffré) à un poste.</text>
+</g>
+</svg>
