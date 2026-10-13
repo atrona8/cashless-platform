@@ -27,7 +27,6 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "configuration-parties-evenements-01M4GCJ9",
-  "status_phase": "1",
   "target_branch": "feat/configuration-parties-evenements",
   "topology": "coord",
   "vcs": "git",

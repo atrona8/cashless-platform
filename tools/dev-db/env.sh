@@ -24,7 +24,9 @@ export PGDATABASE="${PGDATABASE:-cashless_test}"
 export PATH="$PG_HOME/bin:$PG_HOME/perl5/bin:$PATH"
 export PERL5LIB="$PG_HOME/perl5/lib/perl5${PERL5LIB:+:$PERL5LIB}"
 
-# Chaînes de connexion utilisées par les migrations (propriétaire) et l'API (rôle applicatif).
+# Chaînes de connexion utilisées par les migrations (propriétaire) et l'API (rôle applicatif, rôle de la plateforme).
 export CASHLESS_APP_PASSWORD="${CASHLESS_APP_PASSWORD:-cashless_app_local}"
+export CASHLESS_PLATFORM_PASSWORD="${CASHLESS_PLATFORM_PASSWORD:-cashless_platform_local}"
 export DATABASE_URL_OWNER="${DATABASE_URL_OWNER:-postgres://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_APP="${DATABASE_URL_APP:-postgres://cashless_app:$CASHLESS_APP_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+export DATABASE_URL_PLATFORM="${DATABASE_URL_PLATFORM:-postgres://cashless_platform:$CASHLESS_PLATFORM_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"

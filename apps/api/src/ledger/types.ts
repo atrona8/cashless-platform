@@ -50,6 +50,8 @@ export interface Line {
   account: AccountRef;
   amount: bigint;
   memo?: string;
+  /** Règle de frais qui a produit la ligne (`posting.fee_rule_id`, SPECIFICATION §4.1). */
+  feeRuleId?: string;
 }
 
 export interface Parties {

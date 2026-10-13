@@ -4,6 +4,9 @@ export interface AppConfig {
   port: number;
   databaseUrl: string;
   poolSize: number;
+  /** Rôle `cashless_platform` (contrat platform-access) : écritures de niveau plateforme seulement. */
+  platformDatabaseUrl: string;
+  platformPoolSize: number;
   problemTypeBase: string;
   production: boolean;
   oidc: OidcConfig;
@@ -53,6 +56,7 @@ function loadOidc(env: NodeJS.ProcessEnv, production: boolean): OidcConfig {
 }
 
 const LOCAL_DATABASE_URL = 'postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test';
+const LOCAL_PLATFORM_DATABASE_URL = 'postgres://cashless_platform:cashless_platform_local@127.0.0.1:5433/cashless_test';
 
 function positiveInt(name: string, value: string | undefined, fallback: number): number {
   if (value === undefined || value === '') return fallback;
@@ -67,11 +71,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (!databaseUrl && production) {
     throw new Error('DATABASE_URL_APP manquant : chaîne de connexion du rôle cashless_app obligatoire en production');
   }
+  const platformDatabaseUrl = env.DATABASE_URL_PLATFORM;
+  if (!platformDatabaseUrl && production) {
+    throw new Error(
+      'DATABASE_URL_PLATFORM manquant : chaîne de connexion du rôle cashless_platform obligatoire en production',
+    );
+  }
   const base = env.PROBLEM_TYPE_BASE || 'https://errors.cashless/';
   return {
     port: positiveInt('PORT', env.PORT, 3000),
     databaseUrl: databaseUrl || LOCAL_DATABASE_URL,
     poolSize: positiveInt('DB_POOL_SIZE', env.DB_POOL_SIZE, 10),
+    platformDatabaseUrl: platformDatabaseUrl || LOCAL_PLATFORM_DATABASE_URL,
+    platformPoolSize: positiveInt('DB_PLATFORM_POOL_SIZE', env.DB_PLATFORM_POOL_SIZE, 2),
     problemTypeBase: base.endsWith('/') ? base : `${base}/`,
     production,
     oidc: loadOidc(env, production),

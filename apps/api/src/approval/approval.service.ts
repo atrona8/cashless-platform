@@ -1,9 +1,13 @@
 // Double validation au back-office (contracts/approvals.md, research R-08, ADR-74) : création d'une demande par
 // l'opération à deux d'une mission, approbation (décision + exécution unique) et refus, chacun dans UNE transaction
 // (le client de la transaction métier IdempotentTx) : décision, exécution, statut final et audit ensemble.
+// Deux niveaux (contrat platform-access, règle 5) : une demande d'un prestataire vit dans sa transaction cloisonnée ;
+// une demande de plateforme (`operatorId` NULL, action déclarée `platform`) dans la transaction de la plateforme,
+// et la base refuse sa décision hors du rôle de la plateforme.
 import { Injectable } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuditService, type AuditContext } from '../audit/audit.service';
+import { PlatformTx } from '../db/platform-tx';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { resolveProblem } from '../errors/problem.filter';
@@ -47,16 +51,26 @@ export class ApprovalService {
     private readonly registry: ApprovalActionRegistry,
     private readonly audit: AuditService,
     private readonly tx: TenantTx,
+    private readonly platformTx: PlatformTx,
   ) {}
 
   /**
    * Crée une demande (règle 2) : à appeler dans le `IdempotentTx.run` de l'opération à deux. L'auteur doit tenir le
    * rôle exigé sur la portée de l'action. Le contrôleur répond ensuite `respondAccepted(res, demande)`.
    */
-  async request(client: TxClient, operatorId: string, input: NewApprovalRequest, actor: ApprovalActor): Promise<ApprovalRequestDto> {
+  async request(
+    client: TxClient,
+    operatorId: string | null,
+    input: NewApprovalRequest,
+    actor: ApprovalActor,
+  ): Promise<ApprovalRequestDto> {
     const definition = this.registry.get(input.action);
     if (!definition) {
       throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: `Action non prise en charge : ${input.action}.` });
+    }
+    // Défaut de l'appelant, pas du client : une action de plateforme n'a pas de prestataire, les autres en ont un.
+    if (Boolean(definition.platform) !== (operatorId === null)) {
+      throw new Error(`Demande ${definition.action} : niveau de la transaction incohérent avec l'action`);
     }
     const payload = definition.validate(input.payload);
     const role = await this.roleOn(client, actor.principal, definition, payload, input.targetId);
@@ -80,7 +94,13 @@ export class ApprovalService {
   }
 
   /** Approbation (règle 3) : décision, puis exécution unique sous un point de sauvegarde ; EXECUTED ou FAILED. */
-  async approve(client: TxClient, operatorId: string, id: string, note: string | null, actor: ApprovalActor): Promise<ApprovalRequestDto> {
+  async approve(
+    client: TxClient,
+    operatorId: string | null,
+    id: string,
+    note: string | null,
+    actor: ApprovalActor,
+  ): Promise<ApprovalRequestDto> {
     const { before, definition, role } = await this.prepareDecision(client, id, actor);
     const decided = await this.decide(client, id, actor.principal.userId, true, note);
     const payload = decided.payload as never;
@@ -125,7 +145,13 @@ export class ApprovalService {
   }
 
   /** Refus (règle 4) : note obligatoire, aucune exécution. */
-  async reject(client: TxClient, operatorId: string, id: string, note: string, actor: ApprovalActor): Promise<ApprovalRequestDto> {
+  async reject(
+    client: TxClient,
+    operatorId: string | null,
+    id: string,
+    note: string,
+    actor: ApprovalActor,
+  ): Promise<ApprovalRequestDto> {
     const { before, role } = await this.prepareDecision(client, id, actor);
     const after = await this.decide(client, id, actor.principal.userId, false, note);
     const dto = approvalRequestDto(after);
@@ -143,13 +169,16 @@ export class ApprovalService {
     return dto;
   }
 
-  /** Liste (règle 6) : demandes du prestataire que la personne peut lancer ou approuver (rôle sur la portée). */
-  list(operatorId: string, principal: Principal, filter: ApprovalListFilter): Promise<ApprovalPage> {
+  /**
+   * Liste (règle 6) : demandes du prestataire que la personne peut lancer ou approuver (rôle sur la portée) ;
+   * `operatorId` NULL : demandes de niveau plateforme seulement.
+   */
+  list(operatorId: string | null, principal: Principal, filter: ApprovalListFilter): Promise<ApprovalPage> {
     if (filter.status !== undefined && !STATUSES.includes(filter.status)) {
       throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'status : valeur inconnue.' });
     }
     let position = decodeCursor(filter.cursor);
-    return this.tx.run(operatorId, async (client) => {
+    return this.transaction(operatorId, async (client) => {
       const visible: ApprovalRequestRow[] = [];
       let exhausted = false;
       // Les demandes que la personne ne peut pas voir sont sautées : on lit par lots jusqu'à remplir la page.
@@ -174,9 +203,9 @@ export class ApprovalService {
   }
 
   /** Consultation : 404 si la demande est invisible (RLS) ou si la personne n'a pas le rôle de l'action. */
-  get(operatorId: string, principal: Principal, id: string): Promise<ApprovalRequestDto> {
+  get(operatorId: string | null, principal: Principal, id: string): Promise<ApprovalRequestDto> {
     if (!UUID.test(id)) throw new ProblemException('NOT_FOUND');
-    return this.tx.run(operatorId, async (client) => {
+    return this.transaction(operatorId, async (client) => {
       const { rows } = await client.query<ApprovalRequestRow>('SELECT * FROM approval_request WHERE id = $1', [id]);
       const row = rows[0];
       if (!row || !(await this.canSee(client, principal, row))) throw new ProblemException('NOT_FOUND');
@@ -185,6 +214,10 @@ export class ApprovalService {
   }
 
   // ------------------------------------------------------------------ Aides
+
+  private transaction<T>(operatorId: string | null, fn: (client: TxClient) => Promise<T>): Promise<T> {
+    return operatorId === null ? this.platformTx.run(fn) : this.tx.run(operatorId, fn);
+  }
 
   private async prepareDecision(client: TxClient, id: string, actor: ApprovalActor) {
     if (!UUID.test(id)) throw new ProblemException('NOT_FOUND');

@@ -1,7 +1,7 @@
 // PURCHASE (vente en ligne ou hors ligne synchronisée) — SPECIFICATION §5.4, cas 13, 14, 19.
 import { extractTax, fee, InsufficientFundsError, spendSplit, type SpendSplit } from '../../money';
 import { BuildError, merchant, partyAccounts, suspense, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
-import { balanced, push, requireId, requirePositive } from './lines';
+import { balanced, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface PurchasePayload {
   walletId: string;
@@ -41,9 +41,11 @@ export function buildPurchase(command: LedgerCommand<'PURCHASE', PurchasePayload
   const commission = fee(amount, config.commissions[participationId] ?? {});
   if (commission > 0n) {
     const { ht, tax } = extractTax(commission, config.taxBps);
+    const from = lines.length;
     push(lines, merchant(participationId), commission);
     push(lines, org('ORG_COM'), -ht);
     push(lines, org('ORG_TAX'), -tax);
+    tagFee(lines, from, config.commissions[participationId]);
   }
   return balanced(lines);
 }

@@ -1,20 +1,431 @@
 {
-  "event_count": 0,
-  "last_event_id": null,
-  "materialized_at": "",
-  "mission_number": "",
-  "mission_slug": "",
+  "event_count": 96,
+  "last_event_id": "01M4TA56BCKD52S9TWVQHKB5HR",
+  "materialized_at": "2026-10-13T09:40:33.772441+00:00",
+  "mission_number": "1",
+  "mission_slug": "configuration-parties-evenements-01M4GCJ9",
   "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
-    "done": 0,
+    "done": 13,
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
     "planned": 0
   },
-  "work_packages": {}
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4821G4CZ8DVW1ESJPNPK",
+      "last_transition_at": "2026-10-13T09:40:02.753691+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0007 + tests_configuration.sql (72 assertions) ; lint, typecheck, pgTAP 748/748, Jest 670/670 verts sur base remise à zéro",
+        "Review passed. Checklist : 1 PASS (party_kind_of appelée par les gardes), 2 PASS (assertions sur les vrais déclencheurs), 3 PASS, 4 PASS (FR-007/008/009/012/014/015 couverts), 5 PASS (schéma de référence et .sql générés intacts), 6 PASS, 7 N/A, 8 PASS (CL001 = refus métier). pgTAP 748/748, Jest 670/670. Observations non bloquantes : no_plan() au lieu de plan(n) (style des suites de la mission 2) ; règle de frais sans prestataire contrôlée sur la seule existence de l'objet (niveau plateforme du schéma de référence, écriture impossible pour cashless_app)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP01-integrite-configuration-base/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP01-integrite-configuration-base/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 12101,
+      "shell_pid_created_at": "1791798226.383584",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4D480Z0T8P3SS7MZGHSE",
+      "last_transition_at": "2026-10-13T09:40:07.944788+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0008 + tests_event_ledger.sql (84 assertions) ; lint, typecheck, pgTAP 832/832, Jest 670/670 verts sur base remise à zéro",
+        "Review passed. Checklist : 1 N/A (fonctions SQL appelées par les routes des WP09 à WP11 de cette mission ; aucun appelant de production avant), 2 PASS (les assertions passent par les fonctions et par set_event_status réels), 3 PASS, 4 PASS (FR-011 ouverture du grand livre, FR-012 compte commerçant, FR-017 conditions), 5 PASS (schéma de référence, .sql générés, roles.sql, post-roles.sql intacts), 6 PASS (aucun nom de rôle dans la migration ; open_* SECURITY INVOKER), 7 N/A, 8 PASS (CL001 / no_data_found = refus métier). Correspondance condition <-> bloc de set_event_status relue ligne à ligne ; 6 cas croisés met=false <=> CL018/CL019. pgTAP 832/832, Jest 670/670. Observation : la partie plateforme n'a pas de contrainte d'unicité, la fonction retient la plus ancienne."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP02-grand-livre-evenement-conditions/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP02-grand-livre-evenement-conditions/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 14777,
+      "shell_pid_created_at": "1791798810.879813",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M4TA4J51X8EV1886N1KNFT7K",
+      "last_transition_at": "2026-10-13T09:40:13.089488+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0009, post-roles.sql, migrate.ts, CI, env local, tests_platform_scope.sql (112 assertions) ; pgTAP 944/944, Jest 670/670, rejeu idempotent. Fichier hors périmètre touché : tests/tests_api_idempotency.sql (une assertion : operator_id n'est plus NOT NULL, conséquence de R-02).",
+        "Revue 1 traitée : politique restrictive app_no_platform_config + assertions. pgTAP 947/947, Jest 670/670.",
+        "Review passed (cycle 2). Checklist : 1 PASS (platform_session appelée par decide_approval_request ; rôle et pool plateforme utilisés à partir du WP05), 2 PASS (assertions sous de vraies sessions cashless_app et cashless_platform), 3 PASS, 4 PASS (FR-001, FR-019 base, NFR-002), 5 PASS (roles.sql et schéma de référence intacts), 6 PASS (aucune migration ne nomme un rôle dans une instruction), 7 : tests/tests_api_idempotency.sql modifié hors périmètre (une assertion, conséquence de R-02), 8 PASS. Écarts consignés : nom de rôle fixe dans platform_session (pas de réglage app.platform_role) ; CHECK de niveau plateforme en équivalence ; politiques restrictives ajoutées pour les deux rôles. Limite ouverte : les fonctions d'API du schéma restent exécutables par cashless_platform via PUBLIC (exigé par la suite de référence)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP03-role-portee-plateforme/review-cycle-2.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP03-role-portee-plateforme/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 17191,
+      "shell_pid_created_at": "1791799540.33327",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4AKH3YMZ9EZEP472S1VE",
+      "last_transition_at": "2026-10-13T09:40:05.361477+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "28 chemins, 48 opérations, 33 schémas ; check contrats, lint, typecheck verts ; Jest 670/670. Fichier hors périmètre touché : apps/api/test/integration/end-to-end/isolation-sweep.spec.ts (sélecteur de routes restreint à la mission 2).",
+        "Review passed. Checklist : 1 N/A (contrat et types générés ; consommés par les WP05 à WP12), 2 N/A (pas de test propre ; check du contrat, typecheck et Jest 670/670 verts), 3 PASS, 4 PASS (FR-021 : 48 opérations sous paths, Idempotency-Key sur toute écriture, pagination par curseur, problem+json), 5 PASS, 6 PASS (montants en integer int64, aucun number), 7 : apps/api/test/integration/end-to-end/isolation-sweep.spec.ts modifié hors périmètre (sélecteur restreint aux routes de la mission 2 ; le balayage des routes de cette mission revient au WP13), 8 N/A."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP04-contrat-api-back-office/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP04-contrat-api-back-office/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 19233,
+      "shell_pid_created_at": "1791800188.514912",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4MNH66HQS1C6HCZPVYPZ",
+      "last_transition_at": "2026-10-13T09:40:15.665862+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Second pool, PlatformTx, idempotence et approbations de plateforme ; Jest 696/696, pgTAP 947/947, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS (PlatformTx appelée par IdempotencyRepository et ApprovalService ; l'option platform par ApprovalController), 2 PASS (tests d'intégration sur la vraie base, vrai rôle cashless_platform, faux serveur d'identité), 3 PASS, 4 PASS (FR-001 second pool, FR-019 approbations de plateforme, FR-020 audit chaîne plateforme, FR-021 idempotence), 5 PASS, 6 PASS (PlatformTx ne pose jamais app.operator_id ; test d'architecture), 7 N/A, 8 PASS. Écart consigné : l'option platform accepte 'principal' pour /approval-requests, route commune aux deux niveaux ; le niveau y est lu sur la personne authentifiée (identifiée en base), jamais sur la requête. Jest 696/696 ; pgTAP 947/947 sur base remise à zéro."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP05-transaction-plateforme-api/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP05-transaction-plateforme-api/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 21381,
+      "shell_pid_created_at": "1791801637.235993",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4FMP9HJEWNQVG9JHMPF4",
+      "last_transition_at": "2026-10-13T09:40:10.518691+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Catalogue, bornes, messages, valeurs provisoires, cascade ; Jest 744/744, pgTAP vert sur base remise à zéro, lint et typecheck verts.",
+        "Review passed. Checklist : 1 N/A pour l'instant (CascadeService, bounds-validator et provisional-defaults sont appelés par les routes des WP07 à WP10 ; aucun contrôleur dans ce lot, comme prévu), 2 PASS (bornes du catalogue comparées aux CHECK réels de event ; concurrence et résolution sur la vraie base), 3 PASS, 4 PASS (FR-003, FR-010, FR-014, FR-015, NFR-005), 5 PASS, 6 PASS (funds_holder hors cascade ; aucune valeur de §17.2 présentée comme validée), 7 : fichiers hors périmètre touchés, minimalement — errors/problem.ts et problem.filter.ts (extensions du problème, permis par le prompt), audit/audit.service.ts (action CONFIG_VERSION_CREATED), 8 PASS. Choix consignés : le conflit d'écriture concurrente est détecté par le numéro de version rendu par la base (n+2 au lieu de n+1), le verrou de 0007 sérialisant les écritures ; une clé d'un autre rôle est refusée même à un rôle englobant (OPERATOR_ADMIN sur une clé d'organisateur)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP06-catalogue-cascade-bornes/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP06-catalogue-cascade-bornes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 24520,
+      "shell_pid_created_at": "1791802369.658062",
+      "subtasks": {
+        "T023": "done",
+        "T024": "done",
+        "T025": "done",
+        "T026": "done",
+        "T027": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4Q6CMHGR44G0NM2XQDFZ",
+      "last_transition_at": "2026-10-13T09:40:18.252236+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "15 routes de plateforme et 2 actions à deux ; Jest 789/789 et pgTAP 947/947 sur bases remises à zéro, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS (services appelés par les contrôleurs ; module importé par AppModule), 2 PASS (19 tests d'intégration par HTTP sur la vraie base et le vrai rôle plateforme), 3 PASS, 4 PASS (FR-002, FR-003, FR-004, FR-007, FR-008, FR-019, FR-020), 5 PASS, 6 PASS (les 8 écritures passent par la transaction de la plateforme ; aucun operator_id lu dans un corps ; TenantTx seulement pour les lectures ouvertes au prestataire), 7 : fichiers hors périmètre touchés — audit/audit.service.ts (actions d'audit de la mission), test/support/app.ts et test/integration/platform/platform-tx.spec.ts (la suite de démonstration du WP05 neutralise les actions réelles, sinon doublon d'enregistrement), 8 PASS. Choix consignés : listes paginées par curseur de position ; une redevance de plateforme débite OPE_REDEV et crédite PLT_REDEV (§5.3) ; pour une nouvelle version de profil, un champ omis reprend son défaut provisoire (texte du contrat), ce qui peut déclencher l'action à deux."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP07-routes-plateforme/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP07-routes-plateforme/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 27193,
+      "shell_pid_created_at": "1791803070.197345",
+      "subtasks": {
+        "T028": "done",
+        "T029": "done",
+        "T030": "done",
+        "T031": "done",
+        "T032": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4SQAYN31A8PZQ9ZQ43DJ",
+      "last_transition_at": "2026-10-13T09:40:20.842104+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "18 routes d'organisation d'un prestataire et l'action CONTRACT_VERSION ; Jest 807/807 et pgTAP 947/947 sur bases remises à zéro, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS (services appelés par TenantController ; module importé par AppModule), 2 PASS (18 tests d'intégration par HTTP), 3 PASS, 4 PASS (FR-005, FR-006, FR-007, FR-008, FR-014, FR-019, FR-020, NFR-001 : 404 pour le personnel d'un autre prestataire sur les 18 routes), 5 PASS, 6 PASS (prestataire toujours tiré du chemin ; operator_id d'un corps ignoré, testé), 7 : app.module.ts modifié (une ligne, prévu par le prompt), 8 PASS. Reste à faire, reporté au WP10 qui reprend cette route : le remplacement d'une redevance de plateforme par un PLATFORM_ADMIN (décrit par replaceFeeRule) n'est pas encore servi (403). Choix consignés : un ORGANIZER_ADMIN d'un autre organisateur du même prestataire reçoit 403 (pas 404) ; une clé du prestataire glissée dans la configuration d'un organisateur est refusée en 403."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP08-organisation-prestataire/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP08-organisation-prestataire/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 29456,
+      "shell_pid_created_at": "1791804252.101391",
+      "subtasks": {
+        "T033": "done",
+        "T034": "done",
+        "T035": "done",
+        "T036": "done",
+        "T037": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4W7K9V72QJAQ38BDB5KD",
+      "last_transition_at": "2026-10-13T09:40:23.411974+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "5 routes d'événement et 2 actions à deux ; Jest 823/823 sur 8 exécutions complètes consécutives, pgTAP 947/947, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS, 2 PASS (16 tests d'intégration par HTTP : les 6 scénarios de l'US3, atomicité par panne injectée, modification à deux en LIVE, configuration résolue, isolation), 3 PASS, 4 PASS (FR-009, FR-010, FR-011, FR-014, FR-015, FR-019, FR-020, NFR-004), 5 PASS, 6 PASS (open_event_ledger appelée une seule fois, dans IdempotentTx.run ; le statut n'est jamais écrit ; funds_holder sans défaut), 7 : fichiers hors périmètre touchés — app.module.ts (une ligne, prévu), configuration/cascade.service.ts (correctif de concurrence : 409 au lieu de 422 pour la perdante), suites cascade.spec, platform.spec et tenant.spec (stabilité en parallèle), 8 PASS. Écarts consignés : une clé status dans updateEvent répond 400 (texte du contrat) et non 422 (prompt) ; deux demandes en attente sur le même événement : la seconde échoue (CONFLICT_STATE) une fois la première exécutée."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP09-evenements/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP09-evenements/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 40684,
+      "shell_pid_created_at": "1791805690.026948",
+      "subtasks": {
+        "T038": "done",
+        "T039": "done",
+        "T040": "done",
+        "T041": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4YR1QSSZQB752TE6PR3N",
+      "last_transition_at": "2026-10-13T09:40:25.985271+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Participations, points de vente, règles de frais d'événement et 2 actions à deux ; Jest 842/842 sur 4 exécutions complètes, pgTAP en succès, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS, 2 PASS (19 tests d'intégration par HTTP : US4, compte L-MCH chaud et négatif permis, règle remplacée jamais modifiée, 202 pendant LIVE puis nouvelle version, isolation, refus après LIVE et sur événement CLOSED), 3 PASS, 4 PASS (FR-008, FR-012, FR-013, FR-019, FR-020), 5 PASS, 6 PASS (commission portée par la participation ; open_participation_account dans la transaction de l'inscription), 7 : fichiers hors périmètre touchés — events.module.ts (une ligne, prévu), organization/tenant/tenant.controller.ts (les 3 routes de règles de frais déplacées vers events/participations/fee-rules.controller.ts), organization/tenant/fee-rules.service.ts (taxe du profil de l'événement, statut de l'événement, chaîne d'audit de plateforme), organization/platform/platform.dto.ts (date facultative nulle), 8 PASS. 46 des 48 opérations du contrat sont servies ; les deux restantes (conditions et passages de statut) sont le WP11. Choix consignés : après LIVE, plus aucune inscription ni règle de frais (409) ; les points de vente se créent sans seconde personne, y compris en LIVE."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP10-participations-points-de-vente-frais/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP10-participations-points-de-vente-frais/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 43705,
+      "shell_pid_created_at": "1791806323.560824",
+      "subtasks": {
+        "T042": "done",
+        "T043": "done",
+        "T044": "done",
+        "T045": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA519J7WDZ7QRGNK8NDJ82",
+      "last_transition_at": "2026-10-13T09:40:28.594476+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Conditions et passages de statut, action EVENT_GO_LIVE ; Jest 853/853 sur 12 exécutions complètes consécutives, pgTAP en succès, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS, 2 PASS (11 tests d'intégration par HTTP : US5 scénarios 1 à 5, refus de l'API comparés aux refus de set_event_status pour RECONCILING et SETTLING, demande LIVE devenue caduque, isolation), 3 PASS, 4 PASS (FR-017, FR-018, FR-019, FR-020), 5 PASS, 6 PASS (C-001 : aucune écriture du statut hors set_event_status ; le seul UPDATE event du code met à jour des colonnes de réglage tirées du catalogue, dont status ne fait pas partie), 7 : fichiers hors périmètre touchés — events.module.ts (déclaration des fichiers de events/status, qui s'appuient sur EventsService), configuration/cascade.service.ts et organization/tenant/fee-rules.service.ts (date d'effet par défaut jamais antérieure à la précédente), suites cascade.spec et events.spec, 8 PASS. Choix consignés : la mise en service est demandée par un ORGANIZER_ADMIN seulement (R-09), les passages suivants par ORGANIZER_ADMIN ou OPERATOR_ADMIN ; les conditions externes (met = null) ne bloquent pas un passage."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP11-statuts-evenement/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP11-statuts-evenement/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 52067,
+      "shell_pid_created_at": "1791807576.683987",
+      "subtasks": {
+        "T046": "done",
+        "T047": "done",
+        "T048": "done",
+        "T049": "done"
+      }
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA53TJ3SZQ4R5PCXWSTYEA",
+      "last_transition_at": "2026-10-13T09:40:31.186431+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "SqlConfigResolver, moteur branché, rejeu du scénario sur configuration construite par l'API ; Jest 865/865 sur 6 exécutions complètes, pgTAP en succès, lint et typecheck verts.",
+        "Review passed. Checklist : 1 PASS (SqlConfigResolver fourni au moteur par ConfigResolverModule, importé par AppModule), 2 PASS (rejeu des 48 transactions par le moteur sur la vraie base ; lignes comparées une à une à scenario_reference.json ; le scénario n'a pas été modifié), 3 PASS (une règle unique absente lève une erreur explicite à sa lecture, pas un zéro), 4 PASS (FR-016 : config_version_id sur chaque transaction écrite par le moteur, fee_rule_id sur chaque ligne de frais ; SC-004), 5 PASS (scenario_reference.json et .sql générés intacts), 6 PASS, 7 : fichiers hors périmètre touchés, minimalement — moteur de la mission 1 (ledger/money/fee.ts, types.ts, cinq constructeurs, db/ledger-queries.ts, ledger-engine.service.ts, ports/config-resolver.ts) pour porter fee_rule_id et passer le client au résolveur : le prompt supposait à tort que c'était déjà fait ; app.module.ts (une ligne, prévu), 8 PASS. Écarts consignés : les transactions de caution, écrites par les fonctions de la base, n'ont pas de config_version_id ; les lignes de crédit de OPERATOR_FEE, somme de plusieurs règles, ne citent pas de règle (les lignes de débit, une par règle, la citent) ; les droits de place n'ont pas de règle de frais (montant de la participation) ; les frais d'un canal de paiement sont lus par une convention provisoire (bénéficiaire PSP:<canal>) en attendant la mission des PSP ; une opération datée d'avant la première version de configuration de l'événement prend cette première version."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP12-resolveur-configuration-sql/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP12-resolveur-configuration-sql/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 56078,
+      "shell_pid_created_at": "1791808398.601202",
+      "subtasks": {
+        "T050": "done",
+        "T051": "done",
+        "T052": "done",
+        "T053": "done"
+      }
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA56BCKD52S9TWVQHKB5HR",
+      "last_transition_at": "2026-10-13T09:40:33.772441+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Parcours de bout en bout, balayage d'isolation des 48 opérations, latence, ADR-80 à 82, CI.md ; Jest 873/873 sur 13 exécutions complètes, pgTAP 947/947, lint et typecheck verts.",
+        "Review passed. Checklist : 1 N/A (tests et documents), 2 PASS (parcours et balayage par HTTP sur la vraie base ; le balayage lit la liste des opérations dans openapi.yaml), 3 PASS, 4 PASS (SC-001 à SC-005, NFR-001, NFR-003, NFR-006, FR-020, FR-021), 5 PASS, 6 PASS, 7 : fichiers hors périmètre touchés — events.service.ts et events.controller.ts (liste des événements sans lecture par ligne), test/scenario/api-config-fixture.ts (réglages de cascade du scénario au niveau de l'organisateur), 8 N/A. Écart consigné sur NFR-003 : les seuils sont tenus avec une large marge quand la suite tourne seule ; pendant la suite Jest complète, la première série d'écritures dépasse 200 ms sous la charge des autres suites et la série refaite le tient — le test refait la série et consigne toutes les mesures. Quickstart : les commandes de vérification ont été rejouées ; l'étape 1 du parcours utilise un pays réservé au test plutôt que SN, que d'autres suites alimentent en parallèle."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP13-preuves-bout-en-bout-ci-docs/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP13-preuves-bout-en-bout-ci-docs/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 62412,
+      "shell_pid_created_at": "1791809619.904157",
+      "subtasks": {
+        "T054": "done",
+        "T055": "done",
+        "T056": "done",
+        "T057": "done"
+      }
+    }
+  }
 }

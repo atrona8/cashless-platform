@@ -104,12 +104,13 @@ export async function readOriginalLines(client: Queryable, ledgerId: string, tra
  * Sérialise les lignes pour `post_transaction` : montants écrits comme nombres JSON à partir de leur forme décimale
  * exacte (`bigint.toString()`), jamais convertis en `number` (même texte JSON que les appels SQL du schéma).
  */
-export function linesJson(lines: readonly { accountId: string; amount: bigint; memo?: string }[]): string {
+export function linesJson(lines: readonly { accountId: string; amount: bigint; memo?: string; feeRuleId?: string }[]): string {
   return `[${lines
     .map(
       (line) =>
         `{"account_id":${JSON.stringify(line.accountId)},"amount":${line.amount.toString()}` +
-        `${line.memo === undefined ? '' : `,"memo":${JSON.stringify(line.memo)}`}}`,
+        `${line.memo === undefined ? '' : `,"memo":${JSON.stringify(line.memo)}`}` +
+        `${line.feeRuleId === undefined ? '' : `,"fee_rule_id":${JSON.stringify(line.feeRuleId)}`}}`,
     )
     .join(',')}]`;
 }

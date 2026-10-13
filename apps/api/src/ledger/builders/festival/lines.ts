@@ -24,6 +24,12 @@ export function creditWithTax(lines: Line[], ttc: bigint, taxBps: bigint, htAcco
   push(lines, taxAccount, -tax);
 }
 
+/** Marque les lignes ajoutées depuis `from` comme produites par cette règle de frais (sans effet pour une règle sans identifiant). */
+export function tagFee(lines: Line[], from: number, rule: { id?: string } | undefined): void {
+  if (!rule?.id) return;
+  for (let index = from; index < lines.length; index += 1) lines[index]!.feeRuleId = rule.id;
+}
+
 /** Dernier contrôle d'un constructeur : au moins deux lignes et somme nulle (sinon, défaut du constructeur). */
 export function balanced(lines: Line[]): Line[] {
   const sum = lines.reduce((total, line) => total + line.amount, 0n);

@@ -2033,6 +2033,739 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/jurisdiction-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les profils de législation
+         * @description Toutes les versions des profils de législation (§4.1), triées par pays puis version. Donnée de référence :
+         *     lisible par `PLATFORM_ADMIN`, `OPERATOR_ADMIN` et `ORGANIZER_ADMIN`. Filtre facultatif par pays.
+         */
+        get: operations["listJurisdictionProfiles"];
+        put?: never;
+        /**
+         * Créer le profil de législation d'un pays
+         * @description Crée la version 1 du profil d'un pays. Un champ omis prend sa valeur provisoire (§17.2) et son nom est rendu
+         *     dans `provisional_fields` avec la personne qui doit le confirmer. Un profil existe déjà pour ce pays : `409
+         *     CONFLICT_STATE` (créer une version). Journalisé (`JURISDICTION_PROFILE_CREATED`). Réservé à `PLATFORM_ADMIN` ;
+         *     écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un
+         *     prestataire.
+         */
+        post: operations["createJurisdictionProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jurisdiction-profiles/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une version de profil de législation
+         * @description Une version d'un profil, avec `provisional_fields`. Mêmes lecteurs que `listJurisdictionProfiles`.
+         */
+        get: operations["getJurisdictionProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jurisdiction-profiles/{profile_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publier une nouvelle version d'un profil de législation
+         * @description Un profil ne se modifie jamais (§4.1) : cette opération crée la version suivante du même pays, avec sa date
+         *     d'effet. `profile_id` doit être la dernière version (sinon `409 CONFLICT_STATE`). Si un plafond réglementaire
+         *     change (`max_wallet_balance`, `kyc_threshold`, `unidentified_max_balance`, `unidentified_monthly_limit`,
+         *     `identified_monthly_limit`), l'opération est à deux personnes : `202`, action `JURISDICTION_LIMITS_CHANGE`.
+         *     Sinon `201`. Les événements gardent la version à laquelle ils sont rattachés. Réservé à `PLATFORM_ADMIN` ;
+         *     écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un
+         *     prestataire.
+         */
+        post: operations["createJurisdictionProfileVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les prestataires
+         * @description Prestataires de la plateforme, triés par date de création. Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de
+         *     base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+         */
+        get: operations["listOperators"];
+        put?: never;
+        /**
+         * Créer un prestataire
+         * @description Crée la partie `OPERATOR` (§3.1). Son contrat avec la plateforme, son premier `OPERATOR_ADMIN` (`createUser`,
+         *     `grantRole`) et sa configuration se créent ensuite. Journalisé (`OPERATOR_CREATED`). Réservé à
+         *     `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+         *     applicatif d'un prestataire.
+         */
+        post: operations["createOperator"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un prestataire
+         * @description Fiche du prestataire. Rôles : `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien.
+         */
+        get: operations["getOperator"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier la fiche d'un prestataire
+         * @description Données descriptives seules (`legal_name`, `country_code`, `tax_id`). Journalisé (`OPERATOR_UPDATED`, avant et
+         *     après). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais
+         *     par le rôle applicatif d'un prestataire.
+         */
+        patch: operations["updateOperator"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/platform-contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versions du contrat plateforme–prestataire
+         * @description Versions du contrat `PLATFORM_OPERATOR` du prestataire (§4.3), de la plus récente à la plus ancienne. Rôles :
+         *     `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien (lecture).
+         */
+        get: operations["listPlatformContracts"];
+        put?: never;
+        /**
+         * Créer le contrat plateforme–prestataire
+         * @description Crée la version 1 du contrat `PLATFORM_OPERATOR`. Un contrat existe déjà : `409 CONFLICT_STATE` (publier une
+         *     version). Journalisé (`CONTRACT_CREATED`). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la
+         *     plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+         */
+        post: operations["createPlatformContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/platform-contracts/{contract_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publier une nouvelle version du contrat plateforme–prestataire
+         * @description Un contrat ne se modifie jamais : une nouvelle version, avec sa date d'effet (§4.3). Opération à deux
+         *     personnes (ADR-74) : `202` avec une demande d'approbation `PENDING`. Action `PLATFORM_CONTRACT_VERSION`,
+         *     décidée par un autre `PLATFORM_ADMIN`. `contract_id` doit être la dernière version (sinon `409
+         *     CONFLICT_STATE`) ; date d'effet antérieure à celle de la version précédente : `422`. Réservé à
+         *     `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+         *     applicatif d'un prestataire.
+         */
+        post: operations["createPlatformContractVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/config-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versions de configuration de la plateforme
+         * @description Versions du niveau `PLATFORM` de la cascade (§4.2), de la plus récente à la plus ancienne. Réservé à
+         *     `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+         *     applicatif d'un prestataire.
+         */
+        get: operations["listPlatformConfigVersions"];
+        put?: never;
+        /**
+         * Publier une version de configuration de la plateforme
+         * @description Crée la version suivante du niveau `PLATFORM` : contenu complet du niveau, pas un différentiel. Clé inconnue,
+         *     clé non réglable à ce niveau ou valeur hors bornes : `422 VALIDATION_FAILED` (`violations`). Journalisé
+         *     (`CONFIG_VERSION_CREATED`, version précédente et nouvelle). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de
+         *     base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+         */
+        post: operations["createPlatformConfigVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/platform-fee-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les redevances de plateforme d'un prestataire
+         * @description Règles de frais de portée `PLATFORM_CONTRACT` (flux plateforme → prestataire, §5.6), en vigueur et fermées.
+         *     Rôles : `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien (lecture).
+         */
+        get: operations["listPlatformFeeRules"];
+        put?: never;
+        /**
+         * Créer une redevance de plateforme
+         * @description Crée une règle de portée `PLATFORM_CONTRACT` sur un contrat `PLATFORM_OPERATOR` du prestataire (`scope_id`).
+         *     Une règle en vigueur de même portée, payeur, bénéficiaire et assiette existe : `409 CONFLICT_STATE` (la
+         *     remplacer). Journalisé (`FEE_RULE_CREATED`). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la
+         *     plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+         */
+        post: operations["createPlatformFeeRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/config-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versions de configuration d'un prestataire
+         * @description Versions du niveau `OPERATOR` de la cascade (§4.2). Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["listOperatorConfigVersions"];
+        put?: never;
+        /**
+         * Publier une version de configuration d'un prestataire
+         * @description Crée la version suivante du niveau `OPERATOR` (contenu complet). Contrôles dans l'ordre : type, bornes fixes
+         *     du catalogue, maximum du niveau supérieur ; premier échec : `422 VALIDATION_FAILED` (`violations`). Écriture
+         *     concurrente : `409 CONFLICT_STATE`. Journalisé (`CONFIG_VERSION_CREATED`). Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["createOperatorConfigVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/organizers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les organisateurs d'un prestataire
+         * @description Parties `ORGANIZER` du prestataire. Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` ne voit que
+         *     le sien.
+         */
+        get: operations["listOrganizers"];
+        put?: never;
+        /**
+         * Créer un organisateur
+         * @description Crée la partie `ORGANIZER` dans le prestataire du chemin (§3.1). Journalisé (`ORGANIZER_CREATED`). Rôle :
+         *     `OPERATOR_ADMIN`.
+         */
+        post: operations["createOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/organizers/{organizer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un organisateur
+         * @description Rôles : comme `listOrganizers`. Organisateur d'un autre prestataire : `404`.
+         */
+        get: operations["getOrganizer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier la fiche d'un organisateur
+         * @description Données descriptives seules. Journalisé (`ORGANIZER_UPDATED`, avant et après). Rôle : `OPERATOR_ADMIN`.
+         */
+        patch: operations["updateOrganizer"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/organizers/{organizer_id}/config-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versions de configuration d'un organisateur
+         * @description Versions du niveau `ORGANIZER` de la cascade. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` de cet organisateur.
+         */
+        get: operations["listOrganizerConfigVersions"];
+        put?: never;
+        /**
+         * Publier une version de configuration d'un organisateur
+         * @description Crée la version suivante du niveau `ORGANIZER` (contenu complet). Chaque clé n'est acceptée que du rôle qui la
+         *     règle (catalogue des réglages) : clé d'un autre rôle modifiée : `403 FORBIDDEN`, rien n'est écrit. Hors bornes
+         *     : `422 VALIDATION_FAILED` (`violations`). Journalisé (`CONFIG_VERSION_CREATED`). Rôles : `OPERATOR_ADMIN`,
+         *     `ORGANIZER_ADMIN` de cet organisateur.
+         */
+        post: operations["createOrganizerConfigVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/organizers/{organizer_id}/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versions du contrat prestataire–organisateur
+         * @description Versions du contrat `OPERATOR_ORGANIZER` de l'organisateur (§4.3). Rôles : `OPERATOR_ADMIN` ;
+         *     `ORGANIZER_ADMIN` de cet organisateur (lecture).
+         */
+        get: operations["listOrganizerContracts"];
+        put?: never;
+        /**
+         * Créer le contrat prestataire–organisateur
+         * @description Crée la version 1 du contrat `OPERATOR_ORGANIZER` avec ses champs obligatoires (§4.3). Un contrat existe déjà
+         *     : `409 CONFLICT_STATE`. Journalisé (`CONTRACT_CREATED`). Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["createOrganizerContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/contracts/{contract_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publier une nouvelle version du contrat prestataire–organisateur
+         * @description Un contrat ne se modifie jamais : une nouvelle version, avec sa date d'effet. Opération à deux personnes
+         *     (ADR-74) : `202` avec une demande d'approbation `PENDING`. Action `CONTRACT_VERSION`, décidée par un autre
+         *     `OPERATOR_ADMIN`. `contract_id` doit être la dernière version (sinon `409 CONFLICT_STATE`). Les événements
+         *     gardent la version à laquelle ils sont rattachés. Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["createOrganizerContractVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/merchants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les commerçants d'un prestataire
+         * @description Parties `MERCHANT` du prestataire. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` ; `MERCHANT_ADMIN` ne voit que
+         *     le sien.
+         */
+        get: operations["listMerchants"];
+        put?: never;
+        /**
+         * Créer un commerçant
+         * @description Crée la partie `MERCHANT` dans le prestataire du chemin ; elle est inscrite ensuite aux événements par
+         *     `createParticipation`. Journalisé (`MERCHANT_CREATED`). Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`.
+         */
+        post: operations["createMerchant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/merchants/{merchant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un commerçant
+         * @description Rôles : comme `listMerchants`. Commerçant d'un autre prestataire : `404`.
+         */
+        get: operations["getMerchant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier la fiche d'un commerçant
+         * @description Données descriptives seules. Journalisé (`MERCHANT_UPDATED`, avant et après). Rôles : `OPERATOR_ADMIN`,
+         *     `ORGANIZER_ADMIN`.
+         */
+        patch: operations["updateMerchant"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les événements d'un prestataire
+         * @description Événements du prestataire, du plus récent au plus ancien ; filtres facultatifs par organisateur et par statut.
+         *     Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` (ceux de son organisateur) ; `SUPERVISOR` (ceux de sa portée).
+         */
+        get: operations["listEvents"];
+        put?: never;
+        /**
+         * Créer un événement
+         * @description Dans une seule transaction : l'événement (`DRAFT`), son grand livre et ses comptes fixes (§5.2), la version 1
+         *     de sa configuration et la ligne d'audit (`EVENT_CREATED`). `funds_holder` est obligatoire, sans valeur par
+         *     défaut (§4.4) ; `THIRD_PARTY` exige `funds_holder_party_id`. `refund_deadline` omise : fin + 30 jours, valeur
+         *     provisoire (`refund_deadline_source = PROVISIONAL_DEFAULT`). Réglage hors bornes (catalogue, maximum du
+         *     prestataire, profil de législation) : `422 VALIDATION_FAILED`, le `detail` cite la règle (`violations`). Rôles
+         *     : `ORGANIZER_ADMIN` de l'organisateur, `OPERATOR_ADMIN`.
+         */
+        post: operations["createEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un événement
+         * @description Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` de son organisateur, `SUPERVISOR` de l'événement. Événement d'un
+         *     autre prestataire : `404`.
+         */
+        get: operations["getEvent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier un événement
+         * @description Chaque clé n'est acceptée que du rôle qui la règle (catalogue des réglages, §4.2, §9.8) : clé d'un autre rôle
+         *     : `403 FORBIDDEN` ; clés de deux rôles dans la même requête : `422` (deux demandes distinctes). `DRAFT` :
+         *     modification immédiate (`200`), nouvelle version de configuration `EVENT`, ligne d'audit (`EVENT_UPDATED`).
+         *     `LIVE` : opération à deux personnes (`202`, action `EVENT_SETTINGS_CHANGE` ou
+         *     `EVENT_OPERATOR_SETTINGS_CHANGE`). À partir de `CLOSING` : `409 CONFLICT_STATE`. Hors bornes : `422
+         *     VALIDATION_FAILED` (`violations`). Le statut ne se modifie pas ici (`transitionEventStatus`) : une clé
+         *     `status` est refusée (`400`).
+         */
+        patch: operations["updateEvent"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Configuration résolue d'un événement à une date
+         * @description Résout la cascade `PLATFORM → OPERATOR → ORGANIZER → EVENT` (§4.2) à la date `at` : pour chaque clé, la valeur
+         *     du niveau le plus précis qui la définit, son niveau et sa version d'origine ; à défaut la valeur par défaut du
+         *     catalogue, marquée `provisional` si elle vient de §17.2. `participation_id` ajoute le niveau `PARTICIPATION`.
+         *     Rôles : lecture de l'événement.
+         */
+        get: operations["getResolvedEventConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/status-conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conditions d'un passage de statut
+         * @description Conditions du passage vers `to` (défaut : statut suivant, §12.1). Source `DATABASE` : calculées par la base,
+         *     celles que le passage vérifie ; `CONFIGURATION` (vers `LIVE`) : `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`,
+         *     `JURISDICTION_SET`, `LEDGER_OPEN` ; `EXTERNAL` : conditions tenues par une autre mission (`met = null`,
+         *     `owner_mission`). Rôles : lecture de l'événement.
+         */
+        get: operations["getEventStatusConditions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/status-transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Faire passer un événement au statut suivant
+         * @description Le statut ne change que par cette opération (§12.1). `DRAFT → LIVE` : conditions de configuration toutes
+         *     remplies, puis opération à deux personnes (`202`, action `EVENT_GO_LIVE`) ; à l'approbation les conditions
+         *     sont revérifiées. Autres passages : immédiats (`200`). Passage non prévu : `409 EVENT_TRANSITION_INVALID` ;
+         *     condition non remplie : `409 CLOSING_CONDITION_NOT_MET`, le `detail` nomme la condition. Journalisé
+         *     (`EVENT_STATUS_CHANGED`, avant, après, valideur). Rôles : `ORGANIZER_ADMIN` de l'organisateur,
+         *     `OPERATOR_ADMIN`.
+         */
+        post: operations["transitionEventStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/participations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les participations d'un événement
+         * @description Commerçants inscrits à l'événement. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR` de l'événement ;
+         *     `MERCHANT_ADMIN` ne voit que la sienne.
+         */
+        get: operations["listParticipations"];
+        put?: never;
+        /**
+         * Inscrire un commerçant à un événement
+         * @description Dans une seule transaction : la participation, son compte commerçant `L-MCH-<id>` (§5.2) et la ligne d'audit
+         *     (`PARTICIPATION_CREATED`). `INTERNAL` : versements à l'organisateur ; `EXTERNAL` : au commerçant (§3.1).
+         *     `PREPAID` avec un droit de place non nul exige `pitch_fee_reference`. Commerçant déjà inscrit : `409
+         *     CONFLICT_STATE`. Événement `LIVE` : opération à deux personnes (`202`, action `PARTICIPATION_CHANGE`) ;
+         *     événement clos : `409`. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["createParticipation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/participations/{participation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une participation
+         * @description Rôles : comme `listParticipations`.
+         */
+        get: operations["getParticipation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier une participation
+         * @description Droit de place et son mode (§12.1). Événement, commerçant et type (`INTERNAL`, `EXTERNAL`) ne changent pas.
+         *     Événement `LIVE` : opération à deux personnes (`202`, action `PARTICIPATION_CHANGE`). Journalisé
+         *     (`PARTICIPATION_UPDATED`). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        patch: operations["updateParticipation"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/participations/{participation_id}/points-of-sale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les points de vente d'une participation
+         * @description Rôles : comme `listParticipations`.
+         */
+        get: operations["listPointsOfSale"];
+        put?: never;
+        /**
+         * Créer un point de vente
+         * @description Stand ou caisse d'un commerçant inscrit ; les terminaux y sont affectés ensuite. Journalisé
+         *     (`POINT_OF_SALE_CREATED`). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["createPointOfSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/points-of-sale/{pos_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un point de vente
+         * @description Rôles : comme `listParticipations`.
+         */
+        get: operations["getPointOfSale"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Renommer un point de vente
+         * @description Seul le nom change ; le rattachement à la participation est immuable. Journalisé (`POINT_OF_SALE_RENAMED`).
+         *     Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        patch: operations["renamePointOfSale"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/fee-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les règles de frais d'un prestataire
+         * @description Règles des portées `OPERATOR_CONTRACT`, `EVENT` et `PARTICIPATION` (§5.6), en vigueur et fermées ; filtres
+         *     facultatifs par portée. Les redevances de plateforme se lisent par `listPlatformFeeRules`. Rôles :
+         *     `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` (portées de son organisateur).
+         */
+        get: operations["listFeeRules"];
+        put?: never;
+        /**
+         * Créer une règle de frais
+         * @description Rôle selon la portée : `OPERATOR_CONTRACT` (prestataire → organisateur) : `OPERATOR_ADMIN` ; `EVENT` et
+         *     `PARTICIPATION` (organisateur → commerçant, frais festivalier) : `ORGANIZER_ADMIN`. `PLATFORM_CONTRACT` est
+         *     refusée ici (`403`, `createPlatformFeeRule`). `tax_code` doit être une taxe du profil de législation de la
+         *     portée. Règle en vigueur de même portée, payeur, bénéficiaire et assiette : `409 CONFLICT_STATE` (la
+         *     remplacer). Événement visé `LIVE` : opération à deux personnes (`202`, action `FEE_RULE_CHANGE`). Journalisé
+         *     (`FEE_RULE_CREATED`).
+         */
+        post: operations["createFeeRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/fee-rules/{fee_rule_id}/replacements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remplacer une règle de frais
+         * @description Une règle ne se modifie jamais (§5.6) : dans une seule transaction, l'ancienne est fermée (`valid_to` = date
+         *     d'effet de la nouvelle) et la nouvelle est créée (version + 1). Portée, payeur, bénéficiaire et assiette
+         *     restent ceux de la règle remplacée (sinon `422`). Règle déjà fermée : `409 CONFLICT_STATE`. Même rôle que pour
+         *     la créer ; une redevance de plateforme : `PLATFORM_ADMIN`. Événement visé `LIVE` : `202` (`FEE_RULE_CHANGE`).
+         *     Journalisé (`FEE_RULE_REPLACED`, ancienne et nouvelle).
+         */
+        post: operations["replaceFeeRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = {
     paymentIntentSucceeded: {
@@ -2131,6 +2864,22 @@ export type components = {
                 /** @description JSON Pointer (RFC 6901) vers le champ fautif. */
                 pointer: string;
                 message: string;
+            }[];
+            /**
+             * @description `VALIDATION_FAILED` sur un réglage hors bornes (§4.1) : une entrée par borne franchie. Le `detail`
+             *     cite la même règle, traduit selon `Accept-Language`.
+             */
+            violations?: {
+                /** @description Réglage refusé (`refund_deadline`, `cash_refund_single_max`…). */
+                field: string;
+                /** @description Identifiant stable de la règle (`jurisdiction.min_refund_window_days`, `catalog.range`, `operator.cash_refund_single_max_cap`…). */
+                rule: string;
+                /** @description Valeur demandée. */
+                requested: unknown;
+                /** @description Borne franchie. */
+                limit: unknown;
+                /** @description Origine de la borne — profil de législation (`SN v1`), niveau et version de configuration, ou `catalog`. */
+                source: string;
             }[];
         } & {
             [key: string]: unknown;
@@ -3554,9 +4303,16 @@ export type components = {
          *     `FORCE_CENTRAL_AUTHORITY` → `requestDebitAuthorityChange` (`force = true`). `ADJUSTMENT`,
          *     `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT`, `PSP_CONFIGURATION`, `EVENT_PSP_SELECTION` : opérations
          *     du back-office à ajouter au contrat (SPECIFICATION §10.4), qui suivent le même flux.
+         *     Configuration (deux personnes du même rôle) : `EVENT_GO_LIVE` → `transitionEventStatus` (vers `LIVE`) ;
+         *     `EVENT_SETTINGS_CHANGE` et `EVENT_OPERATOR_SETTINGS_CHANGE` → `updateEvent` (événement `LIVE`, réglages de
+         *     l'organisateur ou du prestataire) ; `PARTICIPATION_CHANGE` → `createParticipation`, `updateParticipation`
+         *     (événement `LIVE`) ; `FEE_RULE_CHANGE` → `createFeeRule`, `replaceFeeRule` (événement `LIVE`) ;
+         *     `CONTRACT_VERSION` → `createOrganizerContractVersion`. Niveau plateforme (demande sans prestataire, décidée
+         *     par un autre `PLATFORM_ADMIN`) : `PLATFORM_CONTRACT_VERSION` → `createPlatformContractVersion` ;
+         *     `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
          * @enum {string}
          */
-        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK";
+        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE";
         /**
          * @description `PENDING` → `APPROVED` | `REJECTED` | `EXPIRED` ; `APPROVED` → `EXECUTED` | `FAILED` (garde de la base).
          *     `APPROVED` est un état de passage : `approveApprovalRequest` exécute l'action dans la foulée.
@@ -3990,6 +4746,599 @@ export type components = {
             /** @description Attributions actives. */
             role_assignments: components["schemas"]["RoleAssignment"][];
         };
+        /**
+         * @description Statut d'un événement (§12.1). Ne change que par `transitionEventStatus`.
+         * @enum {string}
+         */
+        EventStatus: "DRAFT" | "LIVE" | "CLOSING" | "RECONCILING" | "SETTLING" | "REFUND_WINDOW" | "CLOSED";
+        /**
+         * @description Version d'un profil de législation (`jurisdiction_profile`, §4.1) : règles d'un pays qui bornent la
+         *     configuration. Jamais modifiée ; une nouvelle version la remplace à sa date d'effet. Montants en unités
+         *     mineures de la devise du pays.
+         */
+        JurisdictionProfile: {
+            /** Format: uuid */
+            profile_id: string;
+            country_code: string;
+            version: number;
+            /** Format: date */
+            valid_from: string;
+            /** @description Délai minimal de remboursement après la fin de l'événement ; `null` = pas d'obligation. */
+            min_refund_window_days?: number | null;
+            /**
+             * @description Destination des soldes non réclamés (§5.5).
+             * @enum {string}
+             */
+            breakage_destination: "ORGANIZER" | "OPERATOR" | "LEGAL_ACCOUNT" | "NONE";
+            /**
+             * Format: int64
+             * @description Plafond de solde d'un client identifié ; `null` = aucun.
+             */
+            max_wallet_balance?: number | null;
+            /** Format: int64 */
+            kyc_threshold?: number | null;
+            /** Format: int64 */
+            unidentified_max_balance?: number | null;
+            /** Format: int64 */
+            unidentified_monthly_limit?: number | null;
+            /** Format: int64 */
+            identified_monthly_limit?: number | null;
+            /** @description Années de réclamation tardive après la clôture (ADR-67) ; 0 = casse définitive. */
+            late_claim_years: number;
+            /** @description Taxes (`taxes`), arrondis et autres règles du pays. */
+            rules: {
+                [key: string]: unknown;
+            };
+            /** @description Champs dont la valeur est un défaut provisoire de §17.2, à confirmer ; vide si tout a été saisi. */
+            provisional_fields: {
+                field: string;
+                /** @description Personne qui doit confirmer la valeur (juriste, expert-comptable, porteur). */
+                confirm_by: string;
+            }[];
+        };
+        /**
+         * @description Contenu d'une version de profil. `country_code` est obligatoire à la création du profil d'un pays et ignoré
+         *     pour une nouvelle version (pays du profil du chemin). Un champ omis prend son défaut provisoire (§17.2).
+         */
+        JurisdictionProfileCreate: {
+            country_code?: string;
+            /** Format: date */
+            valid_from: string;
+            min_refund_window_days?: number | null;
+            /** @enum {string} */
+            breakage_destination?: "ORGANIZER" | "OPERATOR" | "LEGAL_ACCOUNT" | "NONE";
+            /** Format: int64 */
+            max_wallet_balance?: number | null;
+            /** Format: int64 */
+            kyc_threshold?: number | null;
+            /** Format: int64 */
+            unidentified_max_balance?: number | null;
+            /** Format: int64 */
+            unidentified_monthly_limit?: number | null;
+            /** Format: int64 */
+            identified_monthly_limit?: number | null;
+            late_claim_years?: number;
+            rules?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Prestataire (partie `OPERATOR`, §3.1), unité d'isolation des données. */
+        Operator: {
+            /** Format: uuid */
+            operator_id: string;
+            legal_name: string;
+            country_code: string | null;
+            tax_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        OperatorCreate: {
+            legal_name: string;
+            country_code: string;
+            tax_id?: string | null;
+        };
+        /** @description Organisateur (partie `ORGANIZER`) rattaché à un prestataire. */
+        Organizer: {
+            /** Format: uuid */
+            organizer_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            legal_name: string;
+            country_code: string | null;
+            tax_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        /**
+         * @description Commerçant (partie `MERCHANT`) rattaché à un prestataire. Il ne porte aucune condition commerciale : elles
+         *     sont sur ses participations.
+         */
+        Merchant: {
+            /** Format: uuid */
+            merchant_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            legal_name: string;
+            country_code: string | null;
+            tax_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        /** @description Création d'un organisateur ou d'un commerçant. Le prestataire est celui du chemin, jamais du corps. */
+        PartyCreate: {
+            legal_name: string;
+            country_code?: string | null;
+            tax_id?: string | null;
+        };
+        /** @description Données descriptives d'une partie ; au moins une. */
+        PartyUpdate: {
+            legal_name?: string;
+            country_code?: string | null;
+            tax_id?: string | null;
+        };
+        /** @enum {string} */
+        ContractKind: "PLATFORM_OPERATOR" | "OPERATOR_ORGANIZER";
+        /**
+         * @description Version d'un contrat (`contract`, §4.3). Jamais modifiée. Champs propres au type : `platform_fee_mode`
+         *     (`PLATFORM_OPERATOR`) ; `offline_loss_bearer`, `cash_diff_bearer`, `breakage_organizer_bps`
+         *     (`OPERATOR_ORGANIZER`).
+         */
+        Contract: {
+            /** Format: uuid */
+            contract_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            kind: components["schemas"]["ContractKind"];
+            /**
+             * Format: uuid
+             * @description Plateforme (`PLATFORM_OPERATOR`) ou organisateur (`OPERATOR_ORGANIZER`).
+             */
+            counterparty_id: string;
+            version: number;
+            valid_from: components["schemas"]["Timestamp"];
+            /** @enum {string|null} */
+            platform_fee_mode?: "IN_POOL" | "INVOICED" | null;
+            /** @enum {string|null} */
+            offline_loss_bearer?: "ORGANIZER" | "OPERATOR" | null;
+            /** @enum {string|null} */
+            cash_diff_bearer?: "ORGANIZER" | "OPERATOR" | null;
+            /** @description Part de la casse de l'organisateur, en points de base ; le reste au prestataire. */
+            breakage_organizer_bps?: number | null;
+            /** @enum {string} */
+            operator_fee_basis: "GROSS" | "NET_OF_REFUNDS";
+            /** @enum {string} */
+            chargeback_bearer: "ORGANIZER" | "OPERATOR";
+        };
+        PlatformContractCreate: {
+            valid_from: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            platform_fee_mode: "IN_POOL" | "INVOICED";
+        };
+        OrganizerContractCreate: {
+            valid_from: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            offline_loss_bearer: "ORGANIZER" | "OPERATOR";
+            /** @enum {string} */
+            cash_diff_bearer: "ORGANIZER" | "OPERATOR";
+            breakage_organizer_bps: number;
+            /**
+             * @default GROSS
+             * @enum {string}
+             */
+            operator_fee_basis: "GROSS" | "NET_OF_REFUNDS";
+            /**
+             * @default ORGANIZER
+             * @enum {string}
+             */
+            chargeback_bearer: "ORGANIZER" | "OPERATOR";
+        };
+        /**
+         * @description Nouvelle version d'un contrat. `valid_from` ne peut pas précéder celle de la version en vigueur. Un champ
+         *     omis reprend la valeur de la version précédente ; seuls les champs du type du contrat sont acceptés.
+         */
+        ContractVersionCreate: {
+            valid_from: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            platform_fee_mode?: "IN_POOL" | "INVOICED";
+            /** @enum {string} */
+            offline_loss_bearer?: "ORGANIZER" | "OPERATOR";
+            /** @enum {string} */
+            cash_diff_bearer?: "ORGANIZER" | "OPERATOR";
+            breakage_organizer_bps?: number;
+            /** @enum {string} */
+            operator_fee_basis?: "GROSS" | "NET_OF_REFUNDS";
+            /** @enum {string} */
+            chargeback_bearer?: "ORGANIZER" | "OPERATOR";
+        };
+        /**
+         * @description Niveau de la cascade de configuration (§4.2), du plus général au plus précis.
+         * @enum {string}
+         */
+        ConfigLevel: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "EVENT" | "PARTICIPATION";
+        /**
+         * @description État figé d'un niveau de la cascade à partir d'une date (`config_version`). `settings` est le contenu complet
+         *     du niveau ; pour un événement il contient aussi l'instantané des réglages portés par ses colonnes.
+         */
+        ConfigVersion: {
+            /** Format: uuid */
+            config_version_id: string;
+            /**
+             * Format: uuid
+             * @description `null` pour le niveau `PLATFORM`.
+             */
+            operator_id: string | null;
+            scope_type: components["schemas"]["ConfigLevel"];
+            /** Format: uuid */
+            scope_id: string;
+            version: number;
+            valid_from: components["schemas"]["Timestamp"];
+            settings: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Contenu complet du niveau (pas un différentiel). La version et la date d'effet sont posées par le serveur. */
+        ConfigVersionCreate: {
+            settings: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Configuration résolue à une date - une entrée par clé du catalogue des réglages. */
+        ResolvedConfigView: {
+            [key: string]: {
+                /** @description Valeur en vigueur. */
+                value: unknown;
+                /** @description Niveau qui définit la valeur ; `null` si elle vient du défaut du catalogue. */
+                level: components["schemas"]["ConfigLevel"] | null;
+                version: number | null;
+                /** Format: uuid */
+                config_version_id: string | null;
+                /** @description `true` si la valeur est un défaut provisoire de §17.2, à confirmer. */
+                provisional: boolean;
+            };
+        };
+        /**
+         * @description Titulaire des comptes d'argent de l'événement (§4.4). Obligatoire, sans valeur par défaut, hors cascade.
+         * @enum {string}
+         */
+        FundsHolder: "ORGANIZER" | "OPERATOR" | "THIRD_PARTY";
+        /**
+         * @description Événement (`event`, §4.2, §9.8, §12.1). Montants en unités mineures de `currency`. Réglés par
+         *     l'`ORGANIZER_ADMIN` : nom, dates, `refund_deadline`, `identity_mode`, `activation_modes`,
+         *     `lost_media_policy`, `cash_refund_single_max`, `reversal_window_minutes`. Réglés par l'`OPERATOR_ADMIN` : les
+         *     réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`, `refund_new_number_*`, `card_*`.
+         */
+        Event: {
+            /** Format: uuid */
+            event_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            /** Format: uuid */
+            organizer_id: string;
+            name: string;
+            currency: components["schemas"]["Currency"];
+            /** @description Fuseau IANA (`Africa/Dakar`). */
+            timezone: string;
+            status: components["schemas"]["EventStatus"];
+            /** Format: date-time */
+            starts_at: string | null;
+            /** Format: date-time */
+            ends_at: string | null;
+            /**
+             * Format: date-time
+             * @description Date limite de remboursement, bornée par `min_refund_window_days` du profil de législation.
+             */
+            refund_deadline: string | null;
+            /**
+             * @description `PROVISIONAL_DEFAULT` : fin + 30 jours (§17.2), à confirmer.
+             * @enum {string|null}
+             */
+            refund_deadline_source: "EXPLICIT" | "PROVISIONAL_DEFAULT" | null;
+            /** Format: uuid */
+            jurisdiction_id: string;
+            /**
+             * Format: uuid
+             * @description Version du contrat prestataire–organisateur applicable.
+             */
+            contract_id: string | null;
+            funds_holder: components["schemas"]["FundsHolder"];
+            /**
+             * Format: uuid
+             * @description Partie tierce détentrice des fonds ; renseignée si et seulement si `funds_holder = THIRD_PARTY`.
+             */
+            funds_holder_party_id: string | null;
+            /**
+             * @description Partie qui doit les crédits aux festivaliers.
+             * @enum {string}
+             */
+            issuer: "ORGANIZER" | "OPERATOR";
+            /** @enum {string} */
+            identity_mode: "ANONYMOUS_ALLOWED" | "ACCOUNT_REQUIRED";
+            activation_modes: ("DESK" | "SELF_APP" | "FIRST_TOPUP")[];
+            /** @enum {string} */
+            lost_media_policy: "END_OF_LIFE" | "REACTIVATE";
+            tap_replay_window_seconds: number;
+            /**
+             * Format: int64
+             * @description Remboursement en espèces par une seule personne jusqu'à ce montant (ADR-53), plafonné par le prestataire.
+             */
+            cash_refund_single_max: number;
+            sync_deadline_hours: number;
+            /** Format: int64 */
+            refund_new_number_max: number;
+            refund_new_number_hold_hours: number;
+            /** Format: int64 */
+            card_topup_daily_max_per_card: number;
+            card_alert_cards_per_wallet: number;
+            /** @description Strictement inférieur à `online_total_timeout_ms`. */
+            online_connect_timeout_ms: number;
+            online_total_timeout_ms: number;
+            online_retries: number;
+            pending_sync_seconds: number;
+            reconcile_sync_seconds: number;
+            heartbeat_seconds: number;
+            reversal_window_minutes: number;
+            local_retention_days: number;
+            /**
+             * Format: uuid
+             * @description Grand livre de l'événement, créé avec lui.
+             */
+            ledger_id: string;
+            /**
+             * Format: uuid
+             * @description Version de configuration `EVENT` en vigueur.
+             */
+            config_version_id: string;
+        };
+        /**
+         * @description Création d'un événement. Les réglages omis prennent la valeur par défaut du schéma. Un `operator_id` reçu est
+         *     ignoré (prestataire du chemin).
+         */
+        EventCreate: {
+            /** Format: uuid */
+            organizer_id: string;
+            name: string;
+            currency: components["schemas"]["Currency"];
+            timezone: string;
+            /** Format: date-time */
+            starts_at?: string | null;
+            /** Format: date-time */
+            ends_at?: string | null;
+            /** Format: date-time */
+            refund_deadline?: string | null;
+            /** Format: uuid */
+            jurisdiction_id: string;
+            /** Format: uuid */
+            contract_id?: string | null;
+            funds_holder: components["schemas"]["FundsHolder"];
+            /** Format: uuid */
+            funds_holder_party_id?: string | null;
+            /**
+             * @default ORGANIZER
+             * @enum {string}
+             */
+            issuer: "ORGANIZER" | "OPERATOR";
+            /** @enum {string} */
+            identity_mode?: "ANONYMOUS_ALLOWED" | "ACCOUNT_REQUIRED";
+            activation_modes?: ("DESK" | "SELF_APP" | "FIRST_TOPUP")[];
+            /** @enum {string} */
+            lost_media_policy?: "END_OF_LIFE" | "REACTIVATE";
+            /** Format: int64 */
+            cash_refund_single_max?: number;
+            reversal_window_minutes?: number;
+        };
+        /**
+         * @description Modification d'un événement ; au moins une clé. Clés de l'`ORGANIZER_ADMIN` : `name`, `starts_at`, `ends_at`,
+         *     `refund_deadline`, `jurisdiction_id`, `contract_id`, `funds_holder`, `funds_holder_party_id`, `issuer`,
+         *     `identity_mode`, `activation_modes`, `lost_media_policy`, `cash_refund_single_max`,
+         *     `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres. Devise, fuseau et organisateur ne
+         *     changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+         */
+        EventUpdate: {
+            name?: string;
+            /** Format: date-time */
+            starts_at?: string | null;
+            /** Format: date-time */
+            ends_at?: string | null;
+            /** Format: date-time */
+            refund_deadline?: string | null;
+            /** Format: uuid */
+            jurisdiction_id?: string;
+            /** Format: uuid */
+            contract_id?: string | null;
+            funds_holder?: components["schemas"]["FundsHolder"];
+            /** Format: uuid */
+            funds_holder_party_id?: string | null;
+            /** @enum {string} */
+            issuer?: "ORGANIZER" | "OPERATOR";
+            /** @enum {string} */
+            identity_mode?: "ANONYMOUS_ALLOWED" | "ACCOUNT_REQUIRED";
+            activation_modes?: ("DESK" | "SELF_APP" | "FIRST_TOPUP")[];
+            /** @enum {string} */
+            lost_media_policy?: "END_OF_LIFE" | "REACTIVATE";
+            /** Format: int64 */
+            cash_refund_single_max?: number;
+            reversal_window_minutes?: number;
+            tap_replay_window_seconds?: number;
+            sync_deadline_hours?: number;
+            /** Format: int64 */
+            refund_new_number_max?: number;
+            refund_new_number_hold_hours?: number;
+            /** Format: int64 */
+            card_topup_daily_max_per_card?: number;
+            card_alert_cards_per_wallet?: number;
+            online_connect_timeout_ms?: number;
+            online_total_timeout_ms?: number;
+            online_retries?: number;
+            pending_sync_seconds?: number;
+            reconcile_sync_seconds?: number;
+            heartbeat_seconds?: number;
+            local_retention_days?: number;
+        };
+        /** @description Condition d'un passage de statut et son état. */
+        StatusCondition: {
+            /**
+             * @description Identifiant stable. `DATABASE` : `TRANSITION_ALLOWED`, `DEVICES_CAUGHT_UP`, `DEBIT_AUTHORITY_CENTRAL`,
+             *     `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`. `CONFIGURATION` :
+             *     `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`, `JURISDICTION_SET`, `LEDGER_OPEN`. `EXTERNAL` :
+             *     `CASH_DESKS_COUNTED`, `PSP_RECONCILED`, `DEVICES_REPORTED`.
+             */
+            code: string;
+            /** @description `null` : condition externe, pas encore calculable. */
+            met: boolean | null;
+            /** @description Raison, traduite selon `Accept-Language`. */
+            detail: string;
+            /** @enum {string} */
+            source: "DATABASE" | "CONFIGURATION" | "EXTERNAL";
+            /** @description Pour une condition `EXTERNAL` - mission qui la rendra calculable. */
+            owner_mission?: string;
+        };
+        StatusTransition: {
+            to: components["schemas"]["EventStatus"];
+        };
+        /**
+         * @description Présence d'un commerçant à un événement (`merchant_participation`, §3.1, §12.1). `INTERNAL` : versements à
+         *     l'organisateur ; `EXTERNAL` : au commerçant. La commission est une règle de frais de portée `PARTICIPATION`.
+         */
+        Participation: {
+            /** Format: uuid */
+            participation_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            /** Format: uuid */
+            event_id: string;
+            /** Format: uuid */
+            merchant_id: string;
+            /** @enum {string} */
+            link_type: "INTERNAL" | "EXTERNAL";
+            /**
+             * Format: uuid
+             * @description Bénéficiaire des versements, posé par la base.
+             */
+            payout_to: string;
+            /** @enum {string} */
+            pitch_fee_mode: "DEDUCT_OR_DEBT" | "PREPAID" | "DEDUCT_CAPPED";
+            /**
+             * Format: int64
+             * @description Droit de place, en unités mineures de la devise de l'événement.
+             */
+            pitch_fee: number;
+            /** @description Référence du paiement d'avance (`PREPAID`). */
+            pitch_fee_reference: string | null;
+            /**
+             * Format: uuid
+             * @description Compte du commerçant dans le grand livre de l'événement (`L-MCH-<id>`).
+             */
+            account_id: string;
+        };
+        ParticipationCreate: {
+            /** Format: uuid */
+            merchant_id: string;
+            /** @enum {string} */
+            link_type: "INTERNAL" | "EXTERNAL";
+            /**
+             * @default DEDUCT_OR_DEBT
+             * @enum {string}
+             */
+            pitch_fee_mode: "DEDUCT_OR_DEBT" | "PREPAID" | "DEDUCT_CAPPED";
+            /**
+             * Format: int64
+             * @default 0
+             */
+            pitch_fee: number;
+            pitch_fee_reference?: string | null;
+        };
+        ParticipationUpdate: {
+            /** @enum {string} */
+            pitch_fee_mode?: "DEDUCT_OR_DEBT" | "PREPAID" | "DEDUCT_CAPPED";
+            /** Format: int64 */
+            pitch_fee?: number;
+            pitch_fee_reference?: string | null;
+        };
+        /** @description Lieu d'encaissement d'une participation (`point_of_sale`), qui portera les terminaux. */
+        PointOfSale: {
+            /** Format: uuid */
+            pos_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            /** Format: uuid */
+            participation_id: string;
+            name: string;
+        };
+        PointOfSaleCreate: {
+            name: string;
+        };
+        /**
+         * @description Portée d'une règle de frais (§5.6) : `PLATFORM_CONTRACT` (plateforme → prestataire), `OPERATOR_CONTRACT`
+         *     (prestataire → organisateur), `EVENT` et `PARTICIPATION` (organisateur → commerçant, frais festivalier).
+         * @enum {string}
+         */
+        FeeRuleScopeType: "PLATFORM_CONTRACT" | "OPERATOR_CONTRACT" | "EVENT" | "PARTICIPATION";
+        /**
+         * @description Règle de frais (`fee_rule`, §5.6). Jamais modifiée : elle se ferme (`valid_to`) et une nouvelle version la
+         *     remplace. Montants en unités mineures.
+         */
+        FeeRule: {
+            /** Format: uuid */
+            fee_rule_id: string;
+            /** Format: uuid */
+            operator_id: string | null;
+            scope_type: components["schemas"]["FeeRuleScopeType"];
+            /**
+             * Format: uuid
+             * @description Contrat, événement ou participation, selon `scope_type`.
+             */
+            scope_id: string;
+            /** @description Usage du compte payeur (`ORG_FPREST`, `MERCHANT`, `OPE_REDEV`…), §5.2. */
+            payer_purpose: string;
+            /** @description Usage du compte bénéficiaire (`OPE_FRAIS`, `ORG_COM`, `PLT_REDEV`…). */
+            beneficiary_purpose: string;
+            /** @enum {string} */
+            basis: "TOPUP_AMOUNT" | "SALE_AMOUNT" | "PER_MEDIA" | "PER_TERMINAL_DAY" | "PER_REFUND" | "FIXED" | "FEE_AMOUNT";
+            /** @description Taux en points de base (1200 = 12 %). */
+            rate_bps: number;
+            /** Format: int64 */
+            fixed_amount: number;
+            /** Format: int64 */
+            min_amount: number | null;
+            /** Format: int64 */
+            max_amount: number | null;
+            /** @description Taxe du profil de législation (`rules.taxes`) ; `null` = hors taxe. */
+            tax_code: string | null;
+            tax_inclusive: boolean;
+            /** @enum {string} */
+            trigger: "REALTIME" | "CLOSING";
+            valid_from: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            valid_to: string | null;
+            version: number;
+        };
+        /**
+         * @description Création ou remplacement d'une règle. `valid_from` omise : instant de l'écriture. `min_amount` ne dépasse pas
+         *     `max_amount`.
+         */
+        FeeRuleCreate: {
+            scope_type: components["schemas"]["FeeRuleScopeType"];
+            /** Format: uuid */
+            scope_id: string;
+            payer_purpose: string;
+            beneficiary_purpose: string;
+            /** @enum {string} */
+            basis: "TOPUP_AMOUNT" | "SALE_AMOUNT" | "PER_MEDIA" | "PER_TERMINAL_DAY" | "PER_REFUND" | "FIXED" | "FEE_AMOUNT";
+            /** @default 0 */
+            rate_bps: number;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            fixed_amount: number;
+            /** Format: int64 */
+            min_amount?: number | null;
+            /** Format: int64 */
+            max_amount?: number | null;
+            tax_code?: string | null;
+            /** @default true */
+            tax_inclusive: boolean;
+            /** @enum {string} */
+            trigger: "REALTIME" | "CLOSING";
+            valid_from?: components["schemas"]["Timestamp"];
+        };
     };
     responses: {
         /** @description Requête invalide (`VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REQUIRED`…). */
@@ -4249,6 +5598,22 @@ export type components = {
          */
         AcceptLanguage: string;
         OutboundSignature: string;
+        /** @description Version de profil de législation. */
+        ProfileId: string;
+        /** @description Version de contrat. */
+        ContractId: string;
+        /** @description Organisateur du prestataire du chemin (sinon `404`). */
+        OrganizerId: string;
+        /** @description Commerçant du prestataire du chemin (sinon `404`). */
+        MerchantId: string;
+        /** @description Événement du prestataire du chemin (sinon `404`). */
+        EventPathId: string;
+        /** @description Participation d'un commerçant à un événement. */
+        ParticipationId: string;
+        /** @description Point de vente. */
+        PosId: string;
+        /** @description Règle de frais. */
+        FeeRuleId: string;
     };
     requestBodies: never;
     headers: {
@@ -8952,6 +10317,2207 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    listJurisdictionProfiles: {
+        parameters: {
+            query?: {
+                /** @description Code pays ISO 3166-1 alpha-2. */
+                country_code?: string;
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de profils de législation. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["JurisdictionProfile"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createJurisdictionProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JurisdictionProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Profil créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/jurisdiction-profiles/{profile_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionProfile"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getJurisdictionProfile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Version de profil de législation. */
+                profile_id: components["parameters"]["ProfileId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Profil de législation. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionProfile"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createJurisdictionProfileVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Version de profil de législation. */
+                profile_id: components["parameters"]["ProfileId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JurisdictionProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Version créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/jurisdiction-profiles/{profile_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionProfile"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listOperators: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de prestataires. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Operator"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createOperator: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OperatorCreate"];
+            };
+        };
+        responses: {
+            /** @description Prestataire créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Operator"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getOperator: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prestataire. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Operator"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateOperator: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Prestataire modifié. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Operator"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listPlatformContracts: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versions de contrat. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Contract"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPlatformContract: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformContractCreate"];
+            };
+        };
+        responses: {
+            /** @description Contrat créé (version 1). */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/platform-contracts` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contract"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    createPlatformContractVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Version de contrat. */
+                contract_id: components["parameters"]["ContractId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Demande d'approbation créée (`PENDING`). */
+            202: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/approval-requests/{approval_request_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRequest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listPlatformConfigVersions: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versions de configuration. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ConfigVersion"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPlatformConfigVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Version créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/platform/config-versions` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listPlatformFeeRules: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de règles de frais. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FeeRule"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPlatformFeeRule: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeeRuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Règle créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/platform-fee-rules` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeeRule"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listOperatorConfigVersions: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versions de configuration. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ConfigVersion"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createOperatorConfigVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Version créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/config-versions` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listOrganizers: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page d'organisateurs. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Organizer"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createOrganizer: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyCreate"];
+            };
+        };
+        responses: {
+            /** @description Organisateur créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/organizers/{organizer_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organizer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getOrganizer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organisateur. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organizer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateOrganizer: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Organisateur modifié. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organizer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listOrganizerConfigVersions: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versions de configuration. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ConfigVersion"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createOrganizerConfigVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Version créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/organizers/{organizer_id}/config-versions` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listOrganizerContracts: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versions de contrat. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Contract"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createOrganizerContract: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizerContractCreate"];
+            };
+        };
+        responses: {
+            /** @description Contrat créé (version 1). */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/organizers/{organizer_id}/contracts` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contract"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    createOrganizerContractVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Version de contrat. */
+                contract_id: components["parameters"]["ContractId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Demande d'approbation créée (`PENDING`). */
+            202: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/approval-requests/{approval_request_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRequest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listMerchants: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de commerçants. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Merchant"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createMerchant: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyCreate"];
+            };
+        };
+        responses: {
+            /** @description Commerçant créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/merchants/{merchant_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Merchant"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getMerchant: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Commerçant du prestataire du chemin (sinon `404`). */
+                merchant_id: components["parameters"]["MerchantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Commerçant. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Merchant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateMerchant: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Commerçant du prestataire du chemin (sinon `404`). */
+                merchant_id: components["parameters"]["MerchantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Commerçant modifié. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Merchant"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listEvents: {
+        parameters: {
+            query?: {
+                /** @description Organisateur. */
+                organizer_id?: string;
+                /** @description Statut. */
+                status?: components["schemas"]["EventStatus"];
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page d'événements. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Event"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventCreate"];
+            };
+        };
+        responses: {
+            /** @description Événement créé (`DRAFT`), avec `ledger_id`. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/events/{event_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Event"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getEvent: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Événement. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Event"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventUpdate"];
+            };
+        };
+        responses: {
+            /** @description Événement modifié. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Event"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getResolvedEventConfig: {
+        parameters: {
+            query?: {
+                /** @description Date de résolution (défaut : maintenant). */
+                at?: string;
+                /** @description Participation de l'événement. */
+                participation_id?: string;
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configuration résolue. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvedConfigView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getEventStatusConditions: {
+        parameters: {
+            query?: {
+                /** @description Statut visé. */
+                to?: components["schemas"]["EventStatus"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conditions, dans l'ordre de contrôle. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusCondition"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    transitionEventStatus: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusTransition"];
+            };
+        };
+        responses: {
+            /** @description Statut changé. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Event"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listParticipations: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de participations. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Participation"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createParticipation: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipationCreate"];
+            };
+        };
+        responses: {
+            /** @description Participation créée, avec `account_id`. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/participations/{participation_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Participation"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getParticipation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Participation d'un commerçant à un événement. */
+                participation_id: components["parameters"]["ParticipationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Participation. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Participation"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateParticipation: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Participation d'un commerçant à un événement. */
+                participation_id: components["parameters"]["ParticipationId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Participation modifiée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Participation"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listPointsOfSale: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Participation d'un commerçant à un événement. */
+                participation_id: components["parameters"]["ParticipationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de points de vente. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PointOfSale"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPointOfSale: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Participation d'un commerçant à un événement. */
+                participation_id: components["parameters"]["ParticipationId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointOfSaleCreate"];
+            };
+        };
+        responses: {
+            /** @description Point de vente créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/points-of-sale/{pos_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PointOfSale"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getPointOfSale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Point de vente. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PointOfSale"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    renamePointOfSale: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointOfSaleCreate"];
+            };
+        };
+        responses: {
+            /** @description Point de vente renommé. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PointOfSale"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listFeeRules: {
+        parameters: {
+            query?: {
+                /** @description Type de portée. */
+                scope_type?: components["schemas"]["FeeRuleScopeType"];
+                /** @description Objet de la portée (contrat, événement, participation). */
+                scope_id?: string;
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de règles de frais. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FeeRule"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createFeeRule: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeeRuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Règle créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/fee-rules` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeeRule"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    replaceFeeRule: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Règle de frais. */
+                fee_rule_id: components["parameters"]["FeeRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeeRuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Nouvelle version de la règle. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/fee-rules` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeeRule"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     onPaymentIntentSucceeded: {

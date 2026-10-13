@@ -10,13 +10,13 @@ import type { Request, Response } from 'express';
 import { from, mergeMap, catchError, type Observable } from 'rxjs';
 import { APP_CONFIG, type AppConfig } from '../config/config';
 import type { TxClient } from '../db/tenant-tx';
-import { TenantTx } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { logProblem, PROBLEM_CONTENT_TYPE, problemBody, resolveProblem } from '../errors/problem.filter';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
 import { CommittedProblem } from './committed-problem';
 import { IdempotencyRepository, LeaseLostError, type Reservation, type StoredResponse } from './idempotency.repository';
 import { IDEMPOTENT, type IdempotentOptions, type IdempotentRequest } from './idempotent.decorator';
+import { assertPlatformAdmin, isPlatformPerson } from './platform-person';
 import { requestHash, routeTemplate } from './request-hash';
 
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
@@ -36,7 +36,6 @@ export class IdempotencyInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
     private readonly moduleRef: ModuleRef,
     private readonly repository: IdempotencyRepository,
-    private readonly tenantTx: TenantTx,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -51,7 +50,10 @@ export class IdempotencyInterceptor implements NestInterceptor {
     if (key.length > 255) {
       throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'Idempotency-Key : 255 caractères au plus.' });
     }
-    const { operatorId } = this.tenant().current(req);
+    // Niveau de la clé : décidé par l'option de la route ; le prestataire n'est pas résolu au niveau plateforme.
+    const platform = options.platform === true || (options.platform === 'principal' && isPlatformPerson(req));
+    if (platform) assertPlatformAdmin(req);
+    const operatorId = platform ? null : this.tenant().current(req).operatorId;
     const scope = typeof options.scope === 'function' ? options.scope(req) : options.scope;
     const outcome = await this.repository.reserve(operatorId, scope, key, requestHash(req.method, routeTemplate(req), req.body));
 
@@ -67,7 +69,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
         if (recorded) throw new Error('IdempotentTx.run : une seule transaction métier par requête');
         let response: StoredResponse | undefined;
         let committed: CommittedProblem | undefined;
-        const result = await this.tenantTx.run(operatorId, async (client) => {
+        const result = await this.repository.transaction(operatorId, async (client) => {
           let value: T;
           try {
             value = await fn(client);

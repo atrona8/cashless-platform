@@ -2,6 +2,8 @@
 import { BPS_SCALE, roundDiv } from './rounding';
 
 export interface FeeRule {
+  /** Identifiant de la règle en base (`fee_rule.id`), reporté sur les lignes qu'elle produit ; absent pour une fixture. */
+  id?: string;
   rateBps?: bigint;
   fixed?: bigint;
   min?: bigint | null;

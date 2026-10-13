@@ -14,6 +14,13 @@ export interface IdempotentOptions {
    * est enregistrée seule, sans transaction métier.
    */
   writes?: boolean;
+  /**
+   * Niveau de la clé et de la transaction métier (contrat platform-access). `true` : route de plateforme — clé sans
+   * prestataire, transaction du rôle de la plateforme, `PLATFORM_ADMIN` exigé. `'principal'` : route commune aux
+   * deux niveaux — plateforme si la personne authentifiée n'a pas de prestataire, sinon son prestataire. Déclaré
+   * par la route seulement : rien de ce que la requête transporte (en-tête, chemin, corps) n'en décide.
+   */
+  platform?: boolean | 'principal';
 }
 
 /** Route d'écriture : `Idempotency-Key` obligatoire, réponse enregistrée et rejouée (SPECIFICATION §10.2). */
@@ -21,7 +28,8 @@ export const Idempotent = (options: IdempotentOptions): MethodDecorator & ClassD
   SetMetadata(IDEMPOTENT, options);
 
 /**
- * Transaction métier d'une requête idempotente : `run` ouvre la transaction cloisonnée du prestataire, exécute `fn`
+ * Transaction métier d'une requête idempotente : `run` ouvre la transaction cloisonnée du prestataire (ou celle de
+ * la plateforme pour une route `platform`), exécute `fn`
  * puis enregistre la réponse (statut de la route, valeur rendue par `fn`) **dans la même transaction** avant le
  * COMMIT. La valeur rendue par `fn` est la réponse envoyée, à la première exécution comme au rejeu.
  */
