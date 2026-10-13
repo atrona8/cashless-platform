@@ -1,0 +1,211 @@
+schema_version: 1
+mission_id: 01M4GCJ9223VETS7PV6G233HYT
+mission_slug: configuration-parties-evenements-01M4GCJ9
+mission_number:
+friendly_name: Configuration, parties et événements
+mission_type: software-dev
+target_branch: feat/configuration-parties-evenements
+created_at: '2026-10-13T09:40:47.289347+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-13T09:40:47.289347+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-003
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-004
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-005
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-006
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-007
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-008
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-009
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-010
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-011
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-012
+  category: implementation
+  summary: WP13 completed without rejection cycles
+  evidence_refs:
+  - e-018
+not_helpful:
+- id: n-004
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-022
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-003
+  category: implementation
+  summary: WP03 needed 2 implementation cycles
+  evidence_refs:
+  - e-021
+  details: WP WP03 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-002
+  category: process
+  summary: WP03 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-020
+  details: WP WP03 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP03 was sent back from review to planning 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP01-integrite-configuration-base.md
+- id: e-006
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP02-grand-livre-evenement-conditions.md
+- id: e-007
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP03-role-portee-plateforme.md
+- id: e-008
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP04-contrat-api-back-office.md
+- id: e-009
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP05-transaction-plateforme-api.md
+- id: e-010
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP06-catalogue-cascade-bornes.md
+- id: e-011
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP07-routes-plateforme.md
+- id: e-012
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP08-organisation-prestataire.md
+- id: e-013
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP09-evenements.md
+- id: e-014
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP10-participations-points-de-vente-frais.md
+- id: e-015
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP11-statuts-evenement.md
+- id: e-016
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP12-resolveur-configuration-sql.md
+- id: e-017
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP13-preuves-bout-en-bout-ci-docs.md
+- id: e-018
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/status.events.jsonl
+- id: e-019
+  kind: event_range
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/status.events.jsonl
+  range: 01M4QS4GX4ZJ83Z5DVKXGP2DKZ
+- id: e-020
+  kind: event_range
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/status.events.jsonl
+  range: 01M4QS4GX4ZJ83Z5DVKXGP2DKZ
+- id: e-021
+  kind: event_range
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/status.events.jsonl
+  range: implementation_cycles
+- id: e-022
+  kind: file
+  path: kitty-specs/configuration-parties-evenements-01M4GCJ9/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
