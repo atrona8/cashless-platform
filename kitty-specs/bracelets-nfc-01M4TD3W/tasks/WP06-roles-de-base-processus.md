@@ -22,7 +22,8 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/post-roles.sql
-create_intent: []
+create_intent:
+- packages/ledger-sql/tests/tests_media_roles.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/post-roles.sql

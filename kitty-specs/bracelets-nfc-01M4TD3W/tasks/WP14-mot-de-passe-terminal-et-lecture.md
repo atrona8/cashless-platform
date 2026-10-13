@@ -22,7 +22,9 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/taps/
-create_intent: []
+create_intent:
+- apps/api/test/integration/media/auth-keys.spec.ts
+- apps/api/test/integration/media/taps.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/auth-keys/**

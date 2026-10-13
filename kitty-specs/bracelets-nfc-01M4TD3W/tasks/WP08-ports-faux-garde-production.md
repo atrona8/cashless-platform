@@ -22,7 +22,10 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/kms/
-create_intent: []
+create_intent:
+- apps/api/test/unit/production-guard.spec.ts
+- apps/api/test/support/fake-device.ts
+- apps/api/test/support/fake-customer.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/kms/**

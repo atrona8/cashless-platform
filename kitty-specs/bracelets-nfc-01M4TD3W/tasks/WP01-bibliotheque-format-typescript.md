@@ -25,7 +25,10 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/tag-format/src/
-create_intent: []
+create_intent:
+- packages/tag-format/package.json
+- packages/tag-format/tsconfig.json
+- packages/tag-format/jest.config.cjs
 execution_mode: code_change
 owned_files:
 - packages/tag-format/package.json

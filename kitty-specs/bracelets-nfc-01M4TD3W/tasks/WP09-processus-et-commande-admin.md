@@ -22,7 +22,17 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/processes/
-create_intent: []
+create_intent:
+- apps/api/src/main.tag-keys.ts
+- apps/api/src/main.personalization.ts
+- apps/api/src/main.tag-check.ts
+- apps/api/src/main.key-admin.ts
+- apps/api/src/media/media-public.module.ts
+- apps/api/src/media/media-tag-keys.module.ts
+- apps/api/src/media/media-personalization.module.ts
+- apps/api/src/media/media-tag-check.module.ts
+- apps/api/src/media/media-key-admin.module.ts
+- apps/api/test/unit/processes.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/processes/**

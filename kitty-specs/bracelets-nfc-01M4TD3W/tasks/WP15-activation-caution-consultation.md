@@ -24,7 +24,18 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/lifecycle/
-create_intent: []
+create_intent:
+- apps/api/src/media/lifecycle/activation.controller.ts
+- apps/api/src/media/lifecycle/activation.service.ts
+- apps/api/src/media/lifecycle/deposit.controller.ts
+- apps/api/src/media/lifecycle/deposit.service.ts
+- apps/api/src/media/lifecycle/media-read.controller.ts
+- apps/api/src/media/lifecycle/media-read.service.ts
+- apps/api/src/media/lifecycle/lifecycle.dto.ts
+- apps/api/src/media/lifecycle/counter-access.ts
+- apps/api/src/media/lifecycle/lifecycle.module.ts
+- apps/api/test/integration/media/activation.spec.ts
+- apps/api/test/integration/media/deposit.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/lifecycle/activation.controller.ts

@@ -30,7 +30,9 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/batches/
-create_intent: []
+create_intent:
+- apps/api/test/integration/media/batches.spec.ts
+- apps/api/test/integration/media/claim-code-order.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/batches/**

@@ -22,7 +22,15 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/keys/
-create_intent: []
+create_intent:
+- apps/api/src/media/keys/dek.worker.ts
+- apps/api/src/media/keys/reencrypt.worker.ts
+- apps/api/src/media/keys/dek-cache.ts
+- apps/api/src/media/keys/data-key.repository.ts
+- apps/api/src/media/keys/keys-personalization.module.ts
+- apps/api/src/media/keys/keys-tag-keys.module.ts
+- apps/api/test/integration/media/data-keys.spec.ts
+- apps/api/test/unit/media/dek-cache.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/keys/dek.worker.ts

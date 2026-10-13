@@ -24,7 +24,11 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/migrations/0011_personalizer_role.sql
-create_intent: []
+create_intent:
+- packages/ledger-sql/migrations/0011_personalizer_role.sql
+- packages/ledger-sql/migrations/0012_tag_key_jobs.sql
+- packages/ledger-sql/tests/tests_personalizer_role.sql
+- packages/ledger-sql/tests/tests_tag_key_jobs.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/migrations/0011_personalizer_role.sql

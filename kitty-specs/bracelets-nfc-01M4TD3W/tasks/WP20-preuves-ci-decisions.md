@@ -27,7 +27,12 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/test/integration/end-to-end/
-create_intent: []
+create_intent:
+- apps/api/test/integration/end-to-end/media-journey.spec.ts
+- apps/api/test/integration/end-to-end/media-isolation.spec.ts
+- apps/api/test/integration/end-to-end/media-secrets.spec.ts
+- apps/api/test/integration/end-to-end/media-latency.spec.ts
+- apps/api/test/integration/end-to-end/media-port-swap.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/test/integration/end-to-end/media-journey.spec.ts

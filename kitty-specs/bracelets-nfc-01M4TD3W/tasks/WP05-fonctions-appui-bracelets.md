@@ -26,7 +26,9 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/migrations/0013_media_api.sql
-create_intent: []
+create_intent:
+- packages/ledger-sql/migrations/0013_media_api.sql
+- packages/ledger-sql/tests/tests_media_api.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/migrations/0013_media_api.sql
