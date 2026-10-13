@@ -26,7 +26,7 @@ agent qui ne lirait que l'un des deux ne passe pas à côté.
 
 | Date | Portée (document ou catégorie précise) | Préférence exprimée | Remplace la règle par défaut de |
 |---|---|---|---|
-| | | | |
+| 13/10/2026 | Diagrammes de cas d'usage et de séquence (`kitty-specs/*/docs/use-case.md`, `sequence.md`, `docs/02`, `docs/05`), à partir de la mission 4 `bracelets-nfc-01M4TD3W` | Utiliser le skill `/illustre` (réponse du porteur : « oui illustre »). Les diagrammes Mermaid des missions 1 à 3 ne sont pas refaits tant que le porteur ne le demande pas | Repli Mermaid appliqué jusque-là faute d'outil |
 
 ## Règle d'application
 
