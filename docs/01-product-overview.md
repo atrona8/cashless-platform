@@ -41,7 +41,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
   l'organisation des parties (prestataires, organisateurs, commerçants, participations, points de vente), les
   profils de législation (gérés par la plateforme), les règles de frais des quatre flux, la création du grand livre
   d'un événement et le passage de ses statuts, par l'API du back-office (sans écran).
-- Statut : ✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779`) — migrations `0007`-`0009`, rôle de base `cashless_platform`, 48 opérations back-office servies,
+- Statut : ✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte) — migrations `0007`-`0009`, rôle de base `cashless_platform`, 48 opérations back-office servies,
   cascade versionnée avec bornes, grand livre ouvert à la création de l'événement, passages de statut (`LIVE` à deux),
   scénario de référence rejoué sur une configuration construite par l'API
 - Mission(s) associée(s) : `configuration-parties-evenements-01M4GCJ9` (Configuration, parties et événements)

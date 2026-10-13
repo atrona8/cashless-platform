@@ -47,10 +47,10 @@ pour la procédure.
 - [x] /spec-kitty.specify Configuration et organisation des parties (SPECIFICATION §3.1, §4, §5.6, §12.1, §10.4). Gestion des prestataires (plateforme), organisateurs, commerçants et participations (`INTERNAL`/`EXTERNAL`, commission, droit de place et `pitch_fee_mode`), points de vente, événements (devise, `funds_holder` obligatoire, `issuer`, `identity_mode`, `activation_modes`, réglages des terminaux bornés §9.8, `cash_refund_single_max`, `refund_deadline`, `sync_deadline_hours`, plafonds carte, remboursement vers un autre numéro). Cascade de configuration versionnée plateforme → prestataire → organisateur → événement → participation, bornée par le profil de législation (refus à l'enregistrement avec un message qui cite la règle). Contrats versionnés `PLATFORM_OPERATOR` et `OPERATOR_ORGANIZER`. Règles de frais `fee_rule` pour les quatre flux. Création des grands livres et des comptes à la demande (§5.2). Passage des statuts d'événement par `set_event_status` uniquement, avec affichage des conditions et de leur état. Ajouter au contrat `openapi.yaml` les endpoints back-office correspondants (§10.4), puis régénérer les types.
 - [x] /spec-kitty.plan Les tâches de niveau plateforme (prestataires, profils de législation) utilisent un rôle de base distinct (§2.2). Valeurs par défaut provisoires (§17.2) codées et paramétrables, jamais présentées comme validées (plafonds Sénégal, TVA 18 %). Chaque transaction enregistre `config_version_id`, chaque ligne de frais `fee_rule_id`. Un contrat ne se modifie pas : nouvelle version.
 - [x] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission configuration-parties-evenements-01M4GCJ9
-- [ ] /spec-kitty.review --mission configuration-parties-evenements-01M4GCJ9
-- [ ] /spec-kitty.accept --mission configuration-parties-evenements-01M4GCJ9
-- [ ] spec-kitty merge --mission configuration-parties-evenements-01M4GCJ9
+- [x] spec-kitty next --agent claude --mission configuration-parties-evenements-01M4GCJ9
+- [x] /spec-kitty.review --mission configuration-parties-evenements-01M4GCJ9
+- [x] /spec-kitty.accept --mission configuration-parties-evenements-01M4GCJ9
+- [x] spec-kitty merge --mission configuration-parties-evenements-01M4GCJ9
 
 ## Mission 4 — Bracelets NFC (format, clés, lots, cycle de vie)
 
