@@ -23,22 +23,23 @@ subtasks:
 - T050
 - T051
 - T052
-phase: Phase 3 - Clés et lots
+phase: 'Phase 3 - Clés et lots'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/batches/
-create_intent:
-- apps/api/test/integration/media/batches.spec.ts
-- apps/api/test/integration/media/claim-code-order.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/batches/**
 - apps/api/test/integration/media/batches.spec.ts
 - apps/api/test/integration/media/claim-code-order.spec.ts
+create_intent:
+- apps/api/test/integration/media/batches.spec.ts
+- apps/api/test/integration/media/claim-code-order.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

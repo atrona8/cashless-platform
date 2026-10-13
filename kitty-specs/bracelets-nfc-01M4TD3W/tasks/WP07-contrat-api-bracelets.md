@@ -1,6 +1,6 @@
 ---
 work_package_id: WP07
-title: "Contrat d'API : routes back-office des bracelets, types TypeScript et Dart"
+title: 'Contrat d''API : routes back-office des bracelets, types TypeScript et Dart'
 dependencies: []
 requirement_refs:
 - FR-036
@@ -12,14 +12,13 @@ subtasks:
 - T027
 - T028
 - T029
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/contracts/openapi.yaml
-create_intent: []
 execution_mode: code_change
 owned_files:
 - packages/contracts/openapi.yaml
@@ -28,6 +27,7 @@ owned_files:
 - packages/contracts/package.json
 - packages/contracts/scripts/**
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

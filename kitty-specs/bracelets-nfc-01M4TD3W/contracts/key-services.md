@@ -25,10 +25,9 @@ réglage d'exécution ne permet de contourner la garde.
 
 | Sorte | Créé par | Exécuté par | Effet |
 |---|---|---|---|
-| `CREATE_KEY` | approbation `TAG_KEY_CREATE` | commande d'administration | crée la clé de dérivation et désigne la clé d'emballage ; `tag_key` nouvel index ; l'ancienne clé active partagée passe en `DECRYPT_ONLY` ; crée `CREATE_DEK` |
-| `CREATE_DEK` | `CREATE_KEY` | personnalisation | clé de données version 1 ; la clé devient utilisable |
-| `ROTATE_DEK` | approbation `TAG_DEK_ROTATE` | personnalisation | nouvelle version `ACTIVE`, ancienne `DECRYPT_ONLY` ; crée `REENCRYPT` |
-| `REENCRYPT` | `ROTATE_DEK` | clés de bracelet | par tranches de 500 ; ancienne version `RETIRED` quand plus aucun bracelet ne la référence |
+| `CREATE_KEY` | approbation `TAG_KEY_CREATE` | commande d'administration | crée la clé de dérivation et désigne la clé d'emballage ; `tag_key` nouvel index ; l'ancienne clé active partagée passe en `DECRYPT_ONLY` ; la clé est utilisable aussitôt |
+| `ROTATE_DEK` | approbation `TAG_DEK_ROTATE` | personnalisation | nouvelle version `ACTIVE`, toutes les autres `DECRYPT_ONLY` ; crée `REENCRYPT` |
+| `REENCRYPT` | `ROTATE_DEK` | clés de bracelet | par tranches de 500 ; chaque ancienne version passe `RETIRED` quand plus aucun bracelet ne la référence |
 | `RETIRE_KEY` | approbation `TAG_KEY_RETIRE` | personnalisation | `retire_dedicated_key` ; crée `DISABLE_KMS_KEY` |
 | `DISABLE_KMS_KEY` | `RETIRE_KEY` | commande d'administration | désactive la clé, renseigne `kms_disabled_at` ; rejoué tant qu'il échoue |
 
@@ -44,10 +43,18 @@ sache qu'une intervention est requise.
 ## Cache de la clé de données (processus des clés de bracelet)
 
 Une entrée par (prestataire, index, version), durée `TAG_DEK_CACHE_SECONDS` (0 à 300, défaut 300 ; 0 = aucun cache).
-Tampon mis à zéro à l'expiration, à l'éviction et à l'arrêt. Aucun autre processus ne met une clé de données en cache.
+Tampon mis à zéro à l'expiration, à l'éviction et à l'arrêt. Seul autre endroit où une clé de données en clair
+survit à une requête : la clé de session de la personnalisation (ci-dessous).
+
+## Clé de données de session (processus de personnalisation)
+
+La personnalisation n'a pas `DecryptPort`. `SessionDataKeyProvider.get(prestataire, index)` : au premier appel ou après
+expiration, `generateDataKey`, nouvelle version `ACTIVE` (la précédente en `DECRYPT_ONLY`), clair gardé en mémoire.
+Effacement : après `TAG_DEK_CACHE_SECONDS` sans utilisation, à l'arrêt, et dès que la version n'est plus active en base.
+La rotation ramène ensuite tous les bracelets d'un index sous une seule version.
 
 ## Contrôle quotidien
 
 `runOnce(prestataire)` : tire au plus 100 bracelets personnalisés non retirés, recalcule `PWD‖PACK` par `MacPort`,
-déchiffre la valeur stockée (un `decrypt` par clé de données), compare, écrit `tag_key_check_run`. Un écart ouvre une
-anomalie et une ligne d'audit. Le processus `main.tag-check.ts` l'appelle une fois (`--once`) ou en boucle.
+déchiffre la valeur stockée (un `decrypt` par clé de données), compare, écrit `tag_key_check_run`. Un écart écrit une
+ligne d'audit nommant le bracelet ; aucune anomalie n'est ouverte (liste fermée de §12.2). Le processus `main.tag-check.ts` l'appelle une fois (`--once`) ou en boucle.

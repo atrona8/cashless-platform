@@ -1,6 +1,6 @@
 ---
 work_package_id: WP01
-title: Bibliothèque de format en TypeScript (`@cashless/tag-format`)
+title: 'Bibliothèque de format en TypeScript (`@cashless/tag-format`)'
 dependencies: []
 requirement_refs:
 - FR-001
@@ -18,17 +18,13 @@ subtasks:
 - T004
 - T005
 - T006
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/tag-format/src/
-create_intent:
-- packages/tag-format/package.json
-- packages/tag-format/tsconfig.json
-- packages/tag-format/jest.config.cjs
 execution_mode: code_change
 owned_files:
 - packages/tag-format/package.json
@@ -40,7 +36,12 @@ owned_files:
 - packages/tag-format/scripts/**
 - package.json
 - package-lock.json
+create_intent:
+- packages/tag-format/package.json
+- packages/tag-format/tsconfig.json
+- packages/tag-format/jest.config.cjs
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

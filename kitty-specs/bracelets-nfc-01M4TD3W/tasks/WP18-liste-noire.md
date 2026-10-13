@@ -1,6 +1,6 @@
 ---
 work_package_id: WP18
-title: Liste noire et sortie à deux
+title: 'Liste noire et sortie à deux'
 dependencies:
 - WP14
 requirement_refs:
@@ -13,20 +13,21 @@ subtasks:
 - T076
 - T077
 - T078
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/blacklist/
-create_intent:
-- apps/api/test/integration/media/blacklist.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/blacklist/**
 - apps/api/test/integration/media/blacklist.spec.ts
+create_intent:
+- apps/api/test/integration/media/blacklist.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

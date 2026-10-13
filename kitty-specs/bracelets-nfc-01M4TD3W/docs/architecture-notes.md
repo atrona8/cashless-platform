@@ -24,7 +24,8 @@
 | Commande d'administration séparée pour créer et désactiver une clé | Aucun service permanent ne peut détruire une clé | Droit donné au processus de personnalisation |
 | Travaux de clé en table (`tag_key_job`) | Une action approuvée dans l'API publique s'exécute là où le droit existe | Appel interne entre processus |
 | Mot de passe jamais transmis en clair, y compris au poste | Règle du contrat pour le terminal, étendue au poste | Réponse en clair sous TLS (écart de sécurité refusé) |
-| Clé de données en mémoire 5 minutes au plus, dans le seul processus des clés | Le contrat prévoit un cache ; durée bornée et effacement | Aucun cache ; cache à vie |
+| Clé de données en mémoire 5 minutes au plus | Le contrat prévoit un cache ; durée bornée et effacement | Aucun cache ; cache à vie |
+| Une clé de données par session de personnalisation | La personnalisation n'a pas le droit de déchiffrer (§3.2) : aucun droit ajouté | Lui donner ce droit ; faire sceller par le processus des clés |
 | Empreinte à clé des codes de rattachement et de confirmation | Un code court se retrouve par essais si la base fuit | Empreinte simple |
 | Rôle dédié `PERSONALIZER` | Moindre privilège sur l'opération la plus sensible | `OPERATOR_ADMIN` sur un poste d'atelier |
 | Les fonctions de la base font les règles | §2.2 ; le schéma de référence les fournit déjà | Règles réécrites dans l'API |

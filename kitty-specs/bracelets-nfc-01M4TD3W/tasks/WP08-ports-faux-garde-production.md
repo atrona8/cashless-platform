@@ -1,6 +1,6 @@
 ---
 work_package_id: WP08
-title: Ports (clés, terminal, festivalier), faux et garde de production
+title: 'Ports (clés, terminal, festivalier), faux et garde de production'
 dependencies:
 - WP01
 requirement_refs:
@@ -15,17 +15,13 @@ subtasks:
 - T032
 - T033
 - T034
-phase: Phase 2 - Socle API
+phase: 'Phase 2 - Socle API'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/kms/
-create_intent:
-- apps/api/test/unit/production-guard.spec.ts
-- apps/api/test/support/fake-device.ts
-- apps/api/test/support/fake-customer.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/kms/**
@@ -39,7 +35,12 @@ owned_files:
 - apps/api/test/support/fake-device.ts
 - apps/api/test/support/fake-customer.ts
 - docs/POINTS_OUVERTS.md
+create_intent:
+- apps/api/test/unit/production-guard.spec.ts
+- apps/api/test/support/fake-device.ts
+- apps/api/test/support/fake-customer.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

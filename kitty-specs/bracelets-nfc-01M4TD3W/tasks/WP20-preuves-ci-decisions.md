@@ -1,6 +1,6 @@
 ---
 work_package_id: WP20
-title: Preuves de bout en bout, secrets, isolation, latence, CI et décisions
+title: 'Preuves de bout en bout, secrets, isolation, latence, CI et décisions'
 dependencies:
 - WP17
 - WP18
@@ -20,19 +20,13 @@ subtasks:
 - T085
 - T086
 - T087
-phase: Phase 5 - Exploitation et preuves
+phase: 'Phase 5 - Exploitation et preuves'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/test/integration/end-to-end/
-create_intent:
-- apps/api/test/integration/end-to-end/media-journey.spec.ts
-- apps/api/test/integration/end-to-end/media-isolation.spec.ts
-- apps/api/test/integration/end-to-end/media-secrets.spec.ts
-- apps/api/test/integration/end-to-end/media-latency.spec.ts
-- apps/api/test/integration/end-to-end/media-port-swap.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/test/integration/end-to-end/media-journey.spec.ts
@@ -44,7 +38,14 @@ owned_files:
 - .github/workflows/ledger-tests.yml
 - .github/CI.md
 - docs/DECISIONS_ADR.md
+create_intent:
+- apps/api/test/integration/end-to-end/media-journey.spec.ts
+- apps/api/test/integration/end-to-end/media-isolation.spec.ts
+- apps/api/test/integration/end-to-end/media-secrets.spec.ts
+- apps/api/test/integration/end-to-end/media-latency.spec.ts
+- apps/api/test/integration/end-to-end/media-port-swap.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -97,7 +98,7 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP17, WP18, WP19
 
 ### T087 — Décisions et dettes
 
-- `docs/DECISIONS_ADR.md` : un ADR par décision du porteur du 13/10/2026 — quatre processus et commande d'administration ; rôles de base distincts ; rôle `PERSONALIZER` ; mot de passe jamais en clair, enveloppe pour le poste ; cache de 5 minutes de la clé de données ; empreinte à clé des codes ; ports et faux avec garde de production (les quatre dettes, leur mission de levée) ; et toute décision prise en cours de mission (dont celle du WP13 sur la clé de données). Numéros à la suite du dernier ADR ; lignes d'index.
+- `docs/DECISIONS_ADR.md` : un ADR par décision du porteur du 13/10/2026 — quatre processus et commande d'administration ; rôles de base distincts ; rôle `PERSONALIZER` ; mot de passe jamais en clair, enveloppe pour le poste ; cache de 5 minutes de la clé de données ; empreinte à clé des codes ; ports et faux avec garde de production (les quatre dettes, leur mission de levée) ; la clé de données de session de la personnalisation (décision n° 7) ; et toute décision prise en cours de mission. Numéros à la suite du dernier ADR ; lignes d'index.
 - Vérifie que chaque dette de `docs/POINTS_OUVERTS.md` (WP08) cite son ADR et sa mission de levée, et que `PROMPTS-A-ENVOYER.md` porte le report pour les missions 5 et 10 (déjà écrit au plan : complète-le si une dette s'est ajoutée ; retouche hors carte).
 - Liste dans le compte rendu les fichiers à faire relire par une personne : `post-roles.sql`, `0013_media_api.sql`, `src/kms/**`, `src/media/personalization/**`, `src/media/auth-keys/**`, `src/media/keys/**`, `packages/tag-format/src/**`.
 

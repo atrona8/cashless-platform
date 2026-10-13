@@ -1,12 +1,12 @@
 ---
 work_package_id: WP06
-title: Rôles de base des processus et retraits à l'API publique (`post-roles.sql`)
+title: 'Rôles de base des processus et retraits à l''API publique (`post-roles.sql`)'
 dependencies:
 - WP05
 requirement_refs:
 - FR-006
-- FR-016
 - FR-018
+- FR-016
 planning_base_branch: feat/bracelets-nfc
 merge_target_branch: feat/bracelets-nfc
 branch_strategy: Planning artifacts for this mission were generated on feat/bracelets-nfc. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/bracelets-nfc unless the human explicitly redirects the landing branch.
@@ -15,15 +15,13 @@ subtasks:
 - T023
 - T024
 - T025
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/post-roles.sql
-create_intent:
-- packages/ledger-sql/tests/tests_media_roles.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/post-roles.sql
@@ -31,7 +29,10 @@ owned_files:
 - packages/ledger-sql/tests/tests_media_roles.sql
 - tools/dev-db/env.sh
 - tools/dev-db/env.test.example
+create_intent:
+- packages/ledger-sql/tests/tests_media_roles.sql
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

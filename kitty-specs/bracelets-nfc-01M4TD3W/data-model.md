@@ -57,14 +57,14 @@ utilisé, `confirm_media_claim(demande, bracelet, empreinte du code, terminal, a
 
 ## Migration 0012 — travaux de clé et contrôle quotidien
 
-**`tag_key_job`** : `id`, `operator_id`, `key_index`, `kind` (`CREATE_KEY`, `CREATE_DEK`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`,
+**`tag_key_job`** : `id`, `operator_id`, `key_index`, `kind` (`CREATE_KEY`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`,
 `DISABLE_KMS_KEY`), `status` (`PENDING`, `RUNNING`, `DONE`, `FAILED`), `payload` jsonb (sans secret), `progress` jsonb,
 `attempts`, `last_error`, `approval_request_id`, `created_at`, `finished_at`. Un seul travail non terminé par
 (prestataire, index, sorte). Pris par `FOR UPDATE SKIP LOCKED`.
 
 **`tag_key_check_run`** : `id`, `operator_id`, `started_at`, `sampled`, `mismatches`, `status` (`OK`, `MISMATCH`,
-`ERROR`). Un écart ouvre une anomalie ; la sorte d'anomalie à utiliser est arrêtée au lot concerné (liste fermée de
-§12.2 : si aucune ne convient, la contradiction est signalée au porteur plutôt que d'en ajouter une en silence).
+`ERROR`). Un écart est tracé par le compte rendu et par une ligne d'audit ; aucune anomalie n'est ouverte, la liste
+fermée de §12.2 n'ayant pas de sorte qui convienne.
 
 ## Migration 0013 — fonctions d'appui de l'API
 
@@ -85,7 +85,7 @@ ses déclencheurs, pour que chaque rôle de base n'ait que les droits nécessair
 | `cashless_app` | API publique | tout sauf `media.pwd_pack_enc`, `media.pwd_pack_dek_id`, `tag_data_key.encrypted_dek`, `offline_snapshot_rows` | comme avant, sauf insertion dans `media`, `tag_key`, `tag_data_key` ; insère des `tag_key_job` |
 | `cashless_tagkeys` | clés de bracelet | `media` (dont le chiffré), `tag_key`, `tag_data_key`, `device`, `tag_key_job` | `media.pwd_pack_enc` et `pwd_pack_dek_id` (rechiffrement), `tag_data_key.status`, `tag_key_job` |
 | `cashless_perso` | personnalisation | `media_batch`, `tag_key`, `tag_data_key`, `claim_code`, `tag_key_job` | `media` (insertion par fonction), `tag_key`, `tag_data_key`, `claim_code` (association), `tag_key_job`, audit |
-| `cashless_tagcheck` | contrôle quotidien | `media` (dont le chiffré), `tag_key`, `tag_data_key` | `tag_key_check_run`, `anomaly` |
+| `cashless_tagcheck` | contrôle quotidien | `media` (dont le chiffré), `tag_key`, `tag_data_key` | `tag_key_check_run`, audit |
 | `cashless_keyadmin` | commande d'administration des clés | `tag_key`, `tag_key_job` | `tag_key` (insertion, `kms_disabled_at`, statut), `tag_key_job`, audit |
 
 Chaque rôle a ses politiques RLS permissives et restrictives par table, sur le modèle de `cashless_platform`
@@ -97,3 +97,5 @@ Chaque rôle a ses politiques RLS permissives et restrictives par table, sur le 
 - Bracelet : table `media_transition` du schéma, qui fait foi.
 - Demande en attente : `PENDING → CONFIRMED | EXPIRED | CANCELLED`.
 - Travail de clé : `PENDING → RUNNING → DONE | FAILED` ; `FAILED → PENDING` à la relance.
+- Clé de données : une version `ACTIVE` par (prestataire, index), ouverte par une session de personnalisation ou une
+  rotation ; les précédentes en `DECRYPT_ONLY`, puis `RETIRED` après rechiffrement.

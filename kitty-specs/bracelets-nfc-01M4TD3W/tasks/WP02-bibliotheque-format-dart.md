@@ -1,6 +1,6 @@
 ---
 work_package_id: WP02
-title: Bibliothèque de format en Dart (`cashless_tag_format`)
+title: 'Bibliothèque de format en Dart (`cashless_tag_format`)'
 dependencies:
 - WP01
 requirement_refs:
@@ -16,18 +16,18 @@ subtasks:
 - T007
 - T008
 - T009
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/tag-format/dart/
-create_intent: []
 execution_mode: code_change
 owned_files:
 - packages/tag-format/dart/**
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

@@ -1,6 +1,6 @@
 ---
 work_package_id: WP10
-title: "Clés : demandes à deux, suivi et commande d'administration"
+title: 'Clés : demandes à deux, suivi et commande d''administration'
 dependencies:
 - WP04
 - WP07
@@ -17,22 +17,13 @@ subtasks:
 - T040
 - T041
 - T042
-phase: Phase 3 - Clés et lots
+phase: 'Phase 3 - Clés et lots'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/keys/
-create_intent:
-- apps/api/src/media/keys/keys.controller.ts
-- apps/api/src/media/keys/keys.service.ts
-- apps/api/src/media/keys/keys.dto.ts
-- apps/api/src/media/keys/key-approval-actions.ts
-- apps/api/src/media/keys/key-admin.worker.ts
-- apps/api/src/media/keys/keys-public.module.ts
-- apps/api/src/media/keys/keys-admin.module.ts
-- apps/api/test/integration/media/keys.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/keys/keys.controller.ts
@@ -43,7 +34,17 @@ owned_files:
 - apps/api/src/media/keys/keys-public.module.ts
 - apps/api/src/media/keys/keys-admin.module.ts
 - apps/api/test/integration/media/keys.spec.ts
+create_intent:
+- apps/api/src/media/keys/keys.controller.ts
+- apps/api/src/media/keys/keys.service.ts
+- apps/api/src/media/keys/keys.dto.ts
+- apps/api/src/media/keys/key-approval-actions.ts
+- apps/api/src/media/keys/key-admin.worker.ts
+- apps/api/src/media/keys/keys-public.module.ts
+- apps/api/src/media/keys/keys-admin.module.ts
+- apps/api/test/integration/media/keys.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -82,13 +83,13 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP04, WP07, WP09
 
 ### T041 — Commande d'administration
 
-- `key-admin.worker.ts` : `runOnce()` prend les travaux `CREATE_KEY` et `DISABLE_KMS_KEY`. `CREATE_KEY` : `KeyAdminPort.createKey('HMAC_256')`, désigne la clé d'emballage (`TAG_WRAPPING_KEY_REF` de la configuration ou création), insère `tag_key` ; pour une clé partagée, l'ancienne clé `ACTIVE` partagée passe en `DECRYPT_ONLY` ; crée le travail `CREATE_DEK`. `DISABLE_KMS_KEY` : `disableKey`, pose `kms_disabled_at`.
+- `key-admin.worker.ts` : `runOnce()` prend les travaux `CREATE_KEY` et `DISABLE_KMS_KEY`. `CREATE_KEY` : `KeyAdminPort.createKey('HMAC_256')`, désigne la clé d'emballage (`TAG_WRAPPING_KEY_REF` de la configuration ou création), insère `tag_key` ; pour une clé partagée, l'ancienne clé `ACTIVE` partagée passe en `DECRYPT_ONLY`. La clé est utilisable aussitôt : sa première clé de données est créée par la première session de personnalisation (WP11, décision du porteur n° 7). `DISABLE_KMS_KEY` : `disableKey`, pose `kms_disabled_at`.
 - Rejouable : un travail repris après une panne ne crée pas deux clés (la référence créée est écrite dans `progress` avant l'insertion de `tag_key`) ; un échec passe le travail en `FAILED` avec l'erreur, relançable.
 - `--list` affiche les travaux en attente sans rien exécuter.
 
 ### T042 — Tests d'intégration
 
-- `keys.spec.ts` : demande refusée à une seule personne, approuvée par une autre → travail ; commande → clé `ACTIVE` sans clé de données (non utilisable) ; panne injectée entre création KMS et insertion → relance sans doublon ; retrait refusé si un lot n'est pas clos ; isolation à deux prestataires ; audit avec auteur et valideur.
+- `keys.spec.ts` : demande refusée à une seule personne, approuvée par une autre → travail ; commande → clé `ACTIVE`, sans clé de données tant qu'aucune session de personnalisation n'a commencé ; panne injectée entre création KMS et insertion → relance sans doublon ; retrait refusé si un lot n'est pas clos ; isolation à deux prestataires ; audit avec auteur et valideur.
 
 ## Test Strategy
 

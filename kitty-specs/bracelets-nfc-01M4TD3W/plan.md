@@ -232,7 +232,7 @@ Dart voisin, les deux lisant le même `vectors.json`.
 - **Relevant requirements**: FR-016, FR-017, NFR-002, NFR-003, décisions de plan 3 et 4
 - **Affected surfaces**: `apps/api/src/media/personalization/`
 - **Sequencing/depends-on**: IC-06, IC-07, IC-08
-- **Risks**: la réponse porte un secret chiffré : elle n'est pas conservée par le registre d'idempotence, elle est recalculée au rejeu.
+- **Risks**: la réponse porte un secret chiffré : elle n'est pas conservée par le registre d'idempotence, elle est recalculée au rejeu. La personnalisation n'a pas le droit de déchiffrer : elle scelle sous une clé de données de session (R-05 bis).
 
 ### IC-10 — Lots, codes à la commande, inventaire, clôture
 

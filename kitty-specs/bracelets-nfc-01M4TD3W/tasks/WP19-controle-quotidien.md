@@ -1,6 +1,6 @@
 ---
 work_package_id: WP19
-title: Contrôle quotidien des mots de passe stockés
+title: 'Contrôle quotidien des mots de passe stockés'
 dependencies:
 - WP13
 requirement_refs:
@@ -12,20 +12,21 @@ subtasks:
 - T079
 - T080
 - T081
-phase: Phase 5 - Exploitation et preuves
+phase: 'Phase 5 - Exploitation et preuves'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/daily-check/
-create_intent:
-- apps/api/test/integration/media/daily-check.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/daily-check/**
 - apps/api/test/integration/media/daily-check.spec.ts
+create_intent:
+- apps/api/test/integration/media/daily-check.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -59,7 +60,7 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP13. L'espace d
 
 ### T080 — Alerte sur un écart
 
-- Un écart : statut `MISMATCH`, ligne d'audit, et anomalie sur le bracelet. La liste des sortes d'anomalie est fermée (§12.2) : regarde si une sorte existante convient ; **si aucune ne convient, ne détourne pas une sorte et n'en ajoute pas en silence** — signale la contradiction au porteur (C-011) et, en attendant, trace l'écart par l'audit et le compte rendu seulement.
+- Un écart : statut `MISMATCH` et ligne d'audit nommant le bracelet (identifiant seulement). Aucune anomalie n'est ouverte : la liste des sortes d'anomalie est fermée (§12.2) et aucune ne correspond ; choix proposé au porteur le 13/10/2026 et consigné dans la spec. Ne détourne pas une sorte existante.
 - Erreur du service de clés : statut `ERROR`, pas d'anomalie ; le passage suivant réessaie.
 
 ### T081 — Point d'entrée et tests

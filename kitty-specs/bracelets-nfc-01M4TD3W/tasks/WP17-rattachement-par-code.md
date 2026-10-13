@@ -1,6 +1,6 @@
 ---
 work_package_id: WP17
-title: Rattachement par code, demande en attente et consultation anonyme
+title: 'Rattachement par code, demande en attente et consultation anonyme'
 dependencies:
 - WP16
 requirement_refs:
@@ -16,22 +16,23 @@ subtasks:
 - T073
 - T074
 - T075
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/claims/
-create_intent:
-- apps/api/test/integration/media/claims.spec.ts
-- apps/api/test/integration/media/claims-timing.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/claims/**
 - apps/api/test/integration/media/claims.spec.ts
 - apps/api/test/integration/media/claims-timing.spec.ts
+create_intent:
+- apps/api/test/integration/media/claims.spec.ts
+- apps/api/test/integration/media/claims-timing.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -48,7 +49,7 @@ Servir le rattachement d'un bracelet par le festivalier, la demande en attente c
 
 ## Context
 
-Exigences : FR-030 à FR-033, NFR-007, SC-006. Contrat : `contracts/claim-codes.md` (à lire en entier) ; opérations `claimMedia`, `confirmMediaClaim`, `lookupBalanceByClaimCode`, `listMyMedia`, `reportMyMediaLost` de `openapi.yaml` (servies telles quelles : lis leurs descriptions et sécurités). Fonctions : `claim_media`, `confirm_media_claim`, `claim_balance_lookup` (WP03). Ajoute `ClaimsModule` à `media-public.module.ts` (retouche hors carte).
+Exigences : FR-030 à FR-033, NFR-007, SC-006. Contrat : `contracts/claim-codes.md` (à lire en entier) ; opérations `claimMedia`, `confirmMediaClaim`, `lookupBalanceByClaimCode` de `openapi.yaml` (servies telles quelles : lis leurs descriptions et sécurités). Fonctions : `claim_media`, `confirm_media_claim`, `claim_balance_lookup` (WP03). Ajoute `ClaimsModule` à `media-public.module.ts` (retouche hors carte).
 
 **Règle de sécurité du projet (`CLAUDE.md`, C-011)** : si un point de ce lot ne peut être tenu qu'en affaiblissant la sécurité (droit plus large, contrôle retiré ou reporté, secret plus exposé, faux gardé plus longtemps), **arrête-toi sur ce point et soumets-le au porteur avant de coder** ; continue le reste. Un renforcement se fait, puis se consigne.
 
@@ -62,7 +63,7 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP16. L'espace d
 
 - `claimMedia` (`@Customer()`) : `normalizeClaimCode` (mal formé → 400 sans recherche ni essai compté), `claimCodeHash`, tire le code de confirmation à 6 chiffres et son empreinte **avant** l'appel (pour que les deux chemins fassent le même travail), `claim_media(...)`.
 - `ATTACHED` → 200 ; `PENDING` → 202 avec identifiant, code de confirmation (rendu **une fois**, jamais stocké en clair) et expiration ; `REFUSED` → un seul refus (même statut, même corps, quel que soit le motif) ; `BLOCKED` → 429 avec `Retry-After`, anomalie ou ligne d'audit d'alerte.
-- `listMyMedia`, `reportMyMediaLost` : si leur contrat tient dans le périmètre (bracelets du compte, suspension), sers-les ; sinon documente pourquoi elles restent à la mission 10 et signale-le.
+- `listMyMedia` et `reportMyMediaLost` ne sont **pas** servies ici : elles relèvent de la mission 10 (app festivalier), choix proposé au porteur le 13/10/2026 et consigné dans la spec. Le balayage d'isolation du WP20 les exclut explicitement.
 
 ### T073 — Confirmation au guichet
 

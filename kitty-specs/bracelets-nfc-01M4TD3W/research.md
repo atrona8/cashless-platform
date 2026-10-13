@@ -51,9 +51,9 @@ sécurité et que la spécification ne tranche pas sont en R-12 ; ils sont soumi
 
 - **Decision** : table `tag_key_job` (prestataire, sorte, état, charge utile, tentatives, erreur). Une demande à deux
   approuvée dans l'API publique insère un travail ; le processus qui a le droit l'exécute par tranches et de façon
-  rejouable. Sortes : `CREATE_KEY`, `CREATE_DEK`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`, `DISABLE_KMS_KEY`.
+  rejouable. Sortes : `CREATE_KEY`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`, `DISABLE_KMS_KEY`.
 - **Rationale** : l'API publique n'a aucun droit KMS ; elle ne peut pas exécuter l'action qu'elle fait approuver.
-- **Répartition** : création de clé de données et nouvelle version → personnalisation (`GenerateDataKey`) ;
+- **Répartition** : clé de données de session et nouvelle version de rotation → personnalisation (`GenerateDataKey`, voir R-05 bis) ;
   rechiffrement → clés de bracelet (`Decrypt` des deux clés de données) ; retrait en base → `retire_dedicated_key` ;
   création et désactivation d'une clé du KMS → commande d'administration `main.key-admin.ts`, lancée à la demande par
   l'exploitant, sans route, avec son rôle de base `cashless_keyadmin` (décision du porteur, question 6). Aucun processus
@@ -65,7 +65,8 @@ sécurité et que la spécification ne tranche pas sont en R-12 ; ils sont soumi
 
 - **Decision** : le processus des clés de bracelet garde une clé de données déchiffrée en mémoire **5 minutes au plus**
   (`TAG_DEK_CACHE_SECONDS`, 0 à 300, défaut 300 ; 0 = aucun cache). Le tampon est mis à zéro à l'expiration et à
-  l'arrêt du processus. Une entrée par (prestataire, index, version). Les autres processus n'ont pas de cache.
+  l'arrêt du processus. Une entrée par (prestataire, index, version). Seule autre clé de données gardée en mémoire : la clé de session de
+  la personnalisation (R-05 bis), sous la même durée.
 - **Rationale** : décision du porteur (plan, question 5). Le contrat (`getMediaAuthKey`) prévoit un cache mémoire et
   prime sur la spécification (§0.3) ; §7.4 dit aussi que le KMS n'est pas appelé bracelet par bracelet. Une clé volée
   en mémoire ne vaut que pour un index et quelques minutes.
@@ -73,6 +74,24 @@ sécurité et que la spécification ne tranche pas sont en R-12 ; ils sont soumi
   cache à vie du processus (écart qui affaiblit la sécurité).
 - **Conséquence sur NFR-003** : « au plus un déchiffrement par requête » reste vrai ; l'effacement « avant la fin de la
   requête » vaut pour le mot de passe, la clé de données suivant la règle du cache. La spec est corrigée en ce sens.
+
+## R-05 bis — Clé de données de session de la personnalisation
+
+- **Constat (découvert au découpage, analyse U1)** : le tableau des services (§3.2) donne à la personnalisation
+  `GenerateMac` et `GenerateDataKey`, pas `Decrypt`. Elle ne peut donc pas rouvrir une clé de données existante pour
+  sceller le mot de passe d'un nouveau bracelet.
+- **Decision** : une clé de données **par session de personnalisation**. Au premier bracelet d'une série, le processus
+  appelle `GenerateDataKey`, enregistre une nouvelle version `ACTIVE` (la précédente passe en `DECRYPT_ONLY`) et garde
+  le clair en mémoire tant que la série dure : effacé après 5 minutes sans utilisation (même réglage que R-05), à
+  l'arrêt, et dès que la version n'est plus active en base.
+- **Rationale** : décision du porteur n° 7 (13/10/2026). Aucun droit ajouté : c'est la lecture stricte de §3.2. Le
+  schéma le permet (versions, une seule active).
+- **Alternatives considered** : donner `Decrypt` à la personnalisation (droit de plus sur le processus exposé aux
+  postes d'atelier : écart qui affaiblit la sécurité) ; faire sceller par le processus des clés (un canal de plus
+  entre processus pour un mot de passe).
+- **Conséquences** : une clé de données en clair vit aussi dans le processus de personnalisation, ce qui amende la
+  décision 5 (R-05) ; les versions se multiplient, une par série, et la rotation les ramène à une seule ; le travail
+  `CREATE_DEK` disparaît, une clé est utilisable dès sa création.
 
 ## R-06 — Empreinte des codes
 
@@ -165,3 +184,8 @@ sécurité et que la spécification ne tranche pas sont en R-12 ; ils sont soumi
 | 4 | Transport du mot de passe vers le poste | Jamais en clair : chiffré pour une clé à usage unique du poste |
 | 5 | Clé de données en mémoire (R-12 a) | Cache court : 5 minutes au plus, réglable, effacé à l'expiration et à l'arrêt (R-05) |
 | 6 | Droit de créer et de désactiver une clé du KMS (R-12 b) | Commande d'administration séparée, lancée à la demande, hors des quatre processus (R-04) |
+| 7 | Comment la personnalisation scelle un nouveau mot de passe sans droit de déchiffrement | Une clé de données par session de personnalisation, en mémoire 5 minutes au plus sans activité (R-05 bis) |
+
+Choix proposés au porteur le 13/10/2026 avec la question 7, appliqués faute d'objection (à rouvrir sur simple demande) :
+un écart du contrôle quotidien est tracé par l'audit et le compte rendu, sans nouvelle sorte d'anomalie ; les routes
+`listMyMedia` et `reportMyMediaLost` restent à la mission 10.

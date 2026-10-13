@@ -1,6 +1,6 @@
 ---
 work_package_id: WP09
-title: Quatre processus et commande d'administration des clés
+title: 'Quatre processus et commande d''administration des clés'
 dependencies:
 - WP06
 - WP08
@@ -15,24 +15,13 @@ subtasks:
 - T036
 - T037
 - T038
-phase: Phase 2 - Socle API
+phase: 'Phase 2 - Socle API'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/processes/
-create_intent:
-- apps/api/src/main.tag-keys.ts
-- apps/api/src/main.personalization.ts
-- apps/api/src/main.tag-check.ts
-- apps/api/src/main.key-admin.ts
-- apps/api/src/media/media-public.module.ts
-- apps/api/src/media/media-tag-keys.module.ts
-- apps/api/src/media/media-personalization.module.ts
-- apps/api/src/media/media-tag-check.module.ts
-- apps/api/src/media/media-key-admin.module.ts
-- apps/api/test/unit/processes.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/processes/**
@@ -52,7 +41,19 @@ owned_files:
 - apps/api/test/unit/processes.spec.ts
 - apps/api/test/support/app.ts
 - apps/api/test/support/db.ts
+create_intent:
+- apps/api/src/main.tag-keys.ts
+- apps/api/src/main.personalization.ts
+- apps/api/src/main.tag-check.ts
+- apps/api/src/main.key-admin.ts
+- apps/api/src/media/media-public.module.ts
+- apps/api/src/media/media-tag-keys.module.ts
+- apps/api/src/media/media-personalization.module.ts
+- apps/api/src/media/media-tag-check.module.ts
+- apps/api/src/media/media-key-admin.module.ts
+- apps/api/test/unit/processes.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

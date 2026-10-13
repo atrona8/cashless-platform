@@ -1,6 +1,6 @@
 ---
 work_package_id: WP05
-title: Fonctions d'appui de l'API des bracelets (migration 0013)
+title: 'Fonctions d''appui de l''API des bracelets (migration 0013)'
 dependencies:
 - WP04
 requirement_refs:
@@ -19,21 +19,22 @@ subtasks:
 - T019
 - T020
 - T021
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/migrations/0013_media_api.sql
-create_intent:
-- packages/ledger-sql/migrations/0013_media_api.sql
-- packages/ledger-sql/tests/tests_media_api.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/migrations/0013_media_api.sql
 - packages/ledger-sql/tests/tests_media_api.sql
+create_intent:
+- packages/ledger-sql/migrations/0013_media_api.sql
+- packages/ledger-sql/tests/tests_media_api.sql
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

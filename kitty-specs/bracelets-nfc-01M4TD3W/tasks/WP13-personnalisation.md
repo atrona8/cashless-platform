@@ -1,6 +1,6 @@
 ---
 work_package_id: WP13
-title: "Personnalisation : enregistrement d'un bracelet et association du code"
+title: 'Personnalisation : enregistrement d''un bracelet et association du code'
 dependencies:
 - WP11
 - WP12
@@ -16,22 +16,23 @@ subtasks:
 - T055
 - T056
 - T057
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/personalization/
-create_intent:
-- apps/api/test/integration/media/personalization.spec.ts
-- apps/api/test/support/media-fixtures.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/personalization/**
 - apps/api/test/integration/media/personalization.spec.ts
 - apps/api/test/support/media-fixtures.ts
+create_intent:
+- apps/api/test/integration/media/personalization.spec.ts
+- apps/api/test/support/media-fixtures.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -64,11 +65,11 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP11, WP12. L'es
 - Déroulé, dans `PersoTx` : lit le lot et la clé (index, référence KMS, version active de la clé de données) ; tire l'identifiant du bracelet ; `MacPort.generateMac(ref, derivationMessage(...))` → `PWD‖PACK` ; obtient le clair de la clé de données (voir T suivant) ; `sealPwdPack` avec un nonce aléatoire et l'AAD du bracelet ; `register_personalized_media(...)` avec l'empreinte SHA-256 de la signature ; audit ; `sealForRecipient(clé du poste, PWD‖PACK, stationAad)` ; **mise à zéro** de `PWD‖PACK` et de la clé de données dans un `finally`.
 - Réponse : identifiant du bracelet, index de clé, enveloppe. Jamais le mot de passe en clair, ni dans la réponse, ni dans un journal, ni dans l'audit.
 
-### T054 — Clé de données pour la personnalisation
+### T054 — Clé de données de session
 
-- Le processus de personnalisation n'a **pas** le droit `decrypt` (§3.2) : il obtient un clair par `generateDataKey` seulement. Il ne peut donc pas rouvrir la clé de données active d'un index.
-- Solution à mettre en œuvre : à sa création (`CREATE_DEK`, WP11) la clé de données n'est connue en clair de personne ; le service de personnalisation demande, par lot de travail, une **enveloppe de session** — étudie d'abord ce que permettent les droits : si aucune voie ne tient sans donner `decrypt` à la personnalisation, **arrête-toi et soumets le choix au porteur** (C-011) avec les options (a) donner `decrypt` à la personnalisation, (b) faire sceller le mot de passe par le processus des clés via un travail, (c) autre. Ne tranche pas seul : c'est un élargissement de droit.
-- Tant que la réponse n'est pas donnée, implémente et teste tout le reste du lot (validation, enregistrement, enveloppe du poste) derrière une interface `PwdPackSealer` dont l'implémentation retenue sera branchée ensuite.
+- Le processus de personnalisation n'a **pas** le droit `decrypt` (§3.2). **Décision du porteur n° 7** : il scelle sous une clé de données de session, fournie par `SessionDataKeyProvider.get(prestataire, index)` (WP11) : identifiant de version et clair, valables tant que la version est `ACTIVE`.
+- `register_personalized_media` refuse une clé de données qui n'est plus la version active (WP05) : sur ce refus, redemande une clé au fournisseur et réessaie **une** fois ; un second refus est une erreur 409.
+- Ne donne jamais `decrypt` à ce processus et ne garde le clair de la clé de session nulle part ailleurs que dans le fournisseur.
 
 ### T055 — Refus et idempotence
 
@@ -91,8 +92,8 @@ Tests demandés par la spec (pgTAP par contrainte, intégration HTTP sur vraie b
 
 ## Definition of Done
 
-Lint, types et Jest verts ; le mot de passe n'existe en clair qu'en mémoire du processus de personnalisation, le temps de la requête ; la question des droits sur la clé de données est tranchée par le porteur ou explicitement en attente. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission bracelets-nfc-01M4TD3W`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte, points soumis au porteur.
+Lint, types et Jest verts ; le mot de passe n'existe en clair qu'en mémoire du processus de personnalisation, le temps de la requête ; la clé de données de session n'existe en clair que dans le fournisseur, 5 minutes au plus sans activité. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission bracelets-nfc-01M4TD3W`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte, points soumis au porteur.
 
 ## Risks / Reviewer guidance
 
-Ce lot porte l'opération la plus sensible de la mission. Le point « clé de données » est un vrai trou du plan, découvert au découpage : ne le comble pas en élargissant un droit sans l'accord du porteur. **Règle de sécurité du projet (`CLAUDE.md`, C-011)** : si un point de ce lot ne peut être tenu qu'en affaiblissant la sécurité (droit plus large, contrôle retiré ou reporté, secret plus exposé, faux gardé plus longtemps), **arrête-toi sur ce point et soumets-le au porteur avant de coder** ; continue le reste. Un renforcement se fait, puis se consigne.
+Ce lot porte l'opération la plus sensible de la mission. La clé de données de session (décision n° 7) est le compromis retenu pour ne donner aucun droit de déchiffrement à ce processus : ne l'élargis pas. **Règle de sécurité du projet (`CLAUDE.md`, C-011)** : si un point de ce lot ne peut être tenu qu'en affaiblissant la sécurité (droit plus large, contrôle retiré ou reporté, secret plus exposé, faux gardé plus longtemps), **arrête-toi sur ce point et soumets-le au porteur avant de coder** ; continue le reste. Un renforcement se fait, puis se consigne.

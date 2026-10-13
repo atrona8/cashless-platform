@@ -17,26 +17,13 @@ subtasks:
 - T069
 - T070
 - T071
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/lifecycle/
-create_intent:
-- apps/api/src/media/lifecycle/release.controller.ts
-- apps/api/src/media/lifecycle/release.service.ts
-- apps/api/src/media/lifecycle/replace.controller.ts
-- apps/api/src/media/lifecycle/replace.service.ts
-- apps/api/src/media/lifecycle/loss.controller.ts
-- apps/api/src/media/lifecycle/loss.service.ts
-- apps/api/src/media/lifecycle/cash-due.controller.ts
-- apps/api/src/media/lifecycle/cash-due.service.ts
-- apps/api/src/media/lifecycle/return.module.ts
-- apps/api/test/integration/media/release.spec.ts
-- apps/api/test/integration/media/replace.spec.ts
-- apps/api/test/integration/media/cash-due.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/lifecycle/release.controller.ts
@@ -51,7 +38,21 @@ owned_files:
 - apps/api/test/integration/media/release.spec.ts
 - apps/api/test/integration/media/replace.spec.ts
 - apps/api/test/integration/media/cash-due.spec.ts
+create_intent:
+- apps/api/src/media/lifecycle/release.controller.ts
+- apps/api/src/media/lifecycle/release.service.ts
+- apps/api/src/media/lifecycle/replace.controller.ts
+- apps/api/src/media/lifecycle/replace.service.ts
+- apps/api/src/media/lifecycle/loss.controller.ts
+- apps/api/src/media/lifecycle/loss.service.ts
+- apps/api/src/media/lifecycle/cash-due.controller.ts
+- apps/api/src/media/lifecycle/cash-due.service.ts
+- apps/api/src/media/lifecycle/return.module.ts
+- apps/api/test/integration/media/release.spec.ts
+- apps/api/test/integration/media/replace.spec.ts
+- apps/api/test/integration/media/cash-due.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

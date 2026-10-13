@@ -55,7 +55,7 @@ Règle transverse (`CLAUDE.md`, C-011) : tout écart qui affaiblit la sécurité
 | T040 | Actions à deux | WP10 | |
 | T041 | Commande d'administration | WP10 | |
 | T042 | Tests d'intégration | WP10 | |
-| T043 | Création et rotation (processus de personnalisation) | WP11 | |
+| T043 | Clé de données de session, rotation, retrait (processus de personnalisation) | WP11 | |
 | T044 | Rechiffrement par tranches (processus des clés) | WP11 | |
 | T045 | Cache court de la clé de données | WP11 | |
 | T046 | Tests d'intégration | WP11 | |
@@ -66,7 +66,7 @@ Règle transverse (`CLAUDE.md`, C-011) : tout écart qui affaiblit la sécurité
 | T051 | Clôture et rattrapage | WP12 | |
 | T052 | Tests d'intégration | WP12 | |
 | T053 | Enregistrement | WP13 | |
-| T054 | Clé de données pour la personnalisation | WP13 | |
+| T054 | Clé de données de session | WP13 | |
 | T055 | Refus et idempotence | WP13 | |
 | T056 | Association du code scanné | WP13 | |
 | T057 | Jeu de test partagé et tests | WP13 | |
@@ -109,7 +109,7 @@ Règle transverse (`CLAUDE.md`, C-011) : tout écart qui affaiblit la sécurité
 - En parallèle de la fin de chaîne : WP02 (Dart, après WP01), WP18 (liste noire, après WP14), WP19 (contrôle quotidien, après WP13).
 - WP20 ferme la mission.
 
-Point ouvert connu dès le découpage (WP13) : le processus de personnalisation n'a pas le droit de déchiffrer une clé de données ; la manière de sceller le mot de passe d'un nouveau bracelet sous la clé de données active est à soumettre au porteur avant d'être codée.
+Décision du porteur n° 7 (13/10/2026) : le processus de personnalisation n'a pas le droit de déchiffrer une clé de données ; il scelle les mots de passe sous une clé de données de session (WP11, WP13).
 
 ## WP01 — Bibliothèque de format en TypeScript (`@cashless/tag-format`)
 
@@ -265,7 +265,7 @@ T042 Tests d'intégration (WP10)
 
 ## WP11 — Clés de données : création, rotation, rechiffrement, retrait
 
-- **But** : Exécuter, dans les processus qui en ont le droit, la création de la clé de données, sa rotation avec rechiffrement par tranches, et le retrait d'une clé dédiée.
+- **But** : Fournir à la personnalisation une clé de données de session, et exécuter dans les processus qui en ont le droit la rotation avec rechiffrement par tranches et le retrait d'une clé dédiée.
 - **Phase** : Phase 3 - Clés et lots · **Dépend de** : WP10 · **Exigences** : FR-007, FR-008, FR-009
 - **Prompt** : [tasks/WP11-cles-de-donnees-rotation-retrait.md](tasks/WP11-cles-de-donnees-rotation-retrait.md)
 - **Critère** : Lint, types et Jest verts ; après rotation, 100 % des mots de passe se déchiffrent sous la nouvelle version et aucun sous l'ancienne ; aucun clair ne survit à un travail (tampons à zéro vérifiés).
@@ -273,7 +273,7 @@ T042 Tests d'intégration (WP10)
 
 Sous-tâches :
 
-T043 Création et rotation (processus de personnalisation) (WP11)
+T043 Clé de données de session, rotation, retrait (processus de personnalisation) (WP11)
 T044 Rechiffrement par tranches (processus des clés) (WP11)
 T045 Cache court de la clé de données (WP11)
 T046 Tests d'intégration (WP11)
@@ -300,13 +300,13 @@ T052 Tests d'intégration (WP12)
 - **But** : Enregistrer un bracelet personnalisé : calculer son mot de passe par le service de clés, le stocker chiffré, le rendre au poste sous enveloppe, associer le code imprimé.
 - **Phase** : Phase 4 - Bracelets · **Dépend de** : WP11, WP12 · **Exigences** : FR-016, FR-017
 - **Prompt** : [tasks/WP13-personnalisation.md](tasks/WP13-personnalisation.md)
-- **Critère** : Lint, types et Jest verts ; le mot de passe n'existe en clair qu'en mémoire du processus de personnalisation, le temps de la requête ; la question des droits sur la clé de données est tranchée par le porteur ou explicitement en attente.
-- **Risques** : Ce lot porte l'opération la plus sensible de la mission. Le point « clé de données » est un vrai trou du plan, découvert au découpage : ne le comble pas en élargissant un droit sans l'accord du porteur.
+- **Critère** : Lint, types et Jest verts ; le mot de passe n'existe en clair qu'en mémoire du processus de personnalisation, le temps de la requête ; la clé de données de session n'existe en clair que dans le fournisseur, 5 minutes au plus sans activité.
+- **Risques** : Ce lot porte l'opération la plus sensible de la mission. La clé de données de session (décision n° 7) est le compromis retenu pour ne donner aucun droit de déchiffrement à ce processus : ne l'élargis pas.
 
 Sous-tâches :
 
 T053 Enregistrement (WP13)
-T054 Clé de données pour la personnalisation (WP13)
+T054 Clé de données de session (WP13)
 T055 Refus et idempotence (WP13)
 T056 Association du code scanné (WP13)
 T057 Jeu de test partagé et tests (WP13)

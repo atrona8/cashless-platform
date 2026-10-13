@@ -1,6 +1,6 @@
 ---
 work_package_id: WP14
-title: Mot de passe pour un terminal et lecture d'un bracelet
+title: 'Mot de passe pour un terminal et lecture d''un bracelet'
 dependencies:
 - WP13
 requirement_refs:
@@ -15,23 +15,24 @@ subtasks:
 - T059
 - T060
 - T061
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/taps/
-create_intent:
-- apps/api/test/integration/media/auth-keys.spec.ts
-- apps/api/test/integration/media/taps.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/auth-keys/**
 - apps/api/src/media/taps/**
 - apps/api/test/integration/media/auth-keys.spec.ts
 - apps/api/test/integration/media/taps.spec.ts
+create_intent:
+- apps/api/test/integration/media/auth-keys.spec.ts
+- apps/api/test/integration/media/taps.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

@@ -1,6 +1,6 @@
 ---
 work_package_id: WP04
-title: Rôle PERSONALIZER, actions à deux et travaux de clé (migrations 0011 et 0012)
+title: 'Rôle PERSONALIZER, actions à deux et travaux de clé (migrations 0011 et 0012)'
 dependencies:
 - WP03
 requirement_refs:
@@ -17,25 +17,26 @@ subtasks:
 - T015
 - T016
 - T017
-phase: Phase 1 - Socle
+phase: 'Phase 1 - Socle'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/migrations/0011_personalizer_role.sql
-create_intent:
-- packages/ledger-sql/migrations/0011_personalizer_role.sql
-- packages/ledger-sql/migrations/0012_tag_key_jobs.sql
-- packages/ledger-sql/tests/tests_personalizer_role.sql
-- packages/ledger-sql/tests/tests_tag_key_jobs.sql
 execution_mode: code_change
 owned_files:
 - packages/ledger-sql/migrations/0011_personalizer_role.sql
 - packages/ledger-sql/migrations/0012_tag_key_jobs.sql
 - packages/ledger-sql/tests/tests_personalizer_role.sql
 - packages/ledger-sql/tests/tests_tag_key_jobs.sql
+create_intent:
+- packages/ledger-sql/migrations/0011_personalizer_role.sql
+- packages/ledger-sql/migrations/0012_tag_key_jobs.sql
+- packages/ledger-sql/tests/tests_personalizer_role.sql
+- packages/ledger-sql/tests/tests_tag_key_jobs.sql
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -75,7 +76,7 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP03. L'espace d
 
 ### T016 — Travaux de clé et comptes rendus (0012)
 
-- `tag_key_job` selon `data-model.md` : sortes `CREATE_KEY`, `CREATE_DEK`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`, `DISABLE_KMS_KEY` ; états `PENDING`, `RUNNING`, `DONE`, `FAILED` ; index unique partiel « un seul travail non terminé par (prestataire, index, sorte) » ; `payload` et `progress` jsonb avec un CHECK qui refuse les clés `plaintext`, `dek`, `pwd`, `secret` (garde-fou contre un secret écrit par erreur).
+- `tag_key_job` selon `data-model.md` : sortes `CREATE_KEY`, `ROTATE_DEK`, `REENCRYPT`, `RETIRE_KEY`, `DISABLE_KMS_KEY` ; états `PENDING`, `RUNNING`, `DONE`, `FAILED` ; index unique partiel « un seul travail non terminé par (prestataire, index, sorte) » ; `payload` et `progress` jsonb avec un CHECK qui refuse les clés `plaintext`, `dek`, `pwd`, `secret` (garde-fou contre un secret écrit par erreur).
 - `claim_tag_key_job(p_kinds text[]) RETURNS tag_key_job` (`FOR UPDATE SKIP LOCKED`, passe en `RUNNING`, incrémente `attempts`), `finish_tag_key_job(p_job, p_status, p_error, p_progress)`.
 - `tag_key_check_run` : prestataire, début, fin, échantillon, écarts, statut `OK`, `MISMATCH`, `ERROR`.
 - RLS sur les deux tables ; les politiques par rôle de base viennent au WP06.

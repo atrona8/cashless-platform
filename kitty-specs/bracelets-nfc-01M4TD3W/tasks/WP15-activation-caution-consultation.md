@@ -1,6 +1,6 @@
 ---
 work_package_id: WP15
-title: Activation, caution et consultation d'un bracelet
+title: 'Activation, caution et consultation d''un bracelet'
 dependencies:
 - WP14
 requirement_refs:
@@ -17,25 +17,13 @@ subtasks:
 - T064
 - T065
 - T066
-phase: Phase 4 - Bracelets
+phase: 'Phase 4 - Bracelets'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/lifecycle/
-create_intent:
-- apps/api/src/media/lifecycle/activation.controller.ts
-- apps/api/src/media/lifecycle/activation.service.ts
-- apps/api/src/media/lifecycle/deposit.controller.ts
-- apps/api/src/media/lifecycle/deposit.service.ts
-- apps/api/src/media/lifecycle/media-read.controller.ts
-- apps/api/src/media/lifecycle/media-read.service.ts
-- apps/api/src/media/lifecycle/lifecycle.dto.ts
-- apps/api/src/media/lifecycle/counter-access.ts
-- apps/api/src/media/lifecycle/lifecycle.module.ts
-- apps/api/test/integration/media/activation.spec.ts
-- apps/api/test/integration/media/deposit.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/lifecycle/activation.controller.ts
@@ -49,7 +37,20 @@ owned_files:
 - apps/api/src/media/lifecycle/lifecycle.module.ts
 - apps/api/test/integration/media/activation.spec.ts
 - apps/api/test/integration/media/deposit.spec.ts
+create_intent:
+- apps/api/src/media/lifecycle/activation.controller.ts
+- apps/api/src/media/lifecycle/activation.service.ts
+- apps/api/src/media/lifecycle/deposit.controller.ts
+- apps/api/src/media/lifecycle/deposit.service.ts
+- apps/api/src/media/lifecycle/media-read.controller.ts
+- apps/api/src/media/lifecycle/media-read.service.ts
+- apps/api/src/media/lifecycle/lifecycle.dto.ts
+- apps/api/src/media/lifecycle/counter-access.ts
+- apps/api/src/media/lifecycle/lifecycle.module.ts
+- apps/api/test/integration/media/activation.spec.ts
+- apps/api/test/integration/media/deposit.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---

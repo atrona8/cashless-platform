@@ -82,7 +82,7 @@ files.append(usecase('usecase-terrain','Bracelets NFC — terrain','Ce que font 
 P=lambda k,l,s='neutral':(k,l,s)
 files.append(sequence('sequence-personnalisation','Personnalisation d’un bracelet','Le mot de passe n’est jamais transmis ni stocké en clair',
  [P('p','Poste','data'),P('s','Personnalisation','primary'),P('k','Service de clés','accent'),P('b','Base centrale')],
- [('p','s','Enregistrer + clé à usage unique'),('s','k','Calculer le mot de passe'),('k','s','Mot de passe','ret'),('s','s','Chiffrer pour stockage'),('s','b','Bracelet personnalisé, audit'),('s','s','Chiffrer pour le poste, effacer'),('s','p','Mot de passe sous enveloppe','ret')]))
+ [('p','s','Enregistrer + clé à usage unique'),('s','k','Calculer le mot de passe'),('k','s','Mot de passe','ret'),('s','s','Chiffrer (clé de session)'),('s','b','Bracelet personnalisé, audit'),('s','s','Chiffrer pour le poste, effacer'),('s','p','Mot de passe sous enveloppe','ret')]))
 files.append(sequence('sequence-lecture','Lecture d’un bracelet par un terminal','Deux processus : les clés d’un côté, l’API publique de l’autre',
  [P('t','Terminal','data'),P('c','Processus des clés','primary'),P('k','Service de clés','accent'),P('a','API publique','primary'),P('b','Base centrale')],
  [('t','c','Demander le mot de passe'),('c','b','Lire le chiffré du bracelet'),('c','k','Déchiffrer la clé de données'),('c','t','Mot de passe chiffré pour ce terminal','ret'),('t','a','Enregistrer la lecture'),('a','b','register_tap'),('a','t','Résultat et solde','ret')],
@@ -94,8 +94,9 @@ files.append(sequence('sequence-rattachement','Rattachement d’un bracelet appr
  [P('f','Festivalier','data'),P('g','Agent de guichet','data'),P('a','API publique','primary'),P('b','Base centrale')],
  [('f','a','Saisir le code imprimé'),('a','b','Solde non nul : demande en attente'),('a','f','Code de confirmation à 6 chiffres','ret'),('g','a','Lecture du bracelet + code'),('a','b','Confirmer la demande'),('a','g','Portefeuille rattaché','ret')]))
 files.append(sequence('sequence-creation-cle','Création d’une clé, à deux','Aucun service permanent ne peut créer une clé',
- [P('x','Admin prestataire','data'),P('y','Second admin','data'),P('a','API publique','primary'),P('e','Commande d’admin.','accent'),P('s','Personnalisation','primary'),P('b','Base centrale')],
- [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Travail : créer la clé'),('e','b','Clé créée (lancée par l’exploitant)'),('s','b','Clé de données, clé utilisable')]))
+ [P('x','Admin prestataire','data'),P('y','Second admin','data'),P('a','API publique','primary'),P('e','Commande d’admin.','accent'),P('b','Base centrale')],
+ [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Travail : créer la clé'),('e','e','Lancée par l’exploitant'),('e','b','Clé créée, utilisable')],
+ note="La première clé de données est créée par la première session de personnalisation."))
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
 for f in files: print(r.render(f))

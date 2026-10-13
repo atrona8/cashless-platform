@@ -15,22 +15,13 @@ subtasks:
 - T044
 - T045
 - T046
-phase: Phase 3 - Clés et lots
+phase: 'Phase 3 - Clés et lots'
 history:
 - timestamp: '2026-10-13T12:05:28Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/media/keys/
-create_intent:
-- apps/api/src/media/keys/dek.worker.ts
-- apps/api/src/media/keys/reencrypt.worker.ts
-- apps/api/src/media/keys/dek-cache.ts
-- apps/api/src/media/keys/data-key.repository.ts
-- apps/api/src/media/keys/keys-personalization.module.ts
-- apps/api/src/media/keys/keys-tag-keys.module.ts
-- apps/api/test/integration/media/data-keys.spec.ts
-- apps/api/test/unit/media/dek-cache.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/media/keys/dek.worker.ts
@@ -41,7 +32,17 @@ owned_files:
 - apps/api/src/media/keys/keys-tag-keys.module.ts
 - apps/api/test/integration/media/data-keys.spec.ts
 - apps/api/test/unit/media/dek-cache.spec.ts
+create_intent:
+- apps/api/src/media/keys/dek.worker.ts
+- apps/api/src/media/keys/reencrypt.worker.ts
+- apps/api/src/media/keys/dek-cache.ts
+- apps/api/src/media/keys/data-key.repository.ts
+- apps/api/src/media/keys/keys-personalization.module.ts
+- apps/api/src/media/keys/keys-tag-keys.module.ts
+- apps/api/test/integration/media/data-keys.spec.ts
+- apps/api/test/unit/media/dek-cache.spec.ts
 role: implementer
+agent: claude
 tags: []
 tracker_refs: []
 ---
@@ -54,7 +55,7 @@ Charge le profil : `/ad-hoc-profile-load implementer-ivan`. Lis ensuite `README.
 
 ## Objective
 
-Exécuter, dans les processus qui en ont le droit, la création de la clé de données, sa rotation avec rechiffrement par tranches, et le retrait d'une clé dédiée.
+Fournir à la personnalisation une clé de données de session, et exécuter dans les processus qui en ont le droit la rotation avec rechiffrement par tranches et le retrait d'une clé dédiée.
 
 ## Context
 
@@ -68,9 +69,11 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP10. L'espace d
 
 ## Subtasks
 
-### T043 — Création et rotation (processus de personnalisation)
+### T043 — Clé de données de session, rotation, retrait (processus de personnalisation)
 
-- `dek.worker.ts` : `CREATE_DEK` → `DataKeyPort.generateDataKey`, insère `tag_data_key` version 1 `ACTIVE`, **met à zéro le clair** aussitôt (il ne sert pas ici). `ROTATE_DEK` → nouvelle version `ACTIVE`, ancienne `DECRYPT_ONLY` dans la même transaction (l'index unique « une seule active » l'impose), puis crée le travail `REENCRYPT`.
+- **Décision du porteur n° 7 (13/10/2026)** : la personnalisation n'a pas le droit `decrypt` ; elle scelle les mots de passe sous une **clé de données de session**. `session-data-key.ts` (dans `data-key.repository.ts` ou un fichier voisin du lot) : `SessionDataKeyProvider.get(operatorId, keyIndex)` → au premier appel, ou après expiration, `DataKeyPort.generateDataKey`, insère une nouvelle version `ACTIVE` et passe la précédente en `DECRYPT_ONLY` dans la même transaction (l'index unique « une seule active » l'impose), garde le clair en mémoire.
+- Durée : le clair est effacé (tampon à zéro) après `tagDekCacheSeconds` sans utilisation (300 s au plus), à l'arrêt du processus, et dès que la version n'est plus `ACTIVE` en base (une autre instance a ouvert une session, ou une rotation a eu lieu) : dans ce cas le fournisseur ouvre une nouvelle version et l'appelant réessaie une fois. Une seule génération en vol par (prestataire, index).
+- `dek.worker.ts` : `ROTATE_DEK` → nouvelle version `ACTIVE` (clair mis à zéro aussitôt : il ne sert pas ici), toutes les autres versions non retirées en `DECRYPT_ONLY`, puis travail `REENCRYPT` qui ramène tous les bracelets de l'index sous la nouvelle version. La rotation sert aussi à résorber les versions de session accumulées.
 - `RETIRE_KEY` → `retire_dedicated_key(prestataire, index)` (fonction du schéma : clé et clé de données `RETIRED`, mots de passe effacés, bracelets retirés), puis crée `DISABLE_KMS_KEY`.
 
 ### T044 — Rechiffrement par tranches (processus des clés)
@@ -82,12 +85,12 @@ Planification et merge sur `feat/bracelets-nfc`. Dépendances : WP10. L'espace d
 ### T045 — Cache court de la clé de données
 
 - `dek-cache.ts` : entrée par (prestataire, index, version), durée `tagDekCacheSeconds` (0 = aucun cache), tampon mis à zéro à l'expiration, à l'éviction et à `onModuleDestroy` ; une seule promesse de déchiffrement en vol par entrée (pas de rafale d'appels KMS).
-- Utilisé **uniquement** par le processus des clés de bracelet (WP14) ; le rechiffrement et le contrôle quotidien ne mettent rien en cache.
+- Utilisé **uniquement** par le processus des clés de bracelet (WP14). Avec la clé de session de la personnalisation (ci-dessus), ce sont les deux seuls endroits où une clé de données en clair survit à une requête ; le rechiffrement et le contrôle quotidien ne gardent rien.
 - `test/unit/media/dek-cache.spec.ts` (horloge simulée) : expiration, mise à zéro vérifiée sur le tampon, 0 = toujours un appel, arrêt du module.
 
 ### T046 — Tests d'intégration
 
-- `data-keys.spec.ts` : clé utilisable après `CREATE_DEK` ; rotation sur 1 200 bracelets personnalisés (insérés par jeu de test avec le faux KMS) → trois tranches, tous relisibles avec la nouvelle version, ancienne `RETIRED` ; interruption simulée au milieu puis reprise ; retrait d'une clé dédiée : mots de passe effacés, travail de désactivation créé ; compteur du faux KMS : 2 `decrypt` par tranche au plus.
+- `data-keys.spec.ts` : première session → version 1 `ACTIVE` ; expiration puis nouvelle session → version 2, version 1 `DECRYPT_ONLY`, bracelets de la version 1 toujours lisibles par le processus des clés ; deux fournisseurs concurrents sur le même index → aucun bracelet scellé sous une version non active ; tampon de session à zéro après expiration et à l'arrêt ; rotation sur 1 200 bracelets personnalisés (insérés par jeu de test avec le faux KMS) → trois tranches, tous relisibles avec la nouvelle version, ancienne `RETIRED` ; interruption simulée au milieu puis reprise ; retrait d'une clé dédiée : mots de passe effacés, travail de désactivation créé ; compteur du faux KMS : 2 `decrypt` par tranche au plus.
 
 ## Test Strategy
 
