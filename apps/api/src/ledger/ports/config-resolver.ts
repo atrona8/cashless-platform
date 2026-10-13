@@ -1,7 +1,8 @@
 // Port : configuration en vigueur à la date de l'opération (SPECIFICATION §5.4, étape 2 : figer la configuration).
 //
-// Aucune implémentation réelle dans cette mission (lecture de fee_rule / config_version : mission 3). Les seules
-// implémentations sont des fixtures : celle du scénario de référence (WP13) et une fixture minimale de test (WP12).
+// Implémentation réelle : `SqlConfigResolver` (configuration/, mission configuration-parties-evenements). Les
+// fixtures restent pour les tests du moteur : celle du scénario de référence et une fixture minimale.
+import type { Queryable } from './account-resolver';
 import type { ResolvedConfig } from '../types';
 
 export interface ConfigQuery {
@@ -9,6 +10,8 @@ export interface ConfigQuery {
   eventId?: string;
   occurredAt: Date;
   participationId?: string;
+  /** Client de la transaction de l'écriture : le résolveur réel lit la configuration sous le même prestataire. */
+  client?: Queryable;
 }
 
 export interface ConfigResolver {

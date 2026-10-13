@@ -1,7 +1,7 @@
 // TOPUP (recharge par PSP) et TOPUP_CASH (recharge en espèces) — SPECIFICATION §5.4.
 import { fee } from '../../money';
 import { cashDue, money, partyAccounts, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
-import { balanced, creditWithTax, push, requireId, requirePositive } from './lines';
+import { balanced, creditWithTax, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface TopupPayload {
   walletId: string;
@@ -23,11 +23,15 @@ export function buildTopup(command: LedgerCommand<'TOPUP', TopupPayload>, ctx: B
   if (config.pspFeeBearer === 'CUSTOMER') {
     // Le festivalier paie les frais : portefeuille crédité du net, frais facturés par l'organisateur (HT + taxe).
     push(lines, wallet(walletId, 'P'), -(amount - pspFee));
+    const from = lines.length;
     creditWithTax(lines, pspFee, config.taxBps, org('ORG_FFEST'), org('ORG_TAX'));
+    tagFee(lines, from, config.pspFees[channel]);
   } else {
     push(lines, wallet(walletId, 'P'), -amount);
+    const from = lines.length;
     push(lines, config.pspFeeBearer === 'ORGANIZER' ? org('ORG_FPSP') : ope('OPE_FPSP'), pspFee);
     push(lines, psp, -pspFee);
+    tagFee(lines, from, config.pspFees[channel]);
   }
   return balanced(lines);
 }

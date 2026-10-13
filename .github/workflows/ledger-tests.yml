@@ -27,8 +27,10 @@ jobs:
       PGPASSWORD: postgres
       PGDATABASE: cashless_test
       CASHLESS_APP_PASSWORD: cashless_app_ci
+      CASHLESS_PLATFORM_PASSWORD: cashless_platform_ci
       DATABASE_URL_OWNER: postgres://postgres:postgres@localhost:5432/cashless_test
       DATABASE_URL_APP: postgres://cashless_app:cashless_app_ci@localhost:5432/cashless_test
+      DATABASE_URL_PLATFORM: postgres://cashless_platform:cashless_platform_ci@localhost:5432/cashless_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -72,4 +74,7 @@ jobs:
       - name: Tests Jest sur base recréée (unitaires, intégration, scénario)
         run: |
           npm run reset-db -w @cashless/ledger-sql
-          npm test
+          SKIP_LATENCY=1 npm test
+
+      - name: Latence des routes de configuration (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- configuration-latency

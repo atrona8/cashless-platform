@@ -1,0 +1,36 @@
+{
+  "accept_commit": "49075803cf8352e063304ae2f02bea4fb3149509",
+  "acceptance_history": [
+    {
+      "accept_commit": "49075803cf8352e063304ae2f02bea4fb3149509",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-10-13T09:32:54.749372+00:00",
+      "accepted_by": "claude (délégation du porteur du projet)",
+      "accepted_from_commit": "e24fbf006de9c87c46fd6f2084d3d4893c087dd8"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-10-13T09:32:54.749372+00:00",
+  "accepted_by": "claude (délégation du porteur du projet)",
+  "accepted_from_commit": "e24fbf006de9c87c46fd6f2084d3d4893c087dd8",
+  "baseline_merge_commit": "8d0938841107aec2f71e8a92199de87adf44bfdd",
+  "coordination_branch": "kitty/mission-configuration-parties-evenements-01M4GCJ9",
+  "created_at": "2026-10-09T13:10:15.470157+00:00",
+  "flattened": false,
+  "friendly_name": "Configuration, parties et événements",
+  "mission_id": "01M4GCJ9223VETS7PV6G233HYT",
+  "mission_number": null,
+  "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Les missions 1 et 2 ont posé le grand livre, l'API, l'identité, les rôles et la double validation, mais aucune partie ni aucun événement ne peut encore être créé ou configuré. Cette mission apporte l'organisation des parties (prestataires, organisateurs, commerçants, participations, points de vente), les événements et leur cycle de statuts, la cascade de configuration versionnée bornée par le profil de législation, les contrats versionnés et les règles de frais, socle sur lequel s'appuient bracelets, terminaux, recharges et paiements des missions suivantes.",
+  "purpose_tldr": "Permettre de créer et configurer prestataires, organisateurs, commerçants, points de vente et événements, avec une configuration versionnée, bornée par la législation, et les comptes du grand livre créés à la demande.",
+  "retain_branches": true,
+  "retain_worktrees": true,
+  "slug": "configuration-parties-evenements-01M4GCJ9",
+  "status_phase": "1",
+  "target_branch": "feat/configuration-parties-evenements",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-09T13:39:31.438573+00:00"
+}

@@ -1,7 +1,7 @@
 // WALLET_REFUND (solde payé) et CHARGEBACK (contestation carte, ADR-77) — SPECIFICATION §5.4.
 import { fee } from '../../money';
 import { BuildError, money, partyAccounts, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
-import { balanced, creditWithTax, push, requireId, requirePositive } from './lines';
+import { balanced, creditWithTax, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface WalletRefundPayload {
   walletId: string;
@@ -23,6 +23,7 @@ export function buildWalletRefund(command: LedgerCommand<'WALLET_REFUND', Wallet
   const lines: Line[] = [];
   push(lines, wallet(walletId, 'P'), refundFee);
   creditWithTax(lines, refundFee, config.taxBps, org('ORG_FFEST'), org('ORG_TAX'));
+  tagFee(lines, 0, config.refundFee);
   push(lines, wallet(walletId, 'P'), amount - refundFee);
   push(lines, money(requireId(moneyAccount, "compte d'argent")), -(amount - refundFee));
   return balanced(lines);

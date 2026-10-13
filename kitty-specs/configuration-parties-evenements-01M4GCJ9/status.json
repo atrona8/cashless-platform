@@ -1,0 +1,229 @@
+{
+  "event_count": 96,
+  "last_event_id": "01M4TA56BCKD52S9TWVQHKB5HR",
+  "materialized_at": "2026-10-13T09:40:33.772441+00:00",
+  "mission_number": "",
+  "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 13,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4821G4CZ8DVW1ESJPNPK",
+      "last_transition_at": "2026-10-13T09:40:02.753691+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP01-integrite-configuration-base/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP01-integrite-configuration-base/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 8342,
+      "shell_pid_created_at": "1791553210.779115"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4D480Z0T8P3SS7MZGHSE",
+      "last_transition_at": "2026-10-13T09:40:07.944788+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP02-grand-livre-evenement-conditions/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP02-grand-livre-evenement-conditions/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12729,
+      "shell_pid_created_at": "1791798381.959514"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M4TA4J51X8EV1886N1KNFT7K",
+      "last_transition_at": "2026-10-13T09:40:13.089488+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP03-role-portee-plateforme/review-cycle-2.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP03-role-portee-plateforme/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16718,
+      "shell_pid_created_at": "1791799497.181422"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4AKH3YMZ9EZEP472S1VE",
+      "last_transition_at": "2026-10-13T09:40:05.361477+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP04-contrat-api-back-office/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP04-contrat-api-back-office/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 17533,
+      "shell_pid_created_at": "1791799577.724596"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4MNH66HQS1C6HCZPVYPZ",
+      "last_transition_at": "2026-10-13T09:40:15.665862+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP05-transaction-plateforme-api/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP05-transaction-plateforme-api/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20029,
+      "shell_pid_created_at": "1791801238.806638"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4FMP9HJEWNQVG9JHMPF4",
+      "last_transition_at": "2026-10-13T09:40:10.518691+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP06-catalogue-cascade-bornes/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP06-catalogue-cascade-bornes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 21964,
+      "shell_pid_created_at": "1791801722.675594"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4Q6CMHGR44G0NM2XQDFZ",
+      "last_transition_at": "2026-10-13T09:40:18.252236+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP07-routes-plateforme/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP07-routes-plateforme/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 24954,
+      "shell_pid_created_at": "1791802444.70312"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4SQAYN31A8PZQ9ZQ43DJ",
+      "last_transition_at": "2026-10-13T09:40:20.842104+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP08-organisation-prestataire/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP08-organisation-prestataire/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 27801,
+      "shell_pid_created_at": "1791803818.454643"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4W7K9V72QJAQ38BDB5KD",
+      "last_transition_at": "2026-10-13T09:40:23.411974+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP09-evenements/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP09-evenements/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 29914,
+      "shell_pid_created_at": "1791804356.654646"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA4YR1QSSZQB752TE6PR3N",
+      "last_transition_at": "2026-10-13T09:40:25.985271+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP10-participations-points-de-vente-frais/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP10-participations-points-de-vente-frais/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 41169,
+      "shell_pid_created_at": "1791805778.2266"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA519J7WDZ7QRGNK8NDJ82",
+      "last_transition_at": "2026-10-13T09:40:28.594476+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP11-statuts-evenement/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP11-statuts-evenement/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44182,
+      "shell_pid_created_at": "1791806401.022115"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA53TJ3SZQ4R5PCXWSTYEA",
+      "last_transition_at": "2026-10-13T09:40:31.186431+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP12-resolveur-configuration-sql/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP12-resolveur-configuration-sql/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 52565,
+      "shell_pid_created_at": "1791807653.640542"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M4TA56BCKD52S9TWVQHKB5HR",
+      "last_transition_at": "2026-10-13T09:40:33.772441+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/configuration-parties-evenements-01M4GCJ9/tasks/WP13-preuves-bout-en-bout-ci-docs/review-cycle-1.md",
+        "reference": "review-cycle://configuration-parties-evenements-01M4GCJ9/WP13-preuves-bout-en-bout-ci-docs/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 56559,
+      "shell_pid_created_at": "1791808459.894531"
+    }
+  }
+}

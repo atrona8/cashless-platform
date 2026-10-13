@@ -7,11 +7,14 @@ export interface ProblemOptions {
   status?: number;
   /** Détail propre à ce cas (sinon celui du catalogue, dans la langue de la requête). */
   detail?: string;
+  /** Membres d'extension du problème (RFC 9457), par exemple `violations` d'un refus de bornes. */
+  extensions?: Record<string, unknown>;
 }
 
 export class ProblemException extends Error {
   readonly status: number;
   readonly detail?: string;
+  readonly extensions?: Record<string, unknown>;
 
   constructor(
     readonly code: ProblemCode,
@@ -21,6 +24,7 @@ export class ProblemException extends Error {
     this.name = 'ProblemException';
     this.status = options.status ?? defaultStatus(code);
     this.detail = options.detail;
+    this.extensions = options.extensions;
   }
 }
 

@@ -1,7 +1,7 @@
 // PROMO_CREDIT, PROMO_EXPIRY et ACTIVATION_FEE — SPECIFICATION §5.4.
 import { fee, groupForTax } from '../../money';
 import { BuildError, partyAccounts, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
-import { balanced, push, requireId, requirePositive } from './lines';
+import { balanced, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface PromoPayload {
   walletId: string;
@@ -53,5 +53,6 @@ export function buildActivationFee(command: LedgerCommand<'ACTIVATION_FEE', Acti
     push(lines, org('ORG_FFEST'), -group.ht);
     push(lines, org('ORG_TAX'), -group.tax);
   }
+  tagFee(lines, 0, config.activationFee);
   return balanced(lines);
 }

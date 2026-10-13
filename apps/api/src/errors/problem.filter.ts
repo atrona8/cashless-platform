@@ -17,6 +17,7 @@ export interface ResolvedProblem {
   code: ProblemCode;
   status: number;
   detail?: string;
+  extensions?: Record<string, unknown>;
 }
 
 export interface ProblemBody {
@@ -26,10 +27,14 @@ export interface ProblemBody {
   detail: string;
   code: ProblemCode;
   instance: string;
+  /** Membres d'extension (RFC 9457). */
+  [extension: string]: unknown;
 }
 
 export function resolveProblem(error: unknown): ResolvedProblem {
-  if (error instanceof ProblemException) return { code: error.code, status: error.status, detail: error.detail };
+  if (error instanceof ProblemException) {
+    return { code: error.code, status: error.status, detail: error.detail, extensions: error.extensions };
+  }
   if (isSqlError(error)) return mapSqlState(error.code, error.constraint);
   if (error instanceof HttpException) {
     const status = error.getStatus();
@@ -45,6 +50,8 @@ export function resolveProblem(error: unknown): ResolvedProblem {
 export function problemBody(problem: ResolvedProblem, req: Request, config: AppConfig): ProblemBody {
   const message = messageFor(problem.code, pickLanguage(req.header('Accept-Language')));
   return {
+    // Les extensions ne remplacent jamais un membre standard.
+    ...problem.extensions,
     type: `${config.problemTypeBase}${problem.code}`,
     title: message.title,
     status: problem.status,

@@ -1,4 +1,5 @@
-// Cloisonnement (research R-03) : seul src/db/ touche `pg` et le jeton du pool ; aucun `SET app.` dans src/.
+// Cloisonnement (research R-03) : seul src/db/ touche `pg` et les jetons des pools ; aucun `SET app.` dans src/.
+// La transaction de plateforme (contrat platform-access) n'est importée que par les services de plateforme.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
@@ -31,8 +32,34 @@ describe('architecture', () => {
     expect(files.filter((file) => /SET\s+(LOCAL\s+)?app\./i.test(file.text)).map((f) => f.path)).toEqual([]);
   });
 
-  it('le jeton du pool n’est pas exporté par DbModule', () => {
+  it('les jetons des pools ne sont pas exportés par DbModule', () => {
     const module = files.find((file) => file.path === 'db/db.module.ts');
-    expect(module?.text).toMatch(/exports:\s*\[TenantTx, APP_CONFIG\]/);
+    expect(module?.text).toMatch(/exports:\s*\[TenantTx, PlatformTx, APP_CONFIG\]/);
+  });
+
+  it('PlatformTx n’est importée que par db/, idempotency/, approval/ et les fichiers de plateforme', () => {
+    const allowed = [
+      /^db\//,
+      /^idempotency\//,
+      /^approval\//,
+      /^organization\/platform\//,
+      /^configuration\/jurisdiction[^/]*$/,
+      /^configuration\/platform-[^/]*$/,
+    ];
+    const offenders = files
+      .filter((file) => imports(file.text).some((source) => source.endsWith('/platform-tx')))
+      .filter((file) => !allowed.some((pattern) => pattern.test(file.path)))
+      .map((file) => file.path);
+    expect(offenders).toEqual([]);
+  });
+
+  it('la transaction de plateforme ne pose jamais de prestataire', () => {
+    const platformTx = files.find((file) => file.path === 'db/platform-tx.ts');
+    expect(platformTx?.text).toMatch(/set_config\('app\.scope', 'platform', true\)/);
+    expect(platformTx?.text.replace(/^\s*\/\/.*$/gm, '')).not.toMatch(/app\.operator_id/);
+  });
+
+  it('seul db/ nomme le pool de la plateforme', () => {
+    expect(files.filter((file) => !file.path.startsWith('db/') && file.text.includes('PG_PLATFORM_POOL')).map((f) => f.path)).toEqual([]);
   });
 });

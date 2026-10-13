@@ -27,7 +27,9 @@ $$;
 SELECT has_table('api_idempotency');
 SELECT col_is_pk('api_idempotency', 'id');
 SELECT col_not_null('api_idempotency', c, 'colonne obligatoire : ' || c)
-  FROM unnest(ARRAY['operator_id','scope','idempotency_key','request_hash','status','created_at','expires_at']) AS c;
+  FROM unnest(ARRAY['scope','idempotency_key','request_hash','status','created_at','expires_at']) AS c;
+-- Migration 0009 : une ligne sans prestataire est une clé de niveau plateforme (tests/tests_platform_scope.sql).
+SELECT col_is_null('api_idempotency', 'operator_id', 'operator_id facultatif : NULL = niveau plateforme');
 SELECT fk_ok('api_idempotency', 'operator_id', 'party', 'id');
 SELECT has_index('api_idempotency', 'api_idempotency_expires_at_idx', 'index de purge sur expires_at');
 

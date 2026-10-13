@@ -89,6 +89,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-77 | Contestations carte : payeur fixé par contrat, contestation tardive dans le grand livre verrouillé | Acceptée |
 | ADR-78 | Pile logicielle : l'existant prime sur le document du porteur | Acceptée |
 | ADR-79 | Clés d'idempotence conservées 30 jours | Acceptée |
+| ADR-80 | Rôle de base distinct pour les écritures de plateforme | Acceptée |
+| ADR-81 | Profils de législation gérés par la plateforme ; colonnes de configuration ajoutées au schéma | Acceptée |
+| ADR-82 | Configuration : rôle strict par réglage, règle de frais portée par les lignes, dates d'effet par défaut | Acceptée |
 
 ---
 
@@ -869,3 +872,43 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Décision.** Durée de vie par défaut d'une clé applicative : 30 jours (`IDEMPOTENCY_TTL_HOURS` = 720 par défaut, toujours paramétrable). Les clés des terminaux restent la clé du grand livre, conservées pour toujours. Le contrat est inchangé.
 - **Conséquences.** Table `api_idempotency` plus volumineuse (une ligne par écriture du back-office et des apps sur 30 jours) ; la purge planifiée future supprimera les lignes expirées.
 - **Références.** `openapi.yaml` (`IdempotencyKey`) ; `apps/api/src/idempotency/idempotency.repository.ts` ; mission 1 (spec, research R-05, `contracts/idempotency.md` : 24 h, remplacé).
+
+## ADR-80 — Rôle de base distinct pour les écritures de plateforme
+
+- **Statut** : Acceptée, 12 octobre 2026 (mission « Configuration, parties et événements » ; tranche la contradiction X-2 ; limite acceptée par le porteur le même jour).
+- **Contexte.** SPEC §2.2 demande que les écritures de niveau plateforme (prestataires, profils de législation, contrat et redevances de plateforme, configuration de niveau plateforme) passent par un rôle de base distinct de celui de l'application. La mission 2 avait servi son seul besoin de plateforme (`create_platform_admin`) par une fonction `SECURITY DEFINER` appelée par le rôle applicatif.
+- **Décision.**
+  1. Un second rôle PostgreSQL, `cashless_platform` (connexion seule, ni superutilisateur ni `BYPASSRLS`), créé par `post-roles.sql`. L'API l'atteint par un second pool (`DATABASE_URL_PLATFORM`, obligatoire en production) et une transaction dédiée (`PlatformTx`) qui ne pose jamais `app.operator_id`. Un test d'architecture limite son usage aux services de plateforme.
+  2. Ses droits sont accordés un à un, après une remise à zéro à chaque rejeu : lecture et insertion sur les tables de plateforme, modification de colonnes nommées seulement, aucun droit sur les événements, le grand livre et leurs objets. Par table, une politique permissive ouvre sa portée et une politique **restrictive** la borne, pour qu'il ne puisse pas l'élargir en posant lui-même un prestataire de session.
+  3. Le rôle applicatif perd les écritures de plateforme : `INSERT`, `UPDATE` sur `jurisdiction_profile` et `currency_exponent` (contradiction X-3 : `roles.sql` les accordait), et, par politiques restrictives, le contrat `PLATFORM_OPERATOR`, les règles `PLATFORM_CONTRACT` et les versions de configuration `PLATFORM`, même rattachés à son propre prestataire.
+  4. Idempotence et demandes d'approbation acceptent une ligne sans prestataire (niveau plateforme). La décision d'une demande de plateforme exige une session ouverte par `cashless_platform` (`platform_session()`, nom de rôle fixe : un réglage de session serait modifiable par le rôle applicatif).
+  5. `create_platform_admin` (mission 2) reste une fonction `SECURITY DEFINER` appelée par le rôle applicatif : les deux méthodes coexistent ; sa migration vers le rôle de plateforme est hors périmètre.
+- **Limite acceptée.** Le schéma de référence laisse `EXECUTE` à `PUBLIC` sur ses fonctions d'API (`post_transaction`, `set_event_status`…), et sa suite de tests l'exige (« fonctions de bascule exposées »). Un droit hérité de `PUBLIC` ne se retire pas à un seul rôle : `cashless_platform` peut donc appeler ces fonctions, bien qu'il n'ait aucun droit sur les tables du grand livre. Chacune commence par `assert_tenant`, et le pool de plateforme ne pose jamais de prestataire. Retirer `EXECUTE` à `PUBLIC` demanderait de modifier le générateur de la suite de référence : non retenu.
+- **Conséquences.** Deux chaînes de connexion et deux mots de passe à gérer (`CASHLESS_PLATFORM_PASSWORD` en local et en CI). Une route de plateforme exige `PLATFORM_ADMIN` et une clé d'idempotence de portée `plt:`. Les routes `/approval-requests` servent les deux niveaux : une personne de la plateforme n'y voit et n'y décide que les demandes de plateforme.
+- **Alternatives écartées.** Fonctions `SECURITY DEFINER` pour toutes les écritures de plateforme (contraire à la lettre de §2.2, surface de fonctions privilégiées en hausse) ; `BYPASSRLS` pour le rôle de plateforme (supprime tout cloisonnement).
+- **Références.** SPEC §2.2 ; `packages/ledger-sql/post-roles.sql`, `migrations/0009_platform_scope.sql`, `tests/tests_platform_scope.sql` ; `apps/api/src/db/platform-tx.ts` ; mission 3 (research R-01, R-02, X-2, X-3 ; contrat `platform-access`).
+
+## ADR-81 — Profils de législation gérés par la plateforme ; colonnes de configuration ajoutées au schéma
+
+- **Statut** : Acceptée, 12 octobre 2026 (mission « Configuration, parties et événements » ; tranche les contradictions X-1, X-4 et X-5, décision du porteur pour X-1).
+- **Contexte.** SPEC §3.2 confiait les profils de législation à l'`OPERATOR_ADMIN`, alors que §2.2 et le schéma (`jurisdiction_profile` sans `operator_id`) en font une donnée de plateforme (X-1). SPEC §4.2 fait de l'émetteur et du tiers détenteur des fonds des paramètres de l'événement, et §3.1 et §12.1 font porter le droit de place par la participation, sans colonne correspondante dans le schéma de référence (X-4, X-5).
+- **Décision.**
+  1. Les profils de législation sont écrits par le `PLATFORM_ADMIN` seul (rôle de base de la plateforme, ADR-80) et lus par les prestataires. Un profil ne se modifie jamais : chaque changement est une nouvelle version du même pays ; une version qui change un plafond réglementaire exige deux personnes (`JURISDICTION_LIMITS_CHANGE`).
+  2. Les valeurs provisoires de SPEC §17.2 (plafonds du Sénégal, TVA 18 %, date limite de remboursement à fin + 30 jours, destination de la casse) sont codées, paramétrables et rendues avec la personne qui doit les confirmer (`provisional_fields`, `refund_deadline_source`). Aucune n'est présentée comme validée.
+  3. La migration `0007` ajoute `event.issuer`, `event.funds_holder_party_id`, `merchant_participation.pitch_fee`, `merchant_participation.pitch_fee_reference` et la table `currency_exponent`. Le schéma de référence n'est pas modifié.
+- **Conséquences.** Un prestataire qui a besoin d'un profil pour un nouveau pays le demande à la plateforme. Les contrats, versions de configuration et profils sont immuables en base, pour tout rôle.
+- **Alternatives écartées.** Profils par prestataire (colonne `operator_id` : chaque prestataire fixerait ses propres bornes légales) ; émetteur et droit de place dans `config_version.settings` (les fonctions de la base lisent des colonnes).
+- **Références.** SPEC §2.2, §3.1, §3.2, §4.1, §4.2, §12.1, §17.2 ; `migrations/0007_configuration.sql` ; `apps/api/src/configuration/jurisdiction.service.ts`, `provisional-defaults.ts` ; mission 3 (research X-1, X-4, X-5, R-07).
+
+## ADR-82 — Configuration : rôle strict par réglage, règle de frais portée par les lignes, dates d'effet par défaut
+
+- **Statut** : Acceptée, 12 octobre 2026 (décisions d'implémentation de la mission « Configuration, parties et événements », confirmées par le porteur).
+- **Contexte.** Plusieurs points n'étaient pas tranchés par les sources, ou reposaient sur une hypothèse fausse du plan.
+- **Décision.**
+  1. **Qui règle quoi.** Un réglage n'est modifiable que par le rôle qui le règle (catalogue des réglages) ; un rôle englobant ne s'y substitue pas : un `OPERATOR_ADMIN` reçoit `403` sur un réglage de l'organisateur, et réciproquement. Une requête qui mêle des réglages de deux rôles est refusée (`422`).
+  2. **Règle de frais sur les lignes.** Le moteur d'écritures ne transmettait pas `fee_rule_id` à la base. Une règle de frais porte désormais son identifiant, les constructeurs le reportent sur les lignes qu'elle produit et `post_transaction` l'enregistre. Exceptions : les lignes de crédit de `OPERATOR_FEE` (somme de plusieurs règles), les droits de place (montant de la participation, pas une règle) et les cautions (écrites par les fonctions de la base, sans version de configuration).
+  3. **Frais d'un canal de paiement.** En attendant la mission « Recharges, caisses et PSP », ils sont une règle de portée `EVENT` dont le bénéficiaire est `PSP:<canal>`. Convention provisoire.
+  4. **Dates d'effet.** Sans date demandée, une version de configuration ou une règle de remplacement prend effet « maintenant » à l'horloge de la base, jamais avant celle qu'elle suit. La perdante de deux écritures simultanées d'un même niveau reçoit `409 CONFLICT_STATE`. Une opération datée d'avant la première version de configuration d'un événement prend cette première version.
+  5. **Après la mise en service.** Pendant `LIVE`, réglages, participations et règles de frais d'un événement passent par deux personnes ; au-delà de `LIVE`, ils ne se modifient plus (`409`). Deux demandes en attente sur le même événement : la seconde échoue une fois la première exécutée.
+- **Conséquences.** Le rejeu du scénario de référence sur une configuration construite par l'API donne les lignes et les soldes de `scenario_reference.json`, chaque ligne de frais citant sa règle.
+- **Références.** SPEC §4.1, §4.2, §5.6, §9.8, §12.1 ; `apps/api/src/configuration/settings-catalog.ts`, `sql-config-resolver.ts`, `cascade.service.ts` ; `apps/api/test/scenario/api-config-replay.spec.ts`.

@@ -15,7 +15,26 @@ export type AuditAction =
   | 'APPROVAL_EXECUTED'
   | 'APPROVAL_FAILED'
   | 'APPROVAL_REJECTED'
-  | 'APPROVAL_TOKEN_USED';
+  | 'APPROVAL_TOKEN_USED'
+  // Mission configuration-parties-evenements
+  | 'CONFIG_VERSION_CREATED'
+  | 'JURISDICTION_PROFILE_CREATED'
+  | 'OPERATOR_CREATED'
+  | 'OPERATOR_UPDATED'
+  | 'ORGANIZER_CREATED'
+  | 'ORGANIZER_UPDATED'
+  | 'MERCHANT_CREATED'
+  | 'MERCHANT_UPDATED'
+  | 'CONTRACT_CREATED'
+  | 'FEE_RULE_CREATED'
+  | 'FEE_RULE_REPLACED'
+  | 'EVENT_CREATED'
+  | 'EVENT_UPDATED'
+  | 'EVENT_STATUS_CHANGED'
+  | 'PARTICIPATION_CREATED'
+  | 'PARTICIPATION_UPDATED'
+  | 'POINT_OF_SALE_CREATED'
+  | 'POINT_OF_SALE_RENAMED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

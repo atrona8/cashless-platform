@@ -27,6 +27,11 @@ export interface ApprovalActionDefinition<P = unknown> {
   action: ApprovalAction;
   /** Rôle exigé de l'auteur comme du valideur, sur la portée de l'action (ou une portée englobante). */
   requiredRole: StaffRole;
+  /**
+   * Action de niveau plateforme (contrat platform-access, règle 5) : demande sans prestataire, créée, décidée et
+   * exécutée dans la transaction de la plateforme. Sa portée est `PLATFORM` et son rôle `PLATFORM_ADMIN`.
+   */
+  platform?: boolean;
   scopeOf(payload: P, targetId: string | null): ScopeRef;
   /** Paramètres validés et figés ; refus : ProblemException 422. */
   validate(payload: unknown): P;
@@ -44,6 +49,9 @@ export class ApprovalActionRegistry {
   register(definition: ApprovalActionDefinition): void {
     if (this.actions.has(definition.action)) {
       throw new Error(`Action à deux personnes déjà enregistrée : ${definition.action}`);
+    }
+    if (definition.platform && definition.requiredRole !== 'PLATFORM_ADMIN') {
+      throw new Error(`Action de plateforme ${definition.action} : rôle PLATFORM_ADMIN exigé`);
     }
     this.actions.set(definition.action, definition);
   }

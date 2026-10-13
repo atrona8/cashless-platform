@@ -134,6 +134,14 @@ tags:
     description: Autorité de débit CENTRAL ↔ EDGE, réplication et resynchronisation de la passerelle.
   - name: Webhooks sortants
     description: '**V2 — hors périmètre V1 (ADR-43).** Abonnements des POS tiers aux événements.'
+  - name: Plateforme
+    description: Profils de législation, prestataires, contrats et redevances de la plateforme — réservé à `PLATFORM_ADMIN` (rôle de base de la plateforme, §2.2).
+  - name: Organisation
+    description: Organisateurs, commerçants et contrats prestataire–organisateur d'un prestataire.
+  - name: Événements
+    description: Événements, statuts (§12.1), participations des commerçants et points de vente.
+  - name: Configuration
+    description: Cascade de configuration versionnée (§4.2), configuration résolue, règles de frais (§5.6).
 
 security:
   - humanBearer: []
@@ -4849,6 +4857,2119 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
 
+  /jurisdiction-profiles:
+    get:
+      tags: [Plateforme]
+      operationId: listJurisdictionProfiles
+      summary: Lister les profils de législation
+      description: |
+        Toutes les versions des profils de législation (§4.1), triées par pays puis version. Donnée de référence :
+        lisible par `PLATFORM_ADMIN`, `OPERATOR_ADMIN` et `ORGANIZER_ADMIN`. Filtre facultatif par pays.
+      parameters:
+        - name: country_code
+          in: query
+          required: false
+          description: 'Code pays ISO 3166-1 alpha-2.'
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de profils de législation.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JurisdictionProfile'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Plateforme]
+      operationId: createJurisdictionProfile
+      summary: Créer le profil de législation d'un pays
+      description: |
+        Crée la version 1 du profil d'un pays. Un champ omis prend sa valeur provisoire (§17.2) et son nom est rendu
+        dans `provisional_fields` avec la personne qui doit le confirmer. Un profil existe déjà pour ce pays : `409
+        CONFLICT_STATE` (créer une version). Journalisé (`JURISDICTION_PROFILE_CREATED`). Réservé à `PLATFORM_ADMIN` ;
+        écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un
+        prestataire.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JurisdictionProfileCreate'
+      responses:
+        '201':
+          description: Profil créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/jurisdiction-profiles/{profile_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JurisdictionProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /jurisdiction-profiles/{profile_id}:
+    get:
+      tags: [Plateforme]
+      operationId: getJurisdictionProfile
+      summary: Consulter une version de profil de législation
+      description: |
+        Une version d'un profil, avec `provisional_fields`. Mêmes lecteurs que `listJurisdictionProfiles`.
+      parameters:
+        - $ref: '#/components/parameters/ProfileId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Profil de législation.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JurisdictionProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jurisdiction-profiles/{profile_id}/versions:
+    post:
+      tags: [Plateforme]
+      operationId: createJurisdictionProfileVersion
+      summary: Publier une nouvelle version d'un profil de législation
+      description: |
+        Un profil ne se modifie jamais (§4.1) : cette opération crée la version suivante du même pays, avec sa date
+        d'effet. `profile_id` doit être la dernière version (sinon `409 CONFLICT_STATE`). Si un plafond réglementaire
+        change (`max_wallet_balance`, `kyc_threshold`, `unidentified_max_balance`, `unidentified_monthly_limit`,
+        `identified_monthly_limit`), l'opération est à deux personnes : `202`, action `JURISDICTION_LIMITS_CHANGE`.
+        Sinon `201`. Les événements gardent la version à laquelle ils sont rattachés. Réservé à `PLATFORM_ADMIN` ;
+        écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un
+        prestataire.
+      parameters:
+        - $ref: '#/components/parameters/ProfileId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JurisdictionProfileCreate'
+      responses:
+        '201':
+          description: Version créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/jurisdiction-profiles/{profile_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JurisdictionProfile'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators:
+    get:
+      tags: [Plateforme]
+      operationId: listOperators
+      summary: Lister les prestataires
+      description: |
+        Prestataires de la plateforme, triés par date de création. Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de
+        base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de prestataires.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Operator'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Plateforme]
+      operationId: createOperator
+      summary: Créer un prestataire
+      description: |
+        Crée la partie `OPERATOR` (§3.1). Son contrat avec la plateforme, son premier `OPERATOR_ADMIN` (`createUser`,
+        `grantRole`) et sa configuration se créent ensuite. Journalisé (`OPERATOR_CREATED`). Réservé à
+        `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+        applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorCreate'
+      responses:
+        '201':
+          description: Prestataire créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operator'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}:
+    get:
+      tags: [Plateforme]
+      operationId: getOperator
+      summary: Consulter un prestataire
+      description: |
+        Fiche du prestataire. Rôles : `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Prestataire.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operator'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Plateforme]
+      operationId: updateOperator
+      summary: Modifier la fiche d'un prestataire
+      description: |
+        Données descriptives seules (`legal_name`, `country_code`, `tax_id`). Journalisé (`OPERATOR_UPDATED`, avant et
+        après). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais
+        par le rôle applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyUpdate'
+      responses:
+        '200':
+          description: Prestataire modifié.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operator'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/platform-contracts:
+    get:
+      tags: [Plateforme]
+      operationId: listPlatformContracts
+      summary: Lister les versions du contrat plateforme–prestataire
+      description: |
+        Versions du contrat `PLATFORM_OPERATOR` du prestataire (§4.3), de la plus récente à la plus ancienne. Rôles :
+        `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien (lecture).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versions de contrat.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contract'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Plateforme]
+      operationId: createPlatformContract
+      summary: Créer le contrat plateforme–prestataire
+      description: |
+        Crée la version 1 du contrat `PLATFORM_OPERATOR`. Un contrat existe déjà : `409 CONFLICT_STATE` (publier une
+        version). Journalisé (`CONTRACT_CREATED`). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la
+        plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlatformContractCreate'
+      responses:
+        '201':
+          description: Contrat créé (version 1).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/platform-contracts`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/platform-contracts/{contract_id}/versions:
+    post:
+      tags: [Plateforme]
+      operationId: createPlatformContractVersion
+      summary: Publier une nouvelle version du contrat plateforme–prestataire
+      description: |
+        Un contrat ne se modifie jamais : une nouvelle version, avec sa date d'effet (§4.3). Opération à deux
+        personnes (ADR-74) : `202` avec une demande d'approbation `PENDING`. Action `PLATFORM_CONTRACT_VERSION`,
+        décidée par un autre `PLATFORM_ADMIN`. `contract_id` doit être la dernière version (sinon `409
+        CONFLICT_STATE`) ; date d'effet antérieure à celle de la version précédente : `422`. Réservé à
+        `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+        applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ContractId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractVersionCreate'
+      responses:
+        '202':
+          description: Demande d'approbation créée (`PENDING`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/approval-requests/{approval_request_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /platform/config-versions:
+    get:
+      tags: [Configuration]
+      operationId: listPlatformConfigVersions
+      summary: Lister les versions de configuration de la plateforme
+      description: |
+        Versions du niveau `PLATFORM` de la cascade (§4.2), de la plus récente à la plus ancienne. Réservé à
+        `PLATFORM_ADMIN` ; écrit par le rôle de base de la plateforme (SPECIFICATION §2.2), jamais par le rôle
+        applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versions de configuration.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfigVersion'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Configuration]
+      operationId: createPlatformConfigVersion
+      summary: Publier une version de configuration de la plateforme
+      description: |
+        Crée la version suivante du niveau `PLATFORM` : contenu complet du niveau, pas un différentiel. Clé inconnue,
+        clé non réglable à ce niveau ou valeur hors bornes : `422 VALIDATION_FAILED` (`violations`). Journalisé
+        (`CONFIG_VERSION_CREATED`, version précédente et nouvelle). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de
+        base de la plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigVersionCreate'
+      responses:
+        '201':
+          description: Version créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/platform/config-versions`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/platform-fee-rules:
+    get:
+      tags: [Plateforme]
+      operationId: listPlatformFeeRules
+      summary: Lister les redevances de plateforme d'un prestataire
+      description: |
+        Règles de frais de portée `PLATFORM_CONTRACT` (flux plateforme → prestataire, §5.6), en vigueur et fermées.
+        Rôles : `PLATFORM_ADMIN` ; `OPERATOR_ADMIN` pour le sien (lecture).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de règles de frais.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeeRule'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Plateforme]
+      operationId: createPlatformFeeRule
+      summary: Créer une redevance de plateforme
+      description: |
+        Crée une règle de portée `PLATFORM_CONTRACT` sur un contrat `PLATFORM_OPERATOR` du prestataire (`scope_id`).
+        Une règle en vigueur de même portée, payeur, bénéficiaire et assiette existe : `409 CONFLICT_STATE` (la
+        remplacer). Journalisé (`FEE_RULE_CREATED`). Réservé à `PLATFORM_ADMIN` ; écrit par le rôle de base de la
+        plateforme (SPECIFICATION §2.2), jamais par le rôle applicatif d'un prestataire.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeRuleCreate'
+      responses:
+        '201':
+          description: Règle créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/platform-fee-rules`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeRule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/config-versions:
+    get:
+      tags: [Configuration]
+      operationId: listOperatorConfigVersions
+      summary: Lister les versions de configuration d'un prestataire
+      description: |
+        Versions du niveau `OPERATOR` de la cascade (§4.2). Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versions de configuration.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfigVersion'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Configuration]
+      operationId: createOperatorConfigVersion
+      summary: Publier une version de configuration d'un prestataire
+      description: |
+        Crée la version suivante du niveau `OPERATOR` (contenu complet). Contrôles dans l'ordre : type, bornes fixes
+        du catalogue, maximum du niveau supérieur ; premier échec : `422 VALIDATION_FAILED` (`violations`). Écriture
+        concurrente : `409 CONFLICT_STATE`. Journalisé (`CONFIG_VERSION_CREATED`). Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigVersionCreate'
+      responses:
+        '201':
+          description: Version créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/config-versions`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/organizers:
+    get:
+      tags: [Organisation]
+      operationId: listOrganizers
+      summary: Lister les organisateurs d'un prestataire
+      description: |
+        Parties `ORGANIZER` du prestataire. Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` ne voit que
+        le sien.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page d'organisateurs.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Organizer'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Organisation]
+      operationId: createOrganizer
+      summary: Créer un organisateur
+      description: |
+        Crée la partie `ORGANIZER` dans le prestataire du chemin (§3.1). Journalisé (`ORGANIZER_CREATED`). Rôle :
+        `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyCreate'
+      responses:
+        '201':
+          description: Organisateur créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/organizers/{organizer_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organizer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/organizers/{organizer_id}:
+    get:
+      tags: [Organisation]
+      operationId: getOrganizer
+      summary: Consulter un organisateur
+      description: |
+        Rôles : comme `listOrganizers`. Organisateur d'un autre prestataire : `404`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Organisateur.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organizer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Organisation]
+      operationId: updateOrganizer
+      summary: Modifier la fiche d'un organisateur
+      description: |
+        Données descriptives seules. Journalisé (`ORGANIZER_UPDATED`, avant et après). Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyUpdate'
+      responses:
+        '200':
+          description: Organisateur modifié.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organizer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/organizers/{organizer_id}/config-versions:
+    get:
+      tags: [Configuration]
+      operationId: listOrganizerConfigVersions
+      summary: Lister les versions de configuration d'un organisateur
+      description: |
+        Versions du niveau `ORGANIZER` de la cascade. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` de cet organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versions de configuration.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfigVersion'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Configuration]
+      operationId: createOrganizerConfigVersion
+      summary: Publier une version de configuration d'un organisateur
+      description: |
+        Crée la version suivante du niveau `ORGANIZER` (contenu complet). Chaque clé n'est acceptée que du rôle qui la
+        règle (catalogue des réglages) : clé d'un autre rôle modifiée : `403 FORBIDDEN`, rien n'est écrit. Hors bornes
+        : `422 VALIDATION_FAILED` (`violations`). Journalisé (`CONFIG_VERSION_CREATED`). Rôles : `OPERATOR_ADMIN`,
+        `ORGANIZER_ADMIN` de cet organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigVersionCreate'
+      responses:
+        '201':
+          description: Version créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/organizers/{organizer_id}/config-versions`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/organizers/{organizer_id}/contracts:
+    get:
+      tags: [Organisation]
+      operationId: listOrganizerContracts
+      summary: Lister les versions du contrat prestataire–organisateur
+      description: |
+        Versions du contrat `OPERATOR_ORGANIZER` de l'organisateur (§4.3). Rôles : `OPERATOR_ADMIN` ;
+        `ORGANIZER_ADMIN` de cet organisateur (lecture).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versions de contrat.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contract'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Organisation]
+      operationId: createOrganizerContract
+      summary: Créer le contrat prestataire–organisateur
+      description: |
+        Crée la version 1 du contrat `OPERATOR_ORGANIZER` avec ses champs obligatoires (§4.3). Un contrat existe déjà
+        : `409 CONFLICT_STATE`. Journalisé (`CONTRACT_CREATED`). Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/OrganizerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizerContractCreate'
+      responses:
+        '201':
+          description: Contrat créé (version 1).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/organizers/{organizer_id}/contracts`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/contracts/{contract_id}/versions:
+    post:
+      tags: [Organisation]
+      operationId: createOrganizerContractVersion
+      summary: Publier une nouvelle version du contrat prestataire–organisateur
+      description: |
+        Un contrat ne se modifie jamais : une nouvelle version, avec sa date d'effet. Opération à deux personnes
+        (ADR-74) : `202` avec une demande d'approbation `PENDING`. Action `CONTRACT_VERSION`, décidée par un autre
+        `OPERATOR_ADMIN`. `contract_id` doit être la dernière version (sinon `409 CONFLICT_STATE`). Les événements
+        gardent la version à laquelle ils sont rattachés. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ContractId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractVersionCreate'
+      responses:
+        '202':
+          description: Demande d'approbation créée (`PENDING`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/approval-requests/{approval_request_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/merchants:
+    get:
+      tags: [Organisation]
+      operationId: listMerchants
+      summary: Lister les commerçants d'un prestataire
+      description: |
+        Parties `MERCHANT` du prestataire. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` ; `MERCHANT_ADMIN` ne voit que
+        le sien.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de commerçants.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Merchant'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Organisation]
+      operationId: createMerchant
+      summary: Créer un commerçant
+      description: |
+        Crée la partie `MERCHANT` dans le prestataire du chemin ; elle est inscrite ensuite aux événements par
+        `createParticipation`. Journalisé (`MERCHANT_CREATED`). Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyCreate'
+      responses:
+        '201':
+          description: Commerçant créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/merchants/{merchant_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Merchant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/merchants/{merchant_id}:
+    get:
+      tags: [Organisation]
+      operationId: getMerchant
+      summary: Consulter un commerçant
+      description: |
+        Rôles : comme `listMerchants`. Commerçant d'un autre prestataire : `404`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MerchantId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Commerçant.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Merchant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Organisation]
+      operationId: updateMerchant
+      summary: Modifier la fiche d'un commerçant
+      description: |
+        Données descriptives seules. Journalisé (`MERCHANT_UPDATED`, avant et après). Rôles : `OPERATOR_ADMIN`,
+        `ORGANIZER_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MerchantId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyUpdate'
+      responses:
+        '200':
+          description: Commerçant modifié.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Merchant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events:
+    get:
+      tags: [Événements]
+      operationId: listEvents
+      summary: Lister les événements d'un prestataire
+      description: |
+        Événements du prestataire, du plus récent au plus ancien ; filtres facultatifs par organisateur et par statut.
+        Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` (ceux de son organisateur) ; `SUPERVISOR` (ceux de sa portée).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - name: organizer_id
+          in: query
+          required: false
+          description: 'Organisateur.'
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          description: 'Statut.'
+          schema:
+            $ref: '#/components/schemas/EventStatus'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page d'événements.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Événements]
+      operationId: createEvent
+      summary: Créer un événement
+      description: |
+        Dans une seule transaction : l'événement (`DRAFT`), son grand livre et ses comptes fixes (§5.2), la version 1
+        de sa configuration et la ligne d'audit (`EVENT_CREATED`). `funds_holder` est obligatoire, sans valeur par
+        défaut (§4.4) ; `THIRD_PARTY` exige `funds_holder_party_id`. `refund_deadline` omise : fin + 30 jours, valeur
+        provisoire (`refund_deadline_source = PROVISIONAL_DEFAULT`). Réglage hors bornes (catalogue, maximum du
+        prestataire, profil de législation) : `422 VALIDATION_FAILED`, le `detail` cite la règle (`violations`). Rôles
+        : `ORGANIZER_ADMIN` de l'organisateur, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreate'
+      responses:
+        '201':
+          description: Événement créé (`DRAFT`), avec `ledger_id`.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/events/{event_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events/{event_id}:
+    get:
+      tags: [Événements]
+      operationId: getEvent
+      summary: Consulter un événement
+      description: |
+        Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` de son organisateur, `SUPERVISOR` de l'événement. Événement d'un
+        autre prestataire : `404`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Événement.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Événements]
+      operationId: updateEvent
+      summary: Modifier un événement
+      description: |
+        Chaque clé n'est acceptée que du rôle qui la règle (catalogue des réglages, §4.2, §9.8) : clé d'un autre rôle
+        : `403 FORBIDDEN` ; clés de deux rôles dans la même requête : `422` (deux demandes distinctes). `DRAFT` :
+        modification immédiate (`200`), nouvelle version de configuration `EVENT`, ligne d'audit (`EVENT_UPDATED`).
+        `LIVE` : opération à deux personnes (`202`, action `EVENT_SETTINGS_CHANGE` ou
+        `EVENT_OPERATOR_SETTINGS_CHANGE`). À partir de `CLOSING` : `409 CONFLICT_STATE`. Hors bornes : `422
+        VALIDATION_FAILED` (`violations`). Le statut ne se modifie pas ici (`transitionEventStatus`) : une clé
+        `status` est refusée (`400`).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventUpdate'
+      responses:
+        '200':
+          description: Événement modifié.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events/{event_id}/config:
+    get:
+      tags: [Configuration]
+      operationId: getResolvedEventConfig
+      summary: Configuration résolue d'un événement à une date
+      description: |
+        Résout la cascade `PLATFORM → OPERATOR → ORGANIZER → EVENT` (§4.2) à la date `at` : pour chaque clé, la valeur
+        du niveau le plus précis qui la définit, son niveau et sa version d'origine ; à défaut la valeur par défaut du
+        catalogue, marquée `provisional` si elle vient de §17.2. `participation_id` ajoute le niveau `PARTICIPATION`.
+        Rôles : lecture de l'événement.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: at
+          in: query
+          required: false
+          description: 'Date de résolution (défaut : maintenant).'
+          schema:
+            type: string
+            format: date-time
+        - name: participation_id
+          in: query
+          required: false
+          description: 'Participation de l''événement.'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Configuration résolue.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedConfigView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events/{event_id}/status-conditions:
+    get:
+      tags: [Événements]
+      operationId: getEventStatusConditions
+      summary: Conditions d'un passage de statut
+      description: |
+        Conditions du passage vers `to` (défaut : statut suivant, §12.1). Source `DATABASE` : calculées par la base,
+        celles que le passage vérifie ; `CONFIGURATION` (vers `LIVE`) : `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`,
+        `JURISDICTION_SET`, `LEDGER_OPEN` ; `EXTERNAL` : conditions tenues par une autre mission (`met = null`,
+        `owner_mission`). Rôles : lecture de l'événement.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: to
+          in: query
+          required: false
+          description: 'Statut visé.'
+          schema:
+            $ref: '#/components/schemas/EventStatus'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Conditions, dans l'ordre de contrôle.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatusCondition'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/events/{event_id}/status-transitions:
+    post:
+      tags: [Événements]
+      operationId: transitionEventStatus
+      summary: Faire passer un événement au statut suivant
+      description: |
+        Le statut ne change que par cette opération (§12.1). `DRAFT → LIVE` : conditions de configuration toutes
+        remplies, puis opération à deux personnes (`202`, action `EVENT_GO_LIVE`) ; à l'approbation les conditions
+        sont revérifiées. Autres passages : immédiats (`200`). Passage non prévu : `409 EVENT_TRANSITION_INVALID` ;
+        condition non remplie : `409 CLOSING_CONDITION_NOT_MET`, le `detail` nomme la condition. Journalisé
+        (`EVENT_STATUS_CHANGED`, avant, après, valideur). Rôles : `ORGANIZER_ADMIN` de l'organisateur,
+        `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusTransition'
+      responses:
+        '200':
+          description: Statut changé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events/{event_id}/participations:
+    get:
+      tags: [Événements]
+      operationId: listParticipations
+      summary: Lister les participations d'un événement
+      description: |
+        Commerçants inscrits à l'événement. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR` de l'événement ;
+        `MERCHANT_ADMIN` ne voit que la sienne.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de participations.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participation'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Événements]
+      operationId: createParticipation
+      summary: Inscrire un commerçant à un événement
+      description: |
+        Dans une seule transaction : la participation, son compte commerçant `L-MCH-<id>` (§5.2) et la ligne d'audit
+        (`PARTICIPATION_CREATED`). `INTERNAL` : versements à l'organisateur ; `EXTERNAL` : au commerçant (§3.1).
+        `PREPAID` avec un droit de place non nul exige `pitch_fee_reference`. Commerçant déjà inscrit : `409
+        CONFLICT_STATE`. Événement `LIVE` : opération à deux personnes (`202`, action `PARTICIPATION_CHANGE`) ;
+        événement clos : `409`. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipationCreate'
+      responses:
+        '201':
+          description: Participation créée, avec `account_id`.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/participations/{participation_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participation'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/participations/{participation_id}:
+    get:
+      tags: [Événements]
+      operationId: getParticipation
+      summary: Consulter une participation
+      description: |
+        Rôles : comme `listParticipations`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ParticipationId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Participation.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Événements]
+      operationId: updateParticipation
+      summary: Modifier une participation
+      description: |
+        Droit de place et son mode (§12.1). Événement, commerçant et type (`INTERNAL`, `EXTERNAL`) ne changent pas.
+        Événement `LIVE` : opération à deux personnes (`202`, action `PARTICIPATION_CHANGE`). Journalisé
+        (`PARTICIPATION_UPDATED`). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ParticipationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipationUpdate'
+      responses:
+        '200':
+          description: Participation modifiée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participation'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/participations/{participation_id}/points-of-sale:
+    get:
+      tags: [Événements]
+      operationId: listPointsOfSale
+      summary: Lister les points de vente d'une participation
+      description: |
+        Rôles : comme `listParticipations`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ParticipationId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de points de vente.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PointOfSale'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Événements]
+      operationId: createPointOfSale
+      summary: Créer un point de vente
+      description: |
+        Stand ou caisse d'un commerçant inscrit ; les terminaux y sont affectés ensuite. Journalisé
+        (`POINT_OF_SALE_CREATED`). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/ParticipationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointOfSaleCreate'
+      responses:
+        '201':
+          description: Point de vente créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/points-of-sale/{pos_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointOfSale'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/points-of-sale/{pos_id}:
+    get:
+      tags: [Événements]
+      operationId: getPointOfSale
+      summary: Consulter un point de vente
+      description: |
+        Rôles : comme `listParticipations`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/PosId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Point de vente.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointOfSale'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Événements]
+      operationId: renamePointOfSale
+      summary: Renommer un point de vente
+      description: |
+        Seul le nom change ; le rattachement à la participation est immuable. Journalisé (`POINT_OF_SALE_RENAMED`).
+        Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/PosId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointOfSaleCreate'
+      responses:
+        '200':
+          description: Point de vente renommé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointOfSale'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/fee-rules:
+    get:
+      tags: [Configuration]
+      operationId: listFeeRules
+      summary: Lister les règles de frais d'un prestataire
+      description: |
+        Règles des portées `OPERATOR_CONTRACT`, `EVENT` et `PARTICIPATION` (§5.6), en vigueur et fermées ; filtres
+        facultatifs par portée. Les redevances de plateforme se lisent par `listPlatformFeeRules`. Rôles :
+        `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` (portées de son organisateur).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - name: scope_type
+          in: query
+          required: false
+          description: 'Type de portée.'
+          schema:
+            $ref: '#/components/schemas/FeeRuleScopeType'
+        - name: scope_id
+          in: query
+          required: false
+          description: 'Objet de la portée (contrat, événement, participation).'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de règles de frais.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeeRule'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Configuration]
+      operationId: createFeeRule
+      summary: Créer une règle de frais
+      description: |
+        Rôle selon la portée : `OPERATOR_CONTRACT` (prestataire → organisateur) : `OPERATOR_ADMIN` ; `EVENT` et
+        `PARTICIPATION` (organisateur → commerçant, frais festivalier) : `ORGANIZER_ADMIN`. `PLATFORM_CONTRACT` est
+        refusée ici (`403`, `createPlatformFeeRule`). `tax_code` doit être une taxe du profil de législation de la
+        portée. Règle en vigueur de même portée, payeur, bénéficiaire et assiette : `409 CONFLICT_STATE` (la
+        remplacer). Événement visé `LIVE` : opération à deux personnes (`202`, action `FEE_RULE_CHANGE`). Journalisé
+        (`FEE_RULE_CREATED`).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeRuleCreate'
+      responses:
+        '201':
+          description: Règle créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/fee-rules`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeRule'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/fee-rules/{fee_rule_id}/replacements:
+    post:
+      tags: [Configuration]
+      operationId: replaceFeeRule
+      summary: Remplacer une règle de frais
+      description: |
+        Une règle ne se modifie jamais (§5.6) : dans une seule transaction, l'ancienne est fermée (`valid_to` = date
+        d'effet de la nouvelle) et la nouvelle est créée (version + 1). Portée, payeur, bénéficiaire et assiette
+        restent ceux de la règle remplacée (sinon `422`). Règle déjà fermée : `409 CONFLICT_STATE`. Même rôle que pour
+        la créer ; une redevance de plateforme : `PLATFORM_ADMIN`. Événement visé `LIVE` : `202` (`FEE_RULE_CHANGE`).
+        Journalisé (`FEE_RULE_REPLACED`, ancienne et nouvelle).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/FeeRuleId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeRuleCreate'
+      responses:
+        '201':
+          description: Nouvelle version de la règle.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/fee-rules`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeRule'
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
 webhooks:
   paymentIntentSucceeded:
     post:
@@ -5198,7 +7319,70 @@ components:
       schema:
         type: string
         example: t=1765569672,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
-
+    ProfileId:
+      name: profile_id
+      in: path
+      required: true
+      description: Version de profil de législation.
+      schema:
+        type: string
+        format: uuid
+    ContractId:
+      name: contract_id
+      in: path
+      required: true
+      description: Version de contrat.
+      schema:
+        type: string
+        format: uuid
+    OrganizerId:
+      name: organizer_id
+      in: path
+      required: true
+      description: Organisateur du prestataire du chemin (sinon `404`).
+      schema:
+        type: string
+        format: uuid
+    MerchantId:
+      name: merchant_id
+      in: path
+      required: true
+      description: Commerçant du prestataire du chemin (sinon `404`).
+      schema:
+        type: string
+        format: uuid
+    EventPathId:
+      name: event_id
+      in: path
+      required: true
+      description: Événement du prestataire du chemin (sinon `404`).
+      schema:
+        type: string
+        format: uuid
+    ParticipationId:
+      name: participation_id
+      in: path
+      required: true
+      description: Participation d'un commerçant à un événement.
+      schema:
+        type: string
+        format: uuid
+    PosId:
+      name: pos_id
+      in: path
+      required: true
+      description: Point de vente.
+      schema:
+        type: string
+        format: uuid
+    FeeRuleId:
+      name: fee_rule_id
+      in: path
+      required: true
+      description: Règle de frais.
+      schema:
+        type: string
+        format: uuid
   responses:
     BadRequest:
       description: Requête invalide (`VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REQUIRED`…).
@@ -5438,6 +7622,28 @@ components:
                 description: JSON Pointer (RFC 6901) vers le champ fautif.
               message:
                 type: string
+        violations:
+          type: array
+          description: |
+            `VALIDATION_FAILED` sur un réglage hors bornes (§4.1) : une entrée par borne franchie. Le `detail`
+            cite la même règle, traduit selon `Accept-Language`.
+          items:
+            type: object
+            required: [field, rule, requested, limit, source]
+            properties:
+              field:
+                type: string
+                description: Réglage refusé (`refund_deadline`, `cash_refund_single_max`…).
+              rule:
+                type: string
+                description: Identifiant stable de la règle (`jurisdiction.min_refund_window_days`, `catalog.range`, `operator.cash_refund_single_max_cap`…).
+              requested:
+                description: Valeur demandée.
+              limit:
+                description: Borne franchie.
+              source:
+                type: string
+                description: Origine de la borne — profil de législation (`SN v1`), niveau et version de configuration, ou `catalog`.
       additionalProperties: true
     ProblemCode:
       type: string
@@ -7712,7 +9918,16 @@ components:
         `FORCE_CENTRAL_AUTHORITY` → `requestDebitAuthorityChange` (`force = true`). `ADJUSTMENT`,
         `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT`, `PSP_CONFIGURATION`, `EVENT_PSP_SELECTION` : opérations
         du back-office à ajouter au contrat (SPECIFICATION §10.4), qui suivent le même flux.
-      enum: [LATE_CLAIM, ADJUSTMENT, ANOMALY_RESOLUTION, WAIVE_SEQ_GAP, FORCE_CENTRAL_AUTHORITY, REINSTATE_MEDIA, PAYOUT, DEVICE_JOURNAL_IMPORT, KYC_REVOCATION, PSP_CONFIGURATION, EVENT_PSP_SELECTION, WALLET_REFUND, LATE_CHARGEBACK]
+        Configuration (deux personnes du même rôle) : `EVENT_GO_LIVE` → `transitionEventStatus` (vers `LIVE`) ;
+        `EVENT_SETTINGS_CHANGE` et `EVENT_OPERATOR_SETTINGS_CHANGE` → `updateEvent` (événement `LIVE`, réglages de
+        l'organisateur ou du prestataire) ; `PARTICIPATION_CHANGE` → `createParticipation`, `updateParticipation`
+        (événement `LIVE`) ; `FEE_RULE_CHANGE` → `createFeeRule`, `replaceFeeRule` (événement `LIVE`) ;
+        `CONTRACT_VERSION` → `createOrganizerContractVersion`. Niveau plateforme (demande sans prestataire, décidée
+        par un autre `PLATFORM_ADMIN`) : `PLATFORM_CONTRACT_VERSION` → `createPlatformContractVersion` ;
+        `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
+      enum: [LATE_CLAIM, ADJUSTMENT, ANOMALY_RESOLUTION, WAIVE_SEQ_GAP, FORCE_CENTRAL_AUTHORITY, REINSTATE_MEDIA, PAYOUT, DEVICE_JOURNAL_IMPORT, KYC_REVOCATION, PSP_CONFIGURATION, EVENT_PSP_SELECTION, WALLET_REFUND, LATE_CHARGEBACK,
+             EVENT_GO_LIVE, EVENT_SETTINGS_CHANGE, EVENT_OPERATOR_SETTINGS_CHANGE, PARTICIPATION_CHANGE, FEE_RULE_CHANGE,
+             CONTRACT_VERSION, PLATFORM_CONTRACT_VERSION, JURISDICTION_LIMITS_CHANGE]
     ApprovalRequestStatus:
       type: string
       description: |
@@ -8389,3 +10604,1093 @@ components:
             granted_by: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
             granted_at: '2026-12-10T08:30:00Z'
             revoked_at: null
+    EventStatus:
+      type: string
+      description: Statut d'un événement (§12.1). Ne change que par `transitionEventStatus`.
+      enum: [DRAFT, LIVE, CLOSING, RECONCILING, SETTLING, REFUND_WINDOW, CLOSED]
+    JurisdictionProfile:
+      type: object
+      description: |
+        Version d'un profil de législation (`jurisdiction_profile`, §4.1) : règles d'un pays qui bornent la
+        configuration. Jamais modifiée ; une nouvelle version la remplace à sa date d'effet. Montants en unités
+        mineures de la devise du pays.
+      required: [profile_id, country_code, version, valid_from, breakage_destination, late_claim_years, rules, provisional_fields]
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        version:
+          type: integer
+          minimum: 1
+        valid_from:
+          type: string
+          format: date
+        min_refund_window_days:
+          type:
+            - integer
+            - 'null'
+          minimum: 0
+          description: Délai minimal de remboursement après la fin de l'événement ; `null` = pas d'obligation.
+        breakage_destination:
+          type: string
+          enum: [ORGANIZER, OPERATOR, LEGAL_ACCOUNT, NONE]
+          description: Destination des soldes non réclamés (§5.5).
+        max_wallet_balance:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          description: Plafond de solde d'un client identifié ; `null` = aucun.
+        kyc_threshold:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        unidentified_max_balance:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        unidentified_monthly_limit:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        identified_monthly_limit:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        late_claim_years:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Années de réclamation tardive après la clôture (ADR-67) ; 0 = casse définitive.
+        rules:
+          type: object
+          additionalProperties: true
+          description: Taxes (`taxes`), arrondis et autres règles du pays.
+        provisional_fields:
+          type: array
+          description: Champs dont la valeur est un défaut provisoire de §17.2, à confirmer ; vide si tout a été saisi.
+          items:
+            type: object
+            required: [field, confirm_by]
+            properties:
+              field:
+                type: string
+              confirm_by:
+                type: string
+                description: Personne qui doit confirmer la valeur (juriste, expert-comptable, porteur).
+    JurisdictionProfileCreate:
+      type: object
+      description: |
+        Contenu d'une version de profil. `country_code` est obligatoire à la création du profil d'un pays et ignoré
+        pour une nouvelle version (pays du profil du chemin). Un champ omis prend son défaut provisoire (§17.2).
+      required: [valid_from]
+      additionalProperties: false
+      properties:
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        valid_from:
+          type: string
+          format: date
+        min_refund_window_days:
+          type:
+            - integer
+            - 'null'
+          minimum: 0
+        breakage_destination:
+          type: string
+          enum: [ORGANIZER, OPERATOR, LEGAL_ACCOUNT, NONE]
+        max_wallet_balance:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        kyc_threshold:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        unidentified_max_balance:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        unidentified_monthly_limit:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        identified_monthly_limit:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        late_claim_years:
+          type: integer
+          minimum: 0
+          maximum: 10
+        rules:
+          type: object
+          additionalProperties: true
+    Operator:
+      type: object
+      description: Prestataire (partie `OPERATOR`, §3.1), unité d'isolation des données.
+      required: [operator_id, legal_name, country_code, tax_id, created_at]
+      properties:
+        operator_id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+        country_code:
+          type:
+            - string
+            - 'null'
+        tax_id:
+          type:
+            - string
+            - 'null'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    OperatorCreate:
+      type: object
+      required: [legal_name, country_code]
+      additionalProperties: false
+      properties:
+        legal_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        tax_id:
+          type:
+            - string
+            - 'null'
+          maxLength: 64
+    Organizer:
+      type: object
+      description: Organisateur (partie `ORGANIZER`) rattaché à un prestataire.
+      required: [organizer_id, operator_id, legal_name, country_code, tax_id, created_at]
+      properties:
+        organizer_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+        country_code:
+          type:
+            - string
+            - 'null'
+        tax_id:
+          type:
+            - string
+            - 'null'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    Merchant:
+      type: object
+      description: |
+        Commerçant (partie `MERCHANT`) rattaché à un prestataire. Il ne porte aucune condition commerciale : elles
+        sont sur ses participations.
+      required: [merchant_id, operator_id, legal_name, country_code, tax_id, created_at]
+      properties:
+        merchant_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+        country_code:
+          type:
+            - string
+            - 'null'
+        tax_id:
+          type:
+            - string
+            - 'null'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    PartyCreate:
+      type: object
+      description: Création d'un organisateur ou d'un commerçant. Le prestataire est celui du chemin, jamais du corps.
+      required: [legal_name]
+      additionalProperties: false
+      properties:
+        legal_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        country_code:
+          type:
+            - string
+            - 'null'
+          pattern: '^[A-Z]{2}$'
+        tax_id:
+          type:
+            - string
+            - 'null'
+          maxLength: 64
+    PartyUpdate:
+      type: object
+      description: Données descriptives d'une partie ; au moins une.
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        legal_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        country_code:
+          type:
+            - string
+            - 'null'
+          pattern: '^[A-Z]{2}$'
+        tax_id:
+          type:
+            - string
+            - 'null'
+          maxLength: 64
+    ContractKind:
+      type: string
+      enum: [PLATFORM_OPERATOR, OPERATOR_ORGANIZER]
+    Contract:
+      type: object
+      description: |
+        Version d'un contrat (`contract`, §4.3). Jamais modifiée. Champs propres au type : `platform_fee_mode`
+        (`PLATFORM_OPERATOR`) ; `offline_loss_bearer`, `cash_diff_bearer`, `breakage_organizer_bps`
+        (`OPERATOR_ORGANIZER`).
+      required: [contract_id, operator_id, kind, counterparty_id, version, valid_from, operator_fee_basis, chargeback_bearer]
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/ContractKind'
+        counterparty_id:
+          type: string
+          format: uuid
+          description: Plateforme (`PLATFORM_OPERATOR`) ou organisateur (`OPERATOR_ORGANIZER`).
+        version:
+          type: integer
+          minimum: 1
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        platform_fee_mode:
+          type:
+            - string
+            - 'null'
+          enum: [IN_POOL, INVOICED, null]
+        offline_loss_bearer:
+          type:
+            - string
+            - 'null'
+          enum: [ORGANIZER, OPERATOR, null]
+        cash_diff_bearer:
+          type:
+            - string
+            - 'null'
+          enum: [ORGANIZER, OPERATOR, null]
+        breakage_organizer_bps:
+          type:
+            - integer
+            - 'null'
+          minimum: 0
+          maximum: 10000
+          description: Part de la casse de l'organisateur, en points de base ; le reste au prestataire.
+        operator_fee_basis:
+          type: string
+          enum: [GROSS, NET_OF_REFUNDS]
+        chargeback_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+    PlatformContractCreate:
+      type: object
+      required: [valid_from, platform_fee_mode]
+      additionalProperties: false
+      properties:
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        platform_fee_mode:
+          type: string
+          enum: [IN_POOL, INVOICED]
+    OrganizerContractCreate:
+      type: object
+      required: [valid_from, offline_loss_bearer, cash_diff_bearer, breakage_organizer_bps]
+      additionalProperties: false
+      properties:
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        offline_loss_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+        cash_diff_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+        breakage_organizer_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        operator_fee_basis:
+          type: string
+          enum: [GROSS, NET_OF_REFUNDS]
+          default: GROSS
+        chargeback_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+          default: ORGANIZER
+    ContractVersionCreate:
+      type: object
+      description: |
+        Nouvelle version d'un contrat. `valid_from` ne peut pas précéder celle de la version en vigueur. Un champ
+        omis reprend la valeur de la version précédente ; seuls les champs du type du contrat sont acceptés.
+      required: [valid_from]
+      additionalProperties: false
+      properties:
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        platform_fee_mode:
+          type: string
+          enum: [IN_POOL, INVOICED]
+        offline_loss_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+        cash_diff_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+        breakage_organizer_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        operator_fee_basis:
+          type: string
+          enum: [GROSS, NET_OF_REFUNDS]
+        chargeback_bearer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+    ConfigLevel:
+      type: string
+      description: Niveau de la cascade de configuration (§4.2), du plus général au plus précis.
+      enum: [PLATFORM, OPERATOR, ORGANIZER, EVENT, PARTICIPATION]
+    ConfigVersion:
+      type: object
+      description: |
+        État figé d'un niveau de la cascade à partir d'une date (`config_version`). `settings` est le contenu complet
+        du niveau ; pour un événement il contient aussi l'instantané des réglages portés par ses colonnes.
+      required: [config_version_id, operator_id, scope_type, scope_id, version, valid_from, settings]
+      properties:
+        config_version_id:
+          type: string
+          format: uuid
+        operator_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: '`null` pour le niveau `PLATFORM`.'
+        scope_type:
+          $ref: '#/components/schemas/ConfigLevel'
+        scope_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        settings:
+          type: object
+          additionalProperties: true
+    ConfigVersionCreate:
+      type: object
+      description: Contenu complet du niveau (pas un différentiel). La version et la date d'effet sont posées par le serveur.
+      required: [settings]
+      additionalProperties: false
+      properties:
+        settings:
+          type: object
+          additionalProperties: true
+    ResolvedConfigView:
+      type: object
+      description: Configuration résolue à une date - une entrée par clé du catalogue des réglages.
+      additionalProperties:
+        type: object
+        required: [value, level, version, config_version_id, provisional]
+        properties:
+          value:
+            description: Valeur en vigueur.
+          level:
+            description: Niveau qui définit la valeur ; `null` si elle vient du défaut du catalogue.
+            oneOf:
+              - $ref: '#/components/schemas/ConfigLevel'
+              - type: 'null'
+          version:
+            type:
+              - integer
+              - 'null'
+          config_version_id:
+            type:
+              - string
+              - 'null'
+            format: uuid
+          provisional:
+            type: boolean
+            description: '`true` si la valeur est un défaut provisoire de §17.2, à confirmer.'
+    FundsHolder:
+      type: string
+      description: Titulaire des comptes d'argent de l'événement (§4.4). Obligatoire, sans valeur par défaut, hors cascade.
+      enum: [ORGANIZER, OPERATOR, THIRD_PARTY]
+    Event:
+      type: object
+      description: |
+        Événement (`event`, §4.2, §9.8, §12.1). Montants en unités mineures de `currency`. Réglés par
+        l'`ORGANIZER_ADMIN` : nom, dates, `refund_deadline`, `identity_mode`, `activation_modes`,
+        `lost_media_policy`, `cash_refund_single_max`, `reversal_window_minutes`. Réglés par l'`OPERATOR_ADMIN` : les
+        réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`, `refund_new_number_*`, `card_*`.
+      required: [event_id, operator_id, organizer_id, name, currency, timezone, status, starts_at, ends_at,
+                 refund_deadline, refund_deadline_source, jurisdiction_id, contract_id, funds_holder,
+                 funds_holder_party_id, issuer, identity_mode, activation_modes, lost_media_policy,
+                 tap_replay_window_seconds, cash_refund_single_max, sync_deadline_hours, refund_new_number_max,
+                 refund_new_number_hold_hours, card_topup_daily_max_per_card, card_alert_cards_per_wallet,
+                 online_connect_timeout_ms, online_total_timeout_ms, online_retries, pending_sync_seconds,
+                 reconcile_sync_seconds, heartbeat_seconds, reversal_window_minutes, local_retention_days,
+                 ledger_id, config_version_id]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        organizer_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        currency:
+          $ref: '#/components/schemas/Currency'
+        timezone:
+          type: string
+          description: Fuseau IANA (`Africa/Dakar`).
+        status:
+          $ref: '#/components/schemas/EventStatus'
+        starts_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        ends_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        refund_deadline:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: Date limite de remboursement, bornée par `min_refund_window_days` du profil de législation.
+        refund_deadline_source:
+          type:
+            - string
+            - 'null'
+          enum: [EXPLICIT, PROVISIONAL_DEFAULT, null]
+          description: '`PROVISIONAL_DEFAULT` : fin + 30 jours (§17.2), à confirmer.'
+        jurisdiction_id:
+          type: string
+          format: uuid
+        contract_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Version du contrat prestataire–organisateur applicable.
+        funds_holder:
+          $ref: '#/components/schemas/FundsHolder'
+        funds_holder_party_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Partie tierce détentrice des fonds ; renseignée si et seulement si `funds_holder = THIRD_PARTY`.
+        issuer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+          description: Partie qui doit les crédits aux festivaliers.
+        identity_mode:
+          type: string
+          enum: [ANONYMOUS_ALLOWED, ACCOUNT_REQUIRED]
+        activation_modes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [DESK, SELF_APP, FIRST_TOPUP]
+        lost_media_policy:
+          type: string
+          enum: [END_OF_LIFE, REACTIVATE]
+        tap_replay_window_seconds:
+          type: integer
+          minimum: 0
+          maximum: 600
+        cash_refund_single_max:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Remboursement en espèces par une seule personne jusqu'à ce montant (ADR-53), plafonné par le prestataire.
+        sync_deadline_hours:
+          type: integer
+          minimum: 1
+          maximum: 720
+        refund_new_number_max:
+          type: integer
+          format: int64
+          minimum: 0
+        refund_new_number_hold_hours:
+          type: integer
+          minimum: 0
+          maximum: 168
+        card_topup_daily_max_per_card:
+          type: integer
+          format: int64
+          minimum: 0
+        card_alert_cards_per_wallet:
+          type: integer
+          minimum: 2
+          maximum: 20
+        online_connect_timeout_ms:
+          type: integer
+          minimum: 1000
+          maximum: 5000
+          description: Strictement inférieur à `online_total_timeout_ms`.
+        online_total_timeout_ms:
+          type: integer
+          minimum: 2000
+          maximum: 6000
+        online_retries:
+          type: integer
+          minimum: 0
+          maximum: 3
+        pending_sync_seconds:
+          type: integer
+          minimum: 10
+          maximum: 300
+        reconcile_sync_seconds:
+          type: integer
+          minimum: 60
+          maximum: 1800
+        heartbeat_seconds:
+          type: integer
+          minimum: 30
+          maximum: 300
+        reversal_window_minutes:
+          type: integer
+          minimum: 0
+          maximum: 60
+        local_retention_days:
+          type: integer
+          minimum: 7
+          maximum: 30
+        ledger_id:
+          type: string
+          format: uuid
+          description: Grand livre de l'événement, créé avec lui.
+        config_version_id:
+          type: string
+          format: uuid
+          description: Version de configuration `EVENT` en vigueur.
+    EventCreate:
+      type: object
+      description: |
+        Création d'un événement. Les réglages omis prennent la valeur par défaut du schéma. Un `operator_id` reçu est
+        ignoré (prestataire du chemin).
+      required: [organizer_id, name, currency, timezone, jurisdiction_id, funds_holder]
+      additionalProperties: false
+      properties:
+        organizer_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        currency:
+          $ref: '#/components/schemas/Currency'
+        timezone:
+          type: string
+        starts_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        ends_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        refund_deadline:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        jurisdiction_id:
+          type: string
+          format: uuid
+        contract_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        funds_holder:
+          $ref: '#/components/schemas/FundsHolder'
+        funds_holder_party_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        issuer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+          default: ORGANIZER
+        identity_mode:
+          type: string
+          enum: [ANONYMOUS_ALLOWED, ACCOUNT_REQUIRED]
+        activation_modes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [DESK, SELF_APP, FIRST_TOPUP]
+        lost_media_policy:
+          type: string
+          enum: [END_OF_LIFE, REACTIVATE]
+        cash_refund_single_max:
+          type: integer
+          format: int64
+          minimum: 0
+        reversal_window_minutes:
+          type: integer
+          minimum: 0
+          maximum: 60
+    EventUpdate:
+      type: object
+      description: |
+        Modification d'un événement ; au moins une clé. Clés de l'`ORGANIZER_ADMIN` : `name`, `starts_at`, `ends_at`,
+        `refund_deadline`, `jurisdiction_id`, `contract_id`, `funds_holder`, `funds_holder_party_id`, `issuer`,
+        `identity_mode`, `activation_modes`, `lost_media_policy`, `cash_refund_single_max`,
+        `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres. Devise, fuseau et organisateur ne
+        changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        starts_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        ends_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        refund_deadline:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        jurisdiction_id:
+          type: string
+          format: uuid
+        contract_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        funds_holder:
+          $ref: '#/components/schemas/FundsHolder'
+        funds_holder_party_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        issuer:
+          type: string
+          enum: [ORGANIZER, OPERATOR]
+        identity_mode:
+          type: string
+          enum: [ANONYMOUS_ALLOWED, ACCOUNT_REQUIRED]
+        activation_modes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [DESK, SELF_APP, FIRST_TOPUP]
+        lost_media_policy:
+          type: string
+          enum: [END_OF_LIFE, REACTIVATE]
+        cash_refund_single_max:
+          type: integer
+          format: int64
+          minimum: 0
+        reversal_window_minutes:
+          type: integer
+          minimum: 0
+          maximum: 60
+        tap_replay_window_seconds:
+          type: integer
+          minimum: 0
+          maximum: 600
+        sync_deadline_hours:
+          type: integer
+          minimum: 1
+          maximum: 720
+        refund_new_number_max:
+          type: integer
+          format: int64
+          minimum: 0
+        refund_new_number_hold_hours:
+          type: integer
+          minimum: 0
+          maximum: 168
+        card_topup_daily_max_per_card:
+          type: integer
+          format: int64
+          minimum: 0
+        card_alert_cards_per_wallet:
+          type: integer
+          minimum: 2
+          maximum: 20
+        online_connect_timeout_ms:
+          type: integer
+          minimum: 1000
+          maximum: 5000
+        online_total_timeout_ms:
+          type: integer
+          minimum: 2000
+          maximum: 6000
+        online_retries:
+          type: integer
+          minimum: 0
+          maximum: 3
+        pending_sync_seconds:
+          type: integer
+          minimum: 10
+          maximum: 300
+        reconcile_sync_seconds:
+          type: integer
+          minimum: 60
+          maximum: 1800
+        heartbeat_seconds:
+          type: integer
+          minimum: 30
+          maximum: 300
+        local_retention_days:
+          type: integer
+          minimum: 7
+          maximum: 30
+    StatusCondition:
+      type: object
+      description: Condition d'un passage de statut et son état.
+      required: [code, met, detail, source]
+      properties:
+        code:
+          type: string
+          description: |
+            Identifiant stable. `DATABASE` : `TRANSITION_ALLOWED`, `DEVICES_CAUGHT_UP`, `DEBIT_AUTHORITY_CENTRAL`,
+            `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`. `CONFIGURATION` :
+            `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`, `JURISDICTION_SET`, `LEDGER_OPEN`. `EXTERNAL` :
+            `CASH_DESKS_COUNTED`, `PSP_RECONCILED`, `DEVICES_REPORTED`.
+        met:
+          type:
+            - boolean
+            - 'null'
+          description: '`null` : condition externe, pas encore calculable.'
+        detail:
+          type: string
+          description: Raison, traduite selon `Accept-Language`.
+        source:
+          type: string
+          enum: [DATABASE, CONFIGURATION, EXTERNAL]
+        owner_mission:
+          type: string
+          description: Pour une condition `EXTERNAL` - mission qui la rendra calculable.
+    StatusTransition:
+      type: object
+      required: [to]
+      additionalProperties: false
+      properties:
+        to:
+          $ref: '#/components/schemas/EventStatus'
+    Participation:
+      type: object
+      description: |
+        Présence d'un commerçant à un événement (`merchant_participation`, §3.1, §12.1). `INTERNAL` : versements à
+        l'organisateur ; `EXTERNAL` : au commerçant. La commission est une règle de frais de portée `PARTICIPATION`.
+      required: [participation_id, operator_id, event_id, merchant_id, link_type, payout_to, pitch_fee_mode,
+                 pitch_fee, pitch_fee_reference, account_id]
+      properties:
+        participation_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        merchant_id:
+          type: string
+          format: uuid
+        link_type:
+          type: string
+          enum: [INTERNAL, EXTERNAL]
+        payout_to:
+          type: string
+          format: uuid
+          description: Bénéficiaire des versements, posé par la base.
+        pitch_fee_mode:
+          type: string
+          enum: [DEDUCT_OR_DEBT, PREPAID, DEDUCT_CAPPED]
+        pitch_fee:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Droit de place, en unités mineures de la devise de l'événement.
+        pitch_fee_reference:
+          type:
+            - string
+            - 'null'
+          description: Référence du paiement d'avance (`PREPAID`).
+        account_id:
+          type: string
+          format: uuid
+          description: Compte du commerçant dans le grand livre de l'événement (`L-MCH-<id>`).
+    ParticipationCreate:
+      type: object
+      required: [merchant_id, link_type]
+      additionalProperties: false
+      properties:
+        merchant_id:
+          type: string
+          format: uuid
+        link_type:
+          type: string
+          enum: [INTERNAL, EXTERNAL]
+        pitch_fee_mode:
+          type: string
+          enum: [DEDUCT_OR_DEBT, PREPAID, DEDUCT_CAPPED]
+          default: DEDUCT_OR_DEBT
+        pitch_fee:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+        pitch_fee_reference:
+          type:
+            - string
+            - 'null'
+          maxLength: 200
+    ParticipationUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        pitch_fee_mode:
+          type: string
+          enum: [DEDUCT_OR_DEBT, PREPAID, DEDUCT_CAPPED]
+        pitch_fee:
+          type: integer
+          format: int64
+          minimum: 0
+        pitch_fee_reference:
+          type:
+            - string
+            - 'null'
+          maxLength: 200
+    PointOfSale:
+      type: object
+      description: Lieu d'encaissement d'une participation (`point_of_sale`), qui portera les terminaux.
+      required: [pos_id, operator_id, participation_id, name]
+      properties:
+        pos_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        participation_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    PointOfSaleCreate:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+    FeeRuleScopeType:
+      type: string
+      description: |
+        Portée d'une règle de frais (§5.6) : `PLATFORM_CONTRACT` (plateforme → prestataire), `OPERATOR_CONTRACT`
+        (prestataire → organisateur), `EVENT` et `PARTICIPATION` (organisateur → commerçant, frais festivalier).
+      enum: [PLATFORM_CONTRACT, OPERATOR_CONTRACT, EVENT, PARTICIPATION]
+    FeeRule:
+      type: object
+      description: |
+        Règle de frais (`fee_rule`, §5.6). Jamais modifiée : elle se ferme (`valid_to`) et une nouvelle version la
+        remplace. Montants en unités mineures.
+      required: [fee_rule_id, operator_id, scope_type, scope_id, payer_purpose, beneficiary_purpose, basis, rate_bps,
+                 fixed_amount, min_amount, max_amount, tax_code, tax_inclusive, trigger, valid_from, valid_to, version]
+      properties:
+        fee_rule_id:
+          type: string
+          format: uuid
+        operator_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        scope_type:
+          $ref: '#/components/schemas/FeeRuleScopeType'
+        scope_id:
+          type: string
+          format: uuid
+          description: Contrat, événement ou participation, selon `scope_type`.
+        payer_purpose:
+          type: string
+          description: Usage du compte payeur (`ORG_FPREST`, `MERCHANT`, `OPE_REDEV`…), §5.2.
+        beneficiary_purpose:
+          type: string
+          description: Usage du compte bénéficiaire (`OPE_FRAIS`, `ORG_COM`, `PLT_REDEV`…).
+        basis:
+          type: string
+          enum: [TOPUP_AMOUNT, SALE_AMOUNT, PER_MEDIA, PER_TERMINAL_DAY, PER_REFUND, FIXED, FEE_AMOUNT]
+        rate_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Taux en points de base (1200 = 12 %).
+        fixed_amount:
+          type: integer
+          format: int64
+          minimum: 0
+        min_amount:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        max_amount:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        tax_code:
+          type:
+            - string
+            - 'null'
+          description: Taxe du profil de législation (`rules.taxes`) ; `null` = hors taxe.
+        tax_inclusive:
+          type: boolean
+        trigger:
+          type: string
+          enum: [REALTIME, CLOSING]
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'
+        valid_to:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+    FeeRuleCreate:
+      type: object
+      description: |
+        Création ou remplacement d'une règle. `valid_from` omise : instant de l'écriture. `min_amount` ne dépasse pas
+        `max_amount`.
+      required: [scope_type, scope_id, payer_purpose, beneficiary_purpose, basis, trigger]
+      additionalProperties: false
+      properties:
+        scope_type:
+          $ref: '#/components/schemas/FeeRuleScopeType'
+        scope_id:
+          type: string
+          format: uuid
+        payer_purpose:
+          type: string
+          minLength: 1
+        beneficiary_purpose:
+          type: string
+          minLength: 1
+        basis:
+          type: string
+          enum: [TOPUP_AMOUNT, SALE_AMOUNT, PER_MEDIA, PER_TERMINAL_DAY, PER_REFUND, FIXED, FEE_AMOUNT]
+        rate_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+        fixed_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+        min_amount:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        max_amount:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          minimum: 0
+        tax_code:
+          type:
+            - string
+            - 'null'
+        tax_inclusive:
+          type: boolean
+          default: true
+        trigger:
+          type: string
+          enum: [REALTIME, CLOSING]
+        valid_from:
+          $ref: '#/components/schemas/Timestamp'

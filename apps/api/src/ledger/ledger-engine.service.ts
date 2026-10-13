@@ -109,6 +109,7 @@ export class LedgerEngineService {
       eventId: context.eventId ?? undefined,
       occurredAt: command.occurredAt,
       participationId: participationOf(command),
+      client,
     });
     const { command: enriched, balances } = await enrich(client, command);
     const buildContext: BuildContext = { config, ...(balances ? { balances } : {}) };
@@ -129,7 +130,12 @@ export class LedgerEngineService {
       occurredAt: command.occurredAt,
       source: command.source,
       linesJson: linesJson(
-        lines.map((line) => ({ accountId: ids.get(line.account)!, amount: line.amount, ...(line.memo ? { memo: line.memo } : {}) })),
+        lines.map((line) => ({
+          accountId: ids.get(line.account)!,
+          amount: line.amount,
+          ...(line.memo ? { memo: line.memo } : {}),
+          ...(line.feeRuleId ? { feeRuleId: line.feeRuleId } : {}),
+        })),
       ),
       eventId: command.eventId ?? context.eventId ?? undefined,
       reversesId: command.reversesId,

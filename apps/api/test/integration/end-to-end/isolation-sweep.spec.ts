@@ -1,4 +1,4 @@
-// Balayage d'isolation (SC-001, NFR-001) : chaque route ajoutée au contrat par la mission (chemins `/operators/…`,
+// Balayage d'isolation (SC-001, NFR-001) : chaque route ajoutée au contrat par la mission (chemins `/operators/…/users`,
 // `/platform-admins`, `/approval-requests…`, lus dans openapi.yaml) est appelée par une personne du prestataire B
 // sur les objets du prestataire A (jamais 2xx sur un objet de A), puis sans jeton (401). Une route du contrat sans
 // cas dans ce fichier fait échouer le test.
@@ -15,7 +15,9 @@ import { FakeIdp, type TestPerson } from '../../support/fake-idp';
 import { createOperators, type Operators } from '../transverse/fixtures';
 
 const CONTRACT = join(__dirname, '../../../../../packages/contracts/openapi.yaml');
-const MISSION_PATHS = /^\/(operators\/|platform-admins$|approval-requests)/;
+// Les routes `/operators/…` de la mission configuration-parties-evenements (organisateurs, événements…) ont leur
+// propre balayage : seules les routes « Personnes » de ce préfixe sont prises ici.
+const MISSION_PATHS = /^\/(operators\/\{operator_id\}\/(users|role-assignments)(\/|$)|platform-admins$|approval-requests)/;
 
 interface Route {
   method: 'get' | 'post';

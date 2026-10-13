@@ -20,8 +20,8 @@ la précédente est annulée), arrêté au bout de 20 minutes. Le job échoue à
 | 5 | Calculs de référence | `python packages/ledger-sql/moteur_ecritures_reference.py` | Les 19 cas normatifs de l'implémentation de référence |
 | 6 | Types du contrat | `npm run check -w @cashless/contracts` | Les types générés depuis `openapi.yaml` sont à jour (FR-022) |
 | 7 | Lint et types | `npm run lint` ; `npm run typecheck` | ESLint (dont l'interdiction des décimaux dans le moteur) ; `tsc` strict sur les trois workspaces |
-| 8 | Base par les migrations | `createdb cashless_test` ; `npm run migrate -w @cashless/ledger-sql` | La base de test est construite **par les migrations** (`0001` à `0006`), jamais par le fichier de schéma brut ; `roles.sql` puis `post-roles.sql` rejoués |
-| 9 | Suites pgTAP | `npm run test:pgtap -w @cashless/ledger-sql` | Référence (400), scénario (64), suites du dépôt (`tests/*.sql` : S21, identité, audit, approbations, administrateurs de la plateforme) |
+| 8 | Base par les migrations | `createdb cashless_test` ; `npm run migrate -w @cashless/ledger-sql` | La base de test est construite **par les migrations** (`0001` à `0009`), jamais par le fichier de schéma brut ; `roles.sql` puis `post-roles.sql` rejoués |
+| 9 | Suites pgTAP | `npm run test:pgtap -w @cashless/ledger-sql` | Référence (400), scénario (64), suites du dépôt (`tests/*.sql` : S21, identité, audit, approbations, administrateurs de la plateforme, configuration, grand livre d'événement, portée plateforme) |
 | 10 | Tests Jest | `npm run reset-db -w @cashless/ledger-sql` ; `npm test` | Base recréée, puis unitaires, intégration (garanties transverses, moteur) et rejeu du scénario de référence |
 
 Variables du job : `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` (outils PostgreSQL et
@@ -57,6 +57,53 @@ d'où l'ordre du job (pgTAP, puis base recréée, puis Jest). Relancer `npm run 
 Sous Windows (Git Bash), ne pas `source tools/dev-db/env.sh` dans le shell qui lance ensuite `npm run test:pgtap` :
 la variable `PERL5LIB` traverse `cmd.exe`, revient sous la forme `C:/…`, et Perl la coupe sur `:` (`pg_prove` ne
 trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
+
+## Répétition locale du 2026-10-12 (mission configuration-parties-evenements, WP13)
+
+Poste macOS, PostgreSQL 17.11 dans Docker (conteneur `cashless-platform-pg17`, `127.0.0.1:5433`, pgTAP installé dans
+le conteneur), Node 24, branche de la lane WP13 (toutes les lanes de la mission 3 fusionnées). Étapes 4 à 10 vertes,
+**53 s** au total (hors `npm ci`).
+
+| Étape | Durée | Résultat |
+|---|---|---|
+| 4. Suites générées | < 1 s | à jour |
+| 5. Calculs de référence | < 1 s | 19 cas OK |
+| 6. Types du contrat | 2 s | à jour (48 opérations ajoutées par la mission) |
+| 7. Lint, types | 4 s + 6 s | 0 erreur |
+| 8. Base, migrations | 2 s | `0001` à `0009` appliquées, `roles.sql` et `post-roles.sql` rejoués (rôle `cashless_platform`) |
+| 9. Suites pgTAP | 5 s | 10 fichiers, **947 assertions**, PASS |
+| 10. Base recréée, Jest | 1 s + 32 s | 47 suites, **873 tests** verts |
+
+Variables ajoutées par la mission (job et poste local) : `CASHLESS_PLATFORM_PASSWORD`, `DATABASE_URL_PLATFORM`.
+
+**Latence (NFR-003)**, mesurée par `configuration-latency.spec.ts` sur une base de 100 événements et 1 000
+participations, requête HTTP complète vue du client de test (donc au-dessus du temps serveur seul).
+
+| Mesure | Nombre | Suite lancée seule (p95) | Pendant toute la suite Jest en parallèle (p95) | Seuil (p95) |
+|---|---|---|---|---|
+| Création d'un événement (grand livre et comptes) | 30 | 74 à 88 ms | 154 à 189 ms | 500 ms |
+| Lectures de configuration | 200 | 30 à 31 ms | 68 à 83 ms | 200 ms |
+| Écritures de configuration | 50 | 67 à 68 ms | première série 209 à 253 ms, série refaite 66 à 69 ms | 200 ms |
+
+Lancée seule, la suite tient les trois seuils avec une marge d'un facteur trois ou plus (trois exécutions). Pendant
+la suite Jest complète, les sept autres processus de test chargent la même machine et la même base : la première
+série d'écritures dépasse alors le seuil (cinq exécutions sur cinq), et la série refaite juste après le tient. Le
+test refait donc une série au-dessus du seuil, trois fois au plus, échoue si aucune ne tient le seuil et consigne
+toutes les séries (`series_p95_ms` de la ligne `LATENCE`). Une mesure de latence fiable demande une machine au
+repos : ce relevé vaut pour la suite lancée seule.
+
+**Mode Docker sur macOS.** Le serveur PostgreSQL tourne dans une VM : son horloge est en avance de 0 à 120 ms environ
+sur celle du poste et recule parfois de quelques dizaines de millisecondes (mesuré : 3 reculs en 40 s, jusqu'à
+113 ms). Conséquences prises en compte : un test ne compare jamais l'horloge de Node à une date posée par la base ;
+sans date demandée, une date d'effet ne précède jamais celle de la version qu'elle suit (ADR-82). La CI (Linux,
+base et tests sur le même noyau) n'a pas ce décalage. Dans un worktree sans `node_modules`, `@cashless/contracts` se
+résout vers le checkout principal : créer `node_modules/@cashless/{api,contracts,ledger-sql}` en liens vers les
+paquets du worktree avant `typecheck` et `npm test`.
+
+**Suites en parallèle sur une base partagée.** Le niveau de configuration `PLATFORM` et les profils de législation
+d'un pays sont communs à toutes les suites : une suite n'y suppose pas être seule (numéros de version de profil
+aléatoires, pays réservé par suite, réglages de cascade posés à un niveau propre à la suite, nouvel essai sur `409`).
+La suite complète a été lancée treize fois de suite sans échec avant ce relevé.
 
 ## Répétition locale du 2026-10-09 (mission identite-roles, WP10)
 

@@ -1,4 +1,5 @@
-// Connexions de test à la base locale (cluster privé, tools/dev-db) : propriétaire et rôle applicatif.
+// Connexions de test à la base locale (cluster privé, tools/dev-db) : propriétaire, rôle applicatif et rôle de la
+// plateforme.
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { Client } from 'pg';
@@ -8,6 +9,9 @@ export const OWNER_URL = process.env.DATABASE_URL_OWNER || `postgres://postgres@
 export const APP_URL =
   process.env.DATABASE_URL_APP ||
   `postgres://cashless_app:${process.env.CASHLESS_APP_PASSWORD || 'cashless_app_local'}@${LOCAL}`;
+export const PLATFORM_URL =
+  process.env.DATABASE_URL_PLATFORM ||
+  `postgres://cashless_platform:${process.env.CASHLESS_PLATFORM_PASSWORD || 'cashless_platform_local'}@${LOCAL}`;
 
 const REPO_ROOT = join(__dirname, '../../../..');
 

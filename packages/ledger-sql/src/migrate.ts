@@ -102,11 +102,16 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
   // Retraits et droits par colonne posés après roles.sql (qui rend INSERT, UPDATE et EXECUTE sur tout).
   report.postRoles = existsSync(POST_ROLES_FILE);
   if (report.postRoles) await client.query(readFileSync(POST_ROLES_FILE, 'utf8'));
-  const password = process.env.CASHLESS_APP_PASSWORD;
-  if (password) {
-    // roles.sql ne fixe volontairement aucun mot de passe : réglage local / CI seulement.
+  // roles.sql et post-roles.sql ne fixent volontairement aucun mot de passe : réglage local / CI seulement.
+  // cashless_platform est créé par post-roles.sql : sans ce fichier, son mot de passe n'est pas posé.
+  const passwords: [role: string, password: string | undefined][] = [
+    ['cashless_app', process.env.CASHLESS_APP_PASSWORD],
+    ['cashless_platform', report.postRoles ? process.env.CASHLESS_PLATFORM_PASSWORD : undefined],
+  ];
+  for (const [role, password] of passwords) {
+    if (!password) continue;
     const { rows: quoted } = await client.query<{ literal: string }>('SELECT quote_literal($1) AS literal', [password]);
-    await client.query(`ALTER ROLE cashless_app PASSWORD ${quoted[0]?.literal}`);
+    await client.query(`ALTER ROLE ${role} PASSWORD ${quoted[0]?.literal}`);
   }
   return report;
 }

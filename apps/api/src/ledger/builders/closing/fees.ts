@@ -1,7 +1,7 @@
 // PITCH_FEE, MERCHANT_DEBT_TRANSFER, OPERATOR_FEE, PLATFORM_FEE — SPECIFICATION §5.4, §5.6.
 import { extractTax, fee, groupForTax } from '../../money';
 import { BuildError, merchant, partyAccounts, type BuildContext, type LedgerCommand, type Line } from '../../types';
-import { balanced, creditWithTax, push, requireId, requirePositive } from '../festival/lines';
+import { balanced, creditWithTax, push, requireId, requirePositive, tagFee } from '../festival/lines';
 
 export type PitchFeeMode = 'DEDUCT_OR_DEBT' | 'DEDUCT_CAPPED' | 'PREPAID';
 
@@ -77,7 +77,9 @@ export function buildOperatorFee(command: LedgerCommand<'OPERATOR_FEE', Operator
   for (const { basis, rule } of config.operatorFees) {
     const base = bases?.[basis] ?? 0n;
     // PER_MEDIA : nombre de supports × montant par support ; TOPUP_AMOUNT : frais sur le montant des recharges.
+    const from = lines.length;
     push(lines, org('ORG_FPREST'), basis === 'PER_MEDIA' ? base * fee(0n, rule) : fee(base, rule));
+    tagFee(lines, from, rule);
   }
   const total = lines.reduce((sum, line) => sum + line.amount, 0n);
   requirePositive(total, 'frais du prestataire');
@@ -99,5 +101,6 @@ export function buildPlatformFee(command: LedgerCommand<'PLATFORM_FEE', Platform
   push(lines, ope('OPE_REDEV'), ttc);
   push(lines, plt('PLT_REDEV'), -ht);
   push(lines, plt('PLT_TAX'), -tax);
+  tagFee(lines, 0, config.platformFee);
   return balanced(lines);
 }

@@ -5,6 +5,7 @@
 // une suppression, refusée au rôle applicatif. Une clé COMPLETED expirée rejoue donc sa réponse (même empreinte) ou
 // répond IDEMPOTENCY_KEY_REUSED (autre empreinte) ; la purge planifiée future supprimera les lignes expirées.
 import { Inject, Injectable } from '@nestjs/common';
+import { PlatformTx } from '../db/platform-tx';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 
@@ -32,7 +33,8 @@ export function loadIdempotencySettings(env: NodeJS.ProcessEnv = process.env): I
 /** Exécution réservée : `leaseToken` (valeur exacte de `lease_until`) prouve que le bail n'a pas été repris. */
 export interface Reservation {
   id: string;
-  operatorId: string;
+  /** NULL : clé de niveau plateforme. */
+  operatorId: string | null;
   leaseToken: string;
 }
 
@@ -65,12 +67,21 @@ interface ExistingRow {
 export class IdempotencyRepository {
   constructor(
     private readonly tx: TenantTx,
+    private readonly platformTx: PlatformTx,
     @Inject(IDEMPOTENCY_SETTINGS) private readonly settings: IdempotencySettings,
   ) {}
 
+  /**
+   * Transaction du niveau de la clé : cloisonnée par prestataire, ou de plateforme (`operatorId` NULL). La
+   * transaction métier d'une requête idempotente passe aussi par ici : clé et travail restent au même niveau.
+   */
+  transaction<T>(operatorId: string | null, fn: (client: TxClient) => Promise<T>): Promise<T> {
+    return operatorId === null ? this.platformTx.run(fn) : this.tx.run(operatorId, fn);
+  }
+
   /** Transaction 1 (courte) : réserve la clé, ou décide du rejeu / du refus. */
-  reserve(operatorId: string, scope: string, key: string, hash: string): Promise<ReserveOutcome> {
-    return this.tx.run(operatorId, async (client) => {
+  reserve(operatorId: string | null, scope: string, key: string, hash: string): Promise<ReserveOutcome> {
+    return this.transaction(operatorId, async (client) => {
       const inserted = await client.query<{ id: string; lease_token: string }>(
         `INSERT INTO api_idempotency (operator_id, scope, idempotency_key, request_hash, status, lease_until, expires_at)
          VALUES ($1, $2, $3, $4, 'IN_PROGRESS', now() + make_interval(secs => $5), now() + make_interval(hours => $6))
@@ -85,7 +96,7 @@ export class IdempotencyRepository {
         `SELECT id, request_hash, status, lease_until <= now() AS lease_expired,
                 response_status, response_body, response_headers
            FROM api_idempotency
-          WHERE operator_id = $1 AND scope = $2 AND idempotency_key = $3
+          WHERE operator_id IS NOT DISTINCT FROM $1 AND scope = $2 AND idempotency_key = $3
             FOR UPDATE`,
         [operatorId, scope, key],
       );
@@ -129,12 +140,12 @@ export class IdempotencyRepository {
 
   /** Enregistre une réponse dans une transaction propre (erreur 4xx : la transaction métier a été annulée). */
   completeAlone(reservation: Reservation, response: StoredResponse): Promise<void> {
-    return this.tx.run(reservation.operatorId, (client) => this.complete(client, reservation, response));
+    return this.transaction(reservation.operatorId, (client) => this.complete(client, reservation, response));
   }
 
   /** Erreur 5xx : bail remis à maintenant, la même clé peut être rejouée tout de suite. */
   async release(reservation: Reservation): Promise<void> {
-    await this.tx.run(reservation.operatorId, (client) =>
+    await this.transaction(reservation.operatorId, (client) =>
       client.query(
         `UPDATE api_idempotency SET lease_until = now()
           WHERE id = $1 AND status = 'IN_PROGRESS' AND lease_until = $2::timestamptz`,
@@ -144,6 +155,6 @@ export class IdempotencyRepository {
   }
 }
 
-function execute(id: string, operatorId: string, leaseToken: string): ReserveOutcome {
+function execute(id: string, operatorId: string | null, leaseToken: string): ReserveOutcome {
   return { kind: 'execute', reservation: { id, operatorId, leaseToken } };
 }

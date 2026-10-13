@@ -1,0 +1,219 @@
+{
+  "mission_slug": "configuration-parties-evenements-01M4GCJ9",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Migration 0009 + post-roles.sql : r\u00f4le cashless_platform, politiques permissives et restrictives ; tests_platform_scope.sql (115 assertions) ; PlatformTx (second pool) : test/integration/platform/platform-tx.spec.ts. Limite accept\u00e9e par le porteur le 2026-10-12 : EXECUTE h\u00e9rit\u00e9 de PUBLIC (ADR-80) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "JurisdictionService + jurisdiction.controller ; test/integration/organization/platform.spec.ts (cr\u00e9ation, liste, lecture, nouvelle version ; changement de plafond \u00e0 deux par JURISDICTION_LIMITS_CHANGE) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "provisional-defaults.ts ; test/unit/configuration/*.spec.ts et platform.spec.ts : valeurs de \u00a717.2 renvoy\u00e9es avec l'indicateur \u00ab \u00e0 confirmer \u00bb et la personne qui doit confirmer \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "operators.service/controller ; platform.spec.ts (19 tests) : cr\u00e9ation, liste, lecture, modification des prestataires par PLATFORM_ADMIN \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "parties.service + tenant.controller ; test/integration/organization/tenant.spec.ts (18 tests) : organisateurs rattach\u00e9s au prestataire d\u00e9duit de l'identit\u00e9 \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "parties.service ; tenant.spec.ts : commer\u00e7ants cr\u00e9\u00e9s, list\u00e9s, lus, modifi\u00e9s, sans condition commerciale \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Migration 0007 (versioned_immutable, contract_version_assign) : tests_configuration.sql (72) ; contracts.service ; platform.spec.ts et tenant.spec.ts : nouvelle version \u00e0 deux (PLATFORM_CONTRACT_VERSION, CONTRACT_VERSION) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "fee-rules.service + fee-rules.controller ; test/integration/events/fee-rules.spec.ts : quatre flux, remplacement par cl\u00f4ture (valid_to), FEE_RULE_CHANGE \u00e0 deux pendant LIVE ; garde fee_rule_guard (pgTAP) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "events.service/controller ; test/integration/events/events.spec.ts (16 tests) : d\u00e9tenteur des fonds obligatoire, tiers d\u00e9sign\u00e9 si THIRD_PARTY, \u00e9metteur ORGANIZER par d\u00e9faut ; garde event_references_guard (pgTAP) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "settings-catalog.ts + assertSettableBy : un r\u00e9glage par r\u00f4le (ADR-81), 403 si r\u00f4le non tenu, 422 si r\u00f4les m\u00e9lang\u00e9s ; events.spec.ts et tests unitaires du catalogue \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Migration 0008 : open_event_ledger (28 comptes de \u00a75.2, + L-LEGAL-CASSE si LEGAL_ACCOUNT) ; tests_event_ledger.sql (84) ; events.spec.ts : grand livre cr\u00e9\u00e9 dans la transaction de cr\u00e9ation \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "participations.service ; test/integration/events/participations.spec.ts : INTERNAL/EXTERNAL, droit de place et mode, compte L-MCH-<participation> ouvert par open_participation_account ; garde participation_guard (pgTAP) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "participations.controller ; participations.spec.ts : points de vente cr\u00e9\u00e9s, list\u00e9s, lus, renomm\u00e9s ; garde point_of_sale_guard (pgTAP) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "cascade.service (PLATFORM\u2192OPERATOR\u2192ORGANIZER\u2192EVENT\u2192PARTICIPATION) ; test/integration/configuration/cascade.spec.ts ; config_version_assign (version n+1, verrou consultatif) : pgTAP ; perdante d'une \u00e9criture concurrente : 409 \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "bounds-validator.ts (violations[]) ; tests unitaires + events.spec.ts et tenant.spec.ts : 422 citant la r\u00e8gle, la valeur et la borne ; event_jurisdiction_bounds (pgTAP) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "SqlConfigResolver ; test/integration/configuration/sql-config-resolver.spec.ts et test/scenario/api-config-replay.spec.ts : 48 transactions du sc\u00e9nario rejou\u00e9es \u00e0 l'identique, config_version_id et fee_rule_id r\u00e9els (ADR-82) \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Verify FR-017 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "event_transition_conditions (migration 0008, pgTAP) ; status.service ; test/integration/events/status.spec.ts (11 tests) : conditions et \u00e9tat de chacune \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Verify FR-018 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "status.controller : passage par set_event_status seulement, CL018/CL019 traduits avec la condition nomm\u00e9e ; status.spec.ts ; cl\u00e9 status dans updateEvent \u2192 400 \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Verify FR-019 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Huit actions \u00e0 deux enregistr\u00e9es (PLATFORM_CONTRACT_VERSION, JURISDICTION_LIMITS_CHANGE, CONTRACT_VERSION, EVENT_SETTINGS_CHANGE, EVENT_OPERATOR_SETTINGS_CHANGE, PARTICIPATION_CHANGE, FEE_RULE_CHANGE, EVENT_GO_LIVE) ; suites platform, tenant, events, participations, fee-rules, status ; configuration-journey.spec.ts : une seule approbation pour LIVE \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Verify FR-020 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "AuditService appel\u00e9 dans la transaction de chaque \u00e9criture, plateforme comprise ; v\u00e9rifi\u00e9 dans les suites d'int\u00e9gration de chaque module et dans platform-tx.spec.ts \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "Verify FR-021 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "openapi.yaml : 48 op\u00e9rations sur 28 chemins, types r\u00e9g\u00e9n\u00e9r\u00e9s ; les 48 op\u00e9rations sont servies (configuration-isolation.spec.ts parcourt chaque route) ; typecheck vert \u2014 lane finale : pgTAP 947/947, Jest 873/873 (2026-10-12)",
+      "pass_fail": "pass",
+      "verified_by": "claude (d\u00e9l\u00e9gation du porteur du projet, \u00ab continue \u00bb du 2026-10-13)",
+      "verified_at": "2026-10-13T09:32:12Z",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
