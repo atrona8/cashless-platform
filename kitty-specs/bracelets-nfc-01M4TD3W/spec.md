@@ -302,6 +302,7 @@ En fin d'événement, l'administrateur clôt un lot : les bracelets en circulati
 | NFR-006 | Latence | Demande de mot de passe et enregistrement d'une lecture : p95 ≤ 200 ms et p99 ≤ 500 ms côté serveur, mesurés sur une base de 100 000 bracelets ; activation : p95 ≤ 500 ms. | Performance | Medium | Open |
 | NFR-007 | Pas d'énumération | Pour un code inconnu et un code déjà utilisé : même statut, même corps, et un écart de temps de réponse médian inférieur à 20 ms sur 200 essais de chaque sorte. | Security | Medium | Open |
 | NFR-008 | Traitements par tranches | Clôture d'un lot, préchargement de rattrapage et rechiffrement traitent au plus 500 bracelets par tranche, peuvent être relancés sans double effet, et vont au bout sur un lot de 5 000 bracelets. | Reliability | Medium | Open |
+| NFR-010 | Aucun faux en production | En configuration de production, l'API refuse de démarrer si le faux service de clés, le faux terminal ou le faux festivalier est branché : 0 démarrage réussi sur les 3 cas, vérifié par un test par faux ; aucun faux n'est atteignable par une route ou un réglage d'exécution. | Security | High | Open |
 | NFR-009 | Tests existants verts | Les suites de la base (947 assertions), les tests des missions 1 à 3 (876) et le rejeu du scénario de référence restent verts en CI à chaque commit. | Reliability | High | Open |
 
 ### Constraints
@@ -318,6 +319,9 @@ En fin d'événement, l'administrateur clôt un lot : les bracelets en circulati
 | C-008 | Contrat d'abord | Toute route est décrite au contrat d'API avant d'être servie ; les types sont générés, jamais écrits à la main. | Technical | High | Open |
 | C-009 | Aucun écran | La mission ne livre aucune interface ; le back-office web est la mission 11. | Business | Medium | Open |
 | C-010 | Bracelets pour le cashless seulement | Un bracelet ne sert ni de billet ni de contrôle d'accès (ADR-41). | Business | Medium | Open |
+
+| C-011 | Écart de sécurité soumis au porteur | Tout écart au plan ou à la spécification qui affaiblit la sécurité (droit plus large, contrôle retiré ou reporté, secret plus exposé, faux gardé plus longtemps) est soumis au porteur avant d'être codé, avec le risque et les options ; il n'est jamais décidé en silence. Un écart qui renforce la sécurité est fait puis consigné. | Business | High | Open |
+| C-012 | Dette de sécurité nommée | Chaque écart de sécurité accepté a une entrée dans `docs/POINTS_OUVERTS.md` et une décision dans `docs/DECISIONS_ADR.md` (risque, raison, mission qui le lève, condition de levée), un test qui échoue si la limite s'élargit, et un report dans `PROMPTS-A-ENVOYER.md` pour la mission qui en hérite. Les quatre écarts connus à la spécification : faux service de clés, faux terminal, faux festivalier, requêtes de terminal non signées. | Business | High | Open |
 
 ### Key Entities
 
@@ -343,6 +347,7 @@ En fin d'événement, l'administrateur clôt un lot : les bracelets en circulati
 - **SC-005** : aucune fuite entre deux prestataires sur l'ensemble des routes de la mission.
 - **SC-006** : un tiers qui connaît seulement le code imprimé d'un bracelet approvisionné ne peut pas le rattacher : 0 rattachement sans lecture du bracelet au guichet sur les cas testés.
 - **SC-007** : aucune sortie de liste noire, création, rotation ou retrait de clé n'est effective avec une seule personne.
+- **SC-009** : à la fin de la mission, chaque écart de sécurité accepté est retrouvé dans les points ouverts avec la mission qui le lève ; aucun écart de sécurité non consigné n'est trouvé par la revue de la mission.
 - **SC-008** : la mission des terminaux peut brancher l'identité réelle du terminal sans modifier une seule route livrée ici (vérifié par le remplacement du faux dans un test).
 
 ## Assumptions
@@ -365,4 +370,5 @@ En fin d'événement, l'administrateur clôt un lot : les bracelets en circulati
 | 1 | Routes de terminal alors que l'enrôlement arrive en mission 5 | Servies ici derrière un port d'identité du terminal, avec un faux pour les tests ; la mission 5 branche l'enrôlement réel |
 | 2 | Bibliothèque Dart sans SDK sur le poste | Livrée ici, prouvée en CI et en local ; SDK Dart 3.8 installé sur le poste avec l'accord du porteur |
 | 3 | Adaptateur AWS KMS | Ports et faux seulement ; l'adaptateur réel viendra quand la région et les comptes AWS seront arrêtés |
+| 5 | Gestion des écarts qui affaiblissent la sécurité | Refus de démarrer avec un faux en production (NFR-010) ; tout écart qui affaiblit la sécurité soumis au porteur avant d'être codé (C-011) ; dette nommée, testée et reportée (C-012). Règle étendue à toutes les missions (`CLAUDE.md`) |
 | 4 | Résumé d'intention et hypothèses (port d'identité du festivalier, routes back-office ajoutées au contrat, périmètre exclu, caution à part en espèces) | Confirmé (« ok ») |
