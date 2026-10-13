@@ -185,6 +185,7 @@ sécurité et que la spécification ne tranche pas sont en R-12 ; ils sont soumi
 | 5 | Clé de données en mémoire (R-12 a) | Cache court : 5 minutes au plus, réglable, effacé à l'expiration et à l'arrêt (R-05) |
 | 6 | Droit de créer et de désactiver une clé du KMS (R-12 b) | Commande d'administration séparée, lancée à la demande, hors des quatre processus (R-04) |
 | 7 | Comment la personnalisation scelle un nouveau mot de passe sans droit de déchiffrement | Une clé de données par session de personnalisation, en mémoire 5 minutes au plus sans activité (R-05 bis) |
+| 8 | Consultation anonyme du solde : route publique du contrat, sans compte ni prestataire de session | Fonction `public_balance_lookup` SECURITY DEFINER, tous prestataires confondus, gardée telle quelle : ne rend que solde, statut et 10 mouvements du bracelet désigné ; limites du contrat (20 par code, 60 par adresse, par heure) ; retirée à PUBLIC, accordée au seul rôle de l'API ; empreintes de code uniques tous prestataires confondus (constatée au WP03, confirmée après coup par le porteur) |
 
 Choix proposés au porteur le 13/10/2026 avec la question 7, appliqués faute d'objection (à rouvrir sur simple demande) :
 un écart du contrôle quotidien est tracé par l'audit et le compte rendu, sans nouvelle sorte d'anomalie ; les routes
