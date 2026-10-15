@@ -25,6 +25,7 @@
   "purpose_context": "Le bracelet est le support de paiement du festivalier, distinct de son portefeuille. Cette mission livre les bibliothèques de format (TypeScript et Dart) conformes aux vecteurs de test du kit, la gestion des clés par KMS, la personnalisation et les lots de bracelets, les codes de rattachement, puis le cycle de vie complet par l'API : passage du bracelet, activation, caution et rendu, restitution, remplacement, espèces dues et liste noire. La lecture NFC par le terminal n'en fait pas partie.",
   "purpose_tldr": "Gérer les bracelets NFC côté serveur : format et clés, lots, rattachement, activation, caution, remplacement et liste noire.",
   "slug": "bracelets-nfc-01M4TD3W",
+  "status_phase": "1",
   "target_branch": "feat/bracelets-nfc",
   "topology": "coord",
   "vcs": "git",
