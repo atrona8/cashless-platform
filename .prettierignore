@@ -1,0 +1,7 @@
+# Fichiers générés : ne jamais les reformater à la main (voir CLAUDE.md).
+**/generated/
+packages/ledger-sql/**/*.sql
+**/*.g.dart
+node_modules/
+.worktrees/
+kitty-specs/
