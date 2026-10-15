@@ -2,7 +2,7 @@
   "mission_slug": "bracelets-nfc-01M4TD3W",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "fail",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -438,10 +438,10 @@
       "criterion_id": "NFR-008",
       "description": "NFR-008 — Traitements par tranches",
       "proof_type": "automated_test",
-      "evidence": "Couvert en partie : tranches de 500 et relance sans double effet prouvées pour la clôture (apps/api/test/integration/media/batches.spec.ts, 600 cautions, 2 relances) et le rechiffrement (apps/api/test/integration/media/data-keys.spec.ts, 1 200 bracelets en 3 tranches, reprise après interruption). Non couvert : aucun test sur un lot de 5 000 bracelets (« vont au bout sur un lot de 5 000 bracelets ») ; rattrapage du préchargement testé sur 3 bracelets seulement, sans tranche (PRELOAD_SLICE jamais atteint). Aucune limite consignée (ni OP ni ADR) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
-      "pass_fail": "fail",
+      "evidence": "Couvert en partie : tranches de 500 et relance sans double effet prouvées pour la clôture (apps/api/test/integration/media/batches.spec.ts, 600 cautions, 2 relances) et le rechiffrement (apps/api/test/integration/media/data-keys.spec.ts, 1 200 bracelets en 3 tranches, reprise après interruption). Non couvert : aucun test sur un lot de 5 000 bracelets (« vont au bout sur un lot de 5 000 bracelets ») ; rattrapage du préchargement testé sur 3 bracelets seulement, sans tranche (PRELOAD_SLICE jamais atteint). Aucune limite consignée (ni OP ni ADR) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts — Écart accepté par le porteur le 2026-10-15 : preuve partielle consignée en OP-N61 / ADR-98 (bloque la production), preuve sur 5 000 bracelets à apporter par la mission 13 (recette V1) ; WP20 cycle 9 approuvé.",
+      "pass_fail": "pass",
       "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
-      "verified_at": "2026-10-15T16:02:00Z",
+      "verified_at": "2026-10-15T16:52:00Z",
       "notes": "Échec : exigence mesurable non prouvée (5 000 bracelets) et tranche du préchargement non exercée ; aucun point ouvert ne la consigne."
     },
     {
