@@ -1,7 +1,7 @@
 # Diagramme de classes — modèle du domaine
 
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
-> `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0016 (missions 1 à 4, état du
+> `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0019 (missions 1 à 4, état du
 > 15/10/2026 ; mission 4 approuvée, acceptation et fusion en attente, schéma lu dans sa lane `kitty/mission-bracelets-nfc-01M4TD3W-lane-t`). Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >

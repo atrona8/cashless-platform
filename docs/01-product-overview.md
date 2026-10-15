@@ -57,7 +57,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
 - Statut : 🚧 implémentée et approuvée le 15/10/2026 (20/20 WP relus, WP20 au cycle 2) ; acceptation et fusion en attente.
   Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
-  sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0016` ; 27 opérations
+  sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0019` ; 27 opérations
   d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
   activation, caution, restitution, remplacement, espèces dues, remise en stock, perte, liste noire, rattachement par
   code, consultation anonyme) ; contrôle quotidien des mots de passe. Limites : service de clés, identité du terminal

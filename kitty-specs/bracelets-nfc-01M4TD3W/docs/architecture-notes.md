@@ -1,6 +1,6 @@
 # Notes d'architecture — mission bracelets-nfc-01M4TD3W
 
-> État : **approuvée** (20 lots relus, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le code de la lane
+> État : **approuvée** (20 lots relus ; WP20 approuvé au cycle 8 de relecture, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le code de la lane
 > `kitty/mission-bracelets-nfc-01M4TD3W-lane-t`.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
@@ -28,8 +28,14 @@
   (rôle `PERSONALIZER`, actions à deux des clés), `0012` (travaux de clé, comptes rendus du contrôle), `0013` (fonctions
   d'appui), **et trois de plus que prévu** : `0014` (prise d'un travail limitée à des prestataires), `0015`
   (`open_event_wallet`, ouverture d'un portefeuille au guichet), `0016` (`consume_tap_for_claim`, lecture consommée par
-  la confirmation d'un rattachement). `post-roles.sql` : quatre rôles de base de plus, droits colonne par colonne, et
-  retrait à `cashless_app` de la lecture des chiffrés.
+  la confirmation d'un rattachement) ; puis, après les relectures de WP20 : `0017` (sortie de liste noire liée à une demande
+  `REINSTATE_MEDIA` approuvée de l'épisode en cours, ADR-94), `0018` (déclencheurs d'historique en `SECURITY DEFINER`),
+  `0019` (`register_personalized_media` et `associate_claim_code` en `SECURITY DEFINER`, contrôles de prestataire refaits
+  sans RLS, `search_path = public, pg_temp`). `post-roles.sql` : quatre rôles de base de plus, droits colonne par colonne, et
+  retrait à `cashless_app` de la lecture des chiffrés ; puis retrait des écritures directes sur les historiques, les tables
+  de règles de passage, `media_assignment`, `device_config_served`, et de tout `INSERT`/`UPDATE` de `cashless_perso` sur
+  `media` (la personnalisation n'écrit plus que par fonctions). `migrate.ts` applique `roles.sql` et `post-roles.sql` dans
+  une seule transaction. Variable `TRUST_PROXY_HOPS` obligatoire en production (ADR-95).
 - Contrat : **27 opérations ajoutées sur 24 chemins** (clés et travaux de clé, lots et codes, bracelets au
   back-office, liste noire, perte, poste de personnalisation, remise en stock) ; 12 opérations existantes reçoivent
   `x-process` ; `lookupBalanceByClaimCode` réduite (décision n° 11). Types TypeScript et Dart régénérés.
@@ -48,19 +54,26 @@
 | Rôle dédié `PERSONALIZER` (ADR-85) | Moindre privilège sur l'opération la plus sensible | `OPERATOR_ADMIN` sur un poste d'atelier |
 | Pas de compte de caisse avant la mission des caisses : espèces → `409` (ADR-89) | Aucun argent liquide sans session de caisse | Créer un compte de caisse ici |
 | Rattachement : consultation réduite, lecture consommée par la demande (0016), activation depuis l'app (ADR-90) | Le contrat demandait plus que la base ne rend ; `consume_tap` exige une écriture | Garder le contrat d'origine |
-| Guichet de retour sans enchaînement : `settle_balance`, `refund_deposit_by` → `422` (ADR-91, **proposée**) | Le plan renvoie l'enchaînement à la mission 9 ; `openapi.yaml` le décrit | Servir l'enchaînement maintenant |
+| Guichet de retour sans enchaînement : `settle_balance`, `refund_deposit_by` → `422` provisoire (ADR-91, acceptée le 15/10/2026 : la mission 9 sert l'enchaînement) ; jeton sur place au-delà de `cash_refund_single_max`, conforme à §8.5 et ADR-53 | Le plan renvoie l'enchaînement à la mission 9 ; `openapi.yaml` le décrit | Réduire le contrat |
+| Écritures sensibles uniquement par fonctions `SECURITY DEFINER` qui refont leurs contrôles de prestataire (ADR-94, cycles 3 à 8 de WP20) | Chaque relecture a trouvé un contournement par accès direct aux tables | Politiques RLS restrictives sur les accès directs (essayé au cycle 6, contourné) |
+| Remise en stock par une route dédiée `reassignPoolMedia` (ADR-93) | Opération distincte de la restitution | La garder dans `releaseMedia` |
 | Contrôle quotidien : alerte d'audit et code de sortie, pas d'anomalie (ADR-92) | La liste des sortes d'anomalie est fermée (§12.2) | Nouvelle sorte d'anomalie |
 | Les fonctions de la base font les règles | §2.2 ; le schéma de référence les fournit déjà | Règles réécrites dans l'API |
 
 ## Dettes de sécurité ouvertes par cette mission
-Consignées dans `docs/POINTS_OUVERTS.md` (lane t) et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-92) :
+Consignées dans `docs/POINTS_OUVERTS.md` (lane t) et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-97) :
 - **Gardées par le refus de démarrer en production (et bloquant la production)** : OP-N41 (faux service de clés), OP-N42 (faux terminal, requêtes
   non signées ; mission 5), OP-N43 (faux festivalier ; mission 10).
 - **Limites acceptées** : OP-N44 (`EXECUTE` hérité de `PUBLIC` par les rôles des processus des clés), OP-N50 (lecture
   liée à une demande encore utilisable par `consume_tap`, test pgTAP qui fige la limite).
-- **Bloquent la production** : OP-N45 (aiguillage par chemin devant les processus), OP-N49 (pas de caisse), OP-N52
-  (valideur d'une sortie de liste noire non vérifié par la base), OP-N53 (limite par adresse sans `trust proxy`).
-- **À trancher par le porteur** : OP-N46, OP-N47, OP-N48, OP-N51 (ADR-91), OP-N54, OP-N55.
+- **Bloquent la production** : OP-N45 (aiguillage par chemin devant les processus), OP-N49 (pas de caisse), OP-N57
+  (`offline_snapshot`, mission 7), OP-N58 (`offline_policy_history`, mission 7), OP-N59 (`search_path` sans `pg_temp`
+  de 77 fonctions `SECURITY DEFINER`, mission 5), OP-N60 (droits de l'API sur `media_batch`, mission 11).
+- **Levés avant l'acceptation** : OP-N52 (valideur d'une sortie de liste noire, migrations 0017-0018 ; limite résiduelle
+  OP-N56 : une session de l'API compromise peut faire décider une demande au nom d'un vrai superviseur, mission 11),
+  OP-N53 (`TRUST_PROXY_HOPS`).
+- **Rattachés à une mission** : OP-N51 (enchaînement du guichet de retour, mission 9). **À trancher** : OP-N46, OP-N47,
+  OP-N48, OP-N54, OP-N55.
 
 ## Lien avec la synthèse globale
 Contribue à : `docs/04-architecture-diagram.md`, domaine « Bracelets NFC » (tables « Composants par mission » et
