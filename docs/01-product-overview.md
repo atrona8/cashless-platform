@@ -55,8 +55,15 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Bracelets NFC
 - Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
-- Statut : 🚧 plan finalisé le 13/10/2026 — bibliothèque de format en TypeScript et en Dart, quatre processus à droits séparés sur les
-  clés, rôles de base distincts, routes de terminal et de festivalier derrière un port d'identité (faux en test)
+- Statut : 🚧 implémentée et approuvée le 15/10/2026 (20/20 WP relus, WP20 au cycle 2) ; acceptation et fusion en attente.
+  Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
+  sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0016` ; 27 opérations
+  d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
+  activation, caution, restitution, remplacement, espèces dues, remise en stock, perte, liste noire, rattachement par
+  code, consultation anonyme) ; contrôle quotidien des mots de passe. Limites : service de clés, identité du terminal
+  et identité du festivalier sont des faux qui refusent la production (OP-N41 à OP-N43) ; caution en espèces et espèces
+  dues répondent `409` tant que la mission des caisses n'existe pas (ADR-89) ; le guichet de retour n'enchaîne pas les
+  étapes (ADR-91, à trancher)
 - Mission(s) associée(s) : `bracelets-nfc-01M4TD3W` (Bracelets NFC : format, clés, lots, cycle de vie)
 
 ### Terminaux et encaissement

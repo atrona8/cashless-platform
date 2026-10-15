@@ -65,6 +65,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Lots (kind, clé partagée ou dédiée, préchargement, caution, politique de réutilisation), cycle de vie. (§7.7)
 - Cycle de vie du bracelet, activation (`DESK`, `SELF_APP`, `FIRST_TOPUP`), code de rattachement imprimé, remplacement. (§7.8)
 - Caution en mode C (sur le solde) ou D (à part) ; ordre imposé au guichet de retour. (§7.9)
+  Le serveur enchaîne les étapes du guichet de retour (caution, crédits offerts, solde, restitution) : livré par la
+  mission 9, la mission 4 servant la restitution seule (décision du porteur du 15/10/2026, ADR-91, OP-N51).
 - Cadrage de la mission 4 (porteur, 13/10/2026) : la bibliothèque de format existe en TypeScript et en Dart dès la
   mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
   des terminaux venant en mission 5 et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1164" viewBox="0 0 2006 1164">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="185.0,236 185.0,884" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="960.0,236 960.0,884" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,884" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,310.88 1727.0,310.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,310.88 1707.6931836384117,321.4273618492925 1707.6931836384117,300.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="825.2" y="273.88" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,414.88 952.0,414.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,414.88 932.6931836384118,425.4273618492925 932.6931836384118,404.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="416.9" y="377.88" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,518.88 952.0,518.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,518.88 932.6931836384118,529.4273618492924 932.6931836384118,508.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="427.29999999999995" y="481.88" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="592.88" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="191.0,726.88 1727.0,726.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,726.88 1707.6931836384117,737.4273618492924 1707.6931836384117,716.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="783.6" y="689.88" width="352.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,830.88 1727.0,830.88" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1727.0,830.88 1707.6931836384117,841.4273618492924 1707.6931836384117,820.3326381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="794.0" y="793.88" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Contrôle quotidien des mots de passe</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Un passage par prestataire et par 24 h, sans anomalie</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">Contrôle quotidien</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Service de clés</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="960.0" y="292.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Échantillon de bracelets</text>
+<text x="34.0" y="313.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="572.5" y="396.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Déchiffrer la clé de données</text>
+<text x="34.0" y="417.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="572.5" y="500.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recalculer le mot de passe</text>
+<text x="34.0" y="521.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="214.0" y="625.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Comparer, effacer</text>
+<text x="34.0" y="625.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="960.0" y="708.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Compte rendu OK, MISMATCH, ERROR</text>
+<text x="34.0" y="729.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="812.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Audit des écarts (identifiant)</text>
+<text x="34.0" y="833.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="60" y="1021.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Avec --once : code de sortie 2 sur écart, 3 sur panne du service de clés (nouvel essai au passage suivant).</text>
+</g>
+</svg>

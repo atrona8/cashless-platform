@@ -1,42 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1164" viewBox="0 0 2006 1164">
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1176" viewBox="0 0 2006 1176">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(66,50)">
 <ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="185.0,236 185.0,780" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<ellipse cx="572.5" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="572.5,236 572.5,780" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<polyline points="960.0,236 960.0,780" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<polyline points="1347.5,236 1347.5,780" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="185.0,236 185.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="495.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="495.0,236 495.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="680.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="805.0,236 805.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="990.0" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="1115.0,236 1115.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1300.0" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="1425.0,236 1425.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="1735.0,236 1735.0,780" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="191.0,310.88 952.0,310.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,310.88 932.6931836384118,321.4273618492925 932.6931836384118,300.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="479.3" y="273.88" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="578.5,414.88 952.0,414.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,414.88 932.6931836384118,425.4273618492925 932.6931836384118,404.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="709.45" y="377.88" width="113.60000000000001" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="966.0,518.88 1727.0,518.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,518.88 1707.6931836384117,529.4273618492924 1707.6931836384117,508.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1223.1" y="481.88" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="1197.5" y="592.88" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
-<polyline points="1353.5,726.88 1727.0,726.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,726.88 1707.6931836384117,737.4273618492924 1707.6931836384117,716.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1422.05" y="689.88" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1735.0,236 1735.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,310.88 797.0,310.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="797.0,310.88 777.6931836384118,321.4273618492925 777.6931836384118,300.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="401.8" y="273.88" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="501.0,414.88 797.0,414.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="797.0,414.88 777.6931836384118,425.4273618492925 777.6931836384118,404.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="593.2" y="377.88" width="113.60000000000001" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="811.0,518.88 1727.0,518.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,518.88 1707.6931836384117,529.4273618492924 1707.6931836384117,508.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1166.4" y="481.88" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="965.0" y="592.88" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="1121.0,726.88 1727.0,726.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,726.88 1707.6931836384117,737.4273618492924 1707.6931836384117,716.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1321.4" y="689.88" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1121.0,830.88 1417.0,830.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1417.0,830.88 1397.6931836384117,841.4273618492924 1397.6931836384117,820.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1171.6" y="793.88" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1121.0,934.88 1727.0,934.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,934.88 1707.6931836384117,945.4273618492924 1707.6931836384117,924.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1264.2" y="897.88" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Création d’une clé, à deux</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Aucun service permanent ne peut créer une clé</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Admin prestataire</text>
-<text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Second admin</text>
-<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
-<text x="1347.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Commande d’admin.</text>
+<text x="495.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Second admin</text>
+<text x="805.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1115.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Commande d’admin.</text>
+<text x="1425.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Service de clés</text>
 <text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
-<text x="572.5" y="292.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demander une clé</text>
+<text x="495.0" y="292.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demander une clé</text>
 <text x="34.0" y="313.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="766.25" y="396.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver</text>
+<text x="650.0" y="396.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver</text>
 <text x="34.0" y="417.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
-<text x="1347.5" y="500.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Travail : créer la clé</text>
+<text x="1270.0" y="500.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Travail CREATE_KEY</text>
 <text x="34.0" y="521.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
-<text x="1347.5" y="625.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lancée par l’exploitant</text>
+<text x="1115.0" y="625.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lancée par l’exploitant</text>
 <text x="34.0" y="625.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
-<text x="1541.25" y="708.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Clé créée, utilisable</text>
+<text x="1425.0" y="708.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Prendre le travail</text>
 <text x="34.0" y="729.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="60" y="1021.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">La première clé de données est créée par la première session de personnalisation.</text>
+<text x="1270.0" y="812.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Créer la clé HMAC</text>
+<text x="34.0" y="833.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1425.0" y="916.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Clé enregistrée, travail fini</text>
+<text x="34.0" y="937.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="60" y="1033.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Référence notée avant l’écriture : une reprise ne crée pas de seconde clé. Première clé de données : première personnalisation.</text>
 </g>
 </svg>

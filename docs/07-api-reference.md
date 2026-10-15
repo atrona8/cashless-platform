@@ -3,14 +3,16 @@
 > Statut de complétude : voir `06-docs-status.md`. Ce document ne remplace
 > jamais le contrat OpenAPI (le contrat technique exact, schéma par schéma) : il
 > l'accompagne et ne duplique aucun schéma de requête ou de réponse.
-> Dernière mise à jour : initialisation du 07/10/2026. L'API n'est pas encore implémentée : ce document décrit le contrat.
+> Dernière mise à jour : 15/10/2026 (routes de la mission « Bracelets NFC », approuvée, acceptation et fusion en
+> attente). Ce document décrit le contrat ; le tableau « Détail par mission » dit ce qui est réellement servi.
 
 ## Lien vers la spécification technique
 
-- Spécification OpenAPI : [`packages/contracts/openapi.yaml`](../packages/contracts/openapi.yaml) (OpenAPI 3.1, 107 chemins ; normative, SPECIFICATION §0.2).
+- Spécification OpenAPI : [`packages/contracts/openapi.yaml`](../packages/contracts/openapi.yaml) (OpenAPI 3.1 ; normative, SPECIFICATION §0.2). 107 chemins et 132 opérations dans `main` ; 131 chemins et 159 opérations
+  dans la lane de la mission « Bracelets NFC » (`kitty/mission-bracelets-nfc-01M4TD3W-lane-t`), à la fusion.
 - Généré par : non généré, écrit à la main ; c'est la **source** des types TypeScript et Dart, qui seront générés depuis lui (§2.2).
 - Opérations V2 (`x-release: V2`) : présentes dans le contrat, à ne pas implémenter en V1.
-- Manque au contrat (à ajouter par les missions) : endpoints du back-office (organisateurs, événements, participations, catalogues, lots, politiques hors ligne, clôture, versements, relevés, exports), en-tête `Accept-Language` commun (§10.1, §10.4).
+- Manque au contrat (à ajouter par les missions) : endpoints du back-office (catalogues, politiques hors ligne, clôture, versements, relevés, exports), en-tête `Accept-Language` commun (§10.1, §10.4).
 
 ## Vue d'ensemble par domaine
 
@@ -20,9 +22,10 @@
 - Section du contrat : chemins `/device*`, `/devices/{device_id}/…`.
 
 ### Bracelets
-- À quoi ça sert : obtenir le mot de passe d'un bracelet, enregistrer une lecture, activer, consulter, gérer caution, restitution, remplacement et rendu des espèces dues.
-- Endpoints principaux : `POST /media/auth-keys`, `POST /taps`, `POST /media/activations`, `POST /media/{media_id}/release`, `POST /media/{media_id}/replace`, `POST /media/{media_id}/cash-due-refunds`.
-- Section du contrat : chemins `/media*`, `/taps`.
+- À quoi ça sert : obtenir le mot de passe d'un bracelet, enregistrer une lecture, activer, consulter, gérer caution, restitution, remplacement, remise en stock et rendu des espèces dues ; au back-office, gérer les clés de bracelet (à deux), les lots et leurs codes imprimés, les bracelets (liste noire, perte) ; au poste d'atelier, personnaliser.
+- Endpoints principaux : terrain `POST /media/auth-keys`, `POST /taps`, `POST /media/activations`, `POST /media/{media_id}/release`, `POST /media/{media_id}/replace`, `POST /media/{media_id}/reassignment`, `POST /media/{media_id}/cash-due-refunds`, `POST /media/claims/confirmations` ; back-office `/operators/{operator_id}/tag-keys…`, `/tag-key-jobs…`, `/tag-key-check-runs`, `/media-batches…`, `/media…` ; poste `/operators/{operator_id}/media-personalizations…`.
+- Processus : chaque opération porte `x-process` (`public`, `tag-keys`, `personalization`) ; seule `POST /media/auth-keys` est servie par le processus des clés, et les deux routes du poste par la personnalisation. L'aiguillage par chemin reste à déployer (OP-N45).
+- Section du contrat : chemins `/media*`, `/taps`, `/operators/{operator_id}/tag-key*`, `/operators/{operator_id}/media*`.
 
 ### Paiements et QR commerçant
 - À quoi ça sert : encaisser par bracelet ou QR client, consulter, annuler ; créer et payer un QR commerçant.
@@ -93,7 +96,7 @@ POST /v1/approval-requests/{approval_request_id}/approve  → demande EXECUTED (
 | `fondations-grand-livre-01M4AY8M` (✅ mergée le 08/10/2026) | Aucun endpoint métier ; `GET /v1/health` seulement. Conventions transverses mises en œuvre : problem+json (SQLSTATE → `ProblemCode`), `Idempotency-Key` / `Idempotency-Replayed`, `X-Request-Id`, `Accept-Language` | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/sequence.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/sequence.md) |
 | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée)) | `/approval-requests` (4 routes, implémentées) ; 7 routes ajoutées au contrat et implémentées : `/operators/{operator_id}/users…`, `role-assignments`, `/platform-admins` (sans `Idempotency-Key`, ADR-78/contradiction C-05) ; clés d'idempotence conservées 30 jours (ADR-79) ; `Authorization: Bearer` (OIDC) sur toutes les routes sauf la santé ; `X-Approval-Token` (formule `act_hash` ajoutée à la description) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/sequence.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/sequence.md) |
 | `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte)) | 48 opérations back-office sur 28 chemins, ajoutées au contrat et toutes servies : plateforme (`/jurisdiction-profiles`, `/operators`, contrats et règles de plateforme, `/platform/config-versions`) et prestataire (`/operators/{operator_id}/…` : organisateurs, commerçants, contrats, versions de configuration, événements, configuration résolue, conditions et passages de statut, participations, points de vente, règles de frais) ; `ApprovalAction` étendue de huit actions | [`kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/sequence.md`](../kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/sequence.md) |
-| `bracelets-nfc-01M4TD3W` (🚧 plan finalisé le 13/10/2026) | Routes de terminal et de festivalier déjà au contrat, à servir : `/media/auth-keys` (processus des clés), `/taps`, `/media/activations`, `/media/{media_id}` et ses actions (caution, rendu, restitution, remplacement, espèces dues), rattachement par code, confirmation au guichet, consultation anonyme. Environ 25 opérations à ajouter : `/operators/{operator_id}/tag-keys`, `/media-batches`, `/media`, `/media-personalizations` ; rôle `PERSONALIZER` ; `ApprovalAction` étendue de quatre actions | [`kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md`](../kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md) |
+| `bracelets-nfc-01M4TD3W` (🚧 approuvée le 15/10/2026, 20/20 WP ; acceptation et fusion en attente) | **39 opérations servies** (toutes avec `x-process`). 12 déjà au contrat : `/media/auth-keys` (processus des clés), `/taps`, `/media/activations`, `GET /media/{media_id}`, caution et rendu de caution, restitution, remplacement, espèces dues, `POST /me/media`, `/media/claims/confirmations`, `/public/balance-lookups` (réponse réduite : devise, solde, statut, 10 derniers mouvements, décision n° 11). **27 ajoutées sur 24 chemins** : clés et travaux de clé (8, `/operators/{operator_id}/tag-keys…`, `/tag-key-jobs…`, `/tag-key-check-runs`), lots et codes (10, `/media-batches…`), bracelets au back-office (6, `/media…` : liste, fiche, liste noire, demande de sortie, perte, retrouvé), poste de personnalisation (2), remise en stock `POST /media/{media_id}/reassignment` (1, non prévue au plan). Rôle `PERSONALIZER` ; `ApprovalAction` étendue de trois actions (`TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`) ; la sortie de liste noire réutilise `REINSTATE_MEDIA`. Refus propres à la mission : `409` sur la caution en espèces et les espèces dues sans caisse (ADR-89) ; `422 release.no_chaining` sur `settle_balance` et `refund_deposit_by` (ADR-91, à trancher). Non servie : `POST /me/media/{media_id}/report-lost` (déclaration de perte par le festivalier) | [`kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md`](../kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md) | [`kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md`](../kitty-specs/bracelets-nfc-01M4TD3W/docs/sequence.md) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

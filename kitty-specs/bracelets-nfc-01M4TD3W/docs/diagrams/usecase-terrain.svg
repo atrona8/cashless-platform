@@ -1,41 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1174" viewBox="0 0 1960 1174">
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1394" viewBox="0 0 1960 1394">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(20,50)">
-<ellipse cx="275.0" cy="306.66666666666663" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="580.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="853.3333333333333" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<rect x="1010" y="210.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<rect x="1010" y="374.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="1010" y="538.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="1010" y="702.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="1010" y="866.0" width="430" height="84" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
-<polyline points="448,306.66666666666663 1000,252.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,252.0 981.8266311322803,264.3987363871404 979.7477099773183,243.40670326142595" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,580.0 1000,416.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,416.0 984.4965899669296,431.60910879411415 978.488859661356,411.38796776559815" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,580.0 1000,580.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,580.0 980.6931836384118,590.5473618492924 980.6931836384118,569.4526381507076" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,580.0 1000,744.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,744.0 978.488859661356,748.6120322344019 984.4965899669296,728.3908912058859" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,853.3333333333333 1000,908.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,908.0 979.7477099773183,916.593296738574 981.8266311322803,895.6012636128596" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="1446,416.0 1510,416.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1510,416.0 1510,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1510,252.0 1450,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,252.0 1469.3068163615883,241.45263815070754 1469.3068163615883,262.5473618492925" fill="#64748B" stroke="#64748B" stroke-width="1"/>
-<polyline points="1446,580.0 1605,580.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1605,580.0 1605,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1605,252.0 1450,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,252.0 1469.3068163615883,241.45263815070754 1469.3068163615883,262.5473618492925" fill="#64748B" stroke="#64748B" stroke-width="1"/>
-<polyline points="1446,744.0 1700,744.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1700,744.0 1700,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1700,252.0 1450,252.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,252.0 1469.3068163615883,241.45263815070754 1469.3068163615883,262.5473618492925" fill="#64748B" stroke="#64748B" stroke-width="1"/>
+<ellipse cx="275.0" cy="343.33333333333337" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="690.0000000000001" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="1036.6666666666667" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="185.77777777777777" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="301.3333333333333" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="416.88888888888886" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="532.4444444444446" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="648.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="763.5555555555557" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="879.1111111111112" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="994.6666666666667" width="430" height="84" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
+<rect x="1010" y="1110.2222222222222" width="430" height="84" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
+<polyline points="448,343.33333333333337 1000,227.77777777777777" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,227.77777777777777 983.2639472534879,242.05729242169917 978.9416748599294,221.41012968016193" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,343.3333333333333" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,343.3333333333333 989.2595484060625,362.53340363420165 978.040607173278,344.66939720969077" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,458.88888888888886" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,458.88888888888886 986.2644345433213,476.0741803203804 978.1177182062859,456.616061684615" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,574.4444444444446" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,574.4444444444446 983.2639472534879,588.723959088366 978.9416748599294,568.0767963468287" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,690.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,690.0 980.6931836384118,700.5473618492924 980.6931836384118,679.4526381507076" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,805.5555555555557" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,805.5555555555557 978.9416748599294,811.9232036531715 983.2639472534879,791.2760409116343" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,690.0000000000001 1000,921.1111111111112" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,921.1111111111112 978.1177182062859,923.3839383153851 986.2644345433213,903.9258196796197" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,1036.6666666666667 1000,1036.6666666666667" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,1036.6666666666667 980.6931836384118,1047.2140285159592 980.6931836384118,1026.1193048173743" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,1036.6666666666667 1000,1152.2222222222222" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,1152.2222222222222 978.9416748599294,1158.589870319838 983.2639472534879,1137.9427075783008" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="1446,343.3333333333333 1510,343.3333333333333" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1510,343.3333333333333 1510,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1510,227.77777777777777 1450,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,227.77777777777777 1469.3068163615883,217.23041592848531 1469.3068163615883,238.32513962707023" fill="#64748B" stroke="#64748B" stroke-width="1"/>
+<polyline points="1446,458.88888888888886 1605,458.88888888888886" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1605,458.88888888888886 1605,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1605,227.77777777777777 1450,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,227.77777777777777 1469.3068163615883,217.23041592848531 1469.3068163615883,238.32513962707023" fill="#64748B" stroke="#64748B" stroke-width="1"/>
+<polyline points="1446,574.4444444444446 1700,574.4444444444446" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1700,574.4444444444446 1700,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1700,227.77777777777777 1450,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,227.77777777777777 1469.3068163615883,217.23041592848531 1469.3068163615883,238.32513962707023" fill="#64748B" stroke="#64748B" stroke-width="1"/>
+<polyline points="1446,921.1111111111112 1795,921.1111111111112" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1795,921.1111111111112 1795,227.77777777777771" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1795,227.77777777777777 1450,227.77777777777777" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,227.77777777777777 1469.3068163615883,217.23041592848531 1469.3068163615883,238.32513962707023" fill="#64748B" stroke="#64748B" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Bracelets NFC — terrain</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Ce que font le terminal, le guichet et le festivalier</text>
 <text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
 <text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
-<text x="275.0" y="311.6166666666666" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
-<text x="275.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Agent de guichet</text>
-<text x="275.0" y="858.2833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
-<text x="1225.0" y="256.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Lire un bracelet</text>
-<text x="1225.0" y="420.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Activer et cautionner</text>
-<text x="1225.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Rendre ou remplacer</text>
-<text x="1225.0" y="748.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Confirmer au guichet</text>
-<text x="1225.0" y="912.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Rattacher par code</text>
+<text x="275.0" y="348.28333333333336" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="275.0" y="694.9500000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Agent de guichet</text>
+<text x="275.0" y="1041.6166666666668" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
+<text x="1225.0" y="232.72777777777776" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Lire un bracelet</text>
+<text x="1225.0" y="348.2833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Activer et cautionner</text>
+<text x="1225.0" y="463.83888888888885" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Rendre ou remplacer</text>
+<text x="1225.0" y="579.3944444444446" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Rendre les espèces dues</text>
+<text x="1225.0" y="694.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Remettre en stock</text>
+<text x="1225.0" y="810.5055555555557" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Déclarer perdu, retrouvé</text>
+<text x="1225.0" y="926.0611111111112" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Confirmer au guichet</text>
+<text x="1225.0" y="1041.6166666666668" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Rattacher par code</text>
+<text x="1225.0" y="1157.1722222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Consulter un solde par code</text>
 <text x="1645.0" y="145.05" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="middle">commence par une lecture</text>
-<text x="60" y="1031.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Un bracelet déjà approvisionné ne se rattache par code qu&#x27;après confirmation au guichet, bracelet en main.</text>
+<text x="60" y="1251.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Bracelet approvisionné : rattachement seulement après confirmation au guichet. Espèces : refus (409) tant qu&#x27;aucune caisse n&#x27;est ouverte.</text>
 </g>
 </svg>

@@ -1,44 +1,71 @@
 # Notes d'architecture — mission bracelets-nfc-01M4TD3W
 
-> État : **plan finalisé** (2026-10-13).
+> État : **approuvée** (20 lots relus, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le code de la lane
+> `kitty/mission-bracelets-nfc-01M4TD3W-lane-t`.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
-- Bibliothèque de format `packages/tag-format` : workspace TypeScript `@cashless/tag-format` et paquet Dart
-  `cashless_tag_format`, prouvés sur les mêmes vecteurs du kit.
-- API centrale : un seul code, **quatre processus** (API publique, clés de bracelet, personnalisation, contrôle
-  quotidien) et une **commande d'administration des clés** lancée à la demande ; module `media/` (clés, lots,
-  personnalisation, lecture, cycle de vie, rattachement, liste noire, contrôle quotidien).
-- Ports avec faux pour les tests : service de clés (découpé par droit), identité du terminal, identité du festivalier ;
-  garde qui refuse le démarrage en production avec un faux.
-- Base centrale : migrations `0010` (codes et demandes de rattachement, S19), `0011` (rôle `PERSONALIZER`, quatre
-  actions à deux), `0012` (travaux de clé, comptes rendus du contrôle), `0013` (fonctions d'appui) ; `post-roles.sql` :
-  quatre rôles de base de plus, et retrait à `cashless_app` de la lecture des secrets chiffrés.
-- Contrat : environ 25 opérations ajoutées (back-office des clés, des lots, des bracelets ; poste de
-  personnalisation) ; types TypeScript et Dart générés.
+- Bibliothèque de format `packages/tag-format` : workspace TypeScript `@cashless/tag-format` (format B, message de
+  dérivation, PWD/PACK, AAD, enveloppes pour le terminal et pour le poste, codes imprimés) et paquet Dart
+  `cashless_tag_format` (`packages/tag-format/dart`), prouvés sur les mêmes vecteurs du kit et l'un contre l'autre.
+- API centrale : un seul code, **quatre processus** et une **commande d'administration des clés** (ADR-83) :
+
+  | Point d'entrée | Processus | Ports de clés | Rôle de base |
+  |---|---|---|---|
+  | `main.ts` | API publique | aucun | `cashless_app` |
+  | `main.tag-keys.ts` | Clés de bracelet (`POST /media/auth-keys`, rechiffrement) | `decrypt` | `cashless_tagkeys` |
+  | `main.personalization.ts` | Personnalisation (poste, nouvelle clé de données, retrait) | `mac`, `dataKey` | `cashless_perso` |
+  | `main.tag-check.ts` | Contrôle quotidien | `mac`, `decrypt` | `cashless_tagcheck` |
+  | `main.key-admin.ts` | Commande d'administration, à la demande | `keyAdmin` | `cashless_keyadmin` |
+
+  Module `apps/api/src/media/` : `keys`, `batches`, `personalization`, `auth-keys`, `taps`, `lifecycle` (activation,
+  caution, consultation, restitution, remplacement, espèces dues, perte), `claims`, `blacklist`, `daily-check`.
+  Chaque opération du contrat porte `x-process` ; un test lit ces 39 opérations et vérifie qu'aucune n'est servie par
+  un autre processus.
+- Ports avec faux pour les tests (`apps/api/src/kms/`, `device-identity/`, `customer-identity/`) : `MacPort`,
+  `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, `DeviceIdentityPort`, `CustomerIdentityPort` ; chaque faux refuse de
+  se construire en production et la garde de démarrage refuse un processus qui en porte un (ADR-88).
+- Base centrale : migrations `0010` (codes imprimés, demandes de rattachement, essais, consultation anonyme), `0011`
+  (rôle `PERSONALIZER`, actions à deux des clés), `0012` (travaux de clé, comptes rendus du contrôle), `0013` (fonctions
+  d'appui), **et trois de plus que prévu** : `0014` (prise d'un travail limitée à des prestataires), `0015`
+  (`open_event_wallet`, ouverture d'un portefeuille au guichet), `0016` (`consume_tap_for_claim`, lecture consommée par
+  la confirmation d'un rattachement). `post-roles.sql` : quatre rôles de base de plus, droits colonne par colonne, et
+  retrait à `cashless_app` de la lecture des chiffrés.
+- Contrat : **27 opérations ajoutées sur 24 chemins** (clés et travaux de clé, lots et codes, bracelets au
+  back-office, liste noire, perte, poste de personnalisation, remise en stock) ; 12 opérations existantes reçoivent
+  `x-process` ; `lookupBalanceByClaimCode` réduite (décision n° 11). Types TypeScript et Dart régénérés.
 
 ## Décisions d'architecture prises dans cette mission
 | Décision | Justification | Alternative envisagée |
 |---|---|---|
-| Quatre processus pour un seul code | Droits séparés sur les clés (§3.2, §13.2) : une faille de l'API publique n'atteint aucune clé | Un seul processus avec séparation logique (écart de sécurité refusé) |
-| Rôles de base distincts ; l'API publique ne lit plus les secrets chiffrés | Seconde barrière, indépendante du service de clés | Rôle applicatif unique |
-| Commande d'administration séparée pour créer et désactiver une clé | Aucun service permanent ne peut détruire une clé | Droit donné au processus de personnalisation |
-| Travaux de clé en table (`tag_key_job`) | Une action approuvée dans l'API publique s'exécute là où le droit existe | Appel interne entre processus |
-| Mot de passe jamais transmis en clair, y compris au poste | Règle du contrat pour le terminal, étendue au poste | Réponse en clair sous TLS (écart de sécurité refusé) |
-| Clé de données en mémoire 5 minutes au plus | Le contrat prévoit un cache ; durée bornée et effacement | Aucun cache ; cache à vie |
-| Une clé de données par session de personnalisation | La personnalisation n'a pas le droit de déchiffrer (§3.2) : aucun droit ajouté | Lui donner ce droit ; faire sceller par le processus des clés |
-| Empreinte à clé des codes de rattachement et de confirmation | Un code court se retrouve par essais si la base fuit | Empreinte simple |
-| Rôle dédié `PERSONALIZER` | Moindre privilège sur l'opération la plus sensible | `OPERATOR_ADMIN` sur un poste d'atelier |
+| Quatre processus pour un seul code (ADR-83) | Droits séparés sur les clés (§3.2, §13.2) : une faille de l'API publique n'atteint aucune clé | Un seul processus avec séparation logique (écart de sécurité refusé) |
+| Rôles de base distincts ; l'API publique ne lit plus les chiffrés (ADR-84) | Seconde barrière, indépendante du service de clés | Rôle applicatif unique |
+| Commande d'administration séparée pour créer et désactiver une clé (ADR-83) | Aucun service permanent ne peut détruire une clé | Droit donné au processus de personnalisation |
+| Travaux de clé en table (`tag_key_job`), sans aucun secret (contrainte en base) | Une action approuvée dans l'API publique s'exécute là où le droit existe | Appel interne entre processus |
+| Mot de passe jamais transmis en clair, y compris au poste (ADR-86) | Règle du contrat pour le terminal, étendue au poste | Réponse en clair sous TLS (écart de sécurité refusé) |
+| Clé de données en mémoire 5 minutes au plus, tampons mis à zéro (ADR-86) | Le contrat prévoit un cache ; durée bornée et effacement | Aucun cache ; cache à vie |
+| Une clé de données par session de personnalisation (ADR-86, décision n° 7) | La personnalisation n'a pas le droit de déchiffrer (§3.2) | Lui donner ce droit ; faire sceller par le processus des clés |
+| Empreinte à clé des codes imprimés et de confirmation ; consultation anonyme par une fonction `SECURITY DEFINER` dédiée (ADR-87) | Un code court se retrouve par essais si la base fuit | Empreinte simple |
+| Rôle dédié `PERSONALIZER` (ADR-85) | Moindre privilège sur l'opération la plus sensible | `OPERATOR_ADMIN` sur un poste d'atelier |
+| Pas de compte de caisse avant la mission des caisses : espèces → `409` (ADR-89) | Aucun argent liquide sans session de caisse | Créer un compte de caisse ici |
+| Rattachement : consultation réduite, lecture consommée par la demande (0016), activation depuis l'app (ADR-90) | Le contrat demandait plus que la base ne rend ; `consume_tap` exige une écriture | Garder le contrat d'origine |
+| Guichet de retour sans enchaînement : `settle_balance`, `refund_deposit_by` → `422` (ADR-91, **proposée**) | Le plan renvoie l'enchaînement à la mission 9 ; `openapi.yaml` le décrit | Servir l'enchaînement maintenant |
+| Contrôle quotidien : alerte d'audit et code de sortie, pas d'anomalie (ADR-92) | La liste des sortes d'anomalie est fermée (§12.2) | Nouvelle sorte d'anomalie |
 | Les fonctions de la base font les règles | §2.2 ; le schéma de référence les fournit déjà | Règles réécrites dans l'API |
 
 ## Dettes de sécurité ouvertes par cette mission
-Faux service de clés, faux terminal, faux festivalier, requêtes de terminal non signées : chacune a sa garde (refus de
-démarrer en production), sa mission de levée et son entrée à créer dans `docs/POINTS_OUVERTS.md` et
-`docs/DECISIONS_ADR.md` (contrainte C-012 de la spec).
+Consignées dans `docs/POINTS_OUVERTS.md` (lane t) et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-92) :
+- **Gardées par le refus de démarrer en production (et bloquant la production)** : OP-N41 (faux service de clés), OP-N42 (faux terminal, requêtes
+  non signées ; mission 5), OP-N43 (faux festivalier ; mission 10).
+- **Limites acceptées** : OP-N44 (`EXECUTE` hérité de `PUBLIC` par les rôles des processus des clés), OP-N50 (lecture
+  liée à une demande encore utilisable par `consume_tap`, test pgTAP qui fige la limite).
+- **Bloquent la production** : OP-N45 (aiguillage par chemin devant les processus), OP-N49 (pas de caisse), OP-N52
+  (valideur d'une sortie de liste noire non vérifié par la base), OP-N53 (limite par adresse sans `trust proxy`).
+- **À trancher par le porteur** : OP-N46, OP-N47, OP-N48, OP-N51 (ADR-91), OP-N54, OP-N55.
 
 ## Lien avec la synthèse globale
-Contribue à : `docs/04-architecture-diagram.md`, tables « Composants par mission » et « Décisions d'architecture
-notables ».
+Contribue à : `docs/04-architecture-diagram.md`, domaine « Bracelets NFC » (tables « Composants par mission » et
+« Décisions d'architecture notables »).
 
 ## Nécessaire pour cette mission ? Oui — nouveaux processus, nouveaux rôles de base, nouvelle bibliothèque en deux langages.
-## Complet ? Oui au stade du plan.
-## Validé par : Agent, par délégation du porteur (13/10/2026)
+## Complet ? Oui, recalé sur l'implémentation. Reste à décrire le déploiement (aiguillage des routes vers les processus, OP-N45) quand l'exploitation l'aura arrêté.
+## Validé par : Agent, par délégation du porteur (13/10/2026 ; recalage du 15/10/2026)

@@ -26,9 +26,9 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 
-def usecase(name,title,sub,actors,ucs,links,includes=(),note=None):
+def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
     d=D(); d.text(60,30,1800,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left')
-    ah,uh=96,84; top=170; H=820
+    ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
     ax,aw,ux,uw=110,330,1010,430
@@ -41,7 +41,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None):
         y1,y2=uy[u]+uh/2,uy[v]+uh/2
         d.arrow(ux+uw+6,y1,xr,y1,'#64748B',True,'line'); d.arrow(xr,y1,xr,y2,'#64748B',True,'line'); d.arrow(xr,y2,ux+uw+10,y2,'#64748B',True)
     if includes: d.text(ux+uw+40,top-44,330,30,includes[0][2],18,'#64748B')
-    if note: d.text(60,1010,1800,34,note,20,'#64748B','left')
+    if note: d.text(60,top+H+20,1800,34,note,20,'#64748B','left')
     return d.save(name)
 
 def sequence(name,title,sub,parts,msgs,note=None):
@@ -56,7 +56,7 @@ def sequence(name,title,sub,parts,msgs,note=None):
         y=top+76+step*(i+0.72); a,b,lab=m[0],m[1],m[2]; style=m[3] if len(m)>3 else 'call'
         col={'call':'#0047CC','ret':'#047857','bad':'#DC2626'}[style]
         if a==b:
-            d.box(cx[a]-150,y-30,300,56,lab,'warn' if style=='bad' else 'decision','rectangle',19)
+            d.box(max(cx[a]-150,64),y-30,300,56,lab,'warn' if style=='bad' else 'decision','rectangle',19)
         else:
             x1,x2=cx[a],cx[b]; s=1 if x2>x1 else -1
             d.arrow(x1+s*6,y,x2-s*8,y,col,style=='ret',width=2)
@@ -70,33 +70,39 @@ def sequence(name,title,sub,parts,msgs,note=None):
 files=[]
 files.append(usecase('usecase-administration','Bracelets NFC — administration','Qui prépare les bracelets et garde les clés',
  ['Admin prestataire','Exploitant','Admin organisateur','Agent de personnalisation','Superviseur'],
- [('Gérer les clés (à deux)','primary'),('Contrôler les clés','neutral'),('Gérer un lot','neutral'),('Commander les codes','neutral'),('Personnaliser un bracelet','accent'),('Sortir de liste noire (à deux)','primary')],
- [('Admin prestataire','Gérer les clés (à deux)'),('Exploitant','Gérer les clés (à deux)'),('Exploitant','Contrôler les clés'),('Admin organisateur','Gérer un lot'),('Admin organisateur','Commander les codes'),('Agent de personnalisation','Personnaliser un bracelet'),('Superviseur','Sortir de liste noire (à deux)')],
- note="En bleu : action validée par une seconde personne. En orange : seule opération où un mot de passe de bracelet est remis (chiffré) à un poste."))
+ [('Gérer les clés (à deux)','primary'),('Contrôler les clés','neutral'),('Gérer un lot','neutral'),('Commander les codes','neutral'),('Personnaliser un bracelet','accent'),('Mettre en liste noire','neutral'),('Sortir de liste noire (à deux)','primary')],
+ [('Admin prestataire','Gérer les clés (à deux)'),('Admin prestataire','Contrôler les clés'),('Exploitant','Gérer les clés (à deux)'),('Exploitant','Contrôler les clés'),('Admin organisateur','Gérer un lot'),('Admin organisateur','Commander les codes'),('Agent de personnalisation','Personnaliser un bracelet'),('Superviseur','Mettre en liste noire'),('Superviseur','Sortir de liste noire (à deux)')],
+ note="En bleu : action validée par une seconde personne. En orange : seule opération où un mot de passe de bracelet est remis (chiffré) à un poste.",H=900))
 files.append(usecase('usecase-terrain','Bracelets NFC — terrain','Ce que font le terminal, le guichet et le festivalier',
  ['Terminal','Agent de guichet','Festivalier'],
- [('Lire un bracelet','primary'),('Activer et cautionner','neutral'),('Rendre ou remplacer','neutral'),('Confirmer au guichet','neutral'),('Rattacher par code','second')],
- [('Terminal','Lire un bracelet'),('Agent de guichet','Activer et cautionner'),('Agent de guichet','Rendre ou remplacer'),('Agent de guichet','Confirmer au guichet'),('Festivalier','Rattacher par code')],
- includes=[('Activer et cautionner','Lire un bracelet','commence par une lecture'),('Rendre ou remplacer','Lire un bracelet',''),('Confirmer au guichet','Lire un bracelet','')],
- note="Un bracelet déjà approvisionné ne se rattache par code qu'après confirmation au guichet, bracelet en main."))
+ [('Lire un bracelet','primary'),('Activer et cautionner','neutral'),('Rendre ou remplacer','neutral'),('Rendre les espèces dues','neutral'),('Remettre en stock','neutral'),('Déclarer perdu, retrouvé','neutral'),('Confirmer au guichet','neutral'),('Rattacher par code','second'),('Consulter un solde par code','second')],
+ [('Terminal','Lire un bracelet'),('Agent de guichet','Activer et cautionner'),('Agent de guichet','Rendre ou remplacer'),('Agent de guichet','Rendre les espèces dues'),('Agent de guichet','Remettre en stock'),('Agent de guichet','Déclarer perdu, retrouvé'),('Agent de guichet','Confirmer au guichet'),('Festivalier','Rattacher par code'),('Festivalier','Consulter un solde par code')],
+ includes=[('Activer et cautionner','Lire un bracelet','commence par une lecture'),('Rendre ou remplacer','Lire un bracelet',''),('Rendre les espèces dues','Lire un bracelet',''),('Confirmer au guichet','Lire un bracelet','')],
+ note="Bracelet approvisionné : rattachement seulement après confirmation au guichet. Espèces : refus (409) tant qu'aucune caisse n'est ouverte.",H=1040))
 P=lambda k,l,s='neutral':(k,l,s)
 files.append(sequence('sequence-personnalisation','Personnalisation d’un bracelet','Le mot de passe n’est jamais transmis ni stocké en clair',
  [P('p','Poste','data'),P('s','Personnalisation','primary'),P('k','Service de clés','accent'),P('b','Base centrale')],
- [('p','s','Enregistrer + clé à usage unique'),('s','k','Calculer le mot de passe'),('k','s','Mot de passe','ret'),('s','s','Chiffrer (clé de session)'),('s','b','Bracelet personnalisé, audit'),('s','s','Chiffrer pour le poste, effacer'),('s','p','Mot de passe sous enveloppe','ret')]))
+ [('p','s','Enregistrer + clé à usage unique'),('s','k','Calculer le mot de passe'),('k','s','Mot de passe','ret'),('s','k','Clé de session (1er bracelet)'),('s','s','Sceller (clé de session)'),('s','b','Bracelet personnalisé, audit'),('s','s','Chiffrer pour le poste, effacer'),('s','p','Mot de passe sous enveloppe','ret')],
+ note="Aucun droit de déchiffrer ici. La signature NXP est vérifiée par le poste ; le serveur n’en garde que l’empreinte."))
 files.append(sequence('sequence-lecture','Lecture d’un bracelet par un terminal','Deux processus : les clés d’un côté, l’API publique de l’autre',
  [P('t','Terminal','data'),P('c','Processus des clés','primary'),P('k','Service de clés','accent'),P('a','API publique','primary'),P('b','Base centrale')],
- [('t','c','Demander le mot de passe'),('c','b','Lire le chiffré du bracelet'),('c','k','Déchiffrer la clé de données'),('c','t','Mot de passe chiffré pour ce terminal','ret'),('t','a','Enregistrer la lecture'),('a','b','register_tap'),('a','t','Résultat et solde','ret')],
- note="La clé de données reste en mémoire 5 minutes au plus, dans le seul processus des clés."))
+ [('t','c','Demander le mot de passe'),('c','b','Lire le chiffré du bracelet'),('c','k','Déchiffrer (hors cache)'),('c','t','Mot de passe chiffré pour ce terminal','ret'),('t','a','Enregistrer la lecture'),('a','b','register_tap'),('a','t','Résultat et solde','ret')],
+ note="La clé de données reste en mémoire 5 minutes au plus, dans le seul processus des clés. Bracelet inconnu : même refus, même délai."))
 files.append(sequence('sequence-lecture-suspecte','Lecture suspecte dans une opération','L’opération échoue, mais le blocage du bracelet reste',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('b','Base centrale')],
  [('t','a','Opération avec lecture'),('a','b','register_tap, dans l’opération'),('b','a','Copie suspectée','bad'),('a','b','Annuler l’opération'),('a','b','register_tap seul, validé'),('b','b','Liste noire + anomalie','bad'),('a','t','Erreur : copie suspectée','bad')]))
 files.append(sequence('sequence-rattachement','Rattachement d’un bracelet approvisionné','Le code imprimé ne suffit pas : il faut le bracelet en main',
  [P('f','Festivalier','data'),P('g','Agent de guichet','data'),P('a','API publique','primary'),P('b','Base centrale')],
- [('f','a','Saisir le code imprimé'),('a','b','Solde non nul : demande en attente'),('a','f','Code de confirmation à 6 chiffres','ret'),('g','a','Lecture du bracelet + code'),('a','b','Confirmer la demande'),('a','g','Portefeuille rattaché','ret')]))
+ [('f','a','Saisir le code imprimé'),('a','b','Solde non nul : demande en attente'),('a','f','Code de confirmation à 6 chiffres','ret'),('g','a','Lecture du bracelet (taps)'),('g','a','Code imprimé, code reçu, lecture'),('a','b','Confirmer, lecture consommée'),('a','g','Portefeuille rattaché','ret')],
+ note="Solde nul : rattachement direct. Bracelet jamais activé : activation par l’app si l’événement l’autorise."))
 files.append(sequence('sequence-creation-cle','Création d’une clé, à deux','Aucun service permanent ne peut créer une clé',
- [P('x','Admin prestataire','data'),P('y','Second admin','data'),P('a','API publique','primary'),P('e','Commande d’admin.','accent'),P('b','Base centrale')],
- [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Travail : créer la clé'),('e','e','Lancée par l’exploitant'),('e','b','Clé créée, utilisable')],
- note="La première clé de données est créée par la première session de personnalisation."))
+ [P('x','Admin prestataire','data'),P('y','Second admin','data'),P('a','API publique','primary'),P('e','Commande d’admin.','accent'),P('k','Service de clés','accent'),P('b','Base centrale')],
+ [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Travail CREATE_KEY'),('e','e','Lancée par l’exploitant'),('e','b','Prendre le travail'),('e','k','Créer la clé HMAC'),('e','b','Clé enregistrée, travail fini')],
+ note="Référence notée avant l’écriture : une reprise ne crée pas de seconde clé. Première clé de données : première personnalisation."))
+files.append(sequence('sequence-controle-quotidien','Contrôle quotidien des mots de passe','Un passage par prestataire et par 24 h, sans anomalie',
+ [P('o','Contrôle quotidien','primary'),P('k','Service de clés','accent'),P('b','Base centrale')],
+ [('o','b','Échantillon de bracelets'),('o','k','Déchiffrer la clé de données'),('o','k','Recalculer le mot de passe'),('o','o','Comparer, effacer'),('o','b','Compte rendu OK, MISMATCH, ERROR'),('o','b','Audit des écarts (identifiant)','bad')],
+ note="Avec --once : code de sortie 2 sur écart, 3 sur panne du service de clés (nouvel essai au passage suivant)."))
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
 for f in files: print(r.render(f))

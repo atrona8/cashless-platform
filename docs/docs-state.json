@@ -23,10 +23,10 @@
       "spec_index_a_jour": true
     },
     "bracelets-nfc-01M4TD3W": {
-      "statut": "plan finalisé",
-      "verifie_le": "2026-10-13T11:57:54Z",
+      "statut": "approuvée (20/20 WP), acceptation et fusion en attente",
+      "verifie_le": "2026-10-15T10:12:37Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }
