@@ -1,6 +1,8 @@
 {
+  "accept_commit": "b0fbed7b2f9c89f1280e39a2854c09c685a1d83e",
   "acceptance_history": [
     {
+      "accept_commit": "b0fbed7b2f9c89f1280e39a2854c09c685a1d83e",
       "acceptance_mode": "local",
       "accepted_at": "2026-10-15T16:53:32.332260+00:00",
       "accepted_by": "claude (délégation du porteur, 15/10/2026)",
