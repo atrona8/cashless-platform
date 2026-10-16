@@ -63,6 +63,8 @@ describe('aucun faux en production', () => {
       OIDC_APPROVAL_AUDIENCE: 'b',
       OIDC_JWKS_URI: 'https://id.example/jwks.json',
       CLAIM_CODE_HMAC_KEY: 'ab'.repeat(32),
+      TAG_WRAPPING_KEY_REF: 'arn:aws:kms:eu-west-3:1:key/wrap',
+      CLAIM_CODE_DOMAIN: 'pay.example.org',
       TRUST_PROXY_HOPS: '1',
       ALLOW_FAKES: '1',
       FAKE_KMS: 'true',

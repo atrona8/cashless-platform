@@ -19,7 +19,7 @@ export interface AppConfig {
   claimCodeHmacKey: Buffer;
   /** Durée de vie en mémoire d'une clé de données en clair, en secondes (0 à 300 ; 0 = aucun cache). */
   tagDekCacheSeconds: number;
-  /** Clé d'emballage des clés de données dans le service de clés. */
+  /** Clé d'emballage des clés de données dans le service de clés ; obligatoire en production. */
   tagWrappingKeyRef: string;
   /** Domaine des liens imprimés sur les bracelets (`https://<domaine>/c/<code>`, ADR-56) ; obligatoire en production. */
   claimCodeDomain: string;
@@ -126,9 +126,21 @@ function tagDekCacheSeconds(value: string | undefined): number {
   return parsed;
 }
 
-/** Nom de domaine seul (ni schéma, ni chemin) : il est imprimé tel quel dans le QR de chaque bracelet. */
+/**
+ * Nom de domaine seul (ni schéma, ni chemin) : il est imprimé tel quel dans le QR de chaque
+ * bracelet. Obligatoire en production dès le chargement (RISK-4) : il n'était refusé qu'à la
+ * première génération de codes.
+ */
 function claimCodeDomain(value: string | undefined, production: boolean): string {
-  if (value === undefined || value === '') return production ? '' : 'pay.cashless.test';
+  if (value === undefined || value === '') {
+    if (production) {
+      throw new Error(
+        'CLAIM_CODE_DOMAIN manquant : domaine des liens imprimés sur les bracelets, ' +
+          'obligatoire en production',
+      );
+    }
+    return 'pay.cashless.test';
+  }
   if (!/^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(value)) {
     throw new Error(`CLAIM_CODE_DOMAIN : nom de domaine attendu (reçu « ${value} »)`);
   }
@@ -160,6 +172,40 @@ function trustProxyHops(value: string | undefined, production: boolean): number 
   return Number(value);
 }
 
+/**
+ * Valeurs admises de `NODE_ENV` (RISK-3 de la revue post-fusion de bracelets-nfc). `production`
+ * arme toutes les gardes (aucun faux, secrets et références obligatoires) ; `development` (poste
+ * local) et `test` (Jest, CI) les laissent désarmées. Toute autre valeur, ou son absence, refuse le
+ * démarrage : un déploiement oublié ou mal nommé (`prod`, `staging`) démarrait sinon hors
+ * production, avec les faux et le secret de test.
+ */
+export const NODE_ENVS = ['production', 'development', 'test'] as const;
+export type NodeEnv = (typeof NODE_ENVS)[number];
+
+function nodeEnv(value: string | undefined): NodeEnv {
+  if (!NODE_ENVS.includes(value as NodeEnv)) {
+    throw new Error(
+      `NODE_ENV ${value ? `inconnu (« ${value} »)` : 'manquant'} : ${NODE_ENVS.join(', ')} attendu`,
+    );
+  }
+  return value as NodeEnv;
+}
+
+/**
+ * Référence de la clé d'emballage des clés de données (RISK-4) : obligatoire en production, défaut
+ * de test ailleurs.
+ */
+function tagWrappingKeyRef(value: string | undefined, production: boolean): string {
+  if (value) return value;
+  if (production) {
+    throw new Error(
+      'TAG_WRAPPING_KEY_REF manquant : clé d’emballage des clés de données, ' +
+        'obligatoire en production',
+    );
+  }
+  return 'fake-kms:wrap:test';
+}
+
 function positiveInt(name: string, value: string | undefined, fallback: number): number {
   if (value === undefined || value === '') return fallback;
   const parsed = Number.parseInt(value, 10);
@@ -169,7 +215,7 @@ function positiveInt(name: string, value: string | undefined, fallback: number):
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  const production = env.NODE_ENV === 'production';
+  const production = nodeEnv(env.NODE_ENV) === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
   if (!databaseUrl && production) {
     throw new Error(
@@ -202,7 +248,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     keyAdminDatabaseUrl: tagUrl('DATABASE_URL_KEYADMIN'),
     claimCodeHmacKey: claimCodeHmacKey(env, production),
     tagDekCacheSeconds: tagDekCacheSeconds(env.TAG_DEK_CACHE_SECONDS),
-    tagWrappingKeyRef: env.TAG_WRAPPING_KEY_REF || (production ? '' : 'fake-kms:wrap:test'),
+    tagWrappingKeyRef: tagWrappingKeyRef(env.TAG_WRAPPING_KEY_REF, production),
     claimCodeDomain: claimCodeDomain(env.CLAIM_CODE_DOMAIN, production),
     trustProxyHops: trustProxyHops(env.TRUST_PROXY_HOPS, production),
   };

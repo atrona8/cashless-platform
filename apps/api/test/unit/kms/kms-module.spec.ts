@@ -14,8 +14,11 @@ import {
 } from '../../../src/kms/kms.ports';
 import { withSecret, zeroize } from '../../../src/kms/zeroize';
 
+/** Hors production : `NODE_ENV` est obligatoire (RISK-3). */
+const LOCAL = { NODE_ENV: 'test' };
+
 @Module({
-  providers: [{ provide: APP_CONFIG, useFactory: () => loadConfig({}) }],
+  providers: [{ provide: APP_CONFIG, useFactory: () => loadConfig(LOCAL) }],
   exports: [APP_CONFIG],
 })
 class ConfigOnly {}
@@ -101,8 +104,8 @@ describe('effacement des secrets', () => {
 });
 
 describe('empreinte à clé des codes', () => {
-  const hasher = new ClaimHasher(loadConfig({}));
-  const other = new ClaimHasher(loadConfig({ CLAIM_CODE_HMAC_KEY: 'ab'.repeat(32) }));
+  const hasher = new ClaimHasher(loadConfig(LOCAL));
+  const other = new ClaimHasher(loadConfig({ ...LOCAL, CLAIM_CODE_HMAC_KEY: 'ab'.repeat(32) }));
 
   it('la saisie est normalisée avant l’empreinte', () => {
     expect(hasher.claimCodeHash('k7qm-4xh9rt').equals(hasher.claimCodeHash('K7QM4XH9RT'))).toBe(

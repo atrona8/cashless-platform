@@ -46,6 +46,9 @@ jobs:
       # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
       # en production (refus de démarrer sans valeur) ; les tests qui simulent un répartiteur le règlent eux-mêmes.
       TRUST_PROXY_HOPS: "0"
+      # Mode d'exécution (RISK-3) : obligatoire, sinon tout processus refuse de démarrer. `test` en
+      # CI : faux permis.
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

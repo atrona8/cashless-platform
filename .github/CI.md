@@ -33,6 +33,11 @@ défaut : un processus démarré avec `NODE_ENV=production` sans cette variable 
 valeur est le nombre exact de répartiteurs qui ajoutent une adresse à `X-Forwarded-For` devant l'API (ex. `1` pour un
 seul répartiteur de charge) : trop haute, un client choisit son adresse ; trop basse, tous les clients ont l'adresse
 du répartiteur et partagent la limite de 60 consultations anonymes par heure.
+Depuis le 2026-10-16 (correctif post-fusion n° 1 de bracelets-nfc, RISK-3) : `NODE_ENV` est
+**obligatoire** pour tout processus, avec l'une des valeurs `production`, `development` ou `test` ;
+absent ou autre (`prod`, `staging`), le processus refuse de démarrer. `test` en CI. En production,
+`TAG_WRAPPING_KEY_REF` et `CLAIM_CODE_DOMAIN` sont aussi refusés vides dès le chargement de la
+configuration (RISK-4).
 
 ## Reproduire en local
 

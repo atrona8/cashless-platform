@@ -27,6 +27,11 @@ export PERL5LIB="$PG_HOME/perl5/lib/perl5${PERL5LIB:+:$PERL5LIB}"
 # Répartiteurs de confiance devant l'API (OP-N53) : aucun sur le poste local. Obligatoire en production.
 export TRUST_PROXY_HOPS="${TRUST_PROXY_HOPS:-0}"
 
+# Mode d'exécution (RISK-3) : obligatoire, `production`, `development` ou `test` ; tout processus
+# refuse de démarrer sans lui. `development` sur le poste local (les faux et les secrets de test y
+# sont permis) ; Jest garde une valeur déjà posée, sinon il pose `test`.
+export NODE_ENV="${NODE_ENV:-development}"
+
 # Chaînes de connexion utilisées par les migrations (propriétaire) et l'API (rôle applicatif, rôle de la plateforme).
 export CASHLESS_APP_PASSWORD="${CASHLESS_APP_PASSWORD:-cashless_app_local}"
 export CASHLESS_PLATFORM_PASSWORD="${CASHLESS_PLATFORM_PASSWORD:-cashless_platform_local}"

@@ -160,6 +160,7 @@ describe('aucun faux en production (démarrage réel)', () => {
     OIDC_JWKS_URI: 'https://id.example/jwks.json',
     CLAIM_CODE_HMAC_KEY: 'ab'.repeat(32),
     TAG_WRAPPING_KEY_REF: 'arn:aws:kms:eu-west-3:1:key/wrap',
+    CLAIM_CODE_DOMAIN: 'pay.example.org',
     TRUST_PROXY_HOPS: '1',
   };
   const saved = { ...process.env };
@@ -196,6 +197,22 @@ describe('aucun faux en production (démarrage réel)', () => {
       );
     },
   );
+
+  // RISK-3 (revue post-fusion de bracelets-nfc) : sans NODE_ENV, ou avec une valeur inconnue, les
+  // faux et le secret de test restaient en service. Chaque processus refuse désormais de démarrer.
+  it.each([
+    ['API publique', PublicProcessModule, undefined],
+    ['clés de bracelet', TagKeysProcessModule, 'prod'],
+    ['personnalisation', PersonalizationProcessModule, 'staging'],
+    ['contrôle quotidien', TagCheckProcessModule, undefined],
+    ['commande d’administration', KeyAdminProcessModule, ''],
+  ])('%s : refuse de démarrer avec NODE_ENV absent ou inconnu (%p)', async (_name, root, value) => {
+    if (value === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = value;
+    await expect(Test.createTestingModule({ imports: [root] }).compile()).rejects.toThrow(
+      /NODE_ENV (manquant|inconnu)/,
+    );
+  });
 
   it('la garde de démarrage refuse aussi un faux injecté autrement', () => {
     const app = {
