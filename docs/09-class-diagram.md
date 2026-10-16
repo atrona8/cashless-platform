@@ -1,8 +1,8 @@
 # Diagramme de classes — modèle du domaine
 
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
-> `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0019 (missions 1 à 4, état du
-> 15/10/2026 ; mission 4 mergée le 16/10/2026 dans `feat/bracelets-nfc`). Seuls les attributs utiles à la compréhension sont montrés ; les
+> `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
+> 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026 dans `feat/bracelets-nfc`). Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
 > Conventions : chaque table porte `operator_id` (cloisonnement par prestataire, RLS) — non répété sur chaque classe.
@@ -388,7 +388,7 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `media_tap` | Lecture d'un bracelet par un terminal : compteur de la puce (deux lectures au même compteur = deux puces), consommée par une seule écriture. | réf. |
 | `tag_key` | Clé maître de dérivation des mots de passe (HMAC dans le KMS, jamais extraite), une par prestataire et par index. | réf. |
 | `tag_data_key` | Clé de données qui chiffre les mots de passe stockés ; stockée chiffrée par une autre clé du KMS ; versionnée (active, déchiffrement seul, retirée). | réf. |
-| `tag_key_job` | Travail de clé inscrit par une approbation (création, rotation, retrait) et exécuté par le processus qui a le droit : commande d'administration (création, désactivation dans le KMS), personnalisation (nouvelle clé de données, retrait), clés de bracelet (rechiffrement). Aucun secret (contrainte). | 0012 (+0014) |
+| `tag_key_job` | Travail de clé inscrit par une approbation (création, rotation, retrait) et exécuté par le processus qui a le droit : commande d'administration (création, désactivation dans le KMS), personnalisation (nouvelle clé de données, retrait), clés de bracelet (rechiffrement). Aucun secret (contrainte). Ne naît que d'une demande approuvée à deux (travail racine) ou d'un travail parent en cours (rechiffrement, désactivation), un seul par demande ou par parent. | 0012 (+0014, +0020) |
 | `tag_key_check_run` | Compte rendu du contrôle quotidien des mots de passe stockés. | 0012 |
 | `claim_code` | Code imprimé d'un bracelet (empreinte seulement) : tiré à la commande du lot, associé à une puce, invalidé à la clôture s'il ne l'a jamais été. | 0010 |
 | `media_claim` | Demande de rattachement d'un bracelet approvisionné, à confirmer au guichet : 24 h, 5 essais, lecture consommée. | 0010 (+0016) |

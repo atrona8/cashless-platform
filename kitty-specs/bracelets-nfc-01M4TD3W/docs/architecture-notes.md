@@ -30,11 +30,16 @@
   la confirmation d'un rattachement) ; puis, après les relectures de WP20 : `0017` (sortie de liste noire liée à une demande
   `REINSTATE_MEDIA` approuvée de l'épisode en cours, ADR-94), `0018` (déclencheurs d'historique en `SECURITY DEFINER`),
   `0019` (`register_personalized_media` et `associate_claim_code` en `SECURITY DEFINER`, contrôles de prestataire refaits
-  sans RLS, `search_path = public, pg_temp`). `post-roles.sql` : quatre rôles de base de plus, droits colonne par colonne, et
+  sans RLS, `search_path = public, pg_temp`) ; puis, au correctif post-fusion n° 1 (constat SEC-1) : `0020` (un travail de clé ne
+  naît que d'une demande approuvée à deux : `enqueue_tag_key_job`, `enqueue_tag_key_child_job`, `tag_key_job_refusal`
+  revérifiée par les trois exécutants, refus audité `TAG_KEY_JOB_REFUSED` ; `retire_dedicated_key` retirée à `PUBLIC`,
+  ADR-102). `post-roles.sql` : quatre rôles de base de plus, droits colonne par colonne, et
   retrait à `cashless_app` de la lecture des chiffrés ; puis retrait des écritures directes sur les historiques, les tables
   de règles de passage, `media_assignment`, `device_config_served`, et de tout `INSERT`/`UPDATE` de `cashless_perso` sur
   `media` (la personnalisation n'écrit plus que par fonctions). `migrate.ts` applique `roles.sql` et `post-roles.sql` dans
-  une seule transaction. Variable `TRUST_PROXY_HOPS` obligatoire en production (ADR-95).
+  une seule transaction. Variable `TRUST_PROXY_HOPS` obligatoire en production (ADR-95). Correctif post-fusion n° 1 : `INSERT` sur `tag_key_job` retiré à
+  `cashless_app` et `cashless_perso` ; `NODE_ENV` obligatoire (`production`, `development`, `test`) ; `TAG_WRAPPING_KEY_REF`
+  et `CLAIM_CODE_DOMAIN` exigés en production.
 - Contrat : **27 opérations ajoutées sur 24 chemins** (clés et travaux de clé, lots et codes, bracelets au
   back-office, liste noire, perte, poste de personnalisation, remise en stock) ; 12 opérations existantes reçoivent
   `x-process` ; `lookupBalanceByClaimCode` réduite (décision n° 11). Types TypeScript et Dart régénérés.

@@ -42,7 +42,10 @@ consommée par la demande confirmée (`consume_tap_for_claim`, migration 0016).
 Sources : [`sequence-creation-cle.excalidraw`](diagrams/sequence-creation-cle.excalidraw), [`sequence-creation-cle.svg`](diagrams/sequence-creation-cle.svg).
 
 Recalé : l'appel au service de clés par la commande d'administration est montré ; sa référence est notée dans le
-travail avant l'écriture de la clé, pour qu'une reprise n'en crée pas une seconde.
+travail avant l'écriture de la clé, pour qu'une reprise n'en crée pas une seconde. Recalé au correctif post-fusion n° 1 :
+l'API inscrit le travail par une fonction de la base qui le dérive de la demande approuvée à deux (migration 0020), et la
+commande d'administration revérifie la demande avant d'appeler le service de clés ; sinon le travail passe en échec avec
+une alerte d'audit `TAG_KEY_JOB_REFUSED`.
 
 ### Contrôle quotidien des mots de passe (ajouté au recalage)
 

@@ -97,8 +97,8 @@ files.append(sequence('sequence-rattachement','Rattachement d’un bracelet appr
  note="Solde nul : rattachement direct. Bracelet jamais activé : activation par l’app si l’événement l’autorise."))
 files.append(sequence('sequence-creation-cle','Création d’une clé, à deux','Aucun service permanent ne peut créer une clé',
  [P('x','Admin prestataire','data'),P('y','Second admin','data'),P('a','API publique','primary'),P('e','Commande d’admin.','accent'),P('k','Service de clés','accent'),P('b','Base centrale')],
- [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Travail CREATE_KEY'),('e','e','Lancée par l’exploitant'),('e','b','Prendre le travail'),('e','k','Créer la clé HMAC'),('e','b','Clé enregistrée, travail fini')],
- note="Référence notée avant l’écriture : une reprise ne crée pas de seconde clé. Première clé de données : première personnalisation."))
+ [('x','a','Demander une clé'),('y','a','Approuver'),('a','b','Inscrire CREATE_KEY depuis la demande'),('e','e','Lancée par l’exploitant'),('e','b','Prendre le travail'),('e','b','Revérifier la demande approuvée'),('e','k','Créer la clé HMAC'),('e','b','Clé enregistrée, travail fini')],
+ note="La base n’inscrit un travail que depuis une demande approuvée à deux (0020) ; sinon refus audité. Référence notée avant l’écriture : pas de seconde clé à la reprise."))
 files.append(sequence('sequence-controle-quotidien','Contrôle quotidien des mots de passe','Un passage par prestataire et par 24 h, sans anomalie',
  [P('o','Contrôle quotidien','primary'),P('k','Service de clés','accent'),P('b','Base centrale')],
  [('o','b','Échantillon de bracelets'),('o','k','Déchiffrer la clé de données'),('o','k','Recalculer le mot de passe'),('o','o','Comparer, effacer'),('o','b','Compte rendu OK, MISMATCH, ERROR'),('o','b','Audit des écarts (identifiant)','bad')],
