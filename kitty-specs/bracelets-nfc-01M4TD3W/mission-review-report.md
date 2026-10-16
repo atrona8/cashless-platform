@@ -392,6 +392,9 @@ Les nouveaux points sont consignés selon la règle 3 (`3209eb5`, relu et approu
 
 **Restent** :
 - RISK-1 : relecture par une personne des fichiers listés ;
-- RISK-2 : la CI n'a jamais tourné, la branche n'est pas poussée ;
 
 DRIFT-1 levé le 16/10/2026 : la ligne de la décision n° 9 est rétablie dans `research.md`, identique à `b658961`.
+
+RISK-2 levé le 16/10/2026 : branche poussée (`acd5e64`), GitHub Actions vert (run 38922933092) : pgTAP 1439/1439, Jest
+1262/1262 plus suites seules (NFR-006, NFR-007, latence de configuration), tag-format TypeScript 39/39 avec
+`kit-vectors.spec.ts`, Dart 30/30 avec les vecteurs du kit.
