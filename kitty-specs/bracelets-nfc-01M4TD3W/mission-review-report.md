@@ -318,8 +318,10 @@ l'adaptateur AWS arrivera (mission 7).
   SEC-1), `0016_media_claim_tap.sql`, `0017_media_reinstate_approval.sql`, `0018_status_history_definer.sql`,
   `0019_personalization_definer.sql` (fonctions SECURITY DEFINER), ainsi que `0013_media_api.sql` et
   `0015_event_wallet.sql`.
+  Ajouté au correctif post-fusion n° 1 : `0020_tag_key_job_approval.sql` (fonctions `enqueue_tag_key_job`,
+  `enqueue_tag_key_child_job`, `tag_key_job_refusal`, droits de `retire_dedicated_key`).
 - **Clés et KMS** : `apps/api/src/kms/{kms.ports,kms.module,production-guard,claim-hash,zeroize}.ts` ;
-  `apps/api/src/media/keys/{dek-cache,session-data-key,data-key.repository,dek.worker,reencrypt.worker,key-admin.worker,key-approval-actions}.ts` ;
+  `apps/api/src/media/keys/{dek-cache,session-data-key,data-key.repository,dek.worker,reencrypt.worker,key-admin.worker,key-approval-actions,job-gate}.ts` ;
   `apps/api/src/media/auth-keys/auth-keys.service.ts` ; `apps/api/src/media/personalization/personalization.service.ts` ;
   `apps/api/src/media/daily-check/daily-check.service.ts` ; `apps/api/src/processes/{bootstrap,process-base}.ts` ;
   `apps/api/src/db/process-db.module.ts` ; `apps/api/src/config/config.ts`.
