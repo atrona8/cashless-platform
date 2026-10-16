@@ -69,10 +69,10 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [x] /spec-kitty.specify Bracelets NFC côté serveur et bibliothèques de format (SPECIFICATION §7, §6.1, §6.4, §14.2 S19, ADR-36, ADR-56, ADR-57, ADR-59). `packages/tag-format` en TypeScript et en Dart : format B 1.0 (28 octets, CRC-32/ISO-HDLC, majeur inconnu refusé), message de dérivation SP 800-108, AAD et chiffrement AES-256-GCM de PWD‖PACK, code de rattachement (10 caractères, alphabet de 32) ; les deux implémentations reproduisent `vecteurs_test_bracelet.py`. Ports KMS (GenerateMac, GenerateDataKey, Decrypt) avec faux pour les tests. Service des clés de bracelet (`POST /media/auth-keys`, un seul Decrypt de DEK, effacement en mémoire), service de personnalisation (enregistrement `token_hash`, UID, signature d'originalité et son empreinte, chiffré, lot), contrôle quotidien sur 100 bracelets, rotation de DEK, `tag_key` et `retire_dedicated_key` puis désactivation KMS. Lots (`media_batch` : kind, clé partagée ou dédiée, préchargement, caution, réutilisation, cycle de vie, inventaire). Codes de rattachement générés à la commande, empreinte seule conservée, association à la personnalisation, limites d'essais, demandes en attente pour un bracelet approvisionné (`media_claim`, confirmation au guichet). `POST /taps` (`register_tap`, effets de sécurité validés dans une transaction séparée), activation, consultation, caution et rendu, restitution, remplacement (la caution suit le bracelet), espèces dues (`refund_cash_due`), liste noire et `reinstate_media` à deux.
 - [x] /spec-kitty.plan Rôles IAM séparés (§3.2, §13.2) : l'API publique n'a ni `kms:Decrypt` ni `kms:GenerateMac`. Les fonctions SQL des bracelets, lots et cautions font les règles ; NestJS les appelle sans les réimplémenter (§2.2). Mots de passe déchiffrés en mémoire seulement, puis effacés. Types Dart générés depuis `openapi.yaml`. Le code de lecture NFC du terminal n'est PAS dans cette mission.
 - [x] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission bracelets-nfc-01M4TD3W
-- [ ] /spec-kitty.review --mission bracelets-nfc-01M4TD3W
-- [ ] /spec-kitty.accept --mission bracelets-nfc-01M4TD3W
-- [ ] spec-kitty merge --mission bracelets-nfc-01M4TD3W
+- [x] spec-kitty next --agent claude --mission bracelets-nfc-01M4TD3W
+- [x] /spec-kitty.review --mission bracelets-nfc-01M4TD3W
+- [x] /spec-kitty.accept --mission bracelets-nfc-01M4TD3W
+- [x] spec-kitty merge --mission bracelets-nfc-01M4TD3W
 
 ## Mission 5 — Terminaux et paiement en ligne
 
@@ -88,7 +88,7 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > test : table temporaire sans effet sur un `tenant_of_*`, ou création refusée à chaque rôle `cashless_*`. Mettre à
 > jour la section 4 de `tests/tests_definer_trigger_writers.sql` (aujourd'hui : au plus 77).
 >
-> **Hérités aussi de la mission 4 (missions proposées par l'agent le 15/10/2026, à confirmer par le porteur, ADR-101
+> **Hérités aussi de la mission 4 (missions proposées par l'agent et confirmées par le porteur le 15/10/2026, ADR-101
 > et ADR-99)** : **OP-N44** — les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin`
 > héritent de `PUBLIC` l'`EXECUTE` des fonctions d'API du schéma de référence ; à traiter avec OP-N59 : faire que le
 > générateur `gen_tests.py` n'exige plus `EXECUTE` pour `PUBLIC` et accorder les droits rôle par rôle
@@ -226,7 +226,7 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > **Condition préalable** : validation de la puce sur de vrais bracelets et campagne de mesure NFC faites
 > (actions 1 et 2 de `POINTS_OUVERTS.md` §7, ADR-39). Ne pas lancer cette mission avant.
 >
-> **Hérité de la mission 4, OP-N46 (ADR-85 ; mission proposée par l'agent le 15/10/2026, à confirmer par le porteur,
+> **Hérité de la mission 4, OP-N46 (ADR-85 ; mission confirmé par le porteur le 15/10/2026,
 > ADR-101)** : à la personnalisation, la signature d'originalité NXP n'est vérifiée que par le poste ; le serveur n'en
 > garde que l'empreinte. Avec la clé publique NXP et les signatures réelles issues de la validation de la puce, faire
 > vérifier aussi la signature par le serveur (vecteurs dans le kit), décision avec l'auditeur sécurité (ADR-44).
@@ -248,7 +248,7 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > 5 000 bracelets, avec au moins une relance sans double effet ; durées dans le rapport de recette (prouvé aujourd'hui :
 > 600 cautions, 1 200 bracelets en 3 tranches, préchargement sur 3 bracelets).
 >
-> **OP-N45 (ADR-83 ; mission proposée par l'agent le 15/10/2026, à confirmer par le porteur, ADR-101)** — décrire et
+> **OP-N45 (ADR-83 ; mission confirmé par le porteur le 15/10/2026, ADR-101)** — décrire et
 > vérifier l'aiguillage par chemin vers les trois processus (`x-process` du contrat) : `POST /media/auth-keys` et
 > `/media-personalizations` n'atteignent que leur processus.
 

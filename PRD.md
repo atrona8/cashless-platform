@@ -203,7 +203,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 
 **Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
 dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,
-OP-N46, OP-N50 et OP-N54 proposées par l'agent le 15/10/2026, à confirmer par le porteur) :
+OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le 15/10/2026) :
 - mission 5 : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
   protégées contre les tables temporaires de l'appelant (`pg_temp` ou `TEMPORARY` retiré), pour fermer un
   contournement probable du cloisonnement entre prestataires (OP-N59, ADR-96, bloque la production) ; droits

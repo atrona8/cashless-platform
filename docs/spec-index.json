@@ -259,7 +259,7 @@
   {
     "mission": "bracelets-nfc-01M4TD3W",
     "titre_cas_usage": "Bracelets NFC (format, clés, lots, cycle de vie)",
-    "statut": "en cours",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "Deux bibliothèques, un seul format",

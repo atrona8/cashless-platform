@@ -108,9 +108,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-96 | Fonctions SECURITY DEFINER sans `pg_temp` (OP-N59) : limite acceptée, levée par la mission 5, bloque la production | Acceptée |
 | ADR-97 | Écritures directes de `cashless_app` sur `media_batch` (OP-N60) : limite acceptée, levée par la mission 11, bloque la production | Acceptée |
 | ADR-98 | Traitements par tranches (NFR-008, OP-N61) : preuve sur 5 000 bracelets reportée à la mission 13, bloque la production | Acceptée |
-| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Proposée (mission à confirmer) |
+| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (confirmée par le porteur le 15/10/2026 ; mission à confirmer) |
 | ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée |
-| ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Proposée (à confirmer par le porteur) |
+| ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Acceptée (confirmée par le porteur le 15/10/2026) |
 
 ---
 
@@ -1124,7 +1124,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 ## ADR-99 — Empreinte de requête sans clé au registre d'idempotence : limite acceptée jusqu'à la mission 5 (OP-N54)
 
 - **Statut** : Limite consignée le 14/10/2026 (constat des relectures indépendantes, sans changement de code) ;
-  mission de levée **proposée par l'agent le 15/10/2026, à confirmer par le porteur**. Dette nommée.
+  mission de levée **confirmé par le porteur le 15/10/2026**. Dette nommée.
 - **Contexte.** Le registre d'idempotence (`api_idempotency`) garde `request_hash`, empreinte SHA-256 sans clé de la
   requête. Pour le rattachement par code, la requête contient le code imprimé (50 bits).
 - **Risque.** Une fuite de la base permet de retrouver un code par essais hors ligne (calcul lourd mais faisable), puis
@@ -1159,7 +1159,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 
 ## ADR-101 — Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50
 
-- **Statut** : Proposée, 15 octobre 2026, par l'agent (lot 20, cycle 9) ; **à confirmer par le porteur**.
+- **Statut** : Acceptée, 15 octobre 2026 : missions proposées par l'agent (lot 20, cycle 9), confirmées par le porteur le même jour.
 - **Contexte.** Règle 3 de `CLAUDE.md` : chaque écart accepté nomme la mission du découpage qui le lève. Ces cinq
   points nommaient le porteur ou l'exploitation. Les décisions de fond restent celles d'ADR-83, ADR-84, ADR-85,
   ADR-88 et ADR-90 ; seule la mission de levée est fixée ici.

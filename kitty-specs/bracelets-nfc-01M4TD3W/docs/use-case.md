@@ -1,6 +1,6 @@
 # Cas d'usage — mission bracelets-nfc-01M4TD3W
 
-> État : **approuvée** (20 lots relus, WP20 au cycle 2, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le
+> État : **approuvée** (20 lots relus, WP20 au cycle 2, 15/10/2026) ; acceptée le 15/10/2026, **mergée le 16/10/2026** (squash `7b1b8c2`). Recalé sur le
 > code de la lane `kitty/mission-bracelets-nfc-01M4TD3W-lane-t` (addendum après review, 15/10/2026).
 
 ## Cas d'usage propres à cette mission

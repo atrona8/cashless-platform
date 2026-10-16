@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-10-13T11:57:54Z",
+  "derniere_verification_globale": "2026-10-16T10:30:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -23,8 +23,8 @@
       "spec_index_a_jour": true
     },
     "bracelets-nfc-01M4TD3W": {
-      "statut": "approuvée (20/20 WP), acceptation et fusion en attente",
-      "verifie_le": "2026-10-15T16:00:00Z",
+      "statut": "mergée",
+      "verifie_le": "2026-10-16T10:30:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

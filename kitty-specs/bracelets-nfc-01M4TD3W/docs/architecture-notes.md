@@ -1,7 +1,6 @@
 # Notes d'architecture — mission bracelets-nfc-01M4TD3W
 
-> État : **approuvée** (20 lots relus ; WP20 approuvé au cycle 8 de relecture, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le code de la lane
-> `kitty/mission-bracelets-nfc-01M4TD3W-lane-t`.
+> État : **approuvée** (20 lots relus ; WP20 approuvé au cycle 8 de relecture, 15/10/2026) ; acceptée le 15/10/2026, **mergée le 16/10/2026** dans `feat/bracelets-nfc` (squash `7b1b8c2`).
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
 - Bibliothèque de format `packages/tag-format` : workspace TypeScript `@cashless/tag-format` (format B, message de

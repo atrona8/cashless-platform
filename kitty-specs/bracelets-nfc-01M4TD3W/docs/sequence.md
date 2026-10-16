@@ -1,7 +1,6 @@
 # Séquences — mission bracelets-nfc-01M4TD3W
 
-> État : **approuvée** (20 lots relus, 15/10/2026) ; acceptation et fusion en attente. Recalé sur le code de la lane
-> `kitty/mission-bracelets-nfc-01M4TD3W-lane-t`.
+> État : **approuvée** (20 lots relus, 15/10/2026) ; acceptée le 15/10/2026, **mergée le 16/10/2026** dans `feat/bracelets-nfc` (squash `7b1b8c2`).
 
 ## Flux internes propres à cette mission
 

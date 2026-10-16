@@ -3,7 +3,7 @@
 > Statut de complétude : voir `06-docs-status.md`. Un diagramme par flux critique
 > qui traverse plusieurs composants (les flux internes à un seul composant vivent
 > dans le détail local de la mission concernée). Rendu en repli Mermaid (skill `/illustre` non installé).
-> Dernière mise à jour : 15/10/2026 (index : mission « Bracelets NFC », approuvée, acceptation et fusion en attente).
+> Dernière mise à jour : 15/10/2026 (index : mission « Bracelets NFC », mergée le 16/10/2026).
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
@@ -148,11 +148,11 @@ sequenceDiagram
 
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
-| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (🚧 approuvée le 15/10/2026, fusion en attente : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
+| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
-| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (🚧 approuvée le 15/10/2026, fusion en attente : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
+| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
 | Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
