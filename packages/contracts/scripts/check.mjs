@@ -12,7 +12,9 @@ const stale = Object.entries(files)
   .map(([name]) => `generated/${name}`);
 
 if (stale.length) {
-  console.error(`[contracts] types périmés : ${stale.join(', ')} — lancer npm run generate -w @cashless/contracts`);
+  console.error(
+    `[contracts] types périmés : ${stale.join(', ')} — lancer npm run generate -w @cashless/contracts`,
+  );
   process.exitCode = 1;
 } else {
   console.log('[contracts] types à jour');

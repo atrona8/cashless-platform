@@ -23,7 +23,14 @@ export interface MiniFixture {
 }
 
 /** Comptes du grand livre : code → (famille, fonction, sens, titulaire, portefeuille, participation). */
-type AccountSpec = [code: string, family: string, purpose: string, side: 'D' | 'C', owner: 'org' | 'merchant' | null, extra?: { wallet?: string; participation?: boolean }];
+type AccountSpec = [
+  code: string,
+  family: string,
+  purpose: string,
+  side: 'D' | 'C',
+  owner: 'org' | 'merchant' | null,
+  extra?: { wallet?: string; participation?: boolean },
+];
 
 export async function createMiniFixture(): Promise<MiniFixture> {
   const f = {
@@ -44,7 +51,10 @@ export async function createMiniFixture(): Promise<MiniFixture> {
 
   await withOwner(async (db) => {
     const q = (text: string, values: unknown[] = []) => db.query(text, values);
-    await q(`INSERT INTO party (id, kind, legal_name, country_code) VALUES ($1, 'OPERATOR', 'Prestataire (moteur)', 'SN')`, [f.operatorId]);
+    await q(
+      `INSERT INTO party (id, kind, legal_name, country_code) VALUES ($1, 'OPERATOR', 'Prestataire (moteur)', 'SN')`,
+      [f.operatorId],
+    );
     await q(
       `INSERT INTO party (id, kind, operator_id, legal_name, country_code) VALUES
          ($1, 'ORGANIZER', $3, 'Organisateur (moteur)', 'SN'), ($2, 'MERCHANT', $3, 'Food truck (moteur)', 'SN')`,
@@ -75,7 +85,12 @@ export async function createMiniFixture(): Promise<MiniFixture> {
        VALUES ($1, $2, $3, $4, 'EXTERNAL', $4)`,
       [f.participationId, f.operatorId, f.eventId, f.merchantId],
     );
-    await q(`INSERT INTO wallet (id, operator_id, ledger_id) VALUES ($1, $3, $4), ($2, $3, $4)`, [f.wallet1, f.wallet2, f.operatorId, f.ledgerId]);
+    await q(`INSERT INTO wallet (id, operator_id, ledger_id) VALUES ($1, $3, $4), ($2, $3, $4)`, [
+      f.wallet1,
+      f.wallet2,
+      f.operatorId,
+      f.ledgerId,
+    ]);
 
     const accounts: AccountSpec[] = [
       ['A-PSP-WAVE', 'ASSET', 'PSP', 'D', 'org'],
@@ -111,9 +126,15 @@ export async function createMiniFixture(): Promise<MiniFixture> {
         ],
       );
     }
-    await q(`UPDATE account SET hot = true WHERE ledger_id = $1 AND code IN ('L-ORG-COM', 'L-ORG-TVA', 'A-PSP-WAVE')`, [f.ledgerId]);
+    await q(
+      `UPDATE account SET hot = true WHERE ledger_id = $1 AND code IN ('L-ORG-COM', 'L-ORG-TVA', 'A-PSP-WAVE')`,
+      [f.ledgerId],
+    );
 
-    await q(`INSERT INTO tag_key (operator_id, key_index, kms_key_ref) VALUES ($1, 1, 'arn:test:moteur')`, [f.operatorId]);
+    await q(
+      `INSERT INTO tag_key (operator_id, key_index, kms_key_ref) VALUES ($1, 1, 'arn:test:moteur')`,
+      [f.operatorId],
+    );
     await q(
       `INSERT INTO media_batch (id, operator_id, organizer_id, event_id, kind, quantity, key_index, status, deposit_amount, deposit_mode)
        VALUES ($1, $2, $3, $4, 'PUBLIC', 10, 1, 'ACTIVE', 500, 'SEPARATE')`,

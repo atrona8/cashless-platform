@@ -6,9 +6,12 @@ import { ProblemException } from '../../errors/problem';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const invalid = (detail: string): ProblemException => new ProblemException('VALIDATION_FAILED', { status: 400, detail });
-export const unprocessable = (detail: string): ProblemException => new ProblemException('VALIDATION_FAILED', { status: 422, detail });
-export const conflict = (detail: string): ProblemException => new ProblemException('CONFLICT_STATE', { status: 409, detail });
+export const invalid = (detail: string): ProblemException =>
+  new ProblemException('VALIDATION_FAILED', { status: 400, detail });
+export const unprocessable = (detail: string): ProblemException =>
+  new ProblemException('VALIDATION_FAILED', { status: 422, detail });
+export const conflict = (detail: string): ProblemException =>
+  new ProblemException('CONFLICT_STATE', { status: 409, detail });
 export const notFound = (): ProblemException => new ProblemException('NOT_FOUND');
 
 export function isUuid(value: unknown): value is string {
@@ -21,66 +24,106 @@ export function requireUuid(value: string): string {
 }
 
 export function objectBody(raw: unknown): Record<string, unknown> {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw invalid('Corps JSON attendu.');
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
+    throw invalid('Corps JSON attendu.');
   return raw as Record<string, unknown>;
 }
 
 type Presence = 'required' | 'optional';
 
-export function textField(body: Record<string, unknown>, name: string, max: number, presence: Presence): string | undefined {
+export function textField(
+  body: Record<string, unknown>,
+  name: string,
+  max: number,
+  presence: Presence,
+): string | undefined {
   const value = body[name];
   if (value === undefined) {
     if (presence === 'required') throw invalid(`Champ obligatoire : ${name}.`);
     return undefined;
   }
-  if (typeof value !== 'string' || value.trim() === '' || value.length > max) throw invalid(`${name} : texte de 1 à ${max} caractères.`);
+  if (typeof value !== 'string' || value.trim() === '' || value.length > max)
+    throw invalid(`${name} : texte de 1 à ${max} caractères.`);
   return value.trim();
 }
 
 /** Texte facultatif qui peut être remis à `null`. */
-export function nullableText(body: Record<string, unknown>, name: string, max: number, pattern?: RegExp): string | null | undefined {
+export function nullableText(
+  body: Record<string, unknown>,
+  name: string,
+  max: number,
+  pattern?: RegExp,
+): string | null | undefined {
   const value = body[name];
   if (value === undefined || value === null) return value as null | undefined;
-  if (typeof value !== 'string' || value.trim() === '' || value.length > max || (pattern && !pattern.test(value))) {
+  if (
+    typeof value !== 'string' ||
+    value.trim() === '' ||
+    value.length > max ||
+    (pattern && !pattern.test(value))
+  ) {
     throw invalid(`${name} : valeur invalide.`);
   }
   return value.trim();
 }
 
-export function enumField<T extends string>(body: Record<string, unknown>, name: string, values: readonly T[], presence: Presence): T | undefined {
+export function enumField<T extends string>(
+  body: Record<string, unknown>,
+  name: string,
+  values: readonly T[],
+  presence: Presence,
+): T | undefined {
   const value = body[name];
   if (value === undefined) {
     if (presence === 'required') throw invalid(`Champ obligatoire : ${name}.`);
     return undefined;
   }
-  if (typeof value !== 'string' || !values.includes(value as T)) throw invalid(`${name} : valeurs permises ${values.join(', ')}.`);
+  if (typeof value !== 'string' || !values.includes(value as T))
+    throw invalid(`${name} : valeurs permises ${values.join(', ')}.`);
   return value as T;
 }
 
-export function intField(body: Record<string, unknown>, name: string, min: number, max: number, presence: Presence): number | undefined {
+export function intField(
+  body: Record<string, unknown>,
+  name: string,
+  min: number,
+  max: number,
+  presence: Presence,
+): number | undefined {
   const value = body[name];
   if (value === undefined) {
     if (presence === 'required') throw invalid(`Champ obligatoire : ${name}.`);
     return undefined;
   }
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max) throw invalid(`${name} : entier de ${min} à ${max}.`);
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max)
+    throw invalid(`${name} : entier de ${min} à ${max}.`);
   return value;
 }
 
 /** Montant en unités mineures, ≥ 0 : entier (ou chaîne de chiffres), `null` permis si `nullable`. */
-export function amountField(body: Record<string, unknown>, name: string, nullable: boolean): string | null | undefined {
+export function amountField(
+  body: Record<string, unknown>,
+  name: string,
+  nullable: boolean,
+): string | null | undefined {
   const value = body[name];
   if (value === undefined) return undefined;
   if (value === null) {
     if (!nullable) throw invalid(`${name} : montant attendu.`);
     return null;
   }
-  const ok = (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) || (typeof value === 'string' && /^\d{1,18}$/.test(value));
+  const ok =
+    (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) ||
+    (typeof value === 'string' && /^\d{1,18}$/.test(value));
   if (!ok) throw invalid(`${name} : montant entier en unités mineures, positif ou nul.`);
   return String(value);
 }
 
-export function dateTimeField(body: Record<string, unknown>, name: string, presence: Presence): Date | undefined {
+export function dateTimeField(
+  body: Record<string, unknown>,
+  name: string,
+  presence: Presence,
+): Date | undefined {
   const value = body[name];
   // Un champ facultatif à `null` vaut absent (corps déjà analysé, repris tel quel dans une demande d'approbation).
   if (value === undefined || (value === null && presence === 'optional')) {
@@ -113,13 +156,20 @@ export function pageRequest(cursor: string | undefined, rawLimit: string | undef
   let limit = 50;
   if (rawLimit !== undefined && rawLimit !== '') {
     limit = Number(rawLimit);
-    if (!Number.isInteger(limit) || limit < 1 || limit > 200) throw invalid('limit : entier de 1 à 200 attendu.');
+    if (!Number.isInteger(limit) || limit < 1 || limit > 200)
+      throw invalid('limit : entier de 1 à 200 attendu.');
   }
   if (cursor === undefined || cursor === '') return { offset: 0, limit };
   try {
     const value: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
     const offset = (value as { o?: unknown }).o;
-    if (typeof offset === 'number' && Number.isInteger(offset) && offset >= 0 && offset <= MAX_OFFSET) return { offset, limit };
+    if (
+      typeof offset === 'number' &&
+      Number.isInteger(offset) &&
+      offset >= 0 &&
+      offset <= MAX_OFFSET
+    )
+      return { offset, limit };
   } catch {
     // illisible : refusé ci-dessous
   }
@@ -131,7 +181,9 @@ export function pageOf<R, T>(rows: R[], request: PageRequest, map: (row: R) => T
   const hasMore = rows.length > request.limit;
   return {
     data: rows.slice(0, request.limit).map(map),
-    next_cursor: hasMore ? Buffer.from(JSON.stringify({ o: request.offset + request.limit })).toString('base64url') : null,
+    next_cursor: hasMore
+      ? Buffer.from(JSON.stringify({ o: request.offset + request.limit })).toString('base64url')
+      : null,
     has_more: hasMore,
   };
 }
@@ -171,11 +223,17 @@ export interface PartyFields {
 
 const COUNTRY = /^[A-Z]{2}$/;
 
-export function parseOperatorCreate(raw: unknown): Required<Pick<PartyFields, 'legal_name'>> & { country_code: string; tax_id: string | null } {
+export function parseOperatorCreate(
+  raw: unknown,
+): Required<Pick<PartyFields, 'legal_name'>> & { country_code: string; tax_id: string | null } {
   const body = objectBody(raw);
   const country = nullableText(body, 'country_code', 2, COUNTRY);
   if (!country) throw invalid('Champ obligatoire : country_code.');
-  return { legal_name: textField(body, 'legal_name', 200, 'required')!, country_code: country, tax_id: nullableText(body, 'tax_id', 64) ?? null };
+  return {
+    legal_name: textField(body, 'legal_name', 200, 'required')!,
+    country_code: country,
+    tax_id: nullableText(body, 'tax_id', 64) ?? null,
+  };
 }
 
 /** Données descriptives d'une partie ; au moins une. */
@@ -188,7 +246,8 @@ export function parsePartyUpdate(raw: unknown): PartyFields {
   if (country !== undefined) fields.country_code = country;
   const tax = nullableText(body, 'tax_id', 64);
   if (tax !== undefined) fields.tax_id = tax;
-  if (Object.keys(fields).length === 0) throw invalid('Au moins un champ à modifier : legal_name, country_code, tax_id.');
+  if (Object.keys(fields).length === 0)
+    throw invalid('Au moins un champ à modifier : legal_name, country_code, tax_id.');
   return fields;
 }
 
@@ -241,10 +300,22 @@ export function parsePlatformContractCreate(raw: unknown): PlatformContractInput
 }
 
 /** Nouvelle version d'un contrat plateforme : seuls ses champs sont acceptés ; un champ omis reprend la version précédente. */
-export function parsePlatformContractVersion(raw: unknown): { valid_from: string; platform_fee_mode?: (typeof FEE_MODES)[number] } {
+export function parsePlatformContractVersion(raw: unknown): {
+  valid_from: string;
+  platform_fee_mode?: (typeof FEE_MODES)[number];
+} {
   const body = objectBody(raw);
-  for (const field of ['offline_loss_bearer', 'cash_diff_bearer', 'breakage_organizer_bps', 'operator_fee_basis', 'chargeback_bearer']) {
-    if (body[field] !== undefined) throw unprocessable(`${field} : champ d'un contrat prestataire–organisateur, refusé pour un contrat de plateforme.`);
+  for (const field of [
+    'offline_loss_bearer',
+    'cash_diff_bearer',
+    'breakage_organizer_bps',
+    'operator_fee_basis',
+    'chargeback_bearer',
+  ]) {
+    if (body[field] !== undefined)
+      throw unprocessable(
+        `${field} : champ d'un contrat prestataire–organisateur, refusé pour un contrat de plateforme.`,
+      );
   }
   return {
     valid_from: dateTimeField(body, 'valid_from', 'required')!.toISOString(),
@@ -295,8 +366,21 @@ export const feeRuleDto = (row: FeeRuleRow) => ({
 });
 export type FeeRuleDto = ReturnType<typeof feeRuleDto>;
 
-export const FEE_SCOPES = ['PLATFORM_CONTRACT', 'OPERATOR_CONTRACT', 'EVENT', 'PARTICIPATION'] as const;
-const FEE_BASES = ['TOPUP_AMOUNT', 'SALE_AMOUNT', 'PER_MEDIA', 'PER_TERMINAL_DAY', 'PER_REFUND', 'FIXED', 'FEE_AMOUNT'] as const;
+export const FEE_SCOPES = [
+  'PLATFORM_CONTRACT',
+  'OPERATOR_CONTRACT',
+  'EVENT',
+  'PARTICIPATION',
+] as const;
+const FEE_BASES = [
+  'TOPUP_AMOUNT',
+  'SALE_AMOUNT',
+  'PER_MEDIA',
+  'PER_TERMINAL_DAY',
+  'PER_REFUND',
+  'FIXED',
+  'FEE_AMOUNT',
+] as const;
 const FEE_TRIGGERS = ['REALTIME', 'CLOSING'] as const;
 
 export interface FeeRuleInput {
@@ -319,10 +403,12 @@ export function parseFeeRuleCreate(raw: unknown): FeeRuleInput {
   const body = objectBody(raw);
   if (!isUuid(body.scope_id)) throw invalid('scope_id : identifiant attendu.');
   const taxInclusive = body.tax_inclusive;
-  if (taxInclusive !== undefined && typeof taxInclusive !== 'boolean') throw invalid('tax_inclusive : booléen attendu.');
+  if (taxInclusive !== undefined && typeof taxInclusive !== 'boolean')
+    throw invalid('tax_inclusive : booléen attendu.');
   const min = amountField(body, 'min_amount', true) ?? null;
   const max = amountField(body, 'max_amount', true) ?? null;
-  if (min !== null && max !== null && BigInt(min) > BigInt(max)) throw unprocessable('min_amount ne peut pas dépasser max_amount.');
+  if (min !== null && max !== null && BigInt(min) > BigInt(max))
+    throw unprocessable('min_amount ne peut pas dépasser max_amount.');
   return {
     scope_type: enumField(body, 'scope_type', FEE_SCOPES, 'required')!,
     scope_id: body.scope_id,
@@ -362,7 +448,11 @@ export interface JurisdictionBody {
 export function parseJurisdictionProfile(raw: unknown, countryRequired: boolean): JurisdictionBody {
   const body = objectBody(raw);
   const validFrom = body.valid_from;
-  if (typeof validFrom !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(validFrom) || Number.isNaN(Date.parse(validFrom))) {
+  if (
+    typeof validFrom !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(validFrom) ||
+    Number.isNaN(Date.parse(validFrom))
+  ) {
     throw invalid('valid_from : date AAAA-MM-JJ attendue.');
   }
   const parsed: JurisdictionBody = { valid_from: validFrom };
@@ -370,11 +460,20 @@ export function parseJurisdictionProfile(raw: unknown, countryRequired: boolean)
   if (countryRequired && !country) throw invalid('Champ obligatoire : country_code.');
   if (country) parsed.country_code = country;
   if (body.min_refund_window_days !== undefined) {
-    parsed.min_refund_window_days = body.min_refund_window_days === null ? null : intField(body, 'min_refund_window_days', 0, 3650, 'required')!;
+    parsed.min_refund_window_days =
+      body.min_refund_window_days === null
+        ? null
+        : intField(body, 'min_refund_window_days', 0, 3650, 'required')!;
   }
   const breakage = enumField(body, 'breakage_destination', BREAKAGE, 'optional');
   if (breakage !== undefined) parsed.breakage_destination = breakage;
-  for (const field of ['max_wallet_balance', 'kyc_threshold', 'unidentified_max_balance', 'unidentified_monthly_limit', 'identified_monthly_limit'] as const) {
+  for (const field of [
+    'max_wallet_balance',
+    'kyc_threshold',
+    'unidentified_max_balance',
+    'unidentified_monthly_limit',
+    'identified_monthly_limit',
+  ] as const) {
     const amount = amountField(body, field, true);
     if (amount !== undefined) parsed[field] = amount;
   }

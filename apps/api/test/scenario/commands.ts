@@ -35,7 +35,9 @@ function step(
         eventId: fx.eventId,
         currency: 'XOF',
         payload: payload(fx),
-        ...(tx.source === 'BACKOFFICE' ? { createdBy: fx.users.author, approvedBy: fx.users.approver } : {}),
+        ...(tx.source === 'BACKOFFICE'
+          ? { createdBy: fx.users.author, approvedBy: fx.users.approver }
+          : {}),
         ...(options.media ? { mediaId: fx.media[options.media] } : {}),
         ...(options.reversesKey ? { reversesId: await lookup(options.reversesKey) } : {}),
       };
@@ -45,14 +47,22 @@ function step(
 
 const W = (fx: ScenarioFixture, key: WalletKey) => fx.wallets[key];
 const P = (fx: ScenarioFixture, key: MerchantKey) => fx.participations[key];
-const topup = (wallet: WalletKey, channel: string, amount: bigint): Payload => (fx) => ({ walletId: W(fx, wallet), channel, amount });
-const cash = (wallet: WalletKey, amount: bigint): Payload => (fx) => ({ walletId: W(fx, wallet), cashDesk: 'C1', amount });
-const sale = (wallet: WalletKey, merchant: MerchantKey, amount: bigint): Payload => (fx) => ({
-  walletId: W(fx, wallet),
-  participationId: P(fx, merchant),
-  amount,
-});
-const confirmed = (amount: bigint): Payload => () => ({ amount, moneyAccount: 'A-BANQUE' });
+const topup =
+  (wallet: WalletKey, channel: string, amount: bigint): Payload =>
+  (fx) => ({ walletId: W(fx, wallet), channel, amount });
+const cash =
+  (wallet: WalletKey, amount: bigint): Payload =>
+  (fx) => ({ walletId: W(fx, wallet), cashDesk: 'C1', amount });
+const sale =
+  (wallet: WalletKey, merchant: MerchantKey, amount: bigint): Payload =>
+  (fx) => ({
+    walletId: W(fx, wallet),
+    participationId: P(fx, merchant),
+    amount,
+  });
+const confirmed =
+  (amount: bigint): Payload =>
+  () => ({ amount, moneyAccount: 'A-BANQUE' });
 
 export const STEPS: ScenarioStep[] = [
   step(1, topup('W01', 'WAVE', 20_000n), { statusBefore: ['LIVE'] }),
@@ -63,7 +73,9 @@ export const STEPS: ScenarioStep[] = [
   step(6, cash('W05', 25_000n)),
   step(7, () => ({}), { media: 'W05' }), // take_deposit, lot FROM_BALANCE
   step(8, (fx) => ({ walletId: W(fx, 'W06'), amount: 6000n })),
-  step(9, (fx) => ({ walletIds: (['W01', 'W02', 'W03', 'W04', 'W05'] as const).map((w) => W(fx, w)) })),
+  step(9, (fx) => ({
+    walletIds: (['W01', 'W02', 'W03', 'W04', 'W05'] as const).map((w) => W(fx, w)),
+  })),
   step(10, sale('W01', 'FOOD', 6000n)),
   step(11, sale('W01', 'BAR', 4000n)),
   step(12, sale('W02', 'TEE', 12_000n)),
@@ -78,7 +90,9 @@ export const STEPS: ScenarioStep[] = [
   step(21, sale('W06', 'FOOD', 1000n)),
   step(22, sale('W04', 'FOOD', 9000n)), // hors ligne : la part non couverte va au compte d'attente
   step(23, () => ({}), { media: 'W05' }), // refund_deposit, recrédité sur le portefeuille
-  step(24, () => ({ cashDesk: 'C1', counted: 36_800n, expected: 37_000n }), { statusBefore: ['CLOSING'] }),
+  step(24, () => ({ cashDesk: 'C1', counted: 36_800n, expected: 37_000n }), {
+    statusBefore: ['CLOSING'],
+  }),
   step(25, () => ({ amount: 3000n }), { statusBefore: ['RECONCILING'] }),
   step(26, () => ({ amount: 36_800n })),
   step(27, () => ({ channel: 'WAVE', net: 19_800n })),
@@ -112,11 +126,20 @@ export const STEPS: ScenarioStep[] = [
   step(36, confirmed(18_500n)),
   step(37, confirmed(4983n)),
   step(38, confirmed(1017n)),
-  step(39, (fx) => ({ payouts: [{ beneficiary: { participationId: P(fx, 'TEE') }, amount: 8000n }] })),
+  step(39, (fx) => ({
+    payouts: [{ beneficiary: { participationId: P(fx, 'TEE') }, amount: 8000n }],
+  })),
   step(40, confirmed(8000n)),
-  step(41, (fx) => ({ walletId: W(fx, 'W02'), amount: 2000n, moneyAccount: 'A-BANQUE' }), { statusBefore: ['REFUND_WINDOW'] }),
+  step(41, (fx) => ({ walletId: W(fx, 'W02'), amount: 2000n, moneyAccount: 'A-BANQUE' }), {
+    statusBefore: ['REFUND_WINDOW'],
+  }),
   step(42, (fx) => ({ walletId: W(fx, 'W03'), amount: 12_500n, moneyAccount: 'A-BANQUE' })),
-  step(43, (fx) => ({ wallets: [{ walletId: W(fx, 'W01'), paid: 9000n }, { walletId: W(fx, 'W05'), paid: 11_000n }] })),
+  step(43, (fx) => ({
+    wallets: [
+      { walletId: W(fx, 'W01'), paid: 9000n },
+      { walletId: W(fx, 'W05'), paid: 11_000n },
+    ],
+  })),
   step(44, () => ({}), { media: 'W04' }), // forfeit_deposit : bracelet jamais rendu
   step(45, (fx) => ({ walletId: W(fx, 'W06'), amount: 1000n })),
   step(46, () => ({

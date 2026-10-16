@@ -41,7 +41,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
   l'organisation des parties (prestataires, organisateurs, commerçants, participations, points de vente), les
   profils de législation (gérés par la plateforme), les règles de frais des quatre flux, la création du grand livre
   d'un événement et le passage de ses statuts, par l'API du back-office (sans écran).
-- Statut : ✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779`) — migrations `0007`-`0009`, rôle de base `cashless_platform`, 48 opérations back-office servies,
+- Statut : ✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte) — migrations `0007`-`0009`, rôle de base `cashless_platform`, 48 opérations back-office servies,
   cascade versionnée avec bornes, grand livre ouvert à la création de l'événement, passages de statut (`LIVE` à deux),
   scénario de référence rejoué sur une configuration construite par l'API
 - Mission(s) associée(s) : `configuration-parties-evenements-01M4GCJ9` (Configuration, parties et événements)
@@ -55,8 +55,16 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Bracelets NFC
 - Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
-- Statut : 📋 planifié
-- Mission(s) associée(s) : à définir
+- Statut : ✅ mergée le 16/10/2026 dans `feat/bracelets-nfc` (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
+  Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
+  sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0020` (0020 au correctif post-fusion n° 1) ; 27 opérations
+  d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
+  activation, caution, restitution, remplacement, espèces dues, remise en stock, perte, liste noire, rattachement par
+  code, consultation anonyme) ; contrôle quotidien des mots de passe. Limites : service de clés, identité du terminal
+  et identité du festivalier sont des faux qui refusent la production (OP-N41 à OP-N43) ; caution en espèces et espèces
+  dues répondent `409` tant que la mission des caisses n'existe pas (ADR-89) ; le guichet de retour n'enchaîne pas les
+  étapes (ADR-91, à trancher)
+- Mission(s) associée(s) : `bracelets-nfc-01M4TD3W` (Bracelets NFC : format, clés, lots, cycle de vie)
 
 ### Terminaux et encaissement
 - Description : caisse à catalogue, TPE clavier, guichet de recharge ; enrôlement sans MDM ; paiement QR ;

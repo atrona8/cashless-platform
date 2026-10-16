@@ -6,7 +6,11 @@ import type { Request } from 'express';
 import request from 'supertest';
 import { TenantTx, type TxClient } from '../../../src/db/tenant-tx';
 import { CommittedProblem } from '../../../src/idempotency/committed-problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../../src/idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../../src/idempotency/idempotent.decorator';
 import { createTestApp, HeaderTenantContext, TEST_OPERATOR_HEADER } from '../../support/app';
 import { withOwner } from '../../support/db';
 import { createOperators, type Operators } from './fixtures';
@@ -113,7 +117,11 @@ describe('idempotence : problème validé et garde writes', () => {
     const first = await post('expire', key, { note });
     expect(first.status).toBe(409);
     expect(first.headers['content-type']).toMatch(/^application\/problem\+json/);
-    expect(JSON.parse(first.text)).toMatchObject({ code: 'APPROVAL_INVALID', status: 409, detail: 'Demande expirée.' });
+    expect(JSON.parse(first.text)).toMatchObject({
+      code: 'APPROVAL_INVALID',
+      status: 409,
+      detail: 'Demande expirée.',
+    });
     expect(await noteCount(note)).toBe(1);
     expect(await keyRow(key)).toEqual({ status: 'COMPLETED', response_status: 409 });
 

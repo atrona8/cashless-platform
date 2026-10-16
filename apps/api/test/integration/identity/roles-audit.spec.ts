@@ -1,7 +1,18 @@
 // Intégration : `@Roles` sur une portée de chemin (FR-005) et lignes d'audit écrites dans la transaction de
 // l'action (FR-008, NFR-004), avec le faux serveur d'identité.
 import { randomUUID } from 'node:crypto';
-import { Controller, Get, HttpCode, Inject, Module, Param, Post, Query, Req, type INestApplication } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Module,
+  Param,
+  Post,
+  Query,
+  Req,
+  type INestApplication,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import request from 'supertest';
 import { auditContext } from '../../../src/audit/audit-context';
@@ -14,7 +25,10 @@ import { withOwner } from '../../support/db';
 import { FakeIdp, type TestPerson } from '../../support/fake-idp';
 import { createOperators, type Operators } from '../transverse/fixtures';
 
-const organizerOfPath = (req: Request) => ({ type: 'ORGANIZER' as const, id: String(req.params.organizer_id) });
+const organizerOfPath = (req: Request) => ({
+  type: 'ORGANIZER' as const,
+  id: String(req.params.organizer_id),
+});
 
 @Controller('__roles')
 class RolesTestController {
@@ -34,7 +48,11 @@ class RolesTestController {
   @Post('organizers/:organizer_id/notes')
   @HttpCode(201)
   @Roles(['ORGANIZER_ADMIN'], organizerOfPath)
-  write(@Req() req: Request, @Param('organizer_id') organizerId: string, @Query('fail') fail?: string) {
+  write(
+    @Req() req: Request,
+    @Param('organizer_id') organizerId: string,
+    @Query('fail') fail?: string,
+  ) {
     const { operatorId } = this.tenant.current(req);
     return this.tx.run(operatorId, async (client) => {
       const { rows } = await client.query<{ id: string }>(
@@ -82,7 +100,10 @@ describe('rôles, portées et audit', () => {
         [org.a1, org.a2, org.b1, ops.a, ops.b],
       );
       const organizerAdmin = (operatorId: string, organizerId: string) =>
-        idp.createPerson(db, { operatorId, roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerId }] });
+        idp.createPerson(db, {
+          operatorId,
+          roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerId }],
+        });
       admin1 = await organizerAdmin(ops.a, org.a1);
       admin2 = await organizerAdmin(ops.a, org.a2);
       adminB = await organizerAdmin(ops.b, org.b1);
@@ -104,7 +125,9 @@ describe('rôles, portées et audit', () => {
   });
 
   const get = (person: TestPerson, organizerId: string) =>
-    request(app.getHttpServer()).get(`/v1/__roles/organizers/${organizerId}`).set('Authorization', `Bearer ${person.token}`);
+    request(app.getHttpServer())
+      .get(`/v1/__roles/organizers/${organizerId}`)
+      .set('Authorization', `Bearer ${person.token}`);
 
   it('administrateur de cet organisateur : 200', async () => {
     expect((await get(admin1, org.a1)).status).toBe(200);

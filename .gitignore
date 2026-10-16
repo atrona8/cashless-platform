@@ -8,6 +8,9 @@ coverage/
 .dart_tool/
 .packages
 pubspec.lock
+# … sauf ceux des deux paquets Dart du dépôt : ils épinglent l'outillage (génération des types, tests du format).
+!packages/contracts/dart/pubspec.lock
+!packages/tag-format/dart/pubspec.lock
 build/
 # Python
 __pycache__/

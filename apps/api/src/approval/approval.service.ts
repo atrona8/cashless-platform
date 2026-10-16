@@ -16,7 +16,11 @@ import { CommittedProblem } from '../idempotency/committed-problem';
 import type { Principal, Role } from '../identity/principal';
 import { exercisedRole, resolveChain } from '../identity/scope-resolver';
 import { ApprovalActionRegistry, type ApprovalActionDefinition } from './action-registry';
-import { approvalRequestDto, type ApprovalRequestDto, type ApprovalRequestRow } from './approval.mapper';
+import {
+  approvalRequestDto,
+  type ApprovalRequestDto,
+  type ApprovalRequestRow,
+} from './approval.mapper';
 
 export interface NewApprovalRequest {
   action: string;
@@ -66,11 +70,16 @@ export class ApprovalService {
   ): Promise<ApprovalRequestDto> {
     const definition = this.registry.get(input.action);
     if (!definition) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: `Action non prise en charge : ${input.action}.` });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: `Action non prise en charge : ${input.action}.`,
+      });
     }
     // Défaut de l'appelant, pas du client : une action de plateforme n'a pas de prestataire, les autres en ont un.
     if (Boolean(definition.platform) !== (operatorId === null)) {
-      throw new Error(`Demande ${definition.action} : niveau de la transaction incohérent avec l'action`);
+      throw new Error(
+        `Demande ${definition.action} : niveau de la transaction incohérent avec l'action`,
+      );
     }
     const payload = definition.validate(input.payload);
     const role = await this.roleOn(client, actor.principal, definition, payload, input.targetId);
@@ -78,7 +87,13 @@ export class ApprovalService {
     const { rows } = await client.query<ApprovalRequestRow>(
       `INSERT INTO approval_request (operator_id, action, target_id, payload, requested_by)
        VALUES ($1, $2, $3, $4::jsonb, $5) RETURNING *`,
-      [operatorId, definition.action, input.targetId, JSON.stringify(payload), actor.principal.userId],
+      [
+        operatorId,
+        definition.action,
+        input.targetId,
+        JSON.stringify(payload),
+        actor.principal.userId,
+      ],
     );
     const dto = approvalRequestDto(rows[0]!);
     await this.audit.record(client, {
@@ -127,7 +142,12 @@ export class ApprovalService {
       const problem = resolveProblem(error);
       // Jamais de texte SQL : seul le détail d'une erreur métier de l'API est conservé.
       const reason = error instanceof ProblemException ? (error.detail ?? null) : null;
-      after = await this.finish(client, id, `status = 'FAILED', failure_code = $2, failure_reason = $3`, [problem.code, reason]);
+      after = await this.finish(
+        client,
+        id,
+        `status = 'FAILED', failure_code = $2, failure_reason = $3`,
+        [problem.code, reason],
+      );
     }
     const dto = approvalRequestDto(after);
     await this.audit.record(client, {
@@ -173,9 +193,16 @@ export class ApprovalService {
    * Liste (règle 6) : demandes du prestataire que la personne peut lancer ou approuver (rôle sur la portée) ;
    * `operatorId` NULL : demandes de niveau plateforme seulement.
    */
-  list(operatorId: string | null, principal: Principal, filter: ApprovalListFilter): Promise<ApprovalPage> {
+  list(
+    operatorId: string | null,
+    principal: Principal,
+    filter: ApprovalListFilter,
+  ): Promise<ApprovalPage> {
     if (filter.status !== undefined && !STATUSES.includes(filter.status)) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'status : valeur inconnue.' });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 400,
+        detail: 'status : valeur inconnue.',
+      });
     }
     let position = decodeCursor(filter.cursor);
     return this.transaction(operatorId, async (client) => {
@@ -192,7 +219,9 @@ export class ApprovalService {
         }
       }
       const data = visible.slice(0, filter.limit);
-      const last = data[data.length - 1] as (ApprovalRequestRow & { requested_at_text: string }) | undefined;
+      const last = data[data.length - 1] as
+        | (ApprovalRequestRow & { requested_at_text: string })
+        | undefined;
       const hasMore = visible.length > filter.limit;
       return {
         data: data.map((row) => approvalRequestDto(row)),
@@ -206,40 +235,60 @@ export class ApprovalService {
   get(operatorId: string | null, principal: Principal, id: string): Promise<ApprovalRequestDto> {
     if (!UUID.test(id)) throw new ProblemException('NOT_FOUND');
     return this.transaction(operatorId, async (client) => {
-      const { rows } = await client.query<ApprovalRequestRow>('SELECT * FROM approval_request WHERE id = $1', [id]);
+      const { rows } = await client.query<ApprovalRequestRow>(
+        'SELECT * FROM approval_request WHERE id = $1',
+        [id],
+      );
       const row = rows[0];
-      if (!row || !(await this.canSee(client, principal, row))) throw new ProblemException('NOT_FOUND');
+      if (!row || !(await this.canSee(client, principal, row)))
+        throw new ProblemException('NOT_FOUND');
       return approvalRequestDto(row);
     });
   }
 
   // ------------------------------------------------------------------ Aides
 
-  private transaction<T>(operatorId: string | null, fn: (client: TxClient) => Promise<T>): Promise<T> {
+  private transaction<T>(
+    operatorId: string | null,
+    fn: (client: TxClient) => Promise<T>,
+  ): Promise<T> {
     return operatorId === null ? this.platformTx.run(fn) : this.tx.run(operatorId, fn);
   }
 
   private async prepareDecision(client: TxClient, id: string, actor: ApprovalActor) {
     if (!UUID.test(id)) throw new ProblemException('NOT_FOUND');
-    const { rows } = await client.query<ApprovalRequestRow>('SELECT * FROM approval_request WHERE id = $1', [id]);
+    const { rows } = await client.query<ApprovalRequestRow>(
+      'SELECT * FROM approval_request WHERE id = $1',
+      [id],
+    );
     const before = rows[0];
     if (!before) throw new ProblemException('NOT_FOUND');
     const definition = this.registry.get(before.action);
     // Action sans définition : personne ne peut la décider dans cette version.
     if (!definition) throw new ProblemException('FORBIDDEN');
-    const role = await this.roleOn(client, actor.principal, definition, before.payload, before.target_id);
+    const role = await this.roleOn(
+      client,
+      actor.principal,
+      definition,
+      before.payload,
+      before.target_id,
+    );
     if (!role) throw new ProblemException('FORBIDDEN');
     return { before, definition, role };
   }
 
   /** `decide_approval_request` ; CL023 remonte (409) ; NULL = demande échue, passée EXPIRED : validée, puis 409. */
-  private async decide(client: TxClient, id: string, approver: string, approve: boolean, note: string | null): Promise<ApprovalRequestRow> {
-    const { rows } = await client.query<ApprovalRequestRow>('SELECT d.* FROM decide_approval_request($1, $2, $3, $4) d', [
-      id,
-      approver,
-      approve,
-      note,
-    ]);
+  private async decide(
+    client: TxClient,
+    id: string,
+    approver: string,
+    approve: boolean,
+    note: string | null,
+  ): Promise<ApprovalRequestRow> {
+    const { rows } = await client.query<ApprovalRequestRow>(
+      'SELECT d.* FROM decide_approval_request($1, $2, $3, $4) d',
+      [id, approver, approve, note],
+    );
     const decided = rows[0];
     if (!decided?.id) {
       throw new CommittedProblem('APPROVAL_INVALID', { status: 409, detail: 'Demande expirée.' });
@@ -247,11 +296,16 @@ export class ApprovalService {
     return decided;
   }
 
-  private async finish(client: TxClient, id: string, set: string, params: unknown[]): Promise<ApprovalRequestRow> {
-    const { rows } = await client.query<ApprovalRequestRow>(`UPDATE approval_request SET ${set} WHERE id = $1 RETURNING *`, [
-      id,
-      ...params,
-    ]);
+  private async finish(
+    client: TxClient,
+    id: string,
+    set: string,
+    params: unknown[],
+  ): Promise<ApprovalRequestRow> {
+    const { rows } = await client.query<ApprovalRequestRow>(
+      `UPDATE approval_request SET ${set} WHERE id = $1 RETURNING *`,
+      [id, ...params],
+    );
     return rows[0]!;
   }
 
@@ -266,11 +320,17 @@ export class ApprovalService {
     return exercisedRole(principal, [definition.requiredRole], chain);
   }
 
-  private async canSee(client: TxClient, principal: Principal, row: ApprovalRequestRow): Promise<boolean> {
+  private async canSee(
+    client: TxClient,
+    principal: Principal,
+    row: ApprovalRequestRow,
+  ): Promise<boolean> {
     const definition = this.registry.get(row.action);
     if (!definition) return false;
     try {
-      return (await this.roleOn(client, principal, definition, row.payload, row.target_id)) !== undefined;
+      return (
+        (await this.roleOn(client, principal, definition, row.payload, row.target_id)) !== undefined
+      );
     } catch (error) {
       if (error instanceof ProblemException && error.code === 'NOT_FOUND') return false;
       throw error;
@@ -295,7 +355,14 @@ export class ApprovalService {
           AND ($4::timestamptz IS NULL OR (r.requested_at, r.id) < ($4::timestamptz, $5::uuid))
         ORDER BY r.requested_at DESC, r.id DESC
         LIMIT $6`,
-      [actions, filter.action ?? null, filter.status ?? null, position?.[0] ?? null, position?.[1] ?? null, limit],
+      [
+        actions,
+        filter.action ?? null,
+        filter.status ?? null,
+        position?.[0] ?? null,
+        position?.[1] ?? null,
+        limit,
+      ],
     );
     return rows;
   }
@@ -316,13 +383,21 @@ function decodeCursor(cursor: string | undefined): [string, string] | null {
   if (cursor === undefined || cursor === '') return null;
   try {
     const value: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
-    if (Array.isArray(value) && value.length === 2 && typeof value[0] === 'string' && UUID.test(String(value[1]))) {
+    if (
+      Array.isArray(value) &&
+      value.length === 2 &&
+      typeof value[0] === 'string' &&
+      UUID.test(String(value[1]))
+    ) {
       return [value[0], String(value[1])];
     }
   } catch {
     // illisible : refusé ci-dessous
   }
-  throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'cursor : curseur invalide.' });
+  throw new ProblemException('VALIDATION_FAILED', {
+    status: 400,
+    detail: 'cursor : curseur invalide.',
+  });
 }
 
 /** Réponse `202 Accepted` d'une opération à deux : la demande créée, avec son adresse. */

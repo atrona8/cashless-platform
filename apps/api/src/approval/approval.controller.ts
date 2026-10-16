@@ -7,16 +7,25 @@ import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query, Req } from
 import type { Request } from 'express';
 import { auditContext } from '../audit/audit-context';
 import { ProblemException } from '../errors/problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../idempotency/idempotent.decorator';
 import { assertPlatformAdmin, isPlatformPerson } from '../idempotency/platform-person';
 import { requestPrincipal } from '../identity/principal';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
 import { ApprovalService } from './approval.service';
 
 function note(body: unknown, required: boolean): string | null {
-  const value = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).note : undefined;
+  const value =
+    typeof body === 'object' && body !== null ? (body as Record<string, unknown>).note : undefined;
   if (value === undefined || value === null) {
-    if (required) throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'Note obligatoire pour un refus.' });
+    if (required)
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 400,
+        detail: 'Note obligatoire pour un refus.',
+      });
     return null;
   }
   const min = required ? 5 : 0;
@@ -33,7 +42,10 @@ function limitOf(raw: string | undefined): number {
   if (raw === undefined || raw === '') return 50;
   const limit = Number(raw);
   if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
-    throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'limit : entier de 1 à 200 attendu.' });
+    throw new ProblemException('VALIDATION_FAILED', {
+      status: 400,
+      detail: 'limit : entier de 1 à 200 attendu.',
+    });
   }
   return limit;
 }
@@ -57,7 +69,12 @@ export class ApprovalController {
     @Query('limit') limit?: string,
   ) {
     const operatorId = this.level(req);
-    return this.approvals.list(operatorId, requestPrincipal(req), { status, action, cursor, limit: limitOf(limit) });
+    return this.approvals.list(operatorId, requestPrincipal(req), {
+      status,
+      action,
+      cursor,
+      limit: limitOf(limit),
+    });
   }
 
   @Get(':approval_request_id')

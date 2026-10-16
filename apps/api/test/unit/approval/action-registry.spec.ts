@@ -1,6 +1,10 @@
 // Unitaires : registre des actions à deux personnes (doublon refusé au démarrage, action inconnue).
 import { Test } from '@nestjs/testing';
-import { ApprovalActionRegistry, registerApprovalActions, type ApprovalActionDefinition } from '../../../src/approval/action-registry';
+import {
+  ApprovalActionRegistry,
+  registerApprovalActions,
+  type ApprovalActionDefinition,
+} from '../../../src/approval/action-registry';
 
 const definition = (action: ApprovalActionDefinition['action']): ApprovalActionDefinition => ({
   action,
@@ -28,8 +32,15 @@ describe('ApprovalActionRegistry', () => {
 
   it('registerApprovalActions : enregistre au démarrage ; doublon entre deux modules : démarrage refusé', async () => {
     // Le registre est global (ApprovalModule) : les modules d'enregistrement le voient.
-    const host = () => ({ module: class RegistryHost {}, global: true, providers: [ApprovalActionRegistry], exports: [ApprovalActionRegistry] });
-    const ok = await Test.createTestingModule({ imports: [host(), registerApprovalActions(definition('LATE_CLAIM'))] }).compile();
+    const host = () => ({
+      module: class RegistryHost {},
+      global: true,
+      providers: [ApprovalActionRegistry],
+      exports: [ApprovalActionRegistry],
+    });
+    const ok = await Test.createTestingModule({
+      imports: [host(), registerApprovalActions(definition('LATE_CLAIM'))],
+    }).compile();
     expect(ok.get(ApprovalActionRegistry).get('LATE_CLAIM')).toBeDefined();
     await expect(
       Test.createTestingModule({

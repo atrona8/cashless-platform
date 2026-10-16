@@ -30,16 +30,25 @@ export function idempotencyOffenders(path: string, text: string): string[] {
     if (ts.isClassDeclaration(node)) {
       const className = node.name?.text ?? '(anonyme)';
       const routes = node.members.filter(
-        (member): member is ts.MethodDeclaration => ts.isMethodDeclaration(member) && decoratorNames(member).includes('Idempotent'),
+        (member): member is ts.MethodDeclaration =>
+          ts.isMethodDeclaration(member) && decoratorNames(member).includes('Idempotent'),
       );
       for (const route of routes) {
-        const withTx = route.parameters.some((param) => decoratorNames(param).includes('IdempotentTransaction'));
-        if (!withTx) offenders.push(`${path} › ${className}.${route.name.getText()} : sans @IdempotentTransaction()`);
+        const withTx = route.parameters.some((param) =>
+          decoratorNames(param).includes('IdempotentTransaction'),
+        );
+        if (!withTx)
+          offenders.push(
+            `${path} › ${className}.${route.name.getText()} : sans @IdempotentTransaction()`,
+          );
       }
       const ctor = node.members.find(ts.isConstructorDeclaration);
-      const injectsTenantTx = ctor?.parameters.some((param) => param.type?.getText() === 'TenantTx') ?? false;
+      const injectsTenantTx =
+        ctor?.parameters.some((param) => param.type?.getText() === 'TenantTx') ?? false;
       if (routes.length > 0 && injectsTenantTx) {
-        offenders.push(`${path} › ${className} : injecte TenantTx alors qu'il déclare une route @Idempotent`);
+        offenders.push(
+          `${path} › ${className} : injecte TenantTx alors qu'il déclare une route @Idempotent`,
+        );
       }
     }
     ts.forEachChild(node, visit);

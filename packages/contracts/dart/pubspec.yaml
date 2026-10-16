@@ -1,0 +1,16 @@
+name: cashless_contracts
+description: Types Dart de l'API cashless, générés depuis ../openapi.yaml — ne jamais les écrire à la main.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  json_serializable: ^6.9.0
+  lints: 6.0.0
+  swagger_parser: 1.45.0

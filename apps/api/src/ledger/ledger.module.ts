@@ -11,7 +11,11 @@ export class LedgerModule {
   static register(configResolver: Provider): DynamicModule {
     return {
       module: LedgerModule,
-      providers: [configResolver, { provide: ACCOUNT_RESOLVER, useClass: SqlAccountResolver }, LedgerEngineService],
+      providers: [
+        configResolver,
+        { provide: ACCOUNT_RESOLVER, useClass: SqlAccountResolver },
+        LedgerEngineService,
+      ],
       exports: [LedgerEngineService],
     };
   }

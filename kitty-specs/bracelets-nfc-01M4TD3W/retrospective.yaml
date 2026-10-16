@@ -1,0 +1,267 @@
+schema_version: 1
+mission_id: 01M4TD3WS72DHMSH9TB2TS5E8W
+mission_slug: bracelets-nfc-01M4TD3W
+mission_number:
+friendly_name: Bracelets NFC (format, clés, lots, cycle de vie)
+mission_type: software-dev
+target_branch: feat/bracelets-nfc
+created_at: '2026-10-16T09:33:36.658710+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-16T09:33:36.658710+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-005
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-006
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-007
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-008
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-009
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-010
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-011
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-012
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-013
+  category: implementation
+  summary: WP13 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-014
+  category: implementation
+  summary: WP14 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-015
+  category: implementation
+  summary: WP15 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-016
+  category: implementation
+  summary: WP16 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-017
+  category: implementation
+  summary: WP17 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-018
+  category: implementation
+  summary: WP18 completed without rejection cycles
+  evidence_refs:
+  - e-025
+- id: h-019
+  category: implementation
+  summary: WP19 completed without rejection cycles
+  evidence_refs:
+  - e-025
+not_helpful:
+- id: n-004
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-029
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-003
+  category: implementation
+  summary: WP20 needed 9 implementation cycles
+  evidence_refs:
+  - e-028
+  details: WP WP20 entered in_progress 9 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-002
+  category: process
+  summary: WP20 required 8 --force override(s) during workflow
+  evidence_refs:
+  - e-027
+  details: WP WP20 required 8 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP20 required 5 rejection cycle(s) before approval
+  evidence_refs:
+  - e-026
+  details: WP WP20 was sent back from review to planning 5 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP01-bibliotheque-format-typescript.md
+- id: e-006
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP02-bibliotheque-format-dart.md
+- id: e-007
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP03-schema-rattachement-s19.md
+- id: e-008
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP04-role-personalizer-travaux-cle.md
+- id: e-009
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP05-fonctions-appui-bracelets.md
+- id: e-010
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP06-roles-de-base-processus.md
+- id: e-011
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP07-contrat-api-bracelets.md
+- id: e-012
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP08-ports-faux-garde-production.md
+- id: e-013
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP09-processus-et-commande-admin.md
+- id: e-014
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP10-cles-demandes-et-commande.md
+- id: e-015
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP11-cles-de-donnees-rotation-retrait.md
+- id: e-016
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP12-lots-codes-inventaire.md
+- id: e-017
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP13-personnalisation.md
+- id: e-018
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP14-mot-de-passe-terminal-et-lecture.md
+- id: e-019
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP15-activation-caution-consultation.md
+- id: e-020
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP16-retour-remplacement-perte.md
+- id: e-021
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP17-rattachement-par-code.md
+- id: e-022
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP18-liste-noire.md
+- id: e-023
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP19-controle-quotidien.md
+- id: e-024
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP20-preuves-ci-decisions.md
+- id: e-025
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/status.events.jsonl
+- id: e-026
+  kind: event_range
+  path: kitty-specs/bracelets-nfc-01M4TD3W/status.events.jsonl
+  range: 01M4XFZC8ZGARJV8H4E81WYMY6..01M502ZAEPZDJGNNP1KYK96XQG
+- id: e-027
+  kind: event_range
+  path: kitty-specs/bracelets-nfc-01M4TD3W/status.events.jsonl
+  range: 01M4XFZC8ZGARJV8H4E81WYMY6..01M506Q5XVEFZ7986XZF6688C2
+- id: e-028
+  kind: event_range
+  path: kitty-specs/bracelets-nfc-01M4TD3W/status.events.jsonl
+  range: implementation_cycles
+- id: e-029
+  kind: file
+  path: kitty-specs/bracelets-nfc-01M4TD3W/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

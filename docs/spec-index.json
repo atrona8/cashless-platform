@@ -255,5 +255,169 @@
       "Suites existantes vertes"
     ],
     "source": "kitty-specs/configuration-parties-evenements-01M4GCJ9/spec.md"
+  },
+  {
+    "mission": "bracelets-nfc-01M4TD3W",
+    "titre_cas_usage": "Bracelets NFC (format, clés, lots, cycle de vie)",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Deux bibliothèques, un seul format",
+        "detail": "Un développeur du serveur ou d'une app encode et décode un bracelet avec la bibliothèque de son langage, et obtient exactement les octets du kit."
+      },
+      {
+        "titre": "L'organisateur commande et suit un lot",
+        "detail": "Un administrateur d'organisateur crée un lot de bracelets, reçoit le fichier de commande avec les codes à imprimer, puis fait avancer le lot jusqu'à sa mise en service et consulte son inventaire."
+      },
+      {
+        "titre": "Le poste de personnalisation enregistre un bracelet",
+        "detail": "Le poste de personnalisation, qui vient d'écrire une puce, enregistre le bracelet auprès du serveur ; le serveur calcule son mot de passe par le KMS, le stocke chiffré et associe le code imprimé."
+      },
+      {
+        "titre": "Le terminal lit un bracelet",
+        "detail": "Un terminal authentifié demande le mot de passe d'un bracelet, puis enregistre sa lecture ; le serveur dit si le bracelet peut servir."
+      },
+      {
+        "titre": "Le guichet active un bracelet et encaisse la caution",
+        "detail": "Un agent de guichet active un bracelet pour un festivalier : le bracelet est rattaché à un portefeuille, préchargé si le lot le prévoit, et la caution est prise."
+      },
+      {
+        "titre": "Le guichet de retour : caution, restitution, remplacement",
+        "detail": "Un agent rend la caution, rend les espèces dues, enregistre la restitution, remet en stock un bracelet rendu d'un lot réattribuable ; ou remplace un bracelet abîmé ou perdu par un neuf. Livré sans enchaînement des étapes par le serveur (ADR-91, à trancher) ; espèces refusées (409) tant qu'aucune caisse n'est ouverte (ADR-89)."
+      },
+      {
+        "titre": "Le festivalier rattache son bracelet avec le code imprimé",
+        "detail": "Un festivalier connecté saisit ou scanne le code imprimé sur son bracelet pour le rattacher à son compte (un bracelet jamais activé est activé depuis l'app si l'événement l'autorise) ; un bracelet approvisionné exige une confirmation au guichet, bracelet en main ; sans compte, il consulte seulement son solde (devise, solde, statut, 10 derniers mouvements)."
+      },
+      {
+        "titre": "Les clés vivent et se retirent sous contrôle",
+        "detail": "Un administrateur de prestataire demande la création d'un index de clé, la rotation de la clé de données ou le retrait d'une clé dédiée, validés par une seconde personne et exécutés par le processus qui a le droit ; un contrôle quotidien recalcule un échantillon de mots de passe stockés et signale un écart par le journal d'audit."
+      },
+      {
+        "titre": "Sortir un bracelet de la liste noire, à deux",
+        "detail": "Après enquête, un superviseur demande la sortie de liste noire d'un bracelet ; une seconde personne valide."
+      },
+      {
+        "titre": "Clore un lot",
+        "detail": "En fin d'événement, l'administrateur clôt un lot : les bracelets en circulation partent en fin de vie et les cautions non rendues sont acquises."
+      }
+    ],
+    "entites_cles": [
+      "Bracelet",
+      "Lot",
+      "Clé de bracelet",
+      "Clé de données",
+      "Lecture",
+      "Rattachement",
+      "Code de rattachement",
+      "Demande en attente",
+      "Essai de code",
+      "Anomalie",
+      "Travail de clé",
+      "Compte rendu du contrôle"
+    ],
+    "resultat_mesurable": "Deux bibliothèques conformes à 100 % des vecteurs du kit ; parcours complet d'un bracelet par l'API sans intervention en base ; 100 % des lectures copiées mises en liste noire ; aucun secret en clair au repos ni dans les journaux ; 0 fuite entre deux prestataires ; aucune action de clé ni sortie de liste noire avec une seule personne ; aucun écart de sécurité non consigné — mesuré à la répétition de CI du 14/10/2026 : vecteurs du kit reproduits en TypeScript et en Dart ; mot de passe p95 15 ms, lecture p95 23 ms, activation p95 49 ms sur 100 000 bracelets ; écart de 0,2 ms entre code inconnu et code utilisé (seuil 20 ms) ; 1 267 assertions pgTAP et 1 223 tests Jest verts",
+    "hypotheses": [
+      "Le poste de personnalisation est tenu par une personne du prestataire qui porte le rôle dédié `PERSONALIZER` (décision du porteur au plan)",
+      "Le serveur calcule le mot de passe à l'enregistrement et le rend au poste chiffré pour une clé à usage unique du poste, jamais en clair (décision du porteur au plan)",
+      "La validité de la signature d'originalité est vérifiée par le poste (clé publique NXP) et déclarée au serveur",
+      "Les routes de terminal et de festivalier déjà décrites au contrat sont servies, avec trois corrections : consultation anonyme réduite (décision n° 11), remplacement qui exige terminal et personne, restitution sans enchaînement (ADR-91)",
+      "Le contrôle quotidien est livré comme une opération déclenchable et testable",
+      "L'alerte d'un blocage d'essais ou d'un écart au contrôle quotidien passe par le journal d'audit et le code de sortie, sans nouvelle sorte d'anomalie (ADR-92)",
+      "Le fichier de commande est remis une seule fois à l'administrateur",
+      "La création d'un compte festivalier est hors mission : le faux festivalier fournit un identifiant de compte",
+      "Les plafonds réglementaires du portefeuille (§6.3) ne sont pas exercés ici au-delà de ce que font déjà les fonctions de la base",
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1"
+    ],
+    "contraintes": [
+      "Les fonctions de la base font les règles",
+      "Fichiers générés du kit intouchables",
+      "Vecteurs du kit comme vérité",
+      "Pas d'adaptateur AWS",
+      "Identités réelles hors mission",
+      "Pas de lecture NFC ni d'outil de poste",
+      "Pas de paiement ni de recharge",
+      "Contrat d'abord",
+      "Aucun écran",
+      "Bracelets pour le cashless seulement",
+      "Écart de sécurité soumis au porteur",
+      "Dette de sécurité nommée",
+      "Aucun compte de caisse avant la mission des caisses (ADR-89)"
+    ],
+    "cas_limites": [
+      "Deux postes enregistrent en même temps le même UID",
+      "Enregistrement d'un bracelet au-delà de la quantité du lot",
+      "Mot de passe demandé pour un index dont la clé est retirée",
+      "Lecture embarquée dans une opération qui échoue",
+      "Lecture d'un bracelet dont le lot est suspendu (stock volé)",
+      "Activation rejouée avec la même clé d'idempotence",
+      "Activation d'un bracelet d'un lot non réservé sans préciser l'événement",
+      "Caution due puis crédit payé reçu",
+      "Remplacement dont l'ancien bracelet a une caution due",
+      "Demande en attente expirée",
+      "Quatrième demande en attente sur un même bracelet",
+      "Code de rattachement saisi avec un caractère hors alphabet (`0`, `1`, `I`, `O`)",
+      "Fichier de correspondance dont un UID est inconnu du lot",
+      "Rotation de la clé de données interrompue",
+      "KMS indisponible pendant une personnalisation ou une demande de mot de passe",
+      "Retrait d'une clé dédiée dont la désactivation dans le KMS échoue",
+      "Sortie de liste noire d'un bracelet remplacé entre-temps",
+      "Fichier de commande des codes perdu en route (OP-N48)",
+      "Lecture qui a confirmé un rattachement réutilisée par une écriture dans la fenêtre (OP-N50)",
+      "Clé du service de clés désactivée pendant le contrôle quotidien"
+    ],
+    "fonctionnel": [
+      "Format B 1.0",
+      "Message de dérivation",
+      "Chiffrement du mot de passe",
+      "Code de rattachement",
+      "Deux implémentations conformes",
+      "Service de gestion des clés substituable",
+      "Clés de bracelet",
+      "Rotation de la clé de données",
+      "Retrait d'une clé dédiée",
+      "Contrôle quotidien",
+      "Lots",
+      "Cycle de vie d'un lot",
+      "Clôture d'un lot et rattrapages",
+      "Inventaire d'un lot",
+      "Codes générés à la commande",
+      "Enregistrement d'un bracelet personnalisé",
+      "Association du code à la puce",
+      "Mot de passe d'un bracelet pour un terminal",
+      "Lecture d'un bracelet",
+      "Effets de sécurité durables",
+      "Activation",
+      "Caution",
+      "Prise d'une caution due",
+      "Consultation d'un bracelet",
+      "Restitution et réattribution",
+      "Remise en stock d'un bracelet réattribuable (route ajoutée)",
+      "Espèces dues",
+      "Remplacement",
+      "Perte et bracelet retrouvé",
+      "Liste noire et sortie à deux",
+      "Rattachement par code",
+      "Activation depuis l'app",
+      "Limites d'essais",
+      "Confirmation au guichet",
+      "Consultation anonyme du solde",
+      "Identité du terminal et du festivalier substituable",
+      "Audit et historique",
+      "Contrat d'API et types générés"
+    ],
+    "non_fonctionnel": [
+      "Conformité aux vecteurs",
+      "Aucun secret en clair au repos",
+      "Durée de vie d'un secret en mémoire",
+      "Isolation entre prestataires",
+      "Séparation des droits sur les clés",
+      "Latence",
+      "Pas d'énumération",
+      "Traitements par tranches",
+      "Aucun faux en production",
+      "Tests existants verts"
+    ],
+    "source": "kitty-specs/bracelets-nfc-01M4TD3W/spec.md"
   }
 ]

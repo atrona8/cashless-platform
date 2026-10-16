@@ -1,0 +1,337 @@
+{
+  "event_count": 183,
+  "last_event_id": "01M520XX7FJTCK3ES52TZYBB5F",
+  "materialized_at": "2026-10-16T09:33:13.327223+00:00",
+  "mission_number": "",
+  "mission_slug": "bracelets-nfc-01M4TD3W",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 20,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WC062YX2PDQBVNFFCXZF",
+      "last_transition_at": "2026-10-16T09:32:22.918980+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP01-bibliotheque-format-typescript/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP01-bibliotheque-format-typescript/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 14378,
+      "shell_pid_created_at": "1791894417.676073"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WKT2RR42EHEPT6XJAGHF",
+      "last_transition_at": "2026-10-16T09:32:30.915025+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP02-bibliotheque-format-dart/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP02-bibliotheque-format-dart/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 16946,
+      "shell_pid_created_at": "1791894835.189214"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WEJYYR5ABQC6SRW3M8CP",
+      "last_transition_at": "2026-10-16T09:32:25.566363+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP03-schema-rattachement-s19/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP03-schema-rattachement-s19/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 18270,
+      "shell_pid_created_at": "1791895115.322425"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WPCC50RBASGXH29B4E4Y",
+      "last_transition_at": "2026-10-16T09:32:33.548754+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP04-role-personalizer-travaux-cle/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP04-role-personalizer-travaux-cle/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 20691,
+      "shell_pid_created_at": "1791896953.105813"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WVH5H0TAQAYS1NXRP82Y",
+      "last_transition_at": "2026-10-16T09:32:38.821593+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP05-fonctions-appui-bracelets/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP05-fonctions-appui-bracelets/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 22133,
+      "shell_pid_created_at": "1791897221.734346"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WY4XVTH3Q9YEQTJ1G99D",
+      "last_transition_at": "2026-10-16T09:32:41.501474+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP06-roles-de-base-processus/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP06-roles-de-base-processus/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 23760,
+      "shell_pid_created_at": "1791897485.23093"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WH5YEDAN0AR0FG8BJKW7",
+      "last_transition_at": "2026-10-16T09:32:28.222399+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP07-contrat-api-bracelets/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP07-contrat-api-bracelets/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 26059,
+      "shell_pid_created_at": "1791898998.253645"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WRYMQ4X4511VGNRB16ZE",
+      "last_transition_at": "2026-10-16T09:32:36.181027+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP08-ports-faux-garde-production/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP08-ports-faux-garde-production/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 28325,
+      "shell_pid_created_at": "1791899586.892965"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X0PZRN6BSR4APAVJ40FP",
+      "last_transition_at": "2026-10-16T09:32:44.127658+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP09-processus-et-commande-admin/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP09-processus-et-commande-admin/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 31329,
+      "shell_pid_created_at": "1791900230.695144"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X39BRP554Z988D28SFFH",
+      "last_transition_at": "2026-10-16T09:32:46.763915+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP10-cles-demandes-et-commande/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP10-cles-demandes-et-commande/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 34083,
+      "shell_pid_created_at": "1791900677.401923"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X8CZ4F10AZGV4C1R6GAQ",
+      "last_transition_at": "2026-10-16T09:32:51.999798+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP11-cles-de-donnees-rotation-retrait/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP11-cles-de-donnees-rotation-retrait/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 37617,
+      "shell_pid_created_at": "1791901995.678098"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X5V7FECZNG90ZFXD82VW",
+      "last_transition_at": "2026-10-16T09:32:49.383505+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP12-lots-codes-inventaire/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP12-lots-codes-inventaire/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 41197,
+      "shell_pid_created_at": "1791902880.413326"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XB0XD364SEFZ19DY5PQ6",
+      "last_transition_at": "2026-10-16T09:32:54.685229+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP13-personnalisation/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP13-personnalisation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 47447,
+      "shell_pid_created_at": "1791904290.286091"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XDK7MY84JJGW9X2NYKJG",
+      "last_transition_at": "2026-10-16T09:32:57.319387+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP14-mot-de-passe-terminal-et-lecture/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP14-mot-de-passe-terminal-et-lecture/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 50107,
+      "shell_pid_created_at": "1791905327.000435"
+    },
+    "WP15": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XJT62BG8JEQ9DB013F2S",
+      "last_transition_at": "2026-10-16T09:33:02.662416+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP15-activation-caution-consultation/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP15-activation-caution-consultation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 53235,
+      "shell_pid_created_at": "1791905927.520147"
+    },
+    "WP16": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XR1E6ZR0CPDGK13KBA60",
+      "last_transition_at": "2026-10-16T09:33:08.014539+00:00",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP16-retour-remplacement-perte/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 57686,
+      "shell_pid_created_at": "1791909372.771166"
+    },
+    "WP17": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XTKXGAYSDSD5BVYNCHXK",
+      "last_transition_at": "2026-10-16T09:33:10.653978+00:00",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP17-rattachement-par-code/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 7606,
+      "shell_pid_created_at": "1791972950.88454"
+    },
+    "WP18": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XNDW53GY1C608TNV5SD4",
+      "last_transition_at": "2026-10-16T09:33:05.340467+00:00",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP18-liste-noire/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 11569,
+      "shell_pid_created_at": "1791976355.516694"
+    },
+    "WP19": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XG681GYDY92M8FCBK78P",
+      "last_transition_at": "2026-10-16T09:32:59.976357+00:00",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP19-controle-quotidien/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 15616,
+      "shell_pid_created_at": "1791980107.818409"
+    },
+    "WP20": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 8,
+      "lane": "done",
+      "last_event_id": "01M520XX7FJTCK3ES52TZYBB5F",
+      "last_transition_at": "2026-10-16T09:33:13.327223+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP20-preuves-ci-decisions/review-cycle-12.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP20-preuves-ci-decisions/review-cycle-12.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 40652,
+      "shell_pid_created_at": "1792082172.959391"
+    }
+  }
+}

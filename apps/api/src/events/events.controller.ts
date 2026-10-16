@@ -11,22 +11,42 @@ import type { SettingRole } from '../configuration/settings-catalog';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { pickLanguage } from '../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../idempotency/idempotent.decorator';
 import type { Role } from '../identity/principal';
-import { conflict, invalid, isUuid, pageRequest, requireUuid, unprocessable } from '../organization/platform/platform.dto';
+import {
+  conflict,
+  invalid,
+  isUuid,
+  pageRequest,
+  requireUuid,
+  unprocessable,
+} from '../organization/platform/platform.dto';
 import { PartiesService } from '../organization/tenant/parties.service';
 import { scopesHeld, TenantAccess, type TenantActor } from '../organization/tenant/tenant-access';
 import { eventDto, parseEventCreate, parseEventUpdate, type EventRow } from './events.dto';
 import { EventsService } from './events.service';
 
-const READERS: readonly Role[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR'];
+const READERS: readonly Role[] = [
+  'PLATFORM_ADMIN',
+  'OPERATOR_ADMIN',
+  'ORGANIZER_ADMIN',
+  'SUPERVISOR',
+];
 const WRITERS: readonly Role[] = ['ORGANIZER_ADMIN', 'OPERATOR_ADMIN'];
 const STATUSES = ['DRAFT', 'LIVE', 'CLOSING', 'RECONCILING', 'SETTLING', 'REFUND_WINDOW', 'CLOSED'];
 
 /** L'événement est-il dans la portée de lecture de la personne ? (les rôles du prestataire voient tout) */
-export function canReadEvent(actor: TenantActor, event: Pick<EventRow, 'id' | 'organizer_id'>): boolean {
+export function canReadEvent(
+  actor: TenantActor,
+  event: Pick<EventRow, 'id' | 'organizer_id'>,
+): boolean {
   const { principal } = actor;
-  if (principal.assignments.some((a) => a.role === 'PLATFORM_ADMIN' || a.role === 'OPERATOR_ADMIN')) return true;
+  if (principal.assignments.some((a) => a.role === 'PLATFORM_ADMIN' || a.role === 'OPERATOR_ADMIN'))
+    return true;
   return (
     scopesHeld(principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(event.organizer_id) ||
     scopesHeld(principal, 'SUPERVISOR', 'ORGANIZER').includes(event.organizer_id) ||
@@ -37,8 +57,10 @@ export function canReadEvent(actor: TenantActor, event: Pick<EventRow, 'id' | 'o
 /** Rôles de réglage tenus sur cet événement : OPERATOR_ADMIN du prestataire, ORGANIZER_ADMIN de son organisateur. */
 export function settingRolesOn(actor: TenantActor, organizerId: string): SettingRole[] {
   const roles: SettingRole[] = [];
-  if (actor.principal.assignments.some((a) => a.role === 'OPERATOR_ADMIN')) roles.push('OPERATOR_ADMIN');
-  if (scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId)) roles.push('ORGANIZER_ADMIN');
+  if (actor.principal.assignments.some((a) => a.role === 'OPERATOR_ADMIN'))
+    roles.push('OPERATOR_ADMIN');
+  if (scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId))
+    roles.push('ORGANIZER_ADMIN');
   return roles;
 }
 
@@ -61,13 +83,22 @@ export class EventsController {
     @Query('limit') limit?: string,
   ) {
     const actor = this.access.actor(req, READERS);
-    if (organizerId !== undefined && !isUuid(organizerId)) throw invalid('organizer_id : identifiant attendu.');
-    if (status !== undefined && !STATUSES.includes(status)) throw invalid('status : valeur inconnue.');
-    const all = actor.principal.assignments.some((a) => a.role === 'PLATFORM_ADMIN' || a.role === 'OPERATOR_ADMIN');
+    if (organizerId !== undefined && !isUuid(organizerId))
+      throw invalid('organizer_id : identifiant attendu.');
+    if (status !== undefined && !STATUSES.includes(status))
+      throw invalid('status : valeur inconnue.');
+    const all = actor.principal.assignments.some(
+      (a) => a.role === 'PLATFORM_ADMIN' || a.role === 'OPERATOR_ADMIN',
+    );
     const filter = {
       organizerId,
       status,
-      organizers: all ? null : [...scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER'), ...scopesHeld(actor.principal, 'SUPERVISOR', 'ORGANIZER')],
+      organizers: all
+        ? null
+        : [
+            ...scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER'),
+            ...scopesHeld(actor.principal, 'SUPERVISOR', 'ORGANIZER'),
+          ],
       events: all ? null : scopesHeld(actor.principal, 'SUPERVISOR', 'EVENT'),
     };
     const page = pageRequest(cursor, limit);
@@ -75,8 +106,18 @@ export class EventsController {
       const rows = await this.events.list(client, filter, page.offset, page.limit + 1);
       const hasMore = rows.length > page.limit;
       return {
-        data: rows.slice(0, page.limit).map((row) => eventDto(row, (row.ledger_id as string | null) ?? null, (row.config_version_id as string | null) ?? null)),
-        next_cursor: hasMore ? Buffer.from(JSON.stringify({ o: page.offset + page.limit })).toString('base64url') : null,
+        data: rows
+          .slice(0, page.limit)
+          .map((row) =>
+            eventDto(
+              row,
+              (row.ledger_id as string | null) ?? null,
+              (row.config_version_id as string | null) ?? null,
+            ),
+          ),
+        next_cursor: hasMore
+          ? Buffer.from(JSON.stringify({ o: page.offset + page.limit })).toString('base64url')
+          : null,
         has_more: hasMore,
       };
     });
@@ -84,15 +125,30 @@ export class EventsController {
 
   @Post()
   @Idempotent({ scope: 'bo:' })
-  create(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  create(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, WRITERS);
     const input = parseEventCreate(body);
     return tx.run(async (client) => {
       // Organisateur du prestataire (404 sinon), sur lequel la personne tient un rôle de réglage.
       await this.parties.row(client, 'ORGANIZER', input.organizer_id);
-      if (settingRolesOn(actor, input.organizer_id).length === 0) throw new ProblemException('FORBIDDEN');
-      const created = await this.events.create(client, actor.operatorId, input, actor.audit, pickLanguage(req.header('Accept-Language')));
-      res.setHeader('Location', `/v1/operators/${actor.operatorId}/events/${String(created.event_id)}`);
+      if (settingRolesOn(actor, input.organizer_id).length === 0)
+        throw new ProblemException('FORBIDDEN');
+      const created = await this.events.create(
+        client,
+        actor.operatorId,
+        input,
+        actor.audit,
+        pickLanguage(req.header('Accept-Language')),
+      );
+      res.setHeader(
+        'Location',
+        `/v1/operators/${actor.operatorId}/events/${String(created.event_id)}`,
+      );
       return created;
     });
   }
@@ -100,7 +156,9 @@ export class EventsController {
   @Get(':event_id')
   get(@Req() req: Request, @Param('event_id') eventId: string) {
     const actor = this.access.actor(req, READERS);
-    return this.access.read(actor, async (client) => this.events.dto(client, await this.visible(client, actor, eventId)));
+    return this.access.read(actor, async (client) =>
+      this.events.dto(client, await this.visible(client, actor, eventId)),
+    );
   }
 
   @Patch(':event_id')
@@ -118,7 +176,12 @@ export class EventsController {
     return tx.run(async (client) => {
       const row = await this.events.row(client, requireUuid(eventId));
       // Qui règle ces clés : 403 si une clé relève d'un rôle que la personne ne tient pas, 422 si deux rôles se mêlent.
-      const role = assertSettableBy(Object.keys(changes), 'EVENT', settingRolesOn(actor, row.organizer_id), language);
+      const role = assertSettableBy(
+        Object.keys(changes),
+        'EVENT',
+        settingRolesOn(actor, row.organizer_id),
+        language,
+      );
       if (!role) throw new ProblemException('FORBIDDEN');
       if (row.status !== 'DRAFT' && row.status !== 'LIVE') {
         throw conflict(`Un événement ${row.status} ne se modifie plus.`);
@@ -130,9 +193,14 @@ export class EventsController {
         client,
         actor.operatorId,
         {
-          action: role === 'OPERATOR_ADMIN' ? 'EVENT_OPERATOR_SETTINGS_CHANGE' : 'EVENT_SETTINGS_CHANGE',
+          action:
+            role === 'OPERATOR_ADMIN' ? 'EVENT_OPERATOR_SETTINGS_CHANGE' : 'EVENT_SETTINGS_CHANGE',
           targetId: row.id,
-          payload: { event_id: row.id, changes, config_version_id: await this.events.currentVersionId(client, row.id) },
+          payload: {
+            event_id: row.id,
+            changes,
+            config_version_id: await this.events.currentVersionId(client, row.id),
+          },
         },
         { principal: actor.principal, audit: actor.audit },
       );
@@ -141,7 +209,12 @@ export class EventsController {
   }
 
   @Get(':event_id/config')
-  config(@Req() req: Request, @Param('event_id') eventId: string, @Query('at') at?: string, @Query('participation_id') participationId?: string) {
+  config(
+    @Req() req: Request,
+    @Param('event_id') eventId: string,
+    @Query('at') at?: string,
+    @Query('participation_id') participationId?: string,
+  ) {
     const actor = this.access.actor(req, READERS);
     let date: Date | undefined;
     if (at !== undefined) {
@@ -149,7 +222,8 @@ export class EventsController {
       if (Number.isNaN(time)) throw unprocessable('at : date-heure ISO 8601 attendue.');
       date = new Date(time);
     }
-    if (participationId !== undefined && !isUuid(participationId)) throw unprocessable('participation_id : identifiant attendu.');
+    if (participationId !== undefined && !isUuid(participationId))
+      throw unprocessable('participation_id : identifiant attendu.');
     return this.access.read(actor, async (client) => {
       await this.visible(client, actor, eventId);
       return this.cascade.resolveForEvent(client, eventId, date, participationId);

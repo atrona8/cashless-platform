@@ -1,0 +1,90 @@
+{
+  "source": "vecteurs_test_bracelet.py",
+  "crc_check": {
+    "input_ascii": "123456789",
+    "crc": "cbf43926"
+  },
+  "format_b": {
+    "major": 1,
+    "minor": 0,
+    "key_index": 1,
+    "flags": 0,
+    "identity": "3f9a1c7e5b2d48e0a6c4f1d29b7e0c53",
+    "crc": "672f4329",
+    "bytes": "010000013f9a1c7e5b2d48e0a6c4f1d29b7e0c5300000000672f4329"
+  },
+  "kdf": {
+    "test_key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "operator_id": "00000000-0000-0000-0000-000000000002",
+    "key_index": 1,
+    "uid": "04a1b2c3d4e5f6",
+    "message": "00000001434153484c4553532f554c2d4556312f5057442f76310000000000000000000000000000000002000104a1b2c3d4e5f600000030",
+    "okm": "283e8c48428c",
+    "pwd": "283e8c48",
+    "pack": "428c"
+  },
+  "envelope": {
+    "dek": "101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f",
+    "nonce": "000102030405060708090a0b",
+    "media_id": "40000000-0000-0000-0000-000000000001",
+    "aad": "434153484c4553532f5057445041434b2f76314000000000000000000000000000000100000000000000000000000000000002000104a1b2c3d4e5f6",
+    "plaintext": "283e8c48428c",
+    "pwd_pack_enc": "000102030405060708090a0bf282e1ec76777dd9d1a82c60ad37fdcb0c2afc4a80b2"
+  },
+  "refusals": {
+    "format_b": [
+      {
+        "name": "majeur inconnu",
+        "bytes": "020000013f9a1c7e5b2d48e0a6c4f1d29b7e0c5300000000672f4329",
+        "code": "UNKNOWN_MAJOR"
+      },
+      {
+        "name": "CRC faux",
+        "bytes": "010000013f9a1c7e5b2d48e0a6c4f1d29b7e0c5300000000672f4328",
+        "code": "BAD_CRC"
+      },
+      {
+        "name": "27 octets",
+        "bytes": "010000013f9a1c7e5b2d48e0a6c4f1d29b7e0c5300000000672f43",
+        "code": "BAD_LENGTH"
+      }
+    ],
+    "envelope": [
+      {
+        "name": "33 octets",
+        "blob": "000102030405060708090a0bf282e1ec76777dd9d1a82c60ad37fdcb0c2afc4a80",
+        "aad": "434153484c4553532f5057445041434b2f76314000000000000000000000000000000100000000000000000000000000000002000104a1b2c3d4e5f6",
+        "code": "BAD_LENGTH"
+      },
+      {
+        "name": "autre UID dans l'AAD",
+        "blob": "000102030405060708090a0bf282e1ec76777dd9d1a82c60ad37fdcb0c2afc4a80b2",
+        "aad": "434153484c4553532f5057445041434b2f76314000000000000000000000000000000100000000000000000000000000000002000104a1b2c3d4e500",
+        "code": "AUTH_FAILED"
+      }
+    ],
+    "claim_code": [
+      "K7QM-4XH9R0",
+      "K7QM-4XH9R1",
+      "K7QM-4XH9RI",
+      "K7QM-4XH9RO",
+      "K7QM-4XH9",
+      "K7QM-4XH9RTT"
+    ]
+  },
+  "claim_code": {
+    "alphabet": "23456789ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "inputs": [
+      {
+        "input": "K7QM-4XH9RT",
+        "normalized": "K7QM4XH9RT",
+        "formatted": "K7QM-4XH9RT"
+      },
+      {
+        "input": " k7qm 4xh9rt ",
+        "normalized": "K7QM4XH9RT",
+        "formatted": "K7QM-4XH9RT"
+      }
+    ]
+  }
+}

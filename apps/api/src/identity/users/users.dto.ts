@@ -4,7 +4,17 @@ import { ProblemException } from '../../errors/problem';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const E164 = /^\+[1-9][0-9]{6,14}$/;
-const STAFF_ROLES = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN', 'VENDOR', 'CUSTOMER'];
+const STAFF_ROLES = [
+  'PLATFORM_ADMIN',
+  'OPERATOR_ADMIN',
+  'ORGANIZER_ADMIN',
+  'SUPERVISOR',
+  'CASHIER',
+  'MERCHANT_ADMIN',
+  'VENDOR',
+  'CUSTOMER',
+  'PERSONALIZER',
+];
 const SCOPE_TYPES = ['PLATFORM', 'OPERATOR', 'ORGANIZER', 'EVENT', 'MERCHANT'];
 
 export interface StaffUserCreate {
@@ -70,9 +80,15 @@ export interface StaffUserDto {
   role_assignments: RoleAssignmentDto[];
 }
 
-const invalid = (detail: string): ProblemException => new ProblemException('VALIDATION_FAILED', { status: 400, detail });
+const invalid = (detail: string): ProblemException =>
+  new ProblemException('VALIDATION_FAILED', { status: 400, detail });
 
-function text(body: Record<string, unknown>, name: string, max: number, required: boolean): string | null {
+function text(
+  body: Record<string, unknown>,
+  name: string,
+  max: number,
+  required: boolean,
+): string | null {
   const value = body[name];
   if (value === undefined || value === null) {
     if (required) throw invalid(`Champ obligatoire : ${name}.`);
@@ -85,7 +101,8 @@ function text(body: Record<string, unknown>, name: string, max: number, required
 }
 
 function object(body: unknown): Record<string, unknown> {
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) throw invalid('Corps JSON (objet) attendu.');
+  if (typeof body !== 'object' || body === null || Array.isArray(body))
+    throw invalid('Corps JSON (objet) attendu.');
   return body as Record<string, unknown>;
 }
 
@@ -93,7 +110,8 @@ export function parseStaffUserCreate(raw: unknown): StaffUserCreate {
   const body = object(raw);
   const email = text(body, 'email', 320, false);
   const phone = text(body, 'phone', 16, false);
-  if (email !== null && !/^[^\s@]+@[^\s@]+$/.test(email)) throw invalid('email : adresse invalide.');
+  if (email !== null && !/^[^\s@]+@[^\s@]+$/.test(email))
+    throw invalid('email : adresse invalide.');
   if (phone !== null && !E164.test(phone)) throw invalid('phone : numéro E.164 attendu.');
   if (email === null && phone === null) throw invalid('email ou phone est obligatoire.');
   return {
@@ -110,9 +128,11 @@ export function parseRoleGrant(raw: unknown): RoleGrantInput {
   const role = text(body, 'role', 32, true)!;
   const scopeType = text(body, 'scope_type', 16, true)!;
   if (!STAFF_ROLES.includes(role)) throw invalid(`role : valeur inconnue (${role}).`);
-  if (!SCOPE_TYPES.includes(scopeType)) throw invalid(`scope_type : valeur inconnue (${scopeType}).`);
+  if (!SCOPE_TYPES.includes(scopeType))
+    throw invalid(`scope_type : valeur inconnue (${scopeType}).`);
   const scopeId = body.scope_id ?? null;
-  if (scopeId !== null && (typeof scopeId !== 'string' || !UUID.test(scopeId))) throw invalid('scope_id : UUID attendu.');
+  if (scopeId !== null && (typeof scopeId !== 'string' || !UUID.test(scopeId)))
+    throw invalid('scope_id : UUID attendu.');
   return { role, scopeType, scopeId };
 }
 
@@ -153,7 +173,12 @@ export function decodeCursor(cursor: string | undefined): [string, string] | nul
   if (cursor === undefined || cursor === '') return null;
   try {
     const value: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
-    if (Array.isArray(value) && value.length === 2 && typeof value[0] === 'string' && UUID.test(String(value[1]))) {
+    if (
+      Array.isArray(value) &&
+      value.length === 2 &&
+      typeof value[0] === 'string' &&
+      UUID.test(String(value[1]))
+    ) {
       return [value[0], String(value[1])];
     }
   } catch {
@@ -165,7 +190,8 @@ export function decodeCursor(cursor: string | undefined): [string, string] | nul
 export function parseLimit(raw: string | undefined): number {
   if (raw === undefined || raw === '') return 50;
   const limit = Number(raw);
-  if (!Number.isInteger(limit) || limit < 1 || limit > 200) throw invalid('limit : entier de 1 à 200 attendu.');
+  if (!Number.isInteger(limit) || limit < 1 || limit > 200)
+    throw invalid('limit : entier de 1 à 200 attendu.');
   return limit;
 }
 

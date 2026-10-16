@@ -62,7 +62,10 @@ describe('idempotence applicative (S21)', () => {
 
   it('sans prestataire authentifié : 401, aucune clé réservée', async () => {
     const key = randomUUID();
-    const res = await request(app.getHttpServer()).post(NOTES).set('Idempotency-Key', key).send({ note: 'anonyme' });
+    const res = await request(app.getHttpServer())
+      .post(NOTES)
+      .set('Idempotency-Key', key)
+      .send({ note: 'anonyme' });
     expect(res.status).toBe(401);
     expect(JSON.parse(res.text).code).toBe('UNAUTHENTICATED');
   });

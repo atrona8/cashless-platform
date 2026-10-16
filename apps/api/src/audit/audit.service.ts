@@ -34,7 +34,41 @@ export type AuditAction =
   | 'PARTICIPATION_CREATED'
   | 'PARTICIPATION_UPDATED'
   | 'POINT_OF_SALE_CREATED'
-  | 'POINT_OF_SALE_RENAMED';
+  | 'POINT_OF_SALE_RENAMED'
+  // Mission bracelets-nfc
+  | 'TAG_KEY_CREATED'
+  | 'TAG_KEY_KMS_DISABLED'
+  | 'TAG_DEK_ROTATED'
+  | 'TAG_DEK_REENCRYPTED'
+  | 'TAG_KEY_RETIRED'
+  | 'TAG_KEY_JOB_REFUSED'
+  | 'MEDIA_BATCH_CREATED'
+  | 'MEDIA_BATCH_UPDATED'
+  | 'MEDIA_BATCH_STATUS_CHANGED'
+  | 'MEDIA_BATCH_CLOSURE'
+  | 'MEDIA_BATCH_PRELOAD_CAUGHT_UP'
+  | 'CLAIM_CODES_ISSUED'
+  | 'CLAIM_CODES_ASSOCIATED'
+  | 'MEDIA_PERSONALIZED'
+  | 'CLAIM_CODE_ASSOCIATED'
+  | 'CLAIM_CODE_ASSOCIATION_REFUSED'
+  | 'MEDIA_BLACKLISTED'
+  | 'MEDIA_REINSTATED'
+  | 'MEDIA_PASSWORD_MISMATCH'
+  | 'MEDIA_ACTIVATED'
+  | 'MEDIA_DEPOSIT_TAKEN'
+  | 'MEDIA_DEPOSIT_REFUNDED'
+  | 'MEDIA_RELEASED'
+  | 'MEDIA_REASSIGNED'
+  | 'MEDIA_REPLACED'
+  | 'MEDIA_REPORTED_LOST'
+  | 'MEDIA_RECOVERED'
+  | 'MEDIA_CASH_DUE_REFUNDED'
+  | 'MEDIA_CLAIMED'
+  | 'MEDIA_CLAIM_PENDING'
+  | 'MEDIA_CLAIM_BLOCKED'
+  | 'MEDIA_CLAIM_CONFIRMED'
+  | 'MEDIA_SELF_ACTIVATED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {
@@ -58,7 +92,9 @@ export interface AuditEntry extends AuditContext {
 /** JSON des états avant/après : les bigint (montants) passent en texte, jamais par un flottant. */
 export function auditJson(value: unknown): string | null {
   if (value === undefined || value === null) return null;
-  return JSON.stringify(value, (_key, item: unknown) => (typeof item === 'bigint' ? item.toString() : item));
+  return JSON.stringify(value, (_key, item: unknown) =>
+    typeof item === 'bigint' ? item.toString() : item,
+  );
 }
 
 @Injectable()

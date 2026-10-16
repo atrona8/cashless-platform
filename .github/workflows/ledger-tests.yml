@@ -1,6 +1,7 @@
-# .github/workflows/ledger-tests.yml — vérifie à chaque push / PR tout ce que livre la mission « fondations du grand
-# livre », sous PostgreSQL 17 : générateurs, calculs de référence, types du contrat, lint, types, migrations, suites
-# pgTAP, puis tests Jest (unitaires, intégration, rejeu du scénario). Détail et répétition locale : .github/CI.md.
+# .github/workflows/ledger-tests.yml — vérifie à chaque push / PR tout ce que livrent les missions, sous PostgreSQL 17 :
+# générateurs, calculs de référence, bibliothèque de format des bracelets (TypeScript et Dart), types du contrat
+# (TypeScript et Dart), lint, types, migrations, suites pgTAP, puis tests Jest (unitaires, intégration, rejeu du
+# scénario) et mesures de temps isolées. Détail et répétition locale : .github/CI.md.
 name: ledger-tests
 on: [push, pull_request]
 
@@ -11,7 +12,7 @@ concurrency:
 jobs:
   ledger:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17
@@ -31,6 +32,23 @@ jobs:
       DATABASE_URL_OWNER: postgres://postgres:postgres@localhost:5432/cashless_test
       DATABASE_URL_APP: postgres://cashless_app:cashless_app_ci@localhost:5432/cashless_test
       DATABASE_URL_PLATFORM: postgres://cashless_platform:cashless_platform_ci@localhost:5432/cashless_test
+      # Rôles des processus des clés de bracelet (post-roles.sql) : mots de passe posés par les migrations.
+      CASHLESS_TAGKEYS_PASSWORD: cashless_tagkeys_ci
+      CASHLESS_PERSO_PASSWORD: cashless_perso_ci
+      CASHLESS_TAGCHECK_PASSWORD: cashless_tagcheck_ci
+      CASHLESS_KEYADMIN_PASSWORD: cashless_keyadmin_ci
+      DATABASE_URL_TAGKEYS: postgres://cashless_tagkeys:cashless_tagkeys_ci@localhost:5432/cashless_test
+      DATABASE_URL_PERSO: postgres://cashless_perso:cashless_perso_ci@localhost:5432/cashless_test
+      DATABASE_URL_TAGCHECK: postgres://cashless_tagcheck:cashless_tagcheck_ci@localhost:5432/cashless_test
+      DATABASE_URL_KEYADMIN: postgres://cashless_keyadmin:cashless_keyadmin_ci@localhost:5432/cashless_test
+      # Clé d'empreinte des codes de rattachement : valeur de test (32 octets en hexadécimal), sans valeur ailleurs.
+      CLAIM_CODE_HMAC_KEY: 636173686c6573732d63692d636c61696d2d636f64652d686d61632d74657374
+      # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
+      # en production (refus de démarrer sans valeur) ; les tests qui simulent un répartiteur le règlent eux-mêmes.
+      TRUST_PROXY_HOPS: "0"
+      # Mode d'exécution (RISK-3) : obligatoire, sinon tout processus refuse de démarrer. `test` en
+      # CI : faux permis.
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,6 +58,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      # SDK Dart épinglé : bibliothèque de format des bracelets et types Dart du contrat.
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "3.8.3"
+
+      - name: Module Python cryptography (script de vecteurs du kit, version épinglée)
+        run: |
+          python -m pip install --only-binary=:all: "cryptography==44.0.3"
 
       - name: Installer pgTAP dans le conteneur et pg_prove sur le runner
         run: |
@@ -55,7 +81,17 @@ jobs:
       - name: Calculs de référence du moteur d'écritures
         run: python packages/ledger-sql/moteur_ecritures_reference.py
 
-      - name: Types du contrat à jour
+      - name: Bibliothèque de format (TypeScript)
+        run: npm test -w @cashless/tag-format
+
+      - name: Bibliothèque de format (Dart)
+        working-directory: packages/tag-format/dart
+        run: |
+          dart pub get --enforce-lockfile
+          dart analyze --fatal-infos
+          dart test
+
+      - name: Types du contrat à jour (TypeScript et Dart)
         run: npm run check -w @cashless/contracts
 
       - name: Lint et vérification des types
@@ -78,3 +114,9 @@ jobs:
 
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
+
+      - name: Latence des bracelets, NFR-006 (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- media-latency
+
+      - name: Codes imprimés sans énumération, NFR-007 (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- claims-timing

@@ -230,3 +230,7 @@ Corrigés après la revue, à la demande du porteur, dans un commit distinct de 
 
 Jest après correction : 47 suites, 876 tests. RISK-1 (relecture indépendante) et RISK-2 (limite acceptée) restent
 ouverts ; RISK-3 se lève à la première exécution GitHub Actions.
+
+RISK-3 levé le 2026-10-13 : la branche a été poussée par le porteur, la PR #2 fusionnée dans `main` (`d2bb588`) ; GitHub
+Actions vert sur la PR (run 38383196858) et sur `main` (run 38383746374) : pgTAP 947 assertions, Jest 874 tests, puis la
+latence seule et sans nouvel essai (p95 créations 16 ms, lectures 7 ms).

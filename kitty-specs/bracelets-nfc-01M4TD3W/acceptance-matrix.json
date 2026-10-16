@@ -1,0 +1,558 @@
+{
+  "mission_slug": "bracelets-nfc-01M4TD3W",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 — Format B 1.0",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/format-b.spec.ts (« encode le vecteur du kit à l’octet près », « décode le vecteur du kit », « refuse : $name » dont majeur inconnu et CRC faux, « accepte un mineur plus récent… ») ; même jeu en Dart : packages/tag-format/dart/test/format_b_test.dart — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 — Message de dérivation",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/kdf-envelope.spec.ts (« construit le message de GenerateMac du kit », « un HMAC-SHA256 sous la clé de test donne PWD et PACK du kit ») ; packages/tag-format/dart/test/kdf_envelope_test.dart ; apps/api/test/unit/kms/fake-kms.spec.ts (« calcule PWD et PACK du kit ») — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 — Chiffrement du mot de passe",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/kdf-envelope.spec.ts (« construit l’AAD du kit », « scelle les 34 octets du kit et les rouvre », « un autre bracelet, prestataire, index ou UID fait échouer l’ouverture ») ; packages/tag-format/dart/test/kdf_envelope_test.dart — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 — Code de rattachement",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/claim-code.spec.ts (alphabet de 32 sans 0/1/I/O, normalisation, refus, tirage de 10 caractères, URL du QR) ; packages/tag-format/dart/test/claim_code_test.dart ; empreinte à clé : apps/api/test/unit/kms/kms-module.spec.ts (« empreinte à clé des codes ») ; ADR-87 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 — Deux implémentations conformes",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/kit-vectors.spec.ts (vectors.json régénéré par vecteurs_test_bracelet.py et comparé : exécuté, non ignoré) ; packages/tag-format/test/cross-impl.spec.ts et packages/tag-format/dart/test/cross_impl_test.dart (« 1000 entrées : octets identiques à l’implémentation TypeScript ») ; Dart lit ../vectors/vectors.json (helpers.dart) ; .github/workflows/ledger-tests.yml (étapes TypeScript et Dart, SDK 3.8.3) ; ADR-88 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 — Service de clés substituable",
+      "proof_type": "automated_test",
+      "evidence": "Ports MacPort/DataKeyPort/DecryptPort/KeyAdminPort (apps/api/src/kms/kms.ports.ts) ; apps/api/test/unit/kms/fake-kms.spec.ts (7 tests), apps/api/test/unit/kms/kms-module.spec.ts ; apps/api/test/integration/media/personalization.spec.ts (« le faux service de clés et le message de dérivation reproduisent le vecteur du kit »). Limite acceptée (C-004) : faux seulement, OP-N41 / ADR-88, levée par l'adaptateur AWS après OP-N11 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Conforme à C-004. OP-N41 est rattaché au « porteur du projet (après OP-N11) », pas à un numéro de mission (voir rapport)."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 — Clés de bracelet",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/keys.spec.ts (« une seule personne ne suffit pas », « approuvée par une autre personne », « commande d’administration : la clé est créée, active, auditée avec l’auteur et le valideur », « nouvelle série : index suivant… déchiffrer », « clé dédiée », droits et isolation) ; packages/ledger-sql/tests/tests_tag_key_jobs.sql, tests_tag_key_job_scope.sql ; ADR-83, ADR-84. Limite OP-N44 (EXECUTE hérité de PUBLIC, ADR-84) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 — Rotation de la clé de données",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/keys.spec.ts (« rotation : clé active seulement, une à la fois », demande approuvée par une seconde personne) ; apps/api/test/integration/media/data-keys.spec.ts (« 1 200 bracelets sous deux versions de session : tous ramenés sous la nouvelle, en trois tranches », reprise sans double effet, panne du service de clés, rotation d’une clé non active refusée) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 — Retrait d'une clé dédiée",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/data-keys.spec.ts (« clé et clés de données retirées, mots de passe effacés, bracelets en fin de vie, désactivation inscrite », « un lot encore ouvert, ou une clé partagée : rien n’est retiré ») ; apps/api/test/integration/media/keys.spec.ts (« retrait : clé dédiée dont tous les lots sont clos », « lot rouvert entre la demande et l’approbation », « désactivation dans le service de clés… date enregistrée », panne puis relance avec kms_disabled_at nul visible) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 — Contrôle quotidien",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/daily-check.spec.ts (9 tests : 150 bracelets → 100 contrôlés, MISMATCH + alerte d’audit + code de sortie 2, panne ERROR code 3, isolation) ; apps/api/test/integration/media/keys.spec.ts (« comptes rendus du contrôle quotidien : lus, paginés ») ; ADR-92 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 — Lots",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/batches.spec.ts (création, valeurs par défaut, journalisation, idempotence ; refus 422 « caution sans mode », « mode sans caution », « clé dédiée sans événement », « clé dédiée et lot réutilisable » ; lecture, filtres, isolation ; modification tant que ORDERED, 409 ensuite). Limite OP-N60 / ADR-97 (écritures directes de cashless_app sur media_batch), levée par la mission 11, figée par packages/ledger-sql/tests/tests_definer_trigger_writers.sql — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 — Cycle de vie d'un lot",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/batches.spec.ts (« ORDERED → PERSONALIZED → DELIVERED → ACTIVE ⇄ SUSPENDED, tracé avec auteur et motif », « un passage non prévu est refusé (409) avec les passages permis ») ; historique écrit par déclencheur SECURITY DEFINER (migration 0018, packages/ledger-sql/tests/tests_media_reinstate.sql). Limite OP-N60 / ADR-97 (mission 11) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 — Clôture d'un lot et rattrapages",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/batches.spec.ts (« 600 cautions détenues : la clôture avance par relances, puis clôt, retire les bracelets et acquiert les cautions », « pose les crédits offerts une seule fois par bracelet actif », lot sans préchargement 409) ; apps/api/test/integration/media/claim-code-order.spec.ts (« à la clôture, les codes jamais associés sont invalidés et ne s’associent plus ») — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 — Inventaire d'un lot",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/batches.spec.ts (« compte les bracelets du lot par statut, et ceux qui manquent au registre ») ; vue batch_inventory du schéma — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 — Codes générés à la commande",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claim-code-order.spec.ts (un code par bracelet, empreintes à clé seules, aucun code en clair au repos ni dans l’audit/l’idempotence/les journaux, fichier produit une seule fois 409, STAFF/VIP sans code, demandes simultanées : un seul fichier) ; packages/ledger-sql/tests/tests_media_claims.sql ; ADR-87. OP-N48 (pas de réémission, choix laissé à l'agent) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 — Enregistrement d'un bracelet personnalisé",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/personalization.spec.ts (mot de passe du kit, un seul calcul, enregistré en stock avec index et empreinte de signature, chiffré rouvert par le processus des clés, rejeu idempotent, trois envois simultanés : un seul bracelet, signature invalide 422, quantité atteinte 409, clé non active 409, KMS en panne 503) ; packages/ledger-sql/tests/tests_personalization_definer.sql, tests_media_api.sql ; migration 0019 ; ADR-85, ADR-86. Limite OP-N46 / ADR-85 (signature NXP vérifiée par le poste, hypothèse de la spec) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 — Association du code à la puce",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/personalization.spec.ts (« associe le code scanné… », refus code inconnu/autre lot/déjà associé/invalidé, motif à l’audit) ; apps/api/test/integration/media/claim-code-order.spec.ts (« import du fichier de l’imprimeur » : lignes refusées par numéro et motif, rejeu, limites de taille) ; packages/ledger-sql/tests/tests_personalization_definer.sql — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 — Mot de passe d'un bracelet pour un terminal",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/auth-keys.spec.ts (enveloppe ouverte par le terminal seul, un seul déchiffrement de clé de données, même 404 pour inconnu/autre prestataire/clé retirée, temps indistinguable, 503 sur panne, rien écrit en base, route absente de l’API publique). Limite OP-N42 / ADR-88 (identité du terminal factice, requêtes non signées), levée par la mission 5 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 — Lecture d'un bracelet",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/taps.spec.ts (« bracelet valide : OK, identifiant de la lecture, bracelet et solde disponible », rejeu même terminal, UNKNOWN, BATCH_INACTIVE, WRONG_EVENT, statut 200, 401 sans identité). Limite OP-N42 / ADR-88 (mission 5) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 — Effets de sécurité durables",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/taps.spec.ts (« compteur déjà lu par un autre terminal, dans une opération : copie suspectée, liste noire persistée », UID et signature différents : liste noire et anomalie) ; apps/api/test/integration/media/deposit.spec.ts (« lecture suspecte présentée pour un rendu : refus, et le bracelet reste en liste noire ») ; apps/api/test/integration/media/release.spec.ts (ancienne identité d’un bracelet réattribué : CLONE_SUSPECTED) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 — Activation",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/activation.spec.ts (portefeuille anonyme au grand livre de l’événement, crédits offerts posés une seule fois même rejoués, mode non permis 422, compte obligatoire, lot suspendu/autre événement refusés) ; apps/api/test/integration/media/claims.spec.ts (SELF_APP, ADR-90) ; packages/ledger-sql/tests/tests_event_wallet.sql — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 — Caution",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/deposit.spec.ts (FROM_BALANCE due puis prise, SEPARATE en espèces encaissée puis rendue, sans moyen de paiement 422, terminal sans caisse 409 sans compte créé). Limite OP-N49 / ADR-89 (aucune caisse avant la mission « Recharges, caisses et PSP » : 409 en usage réel), levée par cette mission — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 — Prise d'une caution due",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/deposit.spec.ts (« solde insuffisant à l’activation : la caution reste due ; elle est prise après un crédit payé, dans une transaction à part » : DepositService.takeDueDeposit, idempotent, DEPOSIT_TAKEN unique) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 — Consultation d'un bracelet",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/activation.spec.ts (« au guichet : état du bracelet, sans identité ni mot de passe », « au back-office : liste filtrée et paginée, détail avec l’historique des statuts », rôles et isolation) ; apps/api/test/unit/architecture.spec.ts (« l’API publique ne fait jamais SELECT * sur media ni ne nomme une colonne secrète ») — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025 — Restitution et réattribution",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/release.spec.ts (refus nommant caution détenue/espèces dues/solde, restitution une fois soldé, POOL : remise en stock avec nouvelle identité et ancienne identité = copie, refus). Enchaînement du guichet de retour refusé 422 release.no_chaining : OP-N51 / ADR-91, levé par la mission 9 ; route reassignPoolMedia : ADR-93 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026 — Espèces dues",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/cash-due.spec.ts (sous le maximum : écriture, anomalies closes ; au-delà : 403 APPROVAL_REQUIRED puis jeton d’une seconde personne consommé une fois ; refus sans lecture/autre bracelet/terminal sans caisse ; isolation). Limite OP-N49 / ADR-89 (mission « Recharges, caisses et PSP ») ; OP-N55 (espèces dues d’un bracelet remplacé, reporté mission 9) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "FR-027 — Remplacement",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/replace.spec.ts (le neuf reprend portefeuille et caution sans écriture ni préchargement, caution due suit le neuf, refus neuf déjà actif/sous caution/autre organisateur/mode de caution différent). OP-N55 : les espèces dues ne suivent pas le neuf (hors texte de FR-027, reporté mission 9 dans PROMPTS-A-ENVOYER.md) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "OP-N55 n'a pas d'ADR (voir rapport)."
+    },
+    {
+      "criterion_id": "FR-028",
+      "description": "FR-028 — Perte et bracelet retrouvé",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/replace.spec.ts (« perte : suspendu, tout passage bloqué, motif et auteur tracés ; retrouvé (fin de vie, défaut) : retiré », « retrouvé quand l’événement réactive : de nouveau actif, et il paie », refus) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-029",
+      "description": "FR-029 — Liste noire et sortie à deux",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/blacklist.spec.ts (11 tests : mise en liste noire tracée, la demande seule ne change rien, l’auteur ne peut pas approuver, OP-N52 chemin nominal et refus du valideur inventé/UPDATE direct) ; packages/ledger-sql/tests/tests_media_reinstate.sql ; migration 0017 ; ADR-94. Limite résiduelle OP-N56 (décision non authentifiée par la base), levée par la mission 11 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-030",
+      "description": "FR-030 — Rattachement par code",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claims.spec.ts (solde nul : 201 et code consommé ; solde disponible : demande en attente 202, code de confirmation rendu une fois, 3 au plus ; code inconnu et utilisé : même réponse ; lot POOL déjà rattaché) ; apps/api/test/integration/end-to-end/media-isolation.spec.ts (code de A refusé comme inconnu pour B) ; packages/ledger-sql/tests/tests_media_claims.sql. Identité festivalier factice : OP-N43 / ADR-88 (mission 10) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-031",
+      "description": "FR-031 — Limites d'essais",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claims.spec.ts (« 5 essais par compte et par heure : le 6e est bloqué (429, Retry-After), avec une alerte », « 20 essais par appareil et par jour… le 21e est bloqué », code mal formé non compté) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-032",
+      "description": "FR-032 — Confirmation au guichet",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claims.spec.ts (même bracelet et bon code : rattaché sans mouvement d’argent, code consommé, autres demandes annulées, lecture consommée ; 5 codes faux ; autre bracelet ; demande expirée ; SC-006) ; packages/ledger-sql/tests/tests_media_claim_tap.sql ; migration 0016 ; ADR-90. Limite OP-N50 (lecture encore utilisable par consume_tap) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "OP-N50 est rattaché au « porteur du projet (évolution du schéma de référence) », pas à une mission (voir rapport)."
+    },
+    {
+      "criterion_id": "FR-033",
+      "description": "FR-033 — Consultation anonyme du solde",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claims.spec.ts (« solde et 10 derniers mouvements, sans donnée personnelle ; le code n’est pas consommé », même 404 pour inconnu/utilisé/rattaché, 20 par code et par heure) ; apps/api/test/integration/media/claims-address-limit.spec.ts (61ᵉ consultation de la même adresse 429) ; consultation réduite : ADR-90 n° 11 ; ADR-95 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-034",
+      "description": "FR-034 — Identité du terminal et du festivalier substituable",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-port-swap.spec.ts (9 tests : SC-008, ports DeviceIdentityPort et CustomerIdentityPort remplacés par des jetons signés sans toucher aux routes) ; apps/api/test/unit/kms/identity-guards.spec.ts. Faux : OP-N42 (mission 5), OP-N43 (mission 10), ADR-88 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-035",
+      "description": "FR-035 — Audit et historique",
+      "proof_type": "automated_test",
+      "evidence": "Lignes d’audit vérifiées par : apps/api/test/integration/media/keys.spec.ts (auteur et valideur), batches.spec.ts (journalisé, avant/après), personalization.spec.ts (« audit : qui, quel lot, quelle clé — jamais le mot de passe »), claim-code-order.spec.ts, blacklist.spec.ts (motif et auteur) ; historique des statuts : batches.spec.ts, activation.spec.ts (détail avec l’historique), packages/ledger-sql/tests/tests_media_reinstate.sql (historiques écrits par déclencheurs seuls, migration 0018). Limite OP-N56 (attribution lue dans des réglages de session), mission 11 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "FR-036",
+      "description": "FR-036 — Contrat d'API et types générés",
+      "proof_type": "automated_test",
+      "evidence": "packages/contracts/openapi.yaml ; npm run check -w @cashless/contracts : « types à jour », « types Dart à jour » ; apps/api/test/integration/end-to-end/media-isolation.spec.ts (« le contrat déclare les 39 opérations, chacune a un cas, aucun cas n’est orphelin », « chaque opération est servie par son processus ») — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Avertissement non bloquant du générateur : « LATE_CLAIM_INVALID absent de la description de ProblemCode ; statut tiré du contrat : 409 »."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 — Conformité aux vecteurs",
+      "proof_type": "automated_test",
+      "evidence": "packages/tag-format/test/kit-vectors.spec.ts (1/1 exécuté avec TAG_FORMAT_PYTHON = venv cryptography 44.0.3, obligatoire en CI via la variable CI) ; vecteurs du kit rejoués en TS (format-b, kdf-envelope, claim-code) et en Dart (30/30) ; .github/workflows/ledger-tests.yml à chaque push/pull_request. Relance locale seulement (aucune exécution GitHub de la lane vérifiée ici) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 — Aucun secret en clair au repos",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-secrets.spec.ts (6 tests : parcours produisant chaque genre de secret, colonnes lues au catalogue, aucune valeur dans la base, les journaux capturés, les réponses d’erreur ; contrôle du contrôle) ; apps/api/test/integration/media/claim-code-order.spec.ts et personalization.spec.ts (recherches au repos avec contrôle du contrôle). Observation : OP-N54 (request_hash SHA-256 sans clé contenant le code imprimé au registre d’idempotence ; pas de clair) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "OP-N54 ouvert sans ADR ni mission de levée (voir rapport) ; l'exigence « 0 code en clair » reste tenue."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 — Durée de vie d'un secret en mémoire",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/media/dek-cache.spec.ts (7 tests : un déchiffrement pour plusieurs demandes, tampon à zéro à l’expiration, durée nulle, arrêt) ; apps/api/test/integration/media/data-keys.spec.ts (durée nulle, effacement après la durée, arrêt du processus) ; apps/api/test/integration/media/auth-keys.spec.ts (un seul déchiffrement par demande, TAG_DEK_CACHE_SECONDS=0) ; apps/api/test/unit/kms/kms-module.spec.ts (withSecret met le tampon à zéro) ; apps/api/test/unit/config.spec.ts (TAG_DEK_CACHE_SECONDS 0 à 300) ; ADR-86 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 — Isolation entre prestataires",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-isolation.spec.ts (balayage des 39 opérations à deux prestataires) ; cas d’isolation dans chaque suite apps/api/test/integration/media/*.spec.ts ; pgTAP : RLS activée et forcée sur claim_code, media_claim, claim_attempt (packages/ledger-sql/tests/tests_media_claims.sql), tag_key_job, tag_key_check_run (packages/ledger-sql/tests/tests_tag_key_jobs.sql). Limite OP-N59 / ADR-96 (77 fonctions SECURITY DEFINER sans pg_temp, contournement probable par session compromise), levée par la mission 5, figée par tests_definer_trigger_writers.sql — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 — Séparation des droits sur les clés",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/architecture.spec.ts (« l’API publique n’atteint aucun fichier du service de clés qui donne un port », « le droit de créer ou de désactiver une clé n’est atteignable que depuis la commande d’administration », pools par processus) ; apps/api/test/unit/processes.spec.ts ; packages/ledger-sql/tests/tests_media_roles.sql ; ADR-83, ADR-84. Aiguillage par chemin : OP-N45 (exploitation) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 — Latence",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-latency.spec.ts lancée seule sur 100 000 bracelets le 2026-10-15 : mot de passe p95 16 ms / p99 19 ms ; lecture p95 25 ms / p99 30 ms (seuils 200/500) ; activation p95 65 ms (seuil 500) ; mesure côté client de test (majorant du temps serveur) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "NFR-007 — Pas d'énumération",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/claims-timing.spec.ts lancée seule le 2026-10-15 : 200 + 200 essais, même statut, corps et en-têtes ; médianes inconnu 20,8 ms, utilisé 20,9 ms, écart 0,2 ms (seuil 20 ms) ; ADR-90 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-008",
+      "description": "NFR-008 — Traitements par tranches",
+      "proof_type": "automated_test",
+      "evidence": "Couvert en partie : tranches de 500 et relance sans double effet prouvées pour la clôture (apps/api/test/integration/media/batches.spec.ts, 600 cautions, 2 relances) et le rechiffrement (apps/api/test/integration/media/data-keys.spec.ts, 1 200 bracelets en 3 tranches, reprise après interruption). Non couvert : aucun test sur un lot de 5 000 bracelets (« vont au bout sur un lot de 5 000 bracelets ») ; rattrapage du préchargement testé sur 3 bracelets seulement, sans tranche (PRELOAD_SLICE jamais atteint). Aucune limite consignée (ni OP ni ADR) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts — Écart accepté par le porteur le 2026-10-15 : preuve partielle consignée en OP-N61 / ADR-98 (bloque la production), preuve sur 5 000 bracelets à apporter par la mission 13 (recette V1) ; WP20 cycle 9 approuvé.",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:52:00Z",
+      "notes": "Échec : exigence mesurable non prouvée (5 000 bracelets) et tranche du préchargement non exercée ; aucun point ouvert ne la consigne."
+    },
+    {
+      "criterion_id": "NFR-009",
+      "description": "NFR-009 — Tests existants verts",
+      "proof_type": "automated_test",
+      "evidence": "Suites pgTAP de référence (400), scénario (64) et suites des missions 1 à 3 incluses dans les 1380 assertions PASS ; Jest 1241/1241 inclut les suites des missions 1 à 3 et le rejeu du scénario ; check:generated « suites pgTAP à jour » ; moteur_ecritures_reference.py « 19 cas OK » ; latence de configuration p95 51/19/38 ms (seuils 500/200/200) — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    },
+    {
+      "criterion_id": "NFR-010",
+      "description": "NFR-010 — Aucun faux en production",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/production-guard.spec.ts (faux service de clés, faux terminal, faux festivalier : construction refusée en production ; aucun réglage ne désactive la garde) ; apps/api/test/unit/processes.spec.ts (« la garde de démarrage refuse aussi un faux injecté autrement ») ; apps/api/test/unit/architecture.spec.ts (« chaque point d’entrée passe par le démarrage commun, qui applique la garde de production ») ; ADR-88 — lane t (b44b917) relancée le 2026-10-15 15:55-15:58 UTC : pgTAP 1380/1380 (21 fichiers, PASS), Jest 1241/1241 (72 suites, SKIP_LATENCY=1), tag-format TS 39/39 (vecteurs du kit compris, cryptography 44.0.3), Dart 30/30, lint/typecheck/check:generated/contrats TS+Dart verts",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 15/10/2026)",
+      "verified_at": "2026-10-15T16:02:00Z",
+      "notes": "Preuve vérifiée dans la lane t (test lu et exécuté)."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun fichier .sql généré du kit (ni générateur, ni scénario, ni migrations 0001-0009) modifié",
+      "verification_method": "custom_command",
+      "verification_command": "git diff --quiet main...kitty/mission-bracelets-nfc-01M4TD3W-lane-t -- packages/ledger-sql/schema_grand_livre_cashless.sql packages/ledger-sql/tests_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql packages/ledger-sql/gen_tests.py packages/ledger-sql/gen_golden.py packages/ledger-sql/scenario_reference.json packages/ledger-sql/roles.sql 'packages/ledger-sql/migrations/000*.sql' && npm run check:generated -w @cashless/ledger-sql",
+      "result": "confirmed_absent",
+      "evidence": "Diff vide sur ces fichiers (ajouts S19 par migrations 0010 à 0019 et post-roles.sql seulement) ; check:generated : « suites pgTAP à jour » (400 + 64), 2026-10-15",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Vecteurs du kit (vecteurs_test_bracelet.py) non modifiés",
+      "verification_method": "custom_command",
+      "verification_command": "git diff --quiet main...kitty/mission-bracelets-nfc-01M4TD3W-lane-t -- packages/tag-format/vecteurs_test_bracelet.py",
+      "result": "confirmed_absent",
+      "evidence": "Diff vide ; vectors.json reproduit par le script du kit (kit-vectors.spec.ts 1/1)",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun faux (service de clés, terminal, festivalier) ne démarre en production",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- production-guard processes",
+      "result": "confirmed_absent",
+      "evidence": "production-guard.spec.ts (5 tests) et processes.spec.ts verts dans Jest 1241/1241 du 2026-10-15",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucun secret de bracelet (identité, mot de passe, clé de données, code) en clair dans la base, les journaux ou les erreurs",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- media-secrets claim-code-order personalization",
+      "result": "confirmed_absent",
+      "evidence": "media-secrets.spec.ts (6 tests, avec contrôle du contrôle) vert le 2026-10-15 ; config.spec.ts : aucune chaîne de connexion, clé d'emballage ni secret des codes par défaut en production",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Aucun adaptateur AWS KMS livré (C-004)",
+      "verification_method": "custom_command",
+      "verification_command": "! grep -rlE 'aws-sdk|@aws-sdk|KMSClient' apps packages --exclude-dir=node_modules",
+      "result": "confirmed_absent",
+      "evidence": "Aucune occurrence dans apps/ et packages/",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-006",
+      "description": "Aucun code de lecture/écriture NFC ni écran livré (C-006, C-009)",
+      "verification_method": "custom_command",
+      "verification_command": "! grep -rliE 'NfcAdapter|android.nfc|nfc_manager|MifareUltralight' apps packages --exclude-dir=node_modules && test \"$(ls apps)\" = api",
+      "result": "confirmed_absent",
+      "evidence": "Aucune occurrence ; apps/ ne contient que api",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-007",
+      "description": "Aucune route publique n'atteint le calcul d'un mot de passe ni le déchiffrement d'une clé de données (NFR-005)",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- architecture",
+      "result": "confirmed_absent",
+      "evidence": "architecture.spec.ts (11 tests) vert le 2026-10-15",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-008",
+      "description": "Aucun type du contrat écrit à la main (C-008)",
+      "verification_method": "custom_command",
+      "verification_command": "npm run check -w @cashless/contracts",
+      "result": "confirmed_absent",
+      "evidence": "« types à jour », « types Dart à jour » le 2026-10-15",
+      "verified_ref": "b44b917b007ee1be96ebe0c5d4495de53adaa933",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    }
+  ]
+}

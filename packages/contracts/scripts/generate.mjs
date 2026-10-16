@@ -35,9 +35,12 @@ function problemBullets(description) {
  */
 function statusesOf(code, text) {
   const parenthesis = /^\s*\(([^)]*)\)/.exec(text);
-  const source = parenthesis ? parenthesis[1] : [...text.matchAll(/`([1-5]\d\d)`/g)].map((m) => m[1]).join(' ');
+  const source = parenthesis
+    ? parenthesis[1]
+    : [...text.matchAll(/`([1-5]\d\d)`/g)].map((m) => m[1]).join(' ');
   const statuses = [...new Set([...source.matchAll(/\b([1-5]\d\d)\b/g)].map((m) => Number(m[1])))];
-  if (statuses.length === 0) throw new Error(`ProblemCode ${code} : aucun statut HTTP dans la description`);
+  if (statuses.length === 0)
+    throw new Error(`ProblemCode ${code} : aucun statut HTTP dans la description`);
   return statuses;
 }
 
@@ -46,9 +49,16 @@ function statusesOf(code, text) {
  * est pris dans les autres mentions du contrat de la forme « `409 CODE` ». Sans aucune mention : erreur.
  */
 function statusesFromMentions(code, rawSpec) {
-  const statuses = [...new Set([...rawSpec.matchAll(new RegExp(`\`([1-5]\\d\\d) ${code}\``, 'g'))].map((m) => Number(m[1])))];
-  if (statuses.length === 0) throw new Error(`ProblemCode ${code} : ni description ni statut HTTP dans le contrat`);
-  console.warn(`[contracts] ${code} absent de la description de ProblemCode ; statut tiré du contrat : ${statuses.join(', ')}`);
+  const statuses = [
+    ...new Set(
+      [...rawSpec.matchAll(new RegExp(`\`([1-5]\\d\\d) ${code}\``, 'g'))].map((m) => Number(m[1])),
+    ),
+  ];
+  if (statuses.length === 0)
+    throw new Error(`ProblemCode ${code} : ni description ni statut HTTP dans le contrat`);
+  console.warn(
+    `[contracts] ${code} absent de la description de ProblemCode ; statut tiré du contrat : ${statuses.join(', ')}`,
+  );
   return statuses;
 }
 
@@ -57,7 +67,8 @@ function problemCodeFiles(spec, rawSpec) {
   const codes = schema.enum;
   const bullets = problemBullets(schema.description);
   const extra = [...bullets.keys()].filter((code) => !codes.includes(code));
-  if (extra.length) throw new Error(`Description de codes absents de l'énumération : ${extra.join(', ')}`);
+  if (extra.length)
+    throw new Error(`Description de codes absents de l'énumération : ${extra.join(', ')}`);
 
   const list = codes.map((code) => `  '${code}',`).join('\n');
   const problemCodes =
@@ -67,7 +78,9 @@ function problemCodeFiles(spec, rawSpec) {
 
   const entries = codes
     .map((code) => {
-      const statuses = bullets.has(code) ? statusesOf(code, bullets.get(code)) : statusesFromMentions(code, rawSpec);
+      const statuses = bullets.has(code)
+        ? statusesOf(code, bullets.get(code))
+        : statusesFromMentions(code, rawSpec);
       return `  ${code}: [${statuses.join(', ')}],`;
     })
     .join('\n');
@@ -84,8 +97,13 @@ function problemCodeFiles(spec, rawSpec) {
 export async function render() {
   const ast = await openapiTS(SPEC_URL, { exportType: true, enum: false });
   const rawSpec = readFileSync(SPEC_URL, 'utf8');
-  const files = { 'openapi.ts': HEADER + '\n' + astToString(ast), ...problemCodeFiles(parse(rawSpec), rawSpec) };
-  return Object.fromEntries(Object.entries(files).map(([name, text]) => [name, text.replace(/\r\n/g, '\n')]));
+  const files = {
+    'openapi.ts': HEADER + '\n' + astToString(ast),
+    ...problemCodeFiles(parse(rawSpec), rawSpec),
+  };
+  return Object.fromEntries(
+    Object.entries(files).map(([name, text]) => [name, text.replace(/\r\n/g, '\n')]),
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

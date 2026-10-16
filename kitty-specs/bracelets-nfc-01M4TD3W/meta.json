@@ -1,0 +1,34 @@
+{
+  "accept_commit": "b0fbed7b2f9c89f1280e39a2854c09c685a1d83e",
+  "acceptance_history": [
+    {
+      "accept_commit": "b0fbed7b2f9c89f1280e39a2854c09c685a1d83e",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-10-15T16:53:32.332260+00:00",
+      "accepted_by": "claude (délégation du porteur, 15/10/2026)",
+      "accepted_from_commit": "41f57b3c0a12f6bd026b5a74a304897944d82040"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-10-15T16:53:32.332260+00:00",
+  "accepted_by": "claude (délégation du porteur, 15/10/2026)",
+  "accepted_from_commit": "41f57b3c0a12f6bd026b5a74a304897944d82040",
+  "baseline_merge_commit": "cae401d4a5a3538e7244420dac40836c75bdfb9b",
+  "coordination_branch": "kitty/mission-bracelets-nfc-01M4TD3W",
+  "created_at": "2026-10-13T10:32:17.035715+00:00",
+  "flattened": false,
+  "friendly_name": "Bracelets NFC (format, clés, lots, cycle de vie)",
+  "mission_id": "01M4TD3WS72DHMSH9TB2TS5E8W",
+  "mission_number": null,
+  "mission_slug": "bracelets-nfc-01M4TD3W",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Le bracelet est le support de paiement du festivalier, distinct de son portefeuille. Cette mission livre les bibliothèques de format (TypeScript et Dart) conformes aux vecteurs de test du kit, la gestion des clés par KMS, la personnalisation et les lots de bracelets, les codes de rattachement, puis le cycle de vie complet par l'API : passage du bracelet, activation, caution et rendu, restitution, remplacement, espèces dues et liste noire. La lecture NFC par le terminal n'en fait pas partie.",
+  "purpose_tldr": "Gérer les bracelets NFC côté serveur : format et clés, lots, rattachement, activation, caution, remplacement et liste noire.",
+  "slug": "bracelets-nfc-01M4TD3W",
+  "status_phase": "1",
+  "target_branch": "feat/bracelets-nfc",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-13T12:27:11.526949+00:00"
+}

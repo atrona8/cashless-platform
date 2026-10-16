@@ -1,10 +1,25 @@
 // Routes « Personnes » d'un prestataire (contrat openapi.yaml, tag Personnes). Le prestataire de la transaction est
 // celui du chemin, contrôlé par IdentityTenantContext (le sien, ou n'importe lequel pour un PLATFORM_ADMIN ; sinon
 // 404). Écritures : idempotentes (`bo:`), travail et audit dans IdempotentTx.run (règle RISK-2).
-import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { auditContext } from '../../audit/audit-context';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../../tenancy/tenant-context';
 import { requestPrincipal } from '../principal';
 import type { RolesRequest } from '../roles.guard';
@@ -42,7 +57,10 @@ export class UsersController {
     const { operatorId, actor } = this.context(req);
     const input = parseStaffUserCreate(body);
     return tx.run(async (client) => {
-      const user = await this.users.create(client, operatorId, input, { ...actor, audit: auditContext(req) });
+      const user = await this.users.create(client, operatorId, input, {
+        ...actor,
+        audit: auditContext(req),
+      });
       res.setHeader('Location', `/v1/operators/${operatorId}/users/${user.user_id}`);
       return user;
     });
@@ -51,9 +69,15 @@ export class UsersController {
   @Post('users/:user_id/disable')
   @HttpCode(200)
   @Idempotent({ scope: 'bo:' })
-  disable(@Req() req: Request, @Param('user_id') userId: string, @IdempotentTransaction() tx: IdempotentTx) {
+  disable(
+    @Req() req: Request,
+    @Param('user_id') userId: string,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const { operatorId, actor } = this.context(req, ['PLATFORM_ADMIN', 'OPERATOR_ADMIN']);
-    return tx.run((client) => this.users.disable(client, operatorId, userId, { ...actor, audit: auditContext(req) }));
+    return tx.run((client) =>
+      this.users.disable(client, operatorId, userId, { ...actor, audit: auditContext(req) }),
+    );
   }
 
   @Post('users/:user_id/role-assignments')
@@ -70,7 +94,10 @@ export class UsersController {
     const principal = requestPrincipal(req);
     const input = parseRoleGrant(body);
     return tx.run(async (client) => {
-      const assignment = await this.users.grant(client, operatorId, userId, input, { principal, audit: auditContext(req) });
+      const assignment = await this.users.grant(client, operatorId, userId, input, {
+        principal,
+        audit: auditContext(req),
+      });
       res.setHeader('Location', `/v1/operators/${operatorId}/users/${userId}`);
       return assignment;
     });
@@ -79,10 +106,16 @@ export class UsersController {
   @Post('role-assignments/:assignment_id/revoke')
   @HttpCode(200)
   @Idempotent({ scope: 'bo:' })
-  revoke(@Req() req: Request, @Param('assignment_id') assignmentId: string, @IdempotentTransaction() tx: IdempotentTx) {
+  revoke(
+    @Req() req: Request,
+    @Param('assignment_id') assignmentId: string,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const operatorId = this.tenant.current(req).operatorId;
     const principal = requestPrincipal(req);
-    return tx.run((client) => this.users.revoke(client, operatorId, assignmentId, { principal, audit: auditContext(req) }));
+    return tx.run((client) =>
+      this.users.revoke(client, operatorId, assignmentId, { principal, audit: auditContext(req) }),
+    );
   }
 
   /** Prestataire du chemin et rôle d'administration exercé (posé sur la requête pour l'audit). */

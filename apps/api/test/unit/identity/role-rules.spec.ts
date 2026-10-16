@@ -2,7 +2,12 @@
 // canGrant, compatibilité rôle ↔ portée, rôles non attribuables.
 import type { Assignment, Principal } from '../../../src/identity/principal';
 import type { ScopeLink } from '../../../src/identity/scope-resolver';
-import { canGrant, grantTarget, staffAdminRole, type GrantableRole } from '../../../src/identity/users/role-rules';
+import {
+  canGrant,
+  grantTarget,
+  staffAdminRole,
+  type GrantableRole,
+} from '../../../src/identity/users/role-rules';
 
 const OP = 'op-1';
 const ORG = 'org-1';
@@ -20,13 +25,21 @@ const person = (...assignments: Assignment[]): Principal => ({
 const platformAdmin = person({ role: 'PLATFORM_ADMIN', scopeType: 'PLATFORM', scopeId: null });
 const operatorAdmin = person({ role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: OP });
 const organizerAdmin = person({ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: ORG });
-const otherOrganizerAdmin = person({ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: OTHER_ORG });
+const otherOrganizerAdmin = person({
+  role: 'ORGANIZER_ADMIN',
+  scopeType: 'ORGANIZER',
+  scopeId: OTHER_ORG,
+});
 const supervisor = person({ role: 'SUPERVISOR', scopeType: 'ORGANIZER', scopeId: ORG });
 
 const PLATFORM: ScopeLink = { scope: { type: 'PLATFORM' } };
 const chains: Record<'operator' | 'organizer' | 'event' | 'merchant', ScopeLink[]> = {
   operator: [{ scope: { type: 'OPERATOR', id: OP } }, PLATFORM],
-  organizer: [{ scope: { type: 'ORGANIZER', id: ORG } }, { scope: { type: 'OPERATOR', id: OP } }, PLATFORM],
+  organizer: [
+    { scope: { type: 'ORGANIZER', id: ORG } },
+    { scope: { type: 'OPERATOR', id: OP } },
+    PLATFORM,
+  ],
   event: [
     { scope: { type: 'EVENT', id: EVT } },
     { scope: { type: 'ORGANIZER', id: ORG } },
@@ -50,15 +63,72 @@ const target: Record<GrantableRole, ScopeLink[]> = {
   SUPERVISOR: chains.event,
   CASHIER: chains.event,
   MERCHANT_ADMIN: chains.merchant,
+  // Poste de personnalisation des bracelets (mission bracelets-nfc) : portée prestataire.
+  PERSONALIZER: chains.operator,
 };
 
 // Table de vérité du contrat : attribuant → rôles attribuables.
 const TRUTH: Array<[string, Principal, Record<GrantableRole, boolean>]> = [
-  ['PLATFORM_ADMIN', platformAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
-  ['OPERATOR_ADMIN', operatorAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: true, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true }],
-  ['ORGANIZER_ADMIN', organizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true }],
-  ['ORGANIZER_ADMIN (autre organisateur)', otherOrganizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
-  ['SUPERVISOR', supervisor, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
+  [
+    'PLATFORM_ADMIN',
+    platformAdmin,
+    {
+      OPERATOR_ADMIN: true,
+      ORGANIZER_ADMIN: false,
+      SUPERVISOR: false,
+      CASHIER: false,
+      MERCHANT_ADMIN: false,
+      PERSONALIZER: false,
+    },
+  ],
+  [
+    'OPERATOR_ADMIN',
+    operatorAdmin,
+    {
+      OPERATOR_ADMIN: true,
+      ORGANIZER_ADMIN: true,
+      SUPERVISOR: true,
+      CASHIER: true,
+      MERCHANT_ADMIN: true,
+      PERSONALIZER: true,
+    },
+  ],
+  [
+    'ORGANIZER_ADMIN',
+    organizerAdmin,
+    {
+      OPERATOR_ADMIN: false,
+      ORGANIZER_ADMIN: false,
+      SUPERVISOR: true,
+      CASHIER: true,
+      MERCHANT_ADMIN: true,
+      PERSONALIZER: false,
+    },
+  ],
+  [
+    'ORGANIZER_ADMIN (autre organisateur)',
+    otherOrganizerAdmin,
+    {
+      OPERATOR_ADMIN: false,
+      ORGANIZER_ADMIN: false,
+      SUPERVISOR: false,
+      CASHIER: false,
+      MERCHANT_ADMIN: false,
+      PERSONALIZER: false,
+    },
+  ],
+  [
+    'SUPERVISOR',
+    supervisor,
+    {
+      OPERATOR_ADMIN: false,
+      ORGANIZER_ADMIN: false,
+      SUPERVISOR: false,
+      CASHIER: false,
+      MERCHANT_ADMIN: false,
+      PERSONALIZER: false,
+    },
+  ],
 ];
 
 describe('canGrant : table de vérité', () => {
@@ -75,7 +145,11 @@ describe('canGrant : table de vérité', () => {
   });
 
   it('ORGANIZER_ADMIN : MERCHANT_ADMIN refusé pour un commerçant sans participation à ses événements', () => {
-    const notParticipating: ScopeLink[] = [{ scope: { type: 'MERCHANT', id: MER } }, { scope: { type: 'OPERATOR', id: OP } }, PLATFORM];
+    const notParticipating: ScopeLink[] = [
+      { scope: { type: 'MERCHANT', id: MER } },
+      { scope: { type: 'OPERATOR', id: OP } },
+      PLATFORM,
+    ];
     expect(canGrant(organizerAdmin, 'MERCHANT_ADMIN', notParticipating)).toBeUndefined();
   });
 
@@ -112,15 +186,21 @@ describe('grantTarget : rôle et portée', () => {
     ['MERCHANT_ADMIN', 'EVENT'],
     ['ORGANIZER_ADMIN', 'PLATFORM'],
   ])('%s sur %s : 422', (role, scope) => {
-    expect(() => grantTarget(role, scope, 'x')).toThrow(expect.objectContaining({ code: 'VALIDATION_FAILED', status: 422 }));
+    expect(() => grantTarget(role, scope, 'x')).toThrow(
+      expect.objectContaining({ code: 'VALIDATION_FAILED', status: 422 }),
+    );
   });
 
   it.each(['VENDOR', 'CUSTOMER', 'PLATFORM_ADMIN'])('%s : non attribuable ici (422)', (role) => {
-    expect(() => grantTarget(role, 'OPERATOR', 'x')).toThrow(expect.objectContaining({ status: 422 }));
+    expect(() => grantTarget(role, 'OPERATOR', 'x')).toThrow(
+      expect.objectContaining({ status: 422 }),
+    );
   });
 
   it('portée sans objet : 422', () => {
-    expect(() => grantTarget('CASHIER', 'EVENT', null)).toThrow(expect.objectContaining({ status: 422 }));
+    expect(() => grantTarget('CASHIER', 'EVENT', null)).toThrow(
+      expect.objectContaining({ status: 422 }),
+    );
   });
 });
 
@@ -131,6 +211,8 @@ describe('staffAdminRole', () => {
     expect(() => staffAdminRole(organizerAdmin, ['PLATFORM_ADMIN', 'OPERATOR_ADMIN'])).toThrow(
       expect.objectContaining({ code: 'FORBIDDEN' }),
     );
-    expect(() => staffAdminRole(supervisor)).toThrow(expect.objectContaining({ code: 'FORBIDDEN' }));
+    expect(() => staffAdminRole(supervisor)).toThrow(
+      expect.objectContaining({ code: 'FORBIDDEN' }),
+    );
   });
 });

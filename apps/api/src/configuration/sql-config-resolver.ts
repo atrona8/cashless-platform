@@ -19,7 +19,13 @@ import { ProblemException } from '../errors/problem';
 import type { FeeRule } from '../ledger/money';
 import type { Queryable } from '../ledger/ports/account-resolver';
 import type { ConfigQuery, ConfigResolver } from '../ledger/ports/config-resolver';
-import type { BreakageDestination, LossBearer, OperatorFeeBasis, PspFeeBearer, ResolvedConfig } from '../ledger/types';
+import type {
+  BreakageDestination,
+  LossBearer,
+  OperatorFeeBasis,
+  PspFeeBearer,
+  ResolvedConfig,
+} from '../ledger/types';
 import type { TxClient } from '../db/tenant-tx';
 import { CascadeService } from './cascade.service';
 
@@ -49,10 +55,19 @@ const PSP_PREFIX = 'PSP:';
 const OPERATOR_BASES: readonly OperatorFeeBasis[] = ['TOPUP_AMOUNT', 'PER_MEDIA'];
 
 const missing = (what: string): ProblemException =>
-  new ProblemException('VALIDATION_FAILED', { status: 422, detail: `Règle de frais manquante : ${what}.` });
+  new ProblemException('VALIDATION_FAILED', {
+    status: 422,
+    detail: `Règle de frais manquante : ${what}.`,
+  });
 
 function feeRule(row: RuleRow): FeeRule {
-  return { id: row.id, rateBps: BigInt(row.rate_bps), fixed: row.fixed_amount, min: row.min_amount, max: row.max_amount };
+  return {
+    id: row.id,
+    rateBps: BigInt(row.rate_bps),
+    fixed: row.fixed_amount,
+    min: row.min_amount,
+    max: row.max_amount,
+  };
 }
 
 @Injectable()
@@ -64,31 +79,44 @@ export class SqlConfigResolver implements ConfigResolver {
     if (!client) throw new Error('SqlConfigResolver : client de la transaction requis');
     const at = query.occurredAt;
     const event = await this.event(client, query);
-    const [platformId, contract, jurisdiction, rules, pitchFees, configVersionId, cascade] = await Promise.all([
-      this.platformParty(client, query.ledgerId),
-      this.contract(client, event),
-      this.jurisdiction(client, event.jurisdiction_id),
-      this.rules(client, event, at),
-      this.pitchFees(client, event.id),
-      this.configVersion(client, event.id, at),
-      this.cascade.resolveForEvent(client, event.id, at),
-    ]);
+    const [platformId, contract, jurisdiction, rules, pitchFees, configVersionId, cascade] =
+      await Promise.all([
+        this.platformParty(client, query.ledgerId),
+        this.contract(client, event),
+        this.jurisdiction(client, event.jurisdiction_id),
+        this.rules(client, event, at),
+        this.pitchFees(client, event.id),
+        this.configVersion(client, event.id, at),
+        this.cascade.resolveForEvent(client, event.id, at),
+      ]);
 
     const of = (scope: string, beneficiary: string, basis: string) =>
-      rules.filter((rule) => rule.scope_type === scope && rule.beneficiary_purpose === beneficiary && rule.basis === basis);
+      rules.filter(
+        (rule) =>
+          rule.scope_type === scope &&
+          rule.beneficiary_purpose === beneficiary &&
+          rule.basis === basis,
+      );
     const single = (scope: string, beneficiary: string, basis: string): FeeRule | undefined => {
       const [rule] = of(scope, beneficiary, basis);
       return rule ? feeRule(rule) : undefined;
     };
     const commissions: Record<string, FeeRule> = {};
-    for (const rule of of('PARTICIPATION', 'ORG_COM', 'SALE_AMOUNT')) commissions[rule.scope_id] = feeRule(rule);
+    for (const rule of of('PARTICIPATION', 'ORG_COM', 'SALE_AMOUNT'))
+      commissions[rule.scope_id] = feeRule(rule);
     const pspFees: Record<string, FeeRule> = {};
     for (const rule of rules) {
-      if (rule.scope_type === 'EVENT' && rule.basis === 'TOPUP_AMOUNT' && rule.beneficiary_purpose.startsWith(PSP_PREFIX)) {
+      if (
+        rule.scope_type === 'EVENT' &&
+        rule.basis === 'TOPUP_AMOUNT' &&
+        rule.beneficiary_purpose.startsWith(PSP_PREFIX)
+      ) {
         pspFees[rule.beneficiary_purpose.slice(PSP_PREFIX.length)] = feeRule(rule);
       }
     }
-    const operatorFees = OPERATOR_BASES.flatMap((basis) => of('OPERATOR_CONTRACT', 'OPE_FRAIS', basis).map((rule) => ({ basis, rule: feeRule(rule) })));
+    const operatorFees = OPERATOR_BASES.flatMap((basis) =>
+      of('OPERATOR_CONTRACT', 'OPE_FRAIS', basis).map((rule) => ({ basis, rule: feeRule(rule) })),
+    );
 
     const config = {
       parties: { platformId, operatorId: event.operator_id, organizerId: event.organizer_id },
@@ -107,9 +135,24 @@ export class SqlConfigResolver implements ConfigResolver {
       breakageDestination: jurisdiction.breakageDestination,
     } as ResolvedConfig;
     // Une règle qu'un constructeur lit alors qu'elle n'existe pas : erreur explicite, jamais un frais nul silencieux.
-    lazyRule(config, 'activationFee', single('EVENT', 'ORG_FFEST', 'PER_MEDIA'), "frais d'activation (EVENT, ORG_FFEST, PER_MEDIA)");
-    lazyRule(config, 'refundFee', single('EVENT', 'ORG_FFEST', 'PER_REFUND'), 'frais de remboursement (EVENT, ORG_FFEST, PER_REFUND)');
-    lazyRule(config, 'platformFee', single('PLATFORM_CONTRACT', 'PLT_REDEV', 'FEE_AMOUNT'), 'redevance de la plateforme (PLATFORM_CONTRACT, PLT_REDEV, FEE_AMOUNT)');
+    lazyRule(
+      config,
+      'activationFee',
+      single('EVENT', 'ORG_FFEST', 'PER_MEDIA'),
+      "frais d'activation (EVENT, ORG_FFEST, PER_MEDIA)",
+    );
+    lazyRule(
+      config,
+      'refundFee',
+      single('EVENT', 'ORG_FFEST', 'PER_REFUND'),
+      'frais de remboursement (EVENT, ORG_FFEST, PER_REFUND)',
+    );
+    lazyRule(
+      config,
+      'platformFee',
+      single('PLATFORM_CONTRACT', 'PLT_REDEV', 'FEE_AMOUNT'),
+      'redevance de la plateforme (PLATFORM_CONTRACT, PLT_REDEV, FEE_AMOUNT)',
+    );
     return config;
   }
 
@@ -122,7 +165,11 @@ export class SqlConfigResolver implements ConfigResolver {
         WHERE l.id = $1 AND ($2::uuid IS NULL OR e.id = $2)`,
       [query.ledgerId, query.eventId ?? null],
     );
-    if (!rows[0]) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : ce grand livre n\'est pas celui d\'un événement.' });
+    if (!rows[0])
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: "Configuration : ce grand livre n'est pas celui d'un événement.",
+      });
     return rows[0];
   }
 
@@ -132,39 +179,71 @@ export class SqlConfigResolver implements ConfigResolver {
       `SELECT owner_party_id FROM account WHERE ledger_id = $1 AND purpose = 'PLT_REDEV' AND owner_party_id IS NOT NULL LIMIT 1`,
       [ledgerId],
     );
-    if (!rows[0]) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : comptes de la plateforme absents du grand livre.' });
+    if (!rows[0])
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Configuration : comptes de la plateforme absents du grand livre.',
+      });
     return rows[0].owner_party_id;
   }
 
   /** Contrat prestataire–organisateur rattaché à l'événement (la version à laquelle il est rattaché fait foi). */
   private async contract(client: Queryable, event: EventRow) {
-    const { rows } = await client.query<{ breakage_organizer_bps: number; chargeback_bearer: LossBearer; cash_diff_bearer: LossBearer; offline_loss_bearer: LossBearer }>(
+    const { rows } = await client.query<{
+      breakage_organizer_bps: number;
+      chargeback_bearer: LossBearer;
+      cash_diff_bearer: LossBearer;
+      offline_loss_bearer: LossBearer;
+    }>(
       `SELECT breakage_organizer_bps, chargeback_bearer, cash_diff_bearer, offline_loss_bearer
          FROM contract WHERE id = $1 AND kind = 'OPERATOR_ORGANIZER'`,
       [event.contract_id],
     );
-    if (!rows[0]) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : aucun contrat prestataire–organisateur rattaché à l\'événement.' });
+    if (!rows[0])
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: "Configuration : aucun contrat prestataire–organisateur rattaché à l'événement.",
+      });
     return rows[0];
   }
 
   /** Destination de la casse et taux de taxe du profil : la taxe unique du profil, ou `VAT` s'il en porte plusieurs. */
-  private async jurisdiction(client: Queryable, jurisdictionId: string): Promise<{ breakageDestination: BreakageDestination; taxBps: bigint }> {
-    const { rows } = await client.query<{ breakage_destination: string; taxes: Record<string, { rate_bps?: unknown }> | null }>(
+  private async jurisdiction(
+    client: Queryable,
+    jurisdictionId: string,
+  ): Promise<{ breakageDestination: BreakageDestination; taxBps: bigint }> {
+    const { rows } = await client.query<{
+      breakage_destination: string;
+      taxes: Record<string, { rate_bps?: unknown }> | null;
+    }>(
       `SELECT breakage_destination, rules->'taxes' AS taxes FROM jurisdiction_profile WHERE id = $1`,
       [jurisdictionId],
     );
     const profile = rows[0];
-    if (!profile) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : profil de législation introuvable.' });
+    if (!profile)
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Configuration : profil de législation introuvable.',
+      });
     const taxes = Object.entries(profile.taxes ?? {});
     const tax = taxes.length === 1 ? taxes[0]![1] : (profile.taxes ?? {}).VAT;
     if (taxes.length > 1 && !tax) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : plusieurs taxes au profil de législation, aucune nommée VAT.' });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Configuration : plusieurs taxes au profil de législation, aucune nommée VAT.',
+      });
     }
     const rate = tax?.rate_bps;
     if (tax && (typeof rate !== 'number' || !Number.isInteger(rate) || rate < 0)) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Configuration : taux de taxe du profil de législation invalide.' });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Configuration : taux de taxe du profil de législation invalide.',
+      });
     }
-    return { breakageDestination: profile.breakage_destination as BreakageDestination, taxBps: BigInt((rate as number | undefined) ?? 0) };
+    return {
+      breakageDestination: profile.breakage_destination as BreakageDestination,
+      taxBps: BigInt((rate as number | undefined) ?? 0),
+    };
   }
 
   /** Règles en vigueur à la date : de l'événement, de ses participations, de son contrat, du contrat de plateforme. */
@@ -187,7 +266,10 @@ export class SqlConfigResolver implements ConfigResolver {
 
   /** Droits de place dus, par participation (les participations sans droit de place n'y figurent pas). */
   private async pitchFees(client: Queryable, eventId: string): Promise<Record<string, bigint>> {
-    const { rows } = await client.query<{ id: string; pitch_fee: bigint }>('SELECT id, pitch_fee FROM merchant_participation WHERE event_id = $1 AND pitch_fee > 0', [eventId]);
+    const { rows } = await client.query<{ id: string; pitch_fee: bigint }>(
+      'SELECT id, pitch_fee FROM merchant_participation WHERE event_id = $1 AND pitch_fee > 0',
+      [eventId],
+    );
     return Object.fromEntries(rows.map((row) => [row.id, row.pitch_fee]));
   }
 
@@ -195,7 +277,11 @@ export class SqlConfigResolver implements ConfigResolver {
    * Version de configuration de l'événement en vigueur à la date ; une opération datée d'avant la première version
    * (heure de terminal antérieure à la création de l'événement) prend la première.
    */
-  private async configVersion(client: Queryable, eventId: string, at: Date): Promise<string | undefined> {
+  private async configVersion(
+    client: Queryable,
+    eventId: string,
+    at: Date,
+  ): Promise<string | undefined> {
     const { rows } = await client.query<{ id: string }>(
       `SELECT id FROM (
          (SELECT id, 1 AS rank, version FROM config_version WHERE scope_type = 'EVENT' AND scope_id = $1 AND valid_from <= $2 ORDER BY version DESC LIMIT 1)
@@ -209,7 +295,12 @@ export class SqlConfigResolver implements ConfigResolver {
 }
 
 /** Pose une règle unique ; absente, la lire lève l'erreur « règle de frais manquante ». */
-function lazyRule(config: ResolvedConfig, key: 'activationFee' | 'refundFee' | 'platformFee', rule: FeeRule | undefined, what: string): void {
+function lazyRule(
+  config: ResolvedConfig,
+  key: 'activationFee' | 'refundFee' | 'platformFee',
+  rule: FeeRule | undefined,
+  what: string,
+): void {
   if (rule) config[key] = rule;
   else {
     Object.defineProperty(config, key, {

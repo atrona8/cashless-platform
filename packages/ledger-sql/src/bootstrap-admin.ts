@@ -31,13 +31,17 @@ export function parseBootstrapArgs(argv: string[]): BootstrapAdminInput {
     strict: true,
   });
   const { issuer, subject, name, email, phone } = values;
-  if (!issuer || !subject || !name) throw new Error('--issuer, --subject et --name sont obligatoires.');
+  if (!issuer || !subject || !name)
+    throw new Error('--issuer, --subject et --name sont obligatoires.');
   if (!email && !phone) throw new Error('--email ou --phone est obligatoire.');
   return { issuer, subject, name, email, phone };
 }
 
 /** Crée la personne de plateforme et son attribution PLATFORM_ADMIN si absentes, avec une ligne d'audit. */
-export async function bootstrapAdmin(client: Client, input: BootstrapAdminInput): Promise<BootstrapAdminResult> {
+export async function bootstrapAdmin(
+  client: Client,
+  input: BootstrapAdminInput,
+): Promise<BootstrapAdminResult> {
   await client.query('BEGIN');
   try {
     // Deux lancements simultanés : le second attend le premier puis voit la personne créée.
@@ -55,7 +59,9 @@ export async function bootstrapAdmin(client: Client, input: BootstrapAdminInput)
     }
     if (person) {
       // Personne existante sans attribution active : l'amorçage ne réécrit pas une identité déjà enregistrée.
-      throw new Error(`La personne (${input.issuer}, ${input.subject}) existe sans rôle PLATFORM_ADMIN : amorçage refusé.`);
+      throw new Error(
+        `La personne (${input.issuer}, ${input.subject}) existe sans rôle PLATFORM_ADMIN : amorçage refusé.`,
+      );
     }
     const { rows: users } = await client.query<Record<string, unknown> & { id: string }>(
       `INSERT INTO app_user (operator_id, issuer, subject, email, phone, display_name, created_by)
@@ -85,7 +91,9 @@ async function main(): Promise<void> {
   const input = parseBootstrapArgs(process.argv.slice(2));
   const connectionString = process.env.DATABASE_URL_OWNER;
   if (!connectionString) {
-    throw new Error('DATABASE_URL_OWNER non défini (rôle propriétaire des tables, jamais cashless_app).');
+    throw new Error(
+      'DATABASE_URL_OWNER non défini (rôle propriétaire des tables, jamais cashless_app).',
+    );
   }
   const client = new Client({ connectionString });
   await client.connect();

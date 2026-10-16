@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP16",
+  "captured_at": "2026-10-13T16:37:02Z",
+  "base_branch": "feat/bracelets-nfc",
+  "base_commit": "aeabd5a579909d1606008a0c843b03a94e68921f",
+  "test_runner": "pytest",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<gate-coverage-junit>",
+      "error": "no JUnit XML artifact produced by the scoped run",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

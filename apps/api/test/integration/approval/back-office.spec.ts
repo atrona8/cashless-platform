@@ -31,12 +31,18 @@ describe('demandes d’approbation au back-office', () => {
         [org.a1, org.a2, org.b1, ops.a, ops.b],
       );
       const admin = (operatorId: string, organizerId: string) =>
-        idp.createPerson(db, { operatorId, roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerId }] });
+        idp.createPerson(db, {
+          operatorId,
+          roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerId }],
+        });
       author = await admin(ops.a, org.a1);
       approver = await admin(ops.a, org.a1);
       otherOrganizer = await admin(ops.a, org.a2);
       authorB = await admin(ops.b, org.b1);
-      noRole = await idp.createPerson(db, { operatorId: ops.a, roles: [{ role: 'CASHIER', scopeType: 'ORGANIZER', scopeId: org.a1 }] });
+      noRole = await idp.createPerson(db, {
+        operatorId: ops.a,
+        roles: [{ role: 'CASHIER', scopeType: 'ORGANIZER', scopeId: org.a1 }],
+      });
     });
     app = await createTestApp({ identity: idp, imports: [DemoApprovalModule] });
   });
@@ -47,8 +53,13 @@ describe('demandes d’approbation au back-office', () => {
 
   const http = () => request(app.getHttpServer());
   const post = (who: TestPerson, path: string, body: object = {}, key: string = randomUUID()) =>
-    http().post(path).set('Authorization', `Bearer ${who.token}`).set('Idempotency-Key', key).send(body);
-  const get = (who: TestPerson, path: string) => http().get(path).set('Authorization', `Bearer ${who.token}`);
+    http()
+      .post(path)
+      .set('Authorization', `Bearer ${who.token}`)
+      .set('Idempotency-Key', key)
+      .send(body);
+  const get = (who: TestPerson, path: string) =>
+    http().get(path).set('Authorization', `Bearer ${who.token}`);
   const code = (res: request.Response) => (JSON.parse(res.text) as { code?: string }).code;
 
   const demand = async (who: TestPerson, payload: object): Promise<string> => {
@@ -57,24 +68,51 @@ describe('demandes d’approbation au back-office', () => {
     return res.body.approval_request_id as string;
   };
   const witnesses = (note: string) =>
-    withOwner(async (db) => (await db.query(`SELECT 1 FROM config_version WHERE settings->>'note' = $1`, [note])).rowCount);
+    withOwner(
+      async (db) =>
+        (await db.query(`SELECT 1 FROM config_version WHERE settings->>'note' = $1`, [note]))
+          .rowCount,
+    );
   const audit = (id: string) =>
     withOwner(async (db) => {
-      const { rows } = await db.query<{ action: string; actor_id: string; approver_id: string | null; actor_role: string }>(
+      const { rows } = await db.query<{
+        action: string;
+        actor_id: string;
+        approver_id: string | null;
+        actor_role: string;
+      }>(
         `SELECT action, actor_id, approver_id, actor_role FROM audit_log WHERE object_id = $1 ORDER BY seq`,
         [id],
       );
       return rows;
     });
   const statusInDb = (id: string) =>
-    withOwner(async (db) => (await db.query<{ status: string }>('SELECT status FROM approval_request WHERE id = $1', [id])).rows[0]?.status);
+    withOwner(
+      async (db) =>
+        (
+          await db.query<{ status: string }>('SELECT status FROM approval_request WHERE id = $1', [
+            id,
+          ])
+        ).rows[0]?.status,
+    );
 
   it('parcours complet : 202 → auteur 409 → sans rôle 403 → autre organisateur 403 → valideur 200 EXECUTED, exécution unique', async () => {
     const note = `ok-${randomUUID()}`;
-    const created = await post(author, '/v1/__test/demo-adjustments', { organizer_id: org.a1, note });
+    const created = await post(author, '/v1/__test/demo-adjustments', {
+      organizer_id: org.a1,
+      note,
+    });
     expect(created.status).toBe(202);
-    expect(created.headers.location).toBe(`/v1/approval-requests/${created.body.approval_request_id}`);
-    expect(created.body).toMatchObject({ action: 'ADJUSTMENT', status: 'PENDING', requested_by: author.userId, decided_by: null, result: null });
+    expect(created.headers.location).toBe(
+      `/v1/approval-requests/${created.body.approval_request_id}`,
+    );
+    expect(created.body).toMatchObject({
+      action: 'ADJUSTMENT',
+      status: 'PENDING',
+      requested_by: author.userId,
+      decided_by: null,
+      result: null,
+    });
     const id = created.body.approval_request_id as string;
     expect(await witnesses(note)).toBe(0);
 
@@ -85,7 +123,12 @@ describe('demandes d’approbation au back-office', () => {
     expect((await post(otherOrganizer, `/v1/approval-requests/${id}/approve`)).status).toBe(403);
 
     const key = randomUUID();
-    const approved = await post(approver, `/v1/approval-requests/${id}/approve`, { note: 'Vu', approved_by: author.userId, decided_by: author.userId }, key);
+    const approved = await post(
+      approver,
+      `/v1/approval-requests/${id}/approve`,
+      { note: 'Vu', approved_by: author.userId, decided_by: author.userId },
+      key,
+    );
     expect(approved.status).toBe(200);
     expect(approved.body).toMatchObject({
       approval_request_id: id,
@@ -98,7 +141,12 @@ describe('demandes d’approbation au back-office', () => {
     expect(await witnesses(note)).toBe(1);
 
     // Rejeu avec la même clé : même réponse, aucune seconde exécution.
-    const replay = await post(approver, `/v1/approval-requests/${id}/approve`, { note: 'Vu', approved_by: author.userId, decided_by: author.userId }, key);
+    const replay = await post(
+      approver,
+      `/v1/approval-requests/${id}/approve`,
+      { note: 'Vu', approved_by: author.userId, decided_by: author.userId },
+      key,
+    );
     expect(replay.headers['idempotency-replayed']).toBe('true');
     expect(replay.body).toEqual(approved.body);
     expect(await witnesses(note)).toBe(1);
@@ -106,8 +154,18 @@ describe('demandes d’approbation au back-office', () => {
     expect((await post(approver, `/v1/approval-requests/${id}/approve`)).status).toBe(409);
 
     expect(await audit(id)).toEqual([
-      { action: 'APPROVAL_REQUESTED', actor_id: author.userId, approver_id: null, actor_role: 'ORGANIZER_ADMIN' },
-      { action: 'APPROVAL_EXECUTED', actor_id: approver.userId, approver_id: approver.userId, actor_role: 'ORGANIZER_ADMIN' },
+      {
+        action: 'APPROVAL_REQUESTED',
+        actor_id: author.userId,
+        approver_id: null,
+        actor_role: 'ORGANIZER_ADMIN',
+      },
+      {
+        action: 'APPROVAL_EXECUTED',
+        actor_id: approver.userId,
+        approver_id: approver.userId,
+        actor_role: 'ORGANIZER_ADMIN',
+      },
     ]);
   });
 
@@ -116,9 +174,17 @@ describe('demandes d’approbation au back-office', () => {
     const id = await demand(author, { organizer_id: org.a1, note, fail: true });
     const res = await post(approver, `/v1/approval-requests/${id}/approve`);
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ status: 'FAILED', failure_code: 'VALIDATION_FAILED', failure_reason: 'Échec de démonstration.', result: null });
+    expect(res.body).toMatchObject({
+      status: 'FAILED',
+      failure_code: 'VALIDATION_FAILED',
+      failure_reason: 'Échec de démonstration.',
+      result: null,
+    });
     expect(await witnesses(note)).toBe(0);
-    expect((await audit(id)).map((r) => r.action)).toEqual(['APPROVAL_REQUESTED', 'APPROVAL_FAILED']);
+    expect((await audit(id)).map((r) => r.action)).toEqual([
+      'APPROVAL_REQUESTED',
+      'APPROVAL_FAILED',
+    ]);
   });
 
   it('refus : note absente 400 ; avec note REJECTED, audit APPROVAL_REJECTED, rien exécuté', async () => {
@@ -127,12 +193,24 @@ describe('demandes d’approbation au back-office', () => {
     const missing = await post(approver, `/v1/approval-requests/${id}/reject`, {});
     expect(missing.status).toBe(400);
     expect(code(missing)).toBe('VALIDATION_FAILED');
-    expect((await post(otherOrganizer, `/v1/approval-requests/${id}/reject`, { note: 'Pas d’accord' })).status).toBe(403);
-    const res = await post(approver, `/v1/approval-requests/${id}/reject`, { note: 'Montant non justifié' });
+    expect(
+      (await post(otherOrganizer, `/v1/approval-requests/${id}/reject`, { note: 'Pas d’accord' }))
+        .status,
+    ).toBe(403);
+    const res = await post(approver, `/v1/approval-requests/${id}/reject`, {
+      note: 'Montant non justifié',
+    });
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ status: 'REJECTED', decided_by: approver.userId, decision_note: 'Montant non justifié' });
+    expect(res.body).toMatchObject({
+      status: 'REJECTED',
+      decided_by: approver.userId,
+      decision_note: 'Montant non justifié',
+    });
     expect(await witnesses(note)).toBe(0);
-    expect((await audit(id)).map((r) => r.action)).toEqual(['APPROVAL_REQUESTED', 'APPROVAL_REJECTED']);
+    expect((await audit(id)).map((r) => r.action)).toEqual([
+      'APPROVAL_REQUESTED',
+      'APPROVAL_REJECTED',
+    ]);
     expect((await post(approver, `/v1/approval-requests/${id}/approve`)).status).toBe(409);
   });
 
@@ -141,7 +219,10 @@ describe('demandes d’approbation au back-office', () => {
     await withOwner(async (db) => {
       await db.query('ALTER TABLE approval_request DISABLE TRIGGER approval_request_guard');
       try {
-        await db.query(`UPDATE approval_request SET requested_at = now() - interval '2 days', expires_at = now() - interval '1 day' WHERE id = $1`, [id]);
+        await db.query(
+          `UPDATE approval_request SET requested_at = now() - interval '2 days', expires_at = now() - interval '1 day' WHERE id = $1`,
+          [id],
+        );
       } finally {
         await db.query('ALTER TABLE approval_request ENABLE TRIGGER approval_request_guard');
       }
@@ -160,14 +241,32 @@ describe('demandes d’approbation au back-office', () => {
   });
 
   it('création : action non autorisée pour l’auteur 403 ; paramètres invalides 422', async () => {
-    expect((await post(noRole, '/v1/__test/demo-adjustments', { organizer_id: org.a1, note: 'x' })).status).toBe(403);
-    expect((await post(otherOrganizer, '/v1/__test/demo-adjustments', { organizer_id: org.a1, note: 'x' })).status).toBe(403);
-    expect((await post(author, '/v1/__test/demo-adjustments', { organizer_id: org.a1 })).status).toBe(422);
+    expect(
+      (await post(noRole, '/v1/__test/demo-adjustments', { organizer_id: org.a1, note: 'x' }))
+        .status,
+    ).toBe(403);
+    expect(
+      (
+        await post(otherOrganizer, '/v1/__test/demo-adjustments', {
+          organizer_id: org.a1,
+          note: 'x',
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await post(author, '/v1/__test/demo-adjustments', { organizer_id: org.a1 })).status,
+    ).toBe(422);
   });
 
   it('liste filtrée, paginée, restreinte au rôle et au prestataire ; consultation 404 hors droit', async () => {
-    const mine = [await demand(author, { organizer_id: org.a1, note: `l1-${randomUUID()}` }), await demand(author, { organizer_id: org.a1, note: `l2-${randomUUID()}` })];
-    const otherId = await demand(otherOrganizer, { organizer_id: org.a2, note: `l3-${randomUUID()}` });
+    const mine = [
+      await demand(author, { organizer_id: org.a1, note: `l1-${randomUUID()}` }),
+      await demand(author, { organizer_id: org.a1, note: `l2-${randomUUID()}` }),
+    ];
+    const otherId = await demand(otherOrganizer, {
+      organizer_id: org.a2,
+      note: `l3-${randomUUID()}`,
+    });
     const idB = await demand(authorB, { organizer_id: org.b1, note: `l4-${randomUUID()}` });
 
     const seen: string[] = [];
@@ -177,7 +276,9 @@ describe('demandes d’approbation au back-office', () => {
       const page = await get(approver, path);
       expect(page.status).toBe(200);
       expect(page.body.data.length).toBeLessThanOrEqual(1);
-      seen.push(...page.body.data.map((r: { approval_request_id: string }) => r.approval_request_id));
+      seen.push(
+        ...page.body.data.map((r: { approval_request_id: string }) => r.approval_request_id),
+      );
       cursor = page.body.next_cursor;
     } while (cursor);
     expect(seen).toEqual(expect.arrayContaining(mine));
@@ -193,7 +294,15 @@ describe('demandes d’approbation au back-office', () => {
   });
 
   it('aucune demande APPROVED ne reste en base (état de passage)', async () => {
-    const count = await withOwner(async (db) => (await db.query(`SELECT 1 FROM approval_request WHERE status = 'APPROVED' AND operator_id = ANY($1::uuid[])`, [[ops.a, ops.b]])).rowCount);
+    const count = await withOwner(
+      async (db) =>
+        (
+          await db.query(
+            `SELECT 1 FROM approval_request WHERE status = 'APPROVED' AND operator_id = ANY($1::uuid[])`,
+            [[ops.a, ops.b]],
+          )
+        ).rowCount,
+    );
     expect(count).toBe(0);
   });
 });

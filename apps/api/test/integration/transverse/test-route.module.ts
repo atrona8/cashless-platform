@@ -6,7 +6,11 @@ import { Body, Controller, Get, HttpCode, Module, Param, Post, Query, Req } from
 import type { Request } from 'express';
 import { TenantTx } from '../../../src/db/tenant-tx';
 import { ProblemException } from '../../../src/errors/problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../../src/idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../../src/idempotency/idempotent.decorator';
 import { HeaderTenantContext } from '../../support/app';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,7 +40,8 @@ export class TestRouteController {
   @Idempotent({ scope: 'app:' })
   createNote(@Body() body: NoteBody, @IdempotentTransaction() idempotent: IdempotentTx) {
     return idempotent.run(async (client) => {
-      if (body.holdLock !== undefined) await client.query('SELECT pg_advisory_xact_lock($1)', [body.holdLock]);
+      if (body.holdLock !== undefined)
+        await client.query('SELECT pg_advisory_xact_lock($1)', [body.holdLock]);
       const { rows } = await client.query<{ id: string }>(
         `INSERT INTO config_version (operator_id, scope_type, scope_id, version, valid_from, settings)
          SELECT current_setting('app.operator_id')::uuid, 'OPERATOR', current_setting('app.operator_id')::uuid,
@@ -72,7 +77,9 @@ export class TestRouteController {
   @Post('fail')
   @HttpCode(200)
   fail(@Req() req: Request, @Query('sqlstate') sqlstate: string) {
-    return this.tx.run(tenant.current(req).operatorId, (client) => client.query('SELECT __test_raise($1)', [sqlstate]));
+    return this.tx.run(tenant.current(req).operatorId, (client) =>
+      client.query('SELECT __test_raise($1)', [sqlstate]),
+    );
   }
 
   /** Écriture back-office sans second valideur : refusée par la contrainte de double validation (23514). */

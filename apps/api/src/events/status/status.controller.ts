@@ -6,18 +6,33 @@ import type { Request, Response } from 'express';
 import { ApprovalService, respondAccepted } from '../../approval/approval.service';
 import { ProblemException } from '../../errors/problem';
 import { pickLanguage } from '../../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
 import type { Role } from '../../identity/principal';
-import { invalid, objectBody, requireUuid, unprocessable } from '../../organization/platform/platform.dto';
+import {
+  invalid,
+  objectBody,
+  requireUuid,
+  unprocessable,
+} from '../../organization/platform/platform.dto';
 import { scopesHeld, TenantAccess } from '../../organization/tenant/tenant-access';
 import { canReadEvent, settingRolesOn } from '../events.controller';
 import { EventsService } from '../events.service';
 import { EVENT_STATUSES, nextStatus, StatusService, type EventStatus } from './status.service';
 
-const READERS: readonly Role[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR'];
+const READERS: readonly Role[] = [
+  'PLATFORM_ADMIN',
+  'OPERATOR_ADMIN',
+  'ORGANIZER_ADMIN',
+  'SUPERVISOR',
+];
 const WRITERS: readonly Role[] = ['ORGANIZER_ADMIN', 'OPERATOR_ADMIN'];
 
-const isStatus = (value: unknown): value is EventStatus => typeof value === 'string' && (EVENT_STATUSES as readonly string[]).includes(value);
+const isStatus = (value: unknown): value is EventStatus =>
+  typeof value === 'string' && (EVENT_STATUSES as readonly string[]).includes(value);
 
 @Controller('operators/:operator_id/events/:event_id')
 export class StatusController {
@@ -38,7 +53,12 @@ export class StatusController {
       const target = to ?? nextStatus(event.status);
       // Événement clos : aucun passage suivant.
       if (!target) return [];
-      return this.status.conditions(client, event, target, pickLanguage(req.header('Accept-Language')));
+      return this.status.conditions(
+        client,
+        event,
+        target,
+        pickLanguage(req.header('Accept-Language')),
+      );
     });
   }
 
@@ -59,15 +79,27 @@ export class StatusController {
     const language = pickLanguage(req.header('Accept-Language'));
     return tx.run(async (client) => {
       const event = await this.events.row(client, requireUuid(eventId));
-      if (settingRolesOn(actor, event.organizer_id).length === 0) throw new ProblemException('FORBIDDEN');
+      if (settingRolesOn(actor, event.organizer_id).length === 0)
+        throw new ProblemException('FORBIDDEN');
       await this.status.assertMet(client, event, to, language);
       if (to === 'LIVE') {
         // Mise en service : deux ORGANIZER_ADMIN de l'organisateur.
-        if (!scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(event.organizer_id)) throw new ProblemException('FORBIDDEN');
+        if (
+          !scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(event.organizer_id)
+        )
+          throw new ProblemException('FORBIDDEN');
         const request = await this.approvals.request(
           client,
           actor.operatorId,
-          { action: 'EVENT_GO_LIVE', targetId: event.id, payload: { event_id: event.id, to, config_version_id: await this.events.currentVersionId(client, event.id) } },
+          {
+            action: 'EVENT_GO_LIVE',
+            targetId: event.id,
+            payload: {
+              event_id: event.id,
+              to,
+              config_version_id: await this.events.currentVersionId(client, event.id),
+            },
+          },
           { principal: actor.principal, audit: actor.audit },
         );
         return respondAccepted(res, request);

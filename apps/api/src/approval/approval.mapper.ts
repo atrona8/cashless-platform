@@ -38,8 +38,13 @@ export interface ApprovalRequestDto {
   failure_reason: string | null;
 }
 
-export function presentedStatus(row: ApprovalRequestRow, now: Date = new Date()): ApprovalRequestRow['status'] {
-  return row.status === 'PENDING' && row.expires_at.getTime() < now.getTime() ? 'EXPIRED' : row.status;
+export function presentedStatus(
+  row: ApprovalRequestRow,
+  now: Date = new Date(),
+): ApprovalRequestRow['status'] {
+  return row.status === 'PENDING' && row.expires_at.getTime() < now.getTime()
+    ? 'EXPIRED'
+    : row.status;
 }
 
 export function approvalRequestDto(row: ApprovalRequestRow, now?: Date): ApprovalRequestDto {

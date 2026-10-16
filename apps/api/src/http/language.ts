@@ -22,7 +22,11 @@ export function pickLanguage(header: string | undefined): Language {
       const [tag = '', ...params] = part.trim().split(';');
       const q = params.map((p) => p.trim()).find((p) => p.startsWith('q='));
       const weight = q ? Number.parseFloat(q.slice(2)) : 1;
-      return { lang: tag.trim().toLowerCase().split('-')[0], weight: Number.isNaN(weight) ? 0 : weight, index };
+      return {
+        lang: tag.trim().toLowerCase().split('-')[0],
+        weight: Number.isNaN(weight) ? 0 : weight,
+        index,
+      };
     })
     .filter((entry) => entry.weight > 0)
     .sort((a, b) => b.weight - a.weight || a.index - b.index);

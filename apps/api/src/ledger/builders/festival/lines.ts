@@ -3,7 +3,8 @@ import { extractTax } from '../../money';
 import { BuildError, type AccountRef, type Line } from '../../types';
 
 export function requirePositive(amount: bigint, what: string): bigint {
-  if (amount <= 0n) throw new BuildError('VALIDATION_FAILED', `${what} : montant strictement positif requis`);
+  if (amount <= 0n)
+    throw new BuildError('VALIDATION_FAILED', `${what} : montant strictement positif requis`);
   return amount;
 }
 
@@ -18,7 +19,13 @@ export function push(lines: Line[], account: AccountRef, amount: bigint): void {
 }
 
 /** Crédite un montant TTC en deux lignes : HT sur `htAccount`, taxe extraite sur `taxAccount` (omise si nulle). */
-export function creditWithTax(lines: Line[], ttc: bigint, taxBps: bigint, htAccount: AccountRef, taxAccount: AccountRef): void {
+export function creditWithTax(
+  lines: Line[],
+  ttc: bigint,
+  taxBps: bigint,
+  htAccount: AccountRef,
+  taxAccount: AccountRef,
+): void {
   const { ht, tax } = extractTax(ttc, taxBps);
   push(lines, htAccount, -ht);
   push(lines, taxAccount, -tax);

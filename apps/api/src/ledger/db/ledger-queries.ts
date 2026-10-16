@@ -75,7 +75,11 @@ export async function readSignedBalances(
 }
 
 /** Marge sous le plafond du portefeuille (verrouille son solde jusqu'à la fin de la transaction) ; null = sans plafond. */
-export async function readTopupHeadroom(client: Queryable, walletId: string, occurredAt: Date): Promise<bigint | undefined> {
+export async function readTopupHeadroom(
+  client: Queryable,
+  walletId: string,
+  occurredAt: Date,
+): Promise<bigint | undefined> {
   const { rows } = await client.query<{ headroom: string | null }>(
     'SELECT wallet_topup_headroom($1, $2)::text AS headroom',
     [walletId, occurredAt.toISOString()],
@@ -85,7 +89,11 @@ export async function readTopupHeadroom(client: Queryable, walletId: string, occ
 }
 
 /** Lignes de la transaction contre-passée, dans leur ordre d'écriture, comptes désignés par leur code. */
-export async function readOriginalLines(client: Queryable, ledgerId: string, transactionId: string): Promise<Line[]> {
+export async function readOriginalLines(
+  client: Queryable,
+  ledgerId: string,
+  transactionId: string,
+): Promise<Line[]> {
   const { rows } = await client.query<{ code: string; amount: string; memo: string | null }>(
     `SELECT a.code, p.amount::text AS amount, p.memo
        FROM posting p JOIN account a ON a.id = p.account_id
@@ -104,7 +112,9 @@ export async function readOriginalLines(client: Queryable, ledgerId: string, tra
  * Sérialise les lignes pour `post_transaction` : montants écrits comme nombres JSON à partir de leur forme décimale
  * exacte (`bigint.toString()`), jamais convertis en `number` (même texte JSON que les appels SQL du schéma).
  */
-export function linesJson(lines: readonly { accountId: string; amount: bigint; memo?: string; feeRuleId?: string }[]): string {
+export function linesJson(
+  lines: readonly { accountId: string; amount: bigint; memo?: string; feeRuleId?: string }[],
+): string {
   return `[${lines
     .map(
       (line) =>
@@ -117,21 +127,31 @@ export function linesJson(lines: readonly { accountId: string; amount: bigint; m
 
 /** Sérialise un objet JSON dont des valeurs peuvent être des bigint (écrits comme nombres exacts). */
 export function jsonWithBigint(value: unknown): string {
-  return JSON.stringify(value, (_key, v: unknown) => (typeof v === 'bigint' ? `\u0000${v.toString()}\u0000` : v)).replace(
-    /"\\u0000(-?\d+)\\u0000"/g,
-    '$1',
-  );
+  return JSON.stringify(value, (_key, v: unknown) =>
+    typeof v === 'bigint' ? `\u0000${v.toString()}\u0000` : v,
+  ).replace(/"\\u0000(-?\d+)\\u0000"/g, '$1');
 }
 
 /**
  * Verrou de transaction sur (grand livre, clé) : deux commandes de même clé s'exécutent l'une après l'autre, ce qui
  * rend exacte la lecture « la transaction existait-elle déjà ? » faite juste après (voir LedgerEngineService).
  */
-export async function lockIdempotencyKey(client: Queryable, ledgerId: string, key: string): Promise<void> {
-  await client.query(`SELECT pg_advisory_xact_lock(hashtextextended('engine-key:' || $1 || ':' || $2, 0))`, [ledgerId, key]);
+export async function lockIdempotencyKey(
+  client: Queryable,
+  ledgerId: string,
+  key: string,
+): Promise<void> {
+  await client.query(
+    `SELECT pg_advisory_xact_lock(hashtextextended('engine-key:' || $1 || ':' || $2, 0))`,
+    [ledgerId, key],
+  );
 }
 
-export async function findTransactionId(client: Queryable, ledgerId: string, key: string): Promise<string | undefined> {
+export async function findTransactionId(
+  client: Queryable,
+  ledgerId: string,
+  key: string,
+): Promise<string | undefined> {
   const { rows } = await client.query<{ id: string }>(
     'SELECT id FROM journal_transaction WHERE ledger_id = $1 AND idempotency_key = $2',
     [ledgerId, key],
@@ -157,7 +177,10 @@ export interface PostTransactionArgs {
 }
 
 /** L'unique appel d'écriture d'une commande à lignes (SPECIFICATION §5.4, signature de post_transaction). */
-export async function postTransaction(client: Queryable, args: PostTransactionArgs): Promise<string> {
+export async function postTransaction(
+  client: Queryable,
+  args: PostTransactionArgs,
+): Promise<string> {
   const { rows } = await client.query<{ id: string }>(
     `SELECT post_transaction($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, $14::jsonb) AS id`,
     [
@@ -188,7 +211,10 @@ export interface MediaDepositState {
 }
 
 /** État de caution du support et rang de son détenteur (les clés internes des fonctions en dépendent). */
-export async function readMediaDepositState(client: Queryable, mediaId: string): Promise<MediaDepositState | undefined> {
+export async function readMediaDepositState(
+  client: Queryable,
+  mediaId: string,
+): Promise<MediaDepositState | undefined> {
   const { rows } = await client.query<{ deposit_status: string; assignments: number }>(
     `SELECT m.deposit_status, (SELECT count(*)::int FROM media_assignment a WHERE a.media_id = m.id) AS assignments
        FROM media m WHERE m.id = $1`,
@@ -198,12 +224,23 @@ export async function readMediaDepositState(client: Queryable, mediaId: string):
   return row ? { depositStatus: row.deposit_status, assignments: row.assignments } : undefined;
 }
 
-export async function takeDeposit(client: Queryable, mediaId: string, moneyAccountId: string | null): Promise<string> {
-  const { rows } = await client.query<{ outcome: string }>('SELECT take_deposit($1, $2) AS outcome', [mediaId, moneyAccountId]);
+export async function takeDeposit(
+  client: Queryable,
+  mediaId: string,
+  moneyAccountId: string | null,
+): Promise<string> {
+  const { rows } = await client.query<{ outcome: string }>(
+    'SELECT take_deposit($1, $2) AS outcome',
+    [mediaId, moneyAccountId],
+  );
   return rows[0]!.outcome;
 }
 
-export async function refundDeposit(client: Queryable, mediaId: string, moneyAccountId: string | null): Promise<void> {
+export async function refundDeposit(
+  client: Queryable,
+  mediaId: string,
+  moneyAccountId: string | null,
+): Promise<void> {
   await client.query('SELECT refund_deposit($1, $2)', [mediaId, moneyAccountId]);
 }
 
@@ -212,21 +249,33 @@ export async function forfeitDeposit(client: Queryable, mediaId: string): Promis
 }
 
 export async function preloadMedia(client: Queryable, mediaId: string): Promise<string | null> {
-  const { rows } = await client.query<{ id: string | null }>('SELECT preload_media($1) AS id', [mediaId]);
+  const { rows } = await client.query<{ id: string | null }>('SELECT preload_media($1) AS id', [
+    mediaId,
+  ]);
   return rows[0]?.id ?? null;
 }
 
 export async function refundCashDue(
   client: Queryable,
-  args: { mediaId: string; cashAccountId: string; key: string; actor: string; approver?: string; deviceId?: string },
+  args: {
+    mediaId: string;
+    cashAccountId: string;
+    key: string;
+    actor: string;
+    approver?: string;
+    deviceId?: string;
+  },
 ): Promise<string> {
-  const { rows } = await client.query<{ id: string }>('SELECT refund_cash_due($1, $2, $3, $4, $5, $6) AS id', [
-    args.mediaId,
-    args.cashAccountId,
-    args.key,
-    args.actor,
-    args.approver ?? null,
-    args.deviceId ?? null,
-  ]);
+  const { rows } = await client.query<{ id: string }>(
+    'SELECT refund_cash_due($1, $2, $3, $4, $5, $6) AS id',
+    [
+      args.mediaId,
+      args.cashAccountId,
+      args.key,
+      args.actor,
+      args.approver ?? null,
+      args.deviceId ?? null,
+    ],
+  );
   return rows[0]!.id;
 }

@@ -20,4 +20,7 @@ export const Roles = (
   scope?: (req: Request) => ScopeRef,
   options: RoleCheckOptions = {},
 ): MethodDecorator & ClassDecorator =>
-  applyDecorators(SetMetadata(ROLES, { roles, scope, ...options } satisfies RolesMetadata), UseGuards(RolesGuard));
+  applyDecorators(
+    SetMetadata(ROLES, { roles, scope, ...options } satisfies RolesMetadata),
+    UseGuards(RolesGuard),
+  );

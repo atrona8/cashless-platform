@@ -25,7 +25,9 @@ describe('santé et garanties transverses', () => {
   it('X-Request-Id généré s’il est absent ou invalide, repris s’il est un UUID', async () => {
     const generated = await request(app.getHttpServer()).get('/v1/health');
     expect(generated.headers['x-request-id']).toMatch(UUID);
-    const invalid = await request(app.getHttpServer()).get('/v1/health').set('X-Request-Id', 'pas-un-uuid');
+    const invalid = await request(app.getHttpServer())
+      .get('/v1/health')
+      .set('X-Request-Id', 'pas-un-uuid');
     expect(invalid.headers['x-request-id']).toMatch(UUID);
     const id = '6f1c2b8e-3d4a-4f5b-8c9d-0e1f2a3b4c5d';
     const echoed = await request(app.getHttpServer()).get('/v1/health').set('X-Request-Id', id);
@@ -48,7 +50,9 @@ describe('santé et garanties transverses', () => {
   });
 
   it('Accept-Language: en → titre anglais, même code et même statut', async () => {
-    const res = await request(app.getHttpServer()).get('/v1/nulle-part').set('Accept-Language', 'en');
+    const res = await request(app.getHttpServer())
+      .get('/v1/nulle-part')
+      .set('Accept-Language', 'en');
     const body = JSON.parse(res.text);
     expect(res.status).toBe(404);
     expect(body.title).toBe('Not found');

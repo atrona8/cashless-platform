@@ -5,7 +5,13 @@
 // endroits, par une migration.
 
 /** Niveaux de la cascade, du plus général au plus précis (§4.1). */
-export const CONFIG_LEVELS = ['PLATFORM', 'OPERATOR', 'ORGANIZER', 'EVENT', 'PARTICIPATION'] as const;
+export const CONFIG_LEVELS = [
+  'PLATFORM',
+  'OPERATOR',
+  'ORGANIZER',
+  'EVENT',
+  'PARTICIPATION',
+] as const;
 export type ConfigLevel = (typeof CONFIG_LEVELS)[number];
 
 /** Rôles qui règlent une configuration. */
@@ -48,7 +54,9 @@ const column = (
   key: string,
   type: SettingType,
   setBy: SettingDefinition['setBy'],
-  rest: Partial<Pick<SettingDefinition, 'default' | 'provisional' | 'cappedBy' | 'resolved' | 'draftOnly'>> = {},
+  rest: Partial<
+    Pick<SettingDefinition, 'default' | 'provisional' | 'cappedBy' | 'resolved' | 'draftOnly'>
+  > = {},
 ): SettingDefinition => ({
   key,
   storage: { kind: 'EVENT_COLUMN', column: key },
@@ -65,7 +73,15 @@ const setting = (
   type: SettingType,
   setBy: SettingDefinition['setBy'],
   rest: Partial<Pick<SettingDefinition, 'default' | 'provisional' | 'cappedBy'>> = {},
-): SettingDefinition => ({ key, storage: { kind: 'SETTINGS' }, levels, type, setBy, resolved: true, ...rest });
+): SettingDefinition => ({
+  key,
+  storage: { kind: 'SETTINGS' },
+  levels,
+  type,
+  setBy,
+  resolved: true,
+  ...rest,
+});
 
 const int = (min: number, max: number): SettingType => ({ kind: 'int', min, max });
 const oneOf = (...values: string[]): SettingType => ({ kind: 'enum', values });
@@ -75,20 +91,45 @@ const DEFINITIONS: readonly SettingDefinition[] = [
   column('name', { kind: 'text', maxLength: 200 }, 'ORGANIZER_ADMIN', { resolved: false }),
   column('starts_at', { kind: 'datetime', nullable: true }, 'ORGANIZER_ADMIN', { resolved: false }),
   column('ends_at', { kind: 'datetime', nullable: true }, 'ORGANIZER_ADMIN', { resolved: false }),
-  column('jurisdiction_id', { kind: 'uuid', nullable: false }, 'ORGANIZER_ADMIN', { resolved: false }),
+  column('jurisdiction_id', { kind: 'uuid', nullable: false }, 'ORGANIZER_ADMIN', {
+    resolved: false,
+  }),
   column('contract_id', { kind: 'uuid', nullable: true }, 'ORGANIZER_ADMIN', { resolved: false }),
   // Détenteur des fonds : colonne qui fait foi, obligatoire, sans défaut, jamais dans la cascade (§4.4, C-003).
-  column('funds_holder', oneOf('ORGANIZER', 'OPERATOR', 'THIRD_PARTY'), 'ORGANIZER_ADMIN', { resolved: false, draftOnly: true }),
-  column('funds_holder_party_id', { kind: 'uuid', nullable: true }, 'ORGANIZER_ADMIN', { resolved: false, draftOnly: true }),
+  column('funds_holder', oneOf('ORGANIZER', 'OPERATOR', 'THIRD_PARTY'), 'ORGANIZER_ADMIN', {
+    resolved: false,
+    draftOnly: true,
+  }),
+  column('funds_holder_party_id', { kind: 'uuid', nullable: true }, 'ORGANIZER_ADMIN', {
+    resolved: false,
+    draftOnly: true,
+  }),
 
   // --- Réglages de l'événement portés par ses colonnes, réglés par l'organisateur (§4.2).
-  column('issuer', oneOf('ORGANIZER', 'OPERATOR'), 'ORGANIZER_ADMIN', { default: 'ORGANIZER', draftOnly: true }),
-  column('identity_mode', oneOf('ANONYMOUS_ALLOWED', 'ACCOUNT_REQUIRED'), 'ORGANIZER_ADMIN', { default: 'ANONYMOUS_ALLOWED' }),
-  column('activation_modes', { kind: 'enumSet', values: ['DESK', 'SELF_APP', 'FIRST_TOPUP'] }, 'ORGANIZER_ADMIN', { default: ['DESK'] }),
-  column('lost_media_policy', oneOf('END_OF_LIFE', 'REACTIVATE'), 'ORGANIZER_ADMIN', { default: 'END_OF_LIFE' }),
-  column('cash_refund_single_max', { kind: 'amount' }, 'ORGANIZER_ADMIN', { default: 50000, cappedBy: 'cash_refund_single_max_cap' }),
+  column('issuer', oneOf('ORGANIZER', 'OPERATOR'), 'ORGANIZER_ADMIN', {
+    default: 'ORGANIZER',
+    draftOnly: true,
+  }),
+  column('identity_mode', oneOf('ANONYMOUS_ALLOWED', 'ACCOUNT_REQUIRED'), 'ORGANIZER_ADMIN', {
+    default: 'ANONYMOUS_ALLOWED',
+  }),
+  column(
+    'activation_modes',
+    { kind: 'enumSet', values: ['DESK', 'SELF_APP', 'FIRST_TOPUP'] },
+    'ORGANIZER_ADMIN',
+    { default: ['DESK'] },
+  ),
+  column('lost_media_policy', oneOf('END_OF_LIFE', 'REACTIVATE'), 'ORGANIZER_ADMIN', {
+    default: 'END_OF_LIFE',
+  }),
+  column('cash_refund_single_max', { kind: 'amount' }, 'ORGANIZER_ADMIN', {
+    default: 50000,
+    cappedBy: 'cash_refund_single_max_cap',
+  }),
   // Absente : fin de l'événement + 30 jours, valeur provisoire (§17.2) ; bornée par le profil de législation.
-  column('refund_deadline', { kind: 'datetime', nullable: true }, 'ORGANIZER_ADMIN', { provisional: { confirmBy: 'porteur du projet' } }),
+  column('refund_deadline', { kind: 'datetime', nullable: true }, 'ORGANIZER_ADMIN', {
+    provisional: { confirmBy: 'porteur du projet' },
+  }),
   column('reversal_window_minutes', int(0, 60), 'ORGANIZER_ADMIN', { default: 15 }),
 
   // --- Réglages de l'événement réglés par le prestataire (§4.2, §9.8, ADR-61, ADR-73, ADR-76, ADR-77).
@@ -96,7 +137,9 @@ const DEFINITIONS: readonly SettingDefinition[] = [
   column('sync_deadline_hours', int(1, 720), 'OPERATOR_ADMIN', { default: 72 }),
   column('refund_new_number_max', { kind: 'amount' }, 'OPERATOR_ADMIN', { default: 50000 }),
   column('refund_new_number_hold_hours', int(0, 168), 'OPERATOR_ADMIN', { default: 48 }),
-  column('card_topup_daily_max_per_card', { kind: 'amount' }, 'OPERATOR_ADMIN', { default: 100000 }),
+  column('card_topup_daily_max_per_card', { kind: 'amount' }, 'OPERATOR_ADMIN', {
+    default: 100000,
+  }),
   column('card_alert_cards_per_wallet', int(2, 20), 'OPERATOR_ADMIN', { default: 3 }),
   column('online_connect_timeout_ms', int(1000, 5000), 'OPERATOR_ADMIN', { default: 2000 }),
   column('online_total_timeout_ms', int(2000, 6000), 'OPERATOR_ADMIN', { default: 3000 }),
@@ -108,21 +151,43 @@ const DEFINITIONS: readonly SettingDefinition[] = [
 
   // --- Réglages de la cascade (config_version.settings).
   // Seul `EVENT` est accepté dans cette mission : le grand livre partagé par organisateur est hors périmètre (C-007).
-  setting('wallet_scope', ['ORGANIZER', 'EVENT'], oneOf('EVENT'), 'ORGANIZER_ADMIN', { default: 'EVENT' }),
-  setting('spend_order', ['PLATFORM', 'OPERATOR', 'ORGANIZER', 'EVENT'], oneOf('PROMO_FIRST', 'PAID_FIRST'), 'ORGANIZER_ADMIN', {
-    default: 'PROMO_FIRST',
+  setting('wallet_scope', ['ORGANIZER', 'EVENT'], oneOf('EVENT'), 'ORGANIZER_ADMIN', {
+    default: 'EVENT',
   }),
-  setting('psp_fee_bearer', ['OPERATOR', 'ORGANIZER', 'EVENT'], oneOf('ORGANIZER', 'OPERATOR', 'CUSTOMER'), 'ORGANIZER_ADMIN', {
-    default: 'ORGANIZER',
-  }),
-  setting('refund_policy', ['OPERATOR', 'ORGANIZER', 'EVENT'], { kind: 'refundPolicy' }, 'ORGANIZER_ADMIN', {
-    default: { open: true, fee_amount: 0, minimum_amount: 0, channels: ['CASH', 'MOBILE_MONEY'] },
-  }),
+  setting(
+    'spend_order',
+    ['PLATFORM', 'OPERATOR', 'ORGANIZER', 'EVENT'],
+    oneOf('PROMO_FIRST', 'PAID_FIRST'),
+    'ORGANIZER_ADMIN',
+    {
+      default: 'PROMO_FIRST',
+    },
+  ),
+  setting(
+    'psp_fee_bearer',
+    ['OPERATOR', 'ORGANIZER', 'EVENT'],
+    oneOf('ORGANIZER', 'OPERATOR', 'CUSTOMER'),
+    'ORGANIZER_ADMIN',
+    {
+      default: 'ORGANIZER',
+    },
+  ),
+  setting(
+    'refund_policy',
+    ['OPERATOR', 'ORGANIZER', 'EVENT'],
+    { kind: 'refundPolicy' },
+    'ORGANIZER_ADMIN',
+    {
+      default: { open: true, fee_amount: 0, minimum_amount: 0, channels: ['CASH', 'MOBILE_MONEY'] },
+    },
+  ),
   // Maximum fixé par le prestataire pour `cash_refund_single_max` des événements (§4.2).
   setting('cash_refund_single_max_cap', ['OPERATOR'], { kind: 'amount' }, 'OPERATOR_ADMIN'),
 ];
 
-export const SETTINGS_CATALOG: ReadonlyMap<string, SettingDefinition> = new Map(DEFINITIONS.map((d) => [d.key, d]));
+export const SETTINGS_CATALOG: ReadonlyMap<string, SettingDefinition> = new Map(
+  DEFINITIONS.map((d) => [d.key, d]),
+);
 
 export const REFUND_CHANNELS = ['CASH', 'MOBILE_MONEY', 'BANK'] as const;
 

@@ -17,7 +17,8 @@ import { createOperators, type Operators } from '../transverse/fixtures';
 const CONTRACT = join(__dirname, '../../../../../packages/contracts/openapi.yaml');
 // Les routes `/operators/…` de la mission configuration-parties-evenements (organisateurs, événements…) ont leur
 // propre balayage : seules les routes « Personnes » de ce préfixe sont prises ici.
-const MISSION_PATHS = /^\/(operators\/\{operator_id\}\/(users|role-assignments)(\/|$)|platform-admins$|approval-requests)/;
+const MISSION_PATHS =
+  /^\/(operators\/\{operator_id\}\/(users|role-assignments)(\/|$)|platform-admins$|approval-requests)/;
 
 interface Route {
   method: 'get' | 'post';
@@ -27,7 +28,9 @@ interface Route {
 
 /** Routes de la mission, lues dans le contrat (jamais une liste en dur). */
 function missionRoutes(): Route[] {
-  const contract = parse(readFileSync(CONTRACT, 'utf8')) as { paths: Record<string, Record<string, { operationId?: string }>> };
+  const contract = parse(readFileSync(CONTRACT, 'utf8')) as {
+    paths: Record<string, Record<string, { operationId?: string }>>;
+  };
   return Object.entries(contract.paths)
     .filter(([path]) => MISSION_PATHS.test(path))
     .flatMap(([path, operations]) =>
@@ -51,12 +54,22 @@ describe('balayage d’isolation des routes de la mission', () => {
   /** Corps valides par opération : le refus vient de l'isolation, pas de la validation. */
   const bodies: Record<string, () => object> = {
     listUsers: () => ({}),
-    createUser: () => ({ issuer: idp.config.issuer, subject: `intrus-${randomUUID()}`, display_name: 'Intrus', email: 'intrus@test.local' }),
+    createUser: () => ({
+      issuer: idp.config.issuer,
+      subject: `intrus-${randomUUID()}`,
+      display_name: 'Intrus',
+      email: 'intrus@test.local',
+    }),
     getUser: () => ({}),
     disableUser: () => ({}),
     grantRole: () => ({ role: 'CASHIER', scope_type: 'ORGANIZER', scope_id: organizerA }),
     revokeRole: () => ({}),
-    createPlatformAdmin: () => ({ issuer: idp.config.issuer, subject: `intrus-${randomUUID()}`, display_name: 'Intrus', email: 'intrus@test.local' }),
+    createPlatformAdmin: () => ({
+      issuer: idp.config.issuer,
+      subject: `intrus-${randomUUID()}`,
+      display_name: 'Intrus',
+      email: 'intrus@test.local',
+    }),
     listApprovalRequests: () => ({}),
     getApprovalRequest: () => ({}),
     approveApprovalRequest: () => ({ note: 'Intrus' }),
@@ -72,11 +85,23 @@ describe('balayage d’isolation des routes de la mission', () => {
            ($1, 'ORGANIZER', $3, 'Org A', 'SN'), ($2, 'ORGANIZER', $4, 'Org B', 'CI')`,
         [organizerA, organizerB, ops.a, ops.b],
       );
-      authorA = await idp.createPerson(db, { operatorId: ops.a, roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerA }] });
-      intruderOperator = await idp.createPerson(db, { operatorId: ops.b, roles: [{ role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: ops.b }] });
-      intruderOrganizer = await idp.createPerson(db, { operatorId: ops.b, roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerB }] });
+      authorA = await idp.createPerson(db, {
+        operatorId: ops.a,
+        roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerA }],
+      });
+      intruderOperator = await idp.createPerson(db, {
+        operatorId: ops.b,
+        roles: [{ role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: ops.b }],
+      });
+      intruderOrganizer = await idp.createPerson(db, {
+        operatorId: ops.b,
+        roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: organizerB }],
+      });
       objects.user = authorA.userId;
-      const { rows } = await db.query<{ id: string }>('SELECT id FROM role_assignment WHERE user_id = $1', [authorA.userId]);
+      const { rows } = await db.query<{ id: string }>(
+        'SELECT id FROM role_assignment WHERE user_id = $1',
+        [authorA.userId],
+      );
       objects.assignment = rows[0]!.id;
     });
     app = await createTestApp({ identity: idp, imports: [DemoApprovalModule] });
@@ -100,7 +125,10 @@ describe('balayage d’isolation des routes de la mission', () => {
       .replace('{assignment_id}', objects.assignment)
       .replace('{approval_request_id}', objects.approval)}`;
   const call = (route: Route, token?: string) => {
-    let req = route.method === 'get' ? request(app.getHttpServer()).get(url(route.path)) : request(app.getHttpServer()).post(url(route.path));
+    let req =
+      route.method === 'get'
+        ? request(app.getHttpServer()).get(url(route.path))
+        : request(app.getHttpServer()).post(url(route.path));
     if (token) req = req.set('Authorization', `Bearer ${token}`);
     req = req.set('Idempotency-Key', randomUUID());
     return route.method === 'get' ? req : req.send(bodies[route.operationId]!());
@@ -109,13 +137,20 @@ describe('balayage d’isolation des routes de la mission', () => {
   it('le contrat déclare les routes attendues, et chacune a un cas dans ce balayage', () => {
     const routes = missionRoutes();
     expect(routes.length).toBeGreaterThanOrEqual(11);
-    expect(routes.filter((route) => !(route.operationId in bodies)).map((r) => `${r.method.toUpperCase()} ${r.path}`)).toEqual([]);
+    expect(
+      routes
+        .filter((route) => !(route.operationId in bodies))
+        .map((r) => `${r.method.toUpperCase()} ${r.path}`),
+    ).toEqual([]);
   });
 
   it('sans jeton : 401 sur chaque route', async () => {
     for (const route of missionRoutes()) {
       const res = await call(route);
-      expect({ route: `${route.method} ${route.path}`, status: res.status }).toEqual({ route: `${route.method} ${route.path}`, status: 401 });
+      expect({ route: `${route.method} ${route.path}`, status: res.status }).toEqual({
+        route: `${route.method} ${route.path}`,
+        status: 401,
+      });
     }
   });
 
@@ -129,7 +164,9 @@ describe('balayage d’isolation des routes de la mission', () => {
       if (route.operationId === 'listApprovalRequests') {
         // Route sans objet de A : la liste de B ne contient aucune demande de A.
         expect({ label, status: res.status }).toEqual({ label, status: 200 });
-        expect(res.body.data.map((r: { approval_request_id: string }) => r.approval_request_id)).not.toContain(objects.approval);
+        expect(
+          res.body.data.map((r: { approval_request_id: string }) => r.approval_request_id),
+        ).not.toContain(objects.approval);
         continue;
       }
       expect({ label, refused: [403, 404].includes(res.status) }).toEqual({ label, refused: true });
@@ -138,9 +175,17 @@ describe('balayage d’isolation des routes de la mission', () => {
 
   it('après le balayage, les objets de A sont intacts', async () => {
     await withOwner(async (db) => {
-      const user = await db.query<{ status: string }>('SELECT status FROM app_user WHERE id = $1', [objects.user]);
-      const assignment = await db.query<{ revoked_at: Date | null }>('SELECT revoked_at FROM role_assignment WHERE id = $1', [objects.assignment]);
-      const approval = await db.query<{ status: string }>('SELECT status FROM approval_request WHERE id = $1', [objects.approval]);
+      const user = await db.query<{ status: string }>('SELECT status FROM app_user WHERE id = $1', [
+        objects.user,
+      ]);
+      const assignment = await db.query<{ revoked_at: Date | null }>(
+        'SELECT revoked_at FROM role_assignment WHERE id = $1',
+        [objects.assignment],
+      );
+      const approval = await db.query<{ status: string }>(
+        'SELECT status FROM approval_request WHERE id = $1',
+        [objects.approval],
+      );
       const intruders = await db.query(`SELECT 1 FROM app_user WHERE display_name = 'Intrus'`);
       expect(user.rows[0]?.status).toBe('ACTIVE');
       expect(assignment.rows[0]?.revoked_at).toBeNull();

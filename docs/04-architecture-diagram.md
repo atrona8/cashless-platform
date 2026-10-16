@@ -3,7 +3,9 @@
 > Statut de complétude : voir `06-docs-status.md`. Notation C4 "Conteneur"
 > (niveau 2), supportée nativement par Mermaid (`C4Container`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
 > Dernière mise à jour : initialisation du 07/10/2026. **Architecture cible** (`SPECIFICATION.md` §1.2, §2) :
-> aucun conteneur n'est encore déployé.
+> aucun conteneur n'est encore déployé. Mise à jour du 15/10/2026 : le service des clés de bracelet est découpé en
+> processus à droits séparés, comme l'a livré la mission « Bracelets NFC » (approuvée, acceptation et fusion en
+> attente).
 
 ## Vue d'ensemble (cible V1)
 
@@ -18,7 +20,10 @@ C4Container
     Container_Boundary(central, "Central (AWS)") {
         Container(bo, "Back-office", "Next.js", "Interfaces d'administration")
         Container(api, "API centrale", "NestJS", "API, moteur d'écritures, synchro, tâches")
-        Container(tagkeys, "Service clés bracelets", "NestJS", "Mots de passe, snapshots")
+        Container(tagkeys, "Processus clés de bracelet", "NestJS, même code", "Mots de passe pour terminaux, rechiffrement")
+        Container(perso, "Processus personnalisation", "NestJS, même code", "Poste d'atelier, clé de données de session")
+        Container(tagcheck, "Contrôle quotidien", "NestJS, même code", "Recalcul d'un échantillon de mots de passe")
+        Container(keyadmin, "Commande admin. des clés", "NestJS, à la demande", "Créer, désactiver une clé KMS")
         ContainerDb(db, "Base centrale", "PostgreSQL 17", "Grand livre, RLS")
     }
 
@@ -43,8 +48,15 @@ C4Container
     Rel(edge, api, "Réplique, rejoue", "mTLS")
     Rel(edge, edgedb, "Lit/écrit")
     Rel(api, db, "Lit/écrit")
-    Rel(tagkeys, db, "Lit")
-    Rel(tagkeys, kms, "Decrypt, Sign")
+    Rel(term, tagkeys, "Demande le mot de passe", "REST")
+    Rel(tagkeys, db, "Lit les chiffrés")
+    Rel(tagkeys, kms, "Decrypt")
+    Rel(perso, db, "Enregistre les bracelets")
+    Rel(perso, kms, "GenerateMac, GenerateDataKey")
+    Rel(tagcheck, db, "Lit, rend compte")
+    Rel(tagcheck, kms, "GenerateMac, Decrypt")
+    Rel(keyadmin, db, "Travaux de clé")
+    Rel(keyadmin, kms, "CreateKey, DisableKey")
     Rel(api, psp, "Paiements, webhooks")
 ```
 
@@ -52,7 +64,7 @@ C4Container
 
 | Dossier | Contenu |
 |---|---|
-| `apps/api` | NestJS : API publique, API terminaux, moteur d'écritures, synchronisation, tâches |
+| `apps/api` | NestJS : API publique, API terminaux, moteur d'écritures, synchronisation, tâches ; depuis la mission « Bracelets NFC », cinq points d'entrée (`main.ts`, `main.tag-keys.ts`, `main.personalization.ts`, `main.tag-check.ts`, `main.key-admin.ts`) dans `src/processes/` |
 | `apps/gateway` | Passerelle locale (réutilise les modules de l'API) |
 | `apps/backoffice` | Next.js : plateforme, prestataire, organisateur, commerçant |
 | `apps/terminal` | Flutter : caisse catalogue, TPE clavier, recharge |
@@ -68,7 +80,8 @@ C4Container
 |---|---|---|
 | `fondations-grand-livre-01M4AY8M` (✅ mergée le 08/10/2026) | API centrale (`apps/api` : squelette, moteur d'écritures), base de données (migrations `packages/ledger-sql`), `packages/contracts` (types générés), CI, base locale (`tools/dev-db`) | [`kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md`](../kitty-specs/fondations-grand-livre-01M4AY8M/docs/architecture-notes.md) |
 | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée)) | API centrale (`identity/`, `identity/users/`, `approval/`, `approval/onsite/`, `audit/` ; `TenantTx.identify`/`withoutTenant`), base de données (migrations `0003`-`0006`, `post-roles.sql`, `bootstrap-admin`), contrat (`openapi.yaml`, tag `Personnes`), serveur d'identité OIDC (externe) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md) |
-| `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779`)) | Base de données (migrations `0007`-`0009`, rôle `cashless_platform` dans `post-roles.sql`), API centrale (second pool `PlatformTx`, modules `configuration/`, `organization/`, `events/`, `SqlConfigResolver`), moteur d'écritures (`fee_rule_id` sur les lignes de frais), contrat (48 opérations back-office sur 28 chemins) | [`kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md`](../kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md) |
+| `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte)) | Base de données (migrations `0007`-`0009`, rôle `cashless_platform` dans `post-roles.sql`), API centrale (second pool `PlatformTx`, modules `configuration/`, `organization/`, `events/`, `SqlConfigResolver`), moteur d'écritures (`fee_rule_id` sur les lignes de frais), contrat (48 opérations back-office sur 28 chemins) | [`kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md`](../kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md) |
+| `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 (20/20 WP, acceptée le 15/10/2026, squash `7b1b8c2`)) | Bibliothèque `packages/tag-format` (TypeScript et Dart), API centrale découpée en quatre processus (API publique, clés de bracelet, personnalisation, contrôle quotidien) et une commande d'administration des clés, module `media/`, ports et faux (`kms/`, `device-identity/`, `customer-identity/`), base de données (migrations `0010`-`0019`, quatre rôles de base de plus dans `post-roles.sql`), contrat (27 opérations ajoutées sur 24 chemins, `x-process` sur 39 opérations, types TypeScript et Dart) | [`kitty-specs/bracelets-nfc-01M4TD3W/docs/architecture-notes.md`](../kitty-specs/bracelets-nfc-01M4TD3W/docs/architecture-notes.md) |
 
 ## Pile logicielle
 
@@ -102,6 +115,12 @@ arrêtée le 09/10/2026 (ADR-78 : l'existant prime). Redis, Fastify, Prisma et N
 | Écritures de plateforme par un second rôle de base `cashless_platform` (second pool, politiques RLS nominatives dans `post-roles.sql`) ; coexiste avec la fonction SECURITY DEFINER de la mission 2 | Lettre de §2.2 (choix du porteur) ; le rôle applicatif ne peut plus écrire une donnée de plateforme (politiques restrictives) ; limite acceptée : `EXECUTE` hérité de `PUBLIC` (ADR-80) | `configuration-parties-evenements-01M4GCJ9` (implémentation) |
 | Grand livre et comptes d'un événement ouverts à sa création par `open_event_ledger` (SQL, INVOKER) ; statut seulement par `set_event_status`, conditions lisibles par `event_transition_conditions` | Plan de comptes en un seul endroit ; aucun grand livre orphelin ; conditions identiques aux refus de la base | `configuration-parties-evenements-01M4GCJ9` (implémentation) |
 | Cascade versionnée : catalogue des réglages en TypeScript, colonnes d'`event` + instantané dans chaque version ; port `ConfigResolver` implémenté en SQL | Bornes et messages centralisés ; `config_version_id` et `fee_rule_id` réels pour chaque écriture ; un réglage par rôle (ADR-81) ; frais du PSP par règle `EVENT` à bénéficiaire `PSP:<canal>` (ADR-82) | `configuration-parties-evenements-01M4GCJ9` (implémentation) |
+| Quatre processus pour un seul code, à droits séparés sur le service de clés ; rôles de base distincts (l'API publique ne lit plus les secrets chiffrés) ; commande d'administration séparée pour créer et désactiver une clé | Une faille de l'API publique n'atteint aucune clé de bracelet (§3.2, §13.2) ; deux barrières indépendantes | `bracelets-nfc-01M4TD3W` (implémentation) |
+| Mot de passe d'un bracelet jamais transmis en clair (enveloppe pour le terminal ou pour le poste) ; clé de données en mémoire 5 minutes au plus ; empreinte à clé des codes de rattachement | Règle du contrat étendue au poste ; exposition bornée ; un code court ne se retrouve pas par essais | `bracelets-nfc-01M4TD3W` (implémentation) |
+| Service de clés, identité du terminal et identité du festivalier derrière des ports, avec un faux pour les tests ; un faux fait refuser le démarrage en production. `NODE_ENV` obligatoire (`production`, `development` ou `test`, sinon aucun processus ne démarre) ; `TAG_WRAPPING_KEY_REF` et `CLAIM_CODE_DOMAIN` exigés en production (correctif post-fusion n° 1) | Avancer sans AWS ni enrôlement réel, sans qu'un raccourci atteigne la production | `bracelets-nfc-01M4TD3W` (implémentation) |
+| Travaux de clé en table (`tag_key_job`, aucun secret, contrainte en base) : une action approuvée dans l'API publique est exécutée par le processus qui a le droit. Depuis la migration 0020 (correctif post-fusion n° 1, ADR-102), un travail ne naît que d'une demande approuvée à deux, par deux fonctions `SECURITY DEFINER` (aucun `INSERT` direct pour l'API ni la personnalisation) ; chaque exécutant revérifie la demande avant d'appeler le service de clés, sinon refus audité `TAG_KEY_JOB_REFUSED` | Pas d'appel entre processus ; reprise sans double effet (ADR-83) | `bracelets-nfc-01M4TD3W` (implémentation) |
+| Aucun compte de caisse avant la mission des caisses : caution en espèces et espèces dues répondent `409` (ADR-89) ; guichet de retour sans enchaînement, `settle_balance` et `refund_deposit_by` refusés en `422` (ADR-91, proposée, à trancher) | Aucun argent liquide sans session de caisse ; enchaînement renvoyé à la mission 9 par le plan, alors que `openapi.yaml` le décrit | `bracelets-nfc-01M4TD3W` (implémentation) |
+| Contrôle quotidien des mots de passe : compte rendu et alerte d'audit, code de sortie 2 sur écart, 3 sur panne ; aucune sorte d'anomalie nouvelle (ADR-92) | Liste des anomalies fermée (§12.2) | `bracelets-nfc-01M4TD3W` (implémentation) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

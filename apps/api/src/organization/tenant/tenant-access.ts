@@ -21,7 +21,9 @@ export interface TenantActor {
 
 /** Objets d'une portée (`ORGANIZER`, `MERCHANT`, `EVENT`) sur lesquels la personne tient un rôle. */
 export function scopesHeld(principal: Principal, role: Role, scopeType: string): string[] {
-  return principal.assignments.filter((a) => a.role === role && a.scopeType === scopeType && a.scopeId).map((a) => a.scopeId!);
+  return principal.assignments
+    .filter((a) => a.role === role && a.scopeType === scopeType && a.scopeId)
+    .map((a) => a.scopeId!);
 }
 
 @Injectable()
@@ -35,21 +37,29 @@ export class TenantAccess {
   actor(req: Request, allowed: readonly Role[]): TenantActor {
     const { operatorId } = this.tenant.current(req);
     const principal = requestPrincipal(req);
-    const role = allowed.find((candidate) => principal.assignments.some((a) => a.role === candidate));
+    const role = allowed.find((candidate) =>
+      principal.assignments.some((a) => a.role === candidate),
+    );
     if (!role) throw new ProblemException('FORBIDDEN');
     (req as RolesRequest).exercisedRole = role;
     return { operatorId, principal, role, audit: auditContext(req) };
   }
 
   /** Lecture dans la transaction cloisonnée du prestataire. */
-  read<T>(actor: Pick<TenantActor, 'operatorId'>, fn: (client: TxClient) => Promise<T>): Promise<T> {
+  read<T>(
+    actor: Pick<TenantActor, 'operatorId'>,
+    fn: (client: TxClient) => Promise<T>,
+  ): Promise<T> {
     return this.tx.run(actor.operatorId, fn);
   }
 }
 
 /** Un ORGANIZER_ADMIN n'agit que sur un organisateur qu'il administre (403 sinon) ; les rôles plus larges passent. */
 export function assertOrganizerScope(actor: TenantActor, organizerId: string): void {
-  if (actor.role === 'ORGANIZER_ADMIN' && !scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId)) {
+  if (
+    actor.role === 'ORGANIZER_ADMIN' &&
+    !scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId)
+  ) {
     throw new ProblemException('FORBIDDEN');
   }
 }

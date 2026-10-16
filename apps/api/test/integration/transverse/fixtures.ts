@@ -28,7 +28,11 @@ export interface BackofficeFixture {
 /** Grand livre minimal du prestataire : organisateur, deux comptes de droits (forme des suites pgTAP). */
 export async function createLedger(operatorId: string): Promise<BackofficeFixture> {
   const organizer = randomUUID();
-  const fixture = { ledgerId: randomUUID(), debitAccountId: randomUUID(), creditAccountId: randomUUID() };
+  const fixture = {
+    ledgerId: randomUUID(),
+    debitAccountId: randomUUID(),
+    creditAccountId: randomUUID(),
+  };
   await withOwner(async (client) => {
     await client.query(
       `INSERT INTO party (id, kind, operator_id, legal_name, country_code) VALUES ($1, 'ORGANIZER', $2, 'Organisateur (test)', 'SN')`,

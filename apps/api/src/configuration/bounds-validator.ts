@@ -51,10 +51,18 @@ const toDate = (value: unknown): Date | null => {
 
 function typeViolation(definition: SettingDefinition, value: unknown): Violation | undefined {
   const { key, type } = definition;
-  const bad = (rule: string, limit: unknown): Violation => ({ field: key, rule, requested: value, limit, source: CATALOG });
+  const bad = (rule: string, limit: unknown): Violation => ({
+    field: key,
+    rule,
+    requested: value,
+    limit,
+    source: CATALOG,
+  });
   switch (type.kind) {
     case 'enum':
-      return typeof value === 'string' && type.values.includes(value) ? undefined : bad('catalog.enum', type.values.join(', '));
+      return typeof value === 'string' && type.values.includes(value)
+        ? undefined
+        : bad('catalog.enum', type.values.join(', '));
     case 'enumSet': {
       const ok =
         Array.isArray(value) &&
@@ -64,8 +72,11 @@ function typeViolation(definition: SettingDefinition, value: unknown): Violation
       return ok ? undefined : bad('catalog.enum', type.values.join(', '));
     }
     case 'int':
-      if (typeof value !== 'number' || !Number.isInteger(value)) return bad('catalog.type', 'integer');
-      return value >= type.min && value <= type.max ? undefined : bad('catalog.range', [type.min, type.max]);
+      if (typeof value !== 'number' || !Number.isInteger(value))
+        return bad('catalog.type', 'integer');
+      return value >= type.min && value <= type.max
+        ? undefined
+        : bad('catalog.range', [type.min, type.max]);
     case 'amount':
       if (!isAmount(value)) return bad('catalog.type', 'integer amount in minor units');
       return BigInt(value) >= 0n ? undefined : bad('catalog.range', '>= 0');
@@ -74,13 +85,21 @@ function typeViolation(definition: SettingDefinition, value: unknown): Violation
       return toDate(value) ? undefined : bad('catalog.type', 'date-time');
     case 'uuid':
       if (value === null) return type.nullable ? undefined : bad('catalog.type', 'uuid');
-      return typeof value === 'string' && UUID.test(value) ? undefined : bad('catalog.type', 'uuid');
+      return typeof value === 'string' && UUID.test(value)
+        ? undefined
+        : bad('catalog.type', 'uuid');
     case 'text':
       if (typeof value !== 'string' || value.trim() === '') return bad('catalog.type', 'text');
-      return value.length <= type.maxLength ? undefined : bad('catalog.range', `<= ${type.maxLength} characters`);
+      return value.length <= type.maxLength
+        ? undefined
+        : bad('catalog.range', `<= ${type.maxLength} characters`);
     case 'refundPolicy': {
-      const policy = (typeof value === 'object' && value !== null && !Array.isArray(value) ? value : null) as Record<string, unknown> | null;
-      const amountOk = (field: string) => policy![field] === undefined || (isAmount(policy![field]) && BigInt(policy![field] as number) >= 0n);
+      const policy = (
+        typeof value === 'object' && value !== null && !Array.isArray(value) ? value : null
+      ) as Record<string, unknown> | null;
+      const amountOk = (field: string) =>
+        policy![field] === undefined ||
+        (isAmount(policy![field]) && BigInt(policy![field] as number) >= 0n);
       const ok =
         policy !== null &&
         typeof policy.open === 'boolean' &&
@@ -88,15 +107,27 @@ function typeViolation(definition: SettingDefinition, value: unknown): Violation
         amountOk('minimum_amount') &&
         (policy.channels === undefined ||
           (Array.isArray(policy.channels) &&
-            policy.channels.every((channel) => (REFUND_CHANNELS as readonly unknown[]).includes(channel)))) &&
-        Object.keys(policy).every((field) => ['open', 'fee_amount', 'minimum_amount', 'channels'].includes(field));
-      return ok ? undefined : bad('catalog.type', `{ open, fee_amount, minimum_amount, channels: ${REFUND_CHANNELS.join('|')} }`);
+            policy.channels.every((channel) =>
+              (REFUND_CHANNELS as readonly unknown[]).includes(channel),
+            ))) &&
+        Object.keys(policy).every((field) =>
+          ['open', 'fee_amount', 'minimum_amount', 'channels'].includes(field),
+        );
+      return ok
+        ? undefined
+        : bad(
+            'catalog.type',
+            `{ open, fee_amount, minimum_amount, channels: ${REFUND_CHANNELS.join('|')} }`,
+          );
     }
   }
 }
 
 /** Violations d'une modification, dans l'ordre des clés reçues puis des règles croisées. */
-export function findViolations(changes: Record<string, unknown>, context: BoundsContext): Violation[] {
+export function findViolations(
+  changes: Record<string, unknown>,
+  context: BoundsContext,
+): Violation[] {
   const violations: Violation[] = [];
   const failed = new Set<string>();
   const add = (violation: Violation) => {
@@ -107,15 +138,37 @@ export function findViolations(changes: Record<string, unknown>, context: Bounds
   for (const [key, value] of Object.entries(changes)) {
     const definition = settingOf(key);
     if (!definition) {
-      add({ field: key, rule: 'catalog.unknown_key', requested: value, limit: null, source: CATALOG });
+      add({
+        field: key,
+        rule: 'catalog.unknown_key',
+        requested: value,
+        limit: null,
+        source: CATALOG,
+      });
       continue;
     }
     if (!definition.levels.includes(context.level)) {
-      add({ field: key, rule: 'catalog.level', requested: context.level, limit: definition.levels.join(', '), source: CATALOG });
+      add({
+        field: key,
+        rule: 'catalog.level',
+        requested: context.level,
+        limit: definition.levels.join(', '),
+        source: CATALOG,
+      });
       continue;
     }
-    if (definition.draftOnly && context.eventStatus !== undefined && context.eventStatus !== 'DRAFT') {
-      add({ field: key, rule: 'catalog.draft_only', requested: value, limit: 'DRAFT', source: CATALOG });
+    if (
+      definition.draftOnly &&
+      context.eventStatus !== undefined &&
+      context.eventStatus !== 'DRAFT'
+    ) {
+      add({
+        field: key,
+        rule: 'catalog.draft_only',
+        requested: value,
+        limit: 'DRAFT',
+        source: CATALOG,
+      });
       continue;
     }
     const type = typeViolation(definition, value);
@@ -125,7 +178,13 @@ export function findViolations(changes: Record<string, unknown>, context: Bounds
     }
     // Maximum fixé par un niveau supérieur.
     const cap = definition.cappedBy ? context.resolved?.[definition.cappedBy] : undefined;
-    if (cap && cap.value !== null && cap.value !== undefined && isAmount(cap.value) && BigInt(value as number) > BigInt(cap.value)) {
+    if (
+      cap &&
+      cap.value !== null &&
+      cap.value !== undefined &&
+      isAmount(cap.value) &&
+      BigInt(value as number) > BigInt(cap.value)
+    ) {
       add({
         field: key,
         rule: `operator.${definition.cappedBy}`,
@@ -138,19 +197,32 @@ export function findViolations(changes: Record<string, unknown>, context: Bounds
 
   // Règles croisées : sur l'état après modification, sans les clés déjà refusées.
   const merged = { ...(context.current ?? {}), ...changes };
-  const touched = (...keys: string[]) => keys.some((key) => key in changes) && !keys.some((key) => failed.has(key));
+  const touched = (...keys: string[]) =>
+    keys.some((key) => key in changes) && !keys.some((key) => failed.has(key));
 
   if (touched('online_connect_timeout_ms', 'online_total_timeout_ms')) {
     const connect = merged.online_connect_timeout_ms;
     const total = merged.online_total_timeout_ms;
     if (typeof connect === 'number' && typeof total === 'number' && connect >= total) {
-      add({ field: 'online_connect_timeout_ms', rule: 'catalog.connect_lt_total', requested: connect, limit: total, source: CATALOG });
+      add({
+        field: 'online_connect_timeout_ms',
+        rule: 'catalog.connect_lt_total',
+        requested: connect,
+        limit: total,
+        source: CATALOG,
+      });
     }
   }
   const start = toDate(merged.starts_at);
   const end = toDate(merged.ends_at);
   if (touched('starts_at', 'ends_at') && start && end && end < start) {
-    add({ field: 'ends_at', rule: 'catalog.dates', requested: end.toISOString(), limit: start.toISOString(), source: CATALOG });
+    add({
+      field: 'ends_at',
+      rule: 'catalog.dates',
+      requested: end.toISOString(),
+      limit: start.toISOString(),
+      source: CATALOG,
+    });
   }
   const deadline = toDate(merged.refund_deadline);
   const minDays = context.jurisdiction?.min_refund_window_days;
@@ -187,7 +259,11 @@ export function boundsProblem(violations: Violation[], language: Language): Prob
 }
 
 /** Refuse la modification si une borne est franchie. */
-export function assertWithinBounds(changes: Record<string, unknown>, context: BoundsContext, language: Language): void {
+export function assertWithinBounds(
+  changes: Record<string, unknown>,
+  context: BoundsContext,
+  language: Language,
+): void {
   const violations = findViolations(changes, context);
   if (violations.length > 0) throw boundsProblem(violations, language);
 }
@@ -214,7 +290,15 @@ export function assertSettableBy(
   if (roles.size > 1) {
     const list = [...roles].sort().join(', ');
     throw boundsProblem(
-      [{ field: keys.join(', '), rule: 'catalog.mixed_roles', requested: keys, limit: list, source: CATALOG }],
+      [
+        {
+          field: keys.join(', '),
+          rule: 'catalog.mixed_roles',
+          requested: keys,
+          limit: list,
+          source: CATALOG,
+        },
+      ],
       language,
     );
   }

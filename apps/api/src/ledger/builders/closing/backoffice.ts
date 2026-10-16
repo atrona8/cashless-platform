@@ -42,7 +42,10 @@ export function buildAnomalyResolution(
   const { config } = ctx;
   const { org, ope } = partyAccounts(config);
   return balanced([
-    { account: config.offlineLossBearer === 'OPERATOR' ? ope('OPE_PERTES') : org('ORG_PERTES'), amount },
+    {
+      account: config.offlineLossBearer === 'OPERATOR' ? ope('OPE_PERTES') : org('ORG_PERTES'),
+      amount,
+    },
     { account: suspense(), amount: -amount },
   ]);
 }
@@ -52,7 +55,10 @@ export interface AdjustmentPayload {
 }
 
 /** Ajustement : lignes fournies par la commande, motif obligatoire (`metadata.reason`). */
-export function buildAdjustment(command: LedgerCommand<'ADJUSTMENT', AdjustmentPayload>, _ctx: BuildContext): Line[] {
+export function buildAdjustment(
+  command: LedgerCommand<'ADJUSTMENT', AdjustmentPayload>,
+  _ctx: BuildContext,
+): Line[] {
   requireBackoffice(command);
   const reason = command.metadata?.['reason'];
   if (typeof reason !== 'string' || reason.trim() === '') {
@@ -61,7 +67,10 @@ export function buildAdjustment(command: LedgerCommand<'ADJUSTMENT', AdjustmentP
   const lines = command.payload.lines ?? [];
   const sum = lines.reduce((total, line) => total + line.amount, 0n);
   if (lines.length < 2 || sum !== 0n || lines.some((line) => line.amount === 0n)) {
-    throw new BuildError('VALIDATION_FAILED', 'ajustement : au moins deux lignes non nulles, de somme nulle');
+    throw new BuildError(
+      'VALIDATION_FAILED',
+      'ajustement : au moins deux lignes non nulles, de somme nulle',
+    );
   }
   return lines.map((line) => ({ ...line }));
 }
@@ -72,9 +81,13 @@ export interface BreakagePayload {
 }
 
 /** Casse : soldes payés (et espèces dues) des portefeuilles, partagés selon la destination légale. */
-export function buildBreakage(command: LedgerCommand<'BREAKAGE', BreakagePayload>, ctx: BuildContext): Line[] {
+export function buildBreakage(
+  command: LedgerCommand<'BREAKAGE', BreakagePayload>,
+  ctx: BuildContext,
+): Line[] {
   const { config } = ctx;
-  if (config.breakageDestination === 'NONE') throw new BuildError('VALIDATION_FAILED', 'casse : destination NONE, aucune casse');
+  if (config.breakageDestination === 'NONE')
+    throw new BuildError('VALIDATION_FAILED', 'casse : destination NONE, aucune casse');
   const { org, ope } = partyAccounts(config);
   const lines: Line[] = [];
   for (const item of command.payload.wallets ?? []) {
@@ -82,7 +95,10 @@ export function buildBreakage(command: LedgerCommand<'BREAKAGE', BreakagePayload
     push(lines, wallet(item.walletId, 'P'), item.paid);
     push(lines, cashDue(item.walletId), item.cashDue ?? 0n);
   }
-  const total = requirePositive(lines.reduce((sum, line) => sum + line.amount, 0n), 'casse');
+  const total = requirePositive(
+    lines.reduce((sum, line) => sum + line.amount, 0n),
+    'casse',
+  );
   if (config.breakageDestination === 'LEGAL_ACCOUNT') {
     push(lines, legalBreakage(), -total);
   } else {
@@ -114,7 +130,10 @@ export function buildBreakageReversal(
   if ('legal' in originalShares) {
     push(lines, legalBreakage(), amount);
   } else {
-    const shares = requirePositive(originalShares.organizer + originalShares.operator, 'casse initiale');
+    const shares = requirePositive(
+      originalShares.organizer + originalShares.operator,
+      'casse initiale',
+    );
     const organizer = roundDiv(amount * originalShares.organizer, shares);
     push(lines, org('ORG_CASSE'), organizer);
     push(lines, ope('OPE_CASSE'), amount - organizer);

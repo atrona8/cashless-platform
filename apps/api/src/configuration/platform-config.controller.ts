@@ -5,7 +5,11 @@ import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { auditContext } from '../audit/audit-context';
 import { pickLanguage } from '../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../idempotency/idempotent.decorator';
 import { Roles } from '../identity/roles.decorator';
 import { platformParty } from '../organization/platform/operators.service';
 import { PlatformAccess } from '../organization/platform/platform-access';
@@ -44,7 +48,11 @@ export class PlatformConfigController {
 
   @Get()
   @Roles(['PLATFORM_ADMIN'], PLATFORM)
-  async list(@Req() req: Request, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async list(
+    @Req() req: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const page = pageRequest(cursor, limit);
     const rows = await this.access.platform(req)(async (client) => {
       const result = await client.query<VersionRow>(
@@ -60,10 +68,20 @@ export class PlatformConfigController {
   @Post()
   @Roles(['PLATFORM_ADMIN'], PLATFORM)
   @Idempotent({ scope: 'plt:', platform: true })
-  create(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  create(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const settings = objectBody(body).settings;
-    if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) throw invalid('Champ obligatoire : settings (objet).');
-    assertWithinBounds(settings as Record<string, unknown>, { level: 'PLATFORM' }, pickLanguage(req.header('Accept-Language')));
+    if (typeof settings !== 'object' || settings === null || Array.isArray(settings))
+      throw invalid('Champ obligatoire : settings (objet).');
+    assertWithinBounds(
+      settings as Record<string, unknown>,
+      { level: 'PLATFORM' },
+      pickLanguage(req.header('Accept-Language')),
+    );
     return tx.run(async (client) => {
       const scopeId = await platformParty(client);
       const created = await this.cascade.writeVersion(

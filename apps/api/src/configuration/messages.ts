@@ -22,8 +22,10 @@ const TEMPLATES: Record<string, Record<Language, Template>> = {
     en: (v) => `Unknown setting: ${v.field}.`,
   },
   'catalog.level': {
-    fr: (v) => `Le réglage ${v.field} ne se règle pas au niveau ${v.requested} (niveaux permis : ${v.limit}).`,
-    en: (v) => `Setting ${v.field} cannot be set at level ${v.requested} (allowed levels: ${v.limit}).`,
+    fr: (v) =>
+      `Le réglage ${v.field} ne se règle pas au niveau ${v.requested} (niveaux permis : ${v.limit}).`,
+    en: (v) =>
+      `Setting ${v.field} cannot be set at level ${v.requested} (allowed levels: ${v.limit}).`,
   },
   'catalog.type': {
     fr: (v) => `${v.field} : valeur ${v.requested} invalide, ${v.limit} attendu.`,
@@ -38,24 +40,33 @@ const TEMPLATES: Record<string, Record<Language, Template>> = {
     en: (v) => `${v.field}: ${v.requested} is outside the range ${v.limit}.`,
   },
   'catalog.connect_lt_total': {
-    fr: (v) => `online_connect_timeout_ms (${v.requested}) doit être strictement inférieur à online_total_timeout_ms (${v.limit}).`,
-    en: (v) => `online_connect_timeout_ms (${v.requested}) must be strictly lower than online_total_timeout_ms (${v.limit}).`,
+    fr: (v) =>
+      `online_connect_timeout_ms (${v.requested}) doit être strictement inférieur à online_total_timeout_ms (${v.limit}).`,
+    en: (v) =>
+      `online_connect_timeout_ms (${v.requested}) must be strictly lower than online_total_timeout_ms (${v.limit}).`,
   },
   'catalog.dates': {
-    fr: (v) => `La fin de l'événement (${v.requested}) ne peut pas précéder son début (${v.limit}).`,
+    fr: (v) =>
+      `La fin de l'événement (${v.requested}) ne peut pas précéder son début (${v.limit}).`,
     en: (v) => `The event end (${v.requested}) cannot be earlier than its start (${v.limit}).`,
   },
   'catalog.draft_only': {
-    fr: (v) => `${v.field} ne se modifie que tant que l'événement est en préparation (statut ${v.limit}).`,
-    en: (v) => `${v.field} can only be changed while the event is being prepared (status ${v.limit}).`,
+    fr: (v) =>
+      `${v.field} ne se modifie que tant que l'événement est en préparation (statut ${v.limit}).`,
+    en: (v) =>
+      `${v.field} can only be changed while the event is being prepared (status ${v.limit}).`,
   },
   'catalog.mixed_roles': {
-    fr: (v) => `Cette modification mêle des réglages de deux rôles (${v.limit}) : faire deux demandes distinctes.`,
-    en: (v) => `This change mixes settings owned by two roles (${v.limit}): submit two separate requests.`,
+    fr: (v) =>
+      `Cette modification mêle des réglages de deux rôles (${v.limit}) : faire deux demandes distinctes.`,
+    en: (v) =>
+      `This change mixes settings owned by two roles (${v.limit}): submit two separate requests.`,
   },
   'operator.cash_refund_single_max_cap': {
-    fr: (v) => `cash_refund_single_max : ${v.requested} dépasse le maximum fixé par le prestataire, ${v.limit} (${v.source}).`,
-    en: (v) => `cash_refund_single_max: ${v.requested} exceeds the maximum set by the operator, ${v.limit} (${v.source}).`,
+    fr: (v) =>
+      `cash_refund_single_max : ${v.requested} dépasse le maximum fixé par le prestataire, ${v.limit} (${v.source}).`,
+    en: (v) =>
+      `cash_refund_single_max: ${v.requested} exceeds the maximum set by the operator, ${v.limit} (${v.source}).`,
   },
   'jurisdiction.min_refund_window_days': {
     fr: (v) =>

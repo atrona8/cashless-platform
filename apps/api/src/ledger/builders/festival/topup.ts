@@ -1,6 +1,14 @@
 // TOPUP (recharge par PSP) et TOPUP_CASH (recharge en espèces) — SPECIFICATION §5.4.
 import { fee } from '../../money';
-import { cashDue, money, partyAccounts, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
+import {
+  cashDue,
+  money,
+  partyAccounts,
+  wallet,
+  type BuildContext,
+  type LedgerCommand,
+  type Line,
+} from '../../types';
 import { balanced, creditWithTax, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface TopupPayload {
@@ -10,7 +18,10 @@ export interface TopupPayload {
   amount: bigint;
 }
 
-export function buildTopup(command: LedgerCommand<'TOPUP', TopupPayload>, ctx: BuildContext): Line[] {
+export function buildTopup(
+  command: LedgerCommand<'TOPUP', TopupPayload>,
+  ctx: BuildContext,
+): Line[] {
   const { walletId, channel, amount } = command.payload;
   requireId(walletId, 'portefeuille');
   requirePositive(amount, 'recharge');
@@ -45,7 +56,10 @@ export interface TopupCashPayload {
   headroom?: bigint;
 }
 
-export function buildTopupCash(command: LedgerCommand<'TOPUP_CASH', TopupCashPayload>, _ctx: BuildContext): Line[] {
+export function buildTopupCash(
+  command: LedgerCommand<'TOPUP_CASH', TopupCashPayload>,
+  _ctx: BuildContext,
+): Line[] {
   const { walletId, cashDesk, amount, headroom } = command.payload;
   requireId(walletId, 'portefeuille');
   requirePositive(amount, 'recharge en espèces');

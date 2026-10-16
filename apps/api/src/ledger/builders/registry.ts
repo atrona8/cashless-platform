@@ -1,6 +1,12 @@
 // Registre : chacun des 26 types associé à son constructeur de lignes ou à sa fonction SQL déléguée
 // (contracts/engine-command.md, « Types délégués à la base »). L'oubli d'un type est une erreur de compilation.
-import { BuildError, type BuildContext, type LedgerCommand, type Line, type TransactionType } from '../types';
+import {
+  BuildError,
+  type BuildContext,
+  type LedgerCommand,
+  type Line,
+  type TransactionType,
+} from '../types';
 import {
   buildAdjustment,
   buildAnomalyResolution,
@@ -30,7 +36,12 @@ import {
   buildWalletRefund,
 } from './festival';
 
-export type DelegatedFunction = 'take_deposit' | 'refund_deposit' | 'forfeit_deposit' | 'preload_media' | 'refund_cash_due';
+export type DelegatedFunction =
+  | 'take_deposit'
+  | 'refund_deposit'
+  | 'forfeit_deposit'
+  | 'preload_media'
+  | 'refund_cash_due';
 
 interface LinesEntry {
   kind: 'lines';
@@ -71,7 +82,11 @@ export const BUILDERS = {
   CASH_DEPOSIT: lines(buildCashDeposit),
   PSP_SETTLEMENT: lines(buildPspSettlement),
   CHARGEBACK: lines(buildChargeback),
-  WALLET_REFUND: { kind: 'mixed', delegated: { CASH_DUE: 'refund_cash_due' }, build: buildWalletRefund },
+  WALLET_REFUND: {
+    kind: 'mixed',
+    delegated: { CASH_DUE: 'refund_cash_due' },
+    build: buildWalletRefund,
+  },
   BREAKAGE: lines(buildBreakage),
   PAYOUT_INITIATED: lines(buildPayoutInitiated),
   PAYOUT_CONFIRMED: lines(buildPayoutConfirmed),
@@ -90,8 +105,11 @@ function variantOf(command: LedgerCommand): string | undefined {
 }
 
 export function plan(command: LedgerCommand, ctx: BuildContext): Plan {
-  const entry: RegistryEntry | undefined = (BUILDERS as Record<string, RegistryEntry>)[command.type];
-  if (!entry) throw new BuildError('VALIDATION_FAILED', `type de transaction inconnu : ${command.type}`);
+  const entry: RegistryEntry | undefined = (BUILDERS as Record<string, RegistryEntry>)[
+    command.type
+  ];
+  if (!entry)
+    throw new BuildError('VALIDATION_FAILED', `type de transaction inconnu : ${command.type}`);
   // Toute écriture de back-office est validée à deux, quel que soit son type (contrainte de journal_transaction).
   if (command.source === 'BACKOFFICE') requireApprovers(command);
   if (entry.kind === 'delegated') return { kind: 'delegated', fn: entry.fn };

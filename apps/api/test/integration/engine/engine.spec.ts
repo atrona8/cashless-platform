@@ -21,24 +21,58 @@ describe('moteur d’écritures (intégration)', () => {
   beforeAll(async () => {
     fx = await createMiniFixture();
     app = await createTestApp({
-      imports: [LedgerModule.register({ provide: CONFIG_RESOLVER, useValue: inMemoryConfigResolver(() => fx.config) })],
+      imports: [
+        LedgerModule.register({
+          provide: CONFIG_RESOLVER,
+          useValue: inMemoryConfigResolver(() => fx.config),
+        }),
+      ],
     });
     engine = app.get(LedgerEngineService);
     tx = app.get(TenantTx);
     // Soldes de départ : W1 = 10 000 payés, W2 = 5 400 payés (recharges PSP par le moteur).
-    await run(command('TOPUP', 'wave:seed-w1', { walletId: fx.wallet1, channel: 'WAVE', amount: 10_000n }, 'PSP_WEBHOOK'));
-    await run(command('TOPUP', 'wave:seed-w2', { walletId: fx.wallet2, channel: 'WAVE', amount: 5_400n }, 'PSP_WEBHOOK'));
+    await run(
+      command(
+        'TOPUP',
+        'wave:seed-w1',
+        { walletId: fx.wallet1, channel: 'WAVE', amount: 10_000n },
+        'PSP_WEBHOOK',
+      ),
+    );
+    await run(
+      command(
+        'TOPUP',
+        'wave:seed-w2',
+        { walletId: fx.wallet2, channel: 'WAVE', amount: 5_400n },
+        'PSP_WEBHOOK',
+      ),
+    );
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  function command<P>(type: LedgerCommand['type'], key: string, payload: P, source: LedgerCommand['source'] = 'ONLINE'): LedgerCommand {
-    return { type, idempotencyKey: key, occurredAt: new Date(), source, ledgerId: fx.ledgerId, eventId: fx.eventId, currency: 'XOF', payload };
+  function command<P>(
+    type: LedgerCommand['type'],
+    key: string,
+    payload: P,
+    source: LedgerCommand['source'] = 'ONLINE',
+  ): LedgerCommand {
+    return {
+      type,
+      idempotencyKey: key,
+      occurredAt: new Date(),
+      source,
+      ledgerId: fx.ledgerId,
+      eventId: fx.eventId,
+      currency: 'XOF',
+      payload,
+    };
   }
 
-  const run = (cmd: LedgerCommand): Promise<EngineResult> => tx.run(fx.operatorId, (client) => engine.execute(client, cmd));
+  const run = (cmd: LedgerCommand): Promise<EngineResult> =>
+    tx.run(fx.operatorId, (client) => engine.execute(client, cmd));
 
   const failure = async (cmd: LedgerCommand): Promise<{ code: string; status: number }> => {
     const error = await run(cmd).then(
@@ -71,7 +105,10 @@ describe('moteur d’écritures (intégration)', () => {
 
   const transactionCount = (ledgerId: string) =>
     withOwner(async (db) => {
-      const { rows } = await db.query<{ n: number }>('SELECT count(*)::int AS n FROM journal_transaction WHERE ledger_id = $1', [ledgerId]);
+      const { rows } = await db.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM journal_transaction WHERE ledger_id = $1',
+        [ledgerId],
+      );
       return rows[0]!.n;
     });
 
@@ -94,7 +131,10 @@ describe('moteur d’écritures (intégration)', () => {
 
   it('vente de 7 000 avec 5 400 disponibles : INSUFFICIENT_FUNDS, aucune écriture', async () => {
     const before = await transactionCount(fx.ledgerId);
-    expect(await failure(purchase('TPE-FOOD:trop', fx.wallet2, 7_000n))).toEqual({ code: 'INSUFFICIENT_FUNDS', status: 422 });
+    expect(await failure(purchase('TPE-FOOD:trop', fx.wallet2, 7_000n))).toEqual({
+      code: 'INSUFFICIENT_FUNDS',
+      status: 422,
+    });
     expect(await transactionCount(fx.ledgerId)).toBe(before);
     expect(await balance('L-WAL-W2-P')).toBe(-5_400n);
   });
@@ -106,7 +146,10 @@ describe('moteur d’écritures (intégration)', () => {
     const again = await run(purchase(key, fx.wallet2, 1_000n));
     expect(again).toEqual({ transactionId: first.transactionId, replayed: true });
     expect(await transactionCount(fx.ledgerId)).toBe(before);
-    expect(await failure(purchase(key, fx.wallet2, 1_500n))).toEqual({ code: 'IDEMPOTENCY_KEY_REUSED', status: 409 });
+    expect(await failure(purchase(key, fx.wallet2, 1_500n))).toEqual({
+      code: 'IDEMPOTENCY_KEY_REUSED',
+      status: 409,
+    });
   });
 
   it('rejeu sans soldes suffisants : toujours un rejeu (l’idempotence passe avant tout recalcul)', async () => {
@@ -117,21 +160,32 @@ describe('moteur d’écritures (intégration)', () => {
   });
 
   it('événement DRAFT et PURCHASE : VALIDATION_FAILED avant toute écriture', async () => {
-    const draft: LedgerCommand = { ...purchase('TPE-FOOD:draft', fx.wallet1, 100n), ledgerId: fx.draftLedgerId, eventId: fx.draftEventId };
+    const draft: LedgerCommand = {
+      ...purchase('TPE-FOOD:draft', fx.wallet1, 100n),
+      ledgerId: fx.draftLedgerId,
+      eventId: fx.draftEventId,
+    };
     expect(await failure(draft)).toEqual({ code: 'VALIDATION_FAILED', status: 422 });
     expect(await transactionCount(fx.draftLedgerId)).toBe(0);
   });
 
   it('devise différente de celle du grand livre : VALIDATION_FAILED', async () => {
-    expect(await failure({ ...purchase('TPE-FOOD:eur', fx.wallet1, 100n), currency: 'EUR' })).toEqual({ code: 'VALIDATION_FAILED', status: 422 });
+    expect(
+      await failure({ ...purchase('TPE-FOOD:eur', fx.wallet1, 100n), currency: 'EUR' }),
+    ).toEqual({ code: 'VALIDATION_FAILED', status: 422 });
   });
 
   it('REVERSAL : contre-passation exacte, lignes opposées en ordre inverse, soldes rétablis', async () => {
     const before = await balance('L-WAL-W1-P');
     const sale = await run(purchase(`TPE-FOOD:${++seq}`, fx.wallet1, 2_500n));
-    const reversal = await run({ ...command('REVERSAL', `TPE-FOOD:${++seq}`, {}), reversesId: sale.transactionId! });
+    const reversal = await run({
+      ...command('REVERSAL', `TPE-FOOD:${++seq}`, {}),
+      reversesId: sale.transactionId!,
+    });
     const original = await linesOf(sale.transactionId!);
-    expect(await linesOf(reversal.transactionId!)).toEqual([...original].reverse().map(([code, amount]) => [code, -amount]));
+    expect(await linesOf(reversal.transactionId!)).toEqual(
+      [...original].reverse().map(([code, amount]) => [code, -amount]),
+    );
     expect(await balance('L-WAL-W1-P')).toBe(before);
   });
 
@@ -148,14 +202,23 @@ describe('moteur d’écritures (intégration)', () => {
       ['L-ORG-CAUTION', -500n],
     ]);
     const before = await transactionCount(fx.ledgerId);
-    expect(await run(deposit('caution:2'))).toEqual({ transactionId: null, replayed: false, outcome: 'HELD' });
+    expect(await run(deposit('caution:2'))).toEqual({
+      transactionId: null,
+      replayed: false,
+      outcome: 'HELD',
+    });
     expect(await transactionCount(fx.ledgerId)).toBe(before);
   });
 
   it('BACKOFFICE sans second valideur distinct : VALIDATION_FAILED avant la base', async () => {
     const actor = '9a0b0c0d-0000-4000-8000-000000000001';
     const cmd: LedgerCommand = {
-      ...command('PROMO_CREDIT', 'promo:bo-1', { walletId: fx.wallet1, amount: 100n }, 'BACKOFFICE'),
+      ...command(
+        'PROMO_CREDIT',
+        'promo:bo-1',
+        { walletId: fx.wallet1, amount: 100n },
+        'BACKOFFICE',
+      ),
       createdBy: actor,
       approvedBy: actor,
     };
@@ -170,13 +233,24 @@ describe('architecture du moteur', () => {
       const path = join(dir, name);
       return statSync(path).isDirectory() ? files(path) : path.endsWith('.ts') ? [path] : [];
     });
-  const sources = files(SRC).map((path) => ({ path: relative(SRC, path).split(sep).join('/'), text: readFileSync(path, 'utf8') }));
+  const sources = files(SRC).map((path) => ({
+    path: relative(SRC, path).split(sep).join('/'),
+    text: readFileSync(path, 'utf8'),
+  }));
 
   it('aucun INSERT direct dans journal_transaction ni posting depuis src/', () => {
-    expect(sources.filter((f) => /INSERT\s+INTO\s+(journal_transaction|posting)\b/i.test(f.text)).map((f) => f.path)).toEqual([]);
+    expect(
+      sources
+        .filter((f) => /INSERT\s+INTO\s+(journal_transaction|posting)\b/i.test(f.text))
+        .map((f) => f.path),
+    ).toEqual([]);
   });
 
   it('post_transaction n’est appelé que par le moteur (src/ledger/)', () => {
-    expect(sources.filter((f) => /post_transaction\(/.test(f.text) && !f.path.startsWith('ledger/')).map((f) => f.path)).toEqual([]);
+    expect(
+      sources
+        .filter((f) => /post_transaction\(/.test(f.text) && !f.path.startsWith('ledger/'))
+        .map((f) => f.path),
+    ).toEqual([]);
   });
 });

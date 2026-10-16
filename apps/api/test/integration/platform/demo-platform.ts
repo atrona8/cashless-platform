@@ -9,7 +9,11 @@ import { registerApprovalActions } from '../../../src/approval/action-registry';
 import { ApprovalService, respondAccepted } from '../../../src/approval/approval.service';
 import { auditContext } from '../../../src/audit/audit-context';
 import { ProblemException } from '../../../src/errors/problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../../src/idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../../src/idempotency/idempotent.decorator';
 import { requestPrincipal } from '../../../src/identity/principal';
 import { Roles } from '../../../src/identity/roles.decorator';
 
@@ -37,7 +41,11 @@ export const demoPlatformContractVersion: ApprovalActionDefinition<DemoPlatformP
          FROM party p WHERE p.kind = 'PLATFORM' ORDER BY p.created_at, p.id LIMIT 1`,
       [payload.note],
     );
-    if (payload.fail) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Échec de démonstration.' });
+    if (payload.fail)
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Échec de démonstration.',
+      });
     return { result: { done: true } };
   },
 };
@@ -90,5 +98,8 @@ class DemoPlatformController {
   }
 }
 
-@Module({ imports: [registerApprovalActions(demoPlatformContractVersion)], controllers: [DemoPlatformController] })
+@Module({
+  imports: [registerApprovalActions(demoPlatformContractVersion)],
+  controllers: [DemoPlatformController],
+})
 export class DemoPlatformModule {}

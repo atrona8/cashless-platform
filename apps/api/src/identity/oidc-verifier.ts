@@ -38,7 +38,10 @@ export class IdentityError extends Error {
     readonly kind: 'INVALID' | 'UNAVAILABLE',
     options?: { cause?: unknown },
   ) {
-    super(`Jeton ${kind === 'INVALID' ? 'invalide' : 'invérifiable : clés publiques injoignables'}`, options);
+    super(
+      `Jeton ${kind === 'INVALID' ? 'invalide' : 'invérifiable : clés publiques injoignables'}`,
+      options,
+    );
     this.name = 'IdentityError';
   }
 }
@@ -54,18 +57,39 @@ export class JoseIdentityVerifier implements IdentityVerifier {
   }
 
   async verifyApproval(token: string): Promise<VerifiedApprovalToken> {
-    const payload = await this.verify(token, this.config.approvalAudience, ['exp', 'sub', 'iat', 'jti', 'act', 'act_hash']);
+    const payload = await this.verify(token, this.config.approvalAudience, [
+      'exp',
+      'sub',
+      'iat',
+      'jti',
+      'act',
+      'act_hash',
+    ]);
     const { jti, act, act_hash: actHash, iat, exp } = payload;
-    if (typeof jti !== 'string' || jti === '' || typeof act !== 'string' || act === '' || typeof actHash !== 'string') {
+    if (
+      typeof jti !== 'string' ||
+      jti === '' ||
+      typeof act !== 'string' ||
+      act === '' ||
+      typeof actHash !== 'string'
+    ) {
       throw new IdentityError('INVALID');
     }
-    if (typeof iat !== 'number' || typeof exp !== 'number' || exp - iat > APPROVAL_TOKEN_MAX_SECONDS) {
+    if (
+      typeof iat !== 'number' ||
+      typeof exp !== 'number' ||
+      exp - iat > APPROVAL_TOKEN_MAX_SECONDS
+    ) {
       throw new IdentityError('INVALID');
     }
     return { ...verified(payload), jti, act, actHash, issuedAt: new Date(iat * 1000) };
   }
 
-  private async verify(token: string, audience: string, requiredClaims: string[]): Promise<JWTPayload> {
+  private async verify(
+    token: string,
+    audience: string,
+    requiredClaims: string[],
+  ): Promise<JWTPayload> {
     try {
       const { payload } = await jwtVerify(token, this.keys, {
         issuer: this.config.issuer,
@@ -89,11 +113,17 @@ function unavailable(error: unknown): boolean {
 }
 
 function verified(payload: JWTPayload): VerifiedToken {
-  if (typeof payload.sub !== 'string' || payload.sub === '' || typeof payload.iss !== 'string' || typeof payload.exp !== 'number') {
+  if (
+    typeof payload.sub !== 'string' ||
+    payload.sub === '' ||
+    typeof payload.iss !== 'string' ||
+    typeof payload.exp !== 'number'
+  ) {
     throw new IdentityError('INVALID');
   }
   const operatorClaim = payload.operator_id;
-  if (operatorClaim !== undefined && typeof operatorClaim !== 'string') throw new IdentityError('INVALID');
+  if (operatorClaim !== undefined && typeof operatorClaim !== 'string')
+    throw new IdentityError('INVALID');
   return {
     issuer: payload.iss,
     subject: payload.sub,
@@ -105,6 +135,9 @@ function verified(payload: JWTPayload): VerifiedToken {
 
 /** Vérifieur de production : JWKS distante, mise en cache et rechargement limités par `jose`. */
 export function createIdentityVerifier(config: OidcConfig): IdentityVerifier {
-  const keys = createRemoteJWKSet(new URL(config.jwksUri), { timeoutDuration: 2000, cooldownDuration: 30000 });
+  const keys = createRemoteJWKSet(new URL(config.jwksUri), {
+    timeoutDuration: 2000,
+    cooldownDuration: 30000,
+  });
   return new JoseIdentityVerifier(keys, config);
 }

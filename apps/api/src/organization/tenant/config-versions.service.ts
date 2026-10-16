@@ -5,7 +5,12 @@
 import { Injectable } from '@nestjs/common';
 import type { AuditContext } from '../../audit/audit.service';
 import { assertSettableBy, assertWithinBounds } from '../../configuration/bounds-validator';
-import { CascadeService, type CascadeTarget, type ConfigScope, type ConfigVersionDto } from '../../configuration/cascade.service';
+import {
+  CascadeService,
+  type CascadeTarget,
+  type ConfigScope,
+  type ConfigVersionDto,
+} from '../../configuration/cascade.service';
 import type { SettingRole } from '../../configuration/settings-catalog';
 import type { TxClient } from '../../db/tenant-tx';
 import type { Language } from '../../http/language';
@@ -23,12 +28,16 @@ interface VersionRow {
 
 export function parseSettings(raw: unknown): Record<string, unknown> {
   const settings = objectBody(raw).settings;
-  if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) throw invalid('Champ obligatoire : settings (objet).');
+  if (typeof settings !== 'object' || settings === null || Array.isArray(settings))
+    throw invalid('Champ obligatoire : settings (objet).');
   return settings as Record<string, unknown>;
 }
 
 /** Clés dont la valeur diffère entre deux contenus complets (ajoutées, modifiées ou retirées). */
-export function changedKeys(previous: Record<string, unknown>, next: Record<string, unknown>): string[] {
+export function changedKeys(
+  previous: Record<string, unknown>,
+  next: Record<string, unknown>,
+): string[] {
   return [...new Set([...Object.keys(previous), ...Object.keys(next)])].filter(
     (key) => JSON.stringify(previous[key]) !== JSON.stringify(next[key]),
   );
@@ -38,7 +47,12 @@ export function changedKeys(previous: Record<string, unknown>, next: Record<stri
 export class ConfigVersionsService {
   constructor(private readonly cascade: CascadeService) {}
 
-  async list(client: TxClient, scope: Pick<ConfigScope, 'level' | 'scopeId'>, offset: number, limit: number): Promise<ConfigVersionDto[]> {
+  async list(
+    client: TxClient,
+    scope: Pick<ConfigScope, 'level' | 'scopeId'>,
+    offset: number,
+    limit: number,
+  ): Promise<ConfigVersionDto[]> {
     const { rows } = await client.query<VersionRow>(
       `SELECT id, operator_id, scope_type, scope_id, version, valid_from, settings FROM config_version
         WHERE scope_type = $1 AND scope_id = $2 ORDER BY version DESC LIMIT $3 OFFSET $4`,
@@ -66,8 +80,17 @@ export class ConfigVersionsService {
     language: Language,
   ): Promise<ConfigVersionDto> {
     const previous = await this.cascade.latest(client, scope);
-    assertSettableBy(changedKeys(previous?.settings ?? {}, settings), scope.level, heldRoles, language);
-    assertWithinBounds(settings, { level: scope.level, resolved: await this.cascade.resolve(client, parents) }, language);
+    assertSettableBy(
+      changedKeys(previous?.settings ?? {}, settings),
+      scope.level,
+      heldRoles,
+      language,
+    );
+    assertWithinBounds(
+      settings,
+      { level: scope.level, resolved: await this.cascade.resolve(client, parents) },
+      language,
+    );
     return this.cascade.writeVersion(client, scope, settings, actor);
   }
 }

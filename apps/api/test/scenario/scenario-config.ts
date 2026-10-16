@@ -9,10 +9,19 @@ import type { ScenarioFixture } from './fixture';
 export function scenarioResolvedConfig(fx: ScenarioFixture): ResolvedConfig {
   const symbolic = scenarioConfig();
   const byParticipation = <T>(table: Record<string, T>): Record<string, T> =>
-    Object.fromEntries(Object.entries(table).map(([merchant, value]) => [fx.participations[merchant as keyof ScenarioFixture['participations']], value]));
+    Object.fromEntries(
+      Object.entries(table).map(([merchant, value]) => [
+        fx.participations[merchant as keyof ScenarioFixture['participations']],
+        value,
+      ]),
+    );
   return {
     ...symbolic,
-    parties: { platformId: fx.parties.PLT, operatorId: fx.parties.OPE, organizerId: fx.parties.ORG },
+    parties: {
+      platformId: fx.parties.PLT,
+      operatorId: fx.parties.OPE,
+      organizerId: fx.parties.ORG,
+    },
     commissions: byParticipation(symbolic.commissions),
     pitchFees: byParticipation(symbolic.pitchFees),
   };

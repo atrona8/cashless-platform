@@ -37,7 +37,10 @@ describe('profil de législation complété', () => {
       unidentified_monthly_limit: 150000,
       identified_monthly_limit: null,
       breakage_destination: 'LEGAL_ACCOUNT',
-      rules: { taxes: { VAT: { rate_bps: 2000, inclusive: true } }, provisional: [{ field: 'ancien', confirm_by: 'x' }] },
+      rules: {
+        taxes: { VAT: { rate_bps: 2000, inclusive: true } },
+        provisional: [{ field: 'ancien', confirm_by: 'x' }],
+      },
     });
     expect(profile.unidentified_monthly_limit).toBe(150000);
     expect(profile.identified_monthly_limit).toBeNull();
@@ -50,7 +53,9 @@ describe('profil de législation complété', () => {
     const profile = completeJurisdictionProfile({ country_code: 'CI', valid_from: '2026-01-01' });
     expect(profile.unidentified_monthly_limit).toBeNull();
     expect(profile.rules.taxes).toBeUndefined();
-    expect(provisionalFields(profile.rules)).toEqual([{ field: 'breakage_destination', confirm_by: 'juriste' }]);
+    expect(provisionalFields(profile.rules)).toEqual([
+      { field: 'breakage_destination', confirm_by: 'juriste' },
+    ]);
   });
 
   it('provisionalFields : tolère des règles sans liste', () => {
@@ -69,7 +74,10 @@ describe('date limite de remboursement', () => {
   });
 
   it('absente : fin + 30 jours, provisoire', () => {
-    expect(effectiveRefundDeadline(null, end)).toEqual({ value: new Date('2027-01-30T00:00:00Z'), source: 'PROVISIONAL_DEFAULT' });
+    expect(effectiveRefundDeadline(null, end)).toEqual({
+      value: new Date('2027-01-30T00:00:00Z'),
+      source: 'PROVISIONAL_DEFAULT',
+    });
   });
 
   it('ni date limite ni fin : aucune', () => {

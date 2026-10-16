@@ -4,7 +4,10 @@
 // conditions sont toujours remplies, sinon la demande passe FAILED ; `set_event_status` est appelée avec l'auteur
 // de la demande, et l'audit porte le valideur.
 import { Injectable } from '@nestjs/common';
-import { ApprovalActionRegistry, type ApprovalActionDefinition } from '../../approval/action-registry';
+import {
+  ApprovalActionRegistry,
+  type ApprovalActionDefinition,
+} from '../../approval/action-registry';
 import { ProblemException } from '../../errors/problem';
 import { conflict, isUuid } from '../../organization/platform/platform.dto';
 import { EventsService } from '../events.service';
@@ -32,11 +35,21 @@ export class GoLiveAction {
       requiredRole: 'ORGANIZER_ADMIN',
       scopeOf: (payload) => ({ type: 'EVENT', id: payload.event_id }),
       validate: (raw) => {
-        const payload = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
+        const payload = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<
+          string,
+          unknown
+        >;
         if (!isUuid(payload.event_id) || payload.to !== 'LIVE') {
-          throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'event_id et to = LIVE attendus.' });
+          throw new ProblemException('VALIDATION_FAILED', {
+            status: 422,
+            detail: 'event_id et to = LIVE attendus.',
+          });
         }
-        return { event_id: payload.event_id, to: 'LIVE', config_version_id: isUuid(payload.config_version_id) ? payload.config_version_id : null };
+        return {
+          event_id: payload.event_id,
+          to: 'LIVE',
+          config_version_id: isUuid(payload.config_version_id) ? payload.config_version_id : null,
+        };
       },
       execute: async (client, { payload, requestedBy, approvedBy }) => {
         const event = await this.events.row(client, payload.event_id);

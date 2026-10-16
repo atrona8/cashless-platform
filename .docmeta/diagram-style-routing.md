@@ -22,6 +22,7 @@
 | `kitty-specs/NNN-slug/docs/use-case.md` | `/illustre` | Mermaid `flowchart` (déjà dans le gabarit) |
 | `docs/05-sequence-diagrams.md` | `/illustre` | Mermaid `sequenceDiagram` (déjà dans le gabarit) |
 | `kitty-specs/NNN-slug/docs/sequence.md` | `/illustre` | Mermaid `sequenceDiagram` (déjà dans le gabarit) |
+| `docs/09-class-diagram.md` (modèle du domaine, depuis le schéma SQL ; ajouté le 14/10/2026) | — (Mermaid directement) | Mermaid `classDiagram` |
 
 ## Comment vérifier la présence des skills
 

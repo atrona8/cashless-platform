@@ -11,7 +11,9 @@ export type Role =
   | 'CASHIER'
   | 'MERCHANT_ADMIN'
   | 'VENDOR'
-  | 'CUSTOMER';
+  | 'CUSTOMER'
+  // Poste de personnalisation des bracelets (mission bracelets-nfc, migration 0011) : portée prestataire.
+  | 'PERSONALIZER';
 
 export type ScopeType = 'PLATFORM' | 'OPERATOR' | 'ORGANIZER' | 'EVENT' | 'MERCHANT';
 

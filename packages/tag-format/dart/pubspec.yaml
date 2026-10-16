@@ -1,0 +1,14 @@
+name: cashless_tag_format
+description: Format des bracelets NFC (format B 1.0), dérivation et stockage chiffré — mêmes vecteurs que @cashless/tag-format.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  pointycastle: 4.0.0
+
+dev_dependencies:
+  lints: 6.0.0
+  test: 1.26.2

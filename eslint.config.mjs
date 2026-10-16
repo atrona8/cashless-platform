@@ -2,7 +2,8 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
-const NO_FLOAT_MESSAGE = 'Montants en bigint uniquement (SPECIFICATION §5.5) : pas de flottant ni de conversion Number.';
+const NO_FLOAT_MESSAGE =
+  'Montants en bigint uniquement (SPECIFICATION §5.5) : pas de flottant ni de conversion Number.';
 
 export default tseslint.config(
   {
@@ -19,15 +20,29 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // Prettier (largeur 100) met `[method](…)` à la ligne ; la règle ci-dessous le refuserait alors que le code n'est
+  // pas ambigu. C'est la seule règle que `eslint-config-prettier` désactiverait ici.
+  { rules: { 'no-unexpected-multiline': 'off' } },
   {
     files: ['**/*.{js,cjs,mjs}'],
-    languageOptions: { globals: { require: 'readonly', module: 'writable', process: 'readonly', console: 'readonly', __dirname: 'readonly' } },
+    languageOptions: {
+      globals: {
+        require: 'readonly',
+        module: 'writable',
+        process: 'readonly',
+        console: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
     files: ['**/*.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
   {

@@ -4,17 +4,33 @@
 // sur une erreur 5xx. Deux extensions (mission identite-roles, WP07) : `CommittedProblem` levé dans la transaction
 // métier valide le travail fait et enregistre le problème comme réponse ; une route `writes` (défaut) qui rend sa
 // valeur sans `IdempotentTx.run` échoue en 500 (RISK-2).
-import { Inject, Injectable, type CallHandler, type ExecutionContext, type NestInterceptor } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  type CallHandler,
+  type ExecutionContext,
+  type NestInterceptor,
+} from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { from, mergeMap, catchError, type Observable } from 'rxjs';
 import { APP_CONFIG, type AppConfig } from '../config/config';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
-import { logProblem, PROBLEM_CONTENT_TYPE, problemBody, resolveProblem } from '../errors/problem.filter';
+import {
+  logProblem,
+  PROBLEM_CONTENT_TYPE,
+  problemBody,
+  resolveProblem,
+} from '../errors/problem.filter';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
 import { CommittedProblem } from './committed-problem';
-import { IdempotencyRepository, LeaseLostError, type Reservation, type StoredResponse } from './idempotency.repository';
+import {
+  IdempotencyRepository,
+  LeaseLostError,
+  type Reservation,
+  type StoredResponse,
+} from './idempotency.repository';
 import { IDEMPOTENT, type IdempotentOptions, type IdempotentRequest } from './idempotent.decorator';
 import { assertPlatformAdmin, isPlatformPerson } from './platform-person';
 import { requestHash, routeTemplate } from './request-hash';
@@ -40,7 +56,10 @@ export class IdempotencyInterceptor implements NestInterceptor {
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-    const options = this.reflector.get<IdempotentOptions | undefined>(IDEMPOTENT, context.getHandler());
+    const options = this.reflector.get<IdempotentOptions | undefined>(
+      IDEMPOTENT,
+      context.getHandler(),
+    );
     if (!options || context.getType() !== 'http') return next.handle();
     const req = context.switchToHttp().getRequest<IdempotentRequest>();
     const res = context.switchToHttp().getResponse<Response>();
@@ -48,14 +67,23 @@ export class IdempotencyInterceptor implements NestInterceptor {
     const key = req.header(IDEMPOTENCY_KEY_HEADER);
     if (key === undefined || key === '') throw new ProblemException('IDEMPOTENCY_KEY_REQUIRED');
     if (key.length > 255) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'Idempotency-Key : 255 caractères au plus.' });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 400,
+        detail: 'Idempotency-Key : 255 caractères au plus.',
+      });
     }
     // Niveau de la clé : décidé par l'option de la route ; le prestataire n'est pas résolu au niveau plateforme.
-    const platform = options.platform === true || (options.platform === 'principal' && isPlatformPerson(req));
+    const platform =
+      options.platform === true || (options.platform === 'principal' && isPlatformPerson(req));
     if (platform) assertPlatformAdmin(req);
     const operatorId = platform ? null : this.tenant().current(req).operatorId;
     const scope = typeof options.scope === 'function' ? options.scope(req) : options.scope;
-    const outcome = await this.repository.reserve(operatorId, scope, key, requestHash(req.method, routeTemplate(req), req.body));
+    const outcome = await this.repository.reserve(
+      operatorId,
+      scope,
+      key,
+      requestHash(req.method, routeTemplate(req), req.body),
+    );
 
     if (outcome.kind === 'replay') {
       res.setHeader(REPLAYED_HEADER, 'true');
@@ -64,9 +92,12 @@ export class IdempotencyInterceptor implements NestInterceptor {
 
     const reservation = outcome.reservation;
     let recorded: StoredResponse | undefined;
+    // Réponse réellement envoyée quand elle diffère de celle qui est enregistrée (route `transient`).
+    let live: StoredResponse | undefined;
     req.idempotentTx = {
       run: async <T>(fn: (client: TxClient) => Promise<T>): Promise<T> => {
-        if (recorded) throw new Error('IdempotentTx.run : une seule transaction métier par requête');
+        if (recorded)
+          throw new Error('IdempotentTx.run : une seule transaction métier par requête');
         let response: StoredResponse | undefined;
         let committed: CommittedProblem | undefined;
         const result = await this.repository.transaction(operatorId, async (client) => {
@@ -81,8 +112,15 @@ export class IdempotencyInterceptor implements NestInterceptor {
             await this.repository.complete(client, reservation, response);
             return COMMITTED;
           }
-          response = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
+          const actual: StoredResponse = {
+            status: res.statusCode,
+            body: value,
+            headers: replayedHeaders(res),
+          };
+          // Route `transient` : la réponse part une fois et n'est écrite nulle part ; le registre garde un refus.
+          response = options.transient ? this.notReplayable(req) : actual;
           await this.repository.complete(client, reservation, response);
+          if (options.transient) live = actual;
           return value;
         });
         recorded = response;
@@ -95,16 +133,22 @@ export class IdempotencyInterceptor implements NestInterceptor {
       mergeMap(async (value) => {
         if (!recorded && options.writes !== false) {
           // Route d'écriture sans transaction métier : ce qu'elle a écrit n'est pas lié à la clé (RISK-2).
-          throw new Error(`${ROUTE_WITHOUT_TX} : ${req.method} ${routeTemplate(req)} a rendu sa valeur sans IdempotentTx.run`);
+          throw new Error(
+            `${ROUTE_WITHOUT_TX} : ${req.method} ${routeTemplate(req)} a rendu sa valeur sans IdempotentTx.run`,
+          );
         }
         // Route déclarée sans écriture : la réponse est enregistrée seule.
         if (!recorded) {
-          const response: StoredResponse = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
+          const response: StoredResponse = {
+            status: res.statusCode,
+            body: value,
+            headers: replayedHeaders(res),
+          };
           await this.repository.completeAlone(reservation, response);
           recorded = response;
         }
-        // Ce qui part est exactement ce qui est enregistré (et sera rejoué).
-        return send(res, recorded);
+        // Ce qui part est exactement ce qui est enregistré (et sera rejoué), sauf pour une route `transient`.
+        return send(res, live ?? recorded);
       }),
       catchError((error: unknown) => from(this.onError(error, req, res, reservation, recorded))),
     );
@@ -138,10 +182,15 @@ export class IdempotencyInterceptor implements NestInterceptor {
     return send(res, response);
   }
 
-  /** Réponse problème enregistrée (même forme que le filtre), après journalisation. */
-  private problemResponse(error: unknown, req: Request): StoredResponse {
-    const problem = resolveProblem(error);
-    logProblem(error, problem, req);
+  /** Ce que le registre garde d'une route `transient` : un refus, sans rien de la réponse d'origine. */
+  private notReplayable(req: Request): StoredResponse {
+    const problem = resolveProblem(
+      new ProblemException('CONFLICT_STATE', {
+        status: 409,
+        detail:
+          'Cette demande a déjà été exécutée ; sa réponse n’est pas conservée et ne peut pas être renvoyée.',
+      }),
+    );
     return {
       status: problem.status,
       body: problemBody(problem, req, this.config),
@@ -149,9 +198,22 @@ export class IdempotencyInterceptor implements NestInterceptor {
     };
   }
 
+  /** Réponse problème enregistrée (même forme que le filtre), après journalisation. */
+  private problemResponse(error: unknown, req: Request): StoredResponse {
+    const problem = resolveProblem(error);
+    logProblem(error, problem, req);
+    return {
+      status: problem.status,
+      body: problemBody(problem, req, this.config),
+      headers: { ...problem.headers, 'Content-Type': PROBLEM_CONTENT_TYPE },
+    };
+  }
+
   private tenant(): TenantContextProvider {
     // Fourni par AppModule (remplacé en test) : résolu sans dépendance de module (strict: false).
-    this.tenantContext ??= this.moduleRef.get<TenantContextProvider>(TENANT_CONTEXT, { strict: false });
+    this.tenantContext ??= this.moduleRef.get<TenantContextProvider>(TENANT_CONTEXT, {
+      strict: false,
+    });
     return this.tenantContext;
   }
 }

@@ -11,7 +11,11 @@ import { createIdentityVerifier, IDENTITY_VERIFIER } from './oidc-verifier';
 @Global()
 @Module({
   providers: [
-    { provide: IDENTITY_VERIFIER, inject: [APP_CONFIG], useFactory: (config: AppConfig) => createIdentityVerifier(config.oidc) },
+    {
+      provide: IDENTITY_VERIFIER,
+      inject: [APP_CONFIG],
+      useFactory: (config: AppConfig) => createIdentityVerifier(config.oidc),
+    },
     AuthenticationGuard,
     { provide: APP_GUARD, useExisting: AuthenticationGuard },
     { provide: TENANT_CONTEXT, useClass: IdentityTenantContext },
