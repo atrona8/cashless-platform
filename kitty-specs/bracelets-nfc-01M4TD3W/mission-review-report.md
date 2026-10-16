@@ -367,3 +367,28 @@ Séquence après fusion : revue de mission → rétrospective → constats. `ret
 - `spec-kitty retrospect summary` : vue d'ensemble des missions (lecture seule)
 - `spec-kitty agent retrospect synthesize --mission bracelets-nfc-01M4TD3W` : propositions (à blanc par défaut ;
   `--apply` pour les appliquer)
+
+## Suivi après la revue (16/10/2026)
+
+**Verdict révisé : PASS WITH NOTES.** Le constat bloquant SEC-1 est corrigé :
+- correctif post-fusion n° 1 (`be8594e`, `38b3943`, `00fb6ae`), approuvé par une relecture distincte (`post-merge-fix-1-review.md`) ;
+- tests au moment du correctif : pgTAP 1432/1432, Jest 1267/1267.
+
+Ce même correctif traite aussi :
+- RISK-3 : `NODE_ENV` est obligatoire ;
+- RISK-4 : `TAG_WRAPPING_KEY_REF` et `CLAIM_CODE_DOMAIN` sont exigés en production ;
+- DRIFT-2 : ADR-103 ;
+- NOTE-1 : ADR-104, avec OP-N47 rattaché à la mission 10.
+
+Les nouveaux points sont consignés selon la règle 3 (`3209eb5`, relu et approuvé ; pgTAP 1439/1439) :
+
+| Point | Statut | Levée |
+|---|---|---|
+| OP-N62 | Ne bloque pas la production | Mission 5 |
+| OP-N63 (ADR-105) | Bloque la production | Mission 5 |
+| Délai d'une demande approuvée (ADR-102) | Limite consignée | Mission 5 |
+
+**Restent** :
+- RISK-1 : relecture par une personne des fichiers listés ;
+- RISK-2 : la CI n'a jamais tourné, la branche n'est pas poussée ;
+- DRIFT-1 : la décision n° 9 manque dans `research.md` ; elle reste consignée dans ADR-84.
