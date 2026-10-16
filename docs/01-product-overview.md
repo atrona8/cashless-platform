@@ -55,7 +55,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Bracelets NFC
 - Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
-- Statut : ✅ mergée le 16/10/2026 dans `feat/bracelets-nfc` (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
+- Statut : ✅ mergée le 16/10/2026, dans `main` par la PR #3 avec CI verte (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
   Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
   sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0020` (0020 au correctif post-fusion n° 1) ; 27 opérations
   d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
