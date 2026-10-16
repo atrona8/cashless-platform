@@ -25,11 +25,6 @@ export interface DataKeyVersionRow {
   created_at: Date;
 }
 
-export interface JobActors {
-  requested_by: string;
-  approved_by: string;
-}
-
 @Injectable()
 export class KeysService {
   async list(client: TxClient, page: PageRequest): Promise<TagKeyRow[]> {
@@ -174,26 +169,16 @@ export class KeysService {
     return next;
   }
 
-  /** Inscrit un travail. Sa charge utile décrit quoi faire et qui l'a demandé ; elle ne porte jamais de secret. */
-  async enqueue(
-    client: TxClient,
-    job: {
-      keyIndex: number;
-      kind: TagKeyJobKind;
-      payload: Record<string, unknown>;
-      approvalRequestId: string;
-      actors: JobActors;
-    },
-  ): Promise<TagKeyJobRow> {
+  /**
+   * Inscrit le travail d'une demande approuvée, pendant son exécution. La base fixe elle-même la
+   * sorte, l'index, la charge utile (jamais de secret), l'auteur et le valideur à partir de la
+   * demande, et refuse une demande non approuvée, sans rapport, décidée par son auteur ou déjà
+   * consommée (`enqueue_tag_key_job`, migration 0020) : l'API n'a plus d'INSERT sur `tag_key_job`.
+   */
+  async enqueue(client: TxClient, approvalRequestId: string): Promise<TagKeyJobRow> {
     const { rows } = await client.query<TagKeyJobRow>(
-      `INSERT INTO tag_key_job (operator_id, key_index, kind, payload, approval_request_id)
-       VALUES (current_setting('app.operator_id')::uuid, $1, $2, $3::jsonb, $4) RETURNING ${TAG_KEY_JOB_COLUMNS}`,
-      [
-        job.keyIndex,
-        job.kind,
-        JSON.stringify({ ...job.payload, ...job.actors }),
-        job.approvalRequestId,
-      ],
+      `SELECT ${TAG_KEY_JOB_COLUMNS} FROM enqueue_tag_key_job($1)`,
+      [approvalRequestId],
     );
     return rows[0]!;
   }

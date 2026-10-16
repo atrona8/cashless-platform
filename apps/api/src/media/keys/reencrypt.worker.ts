@@ -15,6 +15,7 @@ import { zeroize } from '../../kms/zeroize';
 import { WorkerRegistry, type ProcessWorker } from '../../processes/worker';
 import { DataKeyRepository } from './data-key.repository';
 import { DekCache } from './dek-cache';
+import { TagKeyJobGate } from './job-gate';
 import { claimJobQuery, type TagKeyJobRow } from './keys.dto';
 
 export const REENCRYPT_BATCH = 500;
@@ -38,9 +39,14 @@ export class ReencryptWorker implements ProcessWorker {
     private readonly audit: AuditService,
     private readonly dataKeys: DataKeyRepository,
     private readonly cache: DekCache,
+    private readonly gate: TagKeyJobGate,
     @Inject(DECRYPT_PORT) private readonly kms: DecryptPort,
   ) {
     registry.register(this);
+  }
+
+  alarm(): number {
+    return this.gate.alarm();
   }
 
   /** Un travail au plus ; `operators` limite le passage aux travaux de ces prestataires. */
@@ -50,6 +56,9 @@ export class ReencryptWorker implements ProcessWorker {
       return rows[0] ?? null;
     });
     if (!job) return 0;
+    // Rotation approuvée à deux, terminée, dont ce rechiffrement est la suite (SEC-1) : sinon rien
+    // n'est déchiffré.
+    if (!(await this.gate.admit(job, 'tag-keys'))) return 1;
     let targetDekId = text(job.payload.target_dek_id);
     let done = typeof job.progress.reencrypted === 'number' ? job.progress.reencrypted : 0;
     try {

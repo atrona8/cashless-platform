@@ -176,9 +176,19 @@ GRANT SELECT (id, operator_id, key_index, version, wrapping_kms_key_ref, status,
 REVOKE INSERT, UPDATE ON tag_key FROM cashless_app;
 --   Contenu d'un snapshot hors ligne : il porte le mot de passe chiffré de chaque bracelet.
 REVOKE ALL ON offline_snapshot_rows FROM cashless_app;
---   Travaux de clé : l'API en inscrit et relance un travail en échec ; elle n'en modifie rien d'autre.
-REVOKE UPDATE ON tag_key_job FROM cashless_app;
+--   Travaux de clé : l'API relance un travail en échec ; elle n'en modifie rien d'autre. Elle
+--   n'en inscrit que par enqueue_tag_key_job (SECURITY DEFINER, migration 0020), pendant
+--   l'exécution d'une demande approuvée à deux : avec INSERT, une session de l'API inscrivait
+--   sans approbation une désactivation dans le service de clés, un retrait ou une création de
+--   clé, que les processus des clés exécutaient (revue post-fusion, SEC-1 ; ADR-102).
+REVOKE INSERT, UPDATE ON tag_key_job FROM cashless_app;
 GRANT UPDATE (status, locked_until) ON tag_key_job TO cashless_app;
+GRANT EXECUTE ON FUNCTION enqueue_tag_key_job(uuid) TO cashless_app;
+--   Fonctions des processus des clés : roles.sql vient de rendre EXECUTE sur toutes les
+--   fonctions à ce rôle. retire_dedicated_key retire une clé dédiée sans travail ni approbation
+--   (EXECUTE retiré à PUBLIC par 0020).
+REVOKE EXECUTE ON FUNCTION enqueue_tag_key_child_job(uuid, uuid), tag_key_job_refusal(uuid),
+  retire_dedicated_key(uuid, integer) FROM cashless_app;
 --   Comptes rendus du contrôle quotidien et essais de code : jamais modifiés par l'API.
 REVOKE INSERT, UPDATE ON tag_key_check_run FROM cashless_app;
 REVOKE UPDATE ON claim_attempt FROM cashless_app;
@@ -278,7 +288,11 @@ GRANT SELECT ON media_batch, media_transition, tag_key, claim_code, tag_key_job,
 --       Clé de données : elle en crée (GenerateDataKey) mais ne relit jamais une clé chiffrée existante.
 GRANT SELECT (id, operator_id, key_index, version, wrapping_kms_key_ref, status, created_at) ON tag_data_key TO cashless_perso;
 --       L'historique de statut des bracelets enregistrés s'écrit par log_media_status (SECURITY DEFINER, 0018).
-GRANT INSERT ON tag_data_key, tag_key_job, audit_log, api_idempotency TO cashless_perso;
+--       Travaux suivants (rechiffrement, désactivation) : par enqueue_tag_key_child_job
+--       seulement (0020, SEC-1).
+GRANT INSERT ON tag_data_key, audit_log, api_idempotency TO cashless_perso;
+GRANT EXECUTE ON FUNCTION enqueue_tag_key_child_job(uuid, uuid), retire_dedicated_key(uuid, integer)
+  TO cashless_perso;
 GRANT UPDATE (status) ON tag_data_key TO cashless_perso;
 GRANT UPDATE (status, attempts, last_error, progress, started_at, locked_until, finished_at) ON tag_key_job TO cashless_perso;
 GRANT UPDATE ON api_idempotency TO cashless_perso;
@@ -301,6 +315,11 @@ GRANT UPDATE (status, attempts, last_error, progress, started_at, locked_until, 
 GRANT SELECT, INSERT ON audit_log TO cashless_keyadmin;
 GRANT USAGE, SELECT ON SEQUENCE audit_log_id_seq TO cashless_keyadmin;
 
+--   2e. Les trois exécutants de la file revérifient la demande d'approbation de chaque travail
+--       (0020, SEC-1).
+GRANT EXECUTE ON FUNCTION tag_key_job_refusal(uuid)
+  TO cashless_tagkeys, cashless_perso, cashless_keyadmin;
+
 -- 3. Politiques nominatives ------------------------------------------------------------------------------------------------
 -- Les politiques tenant_* du schéma valent pour tous les rôles : un processus des clés traite les lignes du
 -- prestataire dont il a posé l'identifiant (celui du terminal, de la personne, ou du travail en cours). Deux
@@ -312,7 +331,9 @@ DECLARE t record;
 BEGIN
   FOR t IN SELECT * FROM (VALUES
     ('cashless_tagkeys',  $q$kind = 'REENCRYPT'$q$,                        NULL),
-    ('cashless_perso',    $q$kind IN ('ROTATE_DEK','RETIRE_KEY')$q$,        $q$kind IN ('REENCRYPT','DISABLE_KMS_KEY')$q$),
+    -- Aucune insertion directe (0020) : la politique d'insertion de la personnalisation
+    -- disparaît au rejeu.
+    ('cashless_perso',    $q$kind IN ('ROTATE_DEK','RETIRE_KEY')$q$,        NULL),
     ('cashless_keyadmin', $q$kind IN ('CREATE_KEY','DISABLE_KMS_KEY')$q$,   NULL)
   ) AS v(role_name, can_work, can_create)
   LOOP

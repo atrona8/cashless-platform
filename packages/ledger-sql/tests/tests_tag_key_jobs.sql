@@ -18,9 +18,15 @@ SELECT is((SELECT count(*)::int FROM pg_class WHERE relname IN ('tag_key_job','t
 SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN ('claim_tag_key_job','finish_tag_key_job','retry_tag_key_job') AND NOT prosecdef),
   3, 'les trois fonctions de la file sont SECURITY INVOKER');
 
--- Sous le rôle applicatif, session du prestataire A.
+-- L'API n'inscrit plus aucun travail directement (migration 0020, SEC-1) :
+-- tests_tag_key_job_approval.sql couvre l'inscription par les fonctions. Les contraintes de la
+-- table se vérifient ici sous le propriétaire.
 SET LOCAL ROLE cashless_app;
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000012a001', true);
+SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind)
+                   VALUES ('00000000-0000-0000-0000-00000012a001', 1, 'CREATE_KEY')$$,
+  '42501', NULL, 'l''API n''inscrit aucun travail directement');
+RESET ROLE;
 
 -- 2. Contraintes -----------------------------------------------------------------------------------------------------
 SELECT lives_ok($$INSERT INTO tag_key_job (id, operator_id, key_index, kind, payload) VALUES
@@ -42,8 +48,6 @@ SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind, progre
   ('00000000-0000-0000-0000-00000012a001', 9, 'REENCRYPT', '{"dek":"x"}')$$, '23514', NULL, 'avancement avec un secret refusé');
 SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind, payload) VALUES
   ('00000000-0000-0000-0000-00000012a001', 9, 'REENCRYPT', '[1]')$$, '23514', NULL, 'charge utile qui n''est pas un objet refusée');
-SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind) VALUES ('00000000-0000-0000-0000-00000012a002', 1, 'CREATE_KEY')$$,
-  '42501', NULL, 'un prestataire n''inscrit pas un travail chez un autre');
 
 -- 3. File : prise, avancement, échec, relance, clôture ----------------------------------------------------------------
 -- La file est travaillée par les processus des clés (post-roles.sql), jamais par l'API publique : ici la commande
@@ -84,8 +88,7 @@ SELECT is((SELECT status || ':' || (finished_at IS NOT NULL)::text || ':' || (lo
   'DONE:true:true', 'terminé, daté, verrou levé');
 SELECT throws_ok($$SELECT finish_tag_key_job('00000000-0000-0000-0000-00000012c001', 'DONE')$$, 'CL020', NULL, 'un travail terminé ne se clôt pas deux fois');
 SELECT throws_ok($$SELECT finish_tag_key_job('00000000-0000-0000-0000-00000012c003', 'CANCELLED')$$, 'CL001', NULL, 'statut de clôture inconnu');
-SET LOCAL ROLE cashless_app;
-SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000012a001', true);
+RESET ROLE;
 SELECT lives_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind) VALUES ('00000000-0000-0000-0000-00000012a001', 1, 'CREATE_KEY')$$,
   'le travail terminé libère la place pour une nouvelle demande');
 

@@ -7,12 +7,11 @@ import { Injectable } from '@nestjs/common';
 import {
   ApprovalActionRegistry,
   type ApprovalActionDefinition,
-  type ApprovalExecutionContext,
 } from '../../approval/action-registry';
 import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { isUuid } from '../../organization/platform/platform.dto';
-import { tagKeyJobDto, type TagKeyJobKind, type TagKeyRequestInput } from './keys.dto';
+import { tagKeyJobDto, type TagKeyRequestInput } from './keys.dto';
 import { KeysService } from './keys.service';
 
 export interface TagKeyCreatePayload extends TagKeyRequestInput {
@@ -43,12 +42,12 @@ export class KeyApprovalActions {
   ) {
     registry.register(this.create() as ApprovalActionDefinition);
     registry.register(
-      this.indexed('TAG_DEK_ROTATE', 'ROTATE_DEK', (client, index) =>
+      this.indexed('TAG_DEK_ROTATE', (client, index) =>
         this.keys.assertRotatable(client, index),
       ) as ApprovalActionDefinition,
     );
     registry.register(
-      this.indexed('TAG_KEY_RETIRE', 'RETIRE_KEY', (client, index) =>
+      this.indexed('TAG_KEY_RETIRE', (client, index) =>
         this.keys.assertRetirable(client, index),
       ) as ApprovalActionDefinition,
     );
@@ -78,20 +77,16 @@ export class KeyApprovalActions {
       },
       execute: async (client, ctx) => {
         await this.keys.assertCreatable(client, ctx.payload);
-        const job = await this.keys.enqueue(client, {
-          keyIndex: await this.keys.nextKeyIndex(client),
-          kind: 'CREATE_KEY',
-          payload: { scope: ctx.payload.scope, dedicated_event_id: ctx.payload.dedicated_event_id },
-          ...this.origin(ctx),
-        });
-        return { result: tagKeyJobDto(job) };
+        // Index disponible (409 sinon) ; la base calcule le même, sous verrou, à l'inscription.
+        await this.keys.nextKeyIndex(client);
+        return { result: tagKeyJobDto(await this.keys.enqueue(client, ctx.request.id)) };
       },
     };
   }
 
+  /** Sorte du travail inscrit (`ROTATE_DEK`, `RETIRE_KEY`) : déduite de l'action par la base. */
   private indexed(
     action: 'TAG_DEK_ROTATE' | 'TAG_KEY_RETIRE',
-    kind: TagKeyJobKind,
     assert: (client: TxClient, keyIndex: number) => Promise<void>,
   ): ApprovalActionDefinition<TagKeyIndexPayload> {
     return {
@@ -101,24 +96,8 @@ export class KeyApprovalActions {
       validate: indexPayload,
       execute: async (client, ctx) => {
         await assert(client, ctx.payload.key_index);
-        return {
-          result: tagKeyJobDto(
-            await this.keys.enqueue(client, {
-              keyIndex: ctx.payload.key_index,
-              kind,
-              payload: {},
-              ...this.origin(ctx),
-            }),
-          ),
-        };
+        return { result: tagKeyJobDto(await this.keys.enqueue(client, ctx.request.id)) };
       },
-    };
-  }
-
-  private origin(ctx: ApprovalExecutionContext<unknown>) {
-    return {
-      approvalRequestId: ctx.request.id,
-      actors: { requested_by: ctx.requestedBy, approved_by: ctx.approvedBy },
     };
   }
 }

@@ -137,8 +137,10 @@ SELECT lives_ok($$INSERT INTO tag_data_key (operator_id, key_index, version, wra
   ('00000000-0000-0000-0000-00000014a001', 1, 2, 'test:wrap', '\xfeed')$$, 'personnalisation : ouvre une nouvelle version de clé de données');
 SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind) VALUES ('00000000-0000-0000-0000-00000014a001', 7, 'CREATE_KEY')$$, '42501', NULL,
   'personnalisation : n''inscrit pas une création de clé');
-SELECT lives_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind) VALUES ('00000000-0000-0000-0000-00000014a001', 1, 'REENCRYPT')$$,
-  'personnalisation : inscrit le rechiffrement qui suit une rotation');
+SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind)
+                   VALUES ('00000000-0000-0000-0000-00000014a001', 1, 'REENCRYPT')$$,
+  '42501', NULL, 'personnalisation : n''inscrit aucun travail directement, même un '
+                 || 'rechiffrement (enqueue_tag_key_child_job seulement, 0020)');
 SELECT pg_temp.nil();
 SELECT is((SELECT array_agg(kind ORDER BY kind) FROM tag_key_job), ARRAY['RETIRE_KEY','ROTATE_DEK'], 'personnalisation : ne voit que rotation et retrait');
 

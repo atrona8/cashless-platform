@@ -1,6 +1,8 @@
 // Travailleur de la commande d'administration des clés (décision du porteur n° 6 ; contracts/key-services.md) :
 // exécute les travaux `CREATE_KEY` et `DISABLE_KMS_KEY` inscrits par des actions approuvées à deux. C'est le seul
 // code qui reçoit `KeyAdminPort` ; il tourne sous le rôle de base cashless_keyadmin, sans aucun accès aux bracelets.
+// Avant tout appel au service de clés, la demande approuvée du travail est revérifiée
+// (`TagKeyJobGate`, SEC-1) ; une désactivation n'est faite que pour une clé RETIRED.
 // Reprise sans double effet : la référence de la clé créée est notée dans l'avancement du travail AVANT l'insertion
 // de `tag_key` ; un travail repris après une panne réutilise cette référence au lieu de créer une seconde clé.
 import { Inject, Injectable } from '@nestjs/common';
@@ -8,6 +10,7 @@ import { AuditService } from '../../audit/audit.service';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
 import { KEY_ADMIN_PORT, type KeyAdminPort } from '../../kms/kms.ports';
 import { WorkerRegistry, type ProcessWorker } from '../../processes/worker';
+import { TagKeyJobGate } from './job-gate';
 import { claimJobQuery, KEY_ADMIN_KINDS, TAG_KEY_JOB_COLUMNS, type TagKeyJobRow } from './keys.dto';
 
 const text = (value: unknown): string | null =>
@@ -21,9 +24,14 @@ export class KeyAdminWorker implements ProcessWorker {
     registry: WorkerRegistry,
     private readonly tx: TenantTx,
     private readonly audit: AuditService,
+    private readonly gate: TagKeyJobGate,
     @Inject(KEY_ADMIN_PORT) private readonly kms: KeyAdminPort,
   ) {
     registry.register(this);
+  }
+
+  alarm(): number {
+    return this.gate.alarm();
   }
 
   async describe(): Promise<string[]> {
@@ -47,6 +55,7 @@ export class KeyAdminWorker implements ProcessWorker {
       return rows[0] ?? null;
     });
     if (!job) return 0;
+    if (!(await this.gate.admit(job, 'key-admin'))) return 1;
     try {
       if (job.kind === 'CREATE_KEY') await this.createKey(job);
       else await this.disableKey(job);
@@ -103,15 +112,21 @@ export class KeyAdminWorker implements ProcessWorker {
   }
 
   private async disableKey(job: TagKeyJobRow): Promise<void> {
-    const kmsKeyRef = await this.tx.run(job.operator_id, async (client) => {
-      const { rows } = await client.query<{ kms_key_ref: string }>(
-        'SELECT kms_key_ref FROM tag_key WHERE operator_id = $1 AND key_index = $2',
+    const key = await this.tx.run(job.operator_id, async (client) => {
+      const { rows } = await client.query<{ kms_key_ref: string; status: string }>(
+        'SELECT kms_key_ref, status FROM tag_key WHERE operator_id = $1 AND key_index = $2',
         [job.operator_id, job.key_index],
       );
-      return rows[0]?.kms_key_ref ?? null;
+      return rows[0] ?? null;
     });
-    if (!kmsKeyRef) throw new Error('Clé introuvable');
-    await this.kms.disableKey(kmsKeyRef);
+    if (!key) throw new Error('Clé introuvable');
+    // Seule une clé retirée en base se désactive dans le service de clés (§7.7) : jamais une clé en
+    // service.
+    if (key.status !== 'RETIRED') {
+      await this.gate.refuse(job, 'key-admin', `la clé n’est pas retirée (${key.status})`);
+      return;
+    }
+    await this.kms.disableKey(key.kms_key_ref);
     await this.tx.run(job.operator_id, async (client) => {
       await client.query(
         'UPDATE tag_key SET kms_disabled_at = coalesce(kms_disabled_at, clock_timestamp()) WHERE operator_id = $1 AND key_index = $2',

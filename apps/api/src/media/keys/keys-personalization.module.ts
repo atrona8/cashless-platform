@@ -2,10 +2,11 @@
 import { Module } from '@nestjs/common';
 import { DataKeyRepository } from './data-key.repository';
 import { DekWorker } from './dek.worker';
+import { TagKeyJobGate } from './job-gate';
 import { SessionDataKeyProvider } from './session-data-key';
 
 @Module({
-  providers: [DataKeyRepository, SessionDataKeyProvider, DekWorker],
+  providers: [DataKeyRepository, SessionDataKeyProvider, TagKeyJobGate, DekWorker],
   exports: [DataKeyRepository, SessionDataKeyProvider],
 })
 export class KeysPersonalizationModule {}

@@ -4,6 +4,8 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { DekWorker } from '../../../src/media/keys/dek.worker';
+import { ALARM_JOB_REFUSED } from '../../../src/media/keys/job-gate';
 import { KeyAdminWorker } from '../../../src/media/keys/key-admin.worker';
 import { createKeyProcess, createTestApp, type KeyProcessApp } from '../../support/app';
 import { withOwner } from '../../support/db';
@@ -14,6 +16,7 @@ describe('clés de bracelet', () => {
   let idp: FakeIdp;
   let app: INestApplication;
   let admin: KeyProcessApp;
+  let perso: KeyProcessApp;
   let ops: Operators;
   let adminA: TestPerson;
   let adminA2: TestPerson;
@@ -61,9 +64,11 @@ describe('clés de bracelet', () => {
     });
     app = await createTestApp({ identity: idp });
     admin = await createKeyProcess('key-admin');
+    perso = await createKeyProcess('personalization', { identity: idp });
   });
 
   afterAll(async () => {
+    await perso.app.close();
     await admin.app.close();
     await app.close();
   });
@@ -71,6 +76,13 @@ describe('clés de bracelet', () => {
   // La file des travaux est commune à toutes les suites qui tournent sur la même base : passage limité aux
   // prestataires de celle-ci.
   const runAdmin = () => admin.app.get(KeyAdminWorker, { strict: false }).runOnce([ops.a, ops.b]);
+  /**
+   * Personnalisation : exécute rotations et retraits en attente (retrait : désactivation inscrite
+   * ensuite).
+   */
+  const drainPerso = async () => {
+    while ((await perso.app.get(DekWorker, { strict: false }).runOnce([ops.a, ops.b])) > 0);
+  };
   const http = () => request(app.getHttpServer());
   const post = (who: TestPerson, path: string, body: object = {}, key: string = randomUUID()) =>
     http()
@@ -369,16 +381,15 @@ describe('clés de bracelet', () => {
           [ops.a, index],
         )
       )[0]!.kms_key_ref;
-      await withOwner((db) =>
-        db.query(
-          `INSERT INTO tag_key_job (operator_id, key_index, kind, payload) VALUES ($1, $2, 'DISABLE_KMS_KEY', $3)`,
-          [
-            ops.a,
-            index,
-            JSON.stringify({ requested_by: adminA.userId, approved_by: adminA2.userId }),
-          ],
-        ),
-      );
+      // Le retrait approuvé au test précédent est exécuté par la personnalisation, qui inscrit la
+      // désactivation.
+      await drainPerso();
+      expect(
+        await rows('SELECT status FROM tag_key WHERE operator_id = $1 AND key_index = $2', [
+          ops.a,
+          index,
+        ]),
+      ).toEqual([{ status: 'RETIRED' }]);
       admin.kms.failNext('disableKey');
       await runAdmin();
       expect(
@@ -407,6 +418,141 @@ describe('clés de bracelet', () => {
         ),
       ).toEqual([{ approver_id: adminA2.userId }]);
       expect((await get(adminA, `${A()}/tag-keys/${index}`)).body.kms_disabled_at).not.toBeNull();
+    });
+  });
+
+  // Revue post-fusion, constat SEC-1 : la base qui aurait accepté ces travaux est simulée par le
+  // propriétaire. Avant le correctif, une session de l'API inscrivait ces travaux elle-même et la
+  // commande d'administration les exécutait.
+  describe('travail planté sans demande approuvée concordante', () => {
+    const plant = (keyIndex: number, kind: string, approvalRequestId: string | null = null) =>
+      rows<{ id: string }>(
+        `INSERT INTO tag_key_job (operator_id, key_index, kind, payload, approval_request_id)
+         VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+        [
+          ops.a,
+          keyIndex,
+          kind,
+          JSON.stringify({
+            scope: 'SHARED',
+            requested_by: adminA.userId,
+            approved_by: adminA2.userId,
+          }),
+          approvalRequestId,
+        ],
+      ).then((r) => r[0]!.id);
+    const activeShared = async () =>
+      (
+        await rows<{ key_index: number; kms_key_ref: string }>(
+          `SELECT key_index, kms_key_ref FROM tag_key
+            WHERE operator_id = $1 AND scope = 'SHARED' AND status = 'ACTIVE'`,
+          [ops.a],
+        )
+      )[0]!;
+
+    it('désactivation de la clé partagée ACTIVE : refusée, aucun appel au KMS', async () => {
+      const key = await activeShared();
+      const id = await plant(key.key_index, 'DISABLE_KMS_KEY');
+      admin.kms.resetCalls();
+      expect(await runAdmin()).toBe(1);
+      expect(admin.kms.calls.disableKey).toBe(0);
+      expect(admin.kms.isDisabled(key.kms_key_ref)).toBe(false);
+      const [job] = await rows<{ status: string; last_error: string }>(
+        'SELECT status, last_error FROM tag_key_job WHERE id = $1',
+        [id],
+      );
+      expect(job!.status).toBe('FAILED');
+      expect(job!.last_error).toContain('Travail refusé : aucune demande');
+      expect(
+        await rows(
+          'SELECT status, kms_disabled_at FROM tag_key WHERE operator_id = $1 AND key_index = $2',
+          [ops.a, key.key_index],
+        ),
+      ).toEqual([{ status: 'ACTIVE', kms_disabled_at: null }]);
+      expect(
+        await rows(
+          `SELECT origin, after->>'reason' AS reason FROM audit_log
+            WHERE operator_id = $1 AND action = 'TAG_KEY_JOB_REFUSED' AND object_id = $2`,
+          [ops.a, id],
+        ),
+      ).toEqual([{ origin: 'key-admin', reason: "aucune demande d'approbation" }]);
+      expect(admin.workers.alarm()).toBe(ALARM_JOB_REFUSED);
+      // Visible et relançable par l'administrateur, mais toujours refusé.
+      expect((await post(adminA, `${A()}/tag-key-jobs/${id}/retry`)).status).toBe(200);
+      expect(await runAdmin()).toBe(1);
+      expect(admin.kms.calls.disableKey).toBe(0);
+    });
+
+    it('désactivation approuvée d’une clé redevenue ACTIVE : refusée, sans KMS', async () => {
+      const created = await approved(`${A()}/tag-keys`, {
+        scope: 'DEDICATED',
+        dedicated_event_id: ids.event,
+      });
+      expect(await runAdmin()).toBe(1);
+      const index = created.result.key_index;
+      await approved(`${A()}/tag-keys/${index}/retirement`);
+      await drainPerso();
+      // La clé est remise en service après le retrait (base qui l'aurait permis) : la désactivation
+      // approuvée ne doit plus toucher une clé en service.
+      await rows(`UPDATE tag_key SET status = 'ACTIVE' WHERE operator_id = $1 AND key_index = $2`, [
+        ops.a,
+        index,
+      ]);
+      admin.kms.resetCalls();
+      expect(await runAdmin()).toBe(1);
+      expect(admin.kms.calls.disableKey).toBe(0);
+      const [job] = await rows<{ status: string; last_error: string }>(
+        `SELECT status, last_error FROM tag_key_job
+          WHERE operator_id = $1 AND key_index = $2 AND kind = 'DISABLE_KMS_KEY'`,
+        [ops.a, index],
+      );
+      expect(job!.status).toBe('FAILED');
+      expect(job!.last_error).toContain('pas retirée');
+    });
+
+    it('création plantée, sans demande ou sur une demande non exécutée : refusée', async () => {
+      const approvedOnly = await withOwner(async (db) => {
+        await db.query('BEGIN');
+        await db.query("SELECT set_config('app.operator_id', $1, true)", [ops.a]);
+        const { rows: requested } = await db.query<{ id: string }>(
+          `INSERT INTO approval_request (operator_id, action, payload, requested_by)
+           VALUES ($1, 'TAG_KEY_CREATE', $2, $3) RETURNING id`,
+          [
+            ops.a,
+            JSON.stringify({ operator_id: ops.a, scope: 'SHARED', dedicated_event_id: null }),
+            adminA.userId,
+          ],
+        );
+        await db.query('SELECT decide_approval_request($1, $2, true, NULL)', [
+          requested[0]!.id,
+          adminA2.userId,
+        ]);
+        await db.query('COMMIT');
+        return requested[0]!.id;
+      });
+      const notExecuted = await plant(9000, 'CREATE_KEY', approvedOnly);
+      const bare = await plant(9001, 'CREATE_KEY');
+      admin.kms.resetCalls();
+      expect(await runAdmin()).toBe(1);
+      expect(await runAdmin()).toBe(1);
+      expect(admin.kms.calls.createKey).toBe(0);
+      expect(
+        await rows(
+          'SELECT key_index FROM tag_key WHERE operator_id = $1 AND key_index = ANY($2::int[])',
+          [ops.a, [9000, 9001]],
+        ),
+      ).toEqual([]);
+      const failed = await rows<{ id: string; status: string; last_error: string }>(
+        `SELECT id, status, last_error FROM tag_key_job
+          WHERE id = ANY($1::uuid[]) ORDER BY key_index`,
+        [[notExecuted, bare]],
+      );
+      expect(failed.map((j) => [j.id, j.status])).toEqual([
+        [notExecuted, 'FAILED'],
+        [bare, 'FAILED'],
+      ]);
+      expect(failed[0]!.last_error).toContain('APPROVED, non exécutée');
+      expect(failed[1]!.last_error).toContain('aucune demande');
     });
   });
 

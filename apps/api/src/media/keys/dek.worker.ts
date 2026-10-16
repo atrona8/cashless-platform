@@ -13,7 +13,13 @@ import { DATA_KEY_PORT, type DataKeyPort } from '../../kms/kms.ports';
 import { zeroize } from '../../kms/zeroize';
 import { WorkerRegistry, type ProcessWorker } from '../../processes/worker';
 import { DataKeyRepository } from './data-key.repository';
-import { claimJobQuery, type TagKeyJobKind, type TagKeyJobRow } from './keys.dto';
+import { TagKeyJobGate } from './job-gate';
+import {
+  claimJobQuery,
+  TAG_KEY_JOB_COLUMNS,
+  type TagKeyJobKind,
+  type TagKeyJobRow,
+} from './keys.dto';
 import { SessionDataKeyProvider } from './session-data-key';
 
 const KINDS: TagKeyJobKind[] = ['ROTATE_DEK', 'RETIRE_KEY'];
@@ -31,9 +37,14 @@ export class DekWorker implements ProcessWorker {
     private readonly audit: AuditService,
     private readonly dataKeys: DataKeyRepository,
     private readonly sessions: SessionDataKeyProvider,
+    private readonly gate: TagKeyJobGate,
     @Inject(DATA_KEY_PORT) private readonly kms: DataKeyPort,
   ) {
     registry.register(this);
+  }
+
+  alarm(): number {
+    return this.gate.alarm();
   }
 
   /** Un travail au plus ; `operators` limite le passage aux travaux de ces prestataires. */
@@ -43,6 +54,7 @@ export class DekWorker implements ProcessWorker {
       return rows[0] ?? null;
     });
     if (!job) return 0;
+    if (!(await this.gate.admit(job, 'personalization'))) return 1;
     try {
       if (job.kind === 'ROTATE_DEK') await this.rotate(job);
       else await this.retire(job);
@@ -69,10 +81,7 @@ export class DekWorker implements ProcessWorker {
         this.config.tagWrappingKeyRef,
         encrypted,
       );
-      await this.child(client, job, 'REENCRYPT', {
-        target_dek_id: version.id,
-        target_version: version.version,
-      });
+      await this.child(client, job, version.id);
       await this.record(client, job, 'TAG_DEK_ROTATED', {
         key_index: job.key_index,
         version: version.version,
@@ -92,7 +101,7 @@ export class DekWorker implements ProcessWorker {
         'SELECT retire_dedicated_key($1, $2) AS retired',
         [job.operator_id, job.key_index],
       );
-      await this.child(client, job, 'DISABLE_KMS_KEY', {});
+      await this.child(client, job, null);
       await this.record(client, job, 'TAG_KEY_RETIRED', {
         key_index: job.key_index,
         retired_media: rows[0]!.retired,
@@ -105,28 +114,17 @@ export class DekWorker implements ProcessWorker {
     this.sessions.forget(job.operator_id, job.key_index);
   }
 
-  /** Travail suivant de la chaîne ; il hérite de l'auteur et du valideur de la demande d'origine. */
-  private async child(
-    client: TxClient,
-    job: TagKeyJobRow,
-    kind: TagKeyJobKind,
-    payload: Record<string, unknown>,
-  ): Promise<void> {
-    await client.query(
-      `INSERT INTO tag_key_job (operator_id, key_index, kind, payload, approval_request_id, parent_job_id) VALUES ($1, $2, $3, $4::jsonb, $5, $6)`,
-      [
-        job.operator_id,
-        job.key_index,
-        kind,
-        JSON.stringify({
-          ...payload,
-          requested_by: text(job.payload.requested_by),
-          approved_by: text(job.payload.approved_by),
-        }),
-        job.approval_request_id,
-        job.id,
-      ],
-    );
+  /**
+   * Travail suivant de la chaîne (rechiffrement vers `targetDekId`, ou désactivation si `null`). Il
+   * n'est inscrit que par `enqueue_tag_key_child_job` (migration 0020) : la base vérifie que ce
+   * travail est en cours et vient d'une demande approuvée concordante, et y reporte elle-même
+   * l'auteur et le valideur de la demande.
+   */
+  private async child(client: TxClient, job: TagKeyJobRow, targetDekId: string | null) {
+    await client.query(`SELECT ${TAG_KEY_JOB_COLUMNS} FROM enqueue_tag_key_child_job($1, $2)`, [
+      job.id,
+      targetDekId,
+    ]);
   }
 
   private record(

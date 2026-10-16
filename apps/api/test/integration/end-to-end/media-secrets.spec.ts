@@ -28,6 +28,7 @@ import { DekWorker } from '../../../src/media/keys/dek.worker';
 import { ReencryptWorker } from '../../../src/media/keys/reencrypt.worker';
 import { createKeyProcess, createTestApp, type KeyProcessApp } from '../../support/app';
 import { withOwner } from '../../support/db';
+import { plantApprovedKeyJob } from '../../support/key-jobs';
 import { createTestCustomer, type TestCustomer } from '../../support/fake-customer';
 import { createTestDevice, type TestDevice } from '../../support/fake-device';
 import {
@@ -336,17 +337,15 @@ describe('aucun secret des bracelets en clair au repos (NFR-002, SC-004)', () =>
 
       // 4. Rotation de la clé de données : ouverte par la personnalisation, rechiffrement
       // par le processus des clés de bracelet.
-      await rows(
-        `INSERT INTO tag_key_job (operator_id, key_index, kind, payload)
-         VALUES ($1, $2, 'ROTATE_DEK', $3)`,
-        [
-          w.ops.a,
-          MEDIA_KEY_INDEX,
-          JSON.stringify({
-            requested_by: w.operatorAdminA.userId,
-            approved_by: w.organizerAdminA.userId,
-          }),
-        ],
+      // Travail inscrit comme l'API à l'approbation d'une demande à deux (sinon refusé : SEC-1).
+      await withOwner((db) =>
+        plantApprovedKeyJob(db, {
+          operatorId: w.ops.a,
+          keyIndex: MEDIA_KEY_INDEX,
+          kind: 'ROTATE_DEK',
+          requestedBy: w.operatorAdminA.userId,
+          approvedBy: w.organizerAdminA.userId,
+        }),
       );
       expect(await perso.app.get(DekWorker, { strict: false }).runOnce([w.ops.a, w.ops.b])).toBe(1);
       await collectDataKeys();

@@ -9,10 +9,12 @@ import { TenantTx } from '../../../src/db/tenant-tx';
 import { ProblemException } from '../../../src/errors/problem';
 import { DataKeyRepository } from '../../../src/media/keys/data-key.repository';
 import { DekWorker } from '../../../src/media/keys/dek.worker';
+import { ALARM_JOB_REFUSED } from '../../../src/media/keys/job-gate';
 import { REENCRYPT_BATCH, ReencryptWorker } from '../../../src/media/keys/reencrypt.worker';
 import { SessionDataKeyProvider } from '../../../src/media/keys/session-data-key';
 import { createKeyProcess, type KeyProcessApp } from '../../support/app';
 import { withOwner } from '../../support/db';
+import { plantApprovedKeyJob, type RootKeyJobKind } from '../../support/key-jobs';
 import { FakeIdp, type TestPerson } from '../../support/fake-idp';
 import { createOperators, type Operators } from '../transverse/fixtures';
 
@@ -149,14 +151,37 @@ describe('clés de données des bracelets', () => {
     return seeded;
   };
 
-  const job = (index: number, kind: string, operatorId: string = ops.a) =>
+  /**
+   * Travail inscrit comme l'API l'inscrit à l'approbation (demande à deux, exécutée) ; rend son
+   * identifiant.
+   */
+  const job = (index: number, kind: RootKeyJobKind, operatorId: string = ops.a) =>
+    withOwner((db) =>
+      plantApprovedKeyJob(db, {
+        operatorId,
+        keyIndex: index,
+        kind,
+        requestedBy: requester.userId,
+        approvedBy: approver.userId,
+      }),
+    );
+
+  /**
+   * Travail planté sans demande approuvée, comme le faisait une session de l'API avant 0020
+   * (SEC-1).
+   */
+  const planted = (index: number, kind: string, payload: Record<string, unknown> = {}) =>
     rows<{ id: string }>(
       `INSERT INTO tag_key_job (operator_id, key_index, kind, payload) VALUES ($1, $2, $3, $4) RETURNING id`,
       [
-        operatorId,
+        ops.a,
         index,
         kind,
-        JSON.stringify({ requested_by: requester.userId, approved_by: approver.userId }),
+        JSON.stringify({
+          ...payload,
+          requested_by: requester.userId,
+          approved_by: approver.userId,
+        }),
       ],
     ).then((r) => r[0]!.id);
 
@@ -755,6 +780,94 @@ describe('clés de données des bracelets', () => {
           [ops.a, [dedicated, shared]],
         ),
       ).toEqual([]);
+    });
+  });
+
+  // Revue post-fusion, constat SEC-1 : la base qui aurait accepté ces travaux est simulée par le
+  // propriétaire.
+  describe('travail planté sans demande approuvée concordante', () => {
+    const refusals = (jobIds: string[]) =>
+      rows<{ object_id: string; origin: string }>(
+        `SELECT object_id, origin FROM audit_log
+          WHERE operator_id = $1 AND action = 'TAG_KEY_JOB_REFUSED'
+            AND object_id = ANY($2::text[])
+          ORDER BY id`,
+        [ops.a, jobIds],
+      );
+
+    it('rotation et retrait : refusés, en échec, audités, aucun appel au KMS', async () => {
+      const index = await createKey(ops.a, true);
+      await createVersion(ops.a, index, 1, 'ACTIVE');
+      const rotation = await planted(index, 'ROTATE_DEK');
+      const retirement = await planted(index, 'RETIRE_KEY');
+      perso.kms.resetCalls();
+      expect(await runPerso()).toBe(1);
+      expect(await runPerso()).toBe(1);
+      expect(perso.kms.calls).toMatchObject({ generateDataKey: 0, decrypt: 0, generateMac: 0 });
+      for (const id of [rotation, retirement]) {
+        const row = await jobRow(id);
+        expect(row.status).toBe('FAILED');
+        expect(row.last_error).toContain('Travail refusé : aucune demande');
+      }
+      expect((await versions(index)).map((v) => v.status)).toEqual(['ACTIVE']);
+      expect(
+        await rows('SELECT status FROM tag_key WHERE operator_id = $1 AND key_index = $2', [
+          ops.a,
+          index,
+        ]),
+      ).toEqual([{ status: 'ACTIVE' }]);
+      expect(
+        await rows('SELECT 1 FROM tag_key_job WHERE parent_job_id = ANY($1::uuid[])', [
+          [rotation, retirement],
+        ]),
+      ).toEqual([]);
+      expect(await refusals([rotation, retirement])).toEqual([
+        { object_id: rotation, origin: 'personalization' },
+        { object_id: retirement, origin: 'personalization' },
+      ]);
+      expect(perso.workers.alarm()).toBe(ALARM_JOB_REFUSED);
+      // Relancé par l'administrateur : refusé de nouveau, jamais exécuté.
+      await rows('SELECT retry_tag_key_job($1)', [rotation]);
+      expect(await runPerso()).toBe(1);
+      expect(await jobRow(rotation)).toMatchObject({ status: 'FAILED' });
+      expect(perso.kms.calls.generateDataKey).toBe(0);
+    });
+
+    it('rechiffrement sans rotation approuvée : refusé, rien de déchiffré', async () => {
+      const index = await createKey();
+      const v1 = await createVersion(ops.a, index, 1, 'DECRYPT_ONLY');
+      const v2 = await createVersion(ops.a, index, 2, 'ACTIVE');
+      const seeded = await seedMedia(
+        ops.a,
+        await createBatch(ops.a, ids.organizer, index, 3),
+        index,
+        3,
+        [v1],
+      );
+      const reencrypt = await planted(index, 'REENCRYPT', { target_dek_id: v2.id });
+      tagKeys.kms.resetCalls();
+      expect(await runTagKeys()).toBe(1);
+      expect(tagKeys.kms.calls.decrypt).toBe(0);
+      expect(await jobRow(reencrypt)).toMatchObject({ status: 'FAILED' });
+      await expectAllUnder(ops.a, index, seeded, v1.id);
+      expect(await refusals([reencrypt])).toEqual([{ object_id: reencrypt, origin: 'tag-keys' }]);
+      expect(tagKeys.workers.alarm()).toBe(ALARM_JOB_REFUSED);
+    });
+
+    it('demande approuvée pour une autre clé : le travail n’est pas couvert', async () => {
+      const index = await createKey();
+      const other = await createKey();
+      await createVersion(ops.a, other, 1, 'ACTIVE');
+      const rotation = await job(index, 'ROTATE_DEK');
+      // Le travail approuvé est détourné vers une autre clé (base qui l'aurait permis).
+      await rows('UPDATE tag_key_job SET key_index = $2 WHERE id = $1', [rotation, other]);
+      perso.kms.resetCalls();
+      expect(await runPerso()).toBe(1);
+      expect(perso.kms.calls.generateDataKey).toBe(0);
+      const row = await jobRow(rotation);
+      expect(row.status).toBe('FAILED');
+      expect(row.last_error).toContain('pas celui que la demande a produit');
+      expect((await versions(other)).map((v) => v.status)).toEqual(['ACTIVE']);
     });
   });
 });
