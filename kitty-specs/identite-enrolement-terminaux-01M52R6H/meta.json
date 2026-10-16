@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-identite-enrolement-terminaux-01M52R6H",
+  "created_at": "2026-10-16T16:19:53.414041+00:00",
+  "flattened": false,
+  "friendly_name": "Identité et enrôlement des terminaux",
+  "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+  "mission_number": null,
+  "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Un terminal n'encaisse que s'il est enrôlé et reconnu. Cette mission livre les codes d'enrôlement à usage unique, l'enrôlement avec les clés propres du terminal, son identité réelle (jeton d'appareil, requêtes signées) en remplacement du faux de la mission 4, sa suspension et sa révocation, la configuration qui lui est servie et son battement de cœur. Elle lève aussi les dettes de sécurité de la base héritées de la mission 4, dont deux bloquent la production. L'encaissement en ligne vient dans la mission 5b, le hors ligne et l'application du terminal dans d'autres missions.",
+  "purpose_tldr": "Enrôler les terminaux de façon sûre, leur donner une identité réelle et lever les dettes de sécurité qui bloquent la production.",
+  "retain_branches": true,
+  "retain_worktrees": true,
+  "slug": "identite-enrolement-terminaux-01M52R6H",
+  "target_branch": "feat/identite-enrolement-terminaux",
+  "topology": "coord"
+}
