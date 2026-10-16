@@ -2,7 +2,15 @@
 // Le moteur refuse VALIDATION_FAILED avant d'appeler la base ; la base applique en plus le statut du grand livre.
 import type { Source, TransactionType } from './types';
 
-export const EVENT_STATUSES = ['DRAFT', 'LIVE', 'CLOSING', 'RECONCILING', 'SETTLING', 'REFUND_WINDOW', 'CLOSED'] as const;
+export const EVENT_STATUSES = [
+  'DRAFT',
+  'LIVE',
+  'CLOSING',
+  'RECONCILING',
+  'SETTLING',
+  'REFUND_WINDOW',
+  'CLOSED',
+] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 export type LedgerStatus = 'OPEN' | 'CLOSING' | 'LOCKED';
 
@@ -35,10 +43,31 @@ const SYNC: readonly Source[] = ['OFFLINE_SYNC', 'EDGE_SYNC'];
 const ALL_TYPES_BUT_BREAKAGE: Partial<Record<TransactionType, Rule>> = Object.fromEntries(
   (
     [
-      'TOPUP', 'TOPUP_CASH', 'PROMO_CREDIT', 'PROMO_EXPIRY', 'ACTIVATION_FEE', 'DEPOSIT_TAKEN', 'DEPOSIT_REFUNDED',
-      'DEPOSIT_FORFEITED', 'PURCHASE', 'REVERSAL', 'PITCH_FEE', 'OPERATOR_FEE', 'PLATFORM_FEE', 'ANOMALY_RESOLUTION',
-      'CASH_CLOSE', 'CASH_DEPOSIT', 'PSP_SETTLEMENT', 'CHARGEBACK', 'WALLET_REFUND', 'PAYOUT_INITIATED',
-      'PAYOUT_CONFIRMED', 'PAYOUT_FAILED', 'ADJUSTMENT', 'MERCHANT_DEBT_TRANSFER', 'BREAKAGE_REVERSAL',
+      'TOPUP',
+      'TOPUP_CASH',
+      'PROMO_CREDIT',
+      'PROMO_EXPIRY',
+      'ACTIVATION_FEE',
+      'DEPOSIT_TAKEN',
+      'DEPOSIT_REFUNDED',
+      'DEPOSIT_FORFEITED',
+      'PURCHASE',
+      'REVERSAL',
+      'PITCH_FEE',
+      'OPERATOR_FEE',
+      'PLATFORM_FEE',
+      'ANOMALY_RESOLUTION',
+      'CASH_CLOSE',
+      'CASH_DEPOSIT',
+      'PSP_SETTLEMENT',
+      'CHARGEBACK',
+      'WALLET_REFUND',
+      'PAYOUT_INITIATED',
+      'PAYOUT_CONFIRMED',
+      'PAYOUT_FAILED',
+      'ADJUSTMENT',
+      'MERCHANT_DEBT_TRANSFER',
+      'BREAKAGE_REVERSAL',
     ] as const
   ).map((type) => [type, true]),
 );
@@ -128,7 +157,10 @@ const CLOSED_LOCKED: Partial<Record<TransactionType, Rule>> = {
   CHARGEBACK: { sources: ['BACKOFFICE'] },
 };
 
-function matrixFor(eventStatus: EventStatus, ledgerStatus: LedgerStatus): Partial<Record<TransactionType, Rule>> {
+function matrixFor(
+  eventStatus: EventStatus,
+  ledgerStatus: LedgerStatus,
+): Partial<Record<TransactionType, Rule>> {
   if (eventStatus !== 'CLOSED') return MATRIX[eventStatus];
   return ledgerStatus === 'LOCKED' ? CLOSED_LOCKED : CLOSED_WITH_BALANCES;
 }
@@ -140,16 +172,28 @@ export function isAccepted(input: StatusCheckInput): StatusCheck {
   if (!rule) return { ok: false, reason: `${type} non accepté : ${where}` };
   if (rule === true) return { ok: true };
   if (rule.sources && !rule.sources.includes(source)) {
-    return { ok: false, reason: `${type} accepté seulement en ${rule.sources.join(' ou ')} : ${where}` };
+    return {
+      ok: false,
+      reason: `${type} accepté seulement en ${rule.sources.join(' ou ')} : ${where}`,
+    };
   }
   if (rule.variant && input.variant !== rule.variant) {
-    return { ok: false, reason: `${type} accepté seulement en variante ${rule.variant} : ${where}` };
+    return {
+      ok: false,
+      reason: `${type} accepté seulement en variante ${rule.variant} : ${where}`,
+    };
   }
   if (rule.depositMode && input.depositMode !== rule.depositMode) {
-    return { ok: false, reason: `${type} accepté seulement en caution ${rule.depositMode} : ${where}` };
+    return {
+      ok: false,
+      reason: `${type} accepté seulement en caution ${rule.depositMode} : ${where}`,
+    };
   }
   if (rule.debitPurpose && !input.debitPurposes?.includes(rule.debitPurpose)) {
-    return { ok: false, reason: `${type} accepté seulement au débit de ${rule.debitPurpose} : ${where}` };
+    return {
+      ok: false,
+      reason: `${type} accepté seulement au débit de ${rule.debitPurpose} : ${where}`,
+    };
   }
   return { ok: true };
 }

@@ -76,7 +76,9 @@ export class LedgerEngineService {
     try {
       validate(command);
       const delegatedFn = delegation(command);
-      return delegatedFn ? await this.delegate(client, command, delegatedFn) : await this.writeLines(client, command);
+      return delegatedFn
+        ? await this.delegate(client, command, delegatedFn)
+        : await this.writeLines(client, command);
     } catch (error) {
       // Erreurs de construction → code stable ; les erreurs SQL remontent telles quelles au filtre (WP10).
       if (error instanceof BuildError) {
@@ -94,7 +96,10 @@ export class LedgerEngineService {
     await lockIdempotencyKey(client, command.ledgerId, command.idempotencyKey);
     const existing = await readExisting(client, command.ledgerId, command.idempotencyKey);
     if (existing) {
-      if (existing.type !== command.type || (existing.fingerprint !== null && existing.fingerprint !== fingerprint)) {
+      if (
+        existing.type !== command.type ||
+        (existing.fingerprint !== null && existing.fingerprint !== fingerprint)
+      ) {
         throw new ProblemException('IDEMPOTENCY_KEY_REUSED');
       }
       return { transactionId: existing.id, replayed: true };
@@ -114,15 +119,24 @@ export class LedgerEngineService {
     const { command: enriched, balances } = await enrich(client, command);
     const buildContext: BuildContext = { config, ...(balances ? { balances } : {}) };
     if (command.type === 'REVERSAL') {
-      buildContext.original = await readOriginalLines(client, command.ledgerId, command.reversesId!);
+      buildContext.original = await readOriginalLines(
+        client,
+        command.ledgerId,
+        command.reversesId!,
+      );
     }
 
     const built = plan(enriched, buildContext);
-    if (built.kind !== 'lines') throw new BuildError('VALIDATION_FAILED', `${command.type} : type délégué`);
+    if (built.kind !== 'lines')
+      throw new BuildError('VALIDATION_FAILED', `${command.type} : type délégué`);
     const lines = checkLines(built.lines);
     if (deferPurposeCheck) checkStatus(context, command, debitPurposes(lines));
 
-    const ids = await this.accountResolver.resolve(client, command.ledgerId, lines.map((line) => line.account));
+    const ids = await this.accountResolver.resolve(
+      client,
+      command.ledgerId,
+      lines.map((line) => line.account),
+    );
     const transactionId = await postTransaction(client, {
       ledgerId: command.ledgerId,
       type: command.type,
@@ -144,16 +158,24 @@ export class LedgerEngineService {
       configVersionId: config.configVersionId,
       deviceId: command.deviceId,
       mediaId: command.mediaId,
-      metadataJson: jsonWithBigint({ ...(command.metadata ?? {}), [COMMAND_FINGERPRINT_KEY]: fingerprint }),
+      metadataJson: jsonWithBigint({
+        ...(command.metadata ?? {}),
+        [COMMAND_FINGERPRINT_KEY]: fingerprint,
+      }),
     });
     return { transactionId, replayed: false };
   }
 
   // ---------------------------------------------------------------- types délégués à la base
 
-  private async delegate(client: Queryable, command: LedgerCommand, fn: DelegatedFunction): Promise<EngineResult> {
+  private async delegate(
+    client: Queryable,
+    command: LedgerCommand,
+    fn: DelegatedFunction,
+  ): Promise<EngineResult> {
     const mediaId = command.mediaId;
-    if (!mediaId || !UUID.test(mediaId)) throw new BuildError('VALIDATION_FAILED', `${command.type} : support (mediaId) requis`);
+    if (!mediaId || !UUID.test(mediaId))
+      throw new BuildError('VALIDATION_FAILED', `${command.type} : support (mediaId) requis`);
     const payload = (command.payload ?? {}) as DelegatedPayload;
     const media = await readMediaDepositState(client, mediaId);
     if (!media) throw new ProblemException('NOT_FOUND');
@@ -178,7 +200,11 @@ export class LedgerEngineService {
       (fn === 'refund_deposit' && media.depositStatus === 'REFUNDED') ||
       (fn === 'forfeit_deposit' && media.depositStatus === 'FORFEITED');
     if (alreadyDone) {
-      return { transactionId: null, replayed: false, outcome: fn === 'take_deposit' ? media.depositStatus : 'NOOP' };
+      return {
+        transactionId: null,
+        replayed: false,
+        outcome: fn === 'take_deposit' ? media.depositStatus : 'NOOP',
+      };
     }
     if (before && (fn === 'preload_media' || fn === 'refund_cash_due')) {
       return { transactionId: before, replayed: true, outcome: 'WRITTEN' };
@@ -195,14 +221,19 @@ export class LedgerEngineService {
     switch (fn) {
       case 'take_deposit': {
         const outcome = await takeDeposit(client, mediaId, await account(payload.moneyAccount));
-        const transactionId = outcome === 'HELD' ? ((await findTransactionId(client, command.ledgerId, internalKey)) ?? null) : null;
+        const transactionId =
+          outcome === 'HELD'
+            ? ((await findTransactionId(client, command.ledgerId, internalKey)) ?? null)
+            : null;
         return { transactionId, replayed: false, outcome };
       }
       case 'refund_deposit':
       case 'forfeit_deposit': {
-        if (fn === 'refund_deposit') await refundDeposit(client, mediaId, await account(payload.moneyAccount));
+        if (fn === 'refund_deposit')
+          await refundDeposit(client, mediaId, await account(payload.moneyAccount));
         else await forfeitDeposit(client, mediaId);
-        const transactionId = (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;
+        const transactionId =
+          (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;
         return { transactionId, replayed: false, outcome: transactionId ? 'WRITTEN' : 'NOOP' };
       }
       case 'preload_media': {
@@ -210,9 +241,17 @@ export class LedgerEngineService {
         return { transactionId, replayed: false, outcome: transactionId ? 'WRITTEN' : 'NOOP' };
       }
       case 'refund_cash_due': {
-        if (!command.createdBy) throw new BuildError('VALIDATION_FAILED', 'rendu d’espèces dues : auteur (createdBy) requis');
+        if (!command.createdBy)
+          throw new BuildError(
+            'VALIDATION_FAILED',
+            'rendu d’espèces dues : auteur (createdBy) requis',
+          );
         const cashAccountId = await account(payload.cashAccount);
-        if (!cashAccountId) throw new BuildError('VALIDATION_FAILED', 'rendu d’espèces dues : compte de caisse requis');
+        if (!cashAccountId)
+          throw new BuildError(
+            'VALIDATION_FAILED',
+            'rendu d’espèces dues : compte de caisse requis',
+          );
         const transactionId = await refundCashDue(client, {
           mediaId,
           cashAccountId,
@@ -226,13 +265,25 @@ export class LedgerEngineService {
     }
   }
 
-  private async ledgerContext(client: Queryable, command: LedgerCommand): Promise<LedgerContextRow & { eventStatus: EventStatus }> {
-    const context = await readLedgerContext(client, command.ledgerId, command.eventId, command.mediaId);
+  private async ledgerContext(
+    client: Queryable,
+    command: LedgerCommand,
+  ): Promise<LedgerContextRow & { eventStatus: EventStatus }> {
+    const context = await readLedgerContext(
+      client,
+      command.ledgerId,
+      command.eventId,
+      command.mediaId,
+    );
     if (!context) throw new ProblemException('NOT_FOUND');
     if (context.currency !== command.currency) {
-      throw new BuildError('VALIDATION_FAILED', `devise ${command.currency} différente de celle du grand livre (${context.currency})`);
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        `devise ${command.currency} différente de celle du grand livre (${context.currency})`,
+      );
     }
-    if (!context.eventStatus) throw new BuildError('VALIDATION_FAILED', 'événement du grand livre introuvable');
+    if (!context.eventStatus)
+      throw new BuildError('VALIDATION_FAILED', 'événement du grand livre introuvable');
     return { ...context, eventStatus: context.eventStatus };
   }
 }
@@ -243,17 +294,24 @@ function validate(command: LedgerCommand): void {
   const fail = (message: string): never => {
     throw new BuildError('VALIDATION_FAILED', message);
   };
-  if (!(TRANSACTION_TYPES as readonly string[]).includes(command.type)) fail(`type de transaction inconnu : ${command.type}`);
-  if (!(SOURCES as readonly string[]).includes(command.source)) fail(`source inconnue : ${command.source}`);
-  if (!command.idempotencyKey || command.idempotencyKey.length > 255) fail('clé d’idempotence : 1 à 255 caractères');
+  if (!(TRANSACTION_TYPES as readonly string[]).includes(command.type))
+    fail(`type de transaction inconnu : ${command.type}`);
+  if (!(SOURCES as readonly string[]).includes(command.source))
+    fail(`source inconnue : ${command.source}`);
+  if (!command.idempotencyKey || command.idempotencyKey.length > 255)
+    fail('clé d’idempotence : 1 à 255 caractères');
   if (!UUID.test(command.ledgerId ?? '')) fail('grand livre (ledgerId) invalide');
-  if (!(command.occurredAt instanceof Date) || Number.isNaN(command.occurredAt.getTime())) fail('date de l’opération invalide');
+  if (!(command.occurredAt instanceof Date) || Number.isNaN(command.occurredAt.getTime()))
+    fail('date de l’opération invalide');
   if (!/^[A-Z]{3}$/.test(command.currency ?? '')) fail('devise ISO 4217 attendue');
   if (command.source === 'BACKOFFICE') {
-    if (!command.createdBy || !command.approvedBy) fail('back-office : auteur et valideur obligatoires');
-    if (command.createdBy === command.approvedBy) fail('back-office : le valideur doit être distinct de l’auteur');
+    if (!command.createdBy || !command.approvedBy)
+      fail('back-office : auteur et valideur obligatoires');
+    if (command.createdBy === command.approvedBy)
+      fail('back-office : le valideur doit être distinct de l’auteur');
   }
-  if (command.type === 'REVERSAL' && !UUID.test(command.reversesId ?? '')) fail('contre-passation : reversesId requis');
+  if (command.type === 'REVERSAL' && !UUID.test(command.reversesId ?? ''))
+    fail('contre-passation : reversesId requis');
 }
 
 function variantOf(command: LedgerCommand): string | undefined {
@@ -269,7 +327,11 @@ function delegation(command: LedgerCommand): DelegatedFunction | undefined {
   return variant === undefined ? undefined : entry.delegated[variant];
 }
 
-function checkStatus(context: LedgerContextRow & { eventStatus: EventStatus }, command: LedgerCommand, purposes?: string[]): void {
+function checkStatus(
+  context: LedgerContextRow & { eventStatus: EventStatus },
+  command: LedgerCommand,
+  purposes?: string[],
+): void {
   const check = isAccepted({
     eventStatus: context.eventStatus,
     ledgerStatus: context.ledgerStatus,
@@ -289,14 +351,19 @@ function participationOf(command: LedgerCommand): string | undefined {
 
 /** ≥ 2 lignes, somme nulle, aucun montant nul (vérifié de nouveau par la base). */
 function checkLines(lines: Line[]): Line[] {
-  if (lines.length < 2) throw new BuildError('VALIDATION_FAILED', 'écriture : au moins deux lignes');
-  if (lines.some((line) => line.amount === 0n)) throw new BuildError('VALIDATION_FAILED', 'écriture : montant nul');
-  if (lines.reduce((sum, line) => sum + line.amount, 0n) !== 0n) throw new BuildError('VALIDATION_FAILED', 'écriture déséquilibrée');
+  if (lines.length < 2)
+    throw new BuildError('VALIDATION_FAILED', 'écriture : au moins deux lignes');
+  if (lines.some((line) => line.amount === 0n))
+    throw new BuildError('VALIDATION_FAILED', 'écriture : montant nul');
+  if (lines.reduce((sum, line) => sum + line.amount, 0n) !== 0n)
+    throw new BuildError('VALIDATION_FAILED', 'écriture déséquilibrée');
   return lines;
 }
 
 function debitPurposes(lines: readonly Line[]): string[] {
-  return lines.filter((line) => line.amount > 0n && 'purpose' in line.account).map((line) => (line.account as { purpose: string }).purpose);
+  return lines
+    .filter((line) => line.amount > 0n && 'purpose' in line.account)
+    .map((line) => (line.account as { purpose: string }).purpose);
 }
 
 /** Empreinte de ce qui fait le sens de la commande (ni la date, ni les métadonnées, comme request_hash du schéma). */
@@ -324,7 +391,9 @@ function bigintsAsText(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(bigintsAsText);
   if (value instanceof Date) return value.toISOString();
   if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, bigintsAsText(item)]));
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, bigintsAsText(item)]),
+    );
   }
   return value;
 }
@@ -352,11 +421,17 @@ async function sequentially<T, R>(items: readonly T[], fn: (item: T) => Promise<
 }
 
 /** Soldes nécessaires à la répartition et au découpage (SPECIFICATION §5.4) ; ajoutés à la commande ou au contexte. */
-async function enrich(client: Queryable, command: LedgerCommand): Promise<{ command: LedgerCommand; balances?: WalletBalances }> {
+async function enrich(
+  client: Queryable,
+  command: LedgerCommand,
+): Promise<{ command: LedgerCommand; balances?: WalletBalances }> {
   const ledgerId = command.ledgerId;
   const payload = (command.payload ?? {}) as Record<string, unknown>;
   const walletId = typeof payload.walletId === 'string' ? payload.walletId : undefined;
-  const withPayload = (next: Record<string, unknown>): LedgerCommand => ({ ...command, payload: { ...payload, ...next } });
+  const withPayload = (next: Record<string, unknown>): LedgerCommand => ({
+    ...command,
+    payload: { ...payload, ...next },
+  });
 
   switch (command.type) {
     case 'PURCHASE':
@@ -375,42 +450,60 @@ async function enrich(client: Queryable, command: LedgerCommand): Promise<{ comm
     }
     case 'PROMO_EXPIRY': {
       if (!walletId || payload.amount !== undefined) return { command };
-      const [promo] = await readSignedBalances(client, ledgerId, [{ purpose: 'WALLET_PROMO', walletId }]);
+      const [promo] = await readSignedBalances(client, ledgerId, [
+        { purpose: 'WALLET_PROMO', walletId },
+      ]);
       return { command: withPayload({ amount: available(promo!) }) };
     }
     case 'MERCHANT_DEBT_TRANSFER': {
       const participationId = payload.participationId;
-      if (typeof participationId !== 'string' || payload.merchantBalance !== undefined) return { command };
-      const [signed] = await readSignedBalances(client, ledgerId, [{ purpose: 'MERCHANT', participationId }]);
+      if (typeof participationId !== 'string' || payload.merchantBalance !== undefined)
+        return { command };
+      const [signed] = await readSignedBalances(client, ledgerId, [
+        { purpose: 'MERCHANT', participationId },
+      ]);
       return { command: withPayload({ merchantBalance: available(signed!) }) };
     }
     case 'PITCH_FEE': {
-      const items = Array.isArray(payload.items) ? (payload.items as Record<string, unknown>[]) : [];
-      const filled = await sequentially(
-        items, async (item) => {
-          if (item.mode !== 'DEDUCT_CAPPED' || item.merchantBalance !== undefined || typeof item.participationId !== 'string') return item;
-          const [signed] = await readSignedBalances(client, ledgerId, [{ purpose: 'MERCHANT', participationId: item.participationId }]);
-          return { ...item, merchantBalance: available(signed!) };
-        },
-      );
+      const items = Array.isArray(payload.items)
+        ? (payload.items as Record<string, unknown>[])
+        : [];
+      const filled = await sequentially(items, async (item) => {
+        if (
+          item.mode !== 'DEDUCT_CAPPED' ||
+          item.merchantBalance !== undefined ||
+          typeof item.participationId !== 'string'
+        )
+          return item;
+        const [signed] = await readSignedBalances(client, ledgerId, [
+          { purpose: 'MERCHANT', participationId: item.participationId },
+        ]);
+        return { ...item, merchantBalance: available(signed!) };
+      });
       return { command: withPayload({ items: filled }) };
     }
     case 'BREAKAGE': {
-      const wallets = Array.isArray(payload.wallets) ? (payload.wallets as Record<string, unknown>[]) : [];
-      const filled = await sequentially(
-        wallets, async (item) => {
-          if (typeof item.walletId !== 'string' || (item.paid !== undefined && item.cashDue !== undefined)) return item;
-          const [paid, due] = await readSignedBalances(client, ledgerId, [
-            { purpose: 'WALLET_PAID', walletId: item.walletId },
-            { purpose: 'CUSTOMER_CASH_DUE', walletId: item.walletId },
-          ]);
-          return {
-            ...item,
-            paid: item.paid ?? available(paid!),
-            ...(item.cashDue === undefined && available(due!) !== 0n ? { cashDue: available(due!) } : {}),
-          };
-        },
-      );
+      const wallets = Array.isArray(payload.wallets)
+        ? (payload.wallets as Record<string, unknown>[])
+        : [];
+      const filled = await sequentially(wallets, async (item) => {
+        if (
+          typeof item.walletId !== 'string' ||
+          (item.paid !== undefined && item.cashDue !== undefined)
+        )
+          return item;
+        const [paid, due] = await readSignedBalances(client, ledgerId, [
+          { purpose: 'WALLET_PAID', walletId: item.walletId },
+          { purpose: 'CUSTOMER_CASH_DUE', walletId: item.walletId },
+        ]);
+        return {
+          ...item,
+          paid: item.paid ?? available(paid!),
+          ...(item.cashDue === undefined && available(due!) !== 0n
+            ? { cashDue: available(due!) }
+            : {}),
+        };
+      });
       return { command: withPayload({ wallets: filled }) };
     }
     default:

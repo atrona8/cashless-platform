@@ -31,7 +31,10 @@ export interface DeviceContext {
 
 /** Lecture du terminal en base, sous le rôle du processus qui sert la route. */
 export interface DeviceDirectory {
-  find(operatorId: string, deviceId: string): Promise<(DeviceContext & { status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED' }) | null>;
+  find(
+    operatorId: string,
+    deviceId: string,
+  ): Promise<(DeviceContext & { status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED' }) | null>;
 }
 
 export const DEVICE_IDENTITY = Symbol('DEVICE_IDENTITY');

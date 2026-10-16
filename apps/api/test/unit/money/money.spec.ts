@@ -1,4 +1,12 @@
-import { extractTax, fee, groupForTax, InsufficientFundsError, roundDiv, spendSplit, splitShare } from '../../../src/ledger/money';
+import {
+  extractTax,
+  fee,
+  groupForTax,
+  InsufficientFundsError,
+  roundDiv,
+  spendSplit,
+  splitShare,
+} from '../../../src/ledger/money';
 
 describe('roundDiv', () => {
   it.each([
@@ -76,7 +84,15 @@ describe('splitShare', () => {
 
 describe('spendSplit', () => {
   it("en ligne, payés d'abord", () => {
-    expect(spendSplit({ amount: 1000n, promoBalance: 400n, paidBalance: 700n, promoFirst: false, mode: 'ONLINE' })).toEqual({
+    expect(
+      spendSplit({
+        amount: 1000n,
+        promoBalance: 400n,
+        paidBalance: 700n,
+        promoFirst: false,
+        mode: 'ONLINE',
+      }),
+    ).toEqual({
       fromPromo: 300n,
       fromPaid: 700n,
       uncovered: 0n,
@@ -84,13 +100,28 @@ describe('spendSplit', () => {
   });
 
   it('en ligne, solde insuffisant', () => {
-    const run = () => spendSplit({ amount: 10n, promoBalance: 3n, paidBalance: 6n, promoFirst: true, mode: 'ONLINE' });
+    const run = () =>
+      spendSplit({
+        amount: 10n,
+        promoBalance: 3n,
+        paidBalance: 6n,
+        promoFirst: true,
+        mode: 'ONLINE',
+      });
     expect(run).toThrow(InsufficientFundsError);
     expect(run).toThrow(expect.objectContaining({ code: 'INSUFFICIENT_FUNDS' }));
   });
 
   it('hors ligne, solde payé négatif ignoré pour la couverture', () => {
-    expect(spendSplit({ amount: 500n, promoBalance: 200n, paidBalance: -100n, promoFirst: true, mode: 'OFFLINE' })).toEqual({
+    expect(
+      spendSplit({
+        amount: 500n,
+        promoBalance: 200n,
+        paidBalance: -100n,
+        promoFirst: true,
+        mode: 'OFFLINE',
+      }),
+    ).toEqual({
       fromPromo: 200n,
       fromPaid: 0n,
       uncovered: 300n,
@@ -98,7 +129,15 @@ describe('spendSplit', () => {
   });
 
   it("hors ligne, payés d'abord", () => {
-    expect(spendSplit({ amount: 9000n, promoBalance: 2000n, paidBalance: 5000n, promoFirst: false, mode: 'OFFLINE' })).toEqual({
+    expect(
+      spendSplit({
+        amount: 9000n,
+        promoBalance: 2000n,
+        paidBalance: 5000n,
+        promoFirst: false,
+        mode: 'OFFLINE',
+      }),
+    ).toEqual({
       fromPromo: 2000n,
       fromPaid: 5000n,
       uncovered: 2000n,

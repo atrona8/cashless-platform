@@ -18,7 +18,14 @@ import type { Role, ScopeType } from '../../src/identity/principal';
 
 const KID = 'fake-idp-key';
 
-export type DefectiveKind = 'expired' | 'wrongIssuer' | 'wrongAudience' | 'otherKey' | 'noExp' | 'algNone' | 'malformed';
+export type DefectiveKind =
+  | 'expired'
+  | 'wrongIssuer'
+  | 'wrongAudience'
+  | 'otherKey'
+  | 'noExp'
+  | 'algNone'
+  | 'malformed';
 export const DEFECTIVE_KINDS: DefectiveKind[] = [
   'expired',
   'wrongIssuer',
@@ -50,7 +57,8 @@ export interface TestPerson {
   token: string;
 }
 
-const base64url = (value: object): string => Buffer.from(JSON.stringify(value)).toString('base64url');
+const base64url = (value: object): string =>
+  Buffer.from(JSON.stringify(value)).toString('base64url');
 
 export class FakeIdp {
   private constructor(
@@ -82,7 +90,12 @@ export class FakeIdp {
 
   approvalToken(input: ApprovalTokenInput): Promise<string> {
     return this.sign(
-      { aud: this.config.approvalAudience, jti: input.jti ?? randomUUID(), act: input.act, act_hash: input.actHash },
+      {
+        aud: this.config.approvalAudience,
+        jti: input.jti ?? randomUUID(),
+        act: input.act,
+        act_hash: input.actHash,
+      },
       input.subject,
       input.ttlSeconds ?? 120,
     );
@@ -130,20 +143,26 @@ export class FakeIdp {
     );
     const userId = rows[0]!.id;
     for (const role of input.roles ?? []) {
-      await db.query(`INSERT INTO role_assignment (user_id, role, scope_type, scope_id) VALUES ($1, $2, $3, $4)`, [
-        userId,
-        role.role,
-        role.scopeType,
-        role.scopeId ?? null,
-      ]);
+      await db.query(
+        `INSERT INTO role_assignment (user_id, role, scope_type, scope_id) VALUES ($1, $2, $3, $4)`,
+        [userId, role.role, role.scopeType, role.scopeId ?? null],
+      );
     }
     if (input.status === 'DISABLED') {
-      await db.query(`UPDATE app_user SET status = 'DISABLED', disabled_at = clock_timestamp() WHERE id = $1`, [userId]);
+      await db.query(
+        `UPDATE app_user SET status = 'DISABLED', disabled_at = clock_timestamp() WHERE id = $1`,
+        [userId],
+      );
     }
     return { userId, subject, token: await this.accessToken(subject) };
   }
 
-  private sign(claims: JWTPayload, subject: string, ttlSeconds: number, key: CryptoKey = this.privateKey): Promise<string> {
+  private sign(
+    claims: JWTPayload,
+    subject: string,
+    ttlSeconds: number,
+    key: CryptoKey = this.privateKey,
+  ): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
     return new SignJWT({ iss: this.config.issuer, iat: now, exp: now + ttlSeconds, ...claims })
       .setProtectedHeader({ alg: 'ES256', kid: KID })

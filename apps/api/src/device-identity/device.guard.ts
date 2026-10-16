@@ -2,10 +2,23 @@
 // Refus : aucune identité (401), terminal inconnu du prestataire annoncé (401), révoqué (`DEVICE_REVOKED`), suspendu
 // (`DEVICE_SUSPENDED`). Pose `req.device` ; le prestataire de la transaction est celui du terminal.
 // `@DeviceAuth()` remplace la garde des personnes sur la route (une route de terminal ne porte pas de jeton humain).
-import { applyDecorators, Inject, Injectable, UseGuards, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  applyDecorators,
+  Inject,
+  Injectable,
+  UseGuards,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { ProblemException } from '../errors/problem';
 import { Public } from '../identity/public.decorator';
-import { DEVICE_DIRECTORY, DEVICE_IDENTITY, type DeviceDirectory, type DeviceIdentityPort, type DeviceRequest } from './device-identity.port';
+import {
+  DEVICE_DIRECTORY,
+  DEVICE_IDENTITY,
+  type DeviceDirectory,
+  type DeviceIdentityPort,
+  type DeviceRequest,
+} from './device-identity.port';
 
 @Injectable()
 export class DeviceGuard implements CanActivate {
@@ -34,4 +47,5 @@ export class DeviceGuard implements CanActivate {
 }
 
 /** Route appelée par un terminal : pas de jeton de personne, identité du terminal obligatoire. */
-export const DeviceAuth = (): MethodDecorator & ClassDecorator => applyDecorators(Public(), UseGuards(DeviceGuard));
+export const DeviceAuth = (): MethodDecorator & ClassDecorator =>
+  applyDecorators(Public(), UseGuards(DeviceGuard));

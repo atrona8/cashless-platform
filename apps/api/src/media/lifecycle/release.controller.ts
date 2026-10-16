@@ -6,8 +6,17 @@ import { Body, Controller, HttpCode, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { requestDevice } from '../../device-identity/device-identity.port';
 import { pickLanguage } from '../../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
-import { intField, invalid, objectBody, requireUuid } from '../../organization/platform/platform.dto';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
+import {
+  intField,
+  invalid,
+  objectBody,
+  requireUuid,
+} from '../../organization/platform/platform.dto';
 import { parseTap, type TapInput } from '../taps/taps.dto';
 import { TapService } from '../taps/tap.service';
 import { CounterAccess, CounterAuth, counterScope } from './counter-access';
@@ -28,18 +37,30 @@ export class ReleaseController {
   @HttpCode(200)
   @CounterAuth()
   @Idempotent({ scope: counterScope })
-  async release(@Req() req: Request, @Param('media_id') mediaId: string, @Body() raw: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  async release(
+    @Req() req: Request,
+    @Param('media_id') mediaId: string,
+    @Body() raw: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const id = requireUuid(mediaId);
     const language = pickLanguage(req.header('Accept-Language'));
     const body = raw === undefined || raw === null || raw === '' ? {} : objectBody(raw);
-    if ((body.refund_deposit_by ?? null) !== null || (body.settle_balance ?? null) !== null) throw counterRefusal('release.no_chaining', language);
+    if ((body.refund_deposit_by ?? null) !== null || (body.settle_balance ?? null) !== null)
+      throw counterRefusal('release.no_chaining', language);
     const tapId = intField(body, 'tap_id', 0, Number.MAX_SAFE_INTEGER, 'optional') ?? null;
-    const tap: TapInput | null = body.tap === undefined || body.tap === null ? null : parseTap(body.tap);
+    const tap: TapInput | null =
+      body.tap === undefined || body.tap === null ? null : parseTap(body.tap);
     try {
       return await tx.run(async (client) => {
         const actor = await this.counter.authorize(client, req);
-        const presented = tap ? await this.taps.registerOrRefuse(client, actor.device, tap) : tapId !== null ? await this.taps.byId(client, actor.device, tapId) : null;
-        if (presented && presented.mediaId !== id) throw counterRefusal('return.wrong_media', language);
+        const presented = tap
+          ? await this.taps.registerOrRefuse(client, actor.device, tap)
+          : tapId !== null
+            ? await this.taps.byId(client, actor.device, tapId)
+            : null;
+        if (presented && presented.mediaId !== id)
+          throw counterRefusal('return.wrong_media', language);
         return this.releases.release(client, actor, id, language);
       });
     } catch (error) {
@@ -51,14 +72,28 @@ export class ReleaseController {
   @HttpCode(200)
   @CounterAuth()
   @Idempotent({ scope: counterScope })
-  reassign(@Req() req: Request, @Param('media_id') mediaId: string, @Body() raw: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  reassign(
+    @Req() req: Request,
+    @Param('media_id') mediaId: string,
+    @Body() raw: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const id = requireUuid(mediaId);
     const language = pickLanguage(req.header('Accept-Language'));
     const body = objectBody(raw);
     const unknown = Object.keys(body).filter((key) => key !== 'new_token_hash');
     if (unknown.length > 0) throw invalid(`${unknown.join(', ')} : champ inconnu.`);
-    if (typeof body.new_token_hash !== 'string' || !HEX32.test(body.new_token_hash)) throw invalid('new_token_hash : 64 chiffres hexadécimaux en minuscules attendus.');
+    if (typeof body.new_token_hash !== 'string' || !HEX32.test(body.new_token_hash))
+      throw invalid('new_token_hash : 64 chiffres hexadécimaux en minuscules attendus.');
     const newTokenHash = Buffer.from(body.new_token_hash, 'hex');
-    return tx.run(async (client) => this.releases.reassign(client, await this.counter.authorize(client, req), id, newTokenHash, language));
+    return tx.run(async (client) =>
+      this.releases.reassign(
+        client,
+        await this.counter.authorize(client, req),
+        id,
+        newTokenHash,
+        language,
+      ),
+    );
   }
 }

@@ -21,6 +21,12 @@ export class TagFormatError extends Error {
   }
 }
 
-export function requireLength(bytes: Uint8Array, length: number, code: TagFormatErrorCode, what: string): void {
-  if (bytes.length !== length) throw new TagFormatError(code, `${what} : ${length} octets attendus, ${bytes.length} reçus`);
+export function requireLength(
+  bytes: Uint8Array,
+  length: number,
+  code: TagFormatErrorCode,
+  what: string,
+): void {
+  if (bytes.length !== length)
+    throw new TagFormatError(code, `${what} : ${length} octets attendus, ${bytes.length} reçus`);
 }

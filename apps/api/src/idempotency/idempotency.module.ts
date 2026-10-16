@@ -2,7 +2,11 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
-import { IDEMPOTENCY_SETTINGS, IdempotencyRepository, loadIdempotencySettings } from './idempotency.repository';
+import {
+  IDEMPOTENCY_SETTINGS,
+  IdempotencyRepository,
+  loadIdempotencySettings,
+} from './idempotency.repository';
 
 @Module({
   providers: [

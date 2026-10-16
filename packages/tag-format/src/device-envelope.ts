@@ -25,13 +25,21 @@ export interface EncryptedBlob {
 /** AAD de l'enveloppe remise à un terminal (`POST /media/auth-keys`). */
 export function deviceAad(deviceId: string, uid: Uint8Array): Buffer {
   assertUid(uid);
-  return Buffer.concat([Buffer.from('CASHLESS/PWDPACK/DEV/v1', 'ascii'), uuidToBytes(deviceId), uid]);
+  return Buffer.concat([
+    Buffer.from('CASHLESS/PWDPACK/DEV/v1', 'ascii'),
+    uuidToBytes(deviceId),
+    uid,
+  ]);
 }
 
 /** AAD de l'enveloppe remise à un poste de personnalisation. */
 export function stationAad(mediaId: string, uid: Uint8Array): Buffer {
   assertUid(uid);
-  return Buffer.concat([Buffer.from('CASHLESS/PWDPACK/PERSO/v1', 'ascii'), uuidToBytes(mediaId), uid]);
+  return Buffer.concat([
+    Buffer.from('CASHLESS/PWDPACK/PERSO/v1', 'ascii'),
+    uuidToBytes(mediaId),
+    uid,
+  ]);
 }
 
 function contentKey(shared: Buffer, aad: Uint8Array): Buffer {
@@ -40,10 +48,15 @@ function contentKey(shared: Buffer, aad: Uint8Array): Buffer {
 
 function assertPublicKey(key: Uint8Array): void {
   requireLength(key, P256_PUBLIC_KEY_LENGTH, 'BAD_KEY', 'clé publique P-256');
-  if (key[0] !== 0x04) throw new TagFormatError('BAD_KEY', 'clé publique P-256 : point non compressé attendu');
+  if (key[0] !== 0x04)
+    throw new TagFormatError('BAD_KEY', 'clé publique P-256 : point non compressé attendu');
 }
 
-export function sealForRecipient(input: { recipientPublicKey: Uint8Array; plaintext: Uint8Array; aad: Uint8Array }): EncryptedBlob {
+export function sealForRecipient(input: {
+  recipientPublicKey: Uint8Array;
+  plaintext: Uint8Array;
+  aad: Uint8Array;
+}): EncryptedBlob {
   assertPublicKey(input.recipientPublicKey);
   const ephemeral = createECDH('prime256v1');
   ephemeral.generateKeys();
@@ -73,8 +86,13 @@ export function sealForRecipient(input: { recipientPublicKey: Uint8Array; plaint
 }
 
 /** Ouverture côté destinataire (tests, faux terminal). `recipientPrivateKey` : scalaire P-256 de 32 octets. */
-export function openForRecipient(input: { recipientPrivateKey: Uint8Array; blob: EncryptedBlob; aad: Uint8Array }): Buffer {
-  if (input.blob.alg !== RECIPIENT_ALG) throw new TagFormatError('AUTH_FAILED', 'algorithme d’enveloppe inconnu');
+export function openForRecipient(input: {
+  recipientPrivateKey: Uint8Array;
+  blob: EncryptedBlob;
+  aad: Uint8Array;
+}): Buffer {
+  if (input.blob.alg !== RECIPIENT_ALG)
+    throw new TagFormatError('AUTH_FAILED', 'algorithme d’enveloppe inconnu');
   const recipient = createECDH('prime256v1');
   let key: Buffer | undefined;
   try {
@@ -83,7 +101,10 @@ export function openForRecipient(input: { recipientPrivateKey: Uint8Array; blob:
     const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(input.blob.nonce, 'base64'));
     decipher.setAAD(input.aad);
     decipher.setAuthTag(Buffer.from(input.blob.tag, 'base64'));
-    return Buffer.concat([decipher.update(Buffer.from(input.blob.ciphertext, 'base64')), decipher.final()]);
+    return Buffer.concat([
+      decipher.update(Buffer.from(input.blob.ciphertext, 'base64')),
+      decipher.final(),
+    ]);
   } catch {
     throw new TagFormatError('AUTH_FAILED', 'ouverture de l’enveloppe refusée');
   } finally {

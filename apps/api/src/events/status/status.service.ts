@@ -12,7 +12,15 @@ import type { EventRow } from '../events.dto';
 import { EventsService } from '../events.service';
 import { conditionText } from './status-messages';
 
-export const EVENT_STATUSES = ['DRAFT', 'LIVE', 'CLOSING', 'RECONCILING', 'SETTLING', 'REFUND_WINDOW', 'CLOSED'] as const;
+export const EVENT_STATUSES = [
+  'DRAFT',
+  'LIVE',
+  'CLOSING',
+  'RECONCILING',
+  'SETTLING',
+  'REFUND_WINDOW',
+  'CLOSED',
+] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
 export interface StatusCondition {
@@ -46,23 +54,54 @@ export class StatusService {
   ) {}
 
   /** Conditions du passage vers `to`, dans l'ordre de contrôle : base, configuration (vers LIVE), externes. */
-  async conditions(client: TxClient, event: EventRow, to: EventStatus, language: Language): Promise<StatusCondition[]> {
-    const { rows } = await client.query<{ code: string; met: boolean }>('SELECT code, met FROM event_transition_conditions($1, $2)', [event.id, to]);
-    const conditions: StatusCondition[] = rows.map((row) => ({ code: row.code, met: row.met, detail: conditionText(row.code, row.met, language), source: 'DATABASE' }));
+  async conditions(
+    client: TxClient,
+    event: EventRow,
+    to: EventStatus,
+    language: Language,
+  ): Promise<StatusCondition[]> {
+    const { rows } = await client.query<{ code: string; met: boolean }>(
+      'SELECT code, met FROM event_transition_conditions($1, $2)',
+      [event.id, to],
+    );
+    const conditions: StatusCondition[] = rows.map((row) => ({
+      code: row.code,
+      met: row.met,
+      detail: conditionText(row.code, row.met, language),
+      source: 'DATABASE',
+    }));
     if (to === 'LIVE') {
       for (const condition of await this.configuration(client, event)) {
-        conditions.push({ ...condition, detail: conditionText(condition.code, condition.met, language), source: 'CONFIGURATION' });
+        conditions.push({
+          ...condition,
+          detail: conditionText(condition.code, condition.met, language),
+          source: 'CONFIGURATION',
+        });
       }
     }
     for (const external of EXTERNAL[to] ?? []) {
-      conditions.push({ code: external.code, met: null, detail: conditionText(external.code, null, language), source: 'EXTERNAL', owner_mission: external.owner });
+      conditions.push({
+        code: external.code,
+        met: null,
+        detail: conditionText(external.code, null, language),
+        source: 'EXTERNAL',
+        owner_mission: external.owner,
+      });
     }
     return conditions;
   }
 
   /** Conditions de configuration de la mise en service : détenteur des fonds, contrat, profil de législation, grand livre. */
-  private async configuration(client: TxClient, event: EventRow): Promise<Array<{ code: string; met: boolean }>> {
-    const { rows } = await client.query<{ funds_holder: boolean; contract: boolean; jurisdiction: boolean; ledger: boolean }>(
+  private async configuration(
+    client: TxClient,
+    event: EventRow,
+  ): Promise<Array<{ code: string; met: boolean }>> {
+    const { rows } = await client.query<{
+      funds_holder: boolean;
+      contract: boolean;
+      jurisdiction: boolean;
+      ledger: boolean;
+    }>(
       `SELECT (e.funds_holder IS NOT NULL AND ((e.funds_holder = 'THIRD_PARTY') = (e.funds_holder_party_id IS NOT NULL))) AS funds_holder,
               EXISTS (SELECT 1 FROM contract c WHERE c.id = e.contract_id AND c.kind = 'OPERATOR_ORGANIZER'
                          AND c.counterparty_id = e.organizer_id AND c.valid_from <= clock_timestamp()) AS contract,
@@ -85,11 +124,20 @@ export class StatusService {
    * EVENT_TRANSITION_INVALID ; autre condition ⇒ 409 CLOSING_CONDITION_NOT_MET, dont le détail nomme la condition.
    * Les conditions externes (`met = null`) ne bloquent pas : elles restent contrôlées par le back-office (§12.1).
    */
-  async assertMet(client: TxClient, event: EventRow, to: EventStatus, language: Language): Promise<void> {
+  async assertMet(
+    client: TxClient,
+    event: EventRow,
+    to: EventStatus,
+    language: Language,
+  ): Promise<void> {
     const conditions = await this.conditions(client, event, to, language);
     const unmet = conditions.filter((condition) => condition.met === false);
     if (unmet.some((condition) => condition.code === 'TRANSITION_ALLOWED')) {
-      throw new ProblemException('EVENT_TRANSITION_INVALID', { status: 409, detail: conditionText('TRANSITION_ALLOWED', false, language), extensions: { from: event.status, to } });
+      throw new ProblemException('EVENT_TRANSITION_INVALID', {
+        status: 409,
+        detail: conditionText('TRANSITION_ALLOWED', false, language),
+        extensions: { from: event.status, to },
+      });
     }
     if (unmet.length > 0) {
       throw new ProblemException('CLOSING_CONDITION_NOT_MET', {
@@ -104,7 +152,14 @@ export class StatusService {
    * Applique le passage par `set_event_status` (auteur = `authorId`), puis l'audite. La base refait ses contrôles :
    * un refus (CL018, CL019) remonte en 409 sans texte SQL.
    */
-  async apply(client: TxClient, event: EventRow, to: EventStatus, authorId: string, actor: AuditContext, approverId?: string): Promise<Record<string, unknown>> {
+  async apply(
+    client: TxClient,
+    event: EventRow,
+    to: EventStatus,
+    authorId: string,
+    actor: AuditContext,
+    approverId?: string,
+  ): Promise<Record<string, unknown>> {
     await client.query('SELECT set_event_status($1, $2, $3)', [event.id, to, authorId]);
     const after = await this.events.dto(client, await this.events.row(client, event.id));
     await this.audit.record(client, {

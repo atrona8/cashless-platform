@@ -38,7 +38,12 @@ describe('aucun faux en production', () => {
 
   it('la garde nomme tous les faux présents et laisse passer un fournisseur réel', () => {
     const real = { identify: async () => null };
-    expect(() => assertNoFakeInProduction(true, { 'le service de clés': null, 'l’identité du terminal': real })).not.toThrow();
+    expect(() =>
+      assertNoFakeInProduction(true, {
+        'le service de clés': null,
+        'l’identité du terminal': real,
+      }),
+    ).not.toThrow();
     try {
       assertNoFakeInProduction(true, { a: new FakeKms(), b: real, c: new FakeDeviceIdentity() });
       throw new Error('aurait dû refuser');

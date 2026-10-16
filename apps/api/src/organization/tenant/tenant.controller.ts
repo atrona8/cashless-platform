@@ -2,14 +2,29 @@
 // `/operators/{operator_id}` : configuration des niveaux prestataire et organisateur, organisateurs, commerçants,
 // contrats prestataire–organisateur. Les règles de frais ont leur contrôleur (events/participations). Écritures idempotentes (`bo:`), travail et audit dans
 // IdempotentTx.run. Le prestataire vient du chemin ; un `operator_id` reçu dans un corps est ignoré.
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ApprovalService, respondAccepted } from '../../approval/approval.service';
 import type { SettingRole } from '../../configuration/settings-catalog';
 import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { pickLanguage } from '../../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
 import type { Role } from '../../identity/principal';
 import {
   contractDto,
@@ -22,14 +37,22 @@ import {
   nullableText,
 } from '../platform/platform.dto';
 import { ConfigVersionsService, parseSettings } from './config-versions.service';
-import { ContractsService, parseOrganizerContractCreate, parseOrganizerContractVersion } from './contracts.service';
+import {
+  ContractsService,
+  parseOrganizerContractCreate,
+  parseOrganizerContractVersion,
+} from './contracts.service';
 import { merchantDto, organizerDto, PartiesService, type TenantPartyKind } from './parties.service';
 import { assertOrganizerScope, scopesHeld, TenantAccess, type TenantActor } from './tenant-access';
 
 const SUPERVISORS: readonly Role[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN'];
 const ORGANIZER_READERS: readonly Role[] = [...SUPERVISORS, 'ORGANIZER_ADMIN'];
 const MERCHANT_WRITERS: readonly Role[] = ['OPERATOR_ADMIN', 'ORGANIZER_ADMIN'];
-const SETTING_ROLES: readonly SettingRole[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN'];
+const SETTING_ROLES: readonly SettingRole[] = [
+  'PLATFORM_ADMIN',
+  'OPERATOR_ADMIN',
+  'ORGANIZER_ADMIN',
+];
 
 function parsePartyCreate(raw: unknown) {
   const body = objectBody(raw);
@@ -53,18 +76,32 @@ export class TenantController {
   // ------------------------------------------------------------------ Configuration du prestataire
 
   @Get('config-versions')
-  async listOperatorConfig(@Req() req: Request, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async listOperatorConfig(
+    @Req() req: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const actor = this.access.actor(req, SUPERVISORS);
     const page = pageRequest(cursor, limit);
     const rows = await this.access.read(actor, (client) =>
-      this.configVersions.list(client, { level: 'OPERATOR', scopeId: actor.operatorId }, page.offset, page.limit + 1),
+      this.configVersions.list(
+        client,
+        { level: 'OPERATOR', scopeId: actor.operatorId },
+        page.offset,
+        page.limit + 1,
+      ),
     );
     return pageOf(rows, page, (row) => row);
   }
 
   @Post('config-versions')
   @Idempotent({ scope: 'bo:' })
-  createOperatorConfig(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  createOperatorConfig(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, ['OPERATOR_ADMIN']);
     const settings = parseSettings(body);
     return tx.run(async (client) => {
@@ -85,42 +122,75 @@ export class TenantController {
   // ------------------------------------------------------------------ Organisateurs
 
   @Get('organizers')
-  async listOrganizers(@Req() req: Request, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async listOrganizers(
+    @Req() req: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const actor = this.access.actor(req, ORGANIZER_READERS);
-    const only = actor.role === 'ORGANIZER_ADMIN' ? scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER') : null;
+    const only =
+      actor.role === 'ORGANIZER_ADMIN'
+        ? scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER')
+        : null;
     const page = pageRequest(cursor, limit);
-    const rows = await this.access.read(actor, (client) => this.parties.list(client, 'ORGANIZER', only, page.offset, page.limit + 1));
+    const rows = await this.access.read(actor, (client) =>
+      this.parties.list(client, 'ORGANIZER', only, page.offset, page.limit + 1),
+    );
     return pageOf(rows, page, organizerDto);
   }
 
   @Post('organizers')
   @Idempotent({ scope: 'bo:' })
-  createOrganizer(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  createOrganizer(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     return this.createParty(req, res, 'ORGANIZER', ['OPERATOR_ADMIN'], body, tx);
   }
 
   @Get('organizers/:organizer_id')
   async getOrganizer(@Req() req: Request, @Param('organizer_id') organizerId: string) {
     const actor = this.access.actor(req, ORGANIZER_READERS);
-    return this.access.read(actor, async (client) => organizerDto(await this.organizer(client, actor, organizerId)));
+    return this.access.read(actor, async (client) =>
+      organizerDto(await this.organizer(client, actor, organizerId)),
+    );
   }
 
   @Patch('organizers/:organizer_id')
   @Idempotent({ scope: 'bo:' })
-  updateOrganizer(@Req() req: Request, @Param('organizer_id') organizerId: string, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  updateOrganizer(
+    @Req() req: Request,
+    @Param('organizer_id') organizerId: string,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, ['OPERATOR_ADMIN']);
     const fields = parsePartyUpdate(body);
     requireUuid(organizerId);
-    return tx.run((client) => this.parties.update(client, 'ORGANIZER', actor.operatorId, organizerId, fields, actor.audit));
+    return tx.run((client) =>
+      this.parties.update(client, 'ORGANIZER', actor.operatorId, organizerId, fields, actor.audit),
+    );
   }
 
   @Get('organizers/:organizer_id/config-versions')
-  async listOrganizerConfig(@Req() req: Request, @Param('organizer_id') organizerId: string, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async listOrganizerConfig(
+    @Req() req: Request,
+    @Param('organizer_id') organizerId: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const actor = this.access.actor(req, ORGANIZER_READERS);
     const page = pageRequest(cursor, limit);
     const rows = await this.access.read(actor, async (client) => {
       await this.organizer(client, actor, organizerId);
-      return this.configVersions.list(client, { level: 'ORGANIZER', scopeId: organizerId }, page.offset, page.limit + 1);
+      return this.configVersions.list(
+        client,
+        { level: 'ORGANIZER', scopeId: organizerId },
+        page.offset,
+        page.limit + 1,
+      );
     });
     return pageOf(rows, page, (row) => row);
   }
@@ -147,7 +217,10 @@ export class TenantController {
         actor.audit,
         pickLanguage(req.header('Accept-Language')),
       );
-      res.setHeader('Location', `/v1/operators/${actor.operatorId}/organizers/${organizerId}/config-versions`);
+      res.setHeader(
+        'Location',
+        `/v1/operators/${actor.operatorId}/organizers/${organizerId}/config-versions`,
+      );
       return created;
     });
   }
@@ -155,7 +228,12 @@ export class TenantController {
   // ------------------------------------------------------------------ Contrats prestataire–organisateur
 
   @Get('organizers/:organizer_id/contracts')
-  async listContracts(@Req() req: Request, @Param('organizer_id') organizerId: string, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async listContracts(
+    @Req() req: Request,
+    @Param('organizer_id') organizerId: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const actor = this.access.actor(req, ORGANIZER_READERS);
     const page = pageRequest(cursor, limit);
     const rows = await this.access.read(actor, async (client) => {
@@ -178,8 +256,17 @@ export class TenantController {
     const input = parseOrganizerContractCreate(body);
     return tx.run(async (client) => {
       await this.organizer(client, actor, organizerId);
-      const created = await this.contracts.create(client, actor.operatorId, organizerId, input, actor.audit);
-      res.setHeader('Location', `/v1/operators/${actor.operatorId}/organizers/${organizerId}/contracts`);
+      const created = await this.contracts.create(
+        client,
+        actor.operatorId,
+        organizerId,
+        input,
+        actor.audit,
+      );
+      res.setHeader(
+        'Location',
+        `/v1/operators/${actor.operatorId}/organizers/${organizerId}/contracts`,
+      );
       return created;
     });
   }
@@ -203,7 +290,11 @@ export class TenantController {
       const request = await this.approvals.request(
         client,
         actor.operatorId,
-        { action: 'CONTRACT_VERSION', targetId: contractId, payload: { operator_id: actor.operatorId, contract_id: contractId, changes } },
+        {
+          action: 'CONTRACT_VERSION',
+          targetId: contractId,
+          payload: { operator_id: actor.operatorId, contract_id: contractId, changes },
+        },
         { principal: actor.principal, audit: actor.audit },
       );
       return respondAccepted(res, request);
@@ -213,17 +304,31 @@ export class TenantController {
   // ------------------------------------------------------------------ Commerçants
 
   @Get('merchants')
-  async listMerchants(@Req() req: Request, @Query('cursor') cursor?: string, @Query('limit') limit?: string) {
+  async listMerchants(
+    @Req() req: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     const actor = this.access.actor(req, [...ORGANIZER_READERS, 'MERCHANT_ADMIN']);
-    const only = actor.role === 'MERCHANT_ADMIN' ? scopesHeld(actor.principal, 'MERCHANT_ADMIN', 'MERCHANT') : null;
+    const only =
+      actor.role === 'MERCHANT_ADMIN'
+        ? scopesHeld(actor.principal, 'MERCHANT_ADMIN', 'MERCHANT')
+        : null;
     const page = pageRequest(cursor, limit);
-    const rows = await this.access.read(actor, (client) => this.parties.list(client, 'MERCHANT', only, page.offset, page.limit + 1));
+    const rows = await this.access.read(actor, (client) =>
+      this.parties.list(client, 'MERCHANT', only, page.offset, page.limit + 1),
+    );
     return pageOf(rows, page, merchantDto);
   }
 
   @Post('merchants')
   @Idempotent({ scope: 'bo:' })
-  createMerchant(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  createMerchant(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     return this.createParty(req, res, 'MERCHANT', MERCHANT_WRITERS, body, tx);
   }
 
@@ -233,7 +338,10 @@ export class TenantController {
     requireUuid(merchantId);
     return this.access.read(actor, async (client) => {
       const row = await this.parties.row(client, 'MERCHANT', merchantId);
-      if (actor.role === 'MERCHANT_ADMIN' && !scopesHeld(actor.principal, 'MERCHANT_ADMIN', 'MERCHANT').includes(merchantId)) {
+      if (
+        actor.role === 'MERCHANT_ADMIN' &&
+        !scopesHeld(actor.principal, 'MERCHANT_ADMIN', 'MERCHANT').includes(merchantId)
+      ) {
         throw new ProblemException('FORBIDDEN');
       }
       return merchantDto(row);
@@ -242,11 +350,18 @@ export class TenantController {
 
   @Patch('merchants/:merchant_id')
   @Idempotent({ scope: 'bo:' })
-  updateMerchant(@Req() req: Request, @Param('merchant_id') merchantId: string, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  updateMerchant(
+    @Req() req: Request,
+    @Param('merchant_id') merchantId: string,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, MERCHANT_WRITERS);
     const fields = parsePartyUpdate(body);
     requireUuid(merchantId);
-    return tx.run((client) => this.parties.update(client, 'MERCHANT', actor.operatorId, merchantId, fields, actor.audit));
+    return tx.run((client) =>
+      this.parties.update(client, 'MERCHANT', actor.operatorId, merchantId, fields, actor.audit),
+    );
   }
 
   // ------------------------------------------------------------------ Aides
@@ -263,17 +378,35 @@ export class TenantController {
   private settingRoles(actor: TenantActor, organizerId?: string): SettingRole[] {
     return SETTING_ROLES.filter((role) =>
       role === 'ORGANIZER_ADMIN'
-        ? organizerId !== undefined && scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId)
-        : role === 'OPERATOR_ADMIN' && actor.principal.assignments.some((a) => a.role === 'OPERATOR_ADMIN'),
+        ? organizerId !== undefined &&
+          scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER').includes(organizerId)
+        : role === 'OPERATOR_ADMIN' &&
+          actor.principal.assignments.some((a) => a.role === 'OPERATOR_ADMIN'),
     );
   }
 
-  private createParty(req: Request, res: Response, kind: TenantPartyKind, roles: readonly Role[], body: unknown, tx: IdempotentTx) {
+  private createParty(
+    req: Request,
+    res: Response,
+    kind: TenantPartyKind,
+    roles: readonly Role[],
+    body: unknown,
+    tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, roles);
     const fields = parsePartyCreate(body);
     return tx.run(async (client) => {
-      const created = await this.parties.create(client, kind, actor.operatorId, fields, actor.audit);
-      const [segment, id] = 'organizer_id' in created ? ['organizers', created.organizer_id] : ['merchants', created.merchant_id];
+      const created = await this.parties.create(
+        client,
+        kind,
+        actor.operatorId,
+        fields,
+        actor.audit,
+      );
+      const [segment, id] =
+        'organizer_id' in created
+          ? ['organizers', created.organizer_id]
+          : ['merchants', created.merchant_id];
       res.setHeader('Location', `/v1/operators/${actor.operatorId}/${segment}/${id}`);
       return created;
     });

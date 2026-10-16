@@ -35,8 +35,14 @@ class WhoAmIController {
     const principal = requestPrincipal(req);
     const { operatorId } = this.tenant.current(req);
     return this.tx.run(operatorId, async (client) => {
-      const { rows } = await client.query<{ operator_id: string }>('SELECT DISTINCT operator_id FROM app_user');
-      return { userId: principal.userId, operatorId, visibleOperators: rows.map((row) => row.operator_id) };
+      const { rows } = await client.query<{ operator_id: string }>(
+        'SELECT DISTINCT operator_id FROM app_user',
+      );
+      return {
+        userId: principal.userId,
+        operatorId,
+        visibleOperators: rows.map((row) => row.operator_id),
+      };
     });
   }
 }
@@ -65,7 +71,10 @@ describe('authentification OIDC et prestataire de la transaction', () => {
         operatorId: ops.b,
         roles: [{ role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: ops.b }],
       });
-      admin = await idp.createPerson(db, { operatorId: null, roles: [{ role: 'PLATFORM_ADMIN', scopeType: 'PLATFORM' }] });
+      admin = await idp.createPerson(db, {
+        operatorId: null,
+        roles: [{ role: 'PLATFORM_ADMIN', scopeType: 'PLATFORM' }],
+      });
       disabled = await idp.createPerson(db, { operatorId: ops.a, status: 'DISABLED' });
     });
     app = await createTestApp({ identity: idp, imports: [WhoAmIModule] });
@@ -92,7 +101,9 @@ describe('authentification OIDC et prestataire de la transaction', () => {
   });
 
   it('en-tête Authorization sans schéma Bearer : 401', async () => {
-    const res = await request(app.getHttpServer()).get('/v1/__auth/me').set('Authorization', `Basic ${alice.token}`);
+    const res = await request(app.getHttpServer())
+      .get('/v1/__auth/me')
+      .set('Authorization', `Basic ${alice.token}`);
     expect(res.status).toBe(401);
   });
 
@@ -102,7 +113,9 @@ describe('authentification OIDC et prestataire de la transaction', () => {
   });
 
   it('personne inconnue : 401', async () => {
-    expect((await get('/v1/__auth/me', await idp.accessToken(`inconnu-${randomUUID()}`))).status).toBe(401);
+    expect(
+      (await get('/v1/__auth/me', await idp.accessToken(`inconnu-${randomUUID()}`))).status,
+    ).toBe(401);
   });
 
   it('personne désactivée : 401', async () => {
@@ -110,8 +123,14 @@ describe('authentification OIDC et prestataire de la transaction', () => {
   });
 
   it('claim operator_id différent du prestataire de la personne : 401 ; égal : 200', async () => {
-    expect((await get('/v1/__auth/me', await idp.accessToken(alice.subject, { operator_id: ops.b }))).status).toBe(401);
-    expect((await get('/v1/__auth/me', await idp.accessToken(alice.subject, { operator_id: ops.a }))).status).toBe(200);
+    expect(
+      (await get('/v1/__auth/me', await idp.accessToken(alice.subject, { operator_id: ops.b })))
+        .status,
+    ).toBe(401);
+    expect(
+      (await get('/v1/__auth/me', await idp.accessToken(alice.subject, { operator_id: ops.a })))
+        .status,
+    ).toBe(200);
   });
 
   it('rôles annoncés par le jeton ignorés : la personne de A reste dans A', async () => {
@@ -139,7 +158,11 @@ describe('authentification OIDC et prestataire de la transaction', () => {
   it('PLATFORM_ADMIN : prestataire du chemin ; route sans prestataire : 403', async () => {
     const res = await get(`/v1/__auth/operators/${ops.b}/me`, admin.token);
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ userId: admin.userId, operatorId: ops.b, visibleOperators: [ops.b] });
+    expect(res.body).toMatchObject({
+      userId: admin.userId,
+      operatorId: ops.b,
+      visibleOperators: [ops.b],
+    });
     expect((await get('/v1/__auth/me', admin.token)).status).toBe(403);
   });
 
@@ -159,7 +182,9 @@ describe('authentification OIDC et prestataire de la transaction', () => {
     });
 
     it('503 SERVICE_UNAVAILABLE, jamais d’acceptation', async () => {
-      const res = await request(down.getHttpServer()).get('/v1/__auth/me').set('Authorization', `Bearer ${alice.token}`);
+      const res = await request(down.getHttpServer())
+        .get('/v1/__auth/me')
+        .set('Authorization', `Bearer ${alice.token}`);
       expect(res.status).toBe(503);
       expect(JSON.parse(res.text)).toMatchObject({ code: 'SERVICE_UNAVAILABLE' });
     });

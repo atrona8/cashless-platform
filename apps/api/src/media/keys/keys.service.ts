@@ -3,7 +3,12 @@
 // des travaux, que les processus qui en ont le droit exécutent.
 import { Injectable } from '@nestjs/common';
 import type { TxClient } from '../../db/tenant-tx';
-import { conflict, notFound, unprocessable, type PageRequest } from '../../organization/platform/platform.dto';
+import {
+  conflict,
+  notFound,
+  unprocessable,
+  type PageRequest,
+} from '../../organization/platform/platform.dto';
 import {
   TAG_KEY_COLUMNS,
   TAG_KEY_JOB_COLUMNS,
@@ -54,7 +59,11 @@ export class KeysService {
     return rows;
   }
 
-  async jobs(client: TxClient, page: PageRequest, filter: { keyIndex?: number; openOnly?: boolean } = {}): Promise<TagKeyJobRow[]> {
+  async jobs(
+    client: TxClient,
+    page: PageRequest,
+    filter: { keyIndex?: number; openOnly?: boolean } = {},
+  ): Promise<TagKeyJobRow[]> {
     const { rows } = await client.query<TagKeyJobRow>(
       `SELECT ${TAG_KEY_JOB_COLUMNS} FROM tag_key_job
         WHERE operator_id = current_setting('app.operator_id')::uuid
@@ -96,16 +105,24 @@ export class KeysService {
   /** Une clé dédiée est réservée à un événement du prestataire. */
   async assertCreatable(client: TxClient, input: TagKeyRequestInput): Promise<void> {
     if (input.scope !== 'DEDICATED') return;
-    const { rowCount } = await client.query("SELECT 1 FROM event WHERE id = $1 AND operator_id = current_setting('app.operator_id')::uuid", [
-      input.dedicated_event_id,
-    ]);
-    if (rowCount !== 1) throw unprocessable('dedicated_event_id : événement de ce prestataire attendu.');
+    const { rowCount } = await client.query(
+      "SELECT 1 FROM event WHERE id = $1 AND operator_id = current_setting('app.operator_id')::uuid",
+      [input.dedicated_event_id],
+    );
+    if (rowCount !== 1)
+      throw unprocessable('dedicated_event_id : événement de ce prestataire attendu.');
   }
 
   async assertRotatable(client: TxClient, keyIndex: number): Promise<void> {
     const key = await this.row(client, keyIndex);
-    if (key.status !== 'ACTIVE') throw conflict('La clé n’est pas active : sa clé de données ne tourne plus.');
-    await this.assertNoOpenJob(client, keyIndex, ['ROTATE_DEK', 'REENCRYPT'], 'Une rotation est déjà en cours pour cette clé.');
+    if (key.status !== 'ACTIVE')
+      throw conflict('La clé n’est pas active : sa clé de données ne tourne plus.');
+    await this.assertNoOpenJob(
+      client,
+      keyIndex,
+      ['ROTATE_DEK', 'REENCRYPT'],
+      'Une rotation est déjà en cours pour cette clé.',
+    );
   }
 
   /** Retrait : clé dédiée, non retirée, dont tous les lots sont clos (règle de `retire_dedicated_key`, §7.7). */
@@ -118,11 +135,22 @@ export class KeysService {
         WHERE operator_id = current_setting('app.operator_id')::uuid AND key_index = $1 AND status <> 'CLOSED'`,
       [keyIndex],
     );
-    if (rows[0]!.open > 0) throw conflict('Tous les lots de cette clé doivent être clos avant son retrait.');
-    await this.assertNoOpenJob(client, keyIndex, ['RETIRE_KEY', 'DISABLE_KMS_KEY'], 'Le retrait de cette clé est déjà en cours.');
+    if (rows[0]!.open > 0)
+      throw conflict('Tous les lots de cette clé doivent être clos avant son retrait.');
+    await this.assertNoOpenJob(
+      client,
+      keyIndex,
+      ['RETIRE_KEY', 'DISABLE_KMS_KEY'],
+      'Le retrait de cette clé est déjà en cours.',
+    );
   }
 
-  private async assertNoOpenJob(client: TxClient, keyIndex: number, kinds: TagKeyJobKind[], detail: string): Promise<void> {
+  private async assertNoOpenJob(
+    client: TxClient,
+    keyIndex: number,
+    kinds: TagKeyJobKind[],
+    detail: string,
+  ): Promise<void> {
     const { rowCount } = await client.query(
       `SELECT 1 FROM tag_key_job WHERE operator_id = current_setting('app.operator_id')::uuid AND key_index = $1
           AND kind = ANY($2) AND status <> 'DONE'`,
@@ -149,12 +177,23 @@ export class KeysService {
   /** Inscrit un travail. Sa charge utile décrit quoi faire et qui l'a demandé ; elle ne porte jamais de secret. */
   async enqueue(
     client: TxClient,
-    job: { keyIndex: number; kind: TagKeyJobKind; payload: Record<string, unknown>; approvalRequestId: string; actors: JobActors },
+    job: {
+      keyIndex: number;
+      kind: TagKeyJobKind;
+      payload: Record<string, unknown>;
+      approvalRequestId: string;
+      actors: JobActors;
+    },
   ): Promise<TagKeyJobRow> {
     const { rows } = await client.query<TagKeyJobRow>(
       `INSERT INTO tag_key_job (operator_id, key_index, kind, payload, approval_request_id)
        VALUES (current_setting('app.operator_id')::uuid, $1, $2, $3::jsonb, $4) RETURNING ${TAG_KEY_JOB_COLUMNS}`,
-      [job.keyIndex, job.kind, JSON.stringify({ ...job.payload, ...job.actors }), job.approvalRequestId],
+      [
+        job.keyIndex,
+        job.kind,
+        JSON.stringify({ ...job.payload, ...job.actors }),
+        job.approvalRequestId,
+      ],
     );
     return rows[0]!;
   }

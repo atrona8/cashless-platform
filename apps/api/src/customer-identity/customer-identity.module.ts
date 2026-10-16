@@ -4,7 +4,11 @@ import { APP_CONFIG, type AppConfig } from '../config/config';
 import { TenantTx } from '../db/tenant-tx';
 import { FakeInProductionError } from '../kms/production-guard';
 import { CustomerGuard } from './customer.guard';
-import { CUSTOMER_DIRECTORY, CUSTOMER_IDENTITY, type CustomerDirectory } from './customer-identity.port';
+import {
+  CUSTOMER_DIRECTORY,
+  CUSTOMER_IDENTITY,
+  type CustomerDirectory,
+} from './customer-identity.port';
 import { FakeCustomerIdentity } from './fake-customer-identity';
 
 @Injectable()
@@ -13,13 +17,18 @@ export class TenantCustomerDirectory implements CustomerDirectory {
 
   exists(operatorId: string, customerId: string): Promise<boolean> {
     return this.tx.run(operatorId, async (client) => {
-      const { rowCount } = await client.query("SELECT 1 FROM party WHERE id = $1 AND kind = 'CUSTOMER' AND operator_id = $2", [customerId, operatorId]);
+      const { rowCount } = await client.query(
+        "SELECT 1 FROM party WHERE id = $1 AND kind = 'CUSTOMER' AND operator_id = $2",
+        [customerId, operatorId],
+      );
       return rowCount === 1;
     });
   }
 }
 
-export function createCustomerIdentity(config: Pick<AppConfig, 'production'>): FakeCustomerIdentity {
+export function createCustomerIdentity(
+  config: Pick<AppConfig, 'production'>,
+): FakeCustomerIdentity {
   if (config.production) throw new FakeInProductionError(['l’identité du festivalier']);
   return new FakeCustomerIdentity();
 }

@@ -44,7 +44,9 @@ export interface StoredResponse {
   headers: Record<string, string>;
 }
 
-export type ReserveOutcome = { kind: 'execute'; reservation: Reservation } | { kind: 'replay'; response: StoredResponse };
+export type ReserveOutcome =
+  | { kind: 'execute'; reservation: Reservation }
+  | { kind: 'replay'; response: StoredResponse };
 
 /** Le bail a expiré et une autre requête a repris la clé : cette exécution ne doit rien enregistrer. */
 export class LeaseLostError extends ProblemException {
@@ -80,7 +82,12 @@ export class IdempotencyRepository {
   }
 
   /** Transaction 1 (courte) : réserve la clé, ou décide du rejeu / du refus. */
-  reserve(operatorId: string | null, scope: string, key: string, hash: string): Promise<ReserveOutcome> {
+  reserve(
+    operatorId: string | null,
+    scope: string,
+    key: string,
+    hash: string,
+  ): Promise<ReserveOutcome> {
     return this.transaction(operatorId, async (client) => {
       const inserted = await client.query<{ id: string; lease_token: string }>(
         `INSERT INTO api_idempotency (operator_id, scope, idempotency_key, request_hash, status, lease_until, expires_at)
@@ -106,7 +113,11 @@ export class IdempotencyRepository {
       if (row.status === 'COMPLETED') {
         return {
           kind: 'replay',
-          response: { status: row.response_status ?? 200, body: row.response_body, headers: row.response_headers ?? {} },
+          response: {
+            status: row.response_status ?? 200,
+            body: row.response_body,
+            headers: row.response_headers ?? {},
+          },
         };
       }
       if (!row.lease_expired) throw new ProblemException('IDEMPOTENCY_KEY_IN_PROGRESS');
@@ -121,7 +132,11 @@ export class IdempotencyRepository {
   }
 
   /** Enregistre la réponse avec le client de la transaction métier (transaction 2) : validées ensemble ou pas du tout. */
-  async complete(client: TxClient, reservation: Reservation, response: StoredResponse): Promise<void> {
+  async complete(
+    client: TxClient,
+    reservation: Reservation,
+    response: StoredResponse,
+  ): Promise<void> {
     const updated = await client.query(
       `UPDATE api_idempotency
           SET status = 'COMPLETED', lease_until = NULL, completed_at = now(),
@@ -140,7 +155,9 @@ export class IdempotencyRepository {
 
   /** Enregistre une réponse dans une transaction propre (erreur 4xx : la transaction métier a été annulée). */
   completeAlone(reservation: Reservation, response: StoredResponse): Promise<void> {
-    return this.transaction(reservation.operatorId, (client) => this.complete(client, reservation, response));
+    return this.transaction(reservation.operatorId, (client) =>
+      this.complete(client, reservation, response),
+    );
   }
 
   /** Erreur 5xx : bail remis à maintenant, la même clé peut être rejouée tout de suite. */

@@ -34,13 +34,31 @@ export class TapService {
   constructor(private readonly tx: TenantTx) {}
 
   /** `register_tap` en ligne, dans la transaction de l'appelant. */
-  async registerEmbedded(client: TxClient, device: DeviceContext, tap: TapInput): Promise<RegisteredTap> {
+  async registerEmbedded(
+    client: TxClient,
+    device: DeviceContext,
+    tap: TapInput,
+  ): Promise<RegisteredTap> {
     const { rows } = await client.query<{ result: TapResult; tap_id: bigint | null }>(
       `SELECT result, tap_id FROM register_tap($1, $2, $3, $4, $5, $6, 'ONLINE', NULL, NULL, $7)`,
-      [device.operatorId, tap.tokenHash, tap.uid, tap.counter, tap.occurredAt, device.deviceId, tap.signature],
+      [
+        device.operatorId,
+        tap.tokenHash,
+        tap.uid,
+        tap.counter,
+        tap.occurredAt,
+        device.deviceId,
+        tap.signature,
+      ],
     );
-    const media = await client.query<{ id: string }>('SELECT id FROM media WHERE token_hash = $1', [tap.tokenHash]);
-    return { result: rows[0]!.result, tapId: rows[0]!.tap_id === null ? null : String(rows[0]!.tap_id), mediaId: media.rows[0]?.id ?? null };
+    const media = await client.query<{ id: string }>('SELECT id FROM media WHERE token_hash = $1', [
+      tap.tokenHash,
+    ]);
+    return {
+      result: rows[0]!.result,
+      tapId: rows[0]!.tap_id === null ? null : String(rows[0]!.tap_id),
+      mediaId: media.rows[0]?.id ?? null,
+    };
   }
 
   /** Relie une lecture à l'écriture qu'elle a servie : une lecture ne sert qu'à une écriture (`CL022` sinon). */
@@ -53,13 +71,32 @@ export class TapService {
     return this.tx.run(device.operatorId, async (client) => {
       const registered = await this.registerEmbedded(client, device, tap);
       if (registered.result !== 'OK' || !registered.mediaId) {
-        return { tap_id: registered.tapId === null ? null : Number(registered.tapId), result: registered.result, tap_expires_at: null, media: null, wallet: null };
+        return {
+          tap_id: registered.tapId === null ? null : Number(registered.tapId),
+          result: registered.result,
+          tap_expires_at: null,
+          media: null,
+          wallet: null,
+        };
       }
-      const media = await client.query<{ media_id: string; status: string; batch_kind: string | null; deposit_status: string; deposit_held: bigint }>(
+      const media = await client.query<{
+        media_id: string;
+        status: string;
+        batch_kind: string | null;
+        deposit_status: string;
+        deposit_held: bigint;
+      }>(
         'SELECT media_id, status, batch_kind, deposit_status, deposit_held FROM media_summary($1)',
         [registered.mediaId],
       );
-      const wallet = await client.query<{ wallet_id: string; status: string; currency: string; spendable: bigint; paid: bigint; promo: bigint }>(
+      const wallet = await client.query<{
+        wallet_id: string;
+        status: string;
+        currency: string;
+        spendable: bigint;
+        paid: bigint;
+        promo: bigint;
+      }>(
         `SELECT w.id AS wallet_id, w.status, l.currency, wallet_spendable(w.id) AS spendable,
                 coalesce((SELECT -sum(ab.balance) FROM account a JOIN account_balance ab ON ab.account_id = a.id WHERE a.wallet_id = w.id AND a.purpose = 'WALLET_PAID'), 0)::bigint AS paid,
                 coalesce((SELECT -sum(ab.balance) FROM account a JOIN account_balance ab ON ab.account_id = a.id WHERE a.wallet_id = w.id AND a.purpose = 'WALLET_PROMO'), 0)::bigint AS promo
@@ -77,8 +114,23 @@ export class TapService {
         tap_id: Number(registered.tapId),
         result: registered.result,
         tap_expires_at: expires.rows[0]?.expires_at.toISOString() ?? null,
-        media: { media_id: m.media_id, status: m.status, batch_kind: m.batch_kind, deposit_status: m.deposit_status, deposit_held: Number(m.deposit_held) },
-        wallet: w ? { wallet_id: w.wallet_id, status: w.status, currency: w.currency.trim(), spendable: Number(w.spendable), paid: Number(w.paid), promo: Number(w.promo) } : null,
+        media: {
+          media_id: m.media_id,
+          status: m.status,
+          batch_kind: m.batch_kind,
+          deposit_status: m.deposit_status,
+          deposit_held: Number(m.deposit_held),
+        },
+        wallet: w
+          ? {
+              wallet_id: w.wallet_id,
+              status: w.status,
+              currency: w.currency.trim(),
+              spendable: Number(w.spendable),
+              paid: Number(w.paid),
+              promo: Number(w.promo),
+            }
+          : null,
       };
     });
   }
@@ -88,9 +140,16 @@ export class TapService {
    * (`OK` par défaut ; l'activation admet aussi `NOT_ACTIVATED`). Sinon tout est annulé et l'erreur `MEDIA_*`
    * correspondante est levée — après avoir rendu durables les effets d'une lecture suspecte.
    */
-  async withEmbeddedTap<T>(device: DeviceContext, tap: TapInput, fn: (client: TxClient, registered: RegisteredTap) => Promise<T>, accept: readonly TapResult[] = ['OK']): Promise<T> {
+  async withEmbeddedTap<T>(
+    device: DeviceContext,
+    tap: TapInput,
+    fn: (client: TxClient, registered: RegisteredTap) => Promise<T>,
+    accept: readonly TapResult[] = ['OK'],
+  ): Promise<T> {
     try {
-      return await this.tx.run(device.operatorId, async (client) => fn(client, await this.registerOrRefuse(client, device, tap, accept)));
+      return await this.tx.run(device.operatorId, async (client) =>
+        fn(client, await this.registerOrRefuse(client, device, tap, accept)),
+      );
     } catch (error) {
       return this.settleRefusal(error, device, tap);
     }
@@ -100,9 +159,18 @@ export class TapService {
    * Lecture embarquée dans une transaction que l'appelant tient déjà (route idempotente) : rend la lecture si son
    * résultat est admis, lève `TapRefused` sinon. L'appelant DOIT passer l'erreur de sa transaction à `settleRefusal`.
    */
-  async registerOrRefuse(client: TxClient, device: DeviceContext, tap: TapInput, accept: readonly TapResult[] = ['OK']): Promise<RegisteredTap> {
+  async registerOrRefuse(
+    client: TxClient,
+    device: DeviceContext,
+    tap: TapInput,
+    accept: readonly TapResult[] = ['OK'],
+  ): Promise<RegisteredTap> {
     const registered = await this.registerEmbedded(client, device, tap);
-    if (!accept.includes(registered.result)) throw new TapRefused(registered.result === 'OK' ? 'BLOCKED' : registered.result, registered.result === 'OK');
+    if (!accept.includes(registered.result))
+      throw new TapRefused(
+        registered.result === 'OK' ? 'BLOCKED' : registered.result,
+        registered.result === 'OK',
+      );
     return registered;
   }
 
@@ -112,7 +180,11 @@ export class TapService {
    */
   async settleRefusal(error: unknown, device: DeviceContext, tap: TapInput | null): Promise<never> {
     if (!(error instanceof TapRefused)) throw error;
-    if (error.alreadyActive) throw new ProblemException('MEDIA_STATE_INVALID', { status: 409, detail: 'Ce bracelet est déjà actif.' });
+    if (error.alreadyActive)
+      throw new ProblemException('MEDIA_STATE_INVALID', {
+        status: 409,
+        detail: 'Ce bracelet est déjà actif.',
+      });
     if (tap && DURABLE_RESULTS.includes(error.result)) {
       await this.tx.run(device.operatorId, (client) => this.registerEmbedded(client, device, tap));
     }
@@ -121,7 +193,10 @@ export class TapService {
 
   /** Lecture déjà enregistrée par CE terminal, citée par son identifiant ; inconnue ou d'un autre terminal : `TAP_UNUSABLE`. */
   async byId(client: TxClient, device: DeviceContext, tapId: number): Promise<RegisteredTap> {
-    const { rows } = await client.query<{ media_id: string }>('SELECT media_id FROM media_tap WHERE id = $1 AND device_id = $2', [tapId, device.deviceId]);
+    const { rows } = await client.query<{ media_id: string }>(
+      'SELECT media_id FROM media_tap WHERE id = $1 AND device_id = $2',
+      [tapId, device.deviceId],
+    );
     if (!rows[0]) throw new ProblemException('TAP_UNUSABLE');
     return { result: 'OK', tapId: String(tapId), mediaId: rows[0].media_id };
   }

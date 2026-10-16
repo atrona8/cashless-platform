@@ -1,6 +1,14 @@
 // Socle commun des processus des clés de bracelet (mission bracelets-nfc, research R-01) : filtre problem+json,
 // X-Request-Id, registre des travailleurs, et refus par défaut de toute route non déclarée.
-import { Global, Injectable, Module, type CanActivate, type ExecutionContext, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import {
+  Global,
+  Injectable,
+  Module,
+  type CanActivate,
+  type ExecutionContext,
+  type MiddlewareConsumer,
+  type NestModule,
+} from '@nestjs/common';
 import { APP_FILTER, Reflector } from '@nestjs/core';
 import { ProblemException } from '../errors/problem';
 import { ProblemFilter } from '../errors/problem.filter';
@@ -18,7 +26,13 @@ export class DenyUnmarkedRoutesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     if (context.getType() !== 'http') return true;
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()])) return true;
+    if (
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    )
+      return true;
     throw new ProblemException('UNAUTHENTICATED');
   }
 }

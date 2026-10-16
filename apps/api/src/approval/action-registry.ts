@@ -72,7 +72,9 @@ let registrations = 0;
  * Module qui enregistre des actions dans le registre global au démarrage (une mission l'importe dans son module).
  * Un doublon fait échouer le démarrage.
  */
-export function registerApprovalActions(...definitions: Array<ApprovalActionDefinition>): DynamicModule {
+export function registerApprovalActions(
+  ...definitions: Array<ApprovalActionDefinition>
+): DynamicModule {
   registrations += 1;
   const token = Symbol(`APPROVAL_ACTIONS_${registrations}`);
   const provider: Provider = {

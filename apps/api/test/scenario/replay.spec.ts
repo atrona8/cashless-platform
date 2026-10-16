@@ -33,7 +33,12 @@ describe('scénario de référence rejoué par le moteur', () => {
   beforeAll(async () => {
     fx = await createScenarioFixture();
     app = await createTestApp({
-      imports: [LedgerModule.register({ provide: CONFIG_RESOLVER, useValue: scenarioConfigResolver(() => fx) })],
+      imports: [
+        LedgerModule.register({
+          provide: CONFIG_RESOLVER,
+          useValue: scenarioConfigResolver(() => fx),
+        }),
+      ],
     });
     engine = app.get(LedgerEngineService);
     tx = app.get(TenantTx);
@@ -43,13 +48,14 @@ describe('scénario de référence rejoué par le moteur', () => {
     await app.close();
   });
 
-  const owner = <T extends QueryResultRow>(sql: string, values: unknown[] = []) => withOwner(async (db) => (await db.query<T>(sql, values)).rows);
+  const owner = <T extends QueryResultRow>(sql: string, values: unknown[] = []) =>
+    withOwner(async (db) => (await db.query<T>(sql, values)).rows);
 
   const lookup = async (key: string): Promise<string> => {
-    const [row] = await owner<{ id: string }>('SELECT id FROM journal_transaction WHERE ledger_id = $1 AND idempotency_key = $2', [
-      fx.ledgerId,
-      key,
-    ]);
+    const [row] = await owner<{ id: string }>(
+      'SELECT id FROM journal_transaction WHERE ledger_id = $1 AND idempotency_key = $2',
+      [fx.ledgerId, key],
+    );
     if (!row) throw new Error(`transaction introuvable pour la clé ${key}`);
     return row.id;
   };
@@ -72,7 +78,9 @@ describe('scénario de référence rejoué par le moteur', () => {
       return await tx.run(fx.parties.OPE, (client) => engine.execute(client, command));
     } catch (error) {
       const e = error as { code?: string; detail?: string; message?: string };
-      throw new Error(`T${s.no} (${command.type}) refusée : ${e.code ?? ''} ${e.detail ?? e.message ?? ''}`);
+      throw new Error(
+        `T${s.no} (${command.type}) refusée : ${e.code ?? ''} ${e.detail ?? e.message ?? ''}`,
+      );
     }
   };
 
@@ -85,12 +93,16 @@ describe('scénario de référence rejoué par le moteur', () => {
 
   const balances = async (): Promise<Record<string, bigint>> =>
     Object.fromEntries(
-      (await owner<{ code: string; b: string }>('SELECT code, signed_balance::text AS b FROM trial_balance WHERE ledger_id = $1', [fx.ledgerId])).map(
-        (row) => [row.code, BigInt(row.b)],
-      ),
+      (
+        await owner<{ code: string; b: string }>(
+          'SELECT code, signed_balance::text AS b FROM trial_balance WHERE ledger_id = $1',
+          [fx.ledgerId],
+        )
+      ).map((row) => [row.code, BigInt(row.b)]),
     );
 
-  const asBigints = (table: Record<string, number>) => Object.fromEntries(Object.entries(table).map(([code, v]) => [code, BigInt(v)]));
+  const asBigints = (table: Record<string, number>) =>
+    Object.fromEntries(Object.entries(table).map(([code, v]) => [code, BigInt(v)]));
 
   const counts = async () => {
     const [row] = await owner<{ transactions: number; postings: number }>(
@@ -106,10 +118,16 @@ describe('scénario de référence rejoué par le moteur', () => {
     for (const s of STEPS.filter((x) => x.no >= from && x.no <= to)) {
       for (const status of s.statusBefore ?? []) await setStatus(status, `avant T${s.no}`);
       const result = await execute(s);
-      if (!result.transactionId) throw new Error(`T${s.no} : aucune transaction écrite (${result.outcome ?? 'sans résultat'})`);
+      if (!result.transactionId)
+        throw new Error(
+          `T${s.no} : aucune transaction écrite (${result.outcome ?? 'sans résultat'})`,
+        );
       expect({ no: s.no, replayed: result.replayed }).toEqual({ no: s.no, replayed: false });
       // Écart → le numéro de la transaction et le diff des lignes apparaissent dans le message d'échec.
-      expect({ no: s.no, lines: await postedLines(result.transactionId) }).toEqual({ no: s.no, lines: expectedLines(s.no) });
+      expect({ no: s.no, lines: await postedLines(result.transactionId) }).toEqual({
+        no: s.no,
+        lines: expectedLines(s.no),
+      });
       written.set(s.no, result.transactionId);
     }
   }
@@ -124,14 +142,24 @@ describe('scénario de référence rejoué par le moteur', () => {
     expect(await balances()).toEqual(asBigints(expected.after_closing.balances));
     await setStatus(FINAL_STATUS, 'après la dernière transaction');
 
-    const [state] = await owner<{ event_status: string; ledger_status: string; must_be_zero: string; drift: number }>(
+    const [state] = await owner<{
+      event_status: string;
+      ledger_status: string;
+      must_be_zero: string;
+      drift: number;
+    }>(
       `SELECT e.status::text AS event_status, l.status AS ledger_status,
               (SELECT must_be_zero::text FROM ledger_invariant WHERE ledger_id = l.id) AS must_be_zero,
               (SELECT count(*)::int FROM balance_drift d JOIN account a ON a.id = d.account_id WHERE a.ledger_id = l.id) AS drift
          FROM ledger l JOIN event e ON e.id = l.scope_id WHERE l.id = $1`,
       [fx.ledgerId],
     );
-    expect(state).toEqual({ event_status: 'CLOSED', ledger_status: 'LOCKED', must_be_zero: '0', drift: 0 });
+    expect(state).toEqual({
+      event_status: 'CLOSED',
+      ledger_status: 'LOCKED',
+      must_be_zero: '0',
+      drift: 0,
+    });
   });
 
   it('second rejeu des 48 commandes, grand livre verrouillé : 0 transaction et 0 ligne créées', async () => {
@@ -140,15 +168,27 @@ describe('scénario de référence rejoué par le moteur', () => {
     for (const s of STEPS) {
       const result = await execute(s);
       // Types à lignes : la transaction existante ; cautions déléguées : sans effet (rien n'est réécrit).
-      if (result.replayed) expect({ no: s.no, id: result.transactionId }).toEqual({ no: s.no, id: written.get(s.no) });
-      else expect({ no: s.no, transactionId: result.transactionId }).toEqual({ no: s.no, transactionId: null });
+      if (result.replayed)
+        expect({ no: s.no, id: result.transactionId }).toEqual({ no: s.no, id: written.get(s.no) });
+      else
+        expect({ no: s.no, transactionId: result.transactionId }).toEqual({
+          no: s.no,
+          transactionId: null,
+        });
     }
     expect(await counts()).toEqual(before);
   });
 
   it('comportement de la base : post_transaction rejoué à l’identique sur un grand livre LOCKED renvoie l’existant', async () => {
     const original = written.get(1)!;
-    const [t1] = await owner<{ type: string; key: string; occurred: string; source: string; event: string; metadata: string }>(
+    const [t1] = await owner<{
+      type: string;
+      key: string;
+      occurred: string;
+      source: string;
+      event: string;
+      metadata: string;
+    }>(
       `SELECT type, idempotency_key AS key, occurred_at::text AS occurred, source, event_id AS event, metadata::text AS metadata
          FROM journal_transaction WHERE id = $1`,
       [original],

@@ -17,7 +17,8 @@ export interface DeviceRow {
   agreement_public_key: Buffer | null;
 }
 
-export const DEVICE_QUERY = 'SELECT id, operator_id, event_id, pos_id, status, agreement_public_key FROM device WHERE id = $1 AND operator_id = $2';
+export const DEVICE_QUERY =
+  'SELECT id, operator_id, event_id, pos_id, status, agreement_public_key FROM device WHERE id = $1 AND operator_id = $2';
 
 export function deviceFromRow(row: DeviceRow) {
   return {

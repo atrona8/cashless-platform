@@ -32,7 +32,14 @@ const confirmed = (no: number, amount: bigint) => () =>
   buildPayoutConfirmed(command(no, { amount, moneyAccount: 'A-BANQUE' }), ctx);
 
 const CASES: [no: number, build: () => Line[]][] = [
-  [24, () => buildCashClose(command(24, { cashDesk: 'C1', counted: 36_800n, expected: 37_000n }, TWO_PEOPLE), ctx)],
+  [
+    24,
+    () =>
+      buildCashClose(
+        command(24, { cashDesk: 'C1', counted: 36_800n, expected: 37_000n }, TWO_PEOPLE),
+        ctx,
+      ),
+  ],
   [25, () => buildAnomalyResolution(command(25, { amount: 3000n }, TWO_PEOPLE), ctx)],
   [26, () => buildCashDeposit(command(26, { amount: 36_800n }), ctx)],
   [27, () => buildPspSettlement(command(27, { channel: 'WAVE', net: 19_800n }), ctx)],
@@ -52,7 +59,10 @@ const CASES: [no: number, build: () => Line[]][] = [
         ctx,
       ),
   ],
-  [31, () => buildOperatorFee(command(31, { bases: { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n } }), ctx)],
+  [
+    31,
+    () => buildOperatorFee(command(31, { bases: { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n } }), ctx),
+  ],
   [32, () => buildPlatformFee(command(32, { operatorFeeHt: 5085n }), ctx)],
   [
     33,
@@ -71,11 +81,29 @@ const CASES: [no: number, build: () => Line[]][] = [
       ),
   ],
   [34, confirmed(34, 11_400n)],
-  [35, () => buildPayoutFailed(command(35, { amount: 8000n, beneficiary: { participationId: 'TEE' } }), ctx)],
+  [
+    35,
+    () =>
+      buildPayoutFailed(
+        command(35, { amount: 8000n, beneficiary: { participationId: 'TEE' } }),
+        ctx,
+      ),
+  ],
   [36, confirmed(36, 18_500n)],
   [37, confirmed(37, 4983n)],
   [38, confirmed(38, 1017n)],
-  [39, () => buildPayoutInitiated(command(39, { payouts: [{ beneficiary: { participationId: 'TEE' }, amount: 8000n }] }, TWO_PEOPLE), ctx)],
+  [
+    39,
+    () =>
+      buildPayoutInitiated(
+        command(
+          39,
+          { payouts: [{ beneficiary: { participationId: 'TEE' }, amount: 8000n }] },
+          TWO_PEOPLE,
+        ),
+        ctx,
+      ),
+  ],
   [40, confirmed(40, 8000n)],
   [
     43,
@@ -120,27 +148,58 @@ describe('cas dédiés', () => {
   const ope = (purpose: string) => ({ purpose, ownerPartyId: config.parties.operatorId });
 
   it('MERCHANT_DEBT_TRANSFER : dette reprise par l’organisateur', () => {
-    const lines = buildMerchantDebtTransfer(command(30, { participationId: 'TEE', merchantBalance: -2500n }, { type: 'MERCHANT_DEBT_TRANSFER' }), ctx);
+    const lines = buildMerchantDebtTransfer(
+      command(
+        30,
+        { participationId: 'TEE', merchantBalance: -2500n },
+        { type: 'MERCHANT_DEBT_TRANSFER' },
+      ),
+      ctx,
+    );
     expectBalanced(lines);
     expect(lines).toEqual([
       { account: org('ORG_RECEIVABLE'), amount: 2500n },
       { account: { purpose: 'MERCHANT', participationId: 'TEE' }, amount: -2500n },
     ]);
     expect(() =>
-      buildMerchantDebtTransfer(command(30, { participationId: 'TEE', merchantBalance: 100n }, { type: 'MERCHANT_DEBT_TRANSFER' }), ctx),
+      buildMerchantDebtTransfer(
+        command(
+          30,
+          { participationId: 'TEE', merchantBalance: 100n },
+          { type: 'MERCHANT_DEBT_TRANSFER' },
+        ),
+        ctx,
+      ),
     ).toThrow(BuildError);
   });
 
   it('PITCH_FEE plafonné au solde du commerçant ; aucune retenue : refus', () => {
-    const lines = buildPitchFee(command(30, { items: [{ participationId: 'FOOD', mode: 'DEDUCT_CAPPED', merchantBalance: 4000n }] }), ctx);
+    const lines = buildPitchFee(
+      command(30, {
+        items: [{ participationId: 'FOOD', mode: 'DEDUCT_CAPPED', merchantBalance: 4000n }],
+      }),
+      ctx,
+    );
     expectBalanced(lines);
-    expect(lines[0]).toEqual({ account: { purpose: 'MERCHANT', participationId: 'FOOD' }, amount: 4000n });
-    expect(() => buildPitchFee(command(30, { items: [{ participationId: 'FOOD', mode: 'PREPAID' }] }), ctx)).toThrow(BuildError);
+    expect(lines[0]).toEqual({
+      account: { purpose: 'MERCHANT', participationId: 'FOOD' },
+      amount: 4000n,
+    });
+    expect(() =>
+      buildPitchFee(command(30, { items: [{ participationId: 'FOOD', mode: 'PREPAID' }] }), ctx),
+    ).toThrow(BuildError);
   });
 
   describe('ADJUSTMENT', () => {
     const adjustment = (lines: Line[], extra: object = {}) =>
-      buildAdjustment(command(25, { lines }, { type: 'ADJUSTMENT', metadata: { reason: 'correction' }, ...TWO_PEOPLE, ...extra }), ctx);
+      buildAdjustment(
+        command(
+          25,
+          { lines },
+          { type: 'ADJUSTMENT', metadata: { reason: 'correction' }, ...TWO_PEOPLE, ...extra },
+        ),
+        ctx,
+      );
     const ok: Line[] = [
       { account: { code: 'A-BANQUE' }, amount: 500n },
       { account: org('ORG_PERTES'), amount: -500n },
@@ -153,7 +212,9 @@ describe('cas dédiés', () => {
       expect(() => adjustment([ok[0]!, { ...ok[1]!, amount: -400n }])).toThrow(BuildError);
     });
     it('ligne nulle : refus', () => {
-      expect(() => adjustment([...ok, { account: { code: 'A-TRANSIT' }, amount: 0n }])).toThrow(BuildError);
+      expect(() => adjustment([...ok, { account: { code: 'A-TRANSIT' }, amount: 0n }])).toThrow(
+        BuildError,
+      );
     });
     it('auteur = valideur : refus', () => {
       expect(() => adjustment(ok, { approvedBy: 'user-a' })).toThrow(BuildError);
@@ -167,17 +228,26 @@ describe('cas dédiés', () => {
   });
 
   it('ANOMALY_RESOLUTION hors BACKOFFICE ou sans seconde personne : refus', () => {
-    expect(() => buildAnomalyResolution(command(25, { amount: 3000n }, { ...TWO_PEOPLE, source: 'BATCH' }), ctx)).toThrow(BuildError);
+    expect(() =>
+      buildAnomalyResolution(
+        command(25, { amount: 3000n }, { ...TWO_PEOPLE, source: 'BATCH' }),
+        ctx,
+      ),
+    ).toThrow(BuildError);
     expect(() => buildAnomalyResolution(command(25, { amount: 3000n }), ctx)).toThrow(BuildError);
   });
 
   it('BREAKAGE_REVERSAL : prorata de la casse initiale (± 1)', () => {
     const lines = buildBreakageReversal(
-      command(43, { walletId: 'W01', amount: 1001n, originalShares: { organizer: 16_000n, operator: 4000n } }, {
-        type: 'BREAKAGE_REVERSAL',
-        source: 'BACKOFFICE',
-        ...TWO_PEOPLE,
-      }),
+      command(
+        43,
+        { walletId: 'W01', amount: 1001n, originalShares: { organizer: 16_000n, operator: 4000n } },
+        {
+          type: 'BREAKAGE_REVERSAL',
+          source: 'BACKOFFICE',
+          ...TWO_PEOPLE,
+        },
+      ),
       ctx,
     );
     expectBalanced(lines);
@@ -189,15 +259,21 @@ describe('cas dédiés', () => {
   });
 
   it('BREAKAGE vers le compte légal', () => {
-    const lines = buildBreakage(command(43, { wallets: [{ walletId: 'W01', paid: 9000n, cashDue: 500n }] }), {
-      config: scenarioConfig({ breakageDestination: 'LEGAL_ACCOUNT' }),
-    });
+    const lines = buildBreakage(
+      command(43, { wallets: [{ walletId: 'W01', paid: 9000n, cashDue: 500n }] }),
+      {
+        config: scenarioConfig({ breakageDestination: 'LEGAL_ACCOUNT' }),
+      },
+    );
     expectBalanced(lines);
     expect(lines.at(-1)).toEqual({ account: { purpose: 'LEGAL_BREAKAGE' }, amount: -9500n });
   });
 
   it('CASH_CLOSE avec surplus : crédit du compte de pertes', () => {
-    const lines = buildCashClose(command(24, { cashDesk: 'C1', counted: 37_300n, expected: 37_000n }), ctx);
+    const lines = buildCashClose(
+      command(24, { cashDesk: 'C1', counted: 37_300n, expected: 37_000n }),
+      ctx,
+    );
     expectBalanced(lines);
     expect(coded(lines)).toEqual([
       { account: 'A-TRANSIT', amount: 37_300n },
@@ -207,8 +283,13 @@ describe('cas dédiés', () => {
   });
 
   it('OPERATOR_FEE en régularisation : sens inverse', () => {
-    const lines = buildOperatorFee(command(31, { bases: { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n }, regularization: true }), ctx);
+    const lines = buildOperatorFee(
+      command(31, { bases: { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n }, regularization: true }),
+      ctx,
+    );
     expectBalanced(lines);
-    expect(coded(lines)).toEqual(expectedLines(31).map((line) => ({ ...line, amount: -line.amount })));
+    expect(coded(lines)).toEqual(
+      expectedLines(31).map((line) => ({ ...line, amount: -line.amount })),
+    );
   });
 });

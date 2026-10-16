@@ -18,7 +18,8 @@ export class AuthKeysController {
   @DeviceAuth()
   get(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() raw: unknown) {
     const body = objectBody(raw);
-    if (typeof body.nfc_uid !== 'string' || !UID.test(body.nfc_uid)) throw invalid('nfc_uid : 14 chiffres hexadécimaux en minuscules attendus.');
+    if (typeof body.nfc_uid !== 'string' || !UID.test(body.nfc_uid))
+      throw invalid('nfc_uid : 14 chiffres hexadécimaux en minuscules attendus.');
     const keyIndex = intField(body, 'key_index', 0, 65535, 'required')!;
     res.setHeader('Cache-Control', 'no-store');
     return this.authKeys.get(requestDevice(req), Buffer.from(body.nfc_uid, 'hex'), keyIndex);

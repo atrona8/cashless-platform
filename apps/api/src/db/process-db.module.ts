@@ -1,7 +1,13 @@
 // Accès base d'un processus des clés de bracelet (mission bracelets-nfc, research R-01, R-02). Fichier distinct de
 // db.module.ts : il n'importe ni le pool de la plateforme ni PlatformTx, de sorte qu'aucun fichier de la plateforme
 // n'est atteignable depuis un processus des clés (test/unit/architecture.spec.ts).
-import { Global, Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Global,
+  Inject,
+  Module,
+  type DynamicModule,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { Pool, types } from 'pg';
 import { APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { PG_POOL } from './pool.token';
@@ -48,7 +54,10 @@ export class ProcessDbModule {
           inject: [APP_CONFIG],
           useFactory: (config: AppConfig) => {
             const connectionString = config[field] as string;
-            if (!connectionString) throw new Error(`${variable} manquant : chaîne de connexion du processus ${process} obligatoire`);
+            if (!connectionString)
+              throw new Error(
+                `${variable} manquant : chaîne de connexion du processus ${process} obligatoire`,
+              );
             return new Pool({ connectionString, max: config.poolSize });
           },
         },

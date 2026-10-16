@@ -12,7 +12,9 @@ module.exports = {
   // de la passe parallèle ; la CI les lance seules ensuite.
   testPathIgnorePatterns: [
     '/node_modules/',
-    ...(process.env.SKIP_LATENCY ? ['configuration-latency', 'media-latency', 'claims-timing'] : []),
+    ...(process.env.SKIP_LATENCY
+      ? ['configuration-latency', 'media-latency', 'claims-timing']
+      : []),
   ],
   transformIgnorePatterns: ['/node_modules/(?!(canonicalize|jose)/)'],
 };

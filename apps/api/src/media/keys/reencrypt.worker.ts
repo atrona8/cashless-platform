@@ -18,7 +18,8 @@ import { DekCache } from './dek-cache';
 import { claimJobQuery, type TagKeyJobRow } from './keys.dto';
 
 export const REENCRYPT_BATCH = 500;
-const text = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
+const text = (value: unknown): string | null =>
+  typeof value === 'string' && value !== '' ? value : null;
 
 interface MediaSecretRow {
   id: string;
@@ -54,16 +55,26 @@ export class ReencryptWorker implements ProcessWorker {
     try {
       // La cible est la version ACTIVE du moment : si une session de personnalisation en a ouvert une depuis la
       // rotation, c'est sous celle-là que tout converge (celle de la rotation, restée sans bracelet, est retirée).
-      targetDekId = (await this.tx.run(job.operator_id, (client) => this.dataKeys.activeVersion(client, job.operator_id, job.key_index))) ?? targetDekId;
+      targetDekId =
+        (await this.tx.run(job.operator_id, (client) =>
+          this.dataKeys.activeVersion(client, job.operator_id, job.key_index),
+        )) ?? targetDekId;
       if (!targetDekId) throw new Error('Travail de rechiffrement sans clé de données cible');
       const target = targetDekId;
       for (;;) {
-        const count = await this.tx.run(job.operator_id, (client) => this.batch(client, job, target));
+        const count = await this.tx.run(job.operator_id, (client) =>
+          this.batch(client, job, target),
+        );
         if (count === 0) break;
         done += count;
         // Avancement noté après chaque tranche validée ; le verrou du travail est prolongé d'autant.
         const progress = JSON.stringify({ reencrypted: done });
-        await this.tx.unscoped((client) => client.query("SELECT finish_tag_key_job($1, 'RUNNING', NULL, $2::jsonb)", [job.id, progress]));
+        await this.tx.unscoped((client) =>
+          client.query("SELECT finish_tag_key_job($1, 'RUNNING', NULL, $2::jsonb)", [
+            job.id,
+            progress,
+          ]),
+        );
       }
       await this.tx.run(job.operator_id, async (client) => {
         // Plus aucun bracelet sous une ancienne version : elles sont retirées.
@@ -86,11 +97,20 @@ export class ReencryptWorker implements ProcessWorker {
           after: { key_index: job.key_index, reencrypted: done, retired_versions: rows.length },
           approverId: text(job.payload.approved_by),
         });
-        await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [job.id, JSON.stringify({ reencrypted: done, retired_versions: rows.length })]);
+        await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [
+          job.id,
+          JSON.stringify({ reencrypted: done, retired_versions: rows.length }),
+        ]);
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'échec';
-      await this.tx.unscoped((client) => client.query("SELECT finish_tag_key_job($1, 'FAILED', $2, $3::jsonb)", [job.id, message, JSON.stringify({ reencrypted: done })]));
+      await this.tx.unscoped((client) =>
+        client.query("SELECT finish_tag_key_job($1, 'FAILED', $2, $3::jsonb)", [
+          job.id,
+          message,
+          JSON.stringify({ reencrypted: done }),
+        ]),
+      );
     }
     return 1;
   }
@@ -118,8 +138,17 @@ export class ReencryptWorker implements ProcessWorker {
     try {
       const target = await key(targetDekId);
       for (const media of rows) {
-        const aad = pwdPackAad({ mediaId: media.id, operatorId: job.operator_id, keyIndex: job.key_index, uid: media.nfc_uid });
-        const pwdPack = openPwdPack({ dek: await key(media.pwd_pack_dek_id), blob: media.pwd_pack_enc, aad });
+        const aad = pwdPackAad({
+          mediaId: media.id,
+          operatorId: job.operator_id,
+          keyIndex: job.key_index,
+          uid: media.nfc_uid,
+        });
+        const pwdPack = openPwdPack({
+          dek: await key(media.pwd_pack_dek_id),
+          blob: media.pwd_pack_enc,
+          aad,
+        });
         try {
           const sealed = sealPwdPack({ dek: target, nonce: randomBytes(12), pwdPack, aad });
           // Vérification avant écriture : ce qui vient d'être scellé se rouvre en la même valeur.
@@ -127,7 +156,10 @@ export class ReencryptWorker implements ProcessWorker {
           const same = timingSafeEqual(check, pwdPack);
           zeroize(check);
           if (!same) throw new Error('Rechiffrement incohérent');
-          await client.query('UPDATE media SET pwd_pack_enc = $2, pwd_pack_dek_id = $3 WHERE id = $1', [media.id, sealed, targetDekId]);
+          await client.query(
+            'UPDATE media SET pwd_pack_enc = $2, pwd_pack_dek_id = $3 WHERE id = $1',
+            [media.id, sealed, targetDekId],
+          );
         } finally {
           zeroize(pwdPack);
         }

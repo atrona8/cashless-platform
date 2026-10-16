@@ -4,7 +4,16 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CLAIM_CODE_LENGTH, derivationMessage, encodeFormatB, formatClaimCode, generateClaimCode, pwdPackAad, sealPwdPack, tokenHash } from '../src';
+import {
+  CLAIM_CODE_LENGTH,
+  derivationMessage,
+  encodeFormatB,
+  formatClaimCode,
+  generateClaimCode,
+  pwdPackAad,
+  sealPwdPack,
+  tokenHash,
+} from '../src';
 import { VECTORS_DIR } from './vectors';
 
 const FILE = join(VECTORS_DIR, 'cross-impl.json');

@@ -33,7 +33,14 @@ export const TRANSACTION_TYPES = [
 ] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
-export const SOURCES = ['ONLINE', 'OFFLINE_SYNC', 'EDGE_SYNC', 'PSP_WEBHOOK', 'BATCH', 'BACKOFFICE'] as const;
+export const SOURCES = [
+  'ONLINE',
+  'OFFLINE_SYNC',
+  'EDGE_SYNC',
+  'PSP_WEBHOOK',
+  'BATCH',
+  'BACKOFFICE',
+] as const;
 export type Source = (typeof SOURCES)[number];
 
 /**
@@ -140,11 +147,17 @@ export const wallet = (walletId: string, kind: 'P' | 'X'): AccountRef => ({
   purpose: kind === 'P' ? 'WALLET_PAID' : 'WALLET_PROMO',
   walletId,
 });
-export const merchant = (participationId: string): AccountRef => ({ purpose: 'MERCHANT', participationId });
+export const merchant = (participationId: string): AccountRef => ({
+  purpose: 'MERCHANT',
+  participationId,
+});
 export const suspense = (): AccountRef => ({ purpose: 'SUSPENSE' });
 export const payoutPending = (): AccountRef => ({ purpose: 'PAYOUT_PENDING' });
 /** Espèces dues au client (ADR-63), tenues par portefeuille. */
-export const cashDue = (walletId: string): AccountRef => ({ purpose: 'CUSTOMER_CASH_DUE', walletId });
+export const cashDue = (walletId: string): AccountRef => ({
+  purpose: 'CUSTOMER_CASH_DUE',
+  walletId,
+});
 export const legalBreakage = (): AccountRef => ({ purpose: 'LEGAL_BREAKAGE' });
 
 /** Comptes des parties du grand livre (organisateur, prestataire, plateforme), titulaire pris dans la configuration. */

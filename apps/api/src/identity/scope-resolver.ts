@@ -6,7 +6,9 @@ import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import type { Principal, Role } from './principal';
 
-export type ScopeRef = { type: 'PLATFORM' } | { type: 'OPERATOR' | 'ORGANIZER' | 'EVENT' | 'MERCHANT'; id: string };
+export type ScopeRef =
+  | { type: 'PLATFORM' }
+  | { type: 'OPERATOR' | 'ORGANIZER' | 'EVENT' | 'MERCHANT'; id: string };
 
 /** Maillon de la chaîne : `viaParticipation` = englobement d'un commerçant par un événement où il participe. */
 export interface ScopeLink {
@@ -24,7 +26,11 @@ const PLATFORM: ScopeLink = { scope: { type: 'PLATFORM' } };
 /** Chaîne d'une route de portée plateforme : aucune lecture en base. */
 export const PLATFORM_CHAIN: readonly ScopeLink[] = [PLATFORM];
 
-const link = (type: 'OPERATOR' | 'ORGANIZER' | 'EVENT' | 'MERCHANT', id: string, viaParticipation?: boolean): ScopeLink =>
+const link = (
+  type: 'OPERATOR' | 'ORGANIZER' | 'EVENT' | 'MERCHANT',
+  id: string,
+  viaParticipation?: boolean,
+): ScopeLink =>
   viaParticipation ? { scope: { type, id }, viaParticipation } : { scope: { type, id } };
 
 /** La portée visée puis toutes ses englobantes, de la plus spécifique à la plateforme. */
@@ -33,7 +39,10 @@ export async function resolveChain(client: TxClient, ref: ScopeRef): Promise<Sco
   if (!UUID.test(ref.id)) throw new ProblemException('NOT_FOUND');
   switch (ref.type) {
     case 'OPERATOR': {
-      const { rows } = await client.query("SELECT id FROM party WHERE id = $1 AND kind = 'OPERATOR'", [ref.id]);
+      const { rows } = await client.query(
+        "SELECT id FROM party WHERE id = $1 AND kind = 'OPERATOR'",
+        [ref.id],
+      );
       if (!rows[0]) throw new ProblemException('NOT_FOUND');
       return [link('OPERATOR', ref.id), PLATFORM];
     }
@@ -48,7 +57,12 @@ export async function resolveChain(client: TxClient, ref: ScopeRef): Promise<Sco
       );
       const event = rows[0];
       if (!event) throw new ProblemException('NOT_FOUND');
-      return [link('EVENT', ref.id), link('ORGANIZER', event.organizer_id), link('OPERATOR', event.operator_id), PLATFORM];
+      return [
+        link('EVENT', ref.id),
+        link('ORGANIZER', event.organizer_id),
+        link('OPERATOR', event.operator_id),
+        PLATFORM,
+      ];
     }
     case 'MERCHANT': {
       const operator = await partyOperator(client, ref.id, 'MERCHANT');
@@ -59,23 +73,32 @@ export async function resolveChain(client: TxClient, ref: ScopeRef): Promise<Sco
           ORDER BY mp.event_id`,
         [ref.id],
       );
-      const viaEvents = rows.flatMap((row) => [link('EVENT', row.event_id, true), link('ORGANIZER', row.organizer_id, true)]);
+      const viaEvents = rows.flatMap((row) => [
+        link('EVENT', row.event_id, true),
+        link('ORGANIZER', row.organizer_id, true),
+      ]);
       return [link('MERCHANT', ref.id), ...viaEvents, link('OPERATOR', operator), PLATFORM];
     }
   }
 }
 
-async function partyOperator(client: TxClient, id: string, kind: 'ORGANIZER' | 'MERCHANT'): Promise<string> {
-  const { rows } = await client.query<{ operator_id: string }>('SELECT operator_id FROM party WHERE id = $1 AND kind = $2', [
-    id,
-    kind,
-  ]);
+async function partyOperator(
+  client: TxClient,
+  id: string,
+  kind: 'ORGANIZER' | 'MERCHANT',
+): Promise<string> {
+  const { rows } = await client.query<{ operator_id: string }>(
+    'SELECT operator_id FROM party WHERE id = $1 AND kind = $2',
+    [id, kind],
+  );
   if (!rows[0]) throw new ProblemException('NOT_FOUND');
   return rows[0].operator_id;
 }
 
 function sameScope(a: ScopeRef, b: { scopeType: string; scopeId: string | null }): boolean {
-  return a.type === b.scopeType && (a.type === 'PLATFORM' ? b.scopeId === null : a.id === b.scopeId);
+  return (
+    a.type === b.scopeType && (a.type === 'PLATFORM' ? b.scopeId === null : a.id === b.scopeId)
+  );
 }
 
 /**

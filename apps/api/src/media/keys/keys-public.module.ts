@@ -5,5 +5,9 @@ import { KeyApprovalActions } from './key-approval-actions';
 import { KeysController } from './keys.controller';
 import { KeysService } from './keys.service';
 
-@Module({ controllers: [KeysController], providers: [TenantAccess, KeysService, KeyApprovalActions], exports: [KeysService] })
+@Module({
+  controllers: [KeysController],
+  providers: [TenantAccess, KeysService, KeyApprovalActions],
+  exports: [KeysService],
+})
 export class KeysPublicModule {}

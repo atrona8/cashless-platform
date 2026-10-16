@@ -32,5 +32,8 @@ export function groupForTax(items: readonly TaxItem[]): TaxGroup[] {
     if (group) group.ttc += item.ttc;
     else groups.set(key, { ...item });
   }
-  return [...groups.values()].map((group) => ({ ...group, ...extractTax(group.ttc, group.taxBps) }));
+  return [...groups.values()].map((group) => ({
+    ...group,
+    ...extractTax(group.ttc, group.taxBps),
+  }));
 }

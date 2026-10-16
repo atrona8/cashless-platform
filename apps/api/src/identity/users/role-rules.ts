@@ -10,7 +10,14 @@ import type { Principal, Role, ScopeType } from '../principal';
 import { exercisedRole, type ScopeLink, type ScopeRef } from '../scope-resolver';
 
 /** Rôles attribuables par `grantRole`. */
-export const GRANTABLE_ROLES = ['OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN', 'PERSONALIZER'] as const;
+export const GRANTABLE_ROLES = [
+  'OPERATOR_ADMIN',
+  'ORGANIZER_ADMIN',
+  'SUPERVISOR',
+  'CASHIER',
+  'MERCHANT_ADMIN',
+  'PERSONALIZER',
+] as const;
 export type GrantableRole = (typeof GRANTABLE_ROLES)[number];
 
 /** Portées compatibles avec chaque rôle attribuable (mêmes règles que la contrainte role_assignment_role_scope). */
@@ -24,7 +31,11 @@ const ROLE_SCOPES: Readonly<Record<GrantableRole, readonly ScopeType[]>> = {
 };
 
 /** Ce que chaque rôle d'administration peut attribuer, et sur quel englobement. */
-const GRANTERS: ReadonlyArray<{ granter: Role; roles: readonly GrantableRole[]; participations?: boolean }> = [
+const GRANTERS: ReadonlyArray<{
+  granter: Role;
+  roles: readonly GrantableRole[];
+  participations?: boolean;
+}> = [
   { granter: 'PLATFORM_ADMIN', roles: ['OPERATOR_ADMIN'] },
   { granter: 'OPERATOR_ADMIN', roles: GRANTABLE_ROLES },
   { granter: 'ORGANIZER_ADMIN', roles: ['SUPERVISOR', 'CASHIER'] },
@@ -36,9 +47,16 @@ const GRANTERS: ReadonlyArray<{ granter: Role; roles: readonly GrantableRole[]; 
 /** Portée d'une attribution donnée par l'API : toujours un objet (jamais PLATFORM). */
 export type GrantScope = Extract<ScopeRef, { id: string }>;
 
-export function grantTarget(role: string, scopeType: string, scopeId: string | null | undefined): GrantScope & { role: GrantableRole } {
+export function grantTarget(
+  role: string,
+  scopeType: string,
+  scopeId: string | null | undefined,
+): GrantScope & { role: GrantableRole } {
   if (!(GRANTABLE_ROLES as readonly string[]).includes(role)) {
-    throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: `Rôle non attribuable ici : ${role}.` });
+    throw new ProblemException('VALIDATION_FAILED', {
+      status: 422,
+      detail: `Rôle non attribuable ici : ${role}.`,
+    });
   }
   const grantable = role as GrantableRole;
   if (!(ROLE_SCOPES[grantable] as readonly string[]).includes(scopeType) || !scopeId) {
@@ -54,10 +72,16 @@ export function grantTarget(role: string, scopeType: string, scopeId: string | n
  * Rôle de l'attribuant qui permet d'attribuer (ou de retirer) `role` sur la portée dont `chain` est la chaîne ;
  * `undefined` si aucun. `chain` est celle de l'objet de la portée, lue sous RLS.
  */
-export function canGrant(granter: Principal, role: GrantableRole, chain: readonly ScopeLink[]): Role | undefined {
+export function canGrant(
+  granter: Principal,
+  role: GrantableRole,
+  chain: readonly ScopeLink[],
+): Role | undefined {
   for (const rule of GRANTERS) {
     if (!rule.roles.includes(role)) continue;
-    const held = exercisedRole(granter, [rule.granter], chain, { participations: rule.participations });
+    const held = exercisedRole(granter, [rule.granter], chain, {
+      participations: rule.participations,
+    });
     if (held) return held;
   }
   return undefined;
@@ -70,8 +94,13 @@ const STAFF_ADMINS: readonly Role[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGA
  * Rôle d'administration exercé sur les personnes du prestataire de la transaction (le plus large tenu parmi
  * `allowed`), sinon `403`. Le prestataire a déjà été contrôlé par le contexte (`IdentityTenantContext`).
  */
-export function staffAdminRole(principal: Principal, allowed: readonly Role[] = STAFF_ADMINS): Role {
-  const role = STAFF_ADMINS.find((r) => allowed.includes(r) && principal.assignments.some((a) => a.role === r));
+export function staffAdminRole(
+  principal: Principal,
+  allowed: readonly Role[] = STAFF_ADMINS,
+): Role {
+  const role = STAFF_ADMINS.find(
+    (r) => allowed.includes(r) && principal.assignments.some((a) => a.role === r),
+  );
   if (!role) throw new ProblemException('FORBIDDEN');
   return role;
 }

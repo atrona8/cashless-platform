@@ -17,7 +17,9 @@ describe('loadConfig', () => {
   it('hors production : défauts locaux des deux pools', () => {
     const config = loadConfig({});
     expect(config.production).toBe(false);
-    expect(config.databaseUrl).toBe('postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test');
+    expect(config.databaseUrl).toBe(
+      'postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test',
+    );
     expect(config.platformDatabaseUrl).toBe(
       'postgres://cashless_platform:cashless_platform_local@127.0.0.1:5433/cashless_test',
     );
@@ -26,7 +28,10 @@ describe('loadConfig', () => {
   });
 
   it('lit DATABASE_URL_PLATFORM et DB_PLATFORM_POOL_SIZE', () => {
-    const config = loadConfig({ DATABASE_URL_PLATFORM: 'postgres://cashless_platform:x@h:5432/d', DB_PLATFORM_POOL_SIZE: '4' });
+    const config = loadConfig({
+      DATABASE_URL_PLATFORM: 'postgres://cashless_platform:x@h:5432/d',
+      DB_PLATFORM_POOL_SIZE: '4',
+    });
     expect(config.platformDatabaseUrl).toBe('postgres://cashless_platform:x@h:5432/d');
     expect(config.platformPoolSize).toBe(4);
   });
@@ -67,19 +72,30 @@ describe('loadConfig', () => {
     const { CLAIM_CODE_HMAC_KEY: _key, ...withoutKey } = PRODUCTION;
     expect(() => loadConfig(withoutKey)).toThrow(/CLAIM_CODE_HMAC_KEY/);
     expect(() => loadConfig({ ...PRODUCTION, CLAIM_CODE_HMAC_KEY: 'abcd' })).toThrow(/32 octets/);
-    expect(loadConfig({ ...PRODUCTION, CLAIM_CODE_HMAC_KEY: Buffer.alloc(32, 7).toString('base64') }).claimCodeHmacKey).toHaveLength(32);
+    expect(
+      loadConfig({ ...PRODUCTION, CLAIM_CODE_HMAC_KEY: Buffer.alloc(32, 7).toString('base64') })
+        .claimCodeHmacKey,
+    ).toHaveLength(32);
     expect(loadConfig(PRODUCTION).claimCodeHmacKey.equals(Buffer.alloc(32, 0xab))).toBe(true);
   });
 
   it('production : aucune chaîne de connexion ni clé d’emballage par défaut pour les processus des clés', () => {
     const config = loadConfig(PRODUCTION);
-    expect([config.tagKeysDatabaseUrl, config.personalizationDatabaseUrl, config.tagCheckDatabaseUrl, config.keyAdminDatabaseUrl, config.tagWrappingKeyRef]).toEqual(['', '', '', '', '']);
+    expect([
+      config.tagKeysDatabaseUrl,
+      config.personalizationDatabaseUrl,
+      config.tagCheckDatabaseUrl,
+      config.keyAdminDatabaseUrl,
+      config.tagWrappingKeyRef,
+    ]).toEqual(['', '', '', '', '']);
   });
 
   it('TRUST_PROXY_HOPS (OP-N53) : obligatoire en production, entier de 0 à 5, 0 hors production', () => {
     const { TRUST_PROXY_HOPS: _hops, ...withoutHops } = PRODUCTION;
     expect(() => loadConfig(withoutHops)).toThrow(/TRUST_PROXY_HOPS manquant/);
-    expect(() => loadConfig({ ...PRODUCTION, TRUST_PROXY_HOPS: '' })).toThrow(/TRUST_PROXY_HOPS manquant/);
+    expect(() => loadConfig({ ...PRODUCTION, TRUST_PROXY_HOPS: '' })).toThrow(
+      /TRUST_PROXY_HOPS manquant/,
+    );
     for (const bad of ['true', '-1', '6', '1.5', 'loopback', ' 1'])
       expect(() => loadConfig({ ...PRODUCTION, TRUST_PROXY_HOPS: bad })).toThrow(/entier de 0 à 5/);
     expect(loadConfig({ ...PRODUCTION, TRUST_PROXY_HOPS: '0' }).trustProxyHops).toBe(0);
@@ -90,11 +106,19 @@ describe('loadConfig', () => {
 
   it('domaine des liens imprimés sur les bracelets : défaut de test, valeur en minuscules, vide en production', () => {
     expect(loadConfig({}).claimCodeDomain).toBe('pay.cashless.test');
-    expect(loadConfig({ CLAIM_CODE_DOMAIN: 'Pay.Example.ORG' }).claimCodeDomain).toBe('pay.example.org');
+    expect(loadConfig({ CLAIM_CODE_DOMAIN: 'Pay.Example.ORG' }).claimCodeDomain).toBe(
+      'pay.example.org',
+    );
     expect(loadConfig(PRODUCTION).claimCodeDomain).toBe('');
   });
 
-  it.each(['https://pay.example.org', 'pay.example.org/c', 'pay example.org', 'localhost', '-pay.example.org'])('CLAIM_CODE_DOMAIN mal formé (%s) : refus', (value) => {
+  it.each([
+    'https://pay.example.org',
+    'pay.example.org/c',
+    'pay example.org',
+    'localhost',
+    '-pay.example.org',
+  ])('CLAIM_CODE_DOMAIN mal formé (%s) : refus', (value) => {
     expect(() => loadConfig({ CLAIM_CODE_DOMAIN: value })).toThrow(/CLAIM_CODE_DOMAIN/);
   });
 
@@ -102,7 +126,10 @@ describe('loadConfig', () => {
     expect(loadConfig({ TAG_DEK_CACHE_SECONDS: value }).tagDekCacheSeconds).toBe(Number(value));
   });
 
-  it.each(['-1', '301', '5.5', 'cinq'])('TAG_DEK_CACHE_SECONDS hors bornes (%s) : refus', (value) => {
-    expect(() => loadConfig({ TAG_DEK_CACHE_SECONDS: value })).toThrow(/TAG_DEK_CACHE_SECONDS/);
-  });
+  it.each(['-1', '301', '5.5', 'cinq'])(
+    'TAG_DEK_CACHE_SECONDS hors bornes (%s) : refus',
+    (value) => {
+      expect(() => loadConfig({ TAG_DEK_CACHE_SECONDS: value })).toThrow(/TAG_DEK_CACHE_SECONDS/);
+    },
+  );
 });

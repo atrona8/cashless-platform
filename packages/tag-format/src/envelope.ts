@@ -11,16 +11,32 @@ export const NONCE_LENGTH = 12;
 export const TAG_LENGTH = 16;
 export const PWD_PACK_ENC_LENGTH = NONCE_LENGTH + PWD_PACK_LENGTH + TAG_LENGTH;
 
-export function pwdPackAad(input: { mediaId: string; operatorId: string; keyIndex: number; uid: Uint8Array }): Buffer {
+export function pwdPackAad(input: {
+  mediaId: string;
+  operatorId: string;
+  keyIndex: number;
+  uid: Uint8Array;
+}): Buffer {
   assertKeyIndex(input.keyIndex);
   assertUid(input.uid);
   const keyIndex = Buffer.alloc(2);
   keyIndex.writeUInt16BE(input.keyIndex);
-  return Buffer.concat([AAD_PREFIX, uuidToBytes(input.mediaId), uuidToBytes(input.operatorId), keyIndex, input.uid]);
+  return Buffer.concat([
+    AAD_PREFIX,
+    uuidToBytes(input.mediaId),
+    uuidToBytes(input.operatorId),
+    keyIndex,
+    input.uid,
+  ]);
 }
 
 /** Le nonce est fourni par l'appelant (12 octets aléatoires en production) : la bibliothèque ne tire aucun aléa ici. */
-export function sealPwdPack(input: { dek: Uint8Array; nonce: Uint8Array; pwdPack: Uint8Array; aad: Uint8Array }): Buffer {
+export function sealPwdPack(input: {
+  dek: Uint8Array;
+  nonce: Uint8Array;
+  pwdPack: Uint8Array;
+  aad: Uint8Array;
+}): Buffer {
   requireLength(input.dek, DEK_LENGTH, 'BAD_KEY', 'clé de données');
   requireLength(input.nonce, NONCE_LENGTH, 'BAD_LENGTH', 'nonce');
   requireLength(input.pwdPack, PWD_PACK_LENGTH, 'BAD_LENGTH', 'PWD‖PACK');

@@ -1,6 +1,15 @@
 // PURCHASE (vente en ligne ou hors ligne synchronisée) — SPECIFICATION §5.4, cas 13, 14, 19.
 import { extractTax, fee, InsufficientFundsError, spendSplit, type SpendSplit } from '../../money';
-import { BuildError, merchant, partyAccounts, suspense, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
+import {
+  BuildError,
+  merchant,
+  partyAccounts,
+  suspense,
+  wallet,
+  type BuildContext,
+  type LedgerCommand,
+  type Line,
+} from '../../types';
 import { balanced, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface PurchasePayload {
@@ -9,13 +18,17 @@ export interface PurchasePayload {
   amount: bigint;
 }
 
-export function buildPurchase(command: LedgerCommand<'PURCHASE', PurchasePayload>, ctx: BuildContext): Line[] {
+export function buildPurchase(
+  command: LedgerCommand<'PURCHASE', PurchasePayload>,
+  ctx: BuildContext,
+): Line[] {
   const { walletId, participationId, amount } = command.payload;
   requireId(walletId, 'portefeuille');
   requireId(participationId, 'participation');
   requirePositive(amount, 'vente');
   const { config, balances } = ctx;
-  if (!balances) throw new BuildError('VALIDATION_FAILED', 'vente : soldes du portefeuille non fournis');
+  if (!balances)
+    throw new BuildError('VALIDATION_FAILED', 'vente : soldes du portefeuille non fournis');
   const { org } = partyAccounts(config);
 
   let split: SpendSplit;
@@ -28,7 +41,8 @@ export function buildPurchase(command: LedgerCommand<'PURCHASE', PurchasePayload
       mode: command.source === 'ONLINE' ? 'ONLINE' : 'OFFLINE',
     });
   } catch (error) {
-    if (error instanceof InsufficientFundsError) throw new BuildError('INSUFFICIENT_FUNDS', 'vente : solde insuffisant');
+    if (error instanceof InsufficientFundsError)
+      throw new BuildError('INSUFFICIENT_FUNDS', 'vente : solde insuffisant');
     throw error;
   }
 

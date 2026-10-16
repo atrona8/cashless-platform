@@ -6,7 +6,10 @@ export function zeroize(...buffers: Array<Uint8Array | null | undefined>): void 
 }
 
 /** Exécute `fn` avec le secret, puis met le tampon à zéro, que `fn` réussisse ou non. */
-export async function withSecret<T>(secret: Buffer, fn: (secret: Buffer) => Promise<T> | T): Promise<T> {
+export async function withSecret<T>(
+  secret: Buffer,
+  fn: (secret: Buffer) => Promise<T> | T,
+): Promise<T> {
   try {
     return await fn(secret);
   } finally {

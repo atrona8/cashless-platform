@@ -15,17 +15,33 @@ export const PLATFORM_URL =
 
 /** Rôles de base des processus des clés de bracelet (mission bracelets-nfc, post-roles.sql). */
 const roleUrl = (variable: string, role: string, passwordVariable: string): string =>
-  process.env[variable] || `postgres://${role}:${process.env[passwordVariable] || `${role}_local`}@${LOCAL}`;
-export const TAGKEYS_URL = roleUrl('DATABASE_URL_TAGKEYS', 'cashless_tagkeys', 'CASHLESS_TAGKEYS_PASSWORD');
+  process.env[variable] ||
+  `postgres://${role}:${process.env[passwordVariable] || `${role}_local`}@${LOCAL}`;
+export const TAGKEYS_URL = roleUrl(
+  'DATABASE_URL_TAGKEYS',
+  'cashless_tagkeys',
+  'CASHLESS_TAGKEYS_PASSWORD',
+);
 export const PERSO_URL = roleUrl('DATABASE_URL_PERSO', 'cashless_perso', 'CASHLESS_PERSO_PASSWORD');
-export const TAGCHECK_URL = roleUrl('DATABASE_URL_TAGCHECK', 'cashless_tagcheck', 'CASHLESS_TAGCHECK_PASSWORD');
-export const KEYADMIN_URL = roleUrl('DATABASE_URL_KEYADMIN', 'cashless_keyadmin', 'CASHLESS_KEYADMIN_PASSWORD');
+export const TAGCHECK_URL = roleUrl(
+  'DATABASE_URL_TAGCHECK',
+  'cashless_tagcheck',
+  'CASHLESS_TAGCHECK_PASSWORD',
+);
+export const KEYADMIN_URL = roleUrl(
+  'DATABASE_URL_KEYADMIN',
+  'cashless_keyadmin',
+  'CASHLESS_KEYADMIN_PASSWORD',
+);
 
 const REPO_ROOT = join(__dirname, '../../../..');
 
 /** Recrée la base de test par les migrations (packages/ledger-sql/scripts/reset-db.sh). */
 export function resetDatabase(): void {
-  execFileSync('bash', [join(REPO_ROOT, 'packages/ledger-sql/scripts/reset-db.sh')], { cwd: REPO_ROOT, stdio: 'ignore' });
+  execFileSync('bash', [join(REPO_ROOT, 'packages/ledger-sql/scripts/reset-db.sh')], {
+    cwd: REPO_ROOT,
+    stdio: 'ignore',
+  });
 }
 
 /** Client connecté (à fermer par l'appelant). */
@@ -68,7 +84,10 @@ export async function commitWhileWaiting<T>(
         ),
       );
       if (rows[0]!.n > 0) break;
-      if (waited >= 10_000) throw new Error(`aucune session ${waiter.role} n'attend le verrou de « ${waiter.statement} »`);
+      if (waited >= 10_000)
+        throw new Error(
+          `aucune session ${waiter.role} n'attend le verrou de « ${waiter.statement} »`,
+        );
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
     await holder.query('COMMIT');

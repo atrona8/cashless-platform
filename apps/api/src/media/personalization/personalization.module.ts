@@ -5,5 +5,9 @@ import { KeysPersonalizationModule } from '../keys/keys-personalization.module';
 import { PersonalizationController } from './personalization.controller';
 import { PersonalizationService } from './personalization.service';
 
-@Module({ imports: [KeysPersonalizationModule], controllers: [PersonalizationController], providers: [ClaimHasher, PersonalizationService] })
+@Module({
+  imports: [KeysPersonalizationModule],
+  controllers: [PersonalizationController],
+  providers: [ClaimHasher, PersonalizationService],
+})
 export class PersonalizationModule {}

@@ -11,7 +11,11 @@ import { TestRouteModule } from './test-route.module';
 const SENTINEL = 'SENTINELLE_SQL_42';
 
 const CASES: [sqlstate: string, code: string, status: number][] = [
-  ...Object.entries(SQLSTATE_MAP).map(([sqlstate, m]): [string, string, number] => [sqlstate, m.code, m.status]),
+  ...Object.entries(SQLSTATE_MAP).map(([sqlstate, m]): [string, string, number] => [
+    sqlstate,
+    m.code,
+    m.status,
+  ]),
   ['23514', 'VALIDATION_FAILED', 422], // contrainte CHECK quelconque (pas de double validation)
   ['22012', 'INTERNAL_ERROR', 500], // SQLSTATE hors table
 ];
@@ -38,18 +42,21 @@ describe('erreurs SQL traduites sans fuite', () => {
     await app.close();
   });
 
-  it.each(CASES)('SQLSTATE %s → %s (%i), aucun fragment du message SQL', async (sqlstate, code, status) => {
-    const res = await request(app.getHttpServer())
-      .post(`/v1/__test/fail?sqlstate=${sqlstate}`)
-      .set(TEST_OPERATOR_HEADER, ops.a)
-      .set('Accept-Language', 'en');
-    expect(res.status).toBe(status);
-    expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
-    const body = JSON.parse(res.text);
-    expect(body).toMatchObject({ code, status, type: `https://errors.cashless/${code}` });
-    expect(res.text).not.toContain(SENTINEL);
-    expect(JSON.stringify(res.headers)).not.toContain(SENTINEL);
-  });
+  it.each(CASES)(
+    'SQLSTATE %s → %s (%i), aucun fragment du message SQL',
+    async (sqlstate, code, status) => {
+      const res = await request(app.getHttpServer())
+        .post(`/v1/__test/fail?sqlstate=${sqlstate}`)
+        .set(TEST_OPERATOR_HEADER, ops.a)
+        .set('Accept-Language', 'en');
+      expect(res.status).toBe(status);
+      expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
+      const body = JSON.parse(res.text);
+      expect(body).toMatchObject({ code, status, type: `https://errors.cashless/${code}` });
+      expect(res.text).not.toContain(SENTINEL);
+      expect(JSON.stringify(res.headers)).not.toContain(SENTINEL);
+    },
+  );
 
   it('23514 de double validation (écriture BACKOFFICE sans valideur) → 403 FORBIDDEN', async () => {
     const res = await request(app.getHttpServer())

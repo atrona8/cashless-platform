@@ -12,7 +12,8 @@ export const CLAIM_CODE_LENGTH = 10;
  */
 export function generateClaimCode(randomBytes: (size: number) => Uint8Array): string {
   const bytes = randomBytes(CLAIM_CODE_LENGTH);
-  if (bytes.length !== CLAIM_CODE_LENGTH) throw new TagFormatError('BAD_LENGTH', 'source d’aléa : 10 octets attendus');
+  if (bytes.length !== CLAIM_CODE_LENGTH)
+    throw new TagFormatError('BAD_LENGTH', 'source d’aléa : 10 octets attendus');
   let code = '';
   for (const byte of bytes) code += CLAIM_CODE_ALPHABET[byte & 0x1f];
   return code;
@@ -21,9 +22,11 @@ export function generateClaimCode(randomBytes: (size: number) => Uint8Array): st
 /** Saisie → 10 caractères : retire tirets et espaces, met en majuscules, refuse tout le reste. */
 export function normalizeClaimCode(input: string): string {
   const code = input.replace(/[\s-]/g, '').toUpperCase();
-  if (code.length !== CLAIM_CODE_LENGTH) throw new TagFormatError('BAD_CLAIM_CODE', 'code de rattachement : 10 caractères attendus');
+  if (code.length !== CLAIM_CODE_LENGTH)
+    throw new TagFormatError('BAD_CLAIM_CODE', 'code de rattachement : 10 caractères attendus');
   for (const char of code) {
-    if (!CLAIM_CODE_ALPHABET.includes(char)) throw new TagFormatError('BAD_CLAIM_CODE', 'code de rattachement : caractère non permis');
+    if (!CLAIM_CODE_ALPHABET.includes(char))
+      throw new TagFormatError('BAD_CLAIM_CODE', 'code de rattachement : caractère non permis');
   }
   return code;
 }

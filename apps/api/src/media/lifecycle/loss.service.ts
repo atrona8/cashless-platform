@@ -20,7 +20,11 @@ export class LossService {
 
   async reportLost(client: TxClient, actor: TenantActor, mediaId: string, reason: string) {
     const before = await this.authorize(client, actor, mediaId);
-    await client.query('SELECT suspend_media($1, $2, $3)', [mediaId, reason, actor.principal.userId]);
+    await client.query('SELECT suspend_media($1, $2, $3)', [
+      mediaId,
+      reason,
+      actor.principal.userId,
+    ]);
     if (before !== 'SUSPENDED') {
       await this.audit.record(client, {
         ...actor.audit,
@@ -39,7 +43,9 @@ export class LossService {
     const before = await this.authorize(client, actor, mediaId);
     const reason = 'LOST_MEDIA_RECOVERED';
     await client.query('SELECT media_set_actor($1, $2)', [actor.principal.userId, reason]);
-    const { rows } = await client.query<{ status: string }>('SELECT recover_media($1) AS status', [mediaId]);
+    const { rows } = await client.query<{ status: string }>('SELECT recover_media($1) AS status', [
+      mediaId,
+    ]);
     await this.audit.record(client, {
       ...actor.audit,
       operatorId: actor.operatorId,
@@ -57,7 +63,11 @@ export class LossService {
    * son lot ou sur son événement (403 sinon). Rend le statut courant.
    */
   private async authorize(client: TxClient, actor: TenantActor, mediaId: string): Promise<string> {
-    const { rows } = await client.query<{ status: string; organizer_id: string | null; event_id: string | null }>(
+    const { rows } = await client.query<{
+      status: string;
+      organizer_id: string | null;
+      event_id: string | null;
+    }>(
       `SELECT m.status, b.organizer_id, media_event(m.id) AS event_id
          FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id WHERE m.id = $1 FOR UPDATE OF m`,
       [mediaId],
@@ -67,7 +77,8 @@ export class LossService {
     const allowed = actor.principal.assignments.some(
       (a) =>
         (LOSS_ROLES as readonly string[]).includes(a.role) &&
-        ((a.scopeType === 'ORGANIZER' && a.scopeId !== null && a.scopeId === media.organizer_id) || (a.scopeType === 'EVENT' && a.scopeId !== null && a.scopeId === media.event_id)),
+        ((a.scopeType === 'ORGANIZER' && a.scopeId !== null && a.scopeId === media.organizer_id) ||
+          (a.scopeType === 'EVENT' && a.scopeId !== null && a.scopeId === media.event_id)),
     );
     if (!allowed) throw new ProblemException('FORBIDDEN');
     return media.status;

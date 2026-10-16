@@ -66,7 +66,8 @@ const dto = (row: ConfigVersionRow): ConfigVersionDto => ({
 
 /** Valeur d'une colonne sous une forme JSON : bigint → entier (ou texte au-delà de 2^53), date → ISO 8601. */
 export function jsonValue(value: unknown): unknown {
-  if (typeof value === 'bigint') return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
+  if (typeof value === 'bigint')
+    return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
   if (value instanceof Date) return value.toISOString();
   return value ?? null;
 }
@@ -85,7 +86,10 @@ export class CascadeService {
   constructor(private readonly audit: AuditService) {}
 
   /** Dernière version d'un niveau (toutes dates d'effet confondues). */
-  async latest(client: TxClient, scope: Pick<ConfigScope, 'level' | 'scopeId'>): Promise<ConfigVersionDto | null> {
+  async latest(
+    client: TxClient,
+    scope: Pick<ConfigScope, 'level' | 'scopeId'>,
+  ): Promise<ConfigVersionDto | null> {
     const { rows } = await client.query<ConfigVersionRow>(
       `SELECT id, operator_id, scope_type, scope_id, version, valid_from, settings FROM config_version
         WHERE scope_type = $1 AND scope_id = $2 ORDER BY version DESC LIMIT 1`,
@@ -146,7 +150,9 @@ export class CascadeService {
   async resolve(client: TxClient, target: CascadeTarget, at?: Date): Promise<ResolvedConfigView> {
     const versions = await this.versionsAt(client, target, at);
     const event = target.eventId ? await this.eventColumns(client, target.eventId) : null;
-    const hasEventVersions = target.eventId ? await this.hasVersions(client, 'EVENT', target.eventId) : false;
+    const hasEventVersions = target.eventId
+      ? await this.hasVersions(client, 'EVENT', target.eventId)
+      : false;
     const view: ResolvedConfigView = {};
 
     for (const definition of resolvedKeys()) {
@@ -160,8 +166,19 @@ export class CascadeService {
           break;
         }
         // Événement sans aucune version (créé hors de l'API) : ses colonnes font foi.
-        if (level === 'EVENT' && definition.storage.kind === 'EVENT_COLUMN' && event && !hasEventVersions) {
-          resolved = { value: jsonValue(event[definition.key]), level: 'EVENT', version: null, config_version_id: null, provisional: false };
+        if (
+          level === 'EVENT' &&
+          definition.storage.kind === 'EVENT_COLUMN' &&
+          event &&
+          !hasEventVersions
+        ) {
+          resolved = {
+            value: jsonValue(event[definition.key]),
+            level: 'EVENT',
+            version: null,
+            config_version_id: null,
+            provisional: false,
+          };
           break;
         }
       }
@@ -179,14 +196,25 @@ export class CascadeService {
     if (event && deadline && deadline.value === null) {
       const fallback = effectiveRefundDeadline(null, (event.ends_at as Date | null) ?? null);
       if (fallback) {
-        view.refund_deadline = { value: fallback.value.toISOString(), level: null, version: null, config_version_id: null, provisional: true };
+        view.refund_deadline = {
+          value: fallback.value.toISOString(),
+          level: null,
+          version: null,
+          config_version_id: null,
+          provisional: true,
+        };
       }
     }
     return view;
   }
 
   /** Configuration résolue d'un événement (et d'une de ses participations) ; événement invisible : 404. */
-  async resolveForEvent(client: TxClient, eventId: string, at?: Date, participationId?: string): Promise<ResolvedConfigView> {
+  async resolveForEvent(
+    client: TxClient,
+    eventId: string,
+    at?: Date,
+    participationId?: string,
+  ): Promise<ResolvedConfigView> {
     const { rows } = await client.query<{ operator_id: string; organizer_id: string }>(
       'SELECT operator_id, organizer_id FROM event WHERE id = $1',
       [eventId],
@@ -194,19 +222,27 @@ export class CascadeService {
     const event = rows[0];
     if (!event) throw new ProblemException('NOT_FOUND');
     if (participationId !== undefined) {
-      const participation = await client.query('SELECT 1 FROM merchant_participation WHERE id = $1 AND event_id = $2', [
-        participationId,
-        eventId,
-      ]);
+      const participation = await client.query(
+        'SELECT 1 FROM merchant_participation WHERE id = $1 AND event_id = $2',
+        [participationId, eventId],
+      );
       if (participation.rowCount !== 1) throw new ProblemException('NOT_FOUND');
     }
-    return this.resolve(client, { operatorId: event.operator_id, organizerId: event.organizer_id, eventId, participationId }, at);
+    return this.resolve(
+      client,
+      { operatorId: event.operator_id, organizerId: event.organizer_id, eventId, participationId },
+      at,
+    );
   }
 
   // ------------------------------------------------------------------ Aides
 
   /** Par niveau, dernière version dont la date d'effet ne dépasse pas `at`. */
-  private async versionsAt(client: TxClient, target: CascadeTarget, at: Date | undefined): Promise<Map<ConfigLevel, ConfigVersionRow>> {
+  private async versionsAt(
+    client: TxClient,
+    target: CascadeTarget,
+    at: Date | undefined,
+  ): Promise<Map<ConfigLevel, ConfigVersionRow>> {
     const { rows } = await client.query<ConfigVersionRow>(
       `SELECT DISTINCT ON (scope_type) id, operator_id, scope_type, scope_id, version, valid_from, settings
          FROM config_version
@@ -217,32 +253,55 @@ export class CascadeService {
             OR (scope_type = 'EVENT' AND scope_id = $4)
             OR (scope_type = 'PARTICIPATION' AND scope_id = $5))
         ORDER BY scope_type, valid_from DESC, version DESC`,
-      [at ?? null, target.operatorId, target.organizerId ?? null, target.eventId ?? null, target.participationId ?? null],
+      [
+        at ?? null,
+        target.operatorId,
+        target.organizerId ?? null,
+        target.eventId ?? null,
+        target.participationId ?? null,
+      ],
     );
     return new Map(rows.map((row) => [row.scope_type, row]));
   }
 
-  private async hasVersions(client: TxClient, level: ConfigLevel, scopeId: string): Promise<boolean> {
-    const { rowCount } = await client.query('SELECT 1 FROM config_version WHERE scope_type = $1 AND scope_id = $2 LIMIT 1', [
-      level,
-      scopeId,
-    ]);
+  private async hasVersions(
+    client: TxClient,
+    level: ConfigLevel,
+    scopeId: string,
+  ): Promise<boolean> {
+    const { rowCount } = await client.query(
+      'SELECT 1 FROM config_version WHERE scope_type = $1 AND scope_id = $2 LIMIT 1',
+      [level, scopeId],
+    );
     return rowCount === 1;
   }
 
-  private async eventColumns(client: TxClient, eventId: string): Promise<Record<string, unknown> | null> {
-    const { rows } = await client.query<Record<string, unknown>>('SELECT * FROM event WHERE id = $1', [eventId]);
+  private async eventColumns(
+    client: TxClient,
+    eventId: string,
+  ): Promise<Record<string, unknown> | null> {
+    const { rows } = await client.query<Record<string, unknown>>(
+      'SELECT * FROM event WHERE id = $1',
+      [eventId],
+    );
     return rows[0] ?? null;
   }
 }
 
 function from(value: unknown, version: ConfigVersionRow): ResolvedValue {
-  return { value, level: version.scope_type, version: version.version, config_version_id: version.id, provisional: false };
+  return {
+    value,
+    level: version.scope_type,
+    version: version.version,
+    config_version_id: version.id,
+    provisional: false,
+  };
 }
 
 function conflict(): ProblemException {
   return new ProblemException('CONFLICT_STATE', {
     status: 409,
-    detail: 'La configuration de ce niveau a changé entre-temps : relire la version courante et recommencer.',
+    detail:
+      'La configuration de ce niveau a changé entre-temps : relire la version courante et recommencer.',
   });
 }

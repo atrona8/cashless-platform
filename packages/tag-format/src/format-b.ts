@@ -53,9 +53,17 @@ export function decodeFormatB(bytes: Uint8Array): FormatB {
   const buf = Buffer.from(bytes);
   const major = buf[0]!;
   // La page 4 est gelée pour toutes les versions : le majeur se lit avant tout contrôle du reste.
-  if (major !== FORMAT_B_MAJOR) throw new TagFormatError('UNKNOWN_MAJOR', `version majeure inconnue : ${major}`);
-  if (!crc32IsoHdlc(buf.subarray(0, 24)).equals(buf.subarray(24, 28))) throw new TagFormatError('BAD_CRC', 'CRC du format B incorrect');
-  return { major, minor: buf[1]!, keyIndex: buf.readUInt16BE(2), identity: Buffer.from(buf.subarray(4, 20)), flags: buf[20]! };
+  if (major !== FORMAT_B_MAJOR)
+    throw new TagFormatError('UNKNOWN_MAJOR', `version majeure inconnue : ${major}`);
+  if (!crc32IsoHdlc(buf.subarray(0, 24)).equals(buf.subarray(24, 28)))
+    throw new TagFormatError('BAD_CRC', 'CRC du format B incorrect');
+  return {
+    major,
+    minor: buf[1]!,
+    keyIndex: buf.readUInt16BE(2),
+    identity: Buffer.from(buf.subarray(4, 20)),
+    flags: buf[20]!,
+  };
 }
 
 /** Empreinte de l'identité : seule forme que le serveur conserve (`media.token_hash`). */

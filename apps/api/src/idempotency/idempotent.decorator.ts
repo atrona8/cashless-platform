@@ -48,8 +48,11 @@ export interface IdempotentRequest extends Request {
 }
 
 /** Paramètre de contrôleur : `@IdempotentTransaction() tx: IdempotentTx` (route marquée `@Idempotent` seulement). */
-export const IdempotentTransaction = createParamDecorator((_data: unknown, context: ExecutionContext): IdempotentTx => {
-  const tx = context.switchToHttp().getRequest<IdempotentRequest>().idempotentTx;
-  if (!tx) throw new Error('@IdempotentTransaction() utilisé sur une route non marquée @Idempotent');
-  return tx;
-});
+export const IdempotentTransaction = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): IdempotentTx => {
+    const tx = context.switchToHttp().getRequest<IdempotentRequest>().idempotentTx;
+    if (!tx)
+      throw new Error('@IdempotentTransaction() utilisé sur une route non marquée @Idempotent');
+    return tx;
+  },
+);

@@ -2,13 +2,29 @@
 // des refus de règle, en français et en anglais (NFR-005). Chaque refus cite sa règle (`rule`), jamais un texte SQL.
 import { ProblemException } from '../../errors/problem';
 import type { Language } from '../../http/language';
-import { amountField, enumField, intField, invalid, isUuid, nullableText, objectBody, textField } from '../../organization/platform/platform.dto';
+import {
+  amountField,
+  enumField,
+  intField,
+  invalid,
+  isUuid,
+  nullableText,
+  objectBody,
+  textField,
+} from '../../organization/platform/platform.dto';
 
 export const BATCH_KINDS = ['PUBLIC', 'STAFF', 'VIP'] as const;
 export const KEY_MODES = ['SHARED', 'DEDICATED'] as const;
 export const REUSE_POLICIES = ['SINGLE_USE', 'PERSONAL', 'POOL'] as const;
 export const DEPOSIT_MODES = ['FROM_BALANCE', 'SEPARATE'] as const;
-export const BATCH_STATUSES = ['ORDERED', 'PERSONALIZED', 'DELIVERED', 'ACTIVE', 'SUSPENDED', 'CLOSED'] as const;
+export const BATCH_STATUSES = [
+  'ORDERED',
+  'PERSONALIZED',
+  'DELIVERED',
+  'ACTIVE',
+  'SUSPENDED',
+  'CLOSED',
+] as const;
 /** Statuts que la route de statut accepte ; `CLOSED` passe par la clôture. */
 export const SETTABLE_STATUSES = ['PERSONALIZED', 'DELIVERED', 'ACTIVE', 'SUSPENDED'] as const;
 
@@ -72,7 +88,8 @@ export interface BatchCreateInput {
 export function parseBatchCreate(raw: unknown): BatchCreateInput {
   const body = objectBody(raw);
   if (!isUuid(body.organizer_id)) throw invalid('organizer_id : identifiant attendu.');
-  if (body.event_id !== undefined && body.event_id !== null && !isUuid(body.event_id)) throw invalid('event_id : identifiant attendu.');
+  if (body.event_id !== undefined && body.event_id !== null && !isUuid(body.event_id))
+    throw invalid('event_id : identifiant attendu.');
   return {
     organizer_id: body.organizer_id,
     event_id: (body.event_id as string | null | undefined) ?? null,
@@ -88,12 +105,21 @@ export function parseBatchCreate(raw: unknown): BatchCreateInput {
   };
 }
 
-export const BATCH_UPDATE_KEYS = ['quantity', 'print_order_ref', 'preload_promo_amount', 'deposit_amount', 'deposit_mode', 'reuse_policy'] as const;
+export const BATCH_UPDATE_KEYS = [
+  'quantity',
+  'print_order_ref',
+  'preload_promo_amount',
+  'deposit_amount',
+  'deposit_mode',
+  'reuse_policy',
+] as const;
 export type BatchChanges = Partial<Pick<BatchCreateInput, (typeof BATCH_UPDATE_KEYS)[number]>>;
 
 export function parseBatchUpdate(raw: unknown): BatchChanges {
   const body = objectBody(raw);
-  const unknown = Object.keys(body).filter((key) => !(BATCH_UPDATE_KEYS as readonly string[]).includes(key));
+  const unknown = Object.keys(body).filter(
+    (key) => !(BATCH_UPDATE_KEYS as readonly string[]).includes(key),
+  );
   if (unknown.length > 0) throw invalid(`Champ non modifiable ou inconnu : ${unknown.join(', ')}.`);
   if (Object.keys(body).length === 0) throw invalid('Au moins un champ à modifier.');
   const changes: BatchChanges = {};
@@ -115,18 +141,29 @@ export function parseBatchUpdate(raw: unknown): BatchChanges {
   return changes;
 }
 
-export function parseStatusChange(raw: unknown): { status: (typeof SETTABLE_STATUSES)[number]; reason: string | null } {
+export function parseStatusChange(raw: unknown): {
+  status: (typeof SETTABLE_STATUSES)[number];
+  reason: string | null;
+} {
   const body = objectBody(raw);
-  if (body.status === 'CLOSED') throw invalid('status : un lot se clôt par sa route de clôture (…/closure), pas par un changement de statut.');
-  return { status: enumField(body, 'status', SETTABLE_STATUSES, 'required')!, reason: textField(body, 'reason', 500, 'optional') ?? null };
+  if (body.status === 'CLOSED')
+    throw invalid(
+      'status : un lot se clôt par sa route de clôture (…/closure), pas par un changement de statut.',
+    );
+  return {
+    status: enumField(body, 'status', SETTABLE_STATUSES, 'required')!,
+    reason: textField(body, 'reason', 500, 'optional') ?? null,
+  };
 }
 
 // Refus de règle ------------------------------------------------------------------------------------------------------
 type Vars = Record<string, string | number>;
 const RULES: Record<string, Record<Language, (v: Vars) => string>> = {
   'batch.deposit_mode': {
-    fr: () => 'Une caution a toujours un mode (FROM_BALANCE ou SEPARATE), et un mode suppose une caution : deposit_amount et deposit_mode vont ensemble.',
-    en: () => 'A deposit always has a mode (FROM_BALANCE or SEPARATE), and a mode requires a deposit: deposit_amount and deposit_mode go together.',
+    fr: () =>
+      'Une caution a toujours un mode (FROM_BALANCE ou SEPARATE), et un mode suppose une caution : deposit_amount et deposit_mode vont ensemble.',
+    en: () =>
+      'A deposit always has a mode (FROM_BALANCE or SEPARATE), and a mode requires a deposit: deposit_amount and deposit_mode go together.',
   },
   'batch.dedicated_event': {
     fr: () => 'Un lot à clé dédiée est réservé à un événement : event_id est obligatoire.',
@@ -145,12 +182,16 @@ const RULES: Record<string, Record<Language, (v: Vars) => string>> = {
     en: (v) => `key_index: no key with index ${v.key_index} for this operator.`,
   },
   'batch.key_inactive': {
-    fr: (v) => `key_index : la clé ${v.key_index} n’est plus active (${v.status}) ; elle ne personnalise plus de nouveau lot.`,
-    en: (v) => `key_index: key ${v.key_index} is no longer active (${v.status}); it cannot personalize a new batch.`,
+    fr: (v) =>
+      `key_index : la clé ${v.key_index} n’est plus active (${v.status}) ; elle ne personnalise plus de nouveau lot.`,
+    en: (v) =>
+      `key_index: key ${v.key_index} is no longer active (${v.status}); it cannot personalize a new batch.`,
   },
   'batch.key_shared': {
-    fr: (v) => `key_index : la clé ${v.key_index} est dédiée à un événement ; un lot à clé partagée ne peut pas l’utiliser.`,
-    en: (v) => `key_index: key ${v.key_index} is dedicated to an event; a shared-key batch cannot use it.`,
+    fr: (v) =>
+      `key_index : la clé ${v.key_index} est dédiée à un événement ; un lot à clé partagée ne peut pas l’utiliser.`,
+    en: (v) =>
+      `key_index: key ${v.key_index} is dedicated to an event; a shared-key batch cannot use it.`,
   },
   'batch.key_dedicated': {
     fr: (v) => `key_index : la clé ${v.key_index} n’est pas la clé dédiée à l’événement du lot.`,
@@ -163,6 +204,14 @@ const RULES: Record<string, Record<Language, (v: Vars) => string>> = {
 };
 
 /** Refus 422 d'une règle des lots, dans la langue de la requête ; `rule` est l'identifiant stable de la règle. */
-export function batchRefusal(rule: keyof typeof RULES & string, language: Language, vars: Vars = {}): ProblemException {
-  return new ProblemException('VALIDATION_FAILED', { status: 422, detail: RULES[rule]![language](vars), extensions: { rule } });
+export function batchRefusal(
+  rule: keyof typeof RULES & string,
+  language: Language,
+  vars: Vars = {},
+): ProblemException {
+  return new ProblemException('VALIDATION_FAILED', {
+    status: 422,
+    detail: RULES[rule]![language](vars),
+    extensions: { rule },
+  });
 }

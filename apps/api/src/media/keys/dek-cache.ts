@@ -25,7 +25,11 @@ export class DekCache implements OnModuleDestroy {
    * Exécute `fn` avec la clé de données `dekId`. `load` (un déchiffrement par le service de clés) n'est appelé que
    * si la clé n'est pas en cache ; plusieurs demandes simultanées partagent le même déchiffrement.
    */
-  async withKey<T>(dekId: string, load: () => Promise<Buffer>, fn: (dek: Buffer) => Promise<T> | T): Promise<T> {
+  async withKey<T>(
+    dekId: string,
+    load: () => Promise<Buffer>,
+    fn: (dek: Buffer) => Promise<T> | T,
+  ): Promise<T> {
     const entry = await this.entry(dekId, load);
     entry.users += 1;
     try {

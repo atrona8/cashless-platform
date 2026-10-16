@@ -19,8 +19,18 @@ import type { AuditService } from '../../audit/audit.service';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { isSqlError } from '../../errors/sqlstate-map';
-import { IDENTITY_VERIFIER, IdentityError, type IdentityVerifier, type VerifiedApprovalToken } from '../../identity/oidc-verifier';
-import { requestPrincipal, type Principal, type Role, type ScopeType } from '../../identity/principal';
+import {
+  IDENTITY_VERIFIER,
+  IdentityError,
+  type IdentityVerifier,
+  type VerifiedApprovalToken,
+} from '../../identity/oidc-verifier';
+import {
+  requestPrincipal,
+  type Principal,
+  type Role,
+  type ScopeType,
+} from '../../identity/principal';
 import type { StaffRole } from '../../identity/roles.decorator';
 import { exercisedRole, resolveChain, type ScopeRef } from '../../identity/scope-resolver';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../../tenancy/tenant-context';
@@ -67,7 +77,10 @@ export class OnsiteApprovalGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const options = this.reflector.get<OnsiteApprovalOptions | undefined>(ONSITE, context.getHandler());
+    const options = this.reflector.get<OnsiteApprovalOptions | undefined>(
+      ONSITE,
+      context.getHandler(),
+    );
     if (!options) return true;
     const req = context.switchToHttp().getRequest<OnsiteRequest>();
     if (options.optional && !req.header(APPROVAL_TOKEN_HEADER)) return true;
@@ -76,7 +89,11 @@ export class OnsiteApprovalGuard implements CanActivate {
   }
 
   /** Toute anomalie → 403 APPROVAL_INVALID ; la raison exacte n'est écrite que dans le journal serveur. */
-  private async verify(req: Request, caller: Principal, options: OnsiteApprovalOptions): Promise<OnsiteApproval> {
+  private async verify(
+    req: Request,
+    caller: Principal,
+    options: OnsiteApprovalOptions,
+  ): Promise<OnsiteApproval> {
     const token = req.header(APPROVAL_TOKEN_HEADER);
     if (!token) throw new ProblemException('APPROVAL_REQUIRED', { status: 403 });
     const reject = (reason: string): never => {
@@ -88,11 +105,13 @@ export class OnsiteApprovalGuard implements CanActivate {
     try {
       verified = await this.verifier.verifyApproval(token);
     } catch (error) {
-      if (error instanceof IdentityError && error.kind === 'UNAVAILABLE') throw new ProblemException('SERVICE_UNAVAILABLE');
+      if (error instanceof IdentityError && error.kind === 'UNAVAILABLE')
+        throw new ProblemException('SERVICE_UNAVAILABLE');
       return reject('signature, émetteur, audience ou durée');
     }
     if (verified.act !== options.operationId) return reject(`act ${verified.act}`);
-    if (!sameHash(verified.actHash, requestActHash(req))) return reject('act_hash différent de la requête');
+    if (!sameHash(verified.actHash, requestActHash(req)))
+      return reject('act_hash différent de la requête');
 
     const person = await this.tx.identify(verified.issuer, verified.subject);
     if (!person || person.status !== 'ACTIVE') return reject('valideur inconnu ou désactivé');
@@ -113,9 +132,15 @@ export class OnsiteApprovalGuard implements CanActivate {
     };
     const target = options.scope?.(req) ?? { type: 'OPERATOR', id: operatorId };
     const chain = await this.tx.run(operatorId, (client) => resolveChain(client, target));
-    if (!exercisedRole(approver, [options.role], chain)) return reject(`valideur sans le rôle ${options.role}`);
+    if (!exercisedRole(approver, [options.role], chain))
+      return reject(`valideur sans le rôle ${options.role}`);
 
-    return { approverId: person.user_id, jti: verified.jti, operationId: verified.act, expiresAt: verified.expiresAt };
+    return {
+      approverId: person.user_id,
+      jti: verified.jti,
+      operationId: verified.act,
+      expiresAt: verified.expiresAt,
+    };
   }
 }
 
@@ -127,18 +152,31 @@ export const RequiresOnsiteApproval = (options: OnsiteApprovalOptions): MethodDe
  * Consomme le jeton vérifié par la garde, dans la transaction métier (`IdempotentTx.run`) ; rend le valideur à
  * transmettre à la base (jamais lu dans le corps). Jeton déjà consommé → 403 APPROVAL_INVALID, travail annulé.
  */
-export async function consumeOnsiteApproval(client: TxClient, req: Request, audit: AuditService): Promise<string> {
+export async function consumeOnsiteApproval(
+  client: TxClient,
+  req: Request,
+  audit: AuditService,
+): Promise<string> {
   const approval = (req as OnsiteRequest).onsiteApproval;
   if (!approval) throw new Error('consumeOnsiteApproval : route sans @RequiresOnsiteApproval');
   const caller = requestPrincipal(req);
-  const { rows } = await client.query<{ id: string }>("SELECT current_setting('app.operator_id') AS id");
+  const { rows } = await client.query<{ id: string }>(
+    "SELECT current_setting('app.operator_id') AS id",
+  );
   const operatorId = rows[0]!.id;
   let consumed: number;
   try {
     const inserted = await client.query(
       `INSERT INTO approval_token_use (jti, operator_id, operation_id, approver_id, caller_id, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (jti) DO NOTHING`,
-      [approval.jti, operatorId, approval.operationId, approval.approverId, caller.userId, approval.expiresAt],
+      [
+        approval.jti,
+        operatorId,
+        approval.operationId,
+        approval.approverId,
+        caller.userId,
+        approval.expiresAt,
+      ],
     );
     consumed = inserted.rowCount ?? 0;
   } catch (error) {

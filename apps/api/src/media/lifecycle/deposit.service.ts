@@ -60,26 +60,50 @@ export class DepositService {
   /** État courant de la caution, avec l'écriture qui l'a posée ou rendue pour le détenteur actuel. */
   async state(client: TxClient, mediaId: string): Promise<DepositState> {
     const row = await this.row(client, mediaId);
-    const amount = row.deposit_status === 'HELD' ? row.deposit_held : row.deposit_status === 'NONE' ? 0n : (row.deposit_amount ?? 0n);
-    const prefix = row.deposit_status === 'REFUNDED' ? 'deposit-refund' : row.deposit_status === 'FORFEITED' ? 'deposit-forfeit' : 'deposit';
+    const amount =
+      row.deposit_status === 'HELD'
+        ? row.deposit_held
+        : row.deposit_status === 'NONE'
+          ? 0n
+          : (row.deposit_amount ?? 0n);
+    const prefix =
+      row.deposit_status === 'REFUNDED'
+        ? 'deposit-refund'
+        : row.deposit_status === 'FORFEITED'
+          ? 'deposit-forfeit'
+          : 'deposit';
     const tx = row.ledger_id
-      ? await client.query<{ id: string }>('SELECT id FROM journal_transaction WHERE ledger_id = $1 AND idempotency_key = $2', [row.ledger_id, `${prefix}:${mediaId}:${row.assignments}`])
+      ? await client.query<{ id: string }>(
+          'SELECT id FROM journal_transaction WHERE ledger_id = $1 AND idempotency_key = $2',
+          [row.ledger_id, `${prefix}:${mediaId}:${row.assignments}`],
+        )
       : { rows: [] };
     return {
       status: row.deposit_status,
       amount: Number(amount),
       mode: Number(row.deposit_amount ?? 0n) === 0 ? null : row.deposit_mode,
-      transaction_id: row.deposit_status === 'NONE' || row.deposit_status === 'DUE' ? null : (tx.rows[0]?.id ?? null),
+      transaction_id:
+        row.deposit_status === 'NONE' || row.deposit_status === 'DUE'
+          ? null
+          : (tx.rows[0]?.id ?? null),
     };
   }
 
   /** Prend la caution du lot ; rend l'identifiant de l'écriture, s'il y en a eu une. Déjà détenue : rien de plus. */
-  async take(client: TxClient, context: DepositContext, mediaId: string, payment: Payment | null, occurredAt: Date): Promise<{ state: DepositState; transactionId: string | null }> {
+  async take(
+    client: TxClient,
+    context: DepositContext,
+    mediaId: string,
+    payment: Payment | null,
+    occurredAt: Date,
+  ): Promise<{ state: DepositState; transactionId: string | null }> {
     const row = await this.row(client, mediaId);
-    if (Number(row.deposit_amount ?? 0n) === 0 || row.deposit_status === 'HELD') return { state: await this.state(client, mediaId), transactionId: null };
+    if (Number(row.deposit_amount ?? 0n) === 0 || row.deposit_status === 'HELD')
+      return { state: await this.state(client, mediaId), transactionId: null };
     if (!row.ledger_id || !row.currency) throw new ProblemException('MEDIA_NOT_ACTIVATED');
     const moneyAccount = this.moneyAccount(context, row, payment);
-    if (row.deposit_mode === 'FROM_BALANCE' && row.debit_authority === 'EDGE') throw new ProblemException('DEBIT_AUTHORITY_EDGE');
+    if (row.deposit_mode === 'FROM_BALANCE' && row.debit_authority === 'EDGE')
+      throw new ProblemException('DEBIT_AUTHORITY_EDGE');
     const result = await this.engine.execute(client, {
       type: 'DEPOSIT_TAKEN',
       idempotencyKey: `deposit:${mediaId}:${row.assignments}`,
@@ -99,19 +123,33 @@ export class DepositService {
       action: 'MEDIA_DEPOSIT_TAKEN',
       objectType: 'media',
       objectId: mediaId,
-      after: { status: state.status, amount: state.amount, mode: state.mode, transaction_id: result.transactionId },
+      after: {
+        status: state.status,
+        amount: state.amount,
+        mode: state.mode,
+        transaction_id: result.transactionId,
+      },
     });
     return { state, transactionId: result.transactionId };
   }
 
   /** Rend la caution détenue, par le canal de son mode. Déjà rendue : même état, rien de plus. */
-  async refund(client: TxClient, context: DepositContext, mediaId: string, payment: Payment | null, occurredAt: Date): Promise<{ state: DepositState; transactionId: string | null }> {
+  async refund(
+    client: TxClient,
+    context: DepositContext,
+    mediaId: string,
+    payment: Payment | null,
+    occurredAt: Date,
+  ): Promise<{ state: DepositState; transactionId: string | null }> {
     const row = await this.row(client, mediaId);
-    if (row.deposit_status === 'REFUNDED') return { state: await this.state(client, mediaId), transactionId: null };
-    if (row.deposit_status !== 'HELD' && row.deposit_status !== 'DUE') throw conflict(`Aucune caution à rendre sur ce bracelet (${row.deposit_status}).`);
+    if (row.deposit_status === 'REFUNDED')
+      return { state: await this.state(client, mediaId), transactionId: null };
+    if (row.deposit_status !== 'HELD' && row.deposit_status !== 'DUE')
+      throw conflict(`Aucune caution à rendre sur ce bracelet (${row.deposit_status}).`);
     if (!row.ledger_id || !row.currency) throw new ProblemException('MEDIA_NOT_ACTIVATED');
     const held = Number(row.deposit_held);
-    const moneyAccount = row.deposit_status === 'HELD' ? this.moneyAccount(context, row, payment) : undefined;
+    const moneyAccount =
+      row.deposit_status === 'HELD' ? this.moneyAccount(context, row, payment) : undefined;
     const result = await this.engine.execute(client, {
       type: 'DEPOSIT_REFUNDED',
       idempotencyKey: `deposit-refund:${mediaId}:${row.assignments}`,
@@ -134,27 +172,50 @@ export class DepositService {
       before: { status: row.deposit_status, amount: held },
       after: { status: state.status, mode: state.mode, transaction_id: result.transactionId },
     });
-    return { state: state.status === 'REFUNDED' ? { ...state, amount: held } : state, transactionId: result.transactionId };
+    return {
+      state: state.status === 'REFUNDED' ? { ...state, amount: held } : state,
+      transactionId: result.transactionId,
+    };
   }
 
   /**
    * Prend une caution restée due, après un crédit payé sur le portefeuille. À appeler par les missions de recharge,
    * APRÈS la validation de la recharge : toujours une transaction distincte (contracts/media-lifecycle.md, règle 4).
    */
-  async takeDueDeposit(operatorId: string, mediaId: string, audit: AuditContext, language: Language = 'fr'): Promise<DepositState> {
+  async takeDueDeposit(
+    operatorId: string,
+    mediaId: string,
+    audit: AuditContext,
+    language: Language = 'fr',
+  ): Promise<DepositState> {
     return this.tx.run(operatorId, async (client) => {
       const row = await this.row(client, mediaId);
       if (row.deposit_status !== 'DUE') return this.state(client, mediaId);
-      return (await this.take(client, { operatorId, cashDeskCode: null, audit, language }, mediaId, null, new Date())).state;
+      return (
+        await this.take(
+          client,
+          { operatorId, cashDeskCode: null, audit, language },
+          mediaId,
+          null,
+          new Date(),
+        )
+      ).state;
     });
   }
 
   /** Compte d'argent d'une caution payée à part : la caisse du terminal, en espèces seulement. */
-  private moneyAccount(context: DepositContext, row: DepositRow, payment: Payment | null): string | undefined {
+  private moneyAccount(
+    context: DepositContext,
+    row: DepositRow,
+    payment: Payment | null,
+  ): string | undefined {
     if (row.deposit_mode !== 'SEPARATE') return undefined;
     if (!payment) throw counterRefusal('deposit.payment_required', context.language);
     if (payment.method !== 'CASH') throw counterRefusal('deposit.cash_only', context.language);
-    if (!context.cashDeskCode) throw conflict('Aucune caisse ouverte pour ce terminal : une caution en espèces ne peut être ni prise ni rendue ici.');
+    if (!context.cashDeskCode)
+      throw conflict(
+        'Aucune caisse ouverte pour ce terminal : une caution en espèces ne peut être ni prise ni rendue ici.',
+      );
     return context.cashDeskCode;
   }
 }

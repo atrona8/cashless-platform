@@ -9,6 +9,12 @@ import { MediaKeyAdminModule } from '../media/media-key-admin.module';
 import { ProcessBaseModule } from './process-base';
 
 @Module({
-  imports: [ProcessDbModule.forProcess('key-admin'), ProcessBaseModule, AuditModule, KmsModule.forCapabilities(['keyAdmin']), MediaKeyAdminModule],
+  imports: [
+    ProcessDbModule.forProcess('key-admin'),
+    ProcessBaseModule,
+    AuditModule,
+    KmsModule.forCapabilities(['keyAdmin']),
+    MediaKeyAdminModule,
+  ],
 })
 export class KeyAdminProcessModule {}

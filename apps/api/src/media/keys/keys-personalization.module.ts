@@ -4,5 +4,8 @@ import { DataKeyRepository } from './data-key.repository';
 import { DekWorker } from './dek.worker';
 import { SessionDataKeyProvider } from './session-data-key';
 
-@Module({ providers: [DataKeyRepository, SessionDataKeyProvider, DekWorker], exports: [DataKeyRepository, SessionDataKeyProvider] })
+@Module({
+  providers: [DataKeyRepository, SessionDataKeyProvider, DekWorker],
+  exports: [DataKeyRepository, SessionDataKeyProvider],
+})
 export class KeysPersonalizationModule {}

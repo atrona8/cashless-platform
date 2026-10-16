@@ -5,7 +5,11 @@ import { Body, Controller, HttpCode, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { requestDevice } from '../../device-identity/device-identity.port';
 import { pickLanguage } from '../../http/language';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
 import { objectBody, requireUuid, textField } from '../../organization/platform/platform.dto';
 import { parseTap } from '../taps/taps.dto';
 import { TapService } from '../taps/tap.service';
@@ -25,16 +29,30 @@ export class ReplaceController {
   @HttpCode(200)
   @CounterAuth()
   @Idempotent({ scope: counterScope })
-  async replace(@Req() req: Request, @Param('media_id') mediaId: string, @Body() raw: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  async replace(
+    @Req() req: Request,
+    @Param('media_id') mediaId: string,
+    @Body() raw: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const id = requireUuid(mediaId);
     const language = pickLanguage(req.header('Accept-Language'));
     const body = objectBody(raw);
     // `new_media_tap_id` est sans effet : un bracelet neuf n'a pas de lecture enregistrée.
-    if (body.new_media_tap === undefined || body.new_media_tap === null) throw counterRefusal('replace.tap_required', language);
+    if (body.new_media_tap === undefined || body.new_media_tap === null)
+      throw counterRefusal('replace.tap_required', language);
     const tap = parseTap(body.new_media_tap);
     const reason = textField(body, 'reason', 500, 'required')!;
     try {
-      return await tx.run(async (client) => this.replacements.replace(client, await this.counter.authorize(client, req), id, { tap, reason }, language));
+      return await tx.run(async (client) =>
+        this.replacements.replace(
+          client,
+          await this.counter.authorize(client, req),
+          id,
+          { tap, reason },
+          language,
+        ),
+      );
     } catch (error) {
       return this.taps.settleRefusal(error, requestDevice(req), tap);
     }

@@ -9,7 +9,11 @@ import { ApprovalService, respondAccepted } from '../../approval/approval.servic
 import { auditContext } from '../../audit/audit-context';
 import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../idempotency/idempotent.decorator';
 import { assertPlatformAdmin, isPlatformPerson } from '../../idempotency/platform-person';
 import type { Role } from '../../identity/principal';
 import type { RolesRequest } from '../../identity/roles.guard';
@@ -27,7 +31,11 @@ import {
   requireUuid,
 } from '../../organization/platform/platform.dto';
 import { FeeRulesService, type FeeScopeInfo } from '../../organization/tenant/fee-rules.service';
-import { scopesHeld, TenantAccess, type TenantActor } from '../../organization/tenant/tenant-access';
+import {
+  scopesHeld,
+  TenantAccess,
+  type TenantActor,
+} from '../../organization/tenant/tenant-access';
 
 const READERS: readonly Role[] = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN'];
 const WRITERS: readonly Role[] = ['OPERATOR_ADMIN', 'ORGANIZER_ADMIN'];
@@ -51,23 +59,45 @@ export class FeeRulesController {
     @Query('limit') limit?: string,
   ) {
     const actor = this.access.actor(req, READERS);
-    if (scopeType !== undefined) enumField({ scope_type: scopeType }, 'scope_type', FEE_SCOPES, 'required');
+    if (scopeType !== undefined)
+      enumField({ scope_type: scopeType }, 'scope_type', FEE_SCOPES, 'required');
     if (scopeId !== undefined && !isUuid(scopeId)) throw invalid('scope_id : identifiant attendu.');
-    const organizers = actor.role === 'ORGANIZER_ADMIN' ? scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER') : null;
+    const organizers =
+      actor.role === 'ORGANIZER_ADMIN'
+        ? scopesHeld(actor.principal, 'ORGANIZER_ADMIN', 'ORGANIZER')
+        : null;
     const page = pageRequest(cursor, limit);
-    const rows = await this.access.read(actor, (client) => this.feeRules.list(client, { scopeType, scopeId, organizers }, page.offset, page.limit + 1));
+    const rows = await this.access.read(actor, (client) =>
+      this.feeRules.list(client, { scopeType, scopeId, organizers }, page.offset, page.limit + 1),
+    );
     return pageOf(rows, page, feeRuleDto);
   }
 
   @Post()
   @Idempotent({ scope: 'bo:' })
-  create(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown, @IdempotentTransaction() tx: IdempotentTx) {
+  create(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
     const actor = this.access.actor(req, WRITERS);
     const input = parseFeeRuleCreate(body);
     return tx.run(async (client) => {
       const info = await this.feeRules.scope(client, actor, input.scope_type, input.scope_id);
-      if (this.live(info)) return this.demand(client, res, actor, info, { event_id: info.eventId, mode: 'create', input });
-      const created = await this.feeRules.create(client, actor.operatorId, input, info, actor.audit);
+      if (this.live(info))
+        return this.demand(client, res, actor, info, {
+          event_id: info.eventId,
+          mode: 'create',
+          input,
+        });
+      const created = await this.feeRules.create(
+        client,
+        actor.operatorId,
+        input,
+        info,
+        actor.audit,
+      );
       res.setHeader('Location', `/v1/operators/${actor.operatorId}/fee-rules`);
       return created;
     });
@@ -89,8 +119,21 @@ export class FeeRulesController {
     return tx.run(async (client) => {
       const previous = await this.feeRules.row(client, feeRuleId);
       const info = await this.feeRules.scope(client, actor, previous.scope_type, previous.scope_id);
-      if (this.live(info)) return this.demand(client, res, actor, info, { event_id: info.eventId, mode: 'replace', fee_rule_id: previous.id, input });
-      const created = await this.feeRules.replace(client, actor.operatorId, previous, input, info, actor.audit);
+      if (this.live(info))
+        return this.demand(client, res, actor, info, {
+          event_id: info.eventId,
+          mode: 'replace',
+          fee_rule_id: previous.id,
+          input,
+        });
+      const created = await this.feeRules.replace(
+        client,
+        actor.operatorId,
+        previous,
+        input,
+        info,
+        actor.audit,
+      );
       res.setHeader('Location', `/v1/operators/${actor.operatorId}/fee-rules`);
       return created;
     });
@@ -100,17 +143,40 @@ export class FeeRulesController {
    * Redevance de plateforme : remplacée par un PLATFORM_ADMIN, dans la transaction de la plateforme, qui ne voit que
    * les règles PLATFORM_CONTRACT (toute autre règle : 404). Audit dans la chaîne de la plateforme.
    */
-  private replacePlatformRule(req: Request, res: Response, feeRuleId: string, input: ReturnType<typeof parseFeeRuleCreate>, tx: IdempotentTx) {
+  private replacePlatformRule(
+    req: Request,
+    res: Response,
+    feeRuleId: string,
+    input: ReturnType<typeof parseFeeRuleCreate>,
+    tx: IdempotentTx,
+  ) {
     assertPlatformAdmin(req);
     (req as RolesRequest).exercisedRole = 'PLATFORM_ADMIN';
     const operatorId = requireUuid((req.params as Record<string, string>).operator_id ?? '');
     return tx.run(async (client) => {
       const previous = await this.feeRules.row(client, feeRuleId);
-      if (previous.scope_type !== 'PLATFORM_CONTRACT' || previous.operator_id !== operatorId) throw notFound();
-      const operator = await client.query<{ country_code: string | null }>(`SELECT country_code FROM party WHERE id = $1 AND kind = 'OPERATOR'`, [operatorId]);
+      if (previous.scope_type !== 'PLATFORM_CONTRACT' || previous.operator_id !== operatorId)
+        throw notFound();
+      const operator = await client.query<{ country_code: string | null }>(
+        `SELECT country_code FROM party WHERE id = $1 AND kind = 'OPERATOR'`,
+        [operatorId],
+      );
       if (!operator.rows[0]) throw notFound();
-      const info: FeeScopeInfo = { role: 'OPERATOR_ADMIN', organizerId: '', countryCode: operator.rows[0].country_code };
-      const created = await this.feeRules.replace(client, operatorId, previous, input, info, auditContext(req), undefined, null);
+      const info: FeeScopeInfo = {
+        role: 'OPERATOR_ADMIN',
+        organizerId: '',
+        countryCode: operator.rows[0].country_code,
+      };
+      const created = await this.feeRules.replace(
+        client,
+        operatorId,
+        previous,
+        input,
+        info,
+        auditContext(req),
+        undefined,
+        null,
+      );
       res.setHeader('Location', `/v1/operators/${operatorId}/platform-fee-rules`);
       return created;
     });
@@ -119,11 +185,20 @@ export class FeeRulesController {
   /** Événement visé en service : à deux ; après LIVE : plus de modification (409). Hors événement : écriture directe. */
   private live(info: FeeScopeInfo): boolean {
     if (info.eventId === undefined || info.eventStatus === 'DRAFT') return false;
-    if (info.eventStatus !== 'LIVE') throw conflict(`L'événement est ${info.eventStatus ?? 'clos'} : ses règles de frais ne se modifient plus.`);
+    if (info.eventStatus !== 'LIVE')
+      throw conflict(
+        `L'événement est ${info.eventStatus ?? 'clos'} : ses règles de frais ne se modifient plus.`,
+      );
     return true;
   }
 
-  private async demand(client: TxClient, res: Response, actor: TenantActor, info: FeeScopeInfo, payload: object) {
+  private async demand(
+    client: TxClient,
+    res: Response,
+    actor: TenantActor,
+    info: FeeScopeInfo,
+    payload: object,
+  ) {
     if (!info.eventId) throw new ProblemException('INTERNAL_ERROR');
     const request = await this.approvals.request(
       client,

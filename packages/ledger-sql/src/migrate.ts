@@ -55,7 +55,10 @@ export interface MigrationReport {
   postRoles?: boolean;
 }
 
-export async function migrate(client: Client, migrations: Migration[] = loadMigrations()): Promise<MigrationReport> {
+export async function migrate(
+  client: Client,
+  migrations: Migration[] = loadMigrations(),
+): Promise<MigrationReport> {
   await client.query('CREATE SCHEMA IF NOT EXISTS ops');
   await client.query('REVOKE ALL ON SCHEMA ops FROM PUBLIC');
   await client.query(`CREATE TABLE IF NOT EXISTS ops.schema_migrations (
@@ -92,7 +95,9 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
-      throw new Error(`Échec de la migration ${migration.version} : ${(error as Error).message}`, { cause: error });
+      throw new Error(`Échec de la migration ${migration.version} : ${(error as Error).message}`, {
+        cause: error,
+      });
     }
     report.applied.push(migration.version);
   }
@@ -123,13 +128,18 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
     ];
     for (const [role, password] of passwords) {
       if (!password) continue;
-      const { rows: quoted } = await client.query<{ literal: string }>('SELECT quote_literal($1) AS literal', [password]);
+      const { rows: quoted } = await client.query<{ literal: string }>(
+        'SELECT quote_literal($1) AS literal',
+        [password],
+      );
       await client.query(`ALTER ROLE ${role} PASSWORD ${quoted[0]?.literal}`);
     }
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
-    throw new Error(`Échec de l'application des droits des rôles : ${(error as Error).message}`, { cause: error });
+    throw new Error(`Échec de l'application des droits des rôles : ${(error as Error).message}`, {
+      cause: error,
+    });
   }
   return report;
 }
@@ -137,7 +147,9 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
 async function main(): Promise<void> {
   const connectionString = process.env.DATABASE_URL_OWNER;
   if (!connectionString) {
-    throw new Error('DATABASE_URL_OWNER non défini (rôle propriétaire des tables, jamais cashless_app).');
+    throw new Error(
+      'DATABASE_URL_OWNER non défini (rôle propriétaire des tables, jamais cashless_app).',
+    );
   }
   const client = new Client({ connectionString });
   await client.connect();

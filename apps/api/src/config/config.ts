@@ -53,7 +53,10 @@ function loadOidc(env: NodeJS.ProcessEnv, production: boolean): OidcConfig {
   const read = (name: keyof typeof TEST_OIDC): string => {
     const value = env[name];
     if (value) return value;
-    if (production) throw new Error(`${name} manquant : configuration du serveur d'identité obligatoire en production`);
+    if (production)
+      throw new Error(
+        `${name} manquant : configuration du serveur d'identité obligatoire en production`,
+      );
     return TEST_OIDC[name];
   };
   const jwksUri = read('OIDC_JWKS_URI');
@@ -64,7 +67,8 @@ function loadOidc(env: NodeJS.ProcessEnv, production: boolean): OidcConfig {
     throw new Error(`OIDC_JWKS_URI : URL invalide (reçu « ${jwksUri} »)`);
   }
   // Une JWKS servie en clair permettrait de substituer les clés (R-11 A2).
-  if (production && protocol !== 'https:') throw new Error('OIDC_JWKS_URI : https obligatoire en production');
+  if (production && protocol !== 'https:')
+    throw new Error('OIDC_JWKS_URI : https obligatoire en production');
   return {
     issuer: read('OIDC_ISSUER'),
     audience: read('OIDC_AUDIENCE'),
@@ -74,27 +78,41 @@ function loadOidc(env: NodeJS.ProcessEnv, production: boolean): OidcConfig {
   };
 }
 
-const LOCAL_DATABASE_URL = 'postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test';
-const LOCAL_PLATFORM_DATABASE_URL = 'postgres://cashless_platform:cashless_platform_local@127.0.0.1:5433/cashless_test';
+const LOCAL_DATABASE_URL =
+  'postgres://cashless_app:cashless_app_local@127.0.0.1:5433/cashless_test';
+const LOCAL_PLATFORM_DATABASE_URL =
+  'postgres://cashless_platform:cashless_platform_local@127.0.0.1:5433/cashless_test';
 
 const LOCAL_TAG_URLS = {
-  DATABASE_URL_TAGKEYS: 'postgres://cashless_tagkeys:cashless_tagkeys_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_TAGKEYS:
+    'postgres://cashless_tagkeys:cashless_tagkeys_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_PERSO: 'postgres://cashless_perso:cashless_perso_local@127.0.0.1:5433/cashless_test',
-  DATABASE_URL_TAGCHECK: 'postgres://cashless_tagcheck:cashless_tagcheck_local@127.0.0.1:5433/cashless_test',
-  DATABASE_URL_KEYADMIN: 'postgres://cashless_keyadmin:cashless_keyadmin_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_TAGCHECK:
+    'postgres://cashless_tagcheck:cashless_tagcheck_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_KEYADMIN:
+    'postgres://cashless_keyadmin:cashless_keyadmin_local@127.0.0.1:5433/cashless_test',
 } as const;
 
 /** Secret de test, hors production seulement : sa valeur est publique. */
-const TEST_CLAIM_CODE_HMAC_KEY = Buffer.from('cashless-claim-code-hmac-key-de-test-uniquement-0000', 'utf8');
+const TEST_CLAIM_CODE_HMAC_KEY = Buffer.from(
+  'cashless-claim-code-hmac-key-de-test-uniquement-0000',
+  'utf8',
+);
 
 /** `CLAIM_CODE_HMAC_KEY` : 32 octets au moins, en hexadécimal ou en base64. Obligatoire en production. */
 function claimCodeHmacKey(env: NodeJS.ProcessEnv, production: boolean): Buffer {
   const raw = env.CLAIM_CODE_HMAC_KEY;
   if (!raw) {
-    if (production) throw new Error('CLAIM_CODE_HMAC_KEY manquant : secret de l’empreinte des codes de rattachement obligatoire en production');
+    if (production)
+      throw new Error(
+        'CLAIM_CODE_HMAC_KEY manquant : secret de l’empreinte des codes de rattachement obligatoire en production',
+      );
     return TEST_CLAIM_CODE_HMAC_KEY;
   }
-  const key = /^[0-9a-fA-F]+$/.test(raw) && raw.length % 2 === 0 ? Buffer.from(raw, 'hex') : Buffer.from(raw, 'base64');
+  const key =
+    /^[0-9a-fA-F]+$/.test(raw) && raw.length % 2 === 0
+      ? Buffer.from(raw, 'hex')
+      : Buffer.from(raw, 'base64');
   if (key.length < 32) throw new Error('CLAIM_CODE_HMAC_KEY : 32 octets au moins attendus');
   return key;
 }
@@ -135,7 +153,9 @@ function trustProxyHops(value: string | undefined, production: boolean): number 
     return 0;
   }
   if (!/^[0-9]+$/.test(value) || Number(value) > MAX_TRUST_PROXY_HOPS) {
-    throw new Error(`TRUST_PROXY_HOPS : entier de 0 à ${MAX_TRUST_PROXY_HOPS} attendu (reçu « ${value} »)`);
+    throw new Error(
+      `TRUST_PROXY_HOPS : entier de 0 à ${MAX_TRUST_PROXY_HOPS} attendu (reçu « ${value} »)`,
+    );
   }
   return Number(value);
 }
@@ -143,7 +163,8 @@ function trustProxyHops(value: string | undefined, production: boolean): number 
 function positiveInt(name: string, value: string | undefined, fallback: number): number {
   if (value === undefined || value === '') return fallback;
   const parsed = Number.parseInt(value, 10);
-  if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${name} : entier positif attendu (reçu « ${value} »)`);
+  if (!Number.isInteger(parsed) || parsed <= 0)
+    throw new Error(`${name} : entier positif attendu (reçu « ${value} »)`);
   return parsed;
 }
 
@@ -151,7 +172,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const production = env.NODE_ENV === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
   if (!databaseUrl && production) {
-    throw new Error('DATABASE_URL_APP manquant : chaîne de connexion du rôle cashless_app obligatoire en production');
+    throw new Error(
+      'DATABASE_URL_APP manquant : chaîne de connexion du rôle cashless_app obligatoire en production',
+    );
   }
   const platformDatabaseUrl = env.DATABASE_URL_PLATFORM;
   if (!platformDatabaseUrl && production) {
@@ -161,7 +184,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   // En production, l'absence d'une de ces chaînes n'empêche pas les autres processus de démarrer : c'est le processus
   // qui s'en sert qui la refuse vide (voir processes/).
-  const tagUrl = (name: keyof typeof LOCAL_TAG_URLS): string => env[name] || (production ? '' : LOCAL_TAG_URLS[name]);
+  const tagUrl = (name: keyof typeof LOCAL_TAG_URLS): string =>
+    env[name] || (production ? '' : LOCAL_TAG_URLS[name]);
   const base = env.PROBLEM_TYPE_BASE || 'https://errors.cashless/';
   return {
     port: positiveInt('PORT', env.PORT, 3000),

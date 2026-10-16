@@ -16,7 +16,18 @@ export class FakeCustomerIdentity implements CustomerIdentityPort {
     const customerId = req.header(TEST_CUSTOMER_HEADER);
     const operatorId = req.header(TEST_CUSTOMER_OPERATOR_HEADER);
     const deviceRef = req.header(TEST_CUSTOMER_DEVICE_HEADER) ?? 'appareil-inconnu';
-    if (!customerId || !operatorId || !UUID.test(customerId) || !UUID.test(operatorId) || !DEVICE_REF.test(deviceRef)) return null;
-    return { customerId: customerId.toLowerCase(), operatorId: operatorId.toLowerCase(), deviceRef };
+    if (
+      !customerId ||
+      !operatorId ||
+      !UUID.test(customerId) ||
+      !UUID.test(operatorId) ||
+      !DEVICE_REF.test(deviceRef)
+    )
+      return null;
+    return {
+      customerId: customerId.toLowerCase(),
+      operatorId: operatorId.toLowerCase(),
+      deviceRef,
+    };
   }
 }

@@ -38,14 +38,19 @@ export class SessionDataKeyProvider implements OnModuleDestroy {
   private readonly opening = new Map<string, Promise<Session>>();
 
   constructor(
-    @Inject(APP_CONFIG) private readonly config: Pick<AppConfig, 'tagDekCacheSeconds' | 'tagWrappingKeyRef'>,
+    @Inject(APP_CONFIG)
+    private readonly config: Pick<AppConfig, 'tagDekCacheSeconds' | 'tagWrappingKeyRef'>,
     private readonly tx: TenantTx,
     private readonly dataKeys: DataKeyRepository,
     @Inject(DATA_KEY_PORT) private readonly kms: DataKeyPort,
   ) {}
 
   /** Exécute `fn` avec la clé de données de session de l'index (ouverte au besoin). */
-  async withKey<T>(operatorId: string, keyIndex: number, fn: (key: SessionKey) => Promise<T>): Promise<T> {
+  async withKey<T>(
+    operatorId: string,
+    keyIndex: number,
+    fn: (key: SessionKey) => Promise<T>,
+  ): Promise<T> {
     const session = await this.session(operatorId, keyIndex);
     session.users += 1;
     try {
@@ -86,7 +91,9 @@ export class SessionDataKeyProvider implements OnModuleDestroy {
     const id = this.id(operatorId, keyIndex);
     const current = this.sessions.get(id);
     if (current) {
-      const usable = current.expiresAt > Date.now() && (await this.tx.run(operatorId, (client) => this.dataKeys.isActive(client, current.dekId)));
+      const usable =
+        current.expiresAt > Date.now() &&
+        (await this.tx.run(operatorId, (client) => this.dataKeys.isActive(client, current.dekId)));
       if (usable) return current;
       this.drop(id, current);
     }
@@ -100,13 +107,35 @@ export class SessionDataKeyProvider implements OnModuleDestroy {
   }
 
   private async open(operatorId: string, keyIndex: number): Promise<Session> {
-    const status = await this.tx.run(operatorId, (client) => this.dataKeys.keyStatus(client, operatorId, keyIndex));
+    const status = await this.tx.run(operatorId, (client) =>
+      this.dataKeys.keyStatus(client, operatorId, keyIndex),
+    );
     if (status === null) throw new ProblemException('NOT_FOUND');
-    if (status !== 'ACTIVE') throw new ProblemException('CONFLICT_STATE', { status: 409, detail: 'La clé de ce lot n’est pas active : elle ne personnalise plus de bracelet.' });
+    if (status !== 'ACTIVE')
+      throw new ProblemException('CONFLICT_STATE', {
+        status: 409,
+        detail: 'La clé de ce lot n’est pas active : elle ne personnalise plus de bracelet.',
+      });
     const { plaintext, encrypted } = await this.kms.generateDataKey(this.config.tagWrappingKeyRef);
     try {
-      const version = await this.tx.run(operatorId, (client) => this.dataKeys.openVersion(client, operatorId, keyIndex, this.config.tagWrappingKeyRef, encrypted));
-      const session: Session = { dekId: version.id, version: version.version, plaintext, expiresAt: 0, timer: null, users: 0, dropped: false };
+      const version = await this.tx.run(operatorId, (client) =>
+        this.dataKeys.openVersion(
+          client,
+          operatorId,
+          keyIndex,
+          this.config.tagWrappingKeyRef,
+          encrypted,
+        ),
+      );
+      const session: Session = {
+        dekId: version.id,
+        version: version.version,
+        plaintext,
+        expiresAt: 0,
+        timer: null,
+        users: 0,
+        dropped: false,
+      };
       if (this.ttlMs() > 0) {
         this.sessions.set(this.id(operatorId, keyIndex), session);
         this.touch(this.id(operatorId, keyIndex), session);

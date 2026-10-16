@@ -1,7 +1,15 @@
 // Accès au scénario de référence (packages/ledger-sql/scenario_reference.json) pour les tests des constructeurs.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AccountRef, LedgerCommand, Line, ResolvedConfig, Source, TransactionType, WalletBalances } from '../../../../src/ledger/types';
+import type {
+  AccountRef,
+  LedgerCommand,
+  Line,
+  ResolvedConfig,
+  Source,
+  TransactionType,
+  WalletBalances,
+} from '../../../../src/ledger/types';
 
 interface ScenarioLine {
   account: string;
@@ -28,7 +36,10 @@ interface Scenario {
   transactions: ScenarioTransaction[];
 }
 
-const SCENARIO_FILE = join(__dirname, '../../../../../../packages/ledger-sql/scenario_reference.json');
+const SCENARIO_FILE = join(
+  __dirname,
+  '../../../../../../packages/ledger-sql/scenario_reference.json',
+);
 const raw = readFileSync(SCENARIO_FILE, 'utf8');
 export const scenario: Scenario = JSON.parse(raw);
 
@@ -47,7 +58,10 @@ export function transaction(no: number): ScenarioTransaction {
 }
 
 export function expectedLines(no: number): CodedLine[] {
-  return transaction(no).lines.map((line) => ({ account: line.account, amount: BigInt(line.amount) }));
+  return transaction(no).lines.map((line) => ({
+    account: line.account,
+    amount: BigInt(line.amount),
+  }));
 }
 
 /** Lignes de la transaction sous forme de lignes du moteur (références par code), pour REVERSAL. */
@@ -66,7 +80,10 @@ export function balanceBefore(no: number, code: string): bigint {
 
 /** Soldes d'un portefeuille avant la transaction `no`, en convention « positif = disponible ». */
 export function walletBalancesBefore(no: number, walletId: string): WalletBalances {
-  return { promo: -balanceBefore(no, `L-WAL-${walletId}-X`), paid: -balanceBefore(no, `L-WAL-${walletId}-P`) };
+  return {
+    promo: -balanceBefore(no, `L-WAL-${walletId}-X`),
+    paid: -balanceBefore(no, `L-WAL-${walletId}-P`),
+  };
 }
 
 // ------------------------------------------------------------------ paramètres
@@ -99,7 +116,11 @@ const partyId = (key: string): string => {
 /** Configuration du scénario, telle que ConfigResolver la fournirait. */
 export function scenarioConfig(overrides: Partial<ResolvedConfig> = {}): ResolvedConfig {
   return {
-    parties: { platformId: partyId('PLT'), operatorId: partyId('OPE'), organizerId: partyId('ORG') },
+    parties: {
+      platformId: partyId('PLT'),
+      operatorId: partyId('OPE'),
+      organizerId: partyId('ORG'),
+    },
     taxBps: bps('Taxe sur commissions et frais (TVA)'),
     commissions: {
       FOOD: { rateBps: bps('Commission Food truck') },
@@ -115,8 +136,14 @@ export function scenarioConfig(overrides: Partial<ResolvedConfig> = {}): Resolve
     activationFee: { fixed: amountParameter("Frais d'activation par bracelet (festivalier)") },
     refundFee: { fixed: amountParameter('Frais de remboursement du solde') },
     operatorFees: [
-      { basis: 'TOPUP_AMOUNT', rule: { rateBps: bps('Frais prestataire : % des recharges payées') } },
-      { basis: 'PER_MEDIA', rule: { fixed: amountParameter('Frais prestataire : par bracelet activé') } },
+      {
+        basis: 'TOPUP_AMOUNT',
+        rule: { rateBps: bps('Frais prestataire : % des recharges payées') },
+      },
+      {
+        basis: 'PER_MEDIA',
+        rule: { fixed: amountParameter('Frais prestataire : par bracelet activé') },
+      },
     ],
     platformFee: { rateBps: bps('Redevance plateforme : % des frais du prestataire') },
     breakageOrganizerBps: bps("Part de la casse revenant à l'organisateur"),
@@ -141,13 +168,17 @@ export function scenarioConfig(overrides: Partial<ResolvedConfig> = {}): Resolve
  */
 export function resolve(ref: AccountRef): string {
   if ('code' in ref) return ref.code;
-  if (ref.walletId) return `L-WAL-${ref.walletId}-${ref.purpose === 'WALLET_PAID' ? 'P' : ref.purpose === 'WALLET_PROMO' ? 'X' : ref.purpose}`;
+  if (ref.walletId)
+    return `L-WAL-${ref.walletId}-${ref.purpose === 'WALLET_PAID' ? 'P' : ref.purpose === 'WALLET_PROMO' ? 'X' : ref.purpose}`;
   if (ref.participationId) return `L-MCH-${ref.participationId}`;
   const owner = ref.ownerPartyId
     ? Object.entries(scenario.parties).find(([, party]) => party.id === ref.ownerPartyId)?.[0]
     : null;
-  const candidates = scenario.accounts.filter((a) => a.purpose === ref.purpose && a.owner === (owner ?? null));
-  if (candidates.length !== 1) throw new Error(`compte introuvable ou ambigu : ${JSON.stringify(ref)}`);
+  const candidates = scenario.accounts.filter(
+    (a) => a.purpose === ref.purpose && a.owner === (owner ?? null),
+  );
+  if (candidates.length !== 1)
+    throw new Error(`compte introuvable ou ambigu : ${JSON.stringify(ref)}`);
   return candidates[0]!.code;
 }
 

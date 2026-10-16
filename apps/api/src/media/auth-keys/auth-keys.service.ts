@@ -7,7 +7,13 @@
 // réponse `404 MEDIA_UNKNOWN`, après un délai constant et sans appel au service de clés — un terminal ne peut pas
 // distinguer ces cas, ni par le corps ni par le temps.
 import { Inject, Injectable } from '@nestjs/common';
-import { deviceAad, openPwdPack, pwdPackAad, sealForRecipient, type EncryptedBlob } from '@cashless/tag-format';
+import {
+  deviceAad,
+  openPwdPack,
+  pwdPackAad,
+  sealForRecipient,
+  type EncryptedBlob,
+} from '@cashless/tag-format';
 import { TenantTx } from '../../db/tenant-tx';
 import type { DeviceContext } from '../../device-identity/device-identity.port';
 import { ProblemException } from '../../errors/problem';
@@ -49,7 +55,10 @@ export class AuthKeysService {
 
   async get(device: DeviceContext, uid: Buffer, keyIndex: number): Promise<MediaAuthKey> {
     const started = Date.now();
-    if (!device.agreementPublicKey) throw conflict('Ce terminal n’a pas de clé d’accord enregistrée : il ne peut pas recevoir de mot de passe.');
+    if (!device.agreementPublicKey)
+      throw conflict(
+        'Ce terminal n’a pas de clé d’accord enregistrée : il ne peut pas recevoir de mot de passe.',
+      );
     const recipient = device.agreementPublicKey;
     const { operatorId } = device;
     const media = await this.tx.run(operatorId, async (client) => {
@@ -63,7 +72,14 @@ export class AuthKeysService {
       );
       return rows[0] ?? null;
     });
-    if (!media || media.key_index !== keyIndex || !media.pwd_pack_enc || !media.pwd_pack_dek_id || media.key_status === 'RETIRED' || media.dek_status === 'RETIRED') {
+    if (
+      !media ||
+      media.key_index !== keyIndex ||
+      !media.pwd_pack_enc ||
+      !media.pwd_pack_dek_id ||
+      media.key_status === 'RETIRED' ||
+      media.dek_status === 'RETIRED'
+    ) {
       await sleepUntil(started + UNKNOWN_MEDIA_DELAY_MS);
       throw new ProblemException('MEDIA_UNKNOWN');
     }
@@ -74,21 +90,35 @@ export class AuthKeysService {
       pwdPack = await this.cache.withKey(
         dekId,
         async () => {
-          const stored = await this.tx.run(operatorId, (client) => this.dataKeys.encrypted(client, dekId));
+          const stored = await this.tx.run(operatorId, (client) =>
+            this.dataKeys.encrypted(client, dekId),
+          );
           if (!stored) throw new ProblemException('MEDIA_UNKNOWN');
           return this.kms.decrypt(stored.wrappingKeyRef, stored.encrypted);
         },
-        (dek) => openPwdPack({ dek, blob, aad: pwdPackAad({ mediaId: media.id, operatorId, keyIndex, uid }) }),
+        (dek) =>
+          openPwdPack({
+            dek,
+            blob,
+            aad: pwdPackAad({ mediaId: media.id, operatorId, keyIndex, uid }),
+          }),
       );
       return {
         nfc_uid: uid.toString('hex'),
         key_index: keyIndex,
-        enc: sealForRecipient({ recipientPublicKey: recipient, plaintext: pwdPack, aad: deviceAad(device.deviceId, uid) }),
+        enc: sealForRecipient({
+          recipientPublicKey: recipient,
+          plaintext: pwdPack,
+          aad: deviceAad(device.deviceId, uid),
+        }),
         ttl_seconds: AUTH_KEY_TTL_SECONDS,
       };
     } catch (error) {
       if (error instanceof KmsUnavailableError) {
-        throw new ProblemException('SERVICE_UNAVAILABLE', { status: 503, detail: 'Service de clés indisponible : réessayer.' });
+        throw new ProblemException('SERVICE_UNAVAILABLE', {
+          status: 503,
+          detail: 'Service de clés indisponible : réessayer.',
+        });
       }
       throw error;
     } finally {

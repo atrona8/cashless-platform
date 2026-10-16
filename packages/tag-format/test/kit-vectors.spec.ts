@@ -5,7 +5,8 @@ import { join } from 'node:path';
 
 const PYTHON = process.env.TAG_FORMAT_PYTHON ?? 'python3';
 const SCRIPT = join(__dirname, '..', 'scripts', 'export_vectors.py');
-const available = spawnSync(PYTHON, ['-c', 'import cryptography'], { stdio: 'ignore' }).status === 0;
+const available =
+  spawnSync(PYTHON, ['-c', 'import cryptography'], { stdio: 'ignore' }).status === 0;
 
 // En CI, l'absence de l'interpréteur n'excuse rien : le contrôle est obligatoire (variable `CI`).
 const required = available || Boolean(process.env.CI);
@@ -16,5 +17,7 @@ const required = available || Boolean(process.env.CI);
 });
 
 if (!required) {
-  console.warn(`[tag-format] ${PYTHON} ou le module cryptography est absent : contrôle de vectors.json ignoré (TAG_FORMAT_PYTHON pour désigner un interpréteur).`);
+  console.warn(
+    `[tag-format] ${PYTHON} ou le module cryptography est absent : contrôle de vectors.json ignoré (TAG_FORMAT_PYTHON pour désigner un interpréteur).`,
+  );
 }

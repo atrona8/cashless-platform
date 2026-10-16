@@ -73,7 +73,9 @@ const LATE_CLAIM_YEARS = 5;
  * Complète un profil : un champ omis prend son défaut provisoire et son nom est consigné dans `rules.provisional`.
  * Un champ fourni, même `null`, est une saisie explicite.
  */
-export function completeJurisdictionProfile(input: JurisdictionProfileInput): CompletedJurisdictionProfile {
+export function completeJurisdictionProfile(
+  input: JurisdictionProfileInput,
+): CompletedJurisdictionProfile {
   const defaults = { ...COMMON, ...(BY_COUNTRY[input.country_code] ?? {}) };
   const provisional: ProvisionalField[] = [];
   const given = input as unknown as Record<string, unknown>;
@@ -110,7 +112,10 @@ export function provisionalFields(rules: unknown): ProvisionalField[] {
   if (!Array.isArray(list)) return [];
   return list.filter(
     (item): item is ProvisionalField =>
-      typeof item === 'object' && item !== null && typeof (item as ProvisionalField).field === 'string' && typeof (item as ProvisionalField).confirm_by === 'string',
+      typeof item === 'object' &&
+      item !== null &&
+      typeof (item as ProvisionalField).field === 'string' &&
+      typeof (item as ProvisionalField).confirm_by === 'string',
   );
 }
 
@@ -126,7 +131,10 @@ export function effectiveRefundDeadline(
 ): { value: Date; source: RefundDeadlineSource } | null {
   if (refundDeadline) return { value: refundDeadline, source: 'EXPLICIT' };
   if (!endsAt) return null;
-  return { value: new Date(endsAt.getTime() + PROVISIONAL_REFUND_DAYS * 86_400_000), source: 'PROVISIONAL_DEFAULT' };
+  return {
+    value: new Date(endsAt.getTime() + PROVISIONAL_REFUND_DAYS * 86_400_000),
+    source: 'PROVISIONAL_DEFAULT',
+  };
 }
 
 export const PROVISIONAL_CONFIRMERS = { JURIST, ACCOUNTANT, PROJECT_OWNER } as const;

@@ -1,7 +1,12 @@
 // Clés de bracelet vues du back-office (contrat openapi.yaml : TagKey, TagKeyDetail, TagKeyJob, TagKeyCheckRun,
 // TagKeyRequest). La référence d'une clé dans le service de clés n'est rendue que tronquée ; aucune clé de données
 // chiffrée n'est lue par l'API publique (elle n'en a pas le droit, post-roles.sql).
-import { enumField, isUuid, objectBody, unprocessable } from '../../organization/platform/platform.dto';
+import {
+  enumField,
+  isUuid,
+  objectBody,
+  unprocessable,
+} from '../../organization/platform/platform.dto';
 
 export interface TagKeyRow {
   operator_id: string;
@@ -14,7 +19,8 @@ export interface TagKeyRow {
   created_at: Date;
 }
 
-export const TAG_KEY_COLUMNS = 'operator_id, key_index, kms_key_ref, status, scope, dedicated_event_id, kms_disabled_at, created_at';
+export const TAG_KEY_COLUMNS =
+  'operator_id, key_index, kms_key_ref, status, scope, dedicated_event_id, kms_disabled_at, created_at';
 
 export const tagKeyDto = (row: TagKeyRow) => ({
   operator_id: row.operator_id,
@@ -28,7 +34,12 @@ export const tagKeyDto = (row: TagKeyRow) => ({
   created_at: row.created_at.toISOString(),
 });
 
-export type TagKeyJobKind = 'CREATE_KEY' | 'ROTATE_DEK' | 'REENCRYPT' | 'RETIRE_KEY' | 'DISABLE_KMS_KEY';
+export type TagKeyJobKind =
+  | 'CREATE_KEY'
+  | 'ROTATE_DEK'
+  | 'REENCRYPT'
+  | 'RETIRE_KEY'
+  | 'DISABLE_KMS_KEY';
 
 export interface TagKeyJobRow {
   id: string;
@@ -53,9 +64,15 @@ export const TAG_KEY_JOB_COLUMNS =
  * Requête de prise d'un travail : toute la file (processus en service) ou, si `operators` est donné, les seuls
  * travaux de ces prestataires (exploitation ciblée ; suites de tests qui partagent une base).
  */
-export const claimJobQuery = (kinds: readonly TagKeyJobKind[], operators?: readonly string[]): { text: string; values: unknown[] } =>
+export const claimJobQuery = (
+  kinds: readonly TagKeyJobKind[],
+  operators?: readonly string[],
+): { text: string; values: unknown[] } =>
   operators
-    ? { text: `SELECT ${TAG_KEY_JOB_COLUMNS} FROM claim_tag_key_job_for($1::uuid[], $2::text[])`, values: [operators, kinds] }
+    ? {
+        text: `SELECT ${TAG_KEY_JOB_COLUMNS} FROM claim_tag_key_job_for($1::uuid[], $2::text[])`,
+        values: [operators, kinds],
+      }
     : { text: `SELECT ${TAG_KEY_JOB_COLUMNS} FROM claim_tag_key_job($1::text[])`, values: [kinds] };
 
 /** Sortes de travaux que seule la commande d'administration des clés exécute (décision du porteur n° 6). */
@@ -67,11 +84,16 @@ export const tagKeyJobDto = (row: TagKeyJobRow) => ({
   key_index: row.key_index,
   kind: row.kind,
   status: row.status,
-  awaiting: row.status !== 'DONE' && KEY_ADMIN_KINDS.includes(row.kind) ? ('KEY_ADMIN_COMMAND' as const) : null,
+  awaiting:
+    row.status !== 'DONE' && KEY_ADMIN_KINDS.includes(row.kind)
+      ? ('KEY_ADMIN_COMMAND' as const)
+      : null,
   attempts: row.attempts,
   last_error: row.last_error,
   // Compteurs seulement : la référence de clé notée pendant une création reste interne.
-  progress: Object.fromEntries(Object.entries(row.progress).filter(([, value]) => typeof value === 'number')),
+  progress: Object.fromEntries(
+    Object.entries(row.progress).filter(([, value]) => typeof value === 'number'),
+  ),
   approval_request_id: row.approval_request_id,
   created_at: row.created_at.toISOString(),
   finished_at: row.finished_at?.toISOString() ?? null,
@@ -108,13 +130,16 @@ export function parseTagKeyRequest(raw: unknown): TagKeyRequestInput {
   const body = raw === undefined || raw === null ? {} : objectBody(raw);
   const scope = enumField(body, 'scope', ['SHARED', 'DEDICATED'] as const, 'optional') ?? 'SHARED';
   const event = body.dedicated_event_id;
-  if (scope === 'DEDICATED' && !isUuid(event)) throw unprocessable('dedicated_event_id : événement obligatoire pour une clé dédiée.');
-  if (scope === 'SHARED' && event !== undefined && event !== null) throw unprocessable('dedicated_event_id : interdit pour une clé partagée.');
+  if (scope === 'DEDICATED' && !isUuid(event))
+    throw unprocessable('dedicated_event_id : événement obligatoire pour une clé dédiée.');
+  if (scope === 'SHARED' && event !== undefined && event !== null)
+    throw unprocessable('dedicated_event_id : interdit pour une clé partagée.');
   return { scope, dedicated_event_id: scope === 'DEDICATED' ? (event as string) : null };
 }
 
 export function parseKeyIndex(raw: string): number {
   const value = Number(raw);
-  if (!/^[0-9]{1,5}$/.test(raw) || value > 65535) throw unprocessable('key_index : entier de 0 à 65535 attendu.');
+  if (!/^[0-9]{1,5}$/.test(raw) || value > 65535)
+    throw unprocessable('key_index : entier de 0 à 65535 attendu.');
   return value;
 }

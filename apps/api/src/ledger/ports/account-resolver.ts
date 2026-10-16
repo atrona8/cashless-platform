@@ -17,7 +17,11 @@ export interface Queryable {
 }
 
 export interface AccountResolver {
-  resolve(client: Queryable, ledgerId: string, refs: readonly AccountRef[]): Promise<Map<AccountRef, string>>;
+  resolve(
+    client: Queryable,
+    ledgerId: string,
+    refs: readonly AccountRef[],
+  ): Promise<Map<AccountRef, string>>;
 }
 
 export const ACCOUNT_RESOLVER = Symbol('ACCOUNT_RESOLVER');
@@ -36,12 +40,17 @@ function matches(row: AccountRow, ref: AccountRef): boolean {
 }
 
 /** Correspondance en mémoire ; référence introuvable ou ambiguë : VALIDATION_FAILED (« compte introuvable »). */
-export function matchAccounts(rows: readonly AccountRow[], refs: readonly AccountRef[]): Map<AccountRef, string> {
+export function matchAccounts(
+  rows: readonly AccountRow[],
+  refs: readonly AccountRef[],
+): Map<AccountRef, string> {
   const resolved = new Map<AccountRef, string>();
   for (const ref of refs) {
     const found = rows.filter((row) => matches(row, ref));
-    if (found.length === 0) throw new BuildError('VALIDATION_FAILED', `compte introuvable : ${label(ref)}`);
-    if (found.length > 1) throw new BuildError('VALIDATION_FAILED', `compte ambigu : ${label(ref)}`);
+    if (found.length === 0)
+      throw new BuildError('VALIDATION_FAILED', `compte introuvable : ${label(ref)}`);
+    if (found.length > 1)
+      throw new BuildError('VALIDATION_FAILED', `compte ambigu : ${label(ref)}`);
     resolved.set(ref, found[0]!.id);
   }
   return resolved;
@@ -52,7 +61,11 @@ export const ACCOUNT_QUERY =
   'WHERE ledger_id = $1 AND (code = ANY($2) OR purpose = ANY($3))';
 
 export class SqlAccountResolver implements AccountResolver {
-  async resolve(client: Queryable, ledgerId: string, refs: readonly AccountRef[]): Promise<Map<AccountRef, string>> {
+  async resolve(
+    client: Queryable,
+    ledgerId: string,
+    refs: readonly AccountRef[],
+  ): Promise<Map<AccountRef, string>> {
     const codes = [...new Set(refs.flatMap((ref) => ('code' in ref ? [ref.code] : [])))];
     const purposes = [...new Set(refs.flatMap((ref) => ('purpose' in ref ? [ref.purpose] : [])))];
     const { rows } = await client.query<AccountRow>(ACCOUNT_QUERY, [ledgerId, codes, purposes]);

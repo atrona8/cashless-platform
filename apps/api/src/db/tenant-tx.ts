@@ -27,7 +27,10 @@ export class TenantTx {
 
   async run<T>(operatorId: string, fn: (client: TxClient) => Promise<T>): Promise<T> {
     if (!UUID.test(operatorId)) {
-      throw new ProblemException('VALIDATION_FAILED', { status: 400, detail: 'Identifiant de prestataire invalide.' });
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 400,
+        detail: 'Identifiant de prestataire invalide.',
+      });
     }
     const client = await this.pool.connect();
     try {

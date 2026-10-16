@@ -8,22 +8,44 @@
 // personnalisation, et qu'une clé de données ouverte par l'une se rouvre dans l'autre. La graine est dans le code :
 // c'est précisément ce qui en fait un faux.
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomUUID } from 'node:crypto';
-import { KmsKeyError, KmsUnavailableError, type DataKeyPort, type DecryptPort, type KeyAdminPort, type KmsKeyKind, type MacPort } from './kms.ports';
+import {
+  KmsKeyError,
+  KmsUnavailableError,
+  type DataKeyPort,
+  type DecryptPort,
+  type KeyAdminPort,
+  type KmsKeyKind,
+  type MacPort,
+} from './kms.ports';
 
 const SEED = Buffer.from('cashless-fake-kms-v1 : graine de test, sans valeur');
-const PREFIX: Record<KmsKeyKind, string> = { HMAC_256: 'fake-kms:hmac:', SYMMETRIC_DEFAULT: 'fake-kms:wrap:' };
+const PREFIX: Record<KmsKeyKind, string> = {
+  HMAC_256: 'fake-kms:hmac:',
+  SYMMETRIC_DEFAULT: 'fake-kms:wrap:',
+};
 
 /** Référence dont la clé de dérivation est celle du kit (`00 01 … 1f`) : rejoue `vecteurs_test_bracelet.py`. */
 export const KIT_VECTOR_HMAC_KEY_REF = 'fake-kms:hmac:kit-vector';
 /** Clé d'emballage de test par défaut des jeux d'essai. */
 export const TEST_WRAPPING_KEY_REF = 'fake-kms:wrap:test';
 
-export type KmsOperation = 'generateMac' | 'generateDataKey' | 'decrypt' | 'createKey' | 'disableKey';
+export type KmsOperation =
+  | 'generateMac'
+  | 'generateDataKey'
+  | 'decrypt'
+  | 'createKey'
+  | 'disableKey';
 
 export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort {
   /** Marqueur lu par la garde de production. */
   readonly isFake = true;
-  readonly calls: Record<KmsOperation, number> = { generateMac: 0, generateDataKey: 0, decrypt: 0, createKey: 0, disableKey: 0 };
+  readonly calls: Record<KmsOperation, number> = {
+    generateMac: 0,
+    generateDataKey: 0,
+    decrypt: 0,
+    createKey: 0,
+    disableKey: 0,
+  };
   private readonly failures = new Map<KmsOperation, number>();
   private readonly disabled = new Set<string>();
 
@@ -69,7 +91,8 @@ export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort 
     this.enter('decrypt');
     const wrapping = this.key(wrappingKeyRef, 'SYMMETRIC_DEFAULT');
     try {
-      if (encrypted.length !== 12 + 32 + 16) throw new KmsKeyError('Clé de données chiffrée illisible');
+      if (encrypted.length !== 12 + 32 + 16)
+        throw new KmsKeyError('Clé de données chiffrée illisible');
       const decipher = createDecipheriv('aes-256-gcm', wrapping, encrypted.subarray(0, 12));
       decipher.setAAD(Buffer.from(wrappingKeyRef));
       decipher.setAuthTag(encrypted.subarray(44));
@@ -104,9 +127,11 @@ export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort 
   }
 
   private key(ref: string, kind: KmsKeyKind): Buffer {
-    if (!ref.startsWith(PREFIX[kind])) throw new KmsKeyError(`Référence de clé inconnue ou d’un autre type (${kind} attendu)`);
+    if (!ref.startsWith(PREFIX[kind]))
+      throw new KmsKeyError(`Référence de clé inconnue ou d’un autre type (${kind} attendu)`);
     if (this.disabled.has(ref)) throw new KmsKeyError('Clé désactivée');
-    if (ref === KIT_VECTOR_HMAC_KEY_REF) return Buffer.from(Array.from({ length: 32 }, (_v, i) => i));
+    if (ref === KIT_VECTOR_HMAC_KEY_REF)
+      return Buffer.from(Array.from({ length: 32 }, (_v, i) => i));
     return createHmac('sha256', SEED).update(ref).digest();
   }
 }

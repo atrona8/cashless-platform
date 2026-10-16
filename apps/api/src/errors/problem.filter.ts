@@ -2,7 +2,13 @@
 // Le message d'une erreur SQL n'atteint jamais le client : il est journalisé côté serveur avec le X-Request-Id.
 // `resolveProblem`, `problemBody` et `logProblem` sont aussi utilisés par l'idempotence (WP11), qui enregistre la
 // réponse d'erreur 4xx telle que ce filtre l'aurait produite.
-import { Catch, HttpException, Inject, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
+import {
+  Catch,
+  HttpException,
+  Inject,
+  type ArgumentsHost,
+  type ExceptionFilter,
+} from '@nestjs/common';
 import type { ProblemCode } from '@cashless/contracts';
 import type { Request, Response } from 'express';
 import { APP_CONFIG, type AppConfig } from '../config/config';
@@ -34,13 +40,20 @@ export interface ProblemBody {
 
 export function resolveProblem(error: unknown): ResolvedProblem {
   if (error instanceof ProblemException) {
-    return { code: error.code, status: error.status, detail: error.detail, extensions: error.extensions, headers: error.headers };
+    return {
+      code: error.code,
+      status: error.status,
+      detail: error.detail,
+      extensions: error.extensions,
+      headers: error.headers,
+    };
   }
   if (isSqlError(error)) return mapSqlState(error.code, error.constraint);
   if (error instanceof HttpException) {
     const status = error.getStatus();
     if (status === 404) return { code: 'NOT_FOUND', status };
-    if (status === 400 || status === 413 || status === 415 || status === 422) return { code: 'VALIDATION_FAILED', status: status === 422 ? 422 : 400 };
+    if (status === 400 || status === 413 || status === 415 || status === 422)
+      return { code: 'VALIDATION_FAILED', status: status === 422 ? 422 : 400 };
     if (status === 401) return { code: 'UNAUTHENTICATED', status };
     if (status === 403) return { code: 'FORBIDDEN', status };
     if (status === 429) return { code: 'RATE_LIMITED', status };
@@ -48,7 +61,11 @@ export function resolveProblem(error: unknown): ResolvedProblem {
   return { code: 'INTERNAL_ERROR', status: 500 };
 }
 
-export function problemBody(problem: ResolvedProblem, req: Request, config: AppConfig): ProblemBody {
+export function problemBody(
+  problem: ResolvedProblem,
+  req: Request,
+  config: AppConfig,
+): ProblemBody {
   const message = messageFor(problem.code, pickLanguage(req.header('Accept-Language')));
   return {
     // Les extensions ne remplacent jamais un membre standard.
@@ -87,6 +104,9 @@ export class ProblemFilter implements ExceptionFilter {
     const problem = resolveProblem(error);
     logProblem(error, problem, req);
     for (const [name, value] of Object.entries(problem.headers ?? {})) res.setHeader(name, value);
-    res.status(problem.status).type(PROBLEM_CONTENT_TYPE).send(JSON.stringify(problemBody(problem, req, this.config)));
+    res
+      .status(problem.status)
+      .type(PROBLEM_CONTENT_TYPE)
+      .send(JSON.stringify(problemBody(problem, req, this.config)));
   }
 }

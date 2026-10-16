@@ -284,9 +284,9 @@ describe('SC-008 : le port d’identité du festivalier se remplace sans toucher
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ media_id: b.media.id, wallet_id: b.walletId });
     expect(identity.calls).toBe(before + 1);
-    expect(
-      await rows('SELECT customer_id FROM wallet WHERE id = $1', [b.walletId]),
-    ).toEqual([{ customer_id: me.customerId }]);
+    expect(await rows('SELECT customer_id FROM wallet WHERE id = $1', [b.walletId])).toEqual([
+      { customer_id: me.customerId },
+    ]);
   });
 
   it('les en-têtes du faux d’origine ne valent plus rien : 401', async () => {

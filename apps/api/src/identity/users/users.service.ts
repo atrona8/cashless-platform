@@ -8,7 +8,14 @@ import { ProblemException } from '../../errors/problem';
 import { isSqlError } from '../../errors/sqlstate-map';
 import type { Principal, Role } from '../principal';
 import { resolveChain } from '../scope-resolver';
-import { administeredOrganizers, canGrant, GRANTABLE_ROLES, grantTarget, type GrantableRole, type GrantScope } from './role-rules';
+import {
+  administeredOrganizers,
+  canGrant,
+  GRANTABLE_ROLES,
+  grantTarget,
+  type GrantableRole,
+  type GrantScope,
+} from './role-rules';
 import {
   assignmentDto,
   decodeCursor,
@@ -36,12 +43,15 @@ export interface Actor {
   audit: AuditContext;
 }
 
-const conflict = (detail: string): ProblemException => new ProblemException('CONFLICT_STATE', { status: 409, detail });
-const forbidden = (detail?: string): ProblemException => new ProblemException('FORBIDDEN', { detail });
+const conflict = (detail: string): ProblemException =>
+  new ProblemException('CONFLICT_STATE', { status: 409, detail });
+const forbidden = (detail?: string): ProblemException =>
+  new ProblemException('FORBIDDEN', { detail });
 const notFound = (): ProblemException => new ProblemException('NOT_FOUND');
 
 /** SQLSTATE d'une erreur `pg`, sinon undefined. */
-const sqlstate = (error: unknown): string | undefined => (isSqlError(error) ? error.code : undefined);
+const sqlstate = (error: unknown): string | undefined =>
+  isSqlError(error) ? error.code : undefined;
 
 /**
  * Visibilité : tout le prestataire si `$1` est NULL ; sinon (ORGANIZER_ADMIN) les personnes qui ont une
@@ -61,7 +71,12 @@ export class UsersService {
 
   // ------------------------------------------------------------------ Lectures
 
-  list(operatorId: string, actor: Omit<Actor, 'audit'>, cursor: string | undefined, limit: number): Promise<UserPage> {
+  list(
+    operatorId: string,
+    actor: Omit<Actor, 'audit'>,
+    cursor: string | undefined,
+    limit: number,
+  ): Promise<UserPage> {
     const after = decodeCursor(cursor);
     return this.tx.run(operatorId, async (client) => {
       const { rows } = await client.query<AppUserRow & { position: string }>(
@@ -89,25 +104,41 @@ export class UsersService {
   get(operatorId: string, actor: Omit<Actor, 'audit'>, userId: string): Promise<StaffUserDto> {
     if (!isUuid(userId)) throw notFound();
     return this.tx.run(operatorId, async (client) => {
-      const { rows } = await client.query<AppUserRow>(`SELECT u.* FROM app_user u WHERE ${VISIBLE} AND u.id = $3`, [
-        ...this.visibility(actor),
-        userId,
-      ]);
+      const { rows } = await client.query<AppUserRow>(
+        `SELECT u.* FROM app_user u WHERE ${VISIBLE} AND u.id = $3`,
+        [...this.visibility(actor), userId],
+      );
       const user = rows[0];
       if (!user) throw notFound();
-      return staffUserDto(user, (await this.activeAssignments(client, [user.id])).get(user.id) ?? []);
+      return staffUserDto(
+        user,
+        (await this.activeAssignments(client, [user.id])).get(user.id) ?? [],
+      );
     });
   }
 
   // ------------------------------------------------------------------ Écritures (transaction métier)
 
-  async create(client: TxClient, operatorId: string, input: StaffUserCreate, actor: Actor): Promise<StaffUserDto> {
+  async create(
+    client: TxClient,
+    operatorId: string,
+    input: StaffUserCreate,
+    actor: Actor,
+  ): Promise<StaffUserDto> {
     let user: AppUserRow;
     try {
       const { rows } = await client.query<AppUserRow>(
         `INSERT INTO app_user (operator_id, issuer, subject, email, phone, display_name, created_by)
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [operatorId, input.issuer, input.subject, input.email, input.phone, input.displayName, actor.principal.userId],
+        [
+          operatorId,
+          input.issuer,
+          input.subject,
+          input.email,
+          input.phone,
+          input.displayName,
+          actor.principal.userId,
+        ],
       );
       user = rows[0]!;
     } catch (error) {
@@ -126,7 +157,12 @@ export class UsersService {
     return dto;
   }
 
-  async disable(client: TxClient, operatorId: string, userId: string, actor: Actor): Promise<StaffUserDto> {
+  async disable(
+    client: TxClient,
+    operatorId: string,
+    userId: string,
+    actor: Actor,
+  ): Promise<StaffUserDto> {
     const before = await this.lockUser(client, userId);
     if (before.status === 'DISABLED') throw conflict('Personne déjà désactivée.');
     let after: AppUserRow;
@@ -138,7 +174,8 @@ export class UsersService {
       after = rows[0]!;
     } catch (error) {
       // Garde de la base : dernier administrateur de la plateforme.
-      if (sqlstate(error) === 'CL001') throw forbidden('Dernier administrateur de la plateforme : désactivation interdite.');
+      if (sqlstate(error) === 'CL001')
+        throw forbidden('Dernier administrateur de la plateforme : désactivation interdite.');
       throw error;
     }
     const assignments = (await this.activeAssignments(client, [userId])).get(userId) ?? [];
@@ -164,7 +201,8 @@ export class UsersService {
   ): Promise<RoleAssignmentDto> {
     const target = grantTarget(input.role, input.scopeType, input.scopeId);
     const user = await this.lockUser(client, userId);
-    if (user.id === actor.principal.userId) throw forbidden('Attribution d’un rôle à soi-même interdite.');
+    if (user.id === actor.principal.userId)
+      throw forbidden('Attribution d’un rôle à soi-même interdite.');
     const role = canGrant(actor.principal, target.role, await resolveChain(client, target));
     if (!role) throw forbidden();
     if (user.status !== 'ACTIVE') throw conflict('Personne désactivée.');
@@ -193,16 +231,26 @@ export class UsersService {
     return dto;
   }
 
-  async revoke(client: TxClient, operatorId: string, assignmentId: string, actor: Omit<Actor, 'role'>): Promise<RoleAssignmentDto> {
+  async revoke(
+    client: TxClient,
+    operatorId: string,
+    assignmentId: string,
+    actor: Omit<Actor, 'role'>,
+  ): Promise<RoleAssignmentDto> {
     if (!isUuid(assignmentId)) throw notFound();
-    const { rows } = await client.query<RoleAssignmentRow>('SELECT * FROM role_assignment WHERE id = $1 FOR UPDATE', [
-      assignmentId,
-    ]);
+    const { rows } = await client.query<RoleAssignmentRow>(
+      'SELECT * FROM role_assignment WHERE id = $1 FOR UPDATE',
+      [assignmentId],
+    );
     const before = rows[0];
     if (!before) throw notFound();
-    if (before.user_id === actor.principal.userId) throw forbidden('Retrait de sa propre attribution interdit.');
+    if (before.user_id === actor.principal.userId)
+      throw forbidden('Retrait de sa propre attribution interdit.');
     if (!(GRANTABLE_ROLES as readonly string[]).includes(before.role)) throw forbidden();
-    const chain = await resolveChain(client, { type: before.scope_type as GrantScope['type'], id: before.scope_id! });
+    const chain = await resolveChain(client, {
+      type: before.scope_type as GrantScope['type'],
+      id: before.scope_id!,
+    });
     const role = canGrant(actor.principal, before.role as GrantableRole, chain);
     if (!role) throw forbidden();
     if (before.revoked_at !== null) throw conflict('Attribution déjà retirée.');
@@ -214,7 +262,8 @@ export class UsersService {
       );
       after = updated.rows[0]!;
     } catch (error) {
-      if (sqlstate(error) === 'CL001') throw forbidden('Dernier administrateur de la plateforme : retrait interdit.');
+      if (sqlstate(error) === 'CL001')
+        throw forbidden('Dernier administrateur de la plateforme : retrait interdit.');
       throw error;
     }
     const dto = assignmentDto(after);
@@ -261,17 +310,25 @@ export class UsersService {
 
   /** Paramètres `$1`, `$2` de VISIBLE : restriction seulement pour un ORGANIZER_ADMIN. */
   private visibility(actor: Omit<Actor, 'audit'>): [string[] | null, string | null] {
-    return actor.role === 'ORGANIZER_ADMIN' ? [administeredOrganizers(actor.principal), actor.principal.userId] : [null, null];
+    return actor.role === 'ORGANIZER_ADMIN'
+      ? [administeredOrganizers(actor.principal), actor.principal.userId]
+      : [null, null];
   }
 
   private async lockUser(client: TxClient, userId: string): Promise<AppUserRow> {
     if (!isUuid(userId)) throw notFound();
-    const { rows } = await client.query<AppUserRow>('SELECT * FROM app_user WHERE id = $1 FOR UPDATE', [userId]);
+    const { rows } = await client.query<AppUserRow>(
+      'SELECT * FROM app_user WHERE id = $1 FOR UPDATE',
+      [userId],
+    );
     if (!rows[0]) throw notFound();
     return rows[0];
   }
 
-  private async activeAssignments(client: TxClient, userIds: string[]): Promise<Map<string, RoleAssignmentRow[]>> {
+  private async activeAssignments(
+    client: TxClient,
+    userIds: string[],
+  ): Promise<Map<string, RoleAssignmentRow[]>> {
     const byUser = new Map<string, RoleAssignmentRow[]>();
     if (userIds.length === 0) return byUser;
     const { rows } = await client.query<RoleAssignmentRow>(

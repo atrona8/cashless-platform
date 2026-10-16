@@ -25,12 +25,23 @@ const SIGNATURE_BYTES = { min: 16, max: 128 };
 export function parsePersonalization(raw: unknown): PersonalizationInput {
   const body = objectBody(raw);
   if (!isUuid(body.batch_id)) throw invalid('batch_id : identifiant attendu.');
-  if (typeof body.token_hash !== 'string' || !TOKEN_HASH.test(body.token_hash)) throw invalid('token_hash : 64 chiffres hexadécimaux attendus.');
-  if (typeof body.nfc_uid !== 'string' || !UID.test(body.nfc_uid)) throw invalid('nfc_uid : 14 chiffres hexadécimaux en minuscules attendus.');
+  if (typeof body.token_hash !== 'string' || !TOKEN_HASH.test(body.token_hash))
+    throw invalid('token_hash : 64 chiffres hexadécimaux attendus.');
+  if (typeof body.nfc_uid !== 'string' || !UID.test(body.nfc_uid))
+    throw invalid('nfc_uid : 14 chiffres hexadécimaux en minuscules attendus.');
   if (typeof body.signature_ok !== 'boolean') throw invalid('signature_ok : booléen attendu.');
-  const signature = typeof body.originality_signature === 'string' && BASE64.test(body.originality_signature) ? Buffer.from(body.originality_signature, 'base64') : null;
-  if (!signature || signature.length < SIGNATURE_BYTES.min || signature.length > SIGNATURE_BYTES.max) {
-    throw invalid(`originality_signature : ${SIGNATURE_BYTES.min} à ${SIGNATURE_BYTES.max} octets en base64 attendus.`);
+  const signature =
+    typeof body.originality_signature === 'string' && BASE64.test(body.originality_signature)
+      ? Buffer.from(body.originality_signature, 'base64')
+      : null;
+  if (
+    !signature ||
+    signature.length < SIGNATURE_BYTES.min ||
+    signature.length > SIGNATURE_BYTES.max
+  ) {
+    throw invalid(
+      `originality_signature : ${SIGNATURE_BYTES.min} à ${SIGNATURE_BYTES.max} octets en base64 attendus.`,
+    );
   }
   return {
     batchId: body.batch_id,
@@ -44,7 +55,8 @@ export function parsePersonalization(raw: unknown): PersonalizationInput {
 
 /** Clé publique du poste : point P-256 non compressé, vérifié sur la courbe avant tout calcul de mot de passe. */
 function stationPublicKey(value: unknown): Buffer {
-  const key = typeof value === 'string' && BASE64URL.test(value) ? Buffer.from(value, 'base64url') : null;
+  const key =
+    typeof value === 'string' && BASE64URL.test(value) ? Buffer.from(value, 'base64url') : null;
   if (key && key.length === P256_PUBLIC_KEY_LENGTH && key[0] === 0x04) {
     try {
       const probe = createECDH('prime256v1');
@@ -55,16 +67,24 @@ function stationPublicKey(value: unknown): Buffer {
       // point hors de la courbe : refusé ci-dessous
     }
   }
-  throw invalid('station_public_key : clé publique P-256 attendue (point non compressé de 65 octets, base64url).');
+  throw invalid(
+    'station_public_key : clé publique P-256 attendue (point non compressé de 65 octets, base64url).',
+  );
 }
 
 /** Empreinte de la demande pour l'idempotence : ce qui désigne la puce, pas la clé du poste (elle change à chaque envoi). */
 export function personalizationHash(input: PersonalizationInput): string {
-  return createHash('sha256').update(input.batchId).update(input.tokenHash).update(input.uid).update(input.signatureSha256).digest('hex');
+  return createHash('sha256')
+    .update(input.batchId)
+    .update(input.tokenHash)
+    .update(input.uid)
+    .update(input.signatureSha256)
+    .digest('hex');
 }
 
 export function parseClaimCode(raw: unknown): string {
   const body = objectBody(raw);
-  if (typeof body.claim_code !== 'string' || body.claim_code === '' || body.claim_code.length > 64) throw invalid('claim_code : texte de 1 à 64 caractères attendu.');
+  if (typeof body.claim_code !== 'string' || body.claim_code === '' || body.claim_code.length > 64)
+    throw invalid('claim_code : texte de 1 à 64 caractères attendu.');
   return body.claim_code;
 }

@@ -1,6 +1,13 @@
 // Code de rattachement : alphabet, tirage, normalisation de la saisie (SPECIFICATION §7.8).
 import { randomBytes } from 'node:crypto';
-import { CLAIM_CODE_ALPHABET, TagFormatError, claimCodeUrl, formatClaimCode, generateClaimCode, normalizeClaimCode } from '../src';
+import {
+  CLAIM_CODE_ALPHABET,
+  TagFormatError,
+  claimCodeUrl,
+  formatClaimCode,
+  generateClaimCode,
+  normalizeClaimCode,
+} from '../src';
 import { vectors } from './vectors';
 
 describe('code de rattachement', () => {
@@ -10,10 +17,13 @@ describe('code de rattachement', () => {
     expect(/[01IO]/.test(CLAIM_CODE_ALPHABET)).toBe(false);
   });
 
-  it.each(vectors.claim_code.inputs as { input: string; normalized: string; formatted: string }[])('normalise « $input »', (sample) => {
-    expect(normalizeClaimCode(sample.input)).toBe(sample.normalized);
-    expect(formatClaimCode(sample.input)).toBe(sample.formatted);
-  });
+  it.each(vectors.claim_code.inputs as { input: string; normalized: string; formatted: string }[])(
+    'normalise « $input »',
+    (sample) => {
+      expect(normalizeClaimCode(sample.input)).toBe(sample.normalized);
+      expect(formatClaimCode(sample.input)).toBe(sample.formatted);
+    },
+  );
 
   it.each(vectors.refusals.claim_code as string[])('refuse « %s »', (input) => {
     expect(() => normalizeClaimCode(input)).toThrow(TagFormatError);

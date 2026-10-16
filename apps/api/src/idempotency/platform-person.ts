@@ -13,5 +13,6 @@ export function isPlatformPerson(req: Request): boolean {
 export function assertPlatformAdmin(req: Request): void {
   const principal = (req as PrincipalRequest).principal;
   if (!principal) throw new ProblemException('UNAUTHENTICATED');
-  if (principal.operatorId !== null || !hasRole(principal, 'PLATFORM_ADMIN')) throw new ProblemException('FORBIDDEN');
+  if (principal.operatorId !== null || !hasRole(principal, 'PLATFORM_ADMIN'))
+    throw new ProblemException('FORBIDDEN');
 }

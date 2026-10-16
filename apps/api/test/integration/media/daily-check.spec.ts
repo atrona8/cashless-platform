@@ -157,7 +157,12 @@ describe('contrôle quotidien des mots de passe stockés', () => {
   const twoOperators = async (countA: number, countB: number) => {
     const w = await createMediaWorld();
     const media = await withOwner(async (db) => {
-      const seed = async (operatorId: string, organizerId: string, kmsKeyRef: string, count: number) =>
+      const seed = async (
+        operatorId: string,
+        organizerId: string,
+        kmsKeyRef: string,
+        count: number,
+      ) =>
         seedPersonalizedMedia(db, {
           operatorId,
           batchId: await createBatch(db, { operatorId, organizerId, quantity: count }),
@@ -180,9 +185,9 @@ describe('contrôle quotidien des mots de passe stockés', () => {
       const ownWorker = own.app.get(DailyCheckWorker, { strict: false });
       const { w, media } = await twoOperators(3, 2);
       await own.kms.disableKey(w.keyRef.b);
-      expect(
-        await rows(`SELECT status FROM tag_key WHERE operator_id = $1`, [w.ops.b]),
-      ).toEqual([{ status: 'ACTIVE' }]);
+      expect(await rows(`SELECT status FROM tag_key WHERE operator_id = $1`, [w.ops.b])).toEqual([
+        { status: 'ACTIVE' },
+      ]);
 
       expect(await ownWorker.runOnce([w.ops.a, w.ops.b])).toBe(2);
       expect(await runs(w.ops.b)).toEqual([

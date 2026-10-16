@@ -30,7 +30,13 @@ export class InsufficientFundsError extends Error {
 const max = (a: bigint, b: bigint): bigint => (a > b ? a : b);
 const min = (a: bigint, b: bigint): bigint => (a < b ? a : b);
 
-export function spendSplit({ amount, promoBalance, paidBalance, promoFirst, mode }: SpendInput): SpendSplit {
+export function spendSplit({
+  amount,
+  promoBalance,
+  paidBalance,
+  promoFirst,
+  mode,
+}: SpendInput): SpendSplit {
   if (mode === 'ONLINE') {
     if (promoBalance + paidBalance < amount) throw new InsufficientFundsError();
     const fromPromo = promoFirst ? min(amount, promoBalance) : max(0n, amount - paidBalance);

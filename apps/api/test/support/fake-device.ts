@@ -3,7 +3,10 @@
 import { createECDH, randomUUID } from 'node:crypto';
 import { deviceAad, openForRecipient, type EncryptedBlob } from '@cashless/tag-format';
 import type { Client } from 'pg';
-import { TEST_DEVICE_HEADER, TEST_DEVICE_OPERATOR_HEADER } from '../../src/device-identity/fake-device-identity';
+import {
+  TEST_DEVICE_HEADER,
+  TEST_DEVICE_OPERATOR_HEADER,
+} from '../../src/device-identity/fake-device-identity';
 
 export interface TestDeviceInput {
   operatorId: string;
@@ -33,8 +36,16 @@ export async function createTestDevice(db: Client, input: TestDeviceInput): Prom
   await db.query(
     `INSERT INTO device (id, operator_id, kind, event_id, pos_id, serial, status, agreement_public_key)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-    [deviceId, input.operatorId, input.kind ?? 'POS', input.eventId ?? null, input.posId ?? null, serial, input.status ?? 'ACTIVE',
-     input.withAgreementKey === false ? null : ecdh.getPublicKey()],
+    [
+      deviceId,
+      input.operatorId,
+      input.kind ?? 'POS',
+      input.eventId ?? null,
+      input.posId ?? null,
+      serial,
+      input.status ?? 'ACTIVE',
+      input.withAgreementKey === false ? null : ecdh.getPublicKey(),
+    ],
   );
   const privateKey = ecdh.getPrivateKey();
   return {
@@ -42,6 +53,7 @@ export async function createTestDevice(db: Client, input: TestDeviceInput): Prom
     operatorId: input.operatorId,
     serial,
     headers: { [TEST_DEVICE_HEADER]: deviceId, [TEST_DEVICE_OPERATOR_HEADER]: input.operatorId },
-    open: (blob, uid) => openForRecipient({ recipientPrivateKey: privateKey, blob, aad: deviceAad(deviceId, uid) }),
+    open: (blob, uid) =>
+      openForRecipient({ recipientPrivateKey: privateKey, blob, aad: deviceAad(deviceId, uid) }),
   };
 }

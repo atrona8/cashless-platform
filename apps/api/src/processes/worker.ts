@@ -17,7 +17,8 @@ export class WorkerRegistry {
   private readonly workers: ProcessWorker[] = [];
 
   register(worker: ProcessWorker): void {
-    if (this.workers.some((w) => w.name === worker.name)) throw new Error(`Travailleur déjà enregistré : ${worker.name}`);
+    if (this.workers.some((w) => w.name === worker.name))
+      throw new Error(`Travailleur déjà enregistré : ${worker.name}`);
     this.workers.push(worker);
   }
 

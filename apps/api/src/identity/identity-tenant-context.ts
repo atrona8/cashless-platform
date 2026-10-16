@@ -16,7 +16,9 @@ export const OPERATOR_PARAM = 'operator_id';
 @Injectable()
 export class IdentityTenantContext implements TenantContextProvider {
   current(req: Request): TenantContext {
-    const pathOperator = (req.params as Record<string, string | undefined> | undefined)?.[OPERATOR_PARAM];
+    const pathOperator = (req.params as Record<string, string | undefined> | undefined)?.[
+      OPERATOR_PARAM
+    ];
     const customer = (req as CustomerRequest).customer;
     if (customer && !(req as PrincipalRequest).principal) {
       if (pathOperator !== undefined) throw new ProblemException('NOT_FOUND');

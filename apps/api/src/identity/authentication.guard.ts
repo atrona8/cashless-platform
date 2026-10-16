@@ -5,7 +5,12 @@ import { Inject, Injectable, type CanActivate, type ExecutionContext } from '@ne
 import { Reflector } from '@nestjs/core';
 import { TenantTx } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
-import { IDENTITY_VERIFIER, IdentityError, type IdentityVerifier, type VerifiedToken } from './oidc-verifier';
+import {
+  IDENTITY_VERIFIER,
+  IdentityError,
+  type IdentityVerifier,
+  type VerifiedToken,
+} from './oidc-verifier';
 import type { Assignment, PrincipalRequest, Role, ScopeType } from './principal';
 import { IS_PUBLIC } from './public.decorator';
 
@@ -21,7 +26,13 @@ export class AuthenticationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return true;
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()])) return true;
+    if (
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    )
+      return true;
     const req = context.switchToHttp().getRequest<PrincipalRequest>();
 
     const token = BEARER.exec(req.header('authorization') ?? '')?.[1];
@@ -37,7 +48,11 @@ export class AuthenticationGuard implements CanActivate {
       userId: person.user_id,
       operatorId: person.operator_id,
       assignments: person.assignments.map(
-        (a): Assignment => ({ role: a.role as Role, scopeType: a.scope_type as ScopeType, scopeId: a.scope_id }),
+        (a): Assignment => ({
+          role: a.role as Role,
+          scopeType: a.scope_type as ScopeType,
+          scopeId: a.scope_id,
+        }),
       ),
       issuer: verified.issuer,
       subject: verified.subject,

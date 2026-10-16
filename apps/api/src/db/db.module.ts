@@ -29,7 +29,8 @@ class PoolCloser implements OnApplicationShutdown {
     {
       provide: PG_POOL,
       inject: [APP_CONFIG],
-      useFactory: (config: AppConfig) => new Pool({ connectionString: config.databaseUrl, max: config.poolSize }),
+      useFactory: (config: AppConfig) =>
+        new Pool({ connectionString: config.databaseUrl, max: config.poolSize }),
     },
     {
       // Aucune connexion n'est ouverte avant la première transaction de plateforme.

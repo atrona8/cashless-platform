@@ -11,7 +11,9 @@ describe('cache de la clé de données', () => {
   it('un seul déchiffrement sert plusieurs demandes, y compris simultanées', async () => {
     const cache = new DekCache({ tagDekCacheSeconds: 300 });
     const load = jest.fn(async () => key());
-    const seen = await Promise.all(Array.from({ length: 20 }, () => cache.withKey('dek-1', load, (dek) => dek.toString('hex'))));
+    const seen = await Promise.all(
+      Array.from({ length: 20 }, () => cache.withKey('dek-1', load, (dek) => dek.toString('hex'))),
+    );
     await cache.withKey('dek-1', load, () => undefined);
     expect(load).toHaveBeenCalledTimes(1);
     expect(new Set(seen)).toEqual(new Set([key().toString('hex')]));
@@ -42,7 +44,11 @@ describe('cache de la clé de données', () => {
     jest.advanceTimersByTime(1);
     expect(cache.size()).toBe(0);
     expect(buffer.equals(zero)).toBe(true);
-    await cache.withKey('dek-1', async () => key(), () => undefined);
+    await cache.withKey(
+      'dek-1',
+      async () => key(),
+      () => undefined,
+    );
     expect(cache.size()).toBe(1);
     cache.onModuleDestroy();
   });
@@ -65,10 +71,14 @@ describe('cache de la clé de données', () => {
     const cache = new DekCache({ tagDekCacheSeconds: 300 });
     const buffer = key();
     let during = false;
-    await cache.withKey('dek-1', async () => buffer, async (dek) => {
-      cache.evict('dek-1');
-      during = dek.equals(key());
-    });
+    await cache.withKey(
+      'dek-1',
+      async () => buffer,
+      async (dek) => {
+        cache.evict('dek-1');
+        during = dek.equals(key());
+      },
+    );
     expect(during).toBe(true);
     expect(buffer.equals(zero)).toBe(true);
     expect(cache.size()).toBe(0);
@@ -77,8 +87,18 @@ describe('cache de la clé de données', () => {
   it('l’arrêt efface tout ; un échec de déchiffrement ne laisse rien en cache', async () => {
     const cache = new DekCache({ tagDekCacheSeconds: 300 });
     const buffer = key();
-    await cache.withKey('dek-1', async () => buffer, () => undefined);
-    await expect(cache.withKey('dek-2', async () => Promise.reject(new Error('service de clés indisponible')), () => undefined)).rejects.toThrow('indisponible');
+    await cache.withKey(
+      'dek-1',
+      async () => buffer,
+      () => undefined,
+    );
+    await expect(
+      cache.withKey(
+        'dek-2',
+        async () => Promise.reject(new Error('service de clés indisponible')),
+        () => undefined,
+      ),
+    ).rejects.toThrow('indisponible');
     expect(cache.size()).toBe(1);
     cache.onModuleDestroy();
     expect(cache.size()).toBe(0);
@@ -88,7 +108,13 @@ describe('cache de la clé de données', () => {
   it('une erreur dans la demande n’empêche pas l’effacement', async () => {
     const cache = new DekCache({ tagDekCacheSeconds: 0 });
     const buffer = key();
-    await expect(cache.withKey('dek-1', async () => buffer, () => Promise.reject(new Error('boum')))).rejects.toThrow('boum');
+    await expect(
+      cache.withKey(
+        'dek-1',
+        async () => buffer,
+        () => Promise.reject(new Error('boum')),
+      ),
+    ).rejects.toThrow('boum');
     expect(buffer.equals(zero)).toBe(true);
   });
 });

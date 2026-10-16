@@ -4,7 +4,11 @@
 // commande d'administration (création, désactivation) ou par la personnalisation (rotation, retrait).
 // La recevabilité est revérifiée à l'exécution : l'état d'une clé peut avoir changé depuis la demande.
 import { Injectable } from '@nestjs/common';
-import { ApprovalActionRegistry, type ApprovalActionDefinition, type ApprovalExecutionContext } from '../../approval/action-registry';
+import {
+  ApprovalActionRegistry,
+  type ApprovalActionDefinition,
+  type ApprovalExecutionContext,
+} from '../../approval/action-registry';
 import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { isUuid } from '../../organization/platform/platform.dto';
@@ -21,11 +25,13 @@ export interface TagKeyIndexPayload {
 }
 
 const bad = (detail: string) => new ProblemException('VALIDATION_FAILED', { status: 422, detail });
-const record = (raw: unknown): Record<string, unknown> => (typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {});
+const record = (raw: unknown): Record<string, unknown> =>
+  typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
 
 function indexPayload(raw: unknown): TagKeyIndexPayload {
   const payload = record(raw);
-  if (!isUuid(payload.operator_id) || !Number.isInteger(payload.key_index)) throw bad('operator_id et key_index attendus.');
+  if (!isUuid(payload.operator_id) || !Number.isInteger(payload.key_index))
+    throw bad('operator_id et key_index attendus.');
   return { operator_id: payload.operator_id, key_index: payload.key_index as number };
 }
 
@@ -36,8 +42,16 @@ export class KeyApprovalActions {
     private readonly keys: KeysService,
   ) {
     registry.register(this.create() as ApprovalActionDefinition);
-    registry.register(this.indexed('TAG_DEK_ROTATE', 'ROTATE_DEK', (client, index) => this.keys.assertRotatable(client, index)) as ApprovalActionDefinition);
-    registry.register(this.indexed('TAG_KEY_RETIRE', 'RETIRE_KEY', (client, index) => this.keys.assertRetirable(client, index)) as ApprovalActionDefinition);
+    registry.register(
+      this.indexed('TAG_DEK_ROTATE', 'ROTATE_DEK', (client, index) =>
+        this.keys.assertRotatable(client, index),
+      ) as ApprovalActionDefinition,
+    );
+    registry.register(
+      this.indexed('TAG_KEY_RETIRE', 'RETIRE_KEY', (client, index) =>
+        this.keys.assertRetirable(client, index),
+      ) as ApprovalActionDefinition,
+    );
   }
 
   private create(): ApprovalActionDefinition<TagKeyCreatePayload> {
@@ -47,10 +61,20 @@ export class KeyApprovalActions {
       scopeOf: (payload) => ({ type: 'OPERATOR', id: payload.operator_id }),
       validate: (raw) => {
         const payload = record(raw);
-        const scope = payload.scope === 'DEDICATED' ? 'DEDICATED' : payload.scope === 'SHARED' ? 'SHARED' : null;
+        const scope =
+          payload.scope === 'DEDICATED'
+            ? 'DEDICATED'
+            : payload.scope === 'SHARED'
+              ? 'SHARED'
+              : null;
         if (!isUuid(payload.operator_id) || !scope) throw bad('operator_id et scope attendus.');
-        if ((scope === 'DEDICATED') !== isUuid(payload.dedicated_event_id)) throw bad('dedicated_event_id : obligatoire pour une clé dédiée, interdit sinon.');
-        return { operator_id: payload.operator_id, scope, dedicated_event_id: scope === 'DEDICATED' ? (payload.dedicated_event_id as string) : null };
+        if ((scope === 'DEDICATED') !== isUuid(payload.dedicated_event_id))
+          throw bad('dedicated_event_id : obligatoire pour une clé dédiée, interdit sinon.');
+        return {
+          operator_id: payload.operator_id,
+          scope,
+          dedicated_event_id: scope === 'DEDICATED' ? (payload.dedicated_event_id as string) : null,
+        };
       },
       execute: async (client, ctx) => {
         await this.keys.assertCreatable(client, ctx.payload);
@@ -77,12 +101,24 @@ export class KeyApprovalActions {
       validate: indexPayload,
       execute: async (client, ctx) => {
         await assert(client, ctx.payload.key_index);
-        return { result: tagKeyJobDto(await this.keys.enqueue(client, { keyIndex: ctx.payload.key_index, kind, payload: {}, ...this.origin(ctx) })) };
+        return {
+          result: tagKeyJobDto(
+            await this.keys.enqueue(client, {
+              keyIndex: ctx.payload.key_index,
+              kind,
+              payload: {},
+              ...this.origin(ctx),
+            }),
+          ),
+        };
       },
     };
   }
 
   private origin(ctx: ApprovalExecutionContext<unknown>) {
-    return { approvalRequestId: ctx.request.id, actors: { requested_by: ctx.requestedBy, approved_by: ctx.approvedBy } };
+    return {
+      approvalRequestId: ctx.request.id,
+      actors: { requested_by: ctx.requestedBy, approved_by: ctx.approvedBy },
+    };
   }
 }

@@ -91,7 +91,9 @@ export interface AuditEntry extends AuditContext {
 /** JSON des états avant/après : les bigint (montants) passent en texte, jamais par un flottant. */
 export function auditJson(value: unknown): string | null {
   if (value === undefined || value === null) return null;
-  return JSON.stringify(value, (_key, item: unknown) => (typeof item === 'bigint' ? item.toString() : item));
+  return JSON.stringify(value, (_key, item: unknown) =>
+    typeof item === 'bigint' ? item.toString() : item,
+  );
 }
 
 @Injectable()

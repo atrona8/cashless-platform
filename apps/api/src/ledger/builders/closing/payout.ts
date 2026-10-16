@@ -13,7 +13,12 @@ import {
 import { balanced, push, requireId, requirePositive } from '../festival/lines';
 
 /** Bénéficiaire d'un versement : un commerçant (par participation), une partie du grand livre ou le compte légal. */
-export type PayoutBeneficiary = { participationId: string } | 'ORGANIZER' | 'OPERATOR' | 'PLATFORM' | 'LEGAL';
+export type PayoutBeneficiary =
+  | { participationId: string }
+  | 'ORGANIZER'
+  | 'OPERATOR'
+  | 'PLATFORM'
+  | 'LEGAL';
 
 function beneficiaryAccount(beneficiary: PayoutBeneficiary, ctx: BuildContext): AccountRef {
   const { org, ope, plt } = partyAccounts(ctx.config);
@@ -36,7 +41,10 @@ export interface PayoutInitiatedPayload {
 }
 
 /** Un débit par bénéficiaire, dans l'ordre donné, puis le total en versements en cours. */
-export function buildPayoutInitiated(command: LedgerCommand<'PAYOUT_INITIATED', PayoutInitiatedPayload>, ctx: BuildContext): Line[] {
+export function buildPayoutInitiated(
+  command: LedgerCommand<'PAYOUT_INITIATED', PayoutInitiatedPayload>,
+  ctx: BuildContext,
+): Line[] {
   const lines: Line[] = [];
   for (const { beneficiary, amount } of command.payload.payouts ?? []) {
     push(lines, beneficiaryAccount(beneficiary, ctx), requirePositive(amount, 'versement'));
@@ -51,7 +59,10 @@ export interface PayoutConfirmedPayload {
   moneyAccount: string;
 }
 
-export function buildPayoutConfirmed(command: LedgerCommand<'PAYOUT_CONFIRMED', PayoutConfirmedPayload>, _ctx: BuildContext): Line[] {
+export function buildPayoutConfirmed(
+  command: LedgerCommand<'PAYOUT_CONFIRMED', PayoutConfirmedPayload>,
+  _ctx: BuildContext,
+): Line[] {
   const { amount, moneyAccount } = command.payload;
   requirePositive(amount, 'versement confirmé');
   return balanced([
@@ -66,7 +77,10 @@ export interface PayoutFailedPayload {
   beneficiary: PayoutBeneficiary;
 }
 
-export function buildPayoutFailed(command: LedgerCommand<'PAYOUT_FAILED', PayoutFailedPayload>, ctx: BuildContext): Line[] {
+export function buildPayoutFailed(
+  command: LedgerCommand<'PAYOUT_FAILED', PayoutFailedPayload>,
+  ctx: BuildContext,
+): Line[] {
   const { amount, beneficiary } = command.payload;
   requirePositive(amount, 'versement échoué');
   return balanced([

@@ -11,7 +11,13 @@ import { TenantController } from './tenant.controller';
 
 @Module({
   controllers: [TenantController],
-  providers: [TenantAccess, PartiesService, ConfigVersionsService, ContractsService, FeeRulesService],
+  providers: [
+    TenantAccess,
+    PartiesService,
+    ConfigVersionsService,
+    ContractsService,
+    FeeRulesService,
+  ],
   exports: [TenantAccess, PartiesService, ConfigVersionsService, ContractsService, FeeRulesService],
 })
 export class TenantModule {}

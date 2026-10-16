@@ -4,5 +4,8 @@ import { DataKeyRepository } from './data-key.repository';
 import { DekCache } from './dek-cache';
 import { ReencryptWorker } from './reencrypt.worker';
 
-@Module({ providers: [DataKeyRepository, DekCache, ReencryptWorker], exports: [DataKeyRepository, DekCache] })
+@Module({
+  providers: [DataKeyRepository, DekCache, ReencryptWorker],
+  exports: [DataKeyRepository, DekCache],
+})
 export class KeysTagKeysModule {}

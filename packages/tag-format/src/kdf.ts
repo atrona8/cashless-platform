@@ -20,12 +20,24 @@ export function assertUid(uid: Uint8Array): void {
   requireLength(uid, UID_LENGTH, 'BAD_UID', 'UID');
 }
 
-export function derivationMessage(input: { operatorId: string; keyIndex: number; uid: Uint8Array }): Buffer {
+export function derivationMessage(input: {
+  operatorId: string;
+  keyIndex: number;
+  uid: Uint8Array;
+}): Buffer {
   assertKeyIndex(input.keyIndex);
   assertUid(input.uid);
   const keyIndex = Buffer.alloc(2);
   keyIndex.writeUInt16BE(input.keyIndex);
-  return Buffer.concat([COUNTER, LABEL, Buffer.from([0]), uuidToBytes(input.operatorId), keyIndex, input.uid, LENGTH_BITS]);
+  return Buffer.concat([
+    COUNTER,
+    LABEL,
+    Buffer.from([0]),
+    uuidToBytes(input.operatorId),
+    keyIndex,
+    input.uid,
+    LENGTH_BITS,
+  ]);
 }
 
 /** Sépare les 6 premiers octets du MAC : `PWD‖PACK`, `PWD` (4 octets) et `PACK` (2 octets). */

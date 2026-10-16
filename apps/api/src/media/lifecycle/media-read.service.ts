@@ -19,10 +19,16 @@ interface SummaryRow {
   deposit_held: bigint;
   has_claim_code: boolean;
   claim_code_used_at: Date | null;
-  wallets: Array<{ wallet_id: string; currency: string; spendable: number; attached_to_account: boolean }>;
+  wallets: Array<{
+    wallet_id: string;
+    currency: string;
+    spendable: number;
+    attached_to_account: boolean;
+  }>;
 }
 
-const SUMMARY = 's.media_id, s.status, s.kind, s.key_index, s.personalized_at, s.batch_id, s.batch_kind, s.batch_status, s.organizer_id, s.event_id, s.deposit_status, s.deposit_held, s.has_claim_code, s.claim_code_used_at, s.wallets';
+const SUMMARY =
+  's.media_id, s.status, s.kind, s.key_index, s.personalized_at, s.batch_id, s.batch_kind, s.batch_status, s.organizer_id, s.event_id, s.deposit_status, s.deposit_held, s.has_claim_code, s.claim_code_used_at, s.wallets';
 
 export const mediaAdminDto = (row: SummaryRow) => ({
   media_id: row.media_id,
@@ -39,7 +45,12 @@ export const mediaAdminDto = (row: SummaryRow) => ({
   deposit_held: Number(row.deposit_held),
   has_claim_code: row.has_claim_code,
   claim_code_used_at: row.claim_code_used_at?.toISOString() ?? null,
-  wallets: row.wallets.map((w) => ({ wallet_id: w.wallet_id, currency: String(w.currency).trim(), spendable: Number(w.spendable), attached_to_account: w.attached_to_account })),
+  wallets: row.wallets.map((w) => ({
+    wallet_id: w.wallet_id,
+    currency: String(w.currency).trim(),
+    spendable: Number(w.spendable),
+    attached_to_account: w.attached_to_account,
+  })),
 });
 
 export interface MediaListFilter {
@@ -53,7 +64,10 @@ export interface MediaListFilter {
 export class MediaReadService {
   /** Organisateur du lot d'un bracelet du prestataire (404 s'il n'existe pas) ; `null` : bracelet sans lot. */
   async organizerOf(client: TxClient, mediaId: string): Promise<string | null> {
-    const { rows } = await client.query<{ organizer_id: string | null }>('SELECT b.organizer_id FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id WHERE m.id = $1', [mediaId]);
+    const { rows } = await client.query<{ organizer_id: string | null }>(
+      'SELECT b.organizer_id FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id WHERE m.id = $1',
+      [mediaId],
+    );
     if (!rows[0]) throw notFound();
     return rows[0].organizer_id;
   }
@@ -61,8 +75,18 @@ export class MediaReadService {
   /** Vue du terminal (contrat `Media`). */
   async forCounter(client: TxClient, mediaId: string) {
     const { rows } = await client.query<{
-      id: string; kind: string; chip_type: string; nfc_uid: Buffer | null; key_index: number; status: string; batch_id: string | null; batch_kind: string | null;
-      deposit_status: string; deposit_held: bigint; last_counter: bigint | null; wallet_ids: string[];
+      id: string;
+      kind: string;
+      chip_type: string;
+      nfc_uid: Buffer | null;
+      key_index: number;
+      status: string;
+      batch_id: string | null;
+      batch_kind: string | null;
+      deposit_status: string;
+      deposit_held: bigint;
+      last_counter: bigint | null;
+      wallet_ids: string[];
     }>(
       `SELECT m.id, m.kind, m.chip_type, m.nfc_uid, m.key_index, m.status, m.batch_id, b.kind AS batch_kind, m.deposit_status, m.deposit_held, m.last_counter,
               coalesce((SELECT array_agg(a.wallet_id ORDER BY a.currency) FROM media_assignment a WHERE a.media_id = m.id AND a.released_at IS NULL), '{}') AS wallet_ids
@@ -72,9 +96,18 @@ export class MediaReadService {
     const m = rows[0];
     if (!m) throw notFound();
     return {
-      media_id: m.id, kind: m.kind, chip_type: m.chip_type, nfc_uid: m.nfc_uid?.toString('hex') ?? null, key_index: m.key_index, status: m.status, batch_id: m.batch_id,
+      media_id: m.id,
+      kind: m.kind,
+      chip_type: m.chip_type,
+      nfc_uid: m.nfc_uid?.toString('hex') ?? null,
+      key_index: m.key_index,
+      status: m.status,
+      batch_id: m.batch_id,
       ...(m.batch_kind ? { batch_kind: m.batch_kind } : {}),
-      deposit_status: m.deposit_status, deposit_held: Number(m.deposit_held), wallet_ids: m.wallet_ids, last_counter: m.last_counter === null ? null : Number(m.last_counter),
+      deposit_status: m.deposit_status,
+      deposit_held: Number(m.deposit_held),
+      wallet_ids: m.wallet_ids,
+      last_counter: m.last_counter === null ? null : Number(m.last_counter),
     };
   }
 
@@ -91,12 +124,24 @@ export class MediaReadService {
   }
 
   async detail(client: TxClient, mediaId: string) {
-    const { rows } = await client.query<SummaryRow>(`SELECT ${SUMMARY} FROM media_summary($1) s`, [mediaId]);
+    const { rows } = await client.query<SummaryRow>(`SELECT ${SUMMARY} FROM media_summary($1) s`, [
+      mediaId,
+    ]);
     if (!rows[0]) throw notFound();
-    const history = await client.query<{ from_status: string | null; to_status: string; reason: string | null; actor_id: string | null; approved_by: string | null; at: Date }>(
+    const history = await client.query<{
+      from_status: string | null;
+      to_status: string;
+      reason: string | null;
+      actor_id: string | null;
+      approved_by: string | null;
+      at: Date;
+    }>(
       'SELECT from_status, to_status, reason, actor_id, approved_by, at FROM media_status_log($1)',
       [mediaId],
     );
-    return { ...mediaAdminDto(rows[0]), status_history: history.rows.map((h) => ({ ...h, at: h.at.toISOString() })) };
+    return {
+      ...mediaAdminDto(rows[0]),
+      status_history: history.rows.map((h) => ({ ...h, at: h.at.toISOString() })),
+    };
   }
 }

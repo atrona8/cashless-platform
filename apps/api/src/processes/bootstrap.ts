@@ -42,7 +42,8 @@ function pollSeconds(): number {
   const raw = process.env.TAG_JOB_POLL_SECONDS;
   if (raw === undefined || raw === '') return 5;
   const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 3600) throw new Error(`TAG_JOB_POLL_SECONDS : entier de 0 à 3600 attendu (reçu « ${raw} »)`);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 3600)
+    throw new Error(`TAG_JOB_POLL_SECONDS : entier de 0 à 3600 attendu (reçu « ${raw} »)`);
   return parsed;
 }
 
@@ -63,7 +64,9 @@ export async function serve(rootModule: Type<unknown>, port: number): Promise<vo
       running = true;
       workers
         .drain()
-        .catch((error: unknown) => console.error('[travaux]', error instanceof Error ? error.message : error))
+        .catch((error: unknown) =>
+          console.error('[travaux]', error instanceof Error ? error.message : error),
+        )
         .finally(() => {
           running = false;
         });

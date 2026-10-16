@@ -1,6 +1,13 @@
 // PROMO_CREDIT, PROMO_EXPIRY et ACTIVATION_FEE — SPECIFICATION §5.4.
 import { fee, groupForTax } from '../../money';
-import { BuildError, partyAccounts, wallet, type BuildContext, type LedgerCommand, type Line } from '../../types';
+import {
+  BuildError,
+  partyAccounts,
+  wallet,
+  type BuildContext,
+  type LedgerCommand,
+  type Line,
+} from '../../types';
 import { balanced, push, requireId, requirePositive, tagFee } from './lines';
 
 export interface PromoPayload {
@@ -9,7 +16,10 @@ export interface PromoPayload {
 }
 
 /** Crédits offerts par l'organisateur (le préchargement d'un lot est délégué à `preload_media`). */
-export function buildPromoCredit(command: LedgerCommand<'PROMO_CREDIT', PromoPayload>, ctx: BuildContext): Line[] {
+export function buildPromoCredit(
+  command: LedgerCommand<'PROMO_CREDIT', PromoPayload>,
+  ctx: BuildContext,
+): Line[] {
   const { walletId, amount } = command.payload;
   requireId(walletId, 'portefeuille');
   requirePositive(amount, 'crédits offerts');
@@ -21,7 +31,10 @@ export function buildPromoCredit(command: LedgerCommand<'PROMO_CREDIT', PromoPay
 }
 
 /** Expiration des crédits offerts : `amount` = solde offert restant du portefeuille. */
-export function buildPromoExpiry(command: LedgerCommand<'PROMO_EXPIRY', PromoPayload>, ctx: BuildContext): Line[] {
+export function buildPromoExpiry(
+  command: LedgerCommand<'PROMO_EXPIRY', PromoPayload>,
+  ctx: BuildContext,
+): Line[] {
   const { walletId, amount } = command.payload;
   requireId(walletId, 'portefeuille');
   requirePositive(amount, 'crédits offerts à expirer');
@@ -38,9 +51,13 @@ export interface ActivationFeePayload {
 }
 
 /** Frais d'activation : un débit par support, puis une seule extraction de taxe sur la somme (cas 2). */
-export function buildActivationFee(command: LedgerCommand<'ACTIVATION_FEE', ActivationFeePayload>, ctx: BuildContext): Line[] {
+export function buildActivationFee(
+  command: LedgerCommand<'ACTIVATION_FEE', ActivationFeePayload>,
+  ctx: BuildContext,
+): Line[] {
   const { walletIds } = command.payload;
-  if (!walletIds?.length) throw new BuildError('VALIDATION_FAILED', "frais d'activation : aucun support");
+  if (!walletIds?.length)
+    throw new BuildError('VALIDATION_FAILED', "frais d'activation : aucun support");
   const { config } = ctx;
   const { org } = partyAccounts(config);
   const perMedia = requirePositive(fee(0n, config.activationFee), "frais d'activation");

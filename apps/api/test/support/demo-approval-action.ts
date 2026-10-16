@@ -9,7 +9,11 @@ import { registerApprovalActions } from '../../src/approval/action-registry';
 import { ApprovalService, respondAccepted } from '../../src/approval/approval.service';
 import { auditContext } from '../../src/audit/audit-context';
 import { ProblemException } from '../../src/errors/problem';
-import { Idempotent, IdempotentTransaction, type IdempotentTx } from '../../src/idempotency/idempotent.decorator';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../../src/idempotency/idempotent.decorator';
 import { requestPrincipal } from '../../src/identity/principal';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../../src/tenancy/tenant-context';
 
@@ -27,8 +31,16 @@ export const demoAdjustment: ApprovalActionDefinition<DemoPayload> = {
   scopeOf: (payload) => ({ type: 'ORGANIZER', id: payload.organizer_id }),
   validate(raw) {
     const p = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
-    if (typeof p.organizer_id !== 'string' || !UUID.test(p.organizer_id) || typeof p.note !== 'string' || p.note === '') {
-      throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'organizer_id et note attendus.' });
+    if (
+      typeof p.organizer_id !== 'string' ||
+      !UUID.test(p.organizer_id) ||
+      typeof p.note !== 'string' ||
+      p.note === ''
+    ) {
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'organizer_id et note attendus.',
+      });
     }
     return { organizer_id: p.organizer_id, note: p.note, fail: p.fail === true };
   },
@@ -39,7 +51,11 @@ export const demoAdjustment: ApprovalActionDefinition<DemoPayload> = {
                1 + (SELECT count(*) FROM config_version WHERE scope_id = $1), now(), jsonb_build_object('note', $2::text))`,
       [payload.organizer_id, payload.note],
     );
-    if (payload.fail) throw new ProblemException('VALIDATION_FAILED', { status: 422, detail: 'Échec de démonstration.' });
+    if (payload.fail)
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Échec de démonstration.',
+      });
     return { result: { done: true } };
   },
 };
@@ -62,11 +78,19 @@ class DemoAdjustmentController {
     const { operatorId } = this.tenant.current(req);
     const actor = { principal: requestPrincipal(req), audit: auditContext(req) };
     return tx.run(async (client) => {
-      const created = await this.approvals.request(client, operatorId, { action: 'ADJUSTMENT', targetId: body.organizer_id ?? null, payload: body }, actor);
+      const created = await this.approvals.request(
+        client,
+        operatorId,
+        { action: 'ADJUSTMENT', targetId: body.organizer_id ?? null, payload: body },
+        actor,
+      );
       return respondAccepted(res, created);
     });
   }
 }
 
-@Module({ imports: [registerApprovalActions(demoAdjustment)], controllers: [DemoAdjustmentController] })
+@Module({
+  imports: [registerApprovalActions(demoAdjustment)],
+  controllers: [DemoAdjustmentController],
+})
 export class DemoApprovalModule {}

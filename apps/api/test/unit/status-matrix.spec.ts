@@ -1,8 +1,19 @@
 // Matrice statut de l'événement × type de transaction (SPECIFICATION §12.1), cellule par cellule.
 // Les attendus sont écrits ici en clair, recopiés de §12.1 — jamais dérivés de l'implémentation.
 import { matchAccounts, type AccountRow } from '../../src/ledger/ports/account-resolver';
-import { isAccepted, type EventStatus, type LedgerStatus, type StatusCheckInput } from '../../src/ledger/status-matrix';
-import { BuildError, SOURCES, TRANSACTION_TYPES, type Source, type TransactionType } from '../../src/ledger/types';
+import {
+  isAccepted,
+  type EventStatus,
+  type LedgerStatus,
+  type StatusCheckInput,
+} from '../../src/ledger/status-matrix';
+import {
+  BuildError,
+  SOURCES,
+  TRANSACTION_TYPES,
+  type Source,
+  type TransactionType,
+} from '../../src/ledger/types';
 
 /** Cellule acceptée : la commande type qui doit passer (source et paramètres). */
 type Accepted = Partial<Omit<StatusCheckInput, 'eventStatus' | 'ledgerStatus' | 'type'>>;
@@ -26,11 +37,30 @@ const EXPECTED: [EventStatus, LedgerStatus, Partial<Record<TransactionType, Acce
     'LIVE',
     'OPEN',
     {
-      TOPUP: { source: 'PSP_WEBHOOK' }, TOPUP_CASH: ANY, PROMO_CREDIT: BO, PROMO_EXPIRY: ANY, ACTIVATION_FEE: ANY,
-      DEPOSIT_TAKEN: ANY, DEPOSIT_REFUNDED: ANY, DEPOSIT_FORFEITED: ANY, PURCHASE: ANY, REVERSAL: ANY, PITCH_FEE: ANY,
-      OPERATOR_FEE: ANY, PLATFORM_FEE: ANY, ANOMALY_RESOLUTION: BO, CASH_CLOSE: BO, CASH_DEPOSIT: ANY,
-      PSP_SETTLEMENT: ANY, CHARGEBACK: ANY, WALLET_REFUND: ANY, PAYOUT_INITIATED: ANY, PAYOUT_CONFIRMED: ANY,
-      PAYOUT_FAILED: ANY, ADJUSTMENT: BO, MERCHANT_DEBT_TRANSFER: ANY,
+      TOPUP: { source: 'PSP_WEBHOOK' },
+      TOPUP_CASH: ANY,
+      PROMO_CREDIT: BO,
+      PROMO_EXPIRY: ANY,
+      ACTIVATION_FEE: ANY,
+      DEPOSIT_TAKEN: ANY,
+      DEPOSIT_REFUNDED: ANY,
+      DEPOSIT_FORFEITED: ANY,
+      PURCHASE: ANY,
+      REVERSAL: ANY,
+      PITCH_FEE: ANY,
+      OPERATOR_FEE: ANY,
+      PLATFORM_FEE: ANY,
+      ANOMALY_RESOLUTION: BO,
+      CASH_CLOSE: BO,
+      CASH_DEPOSIT: ANY,
+      PSP_SETTLEMENT: ANY,
+      CHARGEBACK: ANY,
+      WALLET_REFUND: ANY,
+      PAYOUT_INITIATED: ANY,
+      PAYOUT_CONFIRMED: ANY,
+      PAYOUT_FAILED: ANY,
+      ADJUSTMENT: BO,
+      MERCHANT_DEBT_TRANSFER: ANY,
       // FR-024: « Tous, sauf BREAKAGE » lu à la lettre : BREAKAGE_REVERSAL passe le moteur ; la base exige une casse
       // antérieure sur le même portefeuille (check_late_claim, CL024).
       BREAKAGE_REVERSAL: BO,
@@ -40,37 +70,71 @@ const EXPECTED: [EventStatus, LedgerStatus, Partial<Record<TransactionType, Acce
     'CLOSING',
     'CLOSING',
     {
-      PURCHASE: SYNC, TOPUP_CASH: SYNC, DEPOSIT_TAKEN: { source: 'EDGE_SYNC' }, TOPUP: { source: 'PSP_WEBHOOK' },
-      REVERSAL: ANY, CASH_CLOSE: BO, DEPOSIT_REFUNDED: ANY, WALLET_REFUND: ANY, PROMO_EXPIRY: ANY, CHARGEBACK: ANY,
+      PURCHASE: SYNC,
+      TOPUP_CASH: SYNC,
+      DEPOSIT_TAKEN: { source: 'EDGE_SYNC' },
+      TOPUP: { source: 'PSP_WEBHOOK' },
+      REVERSAL: ANY,
+      CASH_CLOSE: BO,
+      DEPOSIT_REFUNDED: ANY,
+      WALLET_REFUND: ANY,
+      PROMO_EXPIRY: ANY,
+      CHARGEBACK: ANY,
     },
   ],
   [
     'RECONCILING',
     'CLOSING',
     {
-      PURCHASE: SYNC, TOPUP_CASH: SYNC, DEPOSIT_TAKEN: SYNC,
+      PURCHASE: SYNC,
+      TOPUP_CASH: SYNC,
+      DEPOSIT_TAKEN: SYNC,
       // FR-024: « les synchronisations et leurs REVERSAL » : seules les annulations synchronisées sont acceptées.
       REVERSAL: SYNC,
-      CASH_CLOSE: BO, CASH_DEPOSIT: ANY, PSP_SETTLEMENT: ANY, ANOMALY_RESOLUTION: BO, ADJUSTMENT: BO, WALLET_REFUND: ANY,
-      DEPOSIT_REFUNDED: ANY, PROMO_EXPIRY: ANY, CHARGEBACK: ANY,
+      CASH_CLOSE: BO,
+      CASH_DEPOSIT: ANY,
+      PSP_SETTLEMENT: ANY,
+      ANOMALY_RESOLUTION: BO,
+      ADJUSTMENT: BO,
+      WALLET_REFUND: ANY,
+      DEPOSIT_REFUNDED: ANY,
+      PROMO_EXPIRY: ANY,
+      CHARGEBACK: ANY,
     },
   ],
   [
     'SETTLING',
     'CLOSING',
     {
-      PITCH_FEE: ANY, MERCHANT_DEBT_TRANSFER: ANY, OPERATOR_FEE: ANY, PLATFORM_FEE: ANY, PAYOUT_INITIATED: ANY,
-      PAYOUT_CONFIRMED: ANY, PAYOUT_FAILED: ANY, WALLET_REFUND: ANY, DEPOSIT_REFUNDED: ANY, PROMO_EXPIRY: ANY,
-      CHARGEBACK: ANY, ADJUSTMENT: BO,
+      PITCH_FEE: ANY,
+      MERCHANT_DEBT_TRANSFER: ANY,
+      OPERATOR_FEE: ANY,
+      PLATFORM_FEE: ANY,
+      PAYOUT_INITIATED: ANY,
+      PAYOUT_CONFIRMED: ANY,
+      PAYOUT_FAILED: ANY,
+      WALLET_REFUND: ANY,
+      DEPOSIT_REFUNDED: ANY,
+      PROMO_EXPIRY: ANY,
+      CHARGEBACK: ANY,
+      ADJUSTMENT: BO,
     },
   ],
   [
     'REFUND_WINDOW',
     'CLOSING',
     {
-      WALLET_REFUND: ANY, DEPOSIT_REFUNDED: ANY, PROMO_EXPIRY: ANY, CHARGEBACK: ANY, BREAKAGE: ANY, DEPOSIT_FORFEITED: ANY,
-      OPERATOR_FEE: { source: 'BATCH', variant: 'REGULARIZATION' }, PAYOUT_INITIATED: ANY, PAYOUT_CONFIRMED: ANY,
-      PAYOUT_FAILED: ANY, ADJUSTMENT: BO,
+      WALLET_REFUND: ANY,
+      DEPOSIT_REFUNDED: ANY,
+      PROMO_EXPIRY: ANY,
+      CHARGEBACK: ANY,
+      BREAKAGE: ANY,
+      DEPOSIT_FORFEITED: ANY,
+      OPERATOR_FEE: { source: 'BATCH', variant: 'REGULARIZATION' },
+      PAYOUT_INITIATED: ANY,
+      PAYOUT_CONFIRMED: ANY,
+      PAYOUT_FAILED: ANY,
+      ADJUSTMENT: BO,
     },
   ],
   [
@@ -88,11 +152,19 @@ const EXPECTED: [EventStatus, LedgerStatus, Partial<Record<TransactionType, Acce
       CHARGEBACK: { source: 'PSP_WEBHOOK' },
     },
   ],
-  ['CLOSED', 'LOCKED', { BREAKAGE_REVERSAL: BO, ADJUSTMENT: BO, WALLET_REFUND: BO, CHARGEBACK: BO }],
+  [
+    'CLOSED',
+    'LOCKED',
+    { BREAKAGE_REVERSAL: BO, ADJUSTMENT: BO, WALLET_REFUND: BO, CHARGEBACK: BO },
+  ],
 ];
 
 /** Contexte le plus permissif pour vérifier qu'un refus ne dépend d'aucun paramètre. */
-const PERMISSIVE = { variant: 'PRELOAD', depositMode: 'SEPARATE', debitPurposes: ['LEGAL_BREAKAGE', 'PAYOUT_PENDING'] } as const;
+const PERMISSIVE = {
+  variant: 'PRELOAD',
+  depositMode: 'SEPARATE',
+  debitPurposes: ['LEGAL_BREAKAGE', 'PAYOUT_PENDING'],
+} as const;
 
 describe('matrice statuts × types (§12.1)', () => {
   for (const [eventStatus, ledgerStatus, accepted] of EXPECTED) {
@@ -100,7 +172,9 @@ describe('matrice statuts × types (§12.1)', () => {
       it.each([...TRANSACTION_TYPES])('%s', (type) => {
         const cell = accepted[type];
         if (cell) {
-          expect(isAccepted({ eventStatus, ledgerStatus, type, source: 'ONLINE', ...cell })).toEqual({ ok: true });
+          expect(
+            isAccepted({ eventStatus, ledgerStatus, type, source: 'ONLINE', ...cell }),
+          ).toEqual({ ok: true });
         } else {
           for (const source of SOURCES) {
             const result = isAccepted({ eventStatus, ledgerStatus, type, source, ...PERMISSIVE });
@@ -113,8 +187,13 @@ describe('matrice statuts × types (§12.1)', () => {
 });
 
 describe('sources, variantes et cas obligatoires', () => {
-  const check = (eventStatus: EventStatus, type: TransactionType, source: Source, extra: Accepted = {}, ledgerStatus: LedgerStatus = 'CLOSING') =>
-    isAccepted({ eventStatus, ledgerStatus, type, source, ...extra }).ok;
+  const check = (
+    eventStatus: EventStatus,
+    type: TransactionType,
+    source: Source,
+    extra: Accepted = {},
+    ledgerStatus: LedgerStatus = 'CLOSING',
+  ) => isAccepted({ eventStatus, ledgerStatus, type, source, ...extra }).ok;
 
   it('BREAKAGE refusé en LIVE', () => {
     expect(check('LIVE', 'BREAKAGE', 'BATCH', {}, 'OPEN')).toBe(false);
@@ -133,10 +212,17 @@ describe('sources, variantes et cas obligatoires', () => {
 
   it('PITCH_FEE accepté en SETTLING seulement (hors LIVE)', () => {
     const statuses: [EventStatus, LedgerStatus][] = [
-      ['DRAFT', 'OPEN'], ['CLOSING', 'CLOSING'], ['RECONCILING', 'CLOSING'], ['SETTLING', 'CLOSING'],
-      ['REFUND_WINDOW', 'CLOSING'], ['CLOSED', 'CLOSING'], ['CLOSED', 'LOCKED'],
+      ['DRAFT', 'OPEN'],
+      ['CLOSING', 'CLOSING'],
+      ['RECONCILING', 'CLOSING'],
+      ['SETTLING', 'CLOSING'],
+      ['REFUND_WINDOW', 'CLOSING'],
+      ['CLOSED', 'CLOSING'],
+      ['CLOSED', 'LOCKED'],
     ];
-    expect(statuses.filter(([e, l]) => check(e, 'PITCH_FEE', 'BATCH', {}, l)).map(([e]) => e)).toEqual(['SETTLING']);
+    expect(
+      statuses.filter(([e, l]) => check(e, 'PITCH_FEE', 'BATCH', {}, l)).map(([e]) => e),
+    ).toEqual(['SETTLING']);
   });
 
   it('LOCKED : ADJUSTMENT BACKOFFICE accepté, BATCH refusé', () => {
@@ -146,7 +232,9 @@ describe('sources, variantes et cas obligatoires', () => {
 
   it('DRAFT : PROMO_CREDIT hors préchargement refusé ; caution FROM_BALANCE refusée', () => {
     expect(check('DRAFT', 'PROMO_CREDIT', 'BACKOFFICE', {}, 'OPEN')).toBe(false);
-    expect(check('DRAFT', 'DEPOSIT_TAKEN', 'ONLINE', { depositMode: 'FROM_BALANCE' }, 'OPEN')).toBe(false);
+    expect(check('DRAFT', 'DEPOSIT_TAKEN', 'ONLINE', { depositMode: 'FROM_BALANCE' }, 'OPEN')).toBe(
+      false,
+    );
   });
 
   it('REFUND_WINDOW : OPERATOR_FEE hors régularisation refusé', () => {
@@ -154,19 +242,37 @@ describe('sources, variantes et cas obligatoires', () => {
   });
 
   it('CLOSED avec soldes : PAYOUT_INITIATED hors compte légal refusé', () => {
-    expect(check('CLOSED', 'PAYOUT_INITIATED', 'BATCH', { debitPurposes: ['MERCHANT'] })).toBe(false);
+    expect(check('CLOSED', 'PAYOUT_INITIATED', 'BATCH', { debitPurposes: ['MERCHANT'] })).toBe(
+      false,
+    );
   });
 
   it('le motif nomme le statut et le type, sans SQL', () => {
-    const result = isAccepted({ eventStatus: 'LIVE', ledgerStatus: 'OPEN', type: 'BREAKAGE', source: 'BATCH' });
+    const result = isAccepted({
+      eventStatus: 'LIVE',
+      ledgerStatus: 'OPEN',
+      type: 'BREAKAGE',
+      source: 'BATCH',
+    });
     expect(result).toEqual({ ok: false, reason: expect.stringContaining('BREAKAGE') });
     expect(result.ok === false && result.reason).toContain('LIVE');
   });
 });
 
 describe('résolution des comptes (correspondance en mémoire)', () => {
-  const row = (id: string, code: string, purpose: string, extra: Partial<AccountRow> = {}): AccountRow => ({
-    id, code, purpose, owner_party_id: null, wallet_id: null, participation_id: null, ...extra,
+  const row = (
+    id: string,
+    code: string,
+    purpose: string,
+    extra: Partial<AccountRow> = {},
+  ): AccountRow => ({
+    id,
+    code,
+    purpose,
+    owner_party_id: null,
+    wallet_id: null,
+    participation_id: null,
+    ...extra,
   });
   const rows = [
     row('a1', 'A-PSP-WAVE', 'PSP', { owner_party_id: 'org' }),

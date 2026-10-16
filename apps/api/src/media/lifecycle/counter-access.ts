@@ -15,7 +15,8 @@ import type { RolesRequest } from '../../identity/roles.guard';
 import { conflict } from '../../organization/platform/platform.dto';
 
 /** Route de guichet : jeton d'une personne (garde globale) et identité du terminal. */
-export const CounterAuth = (): MethodDecorator & ClassDecorator => applyDecorators(UseGuards(DeviceGuard));
+export const CounterAuth = (): MethodDecorator & ClassDecorator =>
+  applyDecorators(UseGuards(DeviceGuard));
 
 const COUNTER_ROLES: readonly Role[] = ['CASHIER', 'SUPERVISOR'];
 
@@ -67,11 +68,15 @@ export class CounterAccess {
     if (!row) throw new ProblemException('NOT_FOUND');
     const role = COUNTER_ROLES.find((candidate) =>
       principal.assignments.some(
-        (a) => a.role === candidate && ((a.scopeType === 'EVENT' && a.scopeId === device.eventId) || (a.scopeType === 'ORGANIZER' && a.scopeId === row.organizer_id)),
+        (a) =>
+          a.role === candidate &&
+          ((a.scopeType === 'EVENT' && a.scopeId === device.eventId) ||
+            (a.scopeType === 'ORGANIZER' && a.scopeId === row.organizer_id)),
       ),
     );
     if (!role) throw new ProblemException('FORBIDDEN');
-    if (!row.ledger_id || !row.currency) throw conflict('L’événement de ce terminal n’a pas de grand livre.');
+    if (!row.ledger_id || !row.currency)
+      throw conflict('L’événement de ce terminal n’a pas de grand livre.');
     (req as RolesRequest).exercisedRole = role;
     return {
       device,

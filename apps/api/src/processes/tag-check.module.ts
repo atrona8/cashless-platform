@@ -9,6 +9,12 @@ import { MediaTagCheckModule } from '../media/media-tag-check.module';
 import { ProcessBaseModule } from './process-base';
 
 @Module({
-  imports: [ProcessDbModule.forProcess('tag-check'), ProcessBaseModule, AuditModule, KmsModule.forCapabilities(['mac', 'decrypt']), MediaTagCheckModule],
+  imports: [
+    ProcessDbModule.forProcess('tag-check'),
+    ProcessBaseModule,
+    AuditModule,
+    KmsModule.forCapabilities(['mac', 'decrypt']),
+    MediaTagCheckModule,
+  ],
 })
 export class TagCheckProcessModule {}

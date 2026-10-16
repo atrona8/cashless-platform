@@ -50,14 +50,15 @@ export async function createScenarioFixture(): Promise<ScenarioFixture> {
 
   await withOwner(async (db) => {
     const q = (text: string, values: unknown[] = []) => db.query(text, values);
-    for (const [key, party] of Object.entries(scenario.parties) as [PartyKey, { kind: string; name: string }][]) {
+    for (const [key, party] of Object.entries(scenario.parties) as [
+      PartyKey,
+      { kind: string; name: string },
+    ][]) {
       const tenant = party.kind === 'PLATFORM' || party.kind === 'OPERATOR' ? null : op;
-      await q(`INSERT INTO party (id, kind, operator_id, legal_name, country_code) VALUES ($1, $2, $3, $4, 'SN')`, [
-        parties[key],
-        party.kind,
-        tenant,
-        party.name,
-      ]);
+      await q(
+        `INSERT INTO party (id, kind, operator_id, legal_name, country_code) VALUES ($1, $2, $3, $4, 'SN')`,
+        [parties[key], party.kind, tenant, party.name],
+      );
     }
     await q(
       `INSERT INTO jurisdiction_profile (id, country_code, version, valid_from, breakage_destination)
@@ -81,11 +82,23 @@ export async function createScenarioFixture(): Promise<ScenarioFixture> {
       await q(
         `INSERT INTO merchant_participation (id, operator_id, event_id, merchant_id, link_type, payout_to, pitch_fee_mode)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [fx.participations[key], op, fx.eventId, parties[key], internal ? 'INTERNAL' : 'EXTERNAL', internal ? parties.ORG : parties[key], internal ? 'PREPAID' : 'DEDUCT_OR_DEBT'],
+        [
+          fx.participations[key],
+          op,
+          fx.eventId,
+          parties[key],
+          internal ? 'INTERNAL' : 'EXTERNAL',
+          internal ? parties.ORG : parties[key],
+          internal ? 'PREPAID' : 'DEDUCT_OR_DEBT',
+        ],
       );
     }
     for (const key of WALLETS) {
-      await q(`INSERT INTO wallet (id, operator_id, ledger_id) VALUES ($1, $2, $3)`, [fx.wallets[key], op, fx.ledgerId]);
+      await q(`INSERT INTO wallet (id, operator_id, ledger_id) VALUES ($1, $2, $3)`, [
+        fx.wallets[key],
+        op,
+        fx.ledgerId,
+      ]);
     }
 
     for (const account of scenario.accounts as {
@@ -124,7 +137,10 @@ export async function createScenarioFixture(): Promise<ScenarioFixture> {
 
     // Cautions (R-07) : un lot par mode, un support actif par portefeuille. Le rattachement (n = 1) est créé par le
     // déclencheur de journal des statuts du support (media_status_log) à l'insertion d'un support ACTIVE.
-    await q(`INSERT INTO tag_key (operator_id, key_index, kms_key_ref) VALUES ($1, 1, 'arn:test:scenario')`, [op]);
+    await q(
+      `INSERT INTO tag_key (operator_id, key_index, kms_key_ref) VALUES ($1, 1, 'arn:test:scenario')`,
+      [op],
+    );
     for (const [wallet, mode] of [
       ['W04', 'SEPARATE'],
       ['W05', 'FROM_BALANCE'],

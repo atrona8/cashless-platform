@@ -20,8 +20,15 @@ const ISSUE_ATTEMPTS = 3;
 const UID = /^[0-9a-fA-F]{14}$/;
 
 export const ASSOCIATION_REASONS = [
-  'MALFORMED_LINE', 'BAD_CLAIM_CODE', 'BAD_UID', 'MEDIA_UNKNOWN', 'CLAIM_CODE_UNKNOWN', 'CLAIM_CODE_OTHER_BATCH',
-  'CLAIM_CODE_ALREADY_ASSOCIATED', 'CLAIM_CODE_INVALIDATED', 'MEDIA_ALREADY_HAS_CODE',
+  'MALFORMED_LINE',
+  'BAD_CLAIM_CODE',
+  'BAD_UID',
+  'MEDIA_UNKNOWN',
+  'CLAIM_CODE_UNKNOWN',
+  'CLAIM_CODE_OTHER_BATCH',
+  'CLAIM_CODE_ALREADY_ASSOCIATED',
+  'CLAIM_CODE_INVALIDATED',
+  'MEDIA_ALREADY_HAS_CODE',
 ] as const;
 export type AssociationReason = (typeof ASSOCIATION_REASONS)[number];
 
@@ -41,15 +48,21 @@ export class ClaimCodesService {
   ) {
     // Sans domaine, chaque QR imprimé serait faux : refus au démarrage plutôt qu'à la première commande.
     if (config.production && config.claimCodeDomain === '') {
-      throw new Error('CLAIM_CODE_DOMAIN manquant : domaine des liens imprimés sur les bracelets, obligatoire en production');
+      throw new Error(
+        'CLAIM_CODE_DOMAIN manquant : domaine des liens imprimés sur les bracelets, obligatoire en production',
+      );
     }
     this.domain = config.claimCodeDomain;
   }
 
   /** Tire les codes du lot, enregistre leurs empreintes et rend le fichier de commande (`rank,code,url`). */
   async issueOrder(client: TxClient, batch: MediaBatchRow, actor: AuditContext): Promise<string> {
-    if (batch.kind !== 'PUBLIC') throw conflict('Seuls les lots PUBLIC portent un code de rattachement.');
-    if (batch.claim_codes_issued_at !== null) throw conflict('Le fichier de commande de ce lot a déjà été produit ; il n’est pas conservé et ne peut pas être produit une seconde fois.');
+    if (batch.kind !== 'PUBLIC')
+      throw conflict('Seuls les lots PUBLIC portent un code de rattachement.');
+    if (batch.claim_codes_issued_at !== null)
+      throw conflict(
+        'Le fichier de commande de ce lot a déjà été produit ; il n’est pas conservé et ne peut pas être produit une seconde fois.',
+      );
     if (batch.status === 'CLOSED') throw conflict('Lot clos.');
     let codes: string[] = [];
     for (let attempt = 1; ; attempt += 1) {
@@ -63,7 +76,8 @@ export class ClaimCodesService {
       } catch (error) {
         await client.query('ROLLBACK TO SAVEPOINT claim_codes');
         // Empreinte déjà prise par un code invisible d'ici (autre prestataire) : nouveau tirage.
-        if (!(isSqlError(error) && error.code === '23505') || attempt >= ISSUE_ATTEMPTS) throw error;
+        if (!(isSqlError(error) && error.code === '23505') || attempt >= ISSUE_ATTEMPTS)
+          throw error;
       }
     }
     await this.audit.record(client, {
@@ -75,12 +89,17 @@ export class ClaimCodesService {
       after: { count: codes.length },
     });
     const lines = ['rank,code,url'];
-    codes.forEach((code, index) => lines.push(`${index + 1},${formatClaimCode(code)},${claimCodeUrl(this.domain, code)}`));
+    codes.forEach((code, index) =>
+      lines.push(`${index + 1},${formatClaimCode(code)},${claimCodeUrl(this.domain, code)}`),
+    );
     return `${lines.join('\n')}\n`;
   }
 
   /** `quantity` codes distincts, dont aucune empreinte n'existe déjà chez ce prestataire. */
-  private async draw(client: TxClient, quantity: number): Promise<{ codes: string[]; hashes: Buffer[] }> {
+  private async draw(
+    client: TxClient,
+    quantity: number,
+  ): Promise<{ codes: string[]; hashes: Buffer[] }> {
     const byHash = new Map<string, { code: string; hash: Buffer }>();
     while (byHash.size < quantity) {
       const fresh: Buffer[] = [];
@@ -92,7 +111,10 @@ export class ClaimCodesService {
         byHash.set(key, { code, hash });
         fresh.push(hash);
       }
-      const { rows } = await client.query<{ code_hash: Buffer }>('SELECT code_hash FROM claim_code WHERE code_hash = ANY($1::bytea[])', [fresh]);
+      const { rows } = await client.query<{ code_hash: Buffer }>(
+        'SELECT code_hash FROM claim_code WHERE code_hash = ANY($1::bytea[])',
+        [fresh],
+      );
       for (const row of rows) byHash.delete(row.code_hash.toString('hex'));
     }
     const drawn = [...byHash.values()];
@@ -100,8 +122,14 @@ export class ClaimCodesService {
   }
 
   /** Importe le fichier `code,uid` de l'imprimeur ; chaque ligne est un point de reprise. */
-  async importAssociations(client: TxClient, batch: MediaBatchRow, csv: string, actor: AuditContext): Promise<AssociationResult> {
-    if (batch.kind !== 'PUBLIC') throw conflict('Seuls les lots PUBLIC portent un code de rattachement.');
+  async importAssociations(
+    client: TxClient,
+    batch: MediaBatchRow,
+    csv: string,
+    actor: AuditContext,
+  ): Promise<AssociationResult> {
+    if (batch.kind !== 'PUBLIC')
+      throw conflict('Seuls les lots PUBLIC portent un code de rattachement.');
     // Marque d'ordre des octets en tête de fichier (tableurs) : écartée.
     const lines = (csv.charCodeAt(0) === 0xfeff ? csv.slice(1) : csv).split(/\r?\n/);
     const result: AssociationResult = { accepted: 0, rejected: [] };
@@ -116,7 +144,8 @@ export class ClaimCodesService {
         if (fields[0]?.toLowerCase() === 'code') continue; // ligne d'en-tête
       }
       data += 1;
-      if (data > MAX_ASSOCIATION_LINES) throw invalid(`Fichier trop long : ${MAX_ASSOCIATION_LINES} lignes au plus par envoi.`);
+      if (data > MAX_ASSOCIATION_LINES)
+        throw invalid(`Fichier trop long : ${MAX_ASSOCIATION_LINES} lignes au plus par envoi.`);
       const reason = await this.associate(client, batch, fields);
       if (reason) result.rejected.push({ line: index + 1, reason });
       else result.accepted += 1;
@@ -133,7 +162,11 @@ export class ClaimCodesService {
   }
 
   /** Associe une ligne ; rend le motif du refus, ou `null` si la ligne est acceptée. */
-  private async associate(client: TxClient, batch: MediaBatchRow, fields: string[]): Promise<AssociationReason | null> {
+  private async associate(
+    client: TxClient,
+    batch: MediaBatchRow,
+    fields: string[],
+  ): Promise<AssociationReason | null> {
     if (fields.length !== 2) return 'MALFORMED_LINE';
     let hash: Buffer;
     try {
@@ -164,16 +197,22 @@ export class ClaimCodesService {
   }
 
   /** Motif du refus d'une ligne, lu sans verrou (`associate_claim_code` verrouille et refait ces contrôles). */
-  private async refusal(client: TxClient, batchId: string, hash: Buffer, uid: Buffer): Promise<AssociationReason | { mediaId: string }> {
+  private async refusal(
+    client: TxClient,
+    batchId: string,
+    hash: Buffer,
+    uid: Buffer,
+  ): Promise<AssociationReason | { mediaId: string }> {
     const media = await client.query<{ id: string; claim_code_hash: Buffer | null }>(
       'SELECT id, claim_code_hash FROM media WHERE batch_id = $1 AND nfc_uid = $2',
       [batchId, uid],
     );
     if (!media.rows[0]) return 'MEDIA_UNKNOWN';
-    const code = await client.query<{ batch_id: string; media_id: string | null; invalidated_at: Date | null }>(
-      'SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1',
-      [hash],
-    );
+    const code = await client.query<{
+      batch_id: string;
+      media_id: string | null;
+      invalidated_at: Date | null;
+    }>('SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1', [hash]);
     const found = code.rows[0];
     if (!found) return 'CLAIM_CODE_UNKNOWN';
     if (found.invalidated_at !== null) return 'CLAIM_CODE_INVALIDATED';

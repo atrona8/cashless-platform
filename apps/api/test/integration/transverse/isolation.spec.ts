@@ -43,7 +43,9 @@ describe('isolation entre prestataires et durées du rôle', () => {
   });
 
   const read = (operatorId: string, id: string) =>
-    request(app.getHttpServer()).get(`/v1/__test/notes/${id}`).set(TEST_OPERATOR_HEADER, operatorId);
+    request(app.getHttpServer())
+      .get(`/v1/__test/notes/${id}`)
+      .set(TEST_OPERATOR_HEADER, operatorId);
 
   it('A relit son objet', async () => {
     const res = await read(ops.a, noteOfA);
@@ -104,7 +106,8 @@ describe('isolation entre prestataires et durées du rôle', () => {
 
   it('durées imposées sur les connexions du pool (NFR-008)', async () => {
     const pool = app.get<Pool>(PG_POOL);
-    const show = async (name: string) => (await pool.query<Record<string, string>>(`SHOW ${name}`)).rows[0]![name];
+    const show = async (name: string) =>
+      (await pool.query<Record<string, string>>(`SHOW ${name}`)).rows[0]![name];
     expect(await show('transaction_timeout')).toBe('1min');
     expect(await show('statement_timeout')).toBe('30s');
     expect(await show('idle_in_transaction_session_timeout')).toBe('10s');

@@ -12,7 +12,18 @@ import { MediaTagKeysModule } from '../media/media-tag-keys.module';
 import { DenyUnmarkedRoutesGuard, ProcessBaseModule } from './process-base';
 
 @Module({
-  imports: [ProcessDbModule.forProcess('tag-keys'), ProcessBaseModule, HealthModule, DeviceIdentityModule, AuditModule, KmsModule.forCapabilities(['decrypt']), MediaTagKeysModule],
-  providers: [DenyUnmarkedRoutesGuard, { provide: APP_GUARD, useExisting: DenyUnmarkedRoutesGuard }],
+  imports: [
+    ProcessDbModule.forProcess('tag-keys'),
+    ProcessBaseModule,
+    HealthModule,
+    DeviceIdentityModule,
+    AuditModule,
+    KmsModule.forCapabilities(['decrypt']),
+    MediaTagKeysModule,
+  ],
+  providers: [
+    DenyUnmarkedRoutesGuard,
+    { provide: APP_GUARD, useExisting: DenyUnmarkedRoutesGuard },
+  ],
 })
 export class TagKeysProcessModule {}

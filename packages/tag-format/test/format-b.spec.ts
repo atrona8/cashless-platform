@@ -15,7 +15,9 @@ function codeOf(fn: () => unknown): string | undefined {
 
 describe('format B 1.0', () => {
   it('CRC-32/ISO-HDLC : valeur de contrôle', () => {
-    expect(crc32IsoHdlc(Buffer.from(vectors.crc_check.input_ascii, 'ascii')).toString('hex')).toBe(vectors.crc_check.crc);
+    expect(crc32IsoHdlc(Buffer.from(vectors.crc_check.input_ascii, 'ascii')).toString('hex')).toBe(
+      vectors.crc_check.crc,
+    );
   });
 
   it('encode le vecteur du kit à l’octet près', () => {
@@ -25,12 +27,21 @@ describe('format B 1.0', () => {
   });
 
   it('décode le vecteur du kit', () => {
-    expect(decodeFormatB(hex(v.bytes))).toEqual({ major: v.major, minor: v.minor, keyIndex: v.key_index, identity: hex(v.identity), flags: v.flags });
+    expect(decodeFormatB(hex(v.bytes))).toEqual({
+      major: v.major,
+      minor: v.minor,
+      keyIndex: v.key_index,
+      identity: hex(v.identity),
+      flags: v.flags,
+    });
   });
 
-  it.each(vectors.refusals.format_b as { name: string; bytes: string; code: string }[])('refuse : $name', (refusal) => {
-    expect(codeOf(() => decodeFormatB(hex(refusal.bytes)))).toBe(refusal.code);
-  });
+  it.each(vectors.refusals.format_b as { name: string; bytes: string; code: string }[])(
+    'refuse : $name',
+    (refusal) => {
+      expect(codeOf(() => decodeFormatB(hex(refusal.bytes)))).toBe(refusal.code);
+    },
+  );
 
   it('accepte un mineur plus récent et des octets réservés non nuls', () => {
     const bytes = hex(v.bytes);
@@ -41,15 +52,25 @@ describe('format B 1.0', () => {
   });
 
   it('refuse un index de clé ou une identité hors bornes', () => {
-    expect(codeOf(() => encodeFormatB({ keyIndex: 65536, identity: hex(v.identity) }))).toBe('BAD_KEY_INDEX');
-    expect(codeOf(() => encodeFormatB({ keyIndex: -1, identity: hex(v.identity) }))).toBe('BAD_KEY_INDEX');
-    expect(codeOf(() => encodeFormatB({ keyIndex: 1.5, identity: hex(v.identity) }))).toBe('BAD_KEY_INDEX');
-    expect(codeOf(() => encodeFormatB({ keyIndex: 1, identity: Buffer.alloc(15) }))).toBe('BAD_IDENTITY');
+    expect(codeOf(() => encodeFormatB({ keyIndex: 65536, identity: hex(v.identity) }))).toBe(
+      'BAD_KEY_INDEX',
+    );
+    expect(codeOf(() => encodeFormatB({ keyIndex: -1, identity: hex(v.identity) }))).toBe(
+      'BAD_KEY_INDEX',
+    );
+    expect(codeOf(() => encodeFormatB({ keyIndex: 1.5, identity: hex(v.identity) }))).toBe(
+      'BAD_KEY_INDEX',
+    );
+    expect(codeOf(() => encodeFormatB({ keyIndex: 1, identity: Buffer.alloc(15) }))).toBe(
+      'BAD_IDENTITY',
+    );
   });
 
   it('aller-retour sur les bornes de l’index', () => {
     for (const keyIndex of [0, 1, 255, 256, 65535]) {
-      expect(decodeFormatB(encodeFormatB({ keyIndex, identity: hex(v.identity) })).keyIndex).toBe(keyIndex);
+      expect(decodeFormatB(encodeFormatB({ keyIndex, identity: hex(v.identity) })).keyIndex).toBe(
+        keyIndex,
+      );
     }
   });
 

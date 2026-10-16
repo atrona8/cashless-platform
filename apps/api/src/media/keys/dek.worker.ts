@@ -17,7 +17,8 @@ import { claimJobQuery, type TagKeyJobKind, type TagKeyJobRow } from './keys.dto
 import { SessionDataKeyProvider } from './session-data-key';
 
 const KINDS: TagKeyJobKind[] = ['ROTATE_DEK', 'RETIRE_KEY'];
-const text = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
+const text = (value: unknown): string | null =>
+  typeof value === 'string' && value !== '' ? value : null;
 
 @Injectable()
 export class DekWorker implements ProcessWorker {
@@ -47,7 +48,9 @@ export class DekWorker implements ProcessWorker {
       else await this.retire(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'échec';
-      await this.tx.unscoped((client) => client.query("SELECT finish_tag_key_job($1, 'FAILED', $2)", [job.id, message]));
+      await this.tx.unscoped((client) =>
+        client.query("SELECT finish_tag_key_job($1, 'FAILED', $2)", [job.id, message]),
+      );
     }
     return 1;
   }
@@ -57,11 +60,27 @@ export class DekWorker implements ProcessWorker {
     // Le clair ne sert pas à la rotation : le rechiffrement se fait dans le processus des clés, qui déchiffre.
     zeroize(plaintext);
     await this.tx.run(job.operator_id, async (client) => {
-      if ((await this.dataKeys.keyStatus(client, job.operator_id, job.key_index)) !== 'ACTIVE') throw new Error('La clé n’est plus active');
-      const version = await this.dataKeys.openVersion(client, job.operator_id, job.key_index, this.config.tagWrappingKeyRef, encrypted);
-      await this.child(client, job, 'REENCRYPT', { target_dek_id: version.id, target_version: version.version });
-      await this.record(client, job, 'TAG_DEK_ROTATED', { key_index: job.key_index, version: version.version });
-      await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [job.id, JSON.stringify({ version: version.version })]);
+      if ((await this.dataKeys.keyStatus(client, job.operator_id, job.key_index)) !== 'ACTIVE')
+        throw new Error('La clé n’est plus active');
+      const version = await this.dataKeys.openVersion(
+        client,
+        job.operator_id,
+        job.key_index,
+        this.config.tagWrappingKeyRef,
+        encrypted,
+      );
+      await this.child(client, job, 'REENCRYPT', {
+        target_dek_id: version.id,
+        target_version: version.version,
+      });
+      await this.record(client, job, 'TAG_DEK_ROTATED', {
+        key_index: job.key_index,
+        version: version.version,
+      });
+      await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [
+        job.id,
+        JSON.stringify({ version: version.version }),
+      ]);
     });
     // La session ouverte sur l'ancienne version n'est plus valable.
     this.sessions.forget(job.operator_id, job.key_index);
@@ -69,30 +88,53 @@ export class DekWorker implements ProcessWorker {
 
   private async retire(job: TagKeyJobRow): Promise<void> {
     await this.tx.run(job.operator_id, async (client) => {
-      const { rows } = await client.query<{ retired: number }>('SELECT retire_dedicated_key($1, $2) AS retired', [job.operator_id, job.key_index]);
+      const { rows } = await client.query<{ retired: number }>(
+        'SELECT retire_dedicated_key($1, $2) AS retired',
+        [job.operator_id, job.key_index],
+      );
       await this.child(client, job, 'DISABLE_KMS_KEY', {});
-      await this.record(client, job, 'TAG_KEY_RETIRED', { key_index: job.key_index, retired_media: rows[0]!.retired });
-      await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [job.id, JSON.stringify({ retired_media: rows[0]!.retired })]);
+      await this.record(client, job, 'TAG_KEY_RETIRED', {
+        key_index: job.key_index,
+        retired_media: rows[0]!.retired,
+      });
+      await client.query("SELECT finish_tag_key_job($1, 'DONE', NULL, $2::jsonb)", [
+        job.id,
+        JSON.stringify({ retired_media: rows[0]!.retired }),
+      ]);
     });
     this.sessions.forget(job.operator_id, job.key_index);
   }
 
   /** Travail suivant de la chaîne ; il hérite de l'auteur et du valideur de la demande d'origine. */
-  private async child(client: TxClient, job: TagKeyJobRow, kind: TagKeyJobKind, payload: Record<string, unknown>): Promise<void> {
+  private async child(
+    client: TxClient,
+    job: TagKeyJobRow,
+    kind: TagKeyJobKind,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
     await client.query(
       `INSERT INTO tag_key_job (operator_id, key_index, kind, payload, approval_request_id, parent_job_id) VALUES ($1, $2, $3, $4::jsonb, $5, $6)`,
       [
         job.operator_id,
         job.key_index,
         kind,
-        JSON.stringify({ ...payload, requested_by: text(job.payload.requested_by), approved_by: text(job.payload.approved_by) }),
+        JSON.stringify({
+          ...payload,
+          requested_by: text(job.payload.requested_by),
+          approved_by: text(job.payload.approved_by),
+        }),
         job.approval_request_id,
         job.id,
       ],
     );
   }
 
-  private record(client: TxClient, job: TagKeyJobRow, action: AuditAction, after: Record<string, unknown>): Promise<void> {
+  private record(
+    client: TxClient,
+    job: TagKeyJobRow,
+    action: AuditAction,
+    after: Record<string, unknown>,
+  ): Promise<void> {
     return this.audit.record(client, {
       operatorId: job.operator_id,
       actorId: text(job.payload.requested_by),

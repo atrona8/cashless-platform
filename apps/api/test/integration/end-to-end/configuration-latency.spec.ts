@@ -25,7 +25,8 @@ function p95(samples: number[]): number {
   const sorted = [...samples].sort((a, b) => a - b);
   return Math.round(sorted[Math.ceil(sorted.length * 0.95) - 1]!);
 }
-const median = (samples: number[]): number => Math.round([...samples].sort((a, b) => a - b)[Math.floor(samples.length / 2)]!);
+const median = (samples: number[]): number =>
+  Math.round([...samples].sort((a, b) => a - b)[Math.floor(samples.length / 2)]!);
 
 describe('latence des routes de configuration', () => {
   let app: INestApplication;
@@ -39,9 +40,17 @@ describe('latence des routes de configuration', () => {
     const idp = await FakeIdp.create();
     operatorId = (await createOperators()).a;
     await withOwner(async (db) => {
-      await db.query(`INSERT INTO party (kind, legal_name) SELECT 'PLATFORM', 'Plateforme (test)' WHERE NOT EXISTS (SELECT 1 FROM party WHERE kind = 'PLATFORM')`);
-      await db.query(`INSERT INTO party (id, kind, operator_id, legal_name) VALUES ($1, 'ORGANIZER', $2, 'Organisateur de charge')`, [ids.organizer, operatorId]);
-      await db.query(`INSERT INTO jurisdiction_profile (id, country_code, version, valid_from, breakage_destination) VALUES ($1, 'SN', (1000000 + floor(random() * 1000000000))::int, '2026-01-01', 'ORGANIZER')`, [ids.profile]);
+      await db.query(
+        `INSERT INTO party (kind, legal_name) SELECT 'PLATFORM', 'Plateforme (test)' WHERE NOT EXISTS (SELECT 1 FROM party WHERE kind = 'PLATFORM')`,
+      );
+      await db.query(
+        `INSERT INTO party (id, kind, operator_id, legal_name) VALUES ($1, 'ORGANIZER', $2, 'Organisateur de charge')`,
+        [ids.organizer, operatorId],
+      );
+      await db.query(
+        `INSERT INTO jurisdiction_profile (id, country_code, version, valid_from, breakage_destination) VALUES ($1, 'SN', (1000000 + floor(random() * 1000000000))::int, '2026-01-01', 'ORGANIZER')`,
+        [ids.profile],
+      );
       await db.query(
         `INSERT INTO contract (id, operator_id, kind, counterparty_id, valid_from, offline_loss_bearer, cash_diff_bearer, breakage_organizer_bps)
          VALUES ($1, $2, 'OPERATOR_ORGANIZER', $3, '2026-01-01', 'ORGANIZER', 'ORGANIZER', 8000)`,
@@ -53,13 +62,19 @@ describe('latence des routes de configuration', () => {
          SELECT $1, $2, 'Événement de charge ' || n, 'XOF', 'Africa/Dakar', $3, 'ORGANIZER' FROM generate_series(1, $4) n`,
         [operatorId, ids.organizer, ids.profile, EVENTS],
       );
-      await db.query(`INSERT INTO party (kind, operator_id, legal_name) SELECT 'MERCHANT', $1, 'Commerçant de charge ' || n FROM generate_series(1, $2) n`, [operatorId, MERCHANTS]);
+      await db.query(
+        `INSERT INTO party (kind, operator_id, legal_name) SELECT 'MERCHANT', $1, 'Commerçant de charge ' || n FROM generate_series(1, $2) n`,
+        [operatorId, MERCHANTS],
+      );
       await db.query(
         `INSERT INTO merchant_participation (operator_id, event_id, merchant_id, link_type)
          SELECT $1, e.id, m.id, 'EXTERNAL' FROM event e, party m WHERE e.operator_id = $1 AND m.operator_id = $1 AND m.kind = 'MERCHANT'`,
         [operatorId],
       );
-      organizerAdmin = await idp.createPerson(db, { operatorId, roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: ids.organizer }] });
+      organizerAdmin = await idp.createPerson(db, {
+        operatorId,
+        roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: ids.organizer }],
+      });
     });
     app = await createTestApp({ identity: idp });
   });
@@ -73,18 +88,40 @@ describe('latence des routes de configuration', () => {
     const start = process.hrtime.bigint();
     const res = await send();
     const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
-    if (res.status !== expected) throw new Error(`statut ${res.status} au lieu de ${expected} : ${res.text.slice(0, 300)}`);
+    if (res.status !== expected)
+      throw new Error(`statut ${res.status} au lieu de ${expected} : ${res.text.slice(0, 300)}`);
     return elapsed;
   };
-  const get = (path: string) => () => request(app.getHttpServer()).get(`${O()}${path}`).set('Authorization', `Bearer ${organizerAdmin.token}`);
+  const get = (path: string) => () =>
+    request(app.getHttpServer())
+      .get(`${O()}${path}`)
+      .set('Authorization', `Bearer ${organizerAdmin.token}`);
   const write = (method: 'post' | 'patch', path: string, body: object) => () =>
-    request(app.getHttpServer())[method](`${O()}${path}`).set('Authorization', `Bearer ${organizerAdmin.token}`).set('Idempotency-Key', randomUUID()).send(body);
+    request(app.getHttpServer())
+      [method](`${O()}${path}`)
+      .set('Authorization', `Bearer ${organizerAdmin.token}`)
+      .set('Idempotency-Key', randomUUID())
+      .send(body);
   const newEvent = (n: number) =>
-    write('post', '/events', { organizer_id: ids.organizer, name: `Création mesurée ${n} ${randomUUID()}`, currency: 'XOF', timezone: 'Africa/Dakar', jurisdiction_id: ids.profile, funds_holder: 'ORGANIZER', contract_id: ids.contract });
+    write('post', '/events', {
+      organizer_id: ids.organizer,
+      name: `Création mesurée ${n} ${randomUUID()}`,
+      currency: 'XOF',
+      timezone: 'Africa/Dakar',
+      jurisdiction_id: ids.profile,
+      funds_holder: 'ORGANIZER',
+      contract_id: ids.contract,
+    });
 
   it('base peuplée : 100 événements et 1 000 participations', async () => {
-    const [counts] = await withOwner(async (db) =>
-      (await db.query(`SELECT (SELECT count(*)::int FROM event WHERE operator_id = $1) AS events, (SELECT count(*)::int FROM merchant_participation WHERE operator_id = $1) AS participations`, [operatorId])).rows,
+    const [counts] = await withOwner(
+      async (db) =>
+        (
+          await db.query(
+            `SELECT (SELECT count(*)::int FROM event WHERE operator_id = $1) AS events, (SELECT count(*)::int FROM merchant_participation WHERE operator_id = $1) AS participations`,
+            [operatorId],
+          )
+        ).rows,
     );
     expect(counts).toEqual({ events: EVENTS, participations: EVENTS * MERCHANTS });
   });
@@ -94,12 +131,31 @@ describe('latence des routes de configuration', () => {
     const warm = await newEvent(0)();
     expect(warm.status).toBe(201);
     eventId = warm.body.event_id as string;
-    const joined = await write('post', `/events/${eventId}/participations`, { merchant_id: (await withOwner(async (db) => (await db.query<{ id: string }>(`SELECT id FROM party WHERE operator_id = $1 AND kind = 'MERCHANT' LIMIT 1`, [operatorId])).rows[0]!.id)), link_type: 'EXTERNAL' })();
+    const joined = await write('post', `/events/${eventId}/participations`, {
+      merchant_id: await withOwner(
+        async (db) =>
+          (
+            await db.query<{ id: string }>(
+              `SELECT id FROM party WHERE operator_id = $1 AND kind = 'MERCHANT' LIMIT 1`,
+              [operatorId],
+            )
+          ).rows[0]!.id,
+      ),
+      link_type: 'EXTERNAL',
+    })();
     participationId = joined.body.participation_id as string;
     await get(`/events/${eventId}/config`)();
     // Écritures de configuration de mise en route, hors mesure elles aussi (première version de chaque niveau).
-    expect((await write('post', `/organizers/${ids.organizer}/config-versions`, { settings: { psp_fee_bearer: 'ORGANIZER' } })()).status).toBe(201);
-    expect((await write('patch', `/events/${eventId}`, { reversal_window_minutes: 9 })()).status).toBe(200);
+    expect(
+      (
+        await write('post', `/organizers/${ids.organizer}/config-versions`, {
+          settings: { psp_fee_bearer: 'ORGANIZER' },
+        })()
+      ).status,
+    ).toBe(201);
+    expect(
+      (await write('patch', `/events/${eventId}`, { reversal_window_minutes: 9 })()).status,
+    ).toBe(200);
 
     const readers = [
       get(`/events/${eventId}`),
@@ -121,15 +177,30 @@ describe('latence des routes de configuration', () => {
       },
       lectures: async () => {
         const samples: number[] = [];
-        for (let n = 0; n < 200; n += 1) samples.push(await timed(readers[n % readers.length]!, 200));
+        for (let n = 0; n < 200; n += 1)
+          samples.push(await timed(readers[n % readers.length]!, 200));
         return samples;
       },
       ecritures: async () => {
         const samples: number[] = [];
         for (let n = 0; n < 25; n += 1) {
           written += 1;
-          samples.push(await timed(write('post', `/organizers/${ids.organizer}/config-versions`, { settings: { psp_fee_bearer: written % 2 ? 'ORGANIZER' : 'CUSTOMER' } }), 201));
-          samples.push(await timed(write('patch', `/events/${eventId}`, { reversal_window_minutes: 10 + (written % 20) }), 200));
+          samples.push(
+            await timed(
+              write('post', `/organizers/${ids.organizer}/config-versions`, {
+                settings: { psp_fee_bearer: written % 2 ? 'ORGANIZER' : 'CUSTOMER' },
+              }),
+              201,
+            ),
+          );
+          samples.push(
+            await timed(
+              write('patch', `/events/${eventId}`, {
+                reversal_window_minutes: 10 + (written % 20),
+              }),
+              200,
+            ),
+          );
         }
         return samples;
       },
@@ -142,10 +213,21 @@ describe('latence des routes de configuration', () => {
       do attempts.push(await series[name]());
       while (attempts.length < maxSeries && p95(attempts[attempts.length - 1]!) > thresholds[name]);
       const best = attempts.reduce((a, b) => (p95(b) < p95(a) ? b : a));
-      return { n: best.length, median_ms: median(best), p95_ms: p95(best), max_ms: Math.round(Math.max(...best)), seuil_ms: thresholds[name], series_p95_ms: attempts.map(p95) };
+      return {
+        n: best.length,
+        median_ms: median(best),
+        p95_ms: p95(best),
+        max_ms: Math.round(Math.max(...best)),
+        seuil_ms: thresholds[name],
+        series_p95_ms: attempts.map(p95),
+      };
     };
 
-    const report = { creations: await measure('creations'), lectures: await measure('lectures'), ecritures: await measure('ecritures') };
+    const report = {
+      creations: await measure('creations'),
+      lectures: await measure('lectures'),
+      ecritures: await measure('ecritures'),
+    };
     process.stdout.write(`LATENCE ${JSON.stringify(report)}\n`);
     expect(report.creations.p95_ms).toBeLessThanOrEqual(500);
     expect(report.lectures.p95_ms).toBeLessThanOrEqual(200);

@@ -45,7 +45,8 @@ export class DailyCheckWorker implements ProcessWorker {
   async describe(): Promise<string[]> {
     const due: string[] = [];
     for (const operatorId of await this.checks.operators()) {
-      if (await this.checks.due(operatorId)) due.push(`daily-check : prestataire ${operatorId} à contrôler`);
+      if (await this.checks.due(operatorId))
+        due.push(`daily-check : prestataire ${operatorId} à contrôler`);
     }
     return due;
   }

@@ -33,17 +33,29 @@ export class PersonalizationController {
 
   @Post(':media_id/claim-code')
   @HttpCode(204)
-  async associateClaimCode(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Param('media_id') mediaId: string, @Body() body: unknown): Promise<void> {
+  async associateClaimCode(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Param('media_id') mediaId: string,
+    @Body() body: unknown,
+  ): Promise<void> {
     const actor = this.personalizer(req);
     idempotencyKey(req);
-    const replayed = await this.personalization.associateClaimCode(actor.operatorId, requireUuid(mediaId), parseClaimCode(body), actor.audit);
+    const replayed = await this.personalization.associateClaimCode(
+      actor.operatorId,
+      requireUuid(mediaId),
+      parseClaimCode(body),
+      actor.audit,
+    );
     if (replayed) res.setHeader('Idempotency-Replayed', 'true');
   }
 
   /** Prestataire du chemin (404 si ce n'est pas celui de la personne) et rôle PERSONALIZER sur ce prestataire (403). */
   private personalizer(req: Request): { operatorId: string; audit: AuditContext } {
     const { operatorId } = this.tenant.current(req);
-    const held = requestPrincipal(req).assignments.some((a) => a.role === 'PERSONALIZER' && a.scopeType === 'OPERATOR' && a.scopeId === operatorId);
+    const held = requestPrincipal(req).assignments.some(
+      (a) => a.role === 'PERSONALIZER' && a.scopeType === 'OPERATOR' && a.scopeId === operatorId,
+    );
     if (!held) throw new ProblemException('FORBIDDEN');
     (req as RolesRequest).exercisedRole = 'PERSONALIZER';
     return { operatorId, audit: auditContext(req) };

@@ -21,17 +21,28 @@ export class ClaimHasher {
 
   /** Empreinte d'un code de rattachement ; la saisie est normalisée (tirets, espaces, casse), un code mal formé lève. */
   claimCodeHash(code: string): Buffer {
-    return createHmac('sha256', this.key).update(CLAIM_PREFIX).update(normalizeClaimCode(code), 'ascii').digest();
+    return createHmac('sha256', this.key)
+      .update(CLAIM_PREFIX)
+      .update(normalizeClaimCode(code), 'ascii')
+      .digest();
   }
 
   /** Empreinte du code de confirmation d'une demande en attente, liée à cette demande. */
   confirmationHash(claimId: string, digits: string): Buffer {
     if (!DIGITS.test(digits)) throw new Error('Code de confirmation : 6 chiffres attendus');
-    return createHmac('sha256', this.key).update(CONFIRM_PREFIX).update(uuidToBytes(claimId)).update(digits, 'ascii').digest();
+    return createHmac('sha256', this.key)
+      .update(CONFIRM_PREFIX)
+      .update(uuidToBytes(claimId))
+      .update(digits, 'ascii')
+      .digest();
   }
 
   /** Référence d'une adresse appelante (consultation anonyme) : jamais l'adresse en clair en base. */
   addressRef(address: string): string {
-    return createHmac('sha256', this.key).update('CASHLESS/CLAIM-ADDR/v1').update(address).digest('hex').slice(0, 32);
+    return createHmac('sha256', this.key)
+      .update('CASHLESS/CLAIM-ADDR/v1')
+      .update(address)
+      .digest('hex')
+      .slice(0, 32);
   }
 }

@@ -406,9 +406,13 @@ describe('liste noire et sortie à deux', () => {
       });
     const reinstate = 'SELECT reinstate_media($1, $2, $3, $4)';
     // Demande encore en attente : refus.
-    expect(await asApp(reinstate, [m.id, supervisor.userId, supervisor2.userId, 'x'])).toBe('CL020');
+    expect(await asApp(reinstate, [m.id, supervisor.userId, supervisor2.userId, 'x'])).toBe(
+      'CL020',
+    );
     // Demande approuvée, mais valideur inventé à l'appel : refus.
-    expect(await asApp(reinstate, [m.id, supervisor.userId, randomUUID(), 'x'], true)).toBe('CL020');
+    expect(await asApp(reinstate, [m.id, supervisor.userId, randomUUID(), 'x'], true)).toBe(
+      'CL020',
+    );
     // Demande approuvée par un valideur inventé : refus (personne inconnue du prestataire).
     const invented = withOwner(async (db) => {
       await db.query('BEGIN');
