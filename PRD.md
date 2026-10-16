@@ -69,7 +69,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   mission 9, la mission 4 servant la restitution seule (décision du porteur du 15/10/2026, ADR-91, OP-N51).
 - Cadrage de la mission 4 (porteur, 13/10/2026) : la bibliothèque de format existe en TypeScript et en Dart dès la
   mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
-  des terminaux venant en mission 5 et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
+  des terminaux venant en mission 5a et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
   l'adaptateur AWS réel venant quand la région et les comptes seront arrêtés (OP-N11) ; la caution payée à part se
   règle en espèces tant que la mission 6 (PSP) n'est pas livrée. Les routes back-office des lots, des clés, de la
   personnalisation et de la liste noire sont à ajouter au contrat.
@@ -78,6 +78,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` (`PAIRED_TPE` refusé en V1). Catalogue à prix TTC fixe. (§8.1)
 - Enrôlement sans MDM par code à usage unique ; clés dans le Keystore ; vendeurs par code PIN ; révocation. (§8.2)
 - Paiement par QR (`MERCHANT_QR`, `CUSTOMER_QR`), toujours en ligne. (§8.3)
+- Découpage (16/10/2026) : la mission 5a livre l'identité réelle du terminal (jeton d'appareil, mTLS, requêtes signées),
+  les codes d'enrôlement (S5), l'enrôlement, la révocation, la configuration servie et le battement de cœur ; la
+  mission 5b livre les vendeurs (S2), le catalogue et les lignes de vente (S18), le paiement par bracelet et par QR,
+  l'annulation et l'identification au guichet (S24). Le schéma de référence n'a ni tables ni routes de contrat pour
+  le catalogue et les vendeurs : la mission 5b les ajoute.
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
@@ -191,7 +196,9 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 2. Identité, rôles et double validation
 3. Configuration, parties et événements
 4. Bracelets NFC (format, clés, lots, cycle de vie)
-5. Terminaux et paiement en ligne
+5. Terminaux, découpée en deux missions le 16/10/2026 (décision du porteur) :
+   5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
+   5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
@@ -204,13 +211,13 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 **Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
 dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,
 OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le 15/10/2026) :
-- mission 5 : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
+- mission 5a : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
   protégées contre les tables temporaires de l'appelant (`pg_temp` ou `TEMPORARY` retiré), pour fermer un
   contournement probable du cloisonnement entre prestataires (OP-N59, ADR-96, bloque la production) ; droits
   d'exécution des fonctions du schéma accordés rôle par rôle, sans héritage de `PUBLIC` (OP-N44) ; lecture qui a
   confirmé un rattachement refusée par `consume_tap` (OP-N50) ; empreinte de requête à clé au registre d'idempotence,
   pour qu'un code imprimé ne se retrouve pas par essais (OP-N54, ADR-99) ;
-- mission 5, suite (correctif post-fusion n° 1 ; confirmé par le porteur le 16/10/2026) :
+- mission 5a, suite (correctif post-fusion n° 1 ; confirmé par le porteur le 16/10/2026) :
   retrait d'une clé dédiée possible seulement pendant un travail de retrait approuvé, y compris
   pour la personnalisation, et demande approuvée périmée refusée à l'inscription (OP-N62, ADR-102) ;
   clé d'accord d'un terminal écrite à l'enrôlement seulement, jamais réécrite par la connexion de

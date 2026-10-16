@@ -74,7 +74,11 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [x] /spec-kitty.accept --mission bracelets-nfc-01M4TD3W
 - [x] spec-kitty merge --mission bracelets-nfc-01M4TD3W
 
-## Mission 5 — Terminaux et paiement en ligne
+## Mission 5a — Identité et enrôlement des terminaux
+
+Découpage du 16/10/2026 (décision du porteur au premier point de cadrage de la mission 5) : la mission 5 devient 5a
+puis 5b. Les héritages de la mission 4 notés « mission 5 » dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md`
+reviennent à la mission 5a. Slug proposé : `identite-enrolement-terminaux`, branche `feat/identite-enrolement-terminaux`.
 
 > **Hérité de la mission 4 (bracelets-nfc)** : remplacer le faux d'identité du terminal par la vérification du jeton
 > d'appareil, du mTLS et de la signature de chaque requête (OP-N42, ADR-88) ; le faux ne doit plus être câblé hors des
@@ -114,13 +118,28 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > Ne pas rouvrir `INSERT` sur `tag_key_job`
 > (travaux par `enqueue_tag_key_job` et `enqueue_tag_key_child_job` seulement, migration 0020).
 
-- [ ] /spec-kitty.specify API des terminaux et encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S5, S18, S24). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256, unicité du `serial` parmi les terminaux non révoqués, rafraîchissement du jeton, révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
-- [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement ; requêtes des terminaux signées par la clé du Keystore. Téléphone personnel : en ligne seulement. iOS : QR uniquement. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`).
+- [ ] /spec-kitty.specify Identité et enrôlement des terminaux (SPECIFICATION §8.1, §8.2, §10.3, §13.2, §13.4, §14.2 S5, `docs/sync_protocol.md` §3.1, ADR-69, ADR-88). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; empreinte, expiration ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256 (clé d'accord écrite à l'enrôlement seulement, OP-N63), unicité du `serial` parmi les terminaux non révoqués, jeton d'appareil et rafraîchissement (`device_refresh_token`), requêtes signées par la clé du terminal et mTLS (OP-N42 : faux d'identité retiré hors des tests), suspension et révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Dettes de sécurité héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62, OP-N63 (voir ci-dessus).
+- [ ] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne
-- [ ] /spec-kitty.review --mission terminaux-paiement-en-ligne
-- [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne
-- [ ] spec-kitty merge --mission terminaux-paiement-en-ligne
+- [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux
+- [ ] /spec-kitty.review --mission identite-enrolement-terminaux
+- [ ] /spec-kitty.accept --mission identite-enrolement-terminaux
+- [ ] spec-kitty merge --mission identite-enrolement-terminaux
+
+## Mission 5b — Terminaux et paiement en ligne
+
+Après la fusion de la mission 5a. Mission déjà créée avant le découpage : slug réel `terminaux-paiement-en-ligne-01M52QB9`,
+branche `feat/terminaux-paiement-en-ligne` (à remettre sur `main` après la fusion de 5a) ; décision de découpage
+consignée dans son dossier `decisions/`. Le schéma de référence n'a ni tables (S2, S18) ni routes de contrat pour les
+vendeurs et le catalogue : la mission les ajoute.
+
+- [ ] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
+- [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement. Téléphone personnel : en ligne seulement. iOS : QR uniquement.
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] /spec-kitty.review --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] spec-kitty merge --mission terminaux-paiement-en-ligne-01M52QB9
 
 ## Mission 6 — Recharges, caisses et PSP
 
