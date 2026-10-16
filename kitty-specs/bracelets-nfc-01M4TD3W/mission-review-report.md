@@ -391,4 +391,5 @@ Les nouveaux points sont consignés selon la règle 3 (`3209eb5`, relu et approu
 **Restent** :
 - RISK-1 : relecture par une personne des fichiers listés ;
 - RISK-2 : la CI n'a jamais tourné, la branche n'est pas poussée ;
-- DRIFT-1 : la décision n° 9 manque dans `research.md` ; elle reste consignée dans ADR-84.
+
+DRIFT-1 levé le 16/10/2026 : la ligne de la décision n° 9 est rétablie dans `research.md`, identique à `b658961`.
