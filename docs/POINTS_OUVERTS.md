@@ -40,8 +40,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N59 | 77 fonctions SECURITY DEFINER de la base sans `pg_temp` dans leur `search_path` : une table temporaire de l'appelant masque une table de la base (droit `TEMP` accordé à `PUBLIC`) ; contournement probable du cloisonnement entre prestataires par les `tenant_of_*` (non démontré de bout en bout) ; antérieur à la mission 4 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-96) | Mission 5 |
 | OP-N60 | `cashless_app` écrit directement ce que des fonctions contrôlent : `INSERT` et `UPDATE` sur toutes les colonnes de `media_batch` (lot créé directement `ACTIVE` ou `CLOSED`, clôture sans `close_batch`, quantité, index de clé), `UPDATE (status)` de `media` sans motif ; antérieur au lot 20 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-97) | Mission 11 (back-office) |
 | OP-N61 | Traitements par tranches (NFR-008) : clôture, rattrapage du préchargement et rechiffrement non prouvés sur un lot de 5 000 bracelets (ADR-98) | Non | **Oui** (preuve attendue de la recette, avant la production) | Mission 13 (recette V1), décision du porteur du 15/10/2026 |
-| OP-N62 | La personnalisation peut appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours (limite résiduelle de la correction de SEC-1, ADR-102) | Non | Non (limite acceptée, à confirmer par le porteur) | Mission 5, avec OP-N44 : proposée par l'agent le 16/10/2026, à confirmer par le porteur |
-| OP-N63 | `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des clés de bracelet chiffre le mot de passe d'un bracelet (signalé par le correctif post-fusion n° 1, non traité) | Non | À décider par le porteur | À décider par le porteur (proposé : mission 5, enrôlement et identité du terminal) |
+| OP-N62 | La personnalisation peut appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours, et une demande de clé approuvée mais périmée est encore acceptée une fois (limites résiduelles de la correction de SEC-1, ADR-102) | Non | Non (limites acceptées) | Mission 5, avec OP-N44 : confirmé par le porteur le 16/10/2026 |
+| OP-N63 | `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des clés de bracelet chiffre le mot de passe d'un bracelet (ADR-105) | Non | **Oui** (confirmé par le porteur le 16/10/2026) | Mission 5, enrôlement réel des terminaux : confirmé par le porteur le 16/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -412,19 +412,25 @@ post-fusion n° 1, ADR-102), consignée selon la règle 3 de `CLAUDE.md`.
   `RETIRE_KEY` qu'après la revérification de la demande (`TagKeyJobGate`) ; la désactivation dans le
   KMS qui suit n'est acceptée que pour une clé `RETIRED` après un retrait approuvé.
 - **Mission qui le lève : mission 5**, avec OP-N44 (droits d'exécution des fonctions du schéma
-  accordés rôle par rôle) — **proposée par l'agent, à confirmer par le porteur**. Condition de levée
+  accordés rôle par rôle) — **confirmé par le porteur le 16/10/2026**. Condition de levée
   : `retire_dedicated_key` n'est plus appelable que par une fonction qui exige un travail
   `RETIRE_KEY` `RUNNING` de la même clé, issu d'une demande exécutée (ou la vérification est ajoutée
   par migration à une fonction de remplacement) ; test : appel sans travail refusé.
 - **Test qui échoue si la limite s'élargit** : `tests/tests_tag_key_job_approval.sql` (droit
   d'exécution de `retire_dedicated_key` : personnalisation seulement ; refusé à `PUBLIC`, à l'API, à
   la plateforme, aux clés de bracelet et à la commande d'administration).
+- **Seconde limite, délai d'une demande approuvée (confirmée par le porteur le 16/10/2026,
+  mission 5, ADR-102 complété).** `enqueue_tag_key_job` ne lit pas `expires_at` : une demande
+  `APPROVED` jamais exécutée sert encore plus tard, une seule fois (index uniques). La mission 5
+  la fait refuser une fois `expires_at` dépassé. Test qui documente le comportement actuel :
+  `tests/tests_tag_key_job_approval.sql`, section 6 (à inverser à la levée).
 
-### OP-N63 — Clé d'accord d'un terminal réécrite par l'API (16 octobre 2026, signalé)
+### OP-N63 — Clé d'accord d'un terminal réécrite par l'API (16 octobre 2026)
 
 Signalé par le correctif post-fusion n° 1 en cherchant les autres entrées qu'un processus des clés
-consomme après qu'une autre connexion les a déposées (consigne 6). **Non traité : décision du
-porteur attendue.**
+consomme après qu'une autre connexion les a déposées (consigne 6). **Écart accepté, bloque la
+production : oui, levé par la mission 5 (enrôlement réel des terminaux) ; confirmé par le porteur
+le 16/10/2026 ; ADR-105.**
 
 - **Constat.** `roles.sql` (kit) accorde à `cashless_app` `UPDATE (agreement_public_key)` sur
   `device`. Le processus des clés de bracelet (`POST /media/auth-keys`) chiffre le mot de passe d'un
@@ -433,10 +439,13 @@ porteur attendue.**
   la réponse suivante de `POST /media/auth-keys` pour ce terminal devient lisible par elle si elle
   intercepte cette réponse. Aujourd'hui l'identité du terminal est un faux qui croit des en-têtes
   (OP-N42, bloque la production) : le risque est couvert par ce point jusqu'à la mission 5.
-- **Proposition.** Avec l'enrôlement réel (mission 5) : clé d'accord écrite à l'enrôlement
+- **Décision.** Avec l'enrôlement réel (mission 5) : clé d'accord écrite à l'enrôlement
   seulement, par une fonction qui vérifie le code d'enrôlement, et `UPDATE (agreement_public_key)`
   retiré à `cashless_app` ; test : réécriture directe refusée. Fichier concerné :
   `packages/ledger-sql/roles.sql` (kit), corrigé par `post-roles.sql`.
+- **Test qui échoue si la limite s'élargit** : `tests/tests_tag_key_job_approval.sql`, section 7
+  (liste exacte des colonnes de `device` que `cashless_app` peut mettre à jour, `INSERT`,
+  `REFERENCES`, `DELETE`, `TRUNCATE`).
 
 ## 3. Relectures d'experts
 

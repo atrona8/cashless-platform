@@ -293,6 +293,56 @@ RESET ROLE;
 SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind, approval_request_id)
                    VALUES (pg_temp.id('20a001'), 41, 'CREATE_KEY', pg_temp.id('209001'))$$,
   '23505', NULL, 'même pour le propriétaire, une demande ne produit pas deux travaux racines');
+
+-- 6. Limite connue : une demande approuvée ne périme pas (OP-N62, ADR-102, complément) -----------
+-- enqueue_tag_key_job ne lit pas expires_at : une demande APPROVED dont le délai est dépassé
+-- s'inscrit encore, une seule fois. Ce test DOCUMENTE le comportement actuel. La mission 5 doit
+-- corriger ce point (refus d'une demande approuvée périmée) ; ce test devra alors être INVERSÉ :
+-- l'inscription sera refusée (throws_ok) et la demande restera sans travail.
+INSERT INTO approval_request (id, operator_id, action, payload, requested_by, expires_at)
+VALUES (pg_temp.id('209020'), pg_temp.id('20a001'), 'TAG_DEK_ROTATE',
+        '{"key_index":1}'::jsonb || jsonb_build_object('operator_id', pg_temp.id('20a001')),
+        pg_temp.id('20e001'), clock_timestamp() + interval '1 second');
+SELECT pg_temp.approve('209020', '20e002');
+SELECT pg_sleep(1.3);
+SELECT ok((SELECT clock_timestamp() > expires_at AND status = 'APPROVED'
+             FROM approval_request WHERE id = pg_temp.id('209020')),
+  'demande approuvée dont expires_at est dépassé');
+SET LOCAL ROLE cashless_app;
+SELECT pg_temp.a();
+SELECT is((SELECT kind || ':' || key_index FROM enqueue_tag_key_job(pg_temp.id('209020'))),
+  'ROTATE_DEK:1',
+  'LIMITE ACTUELLE (OP-N62) : une demande approuvée périmée est encore acceptée');
+SELECT throws_ok($$SELECT enqueue_tag_key_job(pg_temp.id('209020'))$$, 'CL023', NULL,
+  'LIMITE ACTUELLE (OP-N62) : acceptée une seule fois, la seconde inscription est refusée');
+RESET ROLE;
+
+-- 7. Droits de cashless_app sur device, colonne par colonne (OP-N63, ADR-105) ---------------------
+-- Fige les droits actuels, y compris UPDATE (agreement_public_key) : limite acceptée jusqu'à la
+-- mission 5 (enrôlement réel). Le test échoue si un droit s'élargit. Quand la mission 5 retirera
+-- UPDATE (agreement_public_key), retirer cette colonne de la liste attendue ci-dessous.
+SELECT is((SELECT array_agg(attname::text ORDER BY attname)
+             FROM pg_attribute
+            WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
+              AND has_column_privilege('cashless_app', 'device', attname, 'UPDATE')),
+  ARRAY['agreement_public_key', 'app_mode', 'cert_sha256', 'event_id', 'last_seen_at',
+        'last_snapshot_version', 'next_seq_floor', 'nfc_enabled', 'personal_phone', 'pos_id',
+        'public_key', 'station_name', 'status'],
+  'cashless_app : UPDATE sur device colonne par colonne, liste exacte (OP-N63)');
+SELECT is((SELECT count(*)::int FROM pg_attribute
+            WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
+              AND NOT has_column_privilege('cashless_app', 'device', attname, 'INSERT')), 0,
+  'cashless_app : INSERT sur toutes les colonnes de device (inchangé)');
+SELECT is((SELECT count(*)::int FROM pg_attribute
+            WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
+              AND has_column_privilege('cashless_app', 'device', attname, 'REFERENCES')), 0,
+  'cashless_app : aucun REFERENCES sur device');
+SELECT is(ARRAY[has_table_privilege('cashless_app', 'device', 'UPDATE'),
+                has_table_privilege('cashless_app', 'device', 'DELETE'),
+                has_table_privilege('cashless_app', 'device', 'TRUNCATE')],
+  ARRAY[false, false, false],
+  'cashless_app : ni UPDATE de table entière, ni DELETE, ni TRUNCATE sur device');
+
 DROP ROLE tag_job_probe;
 
 SELECT * FROM finish();

@@ -99,16 +99,19 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > qui contient le code imprimé ; le passer à une empreinte à clé (HMAC, secret hors de la base) ou en exclure les
 > champs secrets ; test : l'empreinte ne se recalcule pas à partir du code seul.
 >
-> **Hérités aussi du correctif post-fusion n° 1 de la mission 4 (16/10/2026 ; missions proposées par
-> l'agent, à confirmer par le porteur)** : **OP-N62** (ADR-102) — la personnalisation peut encore
-> appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours ; avec OP-N44, ne la rendre
-> appelable que par une fonction qui exige un travail `RETIRE_KEY` `RUNNING` issu d'une demande
-> exécutée ; test : appel sans travail refusé (mettre à jour
-> `tests/tests_tag_key_job_approval.sql`). **OP-N63** (signalé, décision du porteur attendue) —
-> `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des
+> **Hérités aussi du correctif post-fusion n° 1 de la mission 4 (16/10/2026 ; confirmé par le
+> porteur le 16/10/2026)** : **OP-N62** (ADR-102) — la personnalisation peut encore appeler
+> `retire_dedicated_key` sans travail `RETIRE_KEY` en cours ; avec OP-N44, ne la rendre appelable
+> que par une fonction qui exige un travail `RETIRE_KEY` `RUNNING` issu d'une demande exécutée ;
+> test : appel sans travail refusé (mettre à jour `tests/tests_tag_key_job_approval.sql`). **Aussi
+> OP-N62 (complément d'ADR-102)** — `enqueue_tag_key_job` accepte encore, une fois, une demande
+> `APPROVED` dont `expires_at` est dépassé ; la faire refuser (`CL023`) ; test : inverser la
+> section 6 de `tests/tests_tag_key_job_approval.sql`. **OP-N63** (ADR-105, bloque la production)
+> — `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des
 > clés chiffre le mot de passe d'un bracelet ; avec l'enrôlement réel, écrire cette clé à
 > l'enrôlement seulement, par une fonction, et retirer `UPDATE (agreement_public_key)` à
-> `cashless_app` ; test : réécriture directe refusée. Ne pas rouvrir `INSERT` sur `tag_key_job`
+> `cashless_app` ; test : réécriture directe refusée (mettre à jour la section 7 du même fichier).
+> Ne pas rouvrir `INSERT` sur `tag_key_job`
 > (travaux par `enqueue_tag_key_job` et `enqueue_tag_key_child_job` seulement, migration 0020).
 
 - [ ] /spec-kitty.specify API des terminaux et encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S5, S18, S24). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256, unicité du `serial` parmi les terminaux non révoqués, rafraîchissement du jeton, révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).

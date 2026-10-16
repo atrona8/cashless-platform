@@ -23,6 +23,7 @@
 | 13/10/2026 | Mission 4 `bracelets-nfc-01M4TD3W` : cadrage arrêté à la spécification (ports d'identité du terminal et du festivalier, Dart dès la mission 4, KMS en port et faux, caution à part en espèces, routes back-office à ajouter au contrat) | §2.4 Bracelets NFC | Oui (mission 4 : cadrage et slug réel) |
 | 15/10/2026 | Mission 9 (héritage de la mission 4) : enchaînement des étapes du guichet de retour par le serveur (ADR-91, OP-N51) ; espèces dues d'un bracelet remplacé (OP-N55) | §2.4 Bracelets NFC | Oui (mission 9, ligne specify complétée) |
 | 16/10/2026 | Correctif post-fusion n° 1 de la mission 4 : missions de levée d'OP-N47 (mission 10), OP-N62 et OP-N63 (mission 5), proposées à confirmer ; contrat `activateMedia`/`replaceMedia` pour la mission 12 (ADR-103) | §8 Héritages de la mission 4 (missions 5, 10, 12) | Oui (missions 5, 10, 12) |
+| 16/10/2026 | Décisions du porteur sur OP-N62, OP-N63 (bloque la production, mission 5, ADR-105) et délai d'une demande approuvée (ADR-102 complété) | §8 Héritages de la mission 4 (mission 5) | Oui (mission 5) |
 
 ## Documents globaux
 

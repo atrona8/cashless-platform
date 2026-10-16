@@ -210,10 +210,11 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   d'exécution des fonctions du schéma accordés rôle par rôle, sans héritage de `PUBLIC` (OP-N44) ; lecture qui a
   confirmé un rattachement refusée par `consume_tap` (OP-N50) ; empreinte de requête à clé au registre d'idempotence,
   pour qu'un code imprimé ne se retrouve pas par essais (OP-N54, ADR-99) ;
-- mission 5, suite (correctif post-fusion n° 1, 16/10/2026 ; à confirmer par le porteur) : retrait
-  d'une clé dédiée possible seulement pendant un travail de retrait approuvé, y compris pour la
-  personnalisation (OP-N62, ADR-102) ; clé d'accord d'un terminal écrite à l'enrôlement seulement,
-  jamais réécrite par la connexion de l'API (OP-N63, signalé) ;
+- mission 5, suite (correctif post-fusion n° 1 ; confirmé par le porteur le 16/10/2026) :
+  retrait d'une clé dédiée possible seulement pendant un travail de retrait approuvé, y compris
+  pour la personnalisation, et demande approuvée périmée refusée à l'inscription (OP-N62, ADR-102) ;
+  clé d'accord d'un terminal écrite à l'enrôlement seulement, jamais réécrite par la connexion de
+  l'API (OP-N63, ADR-105, bloque la production) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
 - mission 7 : snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version

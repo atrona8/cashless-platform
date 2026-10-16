@@ -114,6 +114,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-102 | Travaux de clé nés d'une demande approuvée à deux seulement, vérifiés par la base et par les exécutants (SEC-1) | Acceptée (décision du porteur du 16/10/2026) |
 | ADR-103 | `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête (contradiction contrat / schéma) | Acceptée (consignée le 16/10/2026) |
 | ADR-104 | Mission de levée d'OP-N47 (rotation de `CLAIM_CODE_HMAC_KEY`) : mission 10 | Proposée par l'agent, à confirmer par le porteur |
+| ADR-105 | Clé d'accord d'un terminal (`device.agreement_public_key`) réécrivable par l'API (OP-N63) : limite acceptée, levée par la mission 5 | Acceptée (décision du porteur du 16/10/2026) |
 
 ---
 
@@ -1249,6 +1250,15 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   l'API et lues par un processus des clés : `media_batch` (OP-N60, mission 11), `claim_code`
   (association contrôlée par `associate_claim_code`, 0019), `device.agreement_public_key` (signalé :
   OP-N63).
+- **Complément du 16/10/2026 (décision du porteur) : délai d'une demande approuvée.**
+  `enqueue_tag_key_job` ne refuse pas une demande `APPROVED` dont `expires_at` est dépassé
+  (`decide_approval_request` ne contrôle le délai qu'à la décision) : une demande approuvée mais
+  jamais exécutée peut servir plus tard, une seule fois (index uniques sur la demande). Risque :
+  une approbation ancienne reste une autorisation valable ; il faut une session de l'API et un
+  second `OPERATOR_ADMIN` ayant déjà approuvé. Limite acceptée, rattachée à OP-N62, levée par la
+  mission 5 : l'inscription refuse une demande `APPROVED` périmée (code `CL023`). Test qui
+  documente le comportement actuel : `tests/tests_tag_key_job_approval.sql`, section 6, à inverser
+  par la mission 5. Report dans `PROMPTS-A-ENVOYER.md` (mission 5).
 - **Références.** SPEC §3.2, §7.3, §7.4, §7.7 ; ADR-83, ADR-84, ADR-94 ; OP-N56, OP-N62, OP-N63 ;
   `contracts/key-services.md` ; `mission-review-report.md` (SEC-1).
 
@@ -1305,3 +1315,22 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   en production, `config.spec.ts`).
 - **Références.** ADR-87 ; OP-N47 ; `apps/api/src/kms/claim-hash.ts` ; `mission-review-report.md`
   (NOTE-1).
+
+## ADR-105 — Clé d'accord d'un terminal réécrivable par l'API : limite acceptée jusqu'à la mission 5
+
+- **Statut** : Acceptée, 16 octobre 2026 (décision du porteur, OP-N63).
+- **Contexte.** `roles.sql` (kit) accorde à `cashless_app` `UPDATE (agreement_public_key)` sur
+  `device`. Le processus des clés de bracelet (`POST /media/auth-keys`) chiffre le mot de passe d'un
+  bracelet pour cette clé (ECDH-ES P-256). Une session de l'API compromise peut y mettre sa propre
+  clé et lire la réponse suivante pour ce terminal si elle l'intercepte. L'identité du terminal est
+  aujourd'hui un faux qui croit des en-têtes (OP-N42).
+- **Décision.** Limite acceptée, classée **bloque la production : oui**. Levée par la **mission 5**
+  (enrôlement réel des terminaux). Aucun faux ne passe en production : OP-N42 reste bloquant.
+- **Condition de levée.** La clé d'accord est écrite à l'enrôlement seulement, par une fonction qui
+  vérifie le code d'enrôlement ; `UPDATE (agreement_public_key)` est retiré à `cashless_app`
+  (`post-roles.sql`) ; test : réécriture directe refusée.
+- **Conséquences.** Test pgTAP qui fige les droits de `cashless_app` sur `device`, colonne par
+  colonne (`tests/tests_tag_key_job_approval.sql`, section 7) : il échoue si un droit s'élargit ;
+  à mettre à jour à la levée. Reports dans `PROMPTS-A-ENVOYER.md` (mission 5) et `PRD.md`
+  (héritages de la mission 4). Fichiers à faire relire par une personne : `post-roles.sql`.
+- **Références.** ADR-102 ; OP-N42, OP-N63 ; `packages/ledger-sql/roles.sql`.
