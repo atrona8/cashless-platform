@@ -25,7 +25,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` pour les rôles de base des processus des clés | Non | Non (limite acceptée) | Mission 5, avec OP-N59 (confirmé par le porteur le 15/10/2026) |
 | OP-N45 | Aiguillage par chemin devant les processus de l'API | Non | **Oui** | Mission 13 (recette V1) (confirmé par le porteur le 15/10/2026) |
 | OP-N46 | Signature d'originalité NXP vérifiée par le poste seulement | Non | Non | Mission 12 (app terminal), avec l'auditeur sécurité (confirmé par le porteur le 15/10/2026) |
-| OP-N47 | Rotation du secret d'empreinte des codes de rattachement non outillée | Non | Non | Exploitation |
+| OP-N47 | Rotation du secret d'empreinte des codes de rattachement non outillée | Non | Non | Mission 10 (app festivalier) : proposée par l'agent le 16/10/2026, à confirmer par le porteur (ADR-104) |
 | OP-N48 | Fichier de commande des codes de rattachement perdu en route : pas de nouvelle émission | Non | Non | Agent (choix laissé par le porteur) ; à revoir en exploitation |
 | OP-N49 | Caution en espèces et espèces dues : aucune caisse avant la mission des caisses (`409`) | Non | **Oui** | Mission « Recharges, caisses et PSP » |
 | OP-N50 | Rattachement par code : lecture liée à la demande encore utilisable par `consume_tap` | Non | Non (limite acceptée) | Mission 5 (paiement, `consume_tap`) (confirmé par le porteur le 15/10/2026) |
@@ -40,6 +40,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N59 | 77 fonctions SECURITY DEFINER de la base sans `pg_temp` dans leur `search_path` : une table temporaire de l'appelant masque une table de la base (droit `TEMP` accordé à `PUBLIC`) ; contournement probable du cloisonnement entre prestataires par les `tenant_of_*` (non démontré de bout en bout) ; antérieur à la mission 4 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-96) | Mission 5 |
 | OP-N60 | `cashless_app` écrit directement ce que des fonctions contrôlent : `INSERT` et `UPDATE` sur toutes les colonnes de `media_batch` (lot créé directement `ACTIVE` ou `CLOSED`, clôture sans `close_batch`, quantité, index de clé), `UPDATE (status)` de `media` sans motif ; antérieur au lot 20 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-97) | Mission 11 (back-office) |
 | OP-N61 | Traitements par tranches (NFR-008) : clôture, rattrapage du préchargement et rechiffrement non prouvés sur un lot de 5 000 bracelets (ADR-98) | Non | **Oui** (preuve attendue de la recette, avant la production) | Mission 13 (recette V1), décision du porteur du 15/10/2026 |
+| OP-N62 | La personnalisation peut appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours (limite résiduelle de la correction de SEC-1, ADR-102) | Non | Non (limite acceptée, à confirmer par le porteur) | Mission 5, avec OP-N44 : proposée par l'agent le 16/10/2026, à confirmer par le porteur |
+| OP-N63 | `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des clés de bracelet chiffre le mot de passe d'un bracelet (signalé par le correctif post-fusion n° 1, non traité) | Non | À décider par le porteur | À décider par le porteur (proposé : mission 5, enrôlement et identité du terminal) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -90,9 +92,10 @@ risque, sa garde, ce qui le lève et la condition de levée. Les décisions corr
 (ADR-83 à ADR-92) : OP-N41, OP-N42, OP-N43 → ADR-88 ; OP-N44 → ADR-84 ; OP-N45 → ADR-83 ;
 OP-N46 → ADR-85 ; OP-N47 → ADR-87.
 
-Missions de levée d'OP-N41, OP-N44, OP-N45 et OP-N46 (15 octobre 2026, ADR-101) : **proposées par l'agent, à confirmer
-par le porteur**, en remplacement de « porteur du projet » ou « exploitation », qui ne sont pas des missions du
-découpage. Raisons :
+Missions de levée d'OP-N41, OP-N44, OP-N45 et OP-N46 (15 octobre 2026, ADR-101) : proposées par
+l'agent et
+**confirmées par le porteur le 15/10/2026**, en remplacement de « porteur du projet » ou «
+exploitation », qui ne sont pas des missions du découpage. Raisons :
 - OP-N41 → mission 7 : première mission qui a besoin d'un vrai KMS pour autre chose que les bracelets (signature des
   snapshots, vérification d'Ed25519 dans KMS, OP-N13) ; l'adaptateur AWS des quatre ports s'y écrit avec celui de la
   signature, une fois la région arrêtée (OP-N11).
@@ -111,7 +114,7 @@ découpage. Raisons :
 | OP-N44 | Les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin` héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence (même limite que `cashless_platform`, ADR-80) | Un processus des clés compromis peut appeler ces fonctions pour un prestataire dont il pose l'identifiant — ni plus ni moins que le rôle de l'API publique | Aucun droit direct sur les tables du grand livre (`tests_media_roles.sql`) ; chaque fonction commence par `assert_tenant` | **Mission 5**, avec OP-N59 : modification du générateur de la suite de référence du kit (`gen_tests.py`) (confirmé par le porteur le 15/10/2026 ; ADR-101) | La suite de référence n'exige plus `EXECUTE` pour `PUBLIC` ; les droits d'exécution sont accordés rôle par rôle |
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
-| OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | Exploitation | Une procédure de rotation (double empreinte pendant une période) est écrite et testée |
+| OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | Une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après |
 
 ### OP-N48 — Fichier de commande des codes de rattachement perdu en route (13 octobre 2026)
 
@@ -393,6 +396,47 @@ NFR-008 en échec). **Écart consigné par décision du porteur du 15/10/2026 (A
 - **Pas de test qui fige la limite.** La limite est un manque de preuve, pas un droit ni un contrôle retiré : rien ne
   peut « s'élargir » qu'un test puisse borner. Les tests existants (`batches.spec.ts`, `data-keys.spec.ts`) échouent
   déjà si le découpage ou la reprise régressent.
+
+### OP-N62 — Retrait d'une clé dédiée par la personnalisation sans travail (16 octobre 2026)
+
+Limite résiduelle de la correction de SEC-1 (revue post-fusion de la mission 4, correctif
+post-fusion n° 1, ADR-102), consignée selon la règle 3 de `CLAUDE.md`.
+
+- **Risque.** `retire_dedicated_key` (schéma de référence, SECURITY DEFINER) retire une clé dédiée
+  dont tous les lots sont clos : clé et clés de données retirées, mots de passe effacés, bracelets
+  en fin de vie. Elle ne vérifie pas qu'un travail `RETIRE_KEY` approuvé est en cours. Depuis la
+  migration 0020, seul `cashless_perso` peut l'appeler (l'API et `PUBLIC` ne le peuvent plus) : un
+  processus de personnalisation compromis retirerait une clé dédiée sans décision à deux. Le modèle
+  de menace retenu par la mission (connexion de l'API compromise) n'est plus concerné.
+- **En place.** `EXECUTE` retiré à `PUBLIC` et à `cashless_app` ; la personnalisation n'exécute
+  `RETIRE_KEY` qu'après la revérification de la demande (`TagKeyJobGate`) ; la désactivation dans le
+  KMS qui suit n'est acceptée que pour une clé `RETIRED` après un retrait approuvé.
+- **Mission qui le lève : mission 5**, avec OP-N44 (droits d'exécution des fonctions du schéma
+  accordés rôle par rôle) — **proposée par l'agent, à confirmer par le porteur**. Condition de levée
+  : `retire_dedicated_key` n'est plus appelable que par une fonction qui exige un travail
+  `RETIRE_KEY` `RUNNING` de la même clé, issu d'une demande exécutée (ou la vérification est ajoutée
+  par migration à une fonction de remplacement) ; test : appel sans travail refusé.
+- **Test qui échoue si la limite s'élargit** : `tests/tests_tag_key_job_approval.sql` (droit
+  d'exécution de `retire_dedicated_key` : personnalisation seulement ; refusé à `PUBLIC`, à l'API, à
+  la plateforme, aux clés de bracelet et à la commande d'administration).
+
+### OP-N63 — Clé d'accord d'un terminal réécrite par l'API (16 octobre 2026, signalé)
+
+Signalé par le correctif post-fusion n° 1 en cherchant les autres entrées qu'un processus des clés
+consomme après qu'une autre connexion les a déposées (consigne 6). **Non traité : décision du
+porteur attendue.**
+
+- **Constat.** `roles.sql` (kit) accorde à `cashless_app` `UPDATE (agreement_public_key)` sur
+  `device`. Le processus des clés de bracelet (`POST /media/auth-keys`) chiffre le mot de passe d'un
+  bracelet pour cette clé (ECDH-ES P-256).
+- **Risque.** Une session de l'API compromise remplace la clé d'accord d'un terminal par la sienne ;
+  la réponse suivante de `POST /media/auth-keys` pour ce terminal devient lisible par elle si elle
+  intercepte cette réponse. Aujourd'hui l'identité du terminal est un faux qui croit des en-têtes
+  (OP-N42, bloque la production) : le risque est couvert par ce point jusqu'à la mission 5.
+- **Proposition.** Avec l'enrôlement réel (mission 5) : clé d'accord écrite à l'enrôlement
+  seulement, par une fonction qui vérifie le code d'enrôlement, et `UPDATE (agreement_public_key)`
+  retiré à `cashless_app` ; test : réécriture directe refusée. Fichier concerné :
+  `packages/ledger-sql/roles.sql` (kit), corrigé par `post-roles.sql`.
 
 ## 3. Relectures d'experts
 

@@ -210,6 +210,10 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   d'exécution des fonctions du schéma accordés rôle par rôle, sans héritage de `PUBLIC` (OP-N44) ; lecture qui a
   confirmé un rattachement refusée par `consume_tap` (OP-N50) ; empreinte de requête à clé au registre d'idempotence,
   pour qu'un code imprimé ne se retrouve pas par essais (OP-N54, ADR-99) ;
+- mission 5, suite (correctif post-fusion n° 1, 16/10/2026 ; à confirmer par le porteur) : retrait
+  d'une clé dédiée possible seulement pendant un travail de retrait approuvé, y compris pour la
+  personnalisation (OP-N62, ADR-102) ; clé d'accord d'un terminal écrite à l'enrôlement seulement,
+  jamais réécrite par la connexion de l'API (OP-N63, signalé) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
 - mission 7 : snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
@@ -223,12 +227,17 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   ADR-100) ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
+- mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
+  rotation du secret d'empreinte des codes imprimés (`CLAIM_CODE_HMAC_KEY`) sans réimpression, par
+  une double empreinte pendant une période bornée (OP-N47, ADR-104) ;
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
   ADR-94) ; lots de bracelets créés et modifiés par des fonctions seulement, sans `INSERT`/`UPDATE` direct de l'API
   sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ;
 - mission 12 : signature d'originalité NXP vérifiée aussi par le serveur à la personnalisation, avec la clé publique
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
+- mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
+  requête (`tap`, `new_media_tap`), pas un identifiant de lecture (ADR-103) ;
 - mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
   aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45).

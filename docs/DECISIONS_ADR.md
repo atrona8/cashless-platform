@@ -108,9 +108,12 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-96 | Fonctions SECURITY DEFINER sans `pg_temp` (OP-N59) : limite acceptée, levée par la mission 5, bloque la production | Acceptée |
 | ADR-97 | Écritures directes de `cashless_app` sur `media_batch` (OP-N60) : limite acceptée, levée par la mission 11, bloque la production | Acceptée |
 | ADR-98 | Traitements par tranches (NFR-008, OP-N61) : preuve sur 5 000 bracelets reportée à la mission 13, bloque la production | Acceptée |
-| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (confirmée par le porteur le 15/10/2026 ; mission à confirmer) |
+| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (mission de levée confirmée par le porteur le 15/10/2026) |
 | ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée |
 | ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Acceptée (confirmée par le porteur le 15/10/2026) |
+| ADR-102 | Travaux de clé nés d'une demande approuvée à deux seulement, vérifiés par la base et par les exécutants (SEC-1) | Acceptée (décision du porteur du 16/10/2026) |
+| ADR-103 | `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête (contradiction contrat / schéma) | Acceptée (consignée le 16/10/2026) |
+| ADR-104 | Mission de levée d'OP-N47 (rotation de `CLAIM_CODE_HMAC_KEY`) : mission 10 | Proposée par l'agent, à confirmer par le porteur |
 
 ---
 
@@ -938,7 +941,15 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Contexte.** SPEC §3.2 sépare les droits sur le service de clés : l'API publique ne doit ni calculer un mot de passe de bracelet ni déchiffrer une clé de données. Un seul processus portant tous les droits rendrait cette séparation théorique.
 - **Décision.** Un seul code, quatre processus, chacun avec son point d'entrée, ses seuls modules et ses seuls ports de clés : API publique (aucun port), clés de bracelet (`decrypt`), personnalisation (`mac`, `dataKey`), contrôle quotidien (`mac`, `decrypt`). La création et la désactivation d'une clé du KMS passent par une commande d'administration séparée (`keyAdmin`), lancée à la demande, hors des quatre processus. Chaque opération du contrat porte `x-process`.
 - **Conséquences.** Une faille de l'API publique n'atteint aucune opération de clé : elle n'en charge aucun port (`test/unit/architecture.spec.ts`). L'aiguillage d'une route vers son processus relève de l'exploitation (OP-N45).
-- **Références.** SPEC §3.2, §7.3, §7.4 ; `apps/api/src/processes/` ; `apps/api/src/kms/kms.ports.ts` ; OP-N45.
+- **Complément du 16/10/2026 (ADR-102, constat SEC-1 de la revue post-fusion).** La séparation des
+  ports ne suffisait pas : la connexion de l'API écrivait librement la file `tag_key_job`, que les
+  processus des clés exécutaient sans relire la demande d'approbation. Depuis la migration 0020, un
+  travail ne naît que d'une demande approuvée à deux concordante (base) et chaque exécutant la
+  revérifie avant tout appel au KMS. La phrase « une faille de l'API publique n'atteint aucune
+  opération de clé » vaut sous la limite d'OP-N56 : une session compromise peut encore faire décider
+  une demande au nom d'un second administrateur réel.
+- **Références.** SPEC §3.2, §7.3, §7.4 ; `apps/api/src/processes/` ;
+  `apps/api/src/kms/kms.ports.ts` ; OP-N45 ; ADR-102.
 
 ## ADR-84 — Rôles de base distincts : seuls les processus des clés lisent les chiffrés
 
@@ -973,7 +984,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Statut** : Acceptée, 13 octobre 2026 (plan de la mission ; décision du porteur n° 8 pour la consultation).
 - **Contexte.** Un code imprimé fait 50 bits : une empreinte simple se retrouverait par essais si la base fuyait. La consultation anonyme se fait sans compte, donc sans prestataire de session.
 - **Décision.** Empreinte `HMAC-SHA256(CLAIM_CODE_HMAC_KEY, …)` du code et du code de confirmation ; le secret vit hors de la base, obligatoire en production (32 octets au moins). **Décision n° 8** : `public_balance_lookup` est `SECURITY DEFINER`, retirée à `PUBLIC` et accordée au seul rôle de l'API ; elle contrôle elle-même ses limites.
-- **Conséquences.** Changer le secret invalide toutes les empreintes : aucune procédure de rotation (OP-N47).
+- **Conséquences.** Changer le secret invalide toutes les empreintes : aucune procédure de rotation
+  (OP-N47 ; mission de levée proposée le 16/10/2026 : mission 10, ADR-104, à confirmer par le
+  porteur).
 - **Références.** SPEC §7.8, §8.5 ; ADR-36, ADR-56 ; `apps/api/src/kms/claim-hash.ts` ; `migrations/0010_media_claims.sql` ; OP-N47.
 
 ## ADR-88 — Ports et faux pour le KMS, l'identité du terminal et celle du festivalier
@@ -1123,8 +1136,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 
 ## ADR-99 — Empreinte de requête sans clé au registre d'idempotence : limite acceptée jusqu'à la mission 5 (OP-N54)
 
-- **Statut** : Limite consignée le 14/10/2026 (constat des relectures indépendantes, sans changement de code) ;
-  mission de levée **confirmé par le porteur le 15/10/2026**. Dette nommée.
+- **Statut** : Acceptée. Limite consignée le 14/10/2026 (constat des relectures indépendantes, sans
+  changement de code) ; mission de levée (mission 5) **confirmée par le porteur le 15/10/2026**.
+  Dette nommée.
 - **Contexte.** Le registre d'idempotence (`api_idempotency`) garde `request_hash`, empreinte SHA-256 sans clé de la
   requête. Pour le rattachement par code, la requête contient le code imprimé (50 bits).
 - **Risque.** Une fuite de la base permet de retrouver un code par essais hors ligne (calcul lourd mais faisable), puis
@@ -1163,7 +1177,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Contexte.** Règle 3 de `CLAUDE.md` : chaque écart accepté nomme la mission du découpage qui le lève. Ces cinq
   points nommaient le porteur ou l'exploitation. Les décisions de fond restent celles d'ADR-83, ADR-84, ADR-85,
   ADR-88 et ADR-90 ; seule la mission de levée est fixée ici.
-- **Décision proposée.**
+- **Décision** (proposée par l'agent, confirmée par le porteur le 15/10/2026).
   - OP-N41 (KMS factice, ADR-88) → **mission 7** : première mission qui a besoin d'un vrai KMS hors bracelets
     (signature des snapshots, OP-N13) ; adaptateur AWS des ports `MacPort`, `DataKeyPort`, `DecryptPort`,
     `KeyAdminPort` écrit avec celui de la signature, après OP-N11.
@@ -1177,6 +1191,117 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   - OP-N50 (lecture d'une demande encore utilisable par `consume_tap`, ADR-90) → **mission 5** : elle sert le
     paiement par `consume_tap`.
 - **Conséquences.** Les conditions de levée et les tests qui bornent les limites restent ceux d'OP-N41 à OP-N50.
-  Reports dans `PROMPTS-A-ENVOYER.md` (missions 5, 7, 12, 13) et `PRD.md` (héritages de la mission 4). Si le porteur
-  choisit une autre mission, déplacer les reports.
+  Reports dans `PROMPTS-A-ENVOYER.md` (missions 5, 7, 12, 13) et `PRD.md` (héritages de la
+  mission 4).
 - **Références.** OP-N41, OP-N44, OP-N45, OP-N46, OP-N50 ; ADR-83 à ADR-85, ADR-88, ADR-90, ADR-96.
+
+## ADR-102 — Travaux de clé : demande approuvée à deux exigée par la base et par les exécutants
+
+- **Statut** : Acceptée, 16 octobre 2026 (décision du porteur sur le constat SEC-1 de la revue
+  post-fusion de la mission 4 : corriger à la fois dans la base et dans les programmes qui exécutent
+  les travaux). Correctif post-fusion n° 1
+  (`kitty-specs/bracelets-nfc-01M4TD3W/post-merge-fix-1.md`).
+- **Contexte.** ADR-83 et SC-007 : aucune création, rotation ni aucun retrait de clé sans deux
+  personnes. La règle n'était tenue que par l'API publique : `cashless_app` gardait `INSERT` sur
+  `tag_key_job` (`post-roles.sql` ne bornait que `UPDATE`), `cashless_perso` y insérait librement,
+  et ni `KeyAdminWorker` ni `DekWorker` ni `ReencryptWorker` ne relisaient la demande. La revue a
+  démontré qu'un `DISABLE_KMS_KEY` inséré par `cashless_app` sur la clé partagée ACTIVE était pris
+  par la commande d'administration. `retire_dedicated_key` (schéma de référence, SECURITY DEFINER)
+  restait de plus exécutable par l'API (EXECUTE hérité de `PUBLIC`).
+- **Cycle de vie vérifié** (code et SPEC §3.2). Une demande naît `PENDING` ;
+  `decide_approval_request` la passe `APPROVED` (valideur ≠ auteur) ; l'API exécute l'action dans la
+  même transaction, puis passe la demande `EXECUTED` avec son résultat (le travail, `job_id` et
+  `key_index`), ou `FAILED`. Correspondance : `TAG_KEY_CREATE` → `CREATE_KEY`, `TAG_DEK_ROTATE` →
+  `ROTATE_DEK`, `TAG_KEY_RETIRE` → `RETIRE_KEY`. Les travaux internes (`REENCRYPT` après
+  `ROTATE_DEK`, `DISABLE_KMS_KEY` après `RETIRE_KEY`) sont inscrits par la personnalisation pendant
+  l'exécution du travail parent, sous la même demande ; aucun autre travail n'existe (pas de travail
+  sans demande dans le code).
+- **Décision.**
+  1. Base (migration `0020_tag_key_job_approval.sql`, `post-roles.sql`) : plus aucun `INSERT` direct
+     sur `tag_key_job` pour un rôle applicatif ou un processus. `enqueue_tag_key_job(demande)` (API,
+     demande `APPROVED`) et `enqueue_tag_key_child_job(parent, clé cible)` (personnalisation, parent
+     `RUNNING`, demande `EXECUTED` dont le résultat désigne ce parent) fixent elles-mêmes la sorte,
+     l'index, la charge utile, l'auteur et le valideur ; contrôles : prestataire de la session,
+     action et objet concordants, auteur ≠ valideur, tous deux `OPERATOR_ADMIN` actifs du
+     prestataire, demande jamais consommée (index uniques), désactivation d'une clé `RETIRED`
+     seulement. SECURITY DEFINER, `search_path = public, pg_temp`, `REVOKE ALL FROM PUBLIC`,
+     `EXECUTE` aux seuls appelants légitimes, contrôles de prestataire explicites (aucun appui sur
+     la RLS). `retire_dedicated_key` : `EXECUTE` retiré à `PUBLIC` et à l'API, accordé à la
+     personnalisation.
+  2. Programmes : les trois exécutants appellent `tag_key_job_refusal(travail)` (`TagKeyJobGate`)
+     juste après la prise et avant tout appel au KMS : demande `EXECUTED` dont le résultat désigne
+     ce travail (ou son parent), même action, même objet, mêmes paramètres et mêmes personnes,
+     parent terminé, clé `RETIRED` pour une désactivation. Un travail refusé passe `FAILED` avec son
+     motif, une ligne d'audit `TAG_KEY_JOB_REFUSED` est écrite, et le processus lève son code
+     d'alerte (4). `disableKey` refuse aussi lui-même une clé qui n'est pas `RETIRED`.
+- **Conséquences.** Une session de l'API compromise ne peut plus inscrire un travail sans demande,
+  ni avec une demande d'une autre action, d'un autre objet, d'un autre prestataire, refusée ou déjà
+  consommée, ni retirer une clé dédiée directement. Limites restantes : OP-N56 (la base
+  n'authentifie pas qui décide une demande ; une session compromise peut faire décider au nom d'un
+  second `OPERATOR_ADMIN` réel), OP-N62 (la personnalisation peut appeler `retire_dedicated_key`
+  sans travail en cours). Tests : `tests/tests_tag_key_job_approval.sql` (pgTAP depuis
+  `cashless_app` et `cashless_perso`), `keys.spec.ts` et `data-keys.spec.ts` (travaux plantés par le
+  propriétaire : refusés, aucun appel au KMS). Les suites qui plantaient des travaux passent par une
+  demande approuvée (`test/support/key-jobs.ts`). Fichiers à faire relire par une personne :
+  migration 0020, `post-roles.sql`, `job-gate.ts` et les trois exécutants.
+- **Autres files examinées.** `tag_key_job` est la seule file de travaux de la mission. Le contrôle
+  quotidien ne lit que `tag_key` et `tag_key_check_run`, que l'API n'écrit pas. Entrées écrites par
+  l'API et lues par un processus des clés : `media_batch` (OP-N60, mission 11), `claim_code`
+  (association contrôlée par `associate_claim_code`, 0019), `device.agreement_public_key` (signalé :
+  OP-N63).
+- **Références.** SPEC §3.2, §7.3, §7.4, §7.7 ; ADR-83, ADR-84, ADR-94 ; OP-N56, OP-N62, OP-N63 ;
+  `contracts/key-services.md` ; `mission-review-report.md` (SEC-1).
+
+## ADR-103 — `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête
+
+- **Statut** : Acceptée, 16 octobre 2026 (consignée après coup : constat DRIFT-2 de la revue
+  post-fusion de la mission 4 ; le changement date du lot 15 et 16).
+- **Contexte.** FR-036 : les routes déjà décrites au contrat sont servies telles quelles. Le contrat
+  de départ faisait porter à `activateMedia` un `tap_id` et à `replaceMedia` un `new_media_tap_id`,
+  identifiants d'une lecture enregistrée au préalable par `register_tap`. Or le schéma de référence,
+  qui prime (SPEC §0.3), n'enregistre aucune lecture d'un bracelet jamais activé : `register_tap`
+  répond `NOT_ACTIVATED` sans écrire de ligne. Un bracelet neuf n'a donc jamais de `tap_id` : les
+  deux routes étaient inutilisables telles que décrites. Contradiction contrat / schéma, résolue
+  sans être consignée.
+- **Décision.** La lecture du bracelet est embarquée dans la requête : `tap` (`TapInput`)
+  obligatoire pour `activateMedia`, `new_media_tap` obligatoire pour `replaceMedia`. Le serveur
+  vérifie la lecture dans la transaction (UID et signature d'originalité comparés à ceux de la
+  personnalisation). `tap_id` et `new_media_tap_id` restent au contrat, marqués `deprecated` ; une
+  requête qui ne porte qu'eux est refusée (`422`). `replaceMedia` gagne aussi les réponses `403`,
+  `422` et sa `security`.
+- **Conséquences.** Rupture de contrat pour l'app terminal : **mission 12** envoie la lecture
+  complète (`TapInput` : `nfc_uid`, `token_hash`, `counter`, `key_index`, `pack_verified`,
+  signature, `occurred_at`) au lieu d'un identifiant de lecture, pour l'activation au guichet et
+  pour le bracelet neuf d'un remplacement. Aucun client n'existait : pas de migration de clients. La
+  sécurité n'est pas affaiblie (la lecture est vérifiée dans la transaction). Report dans
+  `PROMPTS-A-ENVOYER.md` (mission 12).
+- **Références.** SPEC §0.3, §7.6, §7.8 ; FR-036 ; `packages/contracts/openapi.yaml`
+  (`activateMedia`, `replaceMedia`, `TapInput`) ; `activation.spec.ts`, `replace.spec.ts` ;
+  `mission-review-report.md` (DRIFT-2).
+
+## ADR-104 — Mission de levée d'OP-N47 (rotation de `CLAIM_CODE_HMAC_KEY`)
+
+- **Statut** : **Proposée par l'agent le 16/10/2026, à confirmer par le porteur** (constat NOTE-1 de
+  la revue post-fusion de la mission 4 : OP-N47 nommait « Exploitation », qui n'est pas une mission
+  du découpage).
+- **Contexte.** ADR-87 : les codes imprimés et les codes de confirmation sont conservés en empreinte
+  `HMAC-SHA256(CLAIM_CODE_HMAC_KEY, …)`. Changer le secret invalide toutes les empreintes ; aucune
+  procédure de rotation n'existe (OP-N47). Une fuite du secret ne se répare qu'en réimprimant les
+  codes.
+- **Décision proposée.** Mission de levée : **mission 10** (app festivalier). C'est la mission qui
+  reprend les flux qui lisent ces empreintes (rattachement par code depuis l'app, demande en attente
+  et code de confirmation, consultation anonyme par code) et leurs comptes ; la double empreinte
+  d'une période de rotation se teste sur ces chemins. Alternative écartée : mission 7 (premier vrai
+  KMS), qui stockera le secret mais ne touche pas aux flux des codes ; elle reste le lieu du
+  stockage du secret si le porteur le préfère.
+- **Condition de levée.** Une procédure de rotation est écrite et testée : nouveau secret actif,
+  ancien accepté en lecture pendant une période bornée (double empreinte, avec la version du
+  secret), recalcul ou extinction des anciennes empreintes, puis retrait de l'ancien secret ; test :
+  un code émis sous l'ancien secret se rattache pendant la période et plus après, aucun code n'est
+  conservé en clair.
+- **Conséquences.** Reports dans `PROMPTS-A-ENVOYER.md` (mission 10) et `PRD.md` (héritages de la
+  mission 4). Si le porteur choisit une autre mission, déplacer les reports. Pas de test qui fige la
+  limite : c'est une procédure absente, pas un droit qui peut s'élargir (le secret reste obligatoire
+  en production, `config.spec.ts`).
+- **Références.** ADR-87 ; OP-N47 ; `apps/api/src/kms/claim-hash.ts` ; `mission-review-report.md`
+  (NOTE-1).

@@ -98,6 +98,18 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > la borne de `tests/tests_media_claim_tap.sql`. **OP-N54** — `api_idempotency.request_hash` est un SHA-256 sans clé
 > qui contient le code imprimé ; le passer à une empreinte à clé (HMAC, secret hors de la base) ou en exclure les
 > champs secrets ; test : l'empreinte ne se recalcule pas à partir du code seul.
+>
+> **Hérités aussi du correctif post-fusion n° 1 de la mission 4 (16/10/2026 ; missions proposées par
+> l'agent, à confirmer par le porteur)** : **OP-N62** (ADR-102) — la personnalisation peut encore
+> appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours ; avec OP-N44, ne la rendre
+> appelable que par une fonction qui exige un travail `RETIRE_KEY` `RUNNING` issu d'une demande
+> exécutée ; test : appel sans travail refusé (mettre à jour
+> `tests/tests_tag_key_job_approval.sql`). **OP-N63** (signalé, décision du porteur attendue) —
+> `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des
+> clés chiffre le mot de passe d'un bracelet ; avec l'enrôlement réel, écrire cette clé à
+> l'enrôlement seulement, par une fonction, et retirer `UPDATE (agreement_public_key)` à
+> `cashless_app` ; test : réécriture directe refusée. Ne pas rouvrir `INSERT` sur `tag_key_job`
+> (travaux par `enqueue_tag_key_job` et `enqueue_tag_key_child_job` seulement, migration 0020).
 
 - [ ] /spec-kitty.specify API des terminaux et encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S5, S18, S24). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256, unicité du `serial` parmi les terminaux non révoqués, rafraîchissement du jeton, révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
 - [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement ; requêtes des terminaux signées par la clé du Keystore. Téléphone personnel : en ligne seulement. iOS : QR uniquement. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`).
@@ -137,8 +149,9 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > **Les deux bloquent la production** (OP-N58 classé « Oui » par le porteur le 15/10/2026, comme OP-N57 : une version
 > plantée en avance est un déni de service) : à lever avant toute mise en production.
 >
-> **Hérité aussi de la mission 4, OP-N41 (ADR-88 ; mission proposée par l'agent le 15/10/2026, à confirmer par le
-> porteur, ADR-101 ; bloque la production)** : le service de clés des bracelets n'existe qu'en faux
+> **Hérité aussi de la mission 4, OP-N41 (ADR-88 ; mission proposée par l'agent le 15/10/2026,
+> confirmée par le porteur le même jour, ADR-101 ; bloque la production)** : le service de clés des
+> bracelets n'existe qu'en faux
 > (`apps/api/src/kms/fake-kms.ts`). Avec l'adaptateur KMS de la signature des snapshots, écrire l'adaptateur AWS des
 > ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, un rôle IAM par processus (SPEC §3.2), après la
 > région (OP-N11) ; le faux reste refusé en production (`production-guard.spec.ts`).
@@ -186,6 +199,14 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > (OP-N43, ADR-88) ; servir `listMyMedia` et `reportMyMediaLost` (non servies par la mission 4) ; le rattachement par
 > code, la demande en attente, l'activation depuis l'app (`SELF_APP`) et la consultation anonyme réduite sont déjà
 > servis côté serveur (ADR-90).
+>
+> **Hérité aussi de la mission 4, OP-N47 (ADR-87, ADR-104 ; mission proposée par l'agent le
+> 16/10/2026, à confirmer par le porteur)** : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY`
+> ; changer le secret invalide toutes les empreintes des codes imprimés et des codes de
+> confirmation. Écrire et tester une rotation : nouveau secret actif, ancien accepté en lecture
+> pendant une période bornée (double empreinte avec version du secret), extinction des anciennes
+> empreintes, retrait de l'ancien secret ; test : un code émis sous l'ancien secret se rattache
+> pendant la période et plus après, aucun code conservé en clair.
 
 - [ ] /spec-kitty.specify App festivalier Flutter, Android et iOS (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques. Côté app : connexion, solde et historique, recharge en ligne, paiement par QR commerçant (confirmation par PIN ou biométrie) et QR client à usage unique (60 s, jamais préchargé), rattachement par QR ou code imprimé (demande en attente avec code de confirmation si le bracelet contient de l'argent), déclaration de perte (suspension immédiate, proposition de payer par QR), demande de remboursement, consultation anonyme du solde par code (`POST /public/balance-lookups`, lecture seule). L'app ne lit jamais la puce. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan Flutter, types Dart générés depuis `openapi.yaml`. Pas de connexion Google ou Apple. Pas de portail web. Fournisseurs OTP réels à choisir sur devis (action 10 de POINTS_OUVERTS) : adaptateurs derrière le port seulement.
@@ -226,10 +247,18 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > **Condition préalable** : validation de la puce sur de vrais bracelets et campagne de mesure NFC faites
 > (actions 1 et 2 de `POINTS_OUVERTS.md` §7, ADR-39). Ne pas lancer cette mission avant.
 >
-> **Hérité de la mission 4, OP-N46 (ADR-85 ; mission confirmé par le porteur le 15/10/2026,
+> **Hérité de la mission 4, OP-N46 (ADR-85 ; mission confirmée par le porteur le 15/10/2026,
 > ADR-101)** : à la personnalisation, la signature d'originalité NXP n'est vérifiée que par le poste ; le serveur n'en
 > garde que l'empreinte. Avec la clé publique NXP et les signatures réelles issues de la validation de la puce, faire
 > vérifier aussi la signature par le serveur (vecteurs dans le kit), décision avec l'auditeur sécurité (ADR-44).
+>
+> **Hérité aussi de la mission 4, contrat de `activateMedia` et `replaceMedia` (ADR-103)** : la
+> lecture du bracelet est embarquée dans la requête (`tap` pour l'activation, `new_media_tap` pour
+> le bracelet neuf d'un remplacement, schéma `TapInput`) ; `tap_id` et `new_media_tap_id` sont
+> dépréciés et refusés seuls (`422`). Raison : un bracelet jamais activé n'a pas de `tap_id`
+> (`register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture), le contrat de départ
+> contredisait le schéma. L'app envoie donc la lecture complète au guichet, pas un identifiant de
+> lecture.
 
 - [ ] /spec-kitty.specify App terminal Flutter (SPECIFICATION §7.6, §8.1, §8.2, §9.3 à §9.5, `docs/sync_protocol.md`, résultats du banc `tools/nfc-bench`). Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; enrôlement par QR, clés ECDSA et ECDH dans l'Android Keystore (StrongBox si disponible) ou la Secure Enclave ; connexion des vendeurs par PIN ; épinglage d'écran. Lecture NFC Android en mode lecteur (`NfcA.transceive`) : page 4, `READ_SIG` à chaque passage, PWD/PACK depuis le snapshot ou `/media/auth-keys`, `PWD_AUTH`, `FAST_READ`, CRC, `INCR_CNT`/`READ_CNT` sur le compteur 2, effacement des mots de passe. Paiement en ligne en un aller-retour avec repli hors ligne après 3 s ; règle d'autorisation hors ligne dans l'ordre imposé (§9.3), journal SQLCipher (WAL, `synchronous = FULL`, fsync avant succès), compteur `seq` commun, snapshots vérifiés et deltas, lots signés et chaînés, exposition par bracelet et par terminal, bascule vers la passerelle. QR (iOS : QR uniquement). Guichet : recharges, cautions, restitutions, remplacements, remboursements, jeton d'approbation de la seconde personne. Vecteurs du format B produits et vérifiés par l'app.
 - [ ] /spec-kitty.plan Flutter, Android et iOS ; `packages/tag-format` en Dart ; réglages de lecture par modèle de téléphone issus du banc. Aucune clé maître sur le terminal. Hors ligne jamais pour : QR, recharge PSP, remboursement, activation, caution, restitution, remplacement. Un refus en ligne est définitif. Latence NFC p95 ≤ 300 ms.
@@ -248,7 +277,7 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > 5 000 bracelets, avec au moins une relance sans double effet ; durées dans le rapport de recette (prouvé aujourd'hui :
 > 600 cautions, 1 200 bracelets en 3 tranches, préchargement sur 3 bracelets).
 >
-> **OP-N45 (ADR-83 ; mission confirmé par le porteur le 15/10/2026, ADR-101)** — décrire et
+> **OP-N45 (ADR-83 ; mission confirmée par le porteur le 15/10/2026, ADR-101)** — décrire et
 > vérifier l'aiguillage par chemin vers les trois processus (`x-process` du contrat) : `POST /media/auth-keys` et
 > `/media-personalizations` n'atteignent que leur processus.
 
