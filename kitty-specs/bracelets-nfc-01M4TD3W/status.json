@@ -1,20 +1,656 @@
 {
-  "event_count": 0,
-  "last_event_id": null,
-  "materialized_at": "",
-  "mission_number": "",
-  "mission_slug": "",
+  "event_count": 183,
+  "last_event_id": "01M520XX7FJTCK3ES52TZYBB5F",
+  "materialized_at": "2026-10-16T09:33:13.327223+00:00",
+  "mission_number": "1",
+  "mission_slug": "bracelets-nfc-01M4TD3W",
   "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
-    "done": 0,
+    "done": 20,
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
     "planned": 0
   },
-  "work_packages": {}
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WC062YX2PDQBVNFFCXZF",
+      "last_transition_at": "2026-10-16T09:32:22.918980+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Bibliothèque TypeScript : 39 tests (vecteurs du kit, refus, preuve croisée). Écarts : tirage du code par masquage de 5 bits (sans biais) au lieu d'un rejet ; HKDF de l'enveloppe : sel vide, info = AAD (non fixé par le contrat) ; contrôle de vectors.json ignoré si le module Python cryptography manque (à installer en CI, WP20).",
+        "Revue : vecteurs du kit reproduits à l'octet (format B, message, PWD/PACK, AAD, chiffré de 34 octets), refus couverts, enveloppe conforme à EncryptedBlob du contrat. Corrigé en revue : le contrôle de vectors.json par le script du kit devient obligatoire en CI au lieu d'être ignoré en silence. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP01-bibliotheque-format-typescript/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP01-bibliotheque-format-typescript/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15608,
+      "shell_pid_created_at": "1791894705.721725",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WKT2RR42EHEPT6XJAGHF",
+      "last_transition_at": "2026-10-16T09:32:30.915025+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Bibliothèque Dart 3.8 : 30 tests, vecteurs du kit et 1 000 entrées croisées identiques à TypeScript ; dart analyze sans remarque. Dépendances : pointycastle 4.0.0 (éditeur bouncycastle.org, pur Dart), test 1.26.2 et lints 6.0.0 (éditeur dart.dev), verrouillées dans pubspec.lock.",
+        "Revue : mêmes fonctions et mêmes codes de refus que TypeScript ; preuve croisée dans les deux sens (ce que TypeScript scelle se rouvre en Dart) ; éditeurs des dépendances vérifiés sur pub.dev ; dart pub get --enforce-lockfile vert. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP02-bibliotheque-format-dart/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP02-bibliotheque-format-dart/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 17337,
+      "shell_pid_created_at": "1791895017.982641",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WEJYYR5ABQC6SRW3M8CP",
+      "last_transition_at": "2026-10-16T09:32:25.566363+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0010 et tests_media_claims.sql (97 assertions) ; pgTAP 1044/1044, Jest 876/876. Écarts au plan : (1) cloisonnement par filtre sur le prestataire de session et RLS, les fonctions tenant_of_* n'étant pas exécutables par le rôle applicatif ; (2) consultation anonyme = fonction SECURITY DEFINER public_balance_lookup sans prestataire de session (route publique du contrat), retirée à PUBLIC ; (3) limites de la consultation prises au contrat (20 par code et 60 par adresse, par heure) et non à §7.8 : contradiction signalée ; (4) empreintes de code uniques tous prestataires confondus ; (5) claim_attempt.operator_id facultatif pour les codes inconnus ; (6) résultat NOT_ACTIVE et mark_claim_code_used pour l'activation par l'app ; (7) identifiant de demande fourni par l'appelant.",
+        "Revue : règles de §7.8 et d'ADR-57 tenues en base et testées (refus unique, 3 demandes, 24 h, 5 codes faux, même bracelet, annulation des autres demandes, aucun mouvement d'argent) ; suites de référence vertes. Point soumis au porteur : la fonction DEFINER de consultation anonyme (seule fonction de la migration qui lit hors du prestataire de session). Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP03-schema-rattachement-s19/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP03-schema-rattachement-s19/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 19664,
+      "shell_pid_created_at": "1791895606.458438",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WPCC50RBASGXH29B4E4Y",
+      "last_transition_at": "2026-10-16T09:32:33.548754+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migrations 0011 et 0012, 70 assertions ; pgTAP 1114/1114, Jest 876/876. Écarts au plan : (1) la sortie de liste noire réutilise l'action REINSTATE_MEDIA déjà présente dans le schéma de référence, au lieu d'ajouter MEDIA_REINSTATE : trois actions ajoutées, pas quatre ; (2) colonnes parent_job_id, started_at, locked_until et fonction retry_tag_key_job ajoutées à tag_key_job (reprise d'un travail dont le processus est mort) ; (3) aucune fonction SQL n'énumère les rôles : qui peut attribuer PERSONALIZER se règle dans l'API (à faire au WP08 ou WP09).",
+        "Revue : contraintes des missions 2 et 3 conservées (suites identity, approvals, platform_scope vertes) ; garde-fou contre un secret dans un travail testé sur huit noms de champ ; prise concurrente par SKIP LOCKED et reprise sur verrou échu testées ; isolation testée. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP04-role-personalizer-travaux-cle/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP04-role-personalizer-travaux-cle/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 21598,
+      "shell_pid_created_at": "1791897169.997705",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WVH5H0TAQAYS1NXRP82Y",
+      "last_transition_at": "2026-10-16T09:32:38.821593+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0013, 45 assertions ; pgTAP 1160/1160, Jest 876/876. Toutes les fonctions sont SECURITY INVOKER (aucune DEFINER n'a été nécessaire). Écarts : blacklist_media et suspend_media passent par media_set_status ; auteur passé en paramètre à register_personalized_media et posé dans la session pour les déclencheurs d'historique ; le test de concurrence à deux sessions sur la quantité d'un lot n'est pas fait en pgTAP (une seule transaction) : la garantie tient au verrou du lot, à prouver côté API au WP13.",
+        "Revue : aucune règle métier nouvelle (les déclencheurs du schéma décident des passages) ; aucune colonne secrète rendue (test sur les noms de colonnes de media_summary) ; isolation testée. Limite : même agent auteur et relecteur ; concurrence sur la quantité à prouver au WP13."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP05-fonctions-appui-bracelets/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP05-fonctions-appui-bracelets/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 23225,
+      "shell_pid_created_at": "1791897436.617784",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WY4XVTH3Q9YEQTJ1G99D",
+      "last_transition_at": "2026-10-16T09:32:41.501474+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "post-roles.sql, migrate.ts, env ; tests_media_roles.sql (66 assertions) ; pgTAP 1227/1227 sur base neuve et rejouée, Jest 876/876, connexion réelle sous les quatre rôles. Renforcements : l'API publique ne garde que quatre colonnes modifiables de media (statut et code de rattachement) au lieu de toutes les non secrètes ; la personnalisation ne relit ni mot de passe chiffré ni clé de données chiffrée ; chaque rôle ne voit dans la file que ses sortes de travaux (politique restrictive). Écarts : pas de politique restrictive par prestataire pour ces rôles (ils traitent tous les prestataires par construction ; la borne est dans les droits par table et par colonne) ; un processus sans prestataire de session pose l'identifiant nul. Retouches hors carte : 0013_media_api.sql (verrou consultatif au lieu d'un verrou de ligne, la personnalisation n'ayant aucun droit d'écriture sur media_batch), tests_tag_key_jobs.sql et tests_media_api.sql (étapes déplacées sous les rôles qui en ont désormais le droit). Limite à soumettre au porteur : EXECUTE hérité de PUBLIC sur les fonctions du schéma de référence vaut aussi pour les quatre nouveaux rôles (même limite que l'ADR-80).",
+        "Revue : chaque GRANT relu contre le tableau du modèle de données ; aucun droit sur le grand livre, les comptes ni les portefeuilles pour les quatre rôles ; aucune suppression ; rejeu idempotent. À faire relire par une personne (fichier le plus sensible de la mission côté base). Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP06-roles-de-base-processus/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP06-roles-de-base-processus/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 25233,
+      "shell_pid_created_at": "1791898005.380992",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WH5YEDAN0AR0FG8BJKW7",
+      "last_transition_at": "2026-10-16T09:32:28.222399+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Contrat : 130 chemins et 158 opérations (23 chemins et 26 opérations ajoutés), 38 opérations marquées x-process, aucune référence cassée ; types TypeScript régénérés ; types Dart générés (357 modèles, dart analyze propre, régénération déterministe vérifiée par npm run check). Jest 876/876. Écarts : (1) retryTagKeyJob ajoutée (relance d'un travail en échec) ; (2) la sortie de liste noire utilise REINSTATE_MEDIA, déjà au contrat ; (3) types Dart : swagger_parser 1.45.0 (éditeur tiers carapacik.dev, outil de développement seulement, sortie relue et commitée) avec json_serializable et build_runner ; il écrit toujours des clients HTTP, supprimés par le script ; un modèle d'une route existante (réponse oneOf de l'autorité de débit) est écarté pour un bogue du générateur, listé dans le script ; (4) npm run check exige désormais le SDK Dart en CI (à installer au WP20) ; (5) seul ajout sur des opérations existantes : l'extension x-process.",
+        "Revue : aucune route existante modifiée hors x-process ; aucun schéma ne porte l'identité, le mot de passe en clair ni une clé de données ; le mot de passe de personnalisation est un EncryptedBlob ; balayage d'isolation de la mission 3 inchangé (tags distincts). Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP07-contrat-api-bracelets/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP07-contrat-api-bracelets/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 27770,
+      "shell_pid_created_at": "1791899537.029736",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520WRYMQ4X4511VGNRB16ZE",
+      "last_transition_at": "2026-10-16T09:32:36.181027+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ports, faux et garde de production ; 44 tests nouveaux, Jest 920/920, lint et types propres. Le faux service de clés est sans état partagé (clés dérivées de leur référence) pour fonctionner entre processus distincts. Écarts : (1) le terminal et le compte annoncés par un fournisseur d'identité sont toujours relus en base ; (2) le fournisseur du faux terminal lit deux en-têtes (terminal et prestataire) ; (3) ClaimHasher porte aussi la référence d'adresse de la consultation anonyme ; (4) sept dettes consignées au lieu de quatre (OP-N41 à OP-N47 : s'y ajoutent EXECUTE via PUBLIC, l'aiguillage par chemin, la vérification serveur de la signature, la rotation du secret des codes) ; (5) l'ajout du rôle PERSONALIZER aux règles d'attribution de l'API est laissé au WP09 (cette lane n'a pas la migration 0011).",
+        "Revue : un port de clé non demandé n'est pas injectable (testé pour les cinq processus) ; les trois faux refusent de se construire en production et aucune variable d'environnement ne l'autorise ; le secret des codes est obligatoire en production. À faire relire par une personne : src/kms/**. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP08-ports-faux-garde-production/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP08-ports-faux-garde-production/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 29935,
+      "shell_pid_created_at": "1791900064.799068",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X0PZRN6BSR4APAVJ40FP",
+      "last_transition_at": "2026-10-16T09:32:44.127658+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Cinq points d'entrée ; Jest 953/953 (33 tests nouveaux), pgTAP 1227/1227, lint et types propres. Chaque processus des clés démarre réellement sous son rôle de base avec exactement ses droits de clé ; les cinq refusent de démarrer en production. Les tests d'architecture ont été vérifiés en violant la règle (port de clé chargé dans l'API publique : 2 tests échouent), puis en rétablissant. Écarts : (1) le pool d'un processus des clés est fourni par un fichier distinct (db/process-db.module.ts) pour qu'aucun fichier de la plateforme ne soit atteignable depuis un processus des clés ; TenantTx y est la même classe, exécutée sous le rôle du processus ; (2) TenantTx.unscoped pose l'identifiant nul pour les lectures sans prestataire ; (3) le processus des clés de bracelet, sans garde des personnes, refuse par défaut toute route non marquée ; (4) registre de travailleurs et boucle à intervalle (TAG_JOB_POLL_SECONDS) pour les travaux de clé. Retouches hors carte : principal.ts, role-rules.ts, users.dto.ts et leur test (rôle PERSONALIZER, attribuable par un OPERATOR_ADMIN seulement) ; apps/api/package.json (scripts de démarrage) ; tenant-tx.ts.",
+        "Revue : séparation des droits prouvée à deux niveaux (analyse statique des imports par processus, et injection réelle au démarrage) ; la commande d'administration est seule à atteindre KEY_ADMIN_PORT ; un processus des clés n'ouvre ni le pool de l'API ni celui de la plateforme. À faire relire par une personne : src/processes/**, src/db/process-db.module.ts. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP09-processus-et-commande-admin/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP09-processus-et-commande-admin/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 33473,
+      "shell_pid_created_at": "1791900608.319815",
+      "subtasks": {
+        "T035": "done",
+        "T036": "done",
+        "T037": "done",
+        "T038": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X39BRP554Z988D28SFFH",
+      "last_transition_at": "2026-10-16T09:32:46.763915+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Clés de bracelet : 8 routes back-office, 3 actions à deux qui inscrivent un travail, commande d'administration (CREATE_KEY, DISABLE_KMS_KEY). 14 tests d'intégration ; Jest 967/967, lint et types propres. Écarts : (1) KmsModule devient global au sein d'un processus, pour que ses modules de fonctionnalité injectent les ports que ce processus a demandés ; la séparation entre processus est inchangée (tests d'architecture et de démarrage repassés) ; (2) l'auteur et le valideur d'une demande sont portés par la charge utile du travail, la commande d'administration n'ayant aucun accès aux demandes d'approbation ; (3) la référence complète d'une clé n'est jamais rendue par l'API, ni dans l'avancement d'un travail ; (4) une clé est utilisable dès sa création (pas de travail CREATE_DEK, décision n° 7). Retouches hors carte : media-public.module.ts, media-key-admin.module.ts, audit.service.ts (deux actions d'audit), kms.module.ts.",
+        "Revue : aucune clé ni travail créés par une seule personne ; aucun appel au service de clés depuis l'API publique ; reprise après panne sans seconde clé (référence notée avant l'écriture) ; recevabilité revérifiée à l'approbation ; isolation à deux prestataires. À faire relire par une personne : src/media/keys/**. Limite : même agent auteur et relecteur."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP10-cles-demandes-et-commande/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP10-cles-demandes-et-commande/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 36711,
+      "shell_pid_created_at": "1791901927.791557",
+      "subtasks": {
+        "T039": "done",
+        "T040": "done",
+        "T041": "done",
+        "T042": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X8CZ4F10AZGV4C1R6GAQ",
+      "last_transition_at": "2026-10-16T09:32:51.999798+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Clé de session, cache borné, rotation, rechiffrement par tranches avec reprise, retrait. Hors périmètre déclaré, justifié : migration 0014 (prise d'un travail limitée à des prestataires, restrictive) et portée optionnelle sur les trois travailleurs, pour que les suites ne se prennent pas leurs travaux. pgTAP 1237/1237, Jest 992/992, lint et types propres.",
+        "Auto-relecture : la personnalisation ne déchiffre jamais (appels comptés), aucun clair hors mémoire, tampons mis à zéro (expiration, éviction, arrêt, version inactive), rechiffrement vérifié avant écriture et repris après échec, retrait par la fonction du schéma, isolation à deux prestataires. Fichiers à faire relire par une personne : src/media/keys/**."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP11-cles-de-donnees-rotation-retrait/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP11-cles-de-donnees-rotation-retrait/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 40855,
+      "shell_pid_created_at": "1791902833.896001",
+      "subtasks": {
+        "T043": "done",
+        "T044": "done",
+        "T045": "done",
+        "T046": "done"
+      }
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520X5V7FECZNG90ZFXD82VW",
+      "last_transition_at": "2026-10-16T09:32:49.383505+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Lots, fichier de commande (jamais conservé), import, clôture par relances, préchargement. Hors carte, justifié : option transient de l'idempotence, CLAIM_CODE_DOMAIN, actions d'audit, correction du contrat (montants 0 permis) et types régénérés, pubspec.lock versionné, jeu d'essai commun. Jest 1005/1005, pgTAP 1227/1227, lint et types propres.",
+        "Auto-relecture : aucun code en clair au repos (base entière balayée, contrôle du contrôle, journaux, registre d'idempotence), écriture réservée à l'administrateur de l'organisateur, isolation à deux prestataires, clôture de 600 cautions en deux appels. Point ouvert OP-N48 (fichier de commande perdu en route) à trancher par le porteur. Fichiers à faire relire par une personne : src/media/batches/claim-codes.service.ts, src/idempotency/idempotency.interceptor.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP12-lots-codes-inventaire/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP12-lots-codes-inventaire/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 46241,
+      "shell_pid_created_at": "1791904155.308662",
+      "subtasks": {
+        "T047": "done",
+        "T048": "done",
+        "T049": "done",
+        "T050": "done",
+        "T051": "done",
+        "T052": "done"
+      }
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XB0XD364SEFZ19DY5PQ6",
+      "last_transition_at": "2026-10-16T09:32:54.685229+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Enregistrement d'un bracelet (mot de passe sous enveloppe, clé de session, mise à zéro), association du code, jeu d'essai commun. Aucun droit ajouté au processus de personnalisation. Hors carte, justifié : actions d'audit, module d'audit commun dans le processus des clés de bracelet, résolution de deux conflits de fusion entre lots. Jest 1091/1091, pgTAP 1237/1237, lint et types propres.",
+        "Auto-relecture : mot de passe égal au calcul indépendant avec la clé du kit, chiffré stocké rouvert à l'identique, aucun secret au repos (base balayée en binaire, hexadécimal et base64, contrôle du contrôle, journaux, registre d'idempotence), un GenerateMac par bracelet et aucun Decrypt, rejeu sans second bracelet, rôle PERSONALIZER seul, isolation à deux prestataires. Fichiers à faire relire par une personne : src/media/personalization/**."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP13-personnalisation/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP13-personnalisation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 49260,
+      "shell_pid_created_at": "1791904866.769142",
+      "subtasks": {
+        "T053": "done",
+        "T054": "done",
+        "T055": "done",
+        "T056": "done",
+        "T057": "done"
+      }
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XDK7MY84JJGW9X2NYKJG",
+      "last_transition_at": "2026-10-16T09:32:57.319387+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Mot de passe pour un terminal (délai constant, un Decrypt au plus), lectures, effets de sécurité durables. Renforcement consigné : une lecture avec pack_verified=false ou un majeur de format inconnu est refusée (422) et n'est pas enregistrée ; la spécification était muette. Jest 1130/1130, pgTAP 1237/1237, lint et types propres.",
+        "Auto-relecture : mot de passe égal à celui de la puce, enveloppe liée au terminal et à la puce, refus indistinguables (corps et temps), aucun appel au service de clés pour un inconnu, chaque résultat de §7.6 couvert, liste noire persistée quand l'opération échoue (une seule anomalie), lecture réutilisable après un échec métier. Fichiers à faire relire par une personne : src/media/auth-keys/**, src/media/taps/tap.service.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP14-mot-de-passe-terminal-et-lecture/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP14-mot-de-passe-terminal-et-lecture/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 52581,
+      "shell_pid_created_at": "1791905848.349558",
+      "subtasks": {
+        "T058": "done",
+        "T059": "done",
+        "T060": "done",
+        "T061": "done"
+      }
+    },
+    "WP15": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XJT62BG8JEQ9DB013F2S",
+      "last_transition_at": "2026-10-16T09:33:02.662416+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Activation, caution, consultation. Contradiction signalée et tranchée : le contrat exigeait tap_id pour l'activation alors que register_tap n'en rend pas pour un bracelet jamais activé ; l'activation porte désormais sa lecture (tap). Renforcement : UID et signature revérifiés à l'activation. Décision du porteur n° 10 : aucune caisse créée ici (OP-N49). Hors carte : migration 0015 (open_event_wallet) et son test, contrat et types, TapService, jeu d'essai. Jest 1152/1152, pgTAP 1249/1249.",
+        "Auto-relecture : guichet refusé sans terminal ou sans personne habilitée, crédits offerts posés une seule fois malgré le rejeu, grand livre équilibré après chaque cas, caution due prise dans une transaction à part, aucune espèce sans caisse ouverte, lecture suspecte persistée, isolation à deux prestataires. Fichiers à faire relire par une personne : src/media/lifecycle/counter-access.ts, deposit.service.ts, migrations/0015_event_wallet.sql."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP15-activation-caution-consultation/review-cycle-1.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP15-activation-caution-consultation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 57035,
+      "shell_pid_created_at": "1791909311.539378",
+      "subtasks": {
+        "T062": "done",
+        "T063": "done",
+        "T064": "done",
+        "T065": "done",
+        "T066": "done"
+      }
+    },
+    "WP16": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XR1E6ZR0CPDGK13KBA60",
+      "last_transition_at": "2026-10-16T09:33:08.014539+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guichet de retour livré ; lint, types, Jest (1171), pgTAP (1249) verts. Contradiction à arbitrer : settle_balance (openapi) vs mission 9 (refus 422).",
+        "Auto-relecture : refus de restitution qui nomment ce qui reste à faire (caution, espèces dues, soldes), rien d'enchaîné ; ancienne identité d'un lot POOL = copie suspectée ; remplacement sans écriture ni préchargement, caution qui suit ; perte/retrouvé selon l'événement ; espèces dues avec jeton sur place au-delà du maximum, consommé une fois ; grand livre équilibré ; isolation à deux prestataires. Fichiers à faire relire par une personne : src/approval/onsite/onsite-approval.ts (option optional), src/media/lifecycle/cash-due.service.ts, cash-due.controller.ts. Contradiction à arbitrer par le porteur : settle_balance (openapi.yaml) renvoyé à la mission 9."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP16-retour-remplacement-perte/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 57686,
+      "shell_pid_created_at": "1791909372.771166",
+      "subtasks": {
+        "T067": "done",
+        "T068": "done",
+        "T069": "done",
+        "T070": "done",
+        "T071": "done"
+      }
+    },
+    "WP17": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XTKXGAYSDSD5BVYNCHXK",
+      "last_transition_at": "2026-10-16T09:33:10.653978+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Rattachement par code, confirmation au guichet, consultation anonyme ; lint, types, Jest (1185), pgTAP (1262), NFR-007 (écart 0,1 ms) verts. Décisions n° 11 à 13 du porteur (OP-N50).",
+        "Auto-relecture : même refus et même temps pour un code inconnu ou utilisé (écart 0,1 ms sur 200+200) ; refus validés avec l'essai inscrit, limites 5/h par compte et 20/j par appareil avec Retry-After et alerte ; code de confirmation jamais en clair au repos ; confirmation seulement avec le bon bracelet, lecture consommée une fois (migration 0016) ; consultation anonyme sans donnée personnelle ; isolation à deux prestataires. Décisions n° 11 à 13 (OP-N50). Fichiers à faire relire par une personne : packages/ledger-sql/migrations/0016_media_claim_tap.sql, apps/api/src/identity/identity-tenant-context.ts, apps/api/src/media/claims/claims.service.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP17-rattachement-par-code/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 7606,
+      "shell_pid_created_at": "1791972950.88454",
+      "subtasks": {
+        "T072": "done",
+        "T073": "done",
+        "T074": "done",
+        "T075": "done"
+      }
+    },
+    "WP18": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XNDW53GY1C608TNV5SD4",
+      "last_transition_at": "2026-10-16T09:33:05.340467+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Liste noire et sortie à deux ; lint, types, Jest (1134 dans la lane), pgTAP (1237) verts.",
+        "Auto-relecture : aucune sortie de liste noire avec une seule personne (auteur refusé 409, base refuse auteur = valideur même en appel direct) ; seule l'action approuvée REINSTATE_MEDIA appelle reinstate_media ; revalidation à l'exécution (FAILED si plus en liste noire) ; motif et auteur à l'historique ; rôles et isolation. Écart : nom d'action REINSTATE_MEDIA (contrat) au lieu de MEDIA_REINSTATE (consigne). Fichier à faire relire : apps/api/src/media/blacklist/blacklist-approval-actions.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP18-liste-noire/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 11569,
+      "shell_pid_created_at": "1791976355.516694",
+      "subtasks": {
+        "T076": "done",
+        "T077": "done",
+        "T078": "done"
+      }
+    },
+    "WP19": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M520XG681GYDY92M8FCBK78P",
+      "last_transition_at": "2026-10-16T09:32:59.976357+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Contrôle quotidien ; lint, types, Jest (1094 dans la lane), pgTAP verts.",
+        "Auto-relecture : échantillon de 100 au plus tiré en base, une ouverture par clé de données, comparaison en temps constant, tampons effacés ; écart → MISMATCH et alerte d'audit sans secret, aucune anomalie ; panne → ERROR et nouvel essai ; un passage par 24 h ; code de sortie 2 sur écart ; isolation par prestataire ; rôle cashless_tagcheck réel. Fichier à faire relire par une personne : apps/api/src/media/daily-check/daily-check.service.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP19-controle-quotidien/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15616,
+      "shell_pid_created_at": "1791980107.818409",
+      "subtasks": {
+        "T079": "done",
+        "T080": "done",
+        "T081": "done"
+      }
+    },
+    "WP20": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 8,
+      "lane": "done",
+      "last_event_id": "01M520XX7FJTCK3ES52TZYBB5F",
+      "last_transition_at": "2026-10-16T09:33:13.327223+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Preuves de bout en bout, secrets, isolation (39 opérations), latence (100 000 bracelets), CI, ADR-83 à ADR-92 ; corrections des relectures indépendantes des lots 16 à 19 ; pgTAP 1267, Jest 1223 (71 suites), latences et NFR-007 verts. À trancher par le porteur : OP-N51 à OP-N55.",
+        "Cycle 2 (relecture 1) : constat 1 corrigé — generateMac sous try dans checkOne (KmsKeyError → écart, KmsUnavailableError relancée), erreur inattendue inscrite ERROR avec son nom dans runOnce (compte rendu, code 3, prestataires suivants contrôlés) ; tests clé HMAC désactivée (MISMATCH, audit, code 2, 2e prestataire OK) et erreur inattendue. Remarques : test de remplacement CUSTOMER_IDENTITY (media-port-swap), passage DailyCheckWorker dans media-secrets, OP-N48..N55 au tableau, ADR-88 4e dette (OP-N44/ADR-84), médiane NFR-007 harmonisée. Commit 6220787 ; 46 suites / 938 tests verts, lint et typecheck propres.",
+        "Review passed (cycle 2): constat 1 corrigé (generateMac sous try, erreur inattendue inscrite ERROR) ; 5 remarques traitées ; grille 1-8 PASS ; 3 suites / 24 tests verts, typecheck et lint propres. Remarques faibles : écart puis interruption reste MISMATCH/code 2 ; erreur inattendue consignée par son nom seul.",
+        "Cycle 3 (décisions du porteur du 15/10/2026, review-feedback-2) : constat 1 annulé par le porteur (seuil conforme à SPEC §3.2, §8.5, ADR-53 ; aucun changement). OP-N52 levé : migration 0017 (reinstate_media exige une demande REINSTATE_MEDIA approuvée, déclencheur ferme BLACKLISTED→ACTIVE hors de ce chemin ; pgTAP + Jest). OP-N53 levé : TRUST_PROXY_HOPS obligatoire en production (refus de démarrer), tests 429 / X-Forwarded-For falsifié. ADR-91 acceptée (mission 9 enchaîne), ADR-93 (reassignPoolMedia), ADR-94, ADR-95. Commit a14e8ae ; pgTAP 1290/1290, Jest 72 suites / 1239 tests, lint et typecheck propres. À confirmer : session du propriétaire exemptée de la règle 0017 (suites normatives du kit).",
+        "Review passed (cycle 3, décisions du porteur du 15/10/2026). Constat 1 annulé : aucun changement sur le jeton sur place. OP-N52 : migration 0017 (déclencheur ferme BLACKLISTED->ACTIVE hors reinstate_media pour cashless_app, y compris UPDATE direct ; demande REINSTATE_MEDIA APPROVED concordante ; valideur SUPERVISOR actif ; demande née PENDING ; SECURITY DEFINER avec search_path), pgTAP + Jest nominal. OP-N53 : TRUST_PROXY_HOPS obligatoire en production, sans défaut permissif, tests réels. ADR-91/93/94/95 et POINTS_OUVERTS cohérents. Aucun .sql généré modifié. pgTAP 1290 OK, Jest ciblé 81/81, typecheck et lint propres. Anti-patterns 1-8 PASS. Retouches hors carte attendues (lane t porte le code de tous les lots). Observations non bloquantes : (a) cashless_app garde UPDATE sur media_status_history, ce qui permet de masquer un épisode et de réutiliser une demande APPROVED non encore EXECUTED (risque dominé par la limite résiduelle d'ADR-94) ; (b) limite résiduelle d'ADR-94 à reporter dans POINTS_OUVERTS.",
+        "Cycle 4 : review-feedback-3 appliqué — UPDATE/DELETE retirés sur les historiques, écriture retirée sur les règles de passage, claim_code/media_claim par colonne (post-roles.sql) ; tests pgTAP + contrôle du contrôle ; OP-N56, ADR-94 complété",
+        "Cycle 5 : migration 0018 (historiques SECURITY DEFINER), INSERT retiré sur les historiques, media_assignment et device_config_served fermés, migrate.ts transactionnel ; scénario pin rejoué en pgTAP",
+        "Cycle 6 : constat 1 fermé (INSERT de cashless_perso sur media borné par colonnes et politique restrictive perso_media_insert) ; OP-N57, OP-N58 consignés avec test qui fige les droits ; OP-N56 précisé. pgTAP 1340 PASS, Jest 1244+38 PASS, typecheck, lint, check:generated OK.",
+        "Cycle 7 : option B appliquée (migration 0019), OP-N58 bloque la production, OP-N59/OP-N60 soumis au porteur",
+        "Ready for review: cycle 8 — motif relu après refus concurrent (perso + import), test filtre prestataire claim_code, OP-N59/OP-N60 consignés (ADR-96/97, tests de limite, reports)",
+        "Review passed (cycle 8): motif relu par refusal() après ROLLBACK TO SAVEPOINT dans personalization.service.ts et claim-codes.service.ts ; tests commitWhileWaiting fiables (5/5) et contrôle du contrôle fait (motif fixe -> 2 échecs) ; pgTAP OP-N59 (<=77) et OP-N60 (colonne par colonne) échouent sur élargissement ; filtre prestataire de associate_claim_code détecté ; fiches OP-N59/OP-N60, ADR-96/97, reports missions 5 et 11 et PRD conformes ; aucun droit de base ni .sql généré modifié. pgTAP 1380 PASS ; Jest 1246+38 (1 skipped) ; typecheck, lint, check:generated OK. Fichiers hors carte (claim-codes.service.ts, personalization.*, test/support/db.ts, POINTS_OUVERTS, PRD, PROMPTS, tests_*.sql) : retouches demandées par review-feedback-7. Remarques non bloquantes : motif MEDIA_ALREADY_HAS_CODE concurrent rendu en CLAIM_CODE_ALREADY_ASSOCIATED côté poste (antérieur) ; commitWhileWaiting masque une erreur précoce de start() derrière 10 s d'attente.",
+        "Ready for review: cycle 9 documentation seulement — OP-N61/ADR-98 (NFR-008, mission 13), ADR-99 (OP-N54, mission 5), ADR-100 (OP-N55, mission 9), ADR-101 (missions de levée OP-N41/44/45/46/50 proposées, à confirmer) ; reports PROMPTS/PRD ; lint et check:generated verts",
+        "Cycle 9 (documentation) approuvé : c92d619 ne touche que PRD.md, PROMPTS-A-ENVOYER.md, docs/POINTS_OUVERTS.md, docs/DECISIONS_ADR.md ; 20edee7 et suivants : kitty-specs seulement. OP-N61/ADR-98 conforme à acceptance-matrix.json (600 cautions, 1 200 bracelets en 3 tranches, préchargement sur 3) ; OP-N54 (ADR-99, M5), OP-N55 (ADR-100, M9), OP-N41 (M7), OP-N44 (M5), OP-N45 (M13), OP-N46 (M12), OP-N50 (M5) via ADR-101 : mission, condition de levée, tableau, reports PROMPTS/PRD sous la bonne mission. lint vert, check:generated vert. Missions proposées à confirmer par le porteur (réserve non bloquante : OP-N46 en mission 12, app Flutter, alors que la correction est côté serveur)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/bracelets-nfc-01M4TD3W/tasks/WP20-preuves-ci-decisions/review-cycle-12.md",
+        "reference": "review-cycle://bracelets-nfc-01M4TD3W/WP20-preuves-ci-decisions/review-cycle-12.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42012,
+      "shell_pid_created_at": "1792082511.497406",
+      "subtasks": {
+        "T082": "done",
+        "T083": "done",
+        "T084": "done",
+        "T085": "done",
+        "T086": "done",
+        "T087": "done"
+      }
+    }
+  }
 }

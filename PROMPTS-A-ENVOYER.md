@@ -76,6 +76,29 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 ## Mission 5 — Terminaux et paiement en ligne
 
+> **Hérité de la mission 4 (bracelets-nfc)** : remplacer le faux d'identité du terminal par la vérification du jeton
+> d'appareil, du mTLS et de la signature de chaque requête (OP-N42, ADR-88) ; le faux ne doit plus être câblé hors des
+> tests. Le port `DeviceIdentityPort` est prêt : aucun contrôleur à modifier (`media-port-swap.spec.ts`).
+>
+> **Hérité aussi de la mission 4, OP-N59 (ADR-96, bloque la production)** : 77 fonctions SECURITY DEFINER fixent
+> `search_path = public` sans `pg_temp` ; une table temporaire d'une session compromise y masque une table de la base.
+> Les `tenant_of_*` qui alimentent `assert_tenant` (`post_transaction`, etc.) en font partie : contournement probable
+> du cloisonnement entre prestataires (non démontré de bout en bout). Retirer `TEMPORARY` aux rôles applicatifs
+> (`post-roles.sql`), ou passer toutes ces fonctions à `search_path = public, pg_temp` par migration, ou les deux ;
+> test : table temporaire sans effet sur un `tenant_of_*`, ou création refusée à chaque rôle `cashless_*`. Mettre à
+> jour la section 4 de `tests/tests_definer_trigger_writers.sql` (aujourd'hui : au plus 77).
+>
+> **Hérités aussi de la mission 4 (missions proposées par l'agent le 15/10/2026, à confirmer par le porteur, ADR-101
+> et ADR-99)** : **OP-N44** — les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin`
+> héritent de `PUBLIC` l'`EXECUTE` des fonctions d'API du schéma de référence ; à traiter avec OP-N59 : faire que le
+> générateur `gen_tests.py` n'exige plus `EXECUTE` pour `PUBLIC` et accorder les droits rôle par rôle
+> (`post-roles.sql`) ; test : chaque rôle de processus des clés n'exécute que ses fonctions. **OP-N50** — `consume_tap`
+> accepte encore une lecture qui a confirmé une demande de rattachement (`consume_tap_for_claim`, migration 0016) ;
+> ce lot touche `consume_tap` pour le paiement : la faire refuser (migration ou générateur), test pgTAP à la place de
+> la borne de `tests/tests_media_claim_tap.sql`. **OP-N54** — `api_idempotency.request_hash` est un SHA-256 sans clé
+> qui contient le code imprimé ; le passer à une empreinte à clé (HMAC, secret hors de la base) ou en exclure les
+> champs secrets ; test : l'empreinte ne se recalcule pas à partir du code seul.
+
 - [ ] /spec-kitty.specify API des terminaux et encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S5, S18, S24). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256, unicité du `serial` parmi les terminaux non révoqués, rafraîchissement du jeton, révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
 - [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement ; requêtes des terminaux signées par la clé du Keystore. Téléphone personnel : en ligne seulement. iOS : QR uniquement. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`).
 - [ ] /spec-kitty.tasks
@@ -86,6 +109,11 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 ## Mission 6 — Recharges, caisses et PSP
 
+> **Hérité de la mission 4 (bracelets-nfc)** : créer le compte de caisse `A-CAISSE-<n° de série>` à l'ouverture d'une
+> session (ou adapter `counter-access.ts`) : sans lui, caution en espèces et rendu des espèces dues répondent `409`
+> (décision n° 10, ADR-89, OP-N49) ; servir `cash_session_id` dans `refundCashDue` et `releaseMedia` ; appeler
+> `DepositService.takeDueDeposit` après chaque crédit payé, dans une transaction distincte.
+
 - [ ] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).
 - [ ] /spec-kitty.plan Secrets PSP dans AWS Secrets Manager, rattachés au détenteur des fonds, jamais partagés. Webhook inconnu ou invalide conservé et signalé, jamais ignoré. Clé d'idempotence des webhooks `<psp>:<id>`. Les taux PSP sont des `fee_rule` par configuration. Adaptateurs réels codés derrière l'interface, activés seulement après vérification des accès de test (action 11 de POINTS_OUVERTS).
 - [ ] /spec-kitty.tasks
@@ -95,6 +123,25 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [ ] spec-kitty merge --mission recharges-caisses-psp
 
 ## Mission 7 — Hors ligne (snapshots et lots)
+
+> **Hérité de la mission 4 (bracelets-nfc)** : deux faiblesses du kit, antérieures à la mission 4, consignées sans
+> changement de comportement (relecture du lot 20, ADR-94). **OP-N57** : `cashless_app` choisit la version d'un
+> snapshot et `check_offline_snapshot` n'exige qu'une version croissante ; une version très grande plantée bloque les
+> snapshots suivants du grand livre (déni de service hors ligne). Faire inscrire les snapshots par une fonction qui
+> calcule elle-même la version (dernière + 1) et retirer l'`INSERT` direct (ou le borner par une politique
+> restrictive) ; test : version choisie par l'appelant refusée, snapshot suivant toujours possible. **OP-N58** :
+> `log_offline_policy` écrit `offline_policy_history` aux droits de l'appelant ; passer cette fonction en SECURITY
+> DEFINER (`search_path` fixé, comme `log_media_status` en migration 0018) et retirer `INSERT` à `cashless_app` ;
+> test : ligne insérée directement refusée, historique toujours écrit par une modification de politique. Le test
+> `tests/tests_definer_trigger_writers.sql` fige les droits actuels : le mettre à jour en levant ces deux points.
+> **Les deux bloquent la production** (OP-N58 classé « Oui » par le porteur le 15/10/2026, comme OP-N57 : une version
+> plantée en avance est un déni de service) : à lever avant toute mise en production.
+>
+> **Hérité aussi de la mission 4, OP-N41 (ADR-88 ; mission proposée par l'agent le 15/10/2026, à confirmer par le
+> porteur, ADR-101 ; bloque la production)** : le service de clés des bracelets n'existe qu'en faux
+> (`apps/api/src/kms/fake-kms.ts`). Avec l'adaptateur KMS de la signature des snapshots, écrire l'adaptateur AWS des
+> ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, un rôle IAM par processus (SPEC §3.2), après la
+> région (OP-N11) ; le faux reste refusé en production (`production-guard.spec.ts`).
 
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
@@ -116,7 +163,16 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 ## Mission 9 — Remboursements, versements et clôture
 
-- [ ] /spec-kitty.specify Remboursements, versements, rapprochements et clôture d'un événement (SPECIFICATION §8.5, §11.3, §11.4, §12, §13.7, §14.2 S16 et S22, ADR-49, ADR-53, ADR-67, ADR-73, ADR-75, ADR-76). Demandes de remboursement (`refund_request` : Wave, Orange Money, virement ; approbation à deux qui écrit `WALLET_REFUND` ; confirmation ou échec avec `REVERSAL` ; autre numéro avec code au nouveau numéro, accord ou attente du numéro vérifié, vérification d'identité au-delà du seuil) ; remboursement en espèces au guichet avec jeton d'approbation au-delà du seuil ; guichet de retour dans l'ordre imposé (§7.9), avec l'enchaînement des étapes par le serveur dans `releaseMedia` (`settle_balance`, `refund_deposit_by`) : la mission 4 les refuse provisoirement en `422 release.no_chaining`, la mission 9 lève ce refus (décision du porteur du 15/10/2026, ADR-91, OP-N51) ; rendu des espèces dues d'un bracelet remplacé (OP-N55, migration ou rendu au back-office à deux). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
+> **Hérité de la mission 4 (bracelets-nfc)** : enchaînement du guichet de retour (`releaseMedia` avec `settle_balance`,
+> `refund_deposit_by`) — **servi par cette mission**, décision du porteur du 15/10/2026 (OP-N51, ADR-91 acceptée) ; le
+> contrat `openapi.yaml` reste tel quel ; le refus provisoire `422` (`release.no_chaining`) disparaît avec cette mission.
+>
+> **Hérité aussi de la mission 4, OP-N55 (ADR-100)** : `replace_media` ne fait pas suivre au bracelet neuf les espèces
+> dues (anomalies `CASH_TOPUP_OVER_LIMIT`) de l'ancien, et le rendu est refusé sur un bracelet `REPLACED` ; la dette
+> reste au grand livre (`L-ESP-A-RENDRE`). Faire suivre les anomalies au remplacement (migration) ou servir un rendu au
+> back-office sur décision de deux personnes ; test : espèces dues d'un bracelet remplacé rendues une fois, et une seule.
+
+- [ ] /spec-kitty.specify Remboursements, versements, rapprochements et clôture d'un événement (SPECIFICATION §8.5, §11.3, §11.4, §12, §13.7, §14.2 S16 et S22, ADR-49, ADR-53, ADR-67, ADR-73, ADR-75, ADR-76). Demandes de remboursement (`refund_request` : Wave, Orange Money, virement ; approbation à deux qui écrit `WALLET_REFUND` ; confirmation ou échec avec `REVERSAL` ; autre numéro avec code au nouveau numéro, accord ou attente du numéro vérifié, vérification d'identité au-delà du seuil) ; remboursement en espèces au guichet avec jeton d'approbation au-delà du seuil ; guichet de retour dans l'ordre imposé (§7.9). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
 - [ ] /spec-kitty.plan Ordre de clôture de référence du scénario (§12.1). Les tâches d'exploitation (scellement, exports) utilisent un rôle distinct qui n'écrit pas au grand livre. Correspondance SYSCOHADA indicative, à faire valider (OP-N3) : configurable, jamais codée en dur. Copie des scellements sous un compte AWS distinct. Scellement : la tâche planifiée et la copie hors de la base (S3 Object Lock, compte distinct) couvrent aussi les scellements du journal d'audit (`audit_seal`, fonctions de scellement et de vérification livrées par la mission 2), avec vérification quotidienne de leur chaîne.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission remboursements-versements-cloture
@@ -125,6 +181,11 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [ ] spec-kitty merge --mission remboursements-versements-cloture
 
 ## Mission 10 — App festivalier
+
+> **Hérité de la mission 4 (bracelets-nfc)** : remplacer le faux d'identité du festivalier par un vrai jeton de compte
+> (OP-N43, ADR-88) ; servir `listMyMedia` et `reportMyMediaLost` (non servies par la mission 4) ; le rattachement par
+> code, la demande en attente, l'activation depuis l'app (`SELF_APP`) et la consultation anonyme réduite sont déjà
+> servis côté serveur (ADR-90).
 
 - [ ] /spec-kitty.specify App festivalier Flutter, Android et iOS (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques. Côté app : connexion, solde et historique, recharge en ligne, paiement par QR commerçant (confirmation par PIN ou biométrie) et QR client à usage unique (60 s, jamais préchargé), rattachement par QR ou code imprimé (demande en attente avec code de confirmation si le bracelet contient de l'argent), déclaration de perte (suspension immédiate, proposition de payer par QR), demande de remboursement, consultation anonyme du solde par code (`POST /public/balance-lookups`, lecture seule). L'app ne lit jamais la puce. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan Flutter, types Dart générés depuis `openapi.yaml`. Pas de connexion Google ou Apple. Pas de portail web. Fournisseurs OTP réels à choisir sur devis (action 10 de POINTS_OUVERTS) : adaptateurs derrière le port seulement.
@@ -135,6 +196,22 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [ ] spec-kitty merge --mission app-festivalier
 
 ## Mission 11 — Back-office web
+
+> **Hérité de la mission 4 (bracelets-nfc)** : la décision d'une demande d'approbation (`decide_approval_request`)
+> croit le valideur que lui passe l'API ; une session de l'API compromise peut décider au nom d'un vrai superviseur
+> (OP-N56, ADR-94). Avec le serveur d'identité réel, n'enregistrer une décision qu'avec une preuve que l'API ne peut
+> pas fabriquer seule (jeton d'approbation signé d'ADR-74, ou signature de la décision par le valideur), vérifiée et
+> conservée avec la décision ; test : décision sans preuve, ou avec la preuve d'une autre personne ou d'une autre
+> demande → refusée. Ne pas rouvrir les droits de `cashless_app` sur les historiques, les règles de passage,
+> `media_assignment` et `device_config_served`, et garder `log_media_status` / `log_batch_status` en SECURITY DEFINER
+> (migration 0018).
+>
+> **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
+> toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,
+> quantité, index de clé) et `UPDATE (status)` de `media` sans motif. La création passe aujourd'hui par un `INSERT`
+> direct (`batches.service.ts:68`). Créer les lots par une fonction qui impose `ORDERED` (ou politique restrictive),
+> borner `UPDATE` de `media_batch`, faire de `media_set_status` le seul chemin du statut d'un bracelet ; test depuis
+> `cashless_app` : ces écritures directes refusées. Mettre à jour la section 4 de `tests/tests_definer_trigger_writers.sql`.
 
 - [ ] /spec-kitty.specify Back-office Next.js (SPECIFICATION §1.2, §3.2, §7.7, §9.3, §11, §12, §15 « Lecture NFC »). Interfaces plateforme (prestataires, contrats, redevance, supervision), prestataire (organisateurs, contrats, index de clés, plafonds maximaux, profils de législation, configurations PSP), organisateur (événements, commerçants, catalogues, terminaux et codes d'enrôlement, politique hors ligne avec affichage du risque maximal, clôture avec liste des conditions et leur état, versements, relevés, exports, relevé des soldes restants), commerçant (ventes par article et par taux, relevés, vendeurs, catalogue si autorisé). Demandes d'approbation : liste, consultation, approbation, refus. Inventaire des lots, anomalies, remboursements. Liste des modèles de téléphone avec leur niveau NFC et signalement des terminaux « tolérés » ou non testés. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan React / Next.js, types TypeScript générés depuis `openapi.yaml`. Les contrôles de clôture non calculables par la base (caisses comptées, PSP rapprochés, terminaux remontés) sont faits avant l'appel. Cloisonnement : un utilisateur d'un prestataire ne voit rien d'un autre.
@@ -148,6 +225,11 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 > **Condition préalable** : validation de la puce sur de vrais bracelets et campagne de mesure NFC faites
 > (actions 1 et 2 de `POINTS_OUVERTS.md` §7, ADR-39). Ne pas lancer cette mission avant.
+>
+> **Hérité de la mission 4, OP-N46 (ADR-85 ; mission proposée par l'agent le 15/10/2026, à confirmer par le porteur,
+> ADR-101)** : à la personnalisation, la signature d'originalité NXP n'est vérifiée que par le poste ; le serveur n'en
+> garde que l'empreinte. Avec la clé publique NXP et les signatures réelles issues de la validation de la puce, faire
+> vérifier aussi la signature par le serveur (vecteurs dans le kit), décision avec l'auditeur sécurité (ADR-44).
 
 - [ ] /spec-kitty.specify App terminal Flutter (SPECIFICATION §7.6, §8.1, §8.2, §9.3 à §9.5, `docs/sync_protocol.md`, résultats du banc `tools/nfc-bench`). Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; enrôlement par QR, clés ECDSA et ECDH dans l'Android Keystore (StrongBox si disponible) ou la Secure Enclave ; connexion des vendeurs par PIN ; épinglage d'écran. Lecture NFC Android en mode lecteur (`NfcA.transceive`) : page 4, `READ_SIG` à chaque passage, PWD/PACK depuis le snapshot ou `/media/auth-keys`, `PWD_AUTH`, `FAST_READ`, CRC, `INCR_CNT`/`READ_CNT` sur le compteur 2, effacement des mots de passe. Paiement en ligne en un aller-retour avec repli hors ligne après 3 s ; règle d'autorisation hors ligne dans l'ordre imposé (§9.3), journal SQLCipher (WAL, `synchronous = FULL`, fsync avant succès), compteur `seq` commun, snapshots vérifiés et deltas, lots signés et chaînés, exposition par bracelet et par terminal, bascule vers la passerelle. QR (iOS : QR uniquement). Guichet : recharges, cautions, restitutions, remplacements, remboursements, jeton d'approbation de la seconde personne. Vecteurs du format B produits et vérifiés par l'app.
 - [ ] /spec-kitty.plan Flutter, Android et iOS ; `packages/tag-format` en Dart ; réglages de lecture par modèle de téléphone issus du banc. Aucune clé maître sur le terminal. Hors ligne jamais pour : QR, recharge PSP, remboursement, activation, caution, restitution, remplacement. Un refus en ligne est définitif. Latence NFC p95 ≤ 300 ms.
@@ -158,6 +240,17 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [ ] spec-kitty merge --mission app-terminal
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
+>
+> **OP-N61 (ADR-98, décision du porteur du 15/10/2026)** — NFR-008 non prouvé à l'échelle : prouver que la clôture d'un
+> lot, le rattrapage du préchargement (au-delà d'une tranche de 500) et le rechiffrement vont au bout sur un lot de
+> 5 000 bracelets, avec au moins une relance sans double effet ; durées dans le rapport de recette (prouvé aujourd'hui :
+> 600 cautions, 1 200 bracelets en 3 tranches, préchargement sur 3 bracelets).
+>
+> **OP-N45 (ADR-83 ; mission proposée par l'agent le 15/10/2026, à confirmer par le porteur, ADR-101)** — décrire et
+> vérifier l'aiguillage par chemin vers les trois processus (`x-process` du contrat) : `POST /media/auth-keys` et
+> `/media-personalizations` n'atteignent que leur processus.
 
 - [ ] /spec-kitty.specify Recette de la V1 selon les critères d'acceptation (SPECIFICATION §15, §16). Test de charge à deux fois la cible (400 terminaux, 100 ventes par seconde sur le site, 40 sur un stand, 30 minutes) sans interblocage, sans écart dans `balance_drift`, latence serveur seul p95 ≤ 200 ms et p99 ≤ 500 ms. Test de coupure : 10 terminaux hors ligne pendant 30 minutes puis synchronisation, zéro doublon, anomalies ouvertes, `S-ATTENTE` = somme des dépassements. Tests minimaux de `sync_protocol.md` §13 de bout en bout. Test automatisé de cloisonnement entre prestataires sur toutes les routes de l'API. Vérification que les deux suites pgTAP, les 19 cas du moteur, le scénario de référence et les vecteurs du format B passent partout. Rapport de recette.
 - [ ] /spec-kitty.plan Environnement de charge proche de la production (PostgreSQL 17 RDS, région provisoire `eu-west-3`). Outils de charge au choix de la mission, justifiés. Le test d'intrusion externe (ADR-44) reste à mener par l'auditeur avant le pilote : hors de cette mission.

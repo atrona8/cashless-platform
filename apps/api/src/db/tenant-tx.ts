@@ -7,6 +7,8 @@ import { ProblemException } from '../errors/problem';
 import { PG_POOL } from './pool.token';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Identifiant qui ne désigne aucun prestataire : voir `TenantTx.unscoped`. */
+export const NO_OPERATOR = '00000000-0000-0000-0000-000000000000';
 
 /** Personne d'un jeton, rendue par `identify_person` (migration 0003). */
 export interface IdentifiedPerson {
@@ -83,6 +85,18 @@ export class TenantTx {
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Transaction d'un processus des clés qui lit SANS prestataire de session (mission bracelets-nfc) : file des travaux
+   * de clé, liste des prestataires à contrôler. `app.operator_id` reçoit l'identifiant nul : aucune ligne d'un
+   * prestataire ne correspond aux politiques tenant_*, et seules les politiques nominatives du rôle du processus
+   * ouvrent des lignes (post-roles.sql). Une valeur vide, laissée sur la connexion par une transaction précédente,
+   * ferait échouer la conversion en uuid de ces politiques. Quatrième exception documentée ; sans effet utile sous le
+   * rôle de l'API publique, qui n'a aucune politique de ce genre.
+   */
+  unscoped<T>(fn: (client: TxClient) => Promise<T>): Promise<T> {
+    return this.run(NO_OPERATOR, fn);
   }
 
   private async readOnly<T>(fn: (client: TxClient) => Promise<T>): Promise<T> {

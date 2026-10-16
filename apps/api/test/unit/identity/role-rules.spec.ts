@@ -50,15 +50,17 @@ const target: Record<GrantableRole, ScopeLink[]> = {
   SUPERVISOR: chains.event,
   CASHIER: chains.event,
   MERCHANT_ADMIN: chains.merchant,
+  // Poste de personnalisation des bracelets (mission bracelets-nfc) : portée prestataire.
+  PERSONALIZER: chains.operator,
 };
 
 // Table de vérité du contrat : attribuant → rôles attribuables.
 const TRUTH: Array<[string, Principal, Record<GrantableRole, boolean>]> = [
-  ['PLATFORM_ADMIN', platformAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
-  ['OPERATOR_ADMIN', operatorAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: true, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true }],
-  ['ORGANIZER_ADMIN', organizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true }],
-  ['ORGANIZER_ADMIN (autre organisateur)', otherOrganizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
-  ['SUPERVISOR', supervisor, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false }],
+  ['PLATFORM_ADMIN', platformAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false, PERSONALIZER: false }],
+  ['OPERATOR_ADMIN', operatorAdmin, { OPERATOR_ADMIN: true, ORGANIZER_ADMIN: true, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true, PERSONALIZER: true }],
+  ['ORGANIZER_ADMIN', organizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: true, CASHIER: true, MERCHANT_ADMIN: true, PERSONALIZER: false }],
+  ['ORGANIZER_ADMIN (autre organisateur)', otherOrganizerAdmin, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false, PERSONALIZER: false }],
+  ['SUPERVISOR', supervisor, { OPERATOR_ADMIN: false, ORGANIZER_ADMIN: false, SUPERVISOR: false, CASHIER: false, MERCHANT_ADMIN: false, PERSONALIZER: false }],
 ];
 
 describe('canGrant : table de vérité', () => {

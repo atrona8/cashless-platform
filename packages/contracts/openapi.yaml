@@ -81,7 +81,8 @@ info:
 
     ## Sécurité
     - `humanBearer` : JWT (OIDC) pour les humains ; rôles de SPECIFICATION §3.2 : `PLATFORM_ADMIN`,
-      `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN`, `VENDOR`, `CUSTOMER`.
+      `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN`, `VENDOR`, `CUSTOMER`, et
+      `PERSONALIZER` (poste de personnalisation des bracelets, portée prestataire).
     - **Authentification des personnes** : le jeton prouve seulement l'identité (`iss`, `sub`, signature,
       audience, expiration). Le prestataire, le statut et les rôles (avec leur portée) sont tirés de la plateforme
       à chaque requête, jamais du jeton : un claim `roles` est ignoré ; un claim `operator_id`, s'il est présent,
@@ -682,6 +683,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: getMediaAuthKey
+      x-process: tag-keys
       summary: Obtenir le PWD/PACK chiffré d'un bracelet (avant PWD_AUTH)
       description: |
         Le terminal lit l'UID (7 octets) et l'index de clé (page 4, octets 2-3, format B) puis demande le
@@ -740,6 +742,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: createTap
+      x-process: public
       summary: Enregistrer une lecture de bracelet (register_tap)
       description: |
         Après PWD_AUTH (PACK vérifié), le terminal exécute INCR_CNT puis READ_CNT, lit l'identité opaque de
@@ -835,6 +838,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: activateMedia
+      x-process: public
       summary: Activer un bracelet (DESK, FIRST_TOPUP) et encaisser la caution
       description: |
         Remise + rattachement d'un bracelet à un portefeuille (`activate_media`). Le canal doit figurer dans
@@ -862,7 +866,14 @@ paths:
             schema:
               $ref: '#/components/schemas/MediaActivationRequest'
             example:
-              tap_id: 918270
+              tap:
+                nfc_uid: 04a1b2c3d4e5f6
+                token_hash: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+                counter: 1
+                key_index: 1
+                pack_verified: true
+                originality_signature: 3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a
+                occurred_at: '2026-12-11T18:02:58Z'
               channel: DESK
               wallet_id: null
               customer_id: null
@@ -911,6 +922,7 @@ paths:
     get:
       tags: [Bracelets]
       operationId: getMedia
+      x-process: public
       summary: Consulter un bracelet (staff)
       parameters:
         - $ref: '#/components/parameters/MediaId'
@@ -948,6 +960,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: takeDeposit
+      x-process: public
       summary: Encaisser la caution (take_deposit)
       description: |
         Transaction `DEPOSIT_TAKEN`. Mode `FROM_BALANCE` : prélevée sur `WALLET_PAID` si le solde suffit,
@@ -1005,6 +1018,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: refundDeposit
+      x-process: public
       summary: Rendre la caution (refund_deposit)
       description: |
         Transaction `DEPOSIT_REFUNDED`. Mode `FROM_BALANCE` : recréditée sur le portefeuille. Mode `SEPARATE` :
@@ -1059,6 +1073,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: releaseMedia
+      x-process: public
       summary: Restitution du bracelet (release_media)
       description: |
         Le bracelet rendu est libéré (`RELEASED`) ; l'argent ne suit jamais le bracelet. Préconditions
@@ -1135,17 +1150,22 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
 
-  /media/{media_id}/replace:
+  /media/{media_id}/reassignment:
     post:
       tags: [Bracelets]
-      operationId: replaceMedia
-      summary: Remplacer un bracelet perdu ou abîmé (replace_media)
+      operationId: reassignPoolMedia
+      x-process: public
+      summary: Remettre en stock un bracelet rendu d'un lot réattribuable (reassign_pool_media)
       description: |
-        L'ancien bracelet passe `REPLACED` ; le nouveau (lu par `tap_id`) reprend le même portefeuille et les
-        portefeuilles des autres devises. Même organisateur obligatoire. Rôle `SUPERVISOR` ou `CASHIER`.
-        Une caution `HELD` ou `DUE` passe au nouveau bracelet ; il doit alors venir d'un lot de même mode de
-        caution. L'ancien bracelet doit être `ACTIVE` ou `SUSPENDED` ; le nouveau doit être neuf (`PERSONALIZED`
-        ou `ISSUED`, sans portefeuille ni caution). Sinon : `409 MEDIA_STATE_INVALID` (`CL020`).
+        Lot `POOL` seulement, bracelet `RELEASED` (§7.8). Le guichet a écrit une nouvelle identité dans la puce ; il en
+        envoie l'empreinte. L'ancienne identité rejoint l'historique : toute lecture qui la présente ensuite est une
+        copie (`CLONE_SUSPECTED`, anomalie `RETIRED_IDENTITY`). Le bracelet repasse `ISSUED`, prêt pour une nouvelle
+        activation. `409` si le lot n'est pas réattribuable ou si le bracelet n'est pas rendu. Rôle `CASHIER` ou
+        `SUPERVISOR`, avec le terminal du guichet.
+      security:
+        - deviceMtls: []
+        - deviceToken: []
+        - humanBearer: []
       parameters:
         - $ref: '#/components/parameters/MediaId'
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -1157,15 +1177,93 @@ paths:
           application/json:
             schema:
               type: object
-              required: [new_media_tap_id, reason]
+              required: [new_token_hash]
+              additionalProperties: false
               properties:
+                new_token_hash:
+                  $ref: '#/components/schemas/Hex32'
+      responses:
+        '200':
+          description: Bracelet remis en stock.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [media_id, media_status]
+                properties:
+                  media_id:
+                    type: string
+                    format: uuid
+                  media_status:
+                    $ref: '#/components/schemas/MediaStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /media/{media_id}/replace:
+    post:
+      tags: [Bracelets]
+      operationId: replaceMedia
+      x-process: public
+      summary: Remplacer un bracelet perdu ou abîmé (replace_media)
+      description: |
+        L'ancien bracelet passe `REPLACED` ; le nouveau, dont la lecture est embarquée (`new_media_tap` : un bracelet
+        neuf n'a pas de `tap_id`, `register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture), reprend le même
+        portefeuille et les portefeuilles des autres devises. Le serveur vérifie que l'UID et la signature d'originalité
+        du bracelet neuf sont ceux de sa personnalisation. Même organisateur obligatoire. Rôle `SUPERVISOR` ou `CASHIER`.
+        Une caution `HELD` ou `DUE` passe au nouveau bracelet ; il doit alors venir d'un lot de même mode de
+        caution. L'ancien bracelet doit être `ACTIVE` ou `SUSPENDED` ; le nouveau doit être neuf (`PERSONALIZED`
+        ou `ISSUED`, sans portefeuille ni caution). Sinon : `409 MEDIA_STATE_INVALID` (`CL020`).
+        Les deux bracelets servent l'événement du terminal : le neuf par son lot, l'ancien par son lot ou, à
+        défaut, par le grand livre de son portefeuille. Sinon : `422 MEDIA_WRONG_EVENT`.
+      security:
+        - deviceMtls: []
+        - deviceToken: []
+        - humanBearer: []
+      parameters:
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_media_tap, reason]
+              properties:
+                new_media_tap:
+                  $ref: '#/components/schemas/TapInput'
                 new_media_tap_id:
                   type: integer
                   format: int64
+                  deprecated: true
+                  description: Sans effet (voir `new_media_tap`) ; une demande qui ne porte que ce champ est refusée (`422`).
                 reason:
                   type: string
+                  minLength: 1
+                  maxLength: 500
             example:
-              new_media_tap_id: 918410
+              new_media_tap:
+                nfc_uid: 04a1b2c3d4e5f6
+                token_hash: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+                counter: 1
+                key_index: 1
+                pack_verified: true
+                originality_signature: 3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a
+                occurred_at: '2026-12-12T10:14:00Z'
               reason: Bracelet déchiré, identité vérifiée sur pièce.
       responses:
         '200':
@@ -1192,17 +1290,24 @@ paths:
                 old_media_id: 1d2e3f40-5a6b-4c7d-8e9f-0a1b2c3d4e5f
                 new_media_id: 2e3f4051-6b7c-4d8e-9fa0-1b2c3d4e5f60
                 wallet_id: a1b2c3d4-e5f6-4789-8abc-def012345678
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
 
   /media/{media_id}/cash-due-refunds:
     post:
       tags: [Bracelets]
       operationId: refundCashDue
+      x-process: public
       summary: Rendre au guichet les espèces dues à un détenteur (refund_cash_due)
       description: |
         Rend en espèces la somme due au détenteur après une recharge espèces hors ligne au-delà d'un plafond
@@ -3245,6 +3350,7 @@ paths:
     post:
       tags: [App client]
       operationId: lookupBalanceByClaimCode
+      x-process: public
       summary: Consulter le solde d'un bracelet anonyme par son code imprimé (sans compte)
       description: |
         Lecture seule, sans authentification (ADR-42). Le festivalier scanne le QR ou saisit le code imprimé
@@ -3278,19 +3384,33 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [currency, balance, recent]
+                required: [currency, spendable, media_status, recent]
+                description: |
+                  Réduit à ce que rend `public_balance_lookup` (décision du porteur du 14/10/2026) : une route sans
+                  authentification n'expose ni la répartition payé/offert, ni l'identifiant, la source ou le libellé
+                  d'une écriture. Bracelet à plusieurs devises : la première par ordre alphabétique de devise.
                 properties:
                   currency:
-                    type: string
-                  balance:
-                    $ref: '#/components/schemas/Balance'
+                    $ref: '#/components/schemas/Currency'
+                  spendable:
+                    type: integer
+                    format: int64
+                    description: Solde disponible (crédits payés + offerts).
                   media_status:
                     $ref: '#/components/schemas/MediaStatus'
                   recent:
                     type: array
                     maxItems: 10
                     items:
-                      $ref: '#/components/schemas/WalletMovement'
+                      type: object
+                      required: [occurred_at, type, amount]
+                      properties:
+                        occurred_at:
+                          $ref: '#/components/schemas/Timestamp'
+                        type:
+                          $ref: '#/components/schemas/TransactionType'
+                        amount:
+                          $ref: '#/components/schemas/SignedAmount'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -3327,6 +3447,7 @@ paths:
     post:
       tags: [App client]
       operationId: claimMedia
+      x-process: public
       summary: Rattacher un bracelet à son compte (SELF_APP)
       description: |
         Le client scanne le QR imprimé sur le bracelet ou saisit le code de 10 caractères imprimé dessous
@@ -3408,6 +3529,7 @@ paths:
     post:
       tags: [Bracelets]
       operationId: confirmMediaClaim
+      x-process: public
       summary: Confirmer au guichet le rattachement d'un bracelet approvisionné (ADR-57)
       description: |
         Le festivalier présente son bracelet et l'app affiche le code de confirmation. Le guichet ne connaît pas
@@ -6970,6 +7092,1067 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
 
+  /operators/{operator_id}/tag-keys:
+    get:
+      tags: [Bracelets]
+      operationId: listTagKeys
+      x-process: public
+      summary: Lister les clés de bracelet d'un prestataire
+      description: |
+        Clés de dérivation du prestataire (`tag_key`, §7.3), par index. La référence de la clé dans le service de clés n'est
+        rendue que tronquée ; aucune clé de données chiffrée n'est rendue. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de clés.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagKey'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Bracelets]
+      operationId: requestTagKey
+      x-process: public
+      summary: Demander une nouvelle clé de bracelet (à deux)
+      description: |
+        Crée une demande d'approbation (`TAG_KEY_CREATE`). Une fois approuvée par un second `OPERATOR_ADMIN`, un travail
+        `CREATE_KEY` est inscrit ; la clé est créée dans le service de clés par la commande d'administration, lancée par
+        l'exploitant : aucun service permanent ne peut créer une clé. Le nouvel index est le suivant du prestataire ; pour une
+        clé partagée, la clé partagée active précédente ne sert plus qu'à déchiffrer (§7.3). Une clé dédiée (`DEDICATED`) est
+        réservée à un événement du prestataire (§7.7). Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagKeyRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/tag-keys/{key_index}:
+    get:
+      tags: [Bracelets]
+      operationId: getTagKey
+      x-process: public
+      summary: Consulter une clé de bracelet
+      description: |
+        Clé, versions de sa clé de données (statut seulement) et travaux en cours. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/KeyIndex'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Clé de bracelet.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagKeyDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/tag-keys/{key_index}/dek-rotations:
+    post:
+      tags: [Bracelets]
+      operationId: requestDekRotation
+      x-process: public
+      summary: Demander la rotation de la clé de données d'une clé (à deux)
+      description: |
+        Demande d'approbation `TAG_DEK_ROTATE`. Approuvée : une nouvelle version de clé de données devient active, les autres
+        ne servent plus qu'à déchiffrer, et tous les mots de passe de l'index sont rechiffrés par tranches sous la nouvelle
+        version (§7.4) ; l'avancement se lit dans `listTagKeyJobs`. Refusée (`409`) si la clé n'est pas active ou si une
+        rotation est déjà en cours. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/KeyIndex'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/tag-keys/{key_index}/retirement:
+    post:
+      tags: [Bracelets]
+      operationId: requestTagKeyRetirement
+      x-process: public
+      summary: Demander le retrait d'une clé dédiée (à deux)
+      description: |
+        Demande d'approbation `TAG_KEY_RETIRE`. Possible seulement pour une clé dédiée dont tous les lots sont clos (`409`
+        sinon). Approuvée : la clé et ses clés de données sont retirées, les mots de passe stockés effacés, les bracelets
+        passent en fin de vie (`retire_dedicated_key`, §7.7) ; la clé est ensuite désactivée dans le service de clés par la
+        commande d'administration, et la date de désactivation enregistrée. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/KeyIndex'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/tag-key-jobs:
+    get:
+      tags: [Bracelets]
+      operationId: listTagKeyJobs
+      x-process: public
+      summary: Lister les travaux de clé
+      description: |
+        Travaux inscrits par les actions de clé approuvées, du plus récent au plus ancien : création, rotation, rechiffrement,
+        retrait, désactivation. `awaiting = KEY_ADMIN_COMMAND` signale un travail qui attend la commande d'administration de
+        l'exploitant. Un travail ne porte jamais de secret. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de travaux.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagKeyJob'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/tag-key-jobs/{job_id}/retry:
+    post:
+      tags: [Bracelets]
+      operationId: retryTagKeyJob
+      x-process: public
+      summary: Relancer un travail de clé en échec
+      description: |
+        Remet en attente un travail `FAILED`. `409` si le travail n'est pas en échec. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/TagKeyJobId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Travail remis en attente.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagKeyJob'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/tag-key-check-runs:
+    get:
+      tags: [Bracelets]
+      operationId: listTagKeyCheckRuns
+      x-process: public
+      summary: Lister les comptes rendus du contrôle quotidien
+      description: |
+        Chaque passage du contrôle quotidien (§7.4) recalcule le mot de passe de 100 bracelets au plus et le compare à la
+        valeur stockée. `MISMATCH` signale au moins un écart. Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de comptes rendus.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagKeyCheckRun'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/media-batches:
+    get:
+      tags: [Bracelets]
+      operationId: listMediaBatches
+      x-process: public
+      summary: Lister les lots de bracelets
+      description: |
+        Lots du prestataire (§7.7). Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN`, `SUPERVISOR` et `CASHIER` ne voient que les
+        lots de leur organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - name: organizer_id
+          in: query
+          required: false
+          description: Lots de cet organisateur.
+          schema:
+            type: string
+            format: uuid
+        - name: event_id
+          in: query
+          required: false
+          description: Lots réservés à cet événement.
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          description: Statut du lot.
+          schema:
+            $ref: '#/components/schemas/MediaBatchStatus'
+      responses:
+        '200':
+          description: Page de lots.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaBatch'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Bracelets]
+      operationId: createMediaBatch
+      x-process: public
+      summary: Créer un lot de bracelets
+      description: |
+        Crée un lot au statut `ORDERED` pour un organisateur du prestataire. `key_index` désigne une clé active ; une clé
+        dédiée exige un lot réservé à son événement et l'usage unique ; une caution a toujours un mode, et inversement
+        (`422` avec la règle citée). Journalisé. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaBatchCreate'
+      responses:
+        '201':
+          description: Lot créé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+            Location:
+              description: '`/v1/operators/{operator_id}/media-batches/{batch_id}`'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/media-batches/{batch_id}:
+    get:
+      tags: [Bracelets]
+      operationId: getMediaBatch
+      x-process: public
+      summary: Consulter un lot
+      description: |
+        Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Lot.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatch'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Bracelets]
+      operationId: updateMediaBatch
+      x-process: public
+      summary: Modifier un lot commandé
+      description: |
+        Tant que le lot est `ORDERED` (`409` ensuite) : quantité, référence de commande, crédits offerts, caution et mode,
+        politique de réutilisation. La quantité ne se modifie plus une fois le fichier de commande produit. Journalisé (avant /
+        après). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaBatchUpdate'
+      responses:
+        '200':
+          description: Lot modifié.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/media-batches/{batch_id}/status:
+    post:
+      tags: [Bracelets]
+      operationId: setMediaBatchStatus
+      x-process: public
+      summary: Faire passer un lot à un autre statut
+      description: |
+        Passages permis (§7.7, table `media_batch_transition`) : `ORDERED` → `PERSONALIZED` → `DELIVERED` → `ACTIVE` ⇄
+        `SUSPENDED`. Un passage non prévu est refusé (`409`). Un motif est obligatoire pour `SUSPENDED` (stock volé ou
+        compromis). La clôture passe par `closeMediaBatch`. Seul un lot `ACTIVE` paie. Tracé (auteur, motif). Rôle :
+        `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaBatchStatusChange'
+      responses:
+        '200':
+          description: Lot dans son nouveau statut.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media-batches/{batch_id}/inventory:
+    get:
+      tags: [Bracelets]
+      operationId: getMediaBatchInventory
+      x-process: public
+      summary: Lire l'inventaire d'un lot
+      description: |
+        Vue `batch_inventory` (§7.7) : commandés, enregistrés, en stock, remis, actifs, suspendus, en liste noire, remplacés,
+        rendus, en fin de vie, manquants au registre. Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Inventaire du lot.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatchInventory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/media-batches/{batch_id}/claim-code-order:
+    post:
+      tags: [Bracelets]
+      operationId: issueClaimCodeOrder
+      x-process: public
+      summary: Produire le fichier de commande des codes de rattachement (une seule fois)
+      description: |
+        Lot `PUBLIC` seulement (les lots `STAFF` et `VIP` n'ont pas de code, §7.8). Tire un code de rattachement par bracelet
+        du lot et rend le fichier à envoyer à l'imprimeur (ADR-56). **Le serveur ne conserve que l'empreinte des codes** : la
+        réponse n'est ni rejouée ni journalisée, et une seconde demande reçoit `409`. L'en-tête `Idempotency-Key` protège
+        seulement contre un double envoi simultané ; il ne permet pas de retrouver le fichier. Journalisé (nombre de codes,
+        jamais les codes). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Fichier de commande (une ligne par bracelet).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            text/csv:
+              schema:
+                type: string
+              example: |
+                rank,code,url
+                1,K7QM-4XH9RT,https://pay.example/c/K7QM4XH9RT
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media-batches/{batch_id}/claim-code-associations:
+    post:
+      tags: [Bracelets]
+      operationId: importClaimCodeAssociations
+      x-process: public
+      summary: Importer le fichier de correspondance code ↔ UID de l'imprimeur
+      description: |
+        Quand le fournisseur encode lui-même les puces, il renvoie la correspondance entre chaque code imprimé et l'UID de sa
+        puce (§7.8). Chaque ligne associe un code à un bracelet déjà enregistré du lot. Une ligne en erreur n'annule pas les
+        autres : la réponse compte les lignes acceptées et liste les lignes refusées, par numéro de ligne et motif, sans
+        jamais renvoyer un code. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+              description: 'Lignes `code,uid` (UID sur 14 chiffres hexadécimaux), avec ou sans ligne d''en-tête.'
+            example: |
+              code,uid
+              K7QM-4XH9RT,04A1B2C3D4E5F6
+      responses:
+        '200':
+          description: Résultat de l'import.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimCodeAssociationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/media-batches/{batch_id}/closure:
+    post:
+      tags: [Bracelets]
+      operationId: closeMediaBatch
+      x-process: public
+      summary: Clore un lot
+      description: |
+        Acquiert les cautions non rendues par tranches de 500 (`forfeit_batch_deposits`), retire les bracelets encore en
+        circulation (`close_batch`) et invalide les codes de rattachement jamais associés à une puce (§7.7, §7.8). Une requête
+        traite un nombre borné de tranches : tant que `remaining_deposits` > 0, le lot n'est pas clos et l'appelant relance.
+        Les portefeuilles restent remboursables. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Avancement de la clôture.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatchClosure'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media-batches/{batch_id}/preload-catchup:
+    post:
+      tags: [Bracelets]
+      operationId: catchUpBatchPreload
+      x-process: public
+      summary: Rattraper le préchargement d'un lot
+      description: |
+        Pose les crédits offerts du lot sur les bracelets actifs qui ne les ont pas reçus (`preload_batch`, par tranches de
+        500, une seule fois par bracelet). `409` si le lot ne prévoit pas de préchargement. L'appelant relance tant que
+        `processed` > 0. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/BatchId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Nombre de bracelets préchargés par cet appel.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBatchPreloadCatchUp'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media:
+    get:
+      tags: [Bracelets]
+      operationId: listMedia
+      x-process: public
+      summary: Lister les bracelets (back-office)
+      description: |
+        Bracelets du prestataire, sans jamais l'identité, son empreinte, le mot de passe ni l'empreinte du code de
+        rattachement. Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - name: batch_id
+          in: query
+          required: false
+          description: Bracelets de ce lot.
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          description: Statut du bracelet.
+          schema:
+            $ref: '#/components/schemas/MediaStatus'
+      responses:
+        '200':
+          description: Page de bracelets.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaAdmin'
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  has_more:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/media/{media_id}:
+    get:
+      tags: [Bracelets]
+      operationId: getMediaAdmin
+      x-process: public
+      summary: Consulter un bracelet et son historique (back-office)
+      description: |
+        État, lot, caution, portefeuilles rattachés et historique des statuts (motif, auteur, valideur, date ; §7.8). Rôles :
+        lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Bracelet.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAdminDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/media/{media_id}/blacklist:
+    post:
+      tags: [Bracelets]
+      operationId: blacklistMedia
+      x-process: public
+      summary: Mettre un bracelet en liste noire
+      description: |
+        Blocage immédiat pour fraude suspectée, avec un motif. Tout passage en caisse répond ensuite `BLOCKED`. `409` si le
+        statut du bracelet ne permet pas ce passage. Tracé. Rôle : `SUPERVISOR` sur l'événement ou l'organisateur.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaReason'
+      responses:
+        '200':
+          description: Bracelet en liste noire.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAdmin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media/{media_id}/reinstatement:
+    post:
+      tags: [Bracelets]
+      operationId: requestMediaReinstatement
+      x-process: public
+      summary: Demander la sortie de liste noire d'un bracelet (à deux)
+      description: |
+        Demande d'approbation `REINSTATE_MEDIA`. Rien ne change tant qu'une **autre** personne habilitée n'a pas approuvé ;
+        la base refuse que l'auteur et le valideur soient la même personne (`reinstate_media`, §7.8). Si le bracelet n'est plus
+        en liste noire à l'approbation (remplacé, retiré), la demande passe `FAILED`. Rôle : `SUPERVISOR`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaReason'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media/{media_id}/loss:
+    post:
+      tags: [Bracelets]
+      operationId: reportMediaLost
+      x-process: public
+      summary: Déclarer un bracelet perdu
+      description: |
+        Le bracelet est suspendu : tout passage en caisse répond `BLOCKED`. Le festivalier garde son portefeuille ; un nouveau
+        bracelet s'obtient par `replaceMedia`. Tracé. Rôles : `CASHIER`, `SUPERVISOR`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaReason'
+      responses:
+        '200':
+          description: Bracelet suspendu.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAdmin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media/{media_id}/recovery:
+    post:
+      tags: [Bracelets]
+      operationId: recoverMedia
+      x-process: public
+      summary: Signaler un bracelet perdu puis retrouvé
+      description: |
+        Selon le réglage `lost_media_policy` de l'événement : le bracelet redevient `ACTIVE` (`REACTIVATE`) ou passe en fin de
+        vie, `RETIRED` (`END_OF_LIFE`, défaut ; `recover_media`, §7.8). Tracé. Rôles : `CASHIER`, `SUPERVISOR`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Bracelet dans son nouveau statut.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAdmin'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/media-personalizations:
+    post:
+      tags: [Bracelets]
+      operationId: registerPersonalizedMedia
+      x-process: personalization
+      summary: Enregistrer un bracelet personnalisé (poste de personnalisation)
+      description: |
+        Servi par le **processus de personnalisation**, seul à pouvoir faire calculer un mot de passe de bracelet (§3.2).
+        Le poste a lu l'UID et la signature d'originalité de la puce, et écrit son identité ; il envoie l'empreinte de
+        l'identité, l'UID, la signature et une clé publique à usage unique. Le serveur fait calculer `PWD‖PACK` par le service
+        de clés (§7.3), le stocke chiffré (§7.4), enregistre le bracelet au statut `PERSONALIZED` avec l'index de clé du lot,
+        et rend le mot de passe **sous enveloppe pour la clé du poste** : il n'est jamais transmis en clair, ni conservé par
+        le registre d'idempotence. Rejeu avec la même clé d'idempotence et le même UID : même bracelet, enveloppe recalculée
+        pour la clé présentée. Refus : signature invalide (`422`), quantité du lot atteinte, lot qui n'est plus en préparation,
+        clé non active, UID ou identité déjà connus (`409`), service de clés indisponible (`503`, rien n'est enregistré).
+        Rôle : `PERSONALIZER` du prestataire, et lui seul.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaPersonalizationRequest'
+      responses:
+        '201':
+          description: Bracelet enregistré.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaPersonalization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /operators/{operator_id}/media-personalizations/{media_id}/claim-code:
+    post:
+      tags: [Bracelets]
+      operationId: associateClaimCode
+      x-process: personalization
+      summary: Associer le code imprimé scanné à un bracelet (poste de personnalisation)
+      description: |
+        Le poste scanne le QR imprimé sur le bracelet (§7.8, ADR-56). Le code doit appartenir au lot du bracelet et n'être
+        associé à aucune puce. Un code inconnu, d'un autre lot ou déjà associé reçoit le même refus (`422`), sans détail.
+        `409` pour un lot sans code (`STAFF`, `VIP`) ou un bracelet qui porte déjà un code. Rôle : `PERSONALIZER`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimCodeAssociation'
+      responses:
+        '204':
+          description: Code associé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
 webhooks:
   paymentIntentSucceeded:
     post:
@@ -7380,6 +8563,29 @@ components:
       in: path
       required: true
       description: Règle de frais.
+      schema:
+        type: string
+        format: uuid
+    BatchId:
+      name: batch_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    KeyIndex:
+      name: key_index
+      in: path
+      required: true
+      description: Index de clé de bracelet (octets 2-3 de la page 4, format B).
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 65535
+    TagKeyJobId:
+      name: job_id
+      in: path
+      required: true
       schema:
         type: string
         format: uuid
@@ -8559,11 +9765,20 @@ components:
           pattern: '^\+[1-9][0-9]{6,14}$'
     MediaActivationRequest:
       type: object
-      required: [tap_id, channel, occurred_at]
+      required: [tap, channel, occurred_at]
       properties:
+        tap:
+          allOf:
+            - $ref: '#/components/schemas/TapInput'
+          description: |
+            Lecture du bracelet à activer, embarquée dans la demande. Un bracelet jamais activé n'a pas de `tap_id` :
+            `register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture (§7.6). L'activation porte donc toujours
+            sa lecture ; le serveur vérifie que l'UID et la signature d'originalité sont ceux de la personnalisation.
         tap_id:
           type: integer
           format: int64
+          deprecated: true
+          description: Sans effet pour une activation (voir `tap`) ; une demande qui ne porte que `tap_id` est refusée (`422`).
         channel:
           type: string
           enum: [DESK, FIRST_TOPUP]
@@ -9642,8 +10857,10 @@ components:
           const: CASH
     CashDueRefundRequest:
       type: object
-      description: Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet).
-      required: [cash_session_id]
+      description: |
+        Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet). Tant que les
+        sessions de caisse ne sont pas livrées, `cash_session_id` est facultatif : le compte crédité est la caisse du
+        terminal (`409` si elle n'est pas ouverte).
       properties:
         tap_id:
           type: integer
@@ -9925,9 +11142,12 @@ components:
         `CONTRACT_VERSION` → `createOrganizerContractVersion`. Niveau plateforme (demande sans prestataire, décidée
         par un autre `PLATFORM_ADMIN`) : `PLATFORM_CONTRACT_VERSION` → `createPlatformContractVersion` ;
         `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
+        Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →
+        `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
       enum: [LATE_CLAIM, ADJUSTMENT, ANOMALY_RESOLUTION, WAIVE_SEQ_GAP, FORCE_CENTRAL_AUTHORITY, REINSTATE_MEDIA, PAYOUT, DEVICE_JOURNAL_IMPORT, KYC_REVOCATION, PSP_CONFIGURATION, EVENT_PSP_SELECTION, WALLET_REFUND, LATE_CHARGEBACK,
              EVENT_GO_LIVE, EVENT_SETTINGS_CHANGE, EVENT_OPERATOR_SETTINGS_CHANGE, PARTICIPATION_CHANGE, FEE_RULE_CHANGE,
-             CONTRACT_VERSION, PLATFORM_CONTRACT_VERSION, JURISDICTION_LIMITS_CHANGE]
+             CONTRACT_VERSION, PLATFORM_CONTRACT_VERSION, JURISDICTION_LIMITS_CHANGE,
+             TAG_KEY_CREATE, TAG_DEK_ROTATE, TAG_KEY_RETIRE]
     ApprovalRequestStatus:
       type: string
       description: |
@@ -10449,7 +11669,7 @@ components:
       description: |
         Rôles du personnel (SPECIFICATION §3.2). `VENDOR` et `CUSTOMER` existent mais ne sont pas attribuables par
         `grantRole` dans cette version.
-      enum: [PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR, CASHIER, MERCHANT_ADMIN, VENDOR, CUSTOMER]
+      enum: [PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR, CASHIER, MERCHANT_ADMIN, VENDOR, CUSTOMER, PERSONALIZER]
     RoleScopeType:
       type: string
       description: |
@@ -11694,3 +12914,537 @@ components:
           enum: [REALTIME, CLOSING]
         valid_from:
           $ref: '#/components/schemas/Timestamp'
+    MediaBatchStatus:
+      type: string
+      description: Statut d'un lot (§7.7). Seul un lot `ACTIVE` paie.
+      enum: [ORDERED, PERSONALIZED, DELIVERED, ACTIVE, SUSPENDED, CLOSED]
+    MediaBatch:
+      type: object
+      required: [batch_id, operator_id, organizer_id, kind, quantity, key_index, status, preload_promo_amount, deposit_amount, key_mode, reuse_policy, claim_codes_issued, created_at]
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        organizer_id:
+          type: string
+          format: uuid
+        event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Événement auquel le lot est réservé ; `null` = valable pour tous les événements de l'organisateur.
+        kind:
+          type: string
+          enum: [PUBLIC, STAFF, VIP]
+        quantity:
+          type: integer
+          minimum: 1
+        key_index:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        key_mode:
+          type: string
+          enum: [SHARED, DEDICATED]
+        reuse_policy:
+          type: string
+          enum: [SINGLE_USE, PERSONAL, POOL]
+        print_order_ref:
+          type:
+            - string
+            - 'null'
+        status:
+          $ref: '#/components/schemas/MediaBatchStatus'
+        preload_promo_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Crédits offerts posés à l''activation ; 0 = aucun.'
+        deposit_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Caution par bracelet ; 0 = pas de caution.'
+        deposit_mode:
+          oneOf:
+            - type: string
+              enum: [FROM_BALANCE, SEPARATE]
+            - type: 'null'
+        claim_codes_issued:
+          type: boolean
+          description: Le fichier de commande des codes de rattachement a déjà été produit.
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    MediaBatchCreate:
+      type: object
+      required: [organizer_id, kind, quantity, key_index]
+      additionalProperties: false
+      properties:
+        organizer_id:
+          type: string
+          format: uuid
+        event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        kind:
+          type: string
+          enum: [PUBLIC, STAFF, VIP]
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 1000000
+        key_index:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        key_mode:
+          type: string
+          enum: [SHARED, DEDICATED]
+          default: SHARED
+        reuse_policy:
+          type: string
+          enum: [SINGLE_USE, PERSONAL, POOL]
+          default: SINGLE_USE
+        print_order_ref:
+          type: string
+          maxLength: 200
+        preload_promo_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Crédits offerts posés à l''activation ; 0 = aucun.'
+        deposit_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Caution par bracelet ; 0 = pas de caution.'
+        deposit_mode:
+          type: string
+          enum: [FROM_BALANCE, SEPARATE]
+    MediaBatchUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 1000000
+        print_order_ref:
+          type:
+            - string
+            - 'null'
+          maxLength: 200
+        preload_promo_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Crédits offerts posés à l''activation ; 0 = aucun.'
+        deposit_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 'Caution par bracelet ; 0 = pas de caution.'
+        deposit_mode:
+          oneOf:
+            - type: string
+              enum: [FROM_BALANCE, SEPARATE]
+            - type: 'null'
+        reuse_policy:
+          type: string
+          enum: [SINGLE_USE, PERSONAL, POOL]
+    MediaBatchStatusChange:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [PERSONALIZED, DELIVERED, ACTIVE, SUSPENDED]
+        reason:
+          type: string
+          maxLength: 500
+          description: Obligatoire pour `SUSPENDED`.
+    MediaBatchInventory:
+      type: object
+      description: Compteurs de la vue `batch_inventory` (§7.7).
+      required: [batch_id, ordered, registered, in_stock, issued, active, suspended, blacklisted, replaced, released, retired, missing]
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        ordered:
+          type: integer
+        registered:
+          type: integer
+        in_stock:
+          type: integer
+        issued:
+          type: integer
+        active:
+          type: integer
+        suspended:
+          type: integer
+        blacklisted:
+          type: integer
+        replaced:
+          type: integer
+        released:
+          type: integer
+        retired:
+          type: integer
+        missing:
+          type: integer
+          description: Commandés et jamais enregistrés.
+    MediaBatchClosure:
+      type: object
+      required: [status, remaining_deposits, retired_media, invalidated_claim_codes]
+      properties:
+        status:
+          $ref: '#/components/schemas/MediaBatchStatus'
+        remaining_deposits:
+          type: integer
+          description: Cautions encore détenues ; tant que > 0, le lot n'est pas clos et l'appelant relance.
+        retired_media:
+          type: integer
+        invalidated_claim_codes:
+          type: integer
+    MediaBatchPreloadCatchUp:
+      type: object
+      required: [processed]
+      properties:
+        processed:
+          type: integer
+          description: Bracelets préchargés par cet appel ; 0 = plus rien à rattraper.
+    ClaimCodeAssociationResult:
+      type: object
+      required: [accepted, rejected]
+      properties:
+        accepted:
+          type: integer
+        rejected:
+          type: array
+          items:
+            type: object
+            required: [line, reason]
+            properties:
+              line:
+                type: integer
+                description: Numéro de la ligne dans le fichier (1 = première ligne).
+              reason:
+                type: string
+                enum: [MALFORMED_LINE, BAD_CLAIM_CODE, BAD_UID, MEDIA_UNKNOWN, CLAIM_CODE_UNKNOWN, CLAIM_CODE_OTHER_BATCH, CLAIM_CODE_ALREADY_ASSOCIATED, CLAIM_CODE_INVALIDATED, MEDIA_ALREADY_HAS_CODE]
+    ClaimCodeAssociation:
+      type: object
+      required: [claim_code]
+      additionalProperties: false
+      properties:
+        claim_code:
+          type: string
+          description: Code lu sur le QR ou saisi ; tirets, espaces et casse ignorés.
+          maxLength: 64
+    TagKeyStatus:
+      type: string
+      description: '`ACTIVE` : personnalise de nouveaux bracelets ; `DECRYPT_ONLY` : ne sert plus qu''à lire les bracelets existants ; `RETIRED` : clé retirée.'
+      enum: [ACTIVE, DECRYPT_ONLY, RETIRED]
+    TagKey:
+      type: object
+      required: [operator_id, key_index, status, scope, kms_key_ref_suffix, created_at]
+      properties:
+        operator_id:
+          type: string
+          format: uuid
+        key_index:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        status:
+          $ref: '#/components/schemas/TagKeyStatus'
+        scope:
+          type: string
+          enum: [SHARED, DEDICATED]
+        dedicated_event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        kms_key_ref_suffix:
+          type: string
+          description: Derniers caractères de la référence de la clé dans le service de clés (la référence complète n'est jamais rendue).
+        kms_disabled_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    TagKeyDetail:
+      allOf:
+        - $ref: '#/components/schemas/TagKey'
+        - type: object
+          required: [data_key_versions, jobs]
+          properties:
+            data_key_versions:
+              type: array
+              items:
+                type: object
+                required: [version, status, created_at]
+                properties:
+                  version:
+                    type: integer
+                  status:
+                    $ref: '#/components/schemas/TagKeyStatus'
+                  created_at:
+                    $ref: '#/components/schemas/Timestamp'
+            jobs:
+              type: array
+              description: Travaux non terminés de cette clé.
+              items:
+                $ref: '#/components/schemas/TagKeyJob'
+    TagKeyRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        scope:
+          type: string
+          enum: [SHARED, DEDICATED]
+          default: SHARED
+        dedicated_event_id:
+          type: string
+          format: uuid
+          description: Obligatoire pour `DEDICATED`, interdit sinon.
+    TagKeyJob:
+      type: object
+      required: [job_id, operator_id, key_index, kind, status, attempts, created_at]
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        key_index:
+          type: integer
+        kind:
+          type: string
+          enum: [CREATE_KEY, ROTATE_DEK, REENCRYPT, RETIRE_KEY, DISABLE_KMS_KEY]
+        status:
+          type: string
+          enum: [PENDING, RUNNING, DONE, FAILED]
+        awaiting:
+          oneOf:
+            - type: string
+              enum: [KEY_ADMIN_COMMAND]
+            - type: 'null'
+          description: Le travail attend la commande d'administration des clés, lancée par l'exploitant.
+        attempts:
+          type: integer
+        last_error:
+          type:
+            - string
+            - 'null'
+        progress:
+          type: object
+          description: Avancement (compteurs) ; jamais de secret.
+          additionalProperties: true
+        approval_request_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        finished_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+    TagKeyCheckRun:
+      type: object
+      required: [run_id, operator_id, started_at, finished_at, sampled, mismatches, status]
+      properties:
+        run_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+          format: uuid
+        started_at:
+          $ref: '#/components/schemas/Timestamp'
+        finished_at:
+          $ref: '#/components/schemas/Timestamp'
+        sampled:
+          type: integer
+          minimum: 0
+          maximum: 100
+        mismatches:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum: [OK, MISMATCH, ERROR]
+        detail:
+          type:
+            - string
+            - 'null'
+    MediaReason:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    MediaAdmin:
+      type: object
+      description: Bracelet vu du back-office. Jamais l'identité, son empreinte, l'UID, le mot de passe ni l'empreinte du code de rattachement.
+      required: [media_id, status, kind, key_index, deposit_status, deposit_held, has_claim_code, wallets]
+      properties:
+        media_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/MediaStatus'
+        kind:
+          type: string
+          enum: [NFC_TAG, CARD, QR]
+        key_index:
+          type: integer
+        personalized_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+        batch_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        batch_kind:
+          oneOf:
+            - type: string
+              enum: [PUBLIC, STAFF, VIP]
+            - type: 'null'
+        batch_status:
+          oneOf:
+            - $ref: '#/components/schemas/MediaBatchStatus'
+            - type: 'null'
+        organizer_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        deposit_status:
+          $ref: '#/components/schemas/DepositStatus'
+        deposit_held:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Caution détenue ; 0 = aucune.
+        has_claim_code:
+          type: boolean
+        claim_code_used_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+        wallets:
+          type: array
+          items:
+            type: object
+            required: [wallet_id, currency, spendable, attached_to_account]
+            properties:
+              wallet_id:
+                type: string
+                format: uuid
+              currency:
+                $ref: '#/components/schemas/Currency'
+              spendable:
+                type: integer
+                format: int64
+                minimum: 0
+              attached_to_account:
+                type: boolean
+    MediaAdminDetail:
+      allOf:
+        - $ref: '#/components/schemas/MediaAdmin'
+        - type: object
+          required: [status_history]
+          properties:
+            status_history:
+              type: array
+              items:
+                type: object
+                required: [to_status, at]
+                properties:
+                  from_status:
+                    oneOf:
+                      - $ref: '#/components/schemas/MediaStatus'
+                      - type: 'null'
+                  to_status:
+                    $ref: '#/components/schemas/MediaStatus'
+                  reason:
+                    type:
+                      - string
+                      - 'null'
+                  actor_id:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                  approved_by:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                  at:
+                    $ref: '#/components/schemas/Timestamp'
+    MediaPersonalizationRequest:
+      type: object
+      required: [batch_id, token_hash, nfc_uid, originality_signature, signature_ok, station_public_key]
+      additionalProperties: false
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        token_hash:
+          type: string
+          description: SHA-256 de l'identité de 16 octets écrite dans la puce (64 chiffres hexadécimaux). L'identité elle-même n'est jamais envoyée.
+          pattern: '^[0-9a-fA-F]{64}$'
+        nfc_uid:
+          $ref: '#/components/schemas/NfcUid'
+        originality_signature:
+          type: string
+          contentEncoding: base64
+          description: Signature d'originalité NXP lue par `READ_SIG` (§7.5). Le serveur n'en garde que l'empreinte (ADR-59).
+        signature_ok:
+          type: boolean
+          description: Résultat de la vérification de la signature par le poste ; `false` fait refuser la puce.
+        station_public_key:
+          type: string
+          description: Clé publique ECDH P-256 à usage unique du poste (point non compressé, 65 octets, base64url) ; le mot de passe est chiffré pour elle.
+    MediaPersonalization:
+      type: object
+      required: [media_id, key_index, pwd_pack]
+      properties:
+        media_id:
+          type: string
+          format: uuid
+        key_index:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        pwd_pack:
+          allOf:
+            - $ref: '#/components/schemas/EncryptedBlob'
+          description: |
+            `PWD‖PACK` (6 octets) sous enveloppe pour la clé du poste : ECDH-ES P-256 + HKDF-SHA256 + AES-256-GCM,
+            AAD = `"CASHLESS/PWDPACK/PERSO/v1" || media_id || nfc_uid`. Jamais transmis en clair.

@@ -2,8 +2,8 @@
 // origine et identifiant de requête (X-Request-Id).
 //
 // Origine : le terminal s'il est connu (`principal.deviceId`, missions des terminaux), sinon l'adresse IP du client
-// (`req.ip`). Derrière un répartiteur de charge, `req.ip` n'est l'adresse du client que si Express est réglé en
-// conséquence (`app.set('trust proxy', …)` au démarrage) ; sans ce réglage, c'est l'adresse du répartiteur.
+// (`req.ip`). Derrière un répartiteur de charge, `req.ip` est l'adresse du client grâce au réglage `trust proxy`
+// posé au démarrage, borné à `TRUST_PROXY_HOPS` (processes/bootstrap.ts, OP-N53).
 import type { Request } from 'express';
 import { requestIdOf } from '../http/request-id.middleware';
 import type { RolesRequest } from '../identity/roles.guard';

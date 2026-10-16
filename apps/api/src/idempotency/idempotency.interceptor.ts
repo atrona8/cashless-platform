@@ -64,6 +64,8 @@ export class IdempotencyInterceptor implements NestInterceptor {
 
     const reservation = outcome.reservation;
     let recorded: StoredResponse | undefined;
+    // Réponse réellement envoyée quand elle diffère de celle qui est enregistrée (route `transient`).
+    let live: StoredResponse | undefined;
     req.idempotentTx = {
       run: async <T>(fn: (client: TxClient) => Promise<T>): Promise<T> => {
         if (recorded) throw new Error('IdempotentTx.run : une seule transaction métier par requête');
@@ -81,8 +83,11 @@ export class IdempotencyInterceptor implements NestInterceptor {
             await this.repository.complete(client, reservation, response);
             return COMMITTED;
           }
-          response = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
+          const actual: StoredResponse = { status: res.statusCode, body: value, headers: replayedHeaders(res) };
+          // Route `transient` : la réponse part une fois et n'est écrite nulle part ; le registre garde un refus.
+          response = options.transient ? this.notReplayable(req) : actual;
           await this.repository.complete(client, reservation, response);
+          if (options.transient) live = actual;
           return value;
         });
         recorded = response;
@@ -103,8 +108,8 @@ export class IdempotencyInterceptor implements NestInterceptor {
           await this.repository.completeAlone(reservation, response);
           recorded = response;
         }
-        // Ce qui part est exactement ce qui est enregistré (et sera rejoué).
-        return send(res, recorded);
+        // Ce qui part est exactement ce qui est enregistré (et sera rejoué), sauf pour une route `transient`.
+        return send(res, live ?? recorded);
       }),
       catchError((error: unknown) => from(this.onError(error, req, res, reservation, recorded))),
     );
@@ -138,6 +143,17 @@ export class IdempotencyInterceptor implements NestInterceptor {
     return send(res, response);
   }
 
+  /** Ce que le registre garde d'une route `transient` : un refus, sans rien de la réponse d'origine. */
+  private notReplayable(req: Request): StoredResponse {
+    const problem = resolveProblem(
+      new ProblemException('CONFLICT_STATE', {
+        status: 409,
+        detail: 'Cette demande a déjà été exécutée ; sa réponse n’est pas conservée et ne peut pas être renvoyée.',
+      }),
+    );
+    return { status: problem.status, body: problemBody(problem, req, this.config), headers: { 'Content-Type': PROBLEM_CONTENT_TYPE } };
+  }
+
   /** Réponse problème enregistrée (même forme que le filtre), après journalisation. */
   private problemResponse(error: unknown, req: Request): StoredResponse {
     const problem = resolveProblem(error);
@@ -145,7 +161,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
     return {
       status: problem.status,
       body: problemBody(problem, req, this.config),
-      headers: { 'Content-Type': PROBLEM_CONTENT_TYPE },
+      headers: { ...problem.headers, 'Content-Type': PROBLEM_CONTENT_TYPE },
     };
   }
 

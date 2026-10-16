@@ -5,7 +5,8 @@
   "workspaces": [
     "apps/api",
     "packages/contracts",
-    "packages/ledger-sql"
+    "packages/ledger-sql",
+    "packages/tag-format"
   ],
   "engines": {
     "node": ">=22 <23"

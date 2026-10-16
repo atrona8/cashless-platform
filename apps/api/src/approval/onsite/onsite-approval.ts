@@ -36,6 +36,12 @@ export interface OnsiteApprovalOptions {
   role: StaffRole;
   /** Portée de l'opération ; par défaut, le prestataire de la transaction. */
   scope?: (req: Request) => ScopeRef;
+  /**
+   * Jeton exigé seulement au-delà d'un seuil que la route connaît (ex. `cash_refund_single_max`) : sans en-tête, la
+   * garde laisse passer SANS valideur, et c'est la route qui refuse (`APPROVAL_REQUIRED`) si le seuil est dépassé.
+   * Un jeton présenté est toujours vérifié en entier.
+   */
+  optional?: boolean;
 }
 
 export interface OnsiteApproval {
@@ -64,6 +70,7 @@ export class OnsiteApprovalGuard implements CanActivate {
     const options = this.reflector.get<OnsiteApprovalOptions | undefined>(ONSITE, context.getHandler());
     if (!options) return true;
     const req = context.switchToHttp().getRequest<OnsiteRequest>();
+    if (options.optional && !req.header(APPROVAL_TOKEN_HEADER)) return true;
     req.onsiteApproval = await this.verify(req, requestPrincipal(req), options);
     return true;
   }

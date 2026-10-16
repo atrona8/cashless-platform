@@ -18,6 +18,7 @@ export interface ResolvedProblem {
   status: number;
   detail?: string;
   extensions?: Record<string, unknown>;
+  headers?: Record<string, string>;
 }
 
 export interface ProblemBody {
@@ -33,7 +34,7 @@ export interface ProblemBody {
 
 export function resolveProblem(error: unknown): ResolvedProblem {
   if (error instanceof ProblemException) {
-    return { code: error.code, status: error.status, detail: error.detail, extensions: error.extensions };
+    return { code: error.code, status: error.status, detail: error.detail, extensions: error.extensions, headers: error.headers };
   }
   if (isSqlError(error)) return mapSqlState(error.code, error.constraint);
   if (error instanceof HttpException) {
@@ -85,6 +86,7 @@ export class ProblemFilter implements ExceptionFilter {
     const res = http.getResponse<Response>();
     const problem = resolveProblem(error);
     logProblem(error, problem, req);
+    for (const [name, value] of Object.entries(problem.headers ?? {})) res.setHeader(name, value);
     res.status(problem.status).type(PROBLEM_CONTENT_TYPE).send(JSON.stringify(problemBody(problem, req, this.config)));
   }
 }

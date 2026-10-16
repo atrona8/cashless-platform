@@ -201,6 +201,38 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 12. App terminal (après la validation NFC sur vrais bracelets)
 13. Recette V1
 
+**Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
+dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,
+OP-N46, OP-N50 et OP-N54 proposées par l'agent le 15/10/2026, à confirmer par le porteur) :
+- mission 5 : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
+  protégées contre les tables temporaires de l'appelant (`pg_temp` ou `TEMPORARY` retiré), pour fermer un
+  contournement probable du cloisonnement entre prestataires (OP-N59, ADR-96, bloque la production) ; droits
+  d'exécution des fonctions du schéma accordés rôle par rôle, sans héritage de `PUBLIC` (OP-N44) ; lecture qui a
+  confirmé un rattachement refusée par `consume_tap` (OP-N50) ; empreinte de requête à clé au registre d'idempotence,
+  pour qu'un code imprimé ne se retrouve pas par essais (OP-N54, ADR-99) ;
+- mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
+  bracelets (OP-N49) ;
+- mission 7 : snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
+  plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul
+  déclencheur, aux droits du propriétaire (OP-N58) ; deux faiblesses du kit relevées pendant la mission 4, qui
+  bloquent toutes deux la production (décision du porteur du 15/10/2026) ; adaptateur AWS KMS réel du service de clés
+  des bracelets, écrit avec celui de la signature des snapshots, après le choix de la région (OP-N41, bloque la
+  production) ;
+- mission 9 : enchaînement du guichet de retour (caution, crédits offerts, solde, restitution), servi par la mission 9
+  (décision du porteur du 15/10/2026, OP-N51, ADR-91) ; rendu des espèces dues d'un bracelet remplacé (OP-N55,
+  ADR-100) ;
+- mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
+  rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
+- mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
+  d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
+  ADR-94) ; lots de bracelets créés et modifiés par des fonctions seulement, sans `INSERT`/`UPDATE` direct de l'API
+  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ;
+- mission 12 : signature d'originalité NXP vérifiée aussi par le serveur à la personnalisation, avec la clé publique
+  NXP et les signatures réelles de la validation de la puce (OP-N46) ;
+- mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
+  lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
+  aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45).
+
 ## 9. Notes non classées
 
 - **Points ouverts non bloquants pour le code mais bloquants pour la production** : OP-N3 (taxes, SYSCOHADA),

@@ -4,7 +4,7 @@ import { ProblemException } from '../../errors/problem';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const E164 = /^\+[1-9][0-9]{6,14}$/;
-const STAFF_ROLES = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN', 'VENDOR', 'CUSTOMER'];
+const STAFF_ROLES = ['PLATFORM_ADMIN', 'OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN', 'VENDOR', 'CUSTOMER', 'PERSONALIZER'];
 const SCOPE_TYPES = ['PLATFORM', 'OPERATOR', 'ORGANIZER', 'EVENT', 'MERCHANT'];
 
 export interface StaffUserCreate {

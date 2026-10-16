@@ -1,15 +1,7 @@
-// Point d'entrée de l'API centrale (SPECIFICATION §2).
+// Point d'entrée de l'API publique (SPECIFICATION §2, §3.2). Aucun droit sur le service de clés des bracelets.
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { API_PREFIX, loadConfig } from './config/config';
+import { loadConfig } from './config/config';
+import { serve } from './processes/bootstrap';
+import { PublicProcessModule } from './processes/public.module';
 
-async function bootstrap(): Promise<void> {
-  const config = loadConfig();
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  app.setGlobalPrefix(API_PREFIX);
-  app.enableShutdownHooks();
-  await app.listen(config.port);
-}
-
-void bootstrap();
+void serve(PublicProcessModule, loadConfig().port);

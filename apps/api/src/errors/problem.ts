@@ -9,12 +9,15 @@ export interface ProblemOptions {
   detail?: string;
   /** Membres d'extension du problème (RFC 9457), par exemple `violations` d'un refus de bornes. */
   extensions?: Record<string, unknown>;
+  /** En-têtes de la réponse d'erreur (ex. `Retry-After` d'un 429) ; enregistrés et rejoués avec elle. */
+  headers?: Record<string, string>;
 }
 
 export class ProblemException extends Error {
   readonly status: number;
   readonly detail?: string;
   readonly extensions?: Record<string, unknown>;
+  readonly headers?: Record<string, string>;
 
   constructor(
     readonly code: ProblemCode,
@@ -25,6 +28,7 @@ export class ProblemException extends Error {
     this.status = options.status ?? defaultStatus(code);
     this.detail = options.detail;
     this.extensions = options.extensions;
+    this.headers = options.headers;
   }
 }
 

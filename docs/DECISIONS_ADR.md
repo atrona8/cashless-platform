@@ -92,6 +92,25 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-80 | Rôle de base distinct pour les écritures de plateforme | Acceptée |
 | ADR-81 | Profils de législation gérés par la plateforme ; colonnes de configuration ajoutées au schéma | Acceptée |
 | ADR-82 | Configuration : rôle strict par réglage, règle de frais portée par les lignes, dates d'effet par défaut | Acceptée |
+| ADR-83 | Quatre processus à droits séparés sur les clés, et une commande d'administration | Acceptée |
+| ADR-84 | Rôles de base distincts : seuls les processus des clés lisent les chiffrés | Acceptée |
+| ADR-85 | Rôle `PERSONALIZER` dédié | Acceptée |
+| ADR-86 | Mot de passe de bracelet jamais en clair hors du processus qui le calcule | Acceptée |
+| ADR-87 | Codes imprimés : empreinte à clé, consultation anonyme par une fonction dédiée | Acceptée |
+| ADR-88 | Ports et faux pour le KMS, l'identité du terminal et celle du festivalier | Acceptée |
+| ADR-89 | Pas de compte de caisse avant la mission des caisses | Acceptée |
+| ADR-90 | Rattachement par code : consultation réduite, lecture consommée, activation depuis l'app | Acceptée |
+| ADR-91 | Guichet de retour : enchaînement des étapes servi par la mission 9 | Acceptée |
+| ADR-92 | Contrôle quotidien des mots de passe : alerte d'audit, pas d'anomalie | Acceptée |
+| ADR-93 | Remise en stock d'un bracelet rendu : route `reassignPoolMedia` distincte de la restitution | Acceptée |
+| ADR-94 | Sortie de liste noire vérifiée par la base (demande approuvée concordante) | Acceptée |
+| ADR-95 | Adresse du client : `trust proxy` borné par `TRUST_PROXY_HOPS`, obligatoire en production | Acceptée |
+| ADR-96 | Fonctions SECURITY DEFINER sans `pg_temp` (OP-N59) : limite acceptée, levée par la mission 5, bloque la production | Acceptée |
+| ADR-97 | Écritures directes de `cashless_app` sur `media_batch` (OP-N60) : limite acceptée, levée par la mission 11, bloque la production | Acceptée |
+| ADR-98 | Traitements par tranches (NFR-008, OP-N61) : preuve sur 5 000 bracelets reportée à la mission 13, bloque la production | Acceptée |
+| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Proposée (mission à confirmer) |
+| ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée |
+| ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Proposée (à confirmer par le porteur) |
 
 ---
 
@@ -912,3 +931,252 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   5. **Après la mise en service.** Pendant `LIVE`, réglages, participations et règles de frais d'un événement passent par deux personnes ; au-delà de `LIVE`, ils ne se modifient plus (`409`). Deux demandes en attente sur le même événement : la seconde échoue une fois la première exécutée.
 - **Conséquences.** Le rejeu du scénario de référence sur une configuration construite par l'API donne les lignes et les soldes de `scenario_reference.json`, chaque ligne de frais citant sa règle.
 - **Références.** SPEC §4.1, §4.2, §5.6, §9.8, §12.1 ; `apps/api/src/configuration/settings-catalog.ts`, `sql-config-resolver.ts`, `cascade.service.ts` ; `apps/api/test/scenario/api-config-replay.spec.ts`.
+
+## ADR-83 — Quatre processus à droits séparés sur les clés, et une commande d'administration
+
+- **Statut** : Acceptée, 13 octobre 2026 (décisions du porteur, mission « Bracelets NFC »).
+- **Contexte.** SPEC §3.2 sépare les droits sur le service de clés : l'API publique ne doit ni calculer un mot de passe de bracelet ni déchiffrer une clé de données. Un seul processus portant tous les droits rendrait cette séparation théorique.
+- **Décision.** Un seul code, quatre processus, chacun avec son point d'entrée, ses seuls modules et ses seuls ports de clés : API publique (aucun port), clés de bracelet (`decrypt`), personnalisation (`mac`, `dataKey`), contrôle quotidien (`mac`, `decrypt`). La création et la désactivation d'une clé du KMS passent par une commande d'administration séparée (`keyAdmin`), lancée à la demande, hors des quatre processus. Chaque opération du contrat porte `x-process`.
+- **Conséquences.** Une faille de l'API publique n'atteint aucune opération de clé : elle n'en charge aucun port (`test/unit/architecture.spec.ts`). L'aiguillage d'une route vers son processus relève de l'exploitation (OP-N45).
+- **Références.** SPEC §3.2, §7.3, §7.4 ; `apps/api/src/processes/` ; `apps/api/src/kms/kms.ports.ts` ; OP-N45.
+
+## ADR-84 — Rôles de base distincts : seuls les processus des clés lisent les chiffrés
+
+- **Statut** : Acceptée, 13 octobre 2026 (décision du porteur). Limite acceptée : voir n° 9 ci-dessous.
+- **Contexte.** Les droits sur le KMS ne suffisent pas : une base lisible par l'API publique exposerait les mots de passe chiffrés et les clés de données chiffrées.
+- **Décision.** Quatre rôles de base (`cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin`) reçoivent des droits colonne par colonne (`post-roles.sql`). `cashless_app` perd la lecture de `media.pwd_pack_enc`, `media.pwd_pack_dek_id` et `tag_data_key.encrypted_dek`. **Décision n° 9 (13/10/2026)** : ces rôles héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence, comme `cashless_platform` (ADR-80), parce que la suite de référence l'exige.
+- **Conséquences.** Deux barrières indépendantes (KMS et base) protègent les mots de passe. La limite d'exécution est une dette (OP-N44), levée quand le générateur de la suite de référence n'exigera plus `EXECUTE` pour `PUBLIC`.
+- **Références.** SPEC §3.2, §7.4 ; `packages/ledger-sql/post-roles.sql` ; `tests/tests_media_roles.sql` ; ADR-80 ; OP-N44.
+
+## ADR-85 — Rôle `PERSONALIZER` dédié
+
+- **Statut** : Acceptée, 13 octobre 2026 (décision du porteur).
+- **Contexte.** La personnalisation fait calculer le mot de passe de chaque bracelet ; aucun rôle existant ne devait gagner ce droit.
+- **Décision.** Nouveau rôle `PERSONALIZER`, de portée prestataire, sans aucun autre droit ; seul à appeler `registerPersonalizedMedia` et `associateClaimCode` (migration 0011).
+- **Conséquences.** Toute personnalisation est tracée avec son auteur. La signature d'originalité NXP est vérifiée par le poste, pas par le serveur (OP-N46).
+- **Références.** SPEC §3.2, §7.5 ; `migrations/0011_personalizer_role.sql` ; OP-N46.
+
+## ADR-86 — Mot de passe de bracelet jamais en clair hors du processus qui le calcule
+
+- **Statut** : Acceptée, 13 octobre 2026 (décisions du porteur).
+- **Contexte.** Le poste de personnalisation et le terminal ont besoin du mot de passe d'une puce ; le transmettre en clair, ou le garder en mémoire, l'exposerait.
+- **Décision.**
+  1. **Transport** : le mot de passe est chiffré pour une clé publique à usage unique fournie par le poste (ECDH P-256), comme pour les terminaux ; il n'est jamais conservé par le registre d'idempotence.
+  2. **Cache** : une clé de données déchiffrée reste en mémoire 5 minutes au plus (réglable), effacée à l'expiration et à l'arrêt.
+  3. **Décision n° 7** : la personnalisation n'a pas le droit `decrypt` ; elle scelle les mots de passe sous une clé de données de session, générée par `GenerateDataKey` et valable tant que sa version est `ACTIVE`.
+  4. Tout tampon en clair est mis à zéro après usage.
+- **Conséquences.** Aucun secret au repos ni dans les journaux (`media-secrets.spec.ts`). Le contrôle quotidien recalcule un échantillon et compare en temps constant (`daily-check.service.ts`).
+- **Références.** SPEC §7.3, §7.4, §7.5, §7.6 ; NFR-002, NFR-003 ; `apps/api/src/media/keys/dek-cache.ts`, `session-data-key.ts`, `src/kms/zeroize.ts`.
+
+## ADR-87 — Codes imprimés : empreinte à clé, consultation anonyme par une fonction dédiée
+
+- **Statut** : Acceptée, 13 octobre 2026 (plan de la mission ; décision du porteur n° 8 pour la consultation).
+- **Contexte.** Un code imprimé fait 50 bits : une empreinte simple se retrouverait par essais si la base fuyait. La consultation anonyme se fait sans compte, donc sans prestataire de session.
+- **Décision.** Empreinte `HMAC-SHA256(CLAIM_CODE_HMAC_KEY, …)` du code et du code de confirmation ; le secret vit hors de la base, obligatoire en production (32 octets au moins). **Décision n° 8** : `public_balance_lookup` est `SECURITY DEFINER`, retirée à `PUBLIC` et accordée au seul rôle de l'API ; elle contrôle elle-même ses limites.
+- **Conséquences.** Changer le secret invalide toutes les empreintes : aucune procédure de rotation (OP-N47).
+- **Références.** SPEC §7.8, §8.5 ; ADR-36, ADR-56 ; `apps/api/src/kms/claim-hash.ts` ; `migrations/0010_media_claims.sql` ; OP-N47.
+
+## ADR-88 — Ports et faux pour le KMS, l'identité du terminal et celle du festivalier
+
+- **Statut** : Acceptée, 13 octobre 2026 (décisions du porteur).
+- **Contexte.** L'adaptateur AWS KMS dépend de la région et des comptes (OP-N11) ; l'enrôlement des terminaux vient en mission 5, les comptes festivaliers en mission 10.
+- **Décision.** La mission livre les services derrière des ports (`MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, `DeviceIdentityPort`, `CustomerIdentityPort`) avec des faux pour les tests. Aucun faux en production : chacun refuse de se construire, et la garde de démarrage refuse un processus qui en porte un (`production-guard.spec.ts`). Le changement d'implémentation d'un port ne touche pas les contrôleurs : `media-port-swap.spec.ts` remplace l'identité du terminal (lecture `POST /v1/taps`) et celle du festivalier (rattachement `POST /v1/me/media`) par des jetons signés. La bibliothèque de format est livrée en TypeScript et en Dart, prouvée en CI.
+- **Conséquences.** Trois dettes nommées par cette décision : OP-N41 (KMS), OP-N42 (terminal, mission 5), OP-N43 (festivalier, mission 10). Le prompt du lot 20 en annonçait quatre : la quatrième, OP-N44 (`EXECUTE` hérité de `PUBLIC` par les rôles de base des processus des clés), relève des rôles de base distincts et est rattachée à l'ADR-84, pas à celle-ci.
+- **Références.** SPEC §3.2, §7.3 ; NFR-010 ; `apps/api/src/kms/`, `device-identity/`, `customer-identity/` ; OP-N41 à OP-N43.
+
+## ADR-89 — Pas de compte de caisse avant la mission des caisses
+
+- **Statut** : Acceptée, 13 octobre 2026 (décision du porteur n° 10).
+- **Contexte.** Une caution payée à part en espèces et le rendu des espèces dues s'écrivent sur le compte de caisse du terminal ; les caisses et leurs sessions viennent avec la mission « Recharges, caisses et PSP ».
+- **Décision.** La mission des bracelets ne crée aucun compte de caisse. Sans caisse ouverte pour le terminal, ces opérations répondent `409`. `cash_session_id` est facultatif tant qu'aucune session n'est servie ; cité, il est refusé (`409`).
+- **Conséquences.** Aucun argent liquide n'entre sans session de caisse. À la charge de la mission 6 : créer le compte à l'ouverture d'une session, ou adapter `counter-access.ts`.
+- **Références.** SPEC §7.9, §11.1 ; OP-N49 ; `apps/api/src/media/lifecycle/deposit.service.ts`, `cash-due.service.ts`.
+
+## ADR-90 — Rattachement par code : consultation réduite, lecture consommée par la demande, activation depuis l'app
+
+- **Statut** : Acceptée, 14 octobre 2026 (décisions du porteur n° 11, 12, 13).
+- **Contexte.** Trois points du lot « rattachement par code » n'étaient pas tenables tels quels : le contrat demandait plus que la base ne rend ; `consume_tap` exige une écriture comptable ; l'activation depuis l'app figurait au contrat mais dans aucune exigence.
+- **Décision.**
+  1. **n° 11** : `lookupBalanceByClaimCode` est réduite à ce que rend `public_balance_lookup` (devise, solde disponible, statut, et date, type, montant des 10 derniers mouvements) ; le contrat est corrigé.
+  2. **n° 12** : migration 0016, `consume_tap_for_claim` : une lecture récente du bracelet de la demande, jamais consommée par une écriture, ne confirme qu'une demande.
+  3. **n° 13** : un code valide d'un bracelet jamais activé l'active sur un portefeuille du festivalier si l'événement autorise `SELF_APP`, que le lot sert un seul événement et qu'il n'a pas de caution payée à part.
+  4. Pas d'énumération : un code inconnu et un code utilisé suivent le même chemin et reçoivent la même réponse ; écart des médianes de 0,1 à 0,2 ms selon les passages sur 200 + 200 essais, seuil 20 ms (`claims-timing.spec.ts` ; 0,2 ms à la répétition de CI consignée dans `.github/CI.md`).
+- **Conséquences.** Limite du n° 12 : `consume_tap` ignore le lien ; une lecture qui a confirmé une demande peut encore servir à une écriture du même bracelet pendant la fenêtre de l'événement (OP-N50, `tests_media_claim_tap.sql`).
+- **Références.** SPEC §7.8, §8.5 ; ADR-57 ; FR-030 à FR-033, NFR-007 ; `apps/api/src/media/claims/` ; `migrations/0016_media_claim_tap.sql` ; OP-N50.
+
+## ADR-91 — Guichet de retour : enchaînement des étapes servi par la mission 9
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (proposée le 14 octobre 2026).
+- **Contexte.** `openapi.yaml` (`releaseMedia`, `settle_balance`, `refund_deposit_by`) décrit un enchaînement complet par le serveur : rendu de la caution, expiration des crédits offerts, remboursement du solde payé, restitution. Le contrat de la mission (`contracts/media-lifecycle.md`) et la consigne du lot 16 renvoyaient les étapes 2 et 3 à la mission 9. `openapi.yaml` prime sur le plan (SPEC §0.3).
+- **Décision.**
+  1. **La mission 9 sert l'enchaînement** des étapes du guichet de retour. Le contrat `openapi.yaml` reste juste et n'est pas réduit.
+  2. D'ici là, la mission des bracelets sert la restitution sans enchaînement : `settle_balance` et `refund_deposit_by` sont refusés (`422`, règle `release.no_chaining`). Ce refus est **provisoire** et disparaît avec la mission 9 ; les refus de `release_media` nomment ce qui reste à faire.
+  3. Jeton d'approbation sur place : exigé seulement au-delà de `cash_refund_single_max` (option `optional` de la garde ; la base refuse de toute façon sans valideur distinct au-delà du seuil). C'est la règle de SPEC §3.2 et §8.5 et d'ADR-53 (une seule personne jusqu'au plafond, une seconde au-delà) : **ce n'est pas un écart**.
+- **Conséquences.** OP-N51 est rattaché à la mission 9 (encore ouvert, non bloquant pour la mission des bracelets). Le report figure dans `PROMPTS-A-ENVOYER.md` et `PRD.md` pour la mission 9.
+- **Références.** SPEC §3.2, §7.9, §8.5 ; ADR-53 ; `apps/api/src/media/lifecycle/release.service.ts` ; `apps/api/src/approval/onsite/onsite-approval.ts` ; OP-N51.
+
+## ADR-92 — Contrôle quotidien des mots de passe : alerte d'audit, pas d'anomalie
+
+- **Statut** : Acceptée, 13 octobre 2026 (choix proposé au porteur et consigné dans la spécification de la mission).
+- **Contexte.** La liste des sortes d'anomalie est fermée (SPEC §12.2) ; aucune ne correspond à un écart entre le mot de passe stocké et son recalcul.
+- **Décision.** Un écart donne un compte rendu `MISMATCH` et une ligne d'audit par bracelet (identifiant seulement) ; une panne du service de clés donne `ERROR` et un nouvel essai au passage suivant. Un passage par prestataire et par 24 h ; `--once` rend le code de sortie 2 sur écart, pour l'ordonnanceur.
+- **Conséquences.** Aucune sorte d'anomalie n'est détournée. L'alerte passe par le journal d'audit et le code de sortie.
+- **Références.** SPEC §7.4, §12.2 ; FR-010 ; `apps/api/src/media/daily-check/`.
+
+## ADR-93 — Remise en stock d'un bracelet rendu : route `reassignPoolMedia` distincte de la restitution
+
+- **Statut** : Acceptée, 15 octobre 2026 (consigne a posteriori, décision du porteur ; route ajoutée au lot 16, commit `f0715fe`).
+- **Contexte.** `contracts/media-lifecycle.md` plaçait la remise en stock d'un bracelet d'un lot réattribuable (`reassign_pool_media`) dans `releaseMedia`. La remise en stock demande une nouvelle identité écrite dans la puce, que le guichet ne connaît qu'après la restitution ; `releaseMedia` n'a pas de champ pour son empreinte.
+- **Décision.** Route à part `POST /media/{media_id}/reassignment` (`reassignPoolMedia`, `x-process: public`, `openapi.yaml`) : lot `POOL` et bracelet `RELEASED` seulement (`409` sinon) ; l'empreinte `new_token_hash` (32 octets) ne doit être ni celle d'un bracelet, ni une identité passée (`409`) ; `reassign_pool_media` range l'ancienne identité dans l'historique (toute lecture qui la présente ensuite est une copie). Droits : route de guichet, rôle `CASHIER` ou `SUPERVISOR` et terminal du guichet (`counter-access.ts`), clé d'idempotence obligatoire. Audit : `MEDIA_REASSIGNED` (avant `RELEASED`, après `ISSUED`), auteur et motif `REASSIGNED` dans l'historique des statuts.
+- **Conséquences.** `contracts/media-lifecycle.md` est en retard sur `openapi.yaml` pour ce point ; `openapi.yaml` prime (SPEC §0.3). Aucun changement de code.
+- **Références.** SPEC §7.8 ; `apps/api/src/media/lifecycle/release.controller.ts`, `release.service.ts` ; `openapi.yaml` (`reassignPoolMedia`).
+
+## ADR-94 — Sortie de liste noire vérifiée par la base (demande approuvée concordante)
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (lève OP-N52).
+- **Contexte.** `reinstate_media` croyait le valideur qu'on lui passait ; `check_media_transition` comparait deux réglages de session posés par l'appelant. Avec la connexion de l'API, une seule personne pouvait sortir un bracelet de liste noire en inventant un valideur.
+- **Décision.** Migration `0017_media_reinstate_approval.sql` (aucun fichier généré modifié) : hors de la session du propriétaire du schéma, `BLACKLISTED → ACTIVE` n'a lieu que dans `reinstate_media`, avec une `approval_request` `REINSTATE_MEDIA` APPROVED du même prestataire, pour ce bracelet et l'épisode de liste noire en cours, dont l'auteur et le valideur sont ceux de l'appel, distincts, personnes actives du prestataire, le valideur avec une attribution `SUPERVISOR` non révoquée. Une demande d'approbation naît `PENDING`, sans décision. Le droit `UPDATE (status)` de `cashless_app` sur `media` est gardé (blocage, perte) : le déclencheur ferme ce chemin pour la sortie de liste noire.
+- **Complément du 15/10/2026 (lot 20, cycle 4, relecture du cycle 3 ; renforcement, `post-roles.sql`).** La règle « demande liée à l'épisode en cours » se lit dans `media_status_history`, que `cashless_app` pouvait modifier (`GRANT INSERT, UPDATE ON ALL TABLES` de `roles.sql`) : en masquant la dernière mise en liste noire, une session de l'API rendait « concordante » la demande APPROVED d'un épisode passé. Et `media_transition`, sans RLS, lui était ouverte en écriture : ajouter `BLACKLISTED → ISSUED` puis passer `ISSUED → ACTIVE` sortait un bracelet de liste noire sans aucune demande, chez tous les prestataires. Retirés à `cashless_app` : `UPDATE` (et `DELETE`, `TRUNCATE`, déjà retirés par `roles.sql`, redits) sur `media_status_history`, `media_batch_status_history`, `media_identity_history` ; `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE` sur les règles de passage `media_transition`, `media_batch_transition`, `event_status_transition`, `handover_transition` ; `UPDATE` sur `claim_code` et `media_claim` réduit aux colonnes que changent les fonctions de la migration 0010. `INSERT` retiré aussi sur `media_identity_history` (écrite par `reassign_pool_media`, SECURITY DEFINER, seule). `INSERT` sur `media_status_history` et `media_batch_status_history` était encore gardé à ce cycle : corrigé au cycle 5 (complément suivant). Aucun code de l'API ni aucune fonction à droits de l'appelant ne modifie ces tables. Tests : `tests/tests_media_reinstate.sql` (UPDATE et DELETE refusés, réutilisation d'une demande d'un épisode passé refusée après la tentative de masquer l'historique, détour par un autre état refusé, liste exacte des droits) ; contrôle du contrôle : le `GRANT` rétabli, la suite échoue (bracelet repassé `ACTIVE`).
+- **Complément du 15/10/2026 (lot 20, cycle 5, relecture du cycle 4 ; option A retenue par l'orchestrateur ; renforcement).** L'`INSERT` gardé sur `media_status_history` rouvrait la réutilisation : une session de l'API plantait une fausse ligne `ACTIVE → BLACKLISTED` d'identifiant très grand (`bigserial`, valeur explicite acceptée) ; `media_reinstatement_approved` prenant le `max(id)` pour épisode en cours, la demande APPROVED calculée sur cette ligne restait concordante après une nouvelle mise en liste noire, et le bracelet ressortait sans nouvelle demande ni décision. Migration `0018_status_history_definer.sql` : `log_media_status` et `log_batch_status` passent en `SECURITY DEFINER SET search_path = public` (`ALTER FUNCTION`, aucun fichier généré modifié). `post-roles.sql` retire alors à `cashless_app` `INSERT` sur `media_status_history` et `media_batch_status_history`, et à `cashless_perso` `INSERT` sur `media_status_history` (et l'usage de sa séquence). Même défaut, même traitement, sur deux autres tables où la base lit « le dernier état » et où l'API pouvait écrire : `media_assignment` (écrite par `log_media_status` et des fonctions SECURITY DEFINER ; son nombre de lignes forme les clés d'idempotence `preload:`, `deposit:`, `deposit-refund:`, et sa ligne ouverte désigne le portefeuille débité par `media_wallet`) : `INSERT` et `UPDATE` retirés ; `device_config_served` (écrite par `record_config_served`, SECURITY DEFINER ; dernière ligne relue comme configuration en cours, plafonds lus par `policy_in_force`) : `INSERT` retiré. `migrate.ts` applique désormais `roles.sql`, `post-roles.sql` et les mots de passe dans une seule transaction : plus d'intervalle où `cashless_app` retrouve `INSERT` et `UPDATE` sur tout. Tests (`tests/tests_media_reinstate.sql`) : fonctions SECURITY DEFINER avec `search_path` ; `INSERT` direct dans les deux historiques refusé (42501) ; scénario de la relecture rejoué (ligne plantée refusée, demande de l'épisode 2 exécutée, nouvel épisode, réutilisation refusée, bracelet `BLACKLISTED`) ; passages normaux depuis `cashless_app` : historiques des bracelets et des lots toujours écrits ; `INSERT`/`UPDATE` sur `media_assignment` refusés ; liste exacte des droits d'écriture de tous les rôles de l'application sur ces quatre tables. Contrôle du contrôle : `INSERT` rendu sur `media_status_history`, la suite échoue (épisode figé à 9 000 000 000 000 000, bracelet repassé `ACTIVE`) ; idem avec `INSERT` sur `media_batch_status_history` ou `media_assignment`, `INSERT` sur `device_config_served`, ou `log_media_status` remise en SECURITY INVOKER. Relevés sans être modifiés, faiblesses du kit antérieures à la mission : `offline_snapshot` et `offline_policy_history`, consignés au cycle 6 en **OP-N57** et **OP-N58** (complément suivant).
+- **Complément du 15/10/2026 (lot 20, cycle 6, relecture du cycle 5 ; décision de l'orchestrateur ; renforcement, `post-roles.sql`).** Constat 1 de la relecture : le passage de `log_media_status` en SECURITY DEFINER élargissait les droits de `cashless_perso`. Ce rôle gardait `INSERT` sur toutes les colonnes de `media`, `wallet_id` et `status` compris ; avant 0018, un bracelet inséré avec un portefeuille échouait (`permission denied for table media_assignment`) ; après 0018, le déclencheur ouvrait le rattachement avec les droits du propriétaire. Le processus de personnalisation pouvait donc créer un bracelet `ACTIVE`, d'identité choisie (`token_hash`, `nfc_uid`), rattaché au portefeuille existant d'un festivalier (d'un autre prestataire sur le poste local, où le propriétaire est superutilisateur), sans passer par `activate_media`. Cet élargissement n'avait été ni soumis ni consigné au cycle 5 (règle 1 de `CLAUDE.md`) : il est fermé ici. Correction : (1) `INSERT` de `cashless_perso` sur `media` réduit aux treize colonnes que fixe `register_personalized_media` (0013) : `id`, `operator_id`, `kind`, `token_hash`, `nfc_uid`, `key_index`, `signature_ok`, `originality_sig_sha256`, `batch_id`, `status`, `personalized_at`, `pwd_pack_enc`, `pwd_pack_dek_id` ; les autres prennent leur défaut (portefeuille absent, caution `NONE`, aucun code) ; (2) politique restrictive nommée `perso_media_insert` (`FOR INSERT TO cashless_perso`) : `status = 'PERSONALIZED'`, `wallet_id IS NULL`, `kind = 'NFC_TAG'`, `signature_ok IS TRUE`, lot, date de personnalisation et chiffré présents, et toutes les autres colonnes à leur valeur initiale. Le chemin légitime est inchangé. **Rectification du cycle 7** (relecture du cycle 6, constat 1) : cette borne ne portait que sur le statut et les valeurs initiales, **pas** sur le lot ni la clé de données ; l'`INSERT` direct restant contournait tous les contrôles de `register_personalized_media` (lot actif, lot ou clé de données d'un autre prestataire, lot plein). L'affirmation « la personnalisation n'insère que des bracelets neufs de son lot en préparation » était donc plus forte que la réalité jusqu'au cycle 7 ; voir le complément suivant. **Relevé des autres rôles** (catalogue, base de test après `reset-db`) : les deux déclencheurs passés en SECURITY DEFINER portent sur `media` (`AFTER INSERT OR UPDATE OF status`) et `media_batch` (même forme). Écrivains de ces tables : `cashless_app` a `UPDATE (status, claim_code_hash, claim_code_used_at, claim_attempts)` sur `media` (un `UPDATE` n'ouvre aucun rattachement, et il avait `INSERT` sur `media_status_history` avant 0018 : rien de nouveau) et `INSERT`, `UPDATE` sur `media_batch` (il avait `INSERT` sur `media_batch_status_history` avant 0018 : rien de nouveau) ; `cashless_tagkeys` a `UPDATE (pwd_pack_enc, pwd_pack_dek_id)` et `cashless_perso` `UPDATE (claim_code_hash)` sur `media`, qui ne déclenchent pas `UPDATE OF status` ; `cashless_tagcheck`, `cashless_keyadmin` et `cashless_platform` n'écrivent ni `media` ni `media_batch`. Seul `cashless_perso` tirait donc de 0018 une écriture qu'il n'avait pas. Les autres fonctions de déclencheur SECURITY DEFINER de la base l'étaient avant la mission ; leur liste est figée par un test. Tests : `tests/tests_definer_trigger_writers.sql`, joué depuis `cashless_perso` : scénario de la relecture (bracelet `ACTIVE` sur le portefeuille d'un autre prestataire) refusé, et de même `ACTIVE` ou `ISSUED` sur un portefeuille du même prestataire, bracelet en stock avec portefeuille, `ISSUED` sans portefeuille, signature invalide, caution posée ; aucune ligne `media` ni `media_assignment` créée ; `register_personalized_media` passe, avec son historique et sans rattachement ; forme exacte de la politique et des droits par colonne ; liste exacte des droits d'écriture des rôles `cashless_*` sur `media` et `media_batch` ; liste exacte des fonctions de déclencheur SECURITY DEFINER. Contrôle du contrôle : politique retirée → tests 5, 6, 9, 14, 15 en échec ; `INSERT` rendu sur toute la table → tests 16, 18 en échec ; les deux → 13 tests en échec, dont le scénario de la relecture (1) et l'absence de rattachement (10) ; `log_media_status` remise en SECURITY INVOKER → le chemin légitime échoue (8, 11, 12). Remarque 1 de la relecture (consignée sans changement de comportement, les tables appartenant à la mission 7) : **OP-N57** (`offline_snapshot`, version plantée, déni de service hors ligne) et **OP-N58** (`offline_policy_history`, trace falsifiable) ; même fichier de tests : droits d'écriture actuels des rôles `cashless_*` sur ces deux tables figés (`INSERT` et `UPDATE` de `cashless_app` seulement, aucune suppression) ; contrôle du contrôle : `INSERT` rendu à `cashless_perso` sur `offline_snapshot` → test 20 en échec ; `DELETE` rendu à `cashless_app` sur `offline_policy_history` → test 21 en échec. Remarque 2 : attribution de l'historique (`actor_id`, `approved_by`, `reason` lus dans des réglages de session fixés par l'appelant) ajoutée à OP-N56.
+- **Complément du 15/10/2026 (lot 20, cycle 7, relecture du cycle 6 ; décision du porteur, option B ; renforcement, migration `0019_personalization_definer.sql`, `post-roles.sql`).** Constat 1 de la relecture : l'`INSERT` direct de `cashless_perso` dans `media`, même borné au cycle 6, ne vérifiait ni le lot ni la clé de données (variantes V1 à V4 : lot `ACTIVE`, lot d'un autre prestataire, clé de données d'un autre prestataire, lot plein, toutes acceptées en direct). Correction : `register_personalized_media` passe en SECURITY DEFINER ; tous ses contrôles nomment le prestataire de la session (`app.operator_id`) et aucun ne dépend de la RLS, qui ne s'applique pas dans la fonction avec un propriétaire superutilisateur : lot du prestataire, statut `ORDERED`/`PERSONALIZED`, verrouillé `FOR SHARE` jusqu'à la fin de la transaction (renforcement : un passage concurrent du lot attend), quantité comptée sur tous les bracelets du lot sous le verrou consultatif, clé du lot `ACTIVE`, clé de données du prestataire, même index, `ACTIVE`. `EXECUTE` retiré à `PUBLIC` et à `cashless_app` (que `roles.sql` réaccorde sur toutes les fonctions), accordé à `cashless_perso` seul ; `cashless_perso` perd tout droit d'écriture sur `media` ; la politique `perso_media_insert` et l'`INSERT` par colonne du cycle 6 sont retirés (plus de droit à borner). **Autres fonctions traitées** (même défaut, recherche demandée par le porteur) : `associate_claim_code` (0010) contrôlait l'association d'un code (code du prestataire, même lot que le bracelet, ni invalidé ni déjà associé, bracelet sans code) que `cashless_perso` (`UPDATE (claim_code_hash)` sur `media`, `UPDATE (media_id, associated_at)` sur `claim_code`) et `cashless_app` (mêmes colonnes) pouvaient faire en direct ; elle passe en SECURITY DEFINER, `EXECUTE` retiré à `PUBLIC` et accordé à ses deux appelants légitimes, `cashless_perso` (poste de personnalisation) et `cashless_app` (import du fichier de l'imprimeur, `claim-codes.service.ts`), et ces quatre droits par colonne sont retirés (`cashless_app` garde `UPDATE (invalidated_at)` pour `invalidate_unassociated_codes`). Le processus de personnalisation (`apps/api/src/media/personalization/**`) n'appelle que les deux fonctions, jamais d'`INSERT` ni d'`UPDATE` direct sur `media` ou `claim_code` ; sa lecture préalable du code perd son `FOR UPDATE` (qui exigeait un droit `UPDATE`) : la fonction verrouille et refait les contrôles, et un refus concurrent est rendu comme motif (point de sauvegarde, comme l'import de l'imprimeur). Fonctions examinées sans changement : `claim_tag_key_job`, `finish_tag_key_job`, `retry_tag_key_job` (un processus qui peut contourner leurs contrôles par `UPDATE` direct ne touche que les travaux de ses propres sortes, bornés par politique, qu'il exécute lui-même) ; écritures directes par conception des processus (`tag_data_key` par la personnalisation, rechiffrement par `cashless_tagkeys`, `tag_key` par la commande d'administration), sans fonction de contrôle. **Signalés au porteur, non corrigés** : OP-N59 (tables masquées par une table temporaire dans les fonctions SECURITY DEFINER) et OP-N60 (écritures directes de `cashless_app` sur `media_batch` et le statut de `media`). **Écart au texte de la décision, plus strict** : `search_path = public, pg_temp` au lieu de `public` (sans `pg_temp` en dernier, une table temporaire de l'appelant masquait `media_batch` ou `tag_data_key` et faisait passer tous les contrôles) ; appliqué aussi à `log_media_status` et `log_batch_status` (0018). Tests : `tests/tests_personalization_definer.sql` (depuis `cashless_perso` : V1 à V4 refusées en direct, 42501, et par la fonction, avec leur code d'erreur ; chemin légitime ; session sans prestataire ou d'un autre prestataire ; tables temporaires ignorées ; association : refus directs, chemin légitime, code déjà associé, invalidé, d'un autre lot ; depuis `cashless_app` : fonctions et écritures directes refusées ; forme exacte : SECURITY DEFINER, `search_path`, `EXECUTE` par rôle, aucun droit d'écriture de `cashless_perso`), `tests_definer_trigger_writers.sql`, `tests_media_api.sql`, `tests_media_claims.sql`, `tests_media_roles.sql`, `tests_media_reinstate.sql` mis à jour. Contrôle du contrôle (`tests_personalization_definer.sql`, base remise à zéro avant chaque essai) : droits directs rendus (`INSERT` sur `media`, `UPDATE` sur `claim_code` et `claim_code_hash`) → tests 3-5, 7, 16-19, 24-29, 33, 35 en échec ; `search_path = public` → 1, 2 (tables temporaires) et 31 ; contrôle du prestataire de la clé de données retiré → 2, 10, 28 ; contrôle du prestataire du lot retiré → 9, 13, 28 ; `EXECUTE` à `cashless_app` → 23, 28, 32 ; contrôle de quantité retiré → 11, 28 ; contrôle du statut du lot retiré → 1, 8, 28 ; fonction remise en SECURITY INVOKER → chemin légitime en échec (suite interrompue) ; base propre → `ok`.
+- **Complément du 15/10/2026 (lot 20, cycle 8, relecture du cycle 7 ; correction d'un défaut du cycle 7, sans changement de droit).** Constat 1 : quand `associate_claim_code` refusait après un contrôle préalable passé (écriture concurrente, par exemple une invalidation à la clôture), le motif inscrit à l'audit était toujours `CLAIM_CODE_ALREADY_ASSOCIATED`. Après le retour au point de sauvegarde, le motif est désormais relu (`refusal()`, READ COMMITTED : la nouvelle lecture voit l'écriture validée), `CLAIM_CODE_ALREADY_ASSOCIATED` restant le dernier recours ; même correction dans l'import du fichier de l'imprimeur (`claim-codes.service.ts`, correspondance fixe héritée du WP12). Tests : `personalization.spec.ts` et `claim-code-order.spec.ts` (code invalidé dans une transaction concurrente validée pendant que la fonction attend son verrou : motif `CLAIM_CODE_INVALIDATED`) ; `tests_personalization_definer.sql` (code d'un autre prestataire : `CLAIM_CODE_UNKNOWN`, ce qui détecte le retrait du filtre de prestataire sur `claim_code`). OP-N59 et OP-N60 tranchés par le porteur : ADR-96 et ADR-97.
+- **Conséquences.** La session du propriétaire garde la seule règle du schéma de référence (suites du kit inchangées ; l'API ne se connecte jamais sous ce rôle). Limite restante, consignée en **OP-N56** : la base n'authentifie pas une personne ; une session de l'API compromise peut encore faire décider une demande au nom d'un vrai superviseur du prestataire (`decide_approval_request` croit le valideur qu'on lui passe). Levée par la mission 11 avec le serveur d'identité réel (preuve de décision signée, vérifiée hors de la session de l'API). Tests : `tests/tests_media_reinstate.sql`, `blacklist.spec.ts`.
+- **Références.** SPEC §7.8 ; FR-035 ; OP-N52 ; OP-N56 ; OP-N57 ; OP-N58 ; OP-N59 ; OP-N60 ; ADR-74 ; `apps/api/src/media/blacklist/blacklist-approval-actions.ts` ; `packages/ledger-sql/post-roles.sql`.
+
+## ADR-95 — Adresse du client : `trust proxy` borné par `TRUST_PROXY_HOPS`, obligatoire en production
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (lève OP-N53).
+- **Contexte.** La limite de la consultation anonyme (60 par adresse et par heure) et l'origine de l'audit reposent sur `req.ip`, sans réglage `trust proxy` : derrière un répartiteur, tous les clients ont la même adresse ; sans borne, `X-Forwarded-For` est falsifiable.
+- **Décision.** `TRUST_PROXY_HOPS`, entier de 0 à 5, lu par `loadConfig` et posé par `applyTrustProxy` au démarrage de chaque processus HTTP (`trust proxy` = nombre de sauts ; 0 = aucun). En production, une valeur absente fait refuser le démarrage, sans défaut ; hors production, 0 par défaut.
+- **Conséquences.** L'exploitation doit fixer la valeur exacte du déploiement (`.github/CI.md`). Tests : `claims-address-limit.spec.ts` (61ᵉ consultation → 429, deux adresses comptées à part, `X-Forwarded-For` falsifié sans effet), `config.spec.ts`, `processes.spec.ts` (refus de démarrer).
+- **Références.** OP-N53 ; contrat `lookupBalanceByClaimCode` ; `apps/api/src/config/config.ts` ; `apps/api/src/processes/bootstrap.ts`.
+
+## ADR-96 — Fonctions SECURITY DEFINER sans `pg_temp` : limite acceptée jusqu'à la mission 5 (OP-N59)
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (relecture du lot 20, cycle 7, constat 2). Dette nommée
+  (règle 3 de `CLAUDE.md`) ; **bloque la production**.
+- **Contexte.** 77 fonctions SECURITY DEFINER du schéma `public` (81 au total ; 4 corrigées par la migration 0019) fixent
+  `search_path = public` sans `pg_temp`. PostgreSQL cherche alors d'abord dans le schéma temporaire de la session, et
+  tous les rôles `cashless_*` peuvent créer des tables temporaires (droit `TEMP` de `PUBLIC`). Parmi elles,
+  `tenant_of_ledger`, `tenant_of_media`, `tenant_of_wallet`, `tenant_of_batch`, `tenant_of_event`, `tenant_of_device` et
+  `tenant_of_gateway` lisent une table pour trouver le prestataire d'un objet et alimentent `assert_tenant` (SECURITY
+  INVOKER) dans les fonctions qui déplacent de l'argent ou changent un bracelet (`post_transaction` :
+  `assert_tenant(tenant_of_ledger(p_ledger))`).
+- **Risque.** Contournement probable du cloisonnement entre prestataires par une session compromise (table temporaire
+  qui fait rendre le prestataire de la session pour l'objet d'un autre). Non démontré de bout en bout ; démontré pour
+  l'historique des statuts avant 0019 (OP-N59).
+- **Décision.** Limite consignée, non corrigée dans la mission 4 (antérieure à la mission, la correction touche le
+  schéma de référence au-delà du lot 20). **Mission qui la lève : mission 5** (prochaine mission qui touche la base) :
+  retirer `TEMPORARY` aux rôles applicatifs, ou passer toutes ces fonctions à `search_path = public, pg_temp`, ou les
+  deux. **Condition de levée** : test pgTAP montrant qu'une table temporaire de l'appelant est sans effet sur un
+  `tenant_of_*`, ou que la création de table temporaire est refusée à chaque rôle `cashless_*`.
+- **Conséquences.** Test qui fige la limite : `tests/tests_definer_trigger_writers.sql`, section 4 (au plus 77
+  fonctions SECURITY DEFINER sans `pg_temp` ; une nouvelle fonction fixe `search_path = public, pg_temp`). Contrôle du
+  contrôle : une fonction SECURITY DEFINER de plus avec `search_path = public` fait échouer le test. Report dans
+  `PROMPTS-A-ENVOYER.md` (mission 5) et `PRD.md` (héritages de la mission 4).
+- **Références.** OP-N59 ; ADR-94 (complément du cycle 7) ; `packages/ledger-sql/migrations/0019_personalization_definer.sql`.
+
+## ADR-97 — Écritures directes de `cashless_app` sur `media_batch` : limite acceptée jusqu'à la mission 11 (OP-N60)
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (relecture du lot 20, cycle 7, constat 2). Dette nommée
+  (règle 3 de `CLAUDE.md`) ; **bloque la production**.
+- **Contexte.** `roles.sql` accorde `INSERT` et `UPDATE` sur toutes les tables à `cashless_app`, et `post-roles.sql` ne
+  les borne pas sur `media_batch` (toutes les colonnes). L'API crée un lot par `INSERT` direct
+  (`apps/api/src/media/batches/batches.service.ts:68`) et change son statut par `set_media_batch_status` et `close_batch`.
+- **Risque.** Une session de l'API compromise peut insérer un lot directement au statut `ACTIVE` ou `CLOSED` (vérifié :
+  `INSERT 0 1`), passer un lot à `CLOSED` sans `close_batch` (sans acquérir les cautions ni retirer les bracelets),
+  changer sa quantité, son index de clé, son organisateur ou son événement, et changer le statut d'un bracelet sans
+  motif (`UPDATE (status)` de `media`). La RLS borne tout cela au prestataire de la session.
+- **Décision.** Limite consignée, non corrigée dans la mission 4 (la correction change la création des lots et des
+  routes de l'API hors du lot 20 ; aucun droit de la base n'est changé dans ce cycle). **Mission qui la lève :
+  mission 11** (back-office), qui reprend la gestion des lots. **Condition de levée** : création par une fonction qui
+  impose `ORDERED` (ou politique restrictive), `UPDATE` de `media_batch` borné, `media_set_status` seul chemin du
+  statut d'un bracelet ; test pgTAP depuis `cashless_app` : lot inséré en `ACTIVE` ou `CLOSED`, clôture directe,
+  changement de quantité et statut de bracelet sans motif refusés.
+- **Conséquences.** Test qui fige la limite : `tests/tests_definer_trigger_writers.sql`, section 4 (droits de
+  `cashless_app` sur `media_batch` colonne par colonne : `INSERT`, `SELECT`, `UPDATE` ; aucune suppression). Contrôle
+  du contrôle : un droit `DELETE`, ou une colonne ajoutée avec un droit, fait échouer le test. Report dans
+  `PROMPTS-A-ENVOYER.md` (mission 11) et `PRD.md` (héritages de la mission 4).
+- **Références.** OP-N60 ; ADR-94 (complément du cycle 7) ; `packages/ledger-sql/post-roles.sql`.
+
+## ADR-98 — Traitements par tranches : preuve sur 5 000 bracelets reportée à la mission 13 (OP-N61)
+
+- **Statut** : Acceptée, 15 octobre 2026, décision du porteur (vérification d'acceptation de la mission 4, NFR-008 en
+  échec). Dette nommée (règle 3 de `CLAUDE.md`) ; **bloque la production**.
+- **Contexte.** NFR-008 demande que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement traitent au
+  plus 500 bracelets par tranche, soient relançables sans double effet et aillent au bout sur un lot de 5 000
+  bracelets. Prouvé : clôture sur 600 cautions avec deux relances (`batches.spec.ts`), rechiffrement de 1 200
+  bracelets en 3 tranches avec reprise (`data-keys.spec.ts`). Non prouvé : le lot de 5 000, et le rattrapage du
+  préchargement au-delà de 3 bracelets (`PRELOAD_SLICE` jamais atteint).
+- **Risque.** Un traitement qui n'irait pas au bout sur un gros lot en exploitation (durée, `transaction_timeout`,
+  verrous) : lot bloqué à mi-chemin, cautions non acquises, bracelets restés sous l'ancienne clé de données.
+- **Décision.** Écart consigné, sans test supplémentaire dans la mission 4. **Mission qui le lève : mission 13**
+  (recette V1), sur l'environnement de charge. **Condition de levée** : les trois traitements vont au bout sur un lot
+  de 5 000 bracelets, le rattrapage du préchargement sur plus d'une tranche, avec au moins une relance sans double
+  effet ; durées consignées dans le rapport de recette.
+- **Conséquences.** Pas de test qui fige la limite : c'est un manque de preuve, pas un droit ni un contrôle qui
+  pourrait s'élargir ; `batches.spec.ts` et `data-keys.spec.ts` échouent déjà si le découpage ou la reprise
+  régressent. Report dans `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md` (héritages de la mission 4).
+- **Références.** OP-N61 ; NFR-008 (`kitty-specs/bracelets-nfc-01M4TD3W/spec.md`) ; `acceptance-matrix.json` ;
+  `apps/api/src/media/batches/batches.service.ts` (`FORFEIT_SLICE`, `PRELOAD_SLICE`).
+
+## ADR-99 — Empreinte de requête sans clé au registre d'idempotence : limite acceptée jusqu'à la mission 5 (OP-N54)
+
+- **Statut** : Limite consignée le 14/10/2026 (constat des relectures indépendantes, sans changement de code) ;
+  mission de levée **proposée par l'agent le 15/10/2026, à confirmer par le porteur**. Dette nommée.
+- **Contexte.** Le registre d'idempotence (`api_idempotency`) garde `request_hash`, empreinte SHA-256 sans clé de la
+  requête. Pour le rattachement par code, la requête contient le code imprimé (50 bits).
+- **Risque.** Une fuite de la base permet de retrouver un code par essais hors ligne (calcul lourd mais faisable), puis
+  de rattacher ou de consulter le bracelet correspondant.
+- **En place.** Le code lui-même n'est jamais conservé ; les codes de confirmation ne sont plus conservés (route
+  `transient`) ; l'empreinte des codes en base est à clé (ADR-87).
+- **Décision.** Limite conservée dans la mission 4 (le registre est un mécanisme transverse de la mission 1).
+  **Mission qui la lève : mission 5**, prochaine mission de paiement, qui ajoute des routes au registre.
+  **Condition de levée** : `request_hash` à clé (HMAC, secret hors de la base), ou champs secrets exclus de
+  l'empreinte des routes qui les portent ; test : l'empreinte ne se recalcule pas à partir du code seul.
+- **Conséquences.** Test qui échoue si la limite s'élargit (code conservé en clair, en hexadécimal ou en base64) :
+  `apps/api/test/integration/end-to-end/media-secrets.spec.ts`. Report dans `PROMPTS-A-ENVOYER.md` (mission 5) et
+  `PRD.md` (héritages de la mission 4).
+- **Références.** OP-N54 ; ADR-79 ; ADR-87 ; `apps/api/src/idempotency/`.
+
+## ADR-100 — Espèces dues d'un bracelet remplacé : limite acceptée jusqu'à la mission 9 (OP-N55)
+
+- **Statut** : Acceptée, 15 octobre 2026 (limite consignée le 14/10/2026 ; mission 9 déjà nommée dans la fiche et
+  reportée au checkout principal). Dette nommée.
+- **Contexte.** `replace_media` fait suivre la caution au bracelet neuf, mais pas les espèces dues (anomalies
+  `CASH_TOPUP_OVER_LIMIT`) de l'ancien ; le rendu des espèces dues est refusé sur un bracelet `REPLACED`.
+- **Risque.** Un festivalier dont le bracelet a été remplacé ne peut plus se faire rendre ses espèces dues au guichet.
+  Aucune perte comptable : la dette reste au grand livre (`L-ESP-A-RENDRE`).
+- **Décision.** Limite conservée dans la mission 4. **Mission qui la lève : mission 9** (remboursements, guichet de
+  retour). **Condition de levée** : anomalies reportées au bracelet neuf par `replace_media` (migration), ou rendu au
+  back-office sur décision de deux personnes ; test : espèces dues d'un bracelet remplacé rendues une fois, et une
+  seule.
+- **Conséquences.** Aucun test ne fige ce manque : c'est une opération absente, pas un droit qui peut s'élargir ; la
+  dette est tenue par le grand livre. Report dans `PROMPTS-A-ENVOYER.md` (mission 9) et `PRD.md` (héritages de la
+  mission 4).
+- **Références.** OP-N55 ; ADR-63 ; `apps/api/test/integration/media/cash-due.spec.ts`, `replace.spec.ts`.
+
+## ADR-101 — Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50
+
+- **Statut** : Proposée, 15 octobre 2026, par l'agent (lot 20, cycle 9) ; **à confirmer par le porteur**.
+- **Contexte.** Règle 3 de `CLAUDE.md` : chaque écart accepté nomme la mission du découpage qui le lève. Ces cinq
+  points nommaient le porteur ou l'exploitation. Les décisions de fond restent celles d'ADR-83, ADR-84, ADR-85,
+  ADR-88 et ADR-90 ; seule la mission de levée est fixée ici.
+- **Décision proposée.**
+  - OP-N41 (KMS factice, ADR-88) → **mission 7** : première mission qui a besoin d'un vrai KMS hors bracelets
+    (signature des snapshots, OP-N13) ; adaptateur AWS des ports `MacPort`, `DataKeyPort`, `DecryptPort`,
+    `KeyAdminPort` écrit avec celui de la signature, après OP-N11.
+  - OP-N44 (`EXECUTE` hérité de `PUBLIC`, ADR-84) → **mission 5** : même correction de droits sur les fonctions du
+    schéma de référence qu'OP-N59 (ADR-96), dans `post-roles.sql` et le générateur `gen_tests.py`.
+  - OP-N45 (aiguillage des routes, ADR-83) → **mission 13** : relève du déploiement ; la recette V1 monte
+    l'environnement proche de la production et y passe le cloisonnement sur toutes les routes.
+  - OP-N46 (signature NXP vérifiée par le poste, ADR-85) → **mission 12** : lancée après la validation de la puce sur
+    de vrais bracelets, qui fournit la clé publique NXP et des signatures réelles ; décision avec l'auditeur sécurité
+    (ADR-44).
+  - OP-N50 (lecture d'une demande encore utilisable par `consume_tap`, ADR-90) → **mission 5** : elle sert le
+    paiement par `consume_tap`.
+- **Conséquences.** Les conditions de levée et les tests qui bornent les limites restent ceux d'OP-N41 à OP-N50.
+  Reports dans `PROMPTS-A-ENVOYER.md` (missions 5, 7, 12, 13) et `PRD.md` (héritages de la mission 4). Si le porteur
+  choisit une autre mission, déplacer les reports.
+- **Références.** OP-N41, OP-N44, OP-N45, OP-N46, OP-N50 ; ADR-83 à ADR-85, ADR-88, ADR-90, ADR-96.

@@ -436,6 +436,30 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/media/{media_id}/reassignment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remettre en stock un bracelet rendu d'un lot réattribuable (reassign_pool_media)
+         * @description Lot `POOL` seulement, bracelet `RELEASED` (§7.8). Le guichet a écrit une nouvelle identité dans la puce ; il en
+         *     envoie l'empreinte. L'ancienne identité rejoint l'historique : toute lecture qui la présente ensuite est une
+         *     copie (`CLONE_SUSPECTED`, anomalie `RETIRED_IDENTITY`). Le bracelet repasse `ISSUED`, prêt pour une nouvelle
+         *     activation. `409` si le lot n'est pas réattribuable ou si le bracelet n'est pas rendu. Rôle `CASHIER` ou
+         *     `SUPERVISOR`, avec le terminal du guichet.
+         */
+        post: operations["reassignPoolMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/{media_id}/replace": {
         parameters: {
             query?: never;
@@ -447,11 +471,15 @@ export type paths = {
         put?: never;
         /**
          * Remplacer un bracelet perdu ou abîmé (replace_media)
-         * @description L'ancien bracelet passe `REPLACED` ; le nouveau (lu par `tap_id`) reprend le même portefeuille et les
-         *     portefeuilles des autres devises. Même organisateur obligatoire. Rôle `SUPERVISOR` ou `CASHIER`.
+         * @description L'ancien bracelet passe `REPLACED` ; le nouveau, dont la lecture est embarquée (`new_media_tap` : un bracelet
+         *     neuf n'a pas de `tap_id`, `register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture), reprend le même
+         *     portefeuille et les portefeuilles des autres devises. Le serveur vérifie que l'UID et la signature d'originalité
+         *     du bracelet neuf sont ceux de sa personnalisation. Même organisateur obligatoire. Rôle `SUPERVISOR` ou `CASHIER`.
          *     Une caution `HELD` ou `DUE` passe au nouveau bracelet ; il doit alors venir d'un lot de même mode de
          *     caution. L'ancien bracelet doit être `ACTIVE` ou `SUSPENDED` ; le nouveau doit être neuf (`PERSONALIZED`
          *     ou `ISSUED`, sans portefeuille ni caution). Sinon : `409 MEDIA_STATE_INVALID` (`CL020`).
+         *     Les deux bracelets servent l'événement du terminal : le neuf par son lot, l'ancien par son lot ou, à
+         *     défaut, par le grand livre de son portefeuille. Sinon : `422 MEDIA_WRONG_EVENT`.
          */
         post: operations["replaceMedia"];
         delete?: never;
@@ -2766,6 +2794,530 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/operators/{operator_id}/tag-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les clés de bracelet d'un prestataire
+         * @description Clés de dérivation du prestataire (`tag_key`, §7.3), par index. La référence de la clé dans le service de clés n'est
+         *     rendue que tronquée ; aucune clé de données chiffrée n'est rendue. Rôle : `OPERATOR_ADMIN`.
+         */
+        get: operations["listTagKeys"];
+        put?: never;
+        /**
+         * Demander une nouvelle clé de bracelet (à deux)
+         * @description Crée une demande d'approbation (`TAG_KEY_CREATE`). Une fois approuvée par un second `OPERATOR_ADMIN`, un travail
+         *     `CREATE_KEY` est inscrit ; la clé est créée dans le service de clés par la commande d'administration, lancée par
+         *     l'exploitant : aucun service permanent ne peut créer une clé. Le nouvel index est le suivant du prestataire ; pour une
+         *     clé partagée, la clé partagée active précédente ne sert plus qu'à déchiffrer (§7.3). Une clé dédiée (`DEDICATED`) est
+         *     réservée à un événement du prestataire (§7.7). Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["requestTagKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-keys/{key_index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une clé de bracelet
+         * @description Clé, versions de sa clé de données (statut seulement) et travaux en cours. Rôle : `OPERATOR_ADMIN`.
+         */
+        get: operations["getTagKey"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-keys/{key_index}/dek-rotations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander la rotation de la clé de données d'une clé (à deux)
+         * @description Demande d'approbation `TAG_DEK_ROTATE`. Approuvée : une nouvelle version de clé de données devient active, les autres
+         *     ne servent plus qu'à déchiffrer, et tous les mots de passe de l'index sont rechiffrés par tranches sous la nouvelle
+         *     version (§7.4) ; l'avancement se lit dans `listTagKeyJobs`. Refusée (`409`) si la clé n'est pas active ou si une
+         *     rotation est déjà en cours. Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["requestDekRotation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-keys/{key_index}/retirement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander le retrait d'une clé dédiée (à deux)
+         * @description Demande d'approbation `TAG_KEY_RETIRE`. Possible seulement pour une clé dédiée dont tous les lots sont clos (`409`
+         *     sinon). Approuvée : la clé et ses clés de données sont retirées, les mots de passe stockés effacés, les bracelets
+         *     passent en fin de vie (`retire_dedicated_key`, §7.7) ; la clé est ensuite désactivée dans le service de clés par la
+         *     commande d'administration, et la date de désactivation enregistrée. Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["requestTagKeyRetirement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-key-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les travaux de clé
+         * @description Travaux inscrits par les actions de clé approuvées, du plus récent au plus ancien : création, rotation, rechiffrement,
+         *     retrait, désactivation. `awaiting = KEY_ADMIN_COMMAND` signale un travail qui attend la commande d'administration de
+         *     l'exploitant. Un travail ne porte jamais de secret. Rôle : `OPERATOR_ADMIN`.
+         */
+        get: operations["listTagKeyJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-key-jobs/{job_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Relancer un travail de clé en échec
+         * @description Remet en attente un travail `FAILED`. `409` si le travail n'est pas en échec. Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["retryTagKeyJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/tag-key-check-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les comptes rendus du contrôle quotidien
+         * @description Chaque passage du contrôle quotidien (§7.4) recalcule le mot de passe de 100 bracelets au plus et le compare à la
+         *     valeur stockée. `MISMATCH` signale au moins un écart. Rôle : `OPERATOR_ADMIN`.
+         */
+        get: operations["listTagKeyCheckRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les lots de bracelets
+         * @description Lots du prestataire (§7.7). Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN`, `SUPERVISOR` et `CASHIER` ne voient que les
+         *     lots de leur organisateur.
+         */
+        get: operations["listMediaBatches"];
+        put?: never;
+        /**
+         * Créer un lot de bracelets
+         * @description Crée un lot au statut `ORDERED` pour un organisateur du prestataire. `key_index` désigne une clé active ; une clé
+         *     dédiée exige un lot réservé à son événement et l'usage unique ; une caution a toujours un mode, et inversement
+         *     (`422` avec la règle citée). Journalisé. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["createMediaBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un lot
+         * @description Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+         */
+        get: operations["getMediaBatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier un lot commandé
+         * @description Tant que le lot est `ORDERED` (`409` ensuite) : quantité, référence de commande, crédits offerts, caution et mode,
+         *     politique de réutilisation. La quantité ne se modifie plus une fois le fichier de commande produit. Journalisé (avant /
+         *     après). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        patch: operations["updateMediaBatch"];
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Faire passer un lot à un autre statut
+         * @description Passages permis (§7.7, table `media_batch_transition`) : `ORDERED` → `PERSONALIZED` → `DELIVERED` → `ACTIVE` ⇄
+         *     `SUSPENDED`. Un passage non prévu est refusé (`409`). Un motif est obligatoire pour `SUSPENDED` (stock volé ou
+         *     compromis). La clôture passe par `closeMediaBatch`. Seul un lot `ACTIVE` paie. Tracé (auteur, motif). Rôle :
+         *     `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["setMediaBatchStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire l'inventaire d'un lot
+         * @description Vue `batch_inventory` (§7.7) : commandés, enregistrés, en stock, remis, actifs, suspendus, en liste noire, remplacés,
+         *     rendus, en fin de vie, manquants au registre. Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+         */
+        get: operations["getMediaBatchInventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/claim-code-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Produire le fichier de commande des codes de rattachement (une seule fois)
+         * @description Lot `PUBLIC` seulement (les lots `STAFF` et `VIP` n'ont pas de code, §7.8). Tire un code de rattachement par bracelet
+         *     du lot et rend le fichier à envoyer à l'imprimeur (ADR-56). **Le serveur ne conserve que l'empreinte des codes** : la
+         *     réponse n'est ni rejouée ni journalisée, et une seconde demande reçoit `409`. L'en-tête `Idempotency-Key` protège
+         *     seulement contre un double envoi simultané ; il ne permet pas de retrouver le fichier. Journalisé (nombre de codes,
+         *     jamais les codes). Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["issueClaimCodeOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/claim-code-associations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Importer le fichier de correspondance code ↔ UID de l'imprimeur
+         * @description Quand le fournisseur encode lui-même les puces, il renvoie la correspondance entre chaque code imprimé et l'UID de sa
+         *     puce (§7.8). Chaque ligne associe un code à un bracelet déjà enregistré du lot. Une ligne en erreur n'annule pas les
+         *     autres : la réponse compte les lignes acceptées et liste les lignes refusées, par numéro de ligne et motif, sans
+         *     jamais renvoyer un code. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["importClaimCodeAssociations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/closure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clore un lot
+         * @description Acquiert les cautions non rendues par tranches de 500 (`forfeit_batch_deposits`), retire les bracelets encore en
+         *     circulation (`close_batch`) et invalide les codes de rattachement jamais associés à une puce (§7.7, §7.8). Une requête
+         *     traite un nombre borné de tranches : tant que `remaining_deposits` > 0, le lot n'est pas clos et l'appelant relance.
+         *     Les portefeuilles restent remboursables. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["closeMediaBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-batches/{batch_id}/preload-catchup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rattraper le préchargement d'un lot
+         * @description Pose les crédits offerts du lot sur les bracelets actifs qui ne les ont pas reçus (`preload_batch`, par tranches de
+         *     500, une seule fois par bracelet). `409` si le lot ne prévoit pas de préchargement. L'appelant relance tant que
+         *     `processed` > 0. Rôle : `ORGANIZER_ADMIN` de l'organisateur.
+         */
+        post: operations["catchUpBatchPreload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les bracelets (back-office)
+         * @description Bracelets du prestataire, sans jamais l'identité, son empreinte, le mot de passe ni l'empreinte du code de
+         *     rattachement. Rôles : lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+         */
+        get: operations["listMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media/{media_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un bracelet et son historique (back-office)
+         * @description État, lot, caution, portefeuilles rattachés et historique des statuts (motif, auteur, valideur, date ; §7.8). Rôles :
+         *     lecteurs de l'organisateur du lot, `OPERATOR_ADMIN`.
+         */
+        get: operations["getMediaAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media/{media_id}/blacklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mettre un bracelet en liste noire
+         * @description Blocage immédiat pour fraude suspectée, avec un motif. Tout passage en caisse répond ensuite `BLOCKED`. `409` si le
+         *     statut du bracelet ne permet pas ce passage. Tracé. Rôle : `SUPERVISOR` sur l'événement ou l'organisateur.
+         */
+        post: operations["blacklistMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media/{media_id}/reinstatement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander la sortie de liste noire d'un bracelet (à deux)
+         * @description Demande d'approbation `REINSTATE_MEDIA`. Rien ne change tant qu'une **autre** personne habilitée n'a pas approuvé ;
+         *     la base refuse que l'auteur et le valideur soient la même personne (`reinstate_media`, §7.8). Si le bracelet n'est plus
+         *     en liste noire à l'approbation (remplacé, retiré), la demande passe `FAILED`. Rôle : `SUPERVISOR`.
+         */
+        post: operations["requestMediaReinstatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media/{media_id}/loss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Déclarer un bracelet perdu
+         * @description Le bracelet est suspendu : tout passage en caisse répond `BLOCKED`. Le festivalier garde son portefeuille ; un nouveau
+         *     bracelet s'obtient par `replaceMedia`. Tracé. Rôles : `CASHIER`, `SUPERVISOR`.
+         */
+        post: operations["reportMediaLost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media/{media_id}/recovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Signaler un bracelet perdu puis retrouvé
+         * @description Selon le réglage `lost_media_policy` de l'événement : le bracelet redevient `ACTIVE` (`REACTIVATE`) ou passe en fin de
+         *     vie, `RETIRED` (`END_OF_LIFE`, défaut ; `recover_media`, §7.8). Tracé. Rôles : `CASHIER`, `SUPERVISOR`.
+         */
+        post: operations["recoverMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-personalizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enregistrer un bracelet personnalisé (poste de personnalisation)
+         * @description Servi par le **processus de personnalisation**, seul à pouvoir faire calculer un mot de passe de bracelet (§3.2).
+         *     Le poste a lu l'UID et la signature d'originalité de la puce, et écrit son identité ; il envoie l'empreinte de
+         *     l'identité, l'UID, la signature et une clé publique à usage unique. Le serveur fait calculer `PWD‖PACK` par le service
+         *     de clés (§7.3), le stocke chiffré (§7.4), enregistre le bracelet au statut `PERSONALIZED` avec l'index de clé du lot,
+         *     et rend le mot de passe **sous enveloppe pour la clé du poste** : il n'est jamais transmis en clair, ni conservé par
+         *     le registre d'idempotence. Rejeu avec la même clé d'idempotence et le même UID : même bracelet, enveloppe recalculée
+         *     pour la clé présentée. Refus : signature invalide (`422`), quantité du lot atteinte, lot qui n'est plus en préparation,
+         *     clé non active, UID ou identité déjà connus (`409`), service de clés indisponible (`503`, rien n'est enregistré).
+         *     Rôle : `PERSONALIZER` du prestataire, et lui seul.
+         */
+        post: operations["registerPersonalizedMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/media-personalizations/{media_id}/claim-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Associer le code imprimé scanné à un bracelet (poste de personnalisation)
+         * @description Le poste scanne le QR imprimé sur le bracelet (§7.8, ADR-56). Le code doit appartenir au lot du bracelet et n'être
+         *     associé à aucune puce. Un code inconnu, d'un autre lot ou déjà associé reçoit le même refus (`422`), sans détail.
+         *     `409` pour un lot sans code (`STAFF`, `VIP`) ou un bracelet qui porte déjà un code. Rôle : `PERSONALIZER`.
+         */
+        post: operations["associateClaimCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = {
     paymentIntentSucceeded: {
@@ -3425,8 +3977,18 @@ export type components = {
             msisdn?: string;
         };
         MediaActivationRequest: {
-            /** Format: int64 */
-            tap_id: number;
+            /**
+             * @description Lecture du bracelet à activer, embarquée dans la demande. Un bracelet jamais activé n'a pas de `tap_id` :
+             *     `register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture (§7.6). L'activation porte donc toujours
+             *     sa lecture ; le serveur vérifie que l'UID et la signature d'originalité sont ceux de la personnalisation.
+             */
+            tap: components["schemas"]["TapInput"];
+            /**
+             * Format: int64
+             * @deprecated
+             * @description Sans effet pour une activation (voir `tap`) ; une demande qui ne porte que `tap_id` est refusée (`422`).
+             */
+            tap_id?: number;
             /**
              * @description SELF_APP passe par POST /me/media.
              * @enum {string}
@@ -4141,7 +4703,11 @@ export type components = {
             /** @constant */
             method: "CASH";
         };
-        /** @description Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet). */
+        /**
+         * @description Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet). Tant que les
+         *     sessions de caisse ne sont pas livrées, `cash_session_id` est facultatif : le compte crédité est la caisse du
+         *     terminal (`409` si elle n'est pas ouverte).
+         */
         CashDueRefundRequest: {
             /** Format: int64 */
             tap_id?: number;
@@ -4150,7 +4716,7 @@ export type components = {
              * Format: uuid
              * @description Session de caisse ouverte ; son compte `CASH_DESK` est crédité.
              */
-            cash_session_id: string;
+            cash_session_id?: string;
         } & (unknown | unknown);
         CashDueRefundResult: {
             /**
@@ -4310,9 +4876,11 @@ export type components = {
          *     `CONTRACT_VERSION` → `createOrganizerContractVersion`. Niveau plateforme (demande sans prestataire, décidée
          *     par un autre `PLATFORM_ADMIN`) : `PLATFORM_CONTRACT_VERSION` → `createPlatformContractVersion` ;
          *     `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
+         *     Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →
+         *     `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
          * @enum {string}
          */
-        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE";
+        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE" | "TAG_KEY_CREATE" | "TAG_DEK_ROTATE" | "TAG_KEY_RETIRE";
         /**
          * @description `PENDING` → `APPROVED` | `REJECTED` | `EXPIRED` ; `APPROVED` → `EXECUTED` | `FAILED` (garde de la base).
          *     `APPROVED` est un état de passage : `approveApprovalRequest` exécute l'action dans la foulée.
@@ -4631,7 +5199,7 @@ export type components = {
          *     `grantRole` dans cette version.
          * @enum {string}
          */
-        StaffRole: "PLATFORM_ADMIN" | "OPERATOR_ADMIN" | "ORGANIZER_ADMIN" | "SUPERVISOR" | "CASHIER" | "MERCHANT_ADMIN" | "VENDOR" | "CUSTOMER";
+        StaffRole: "PLATFORM_ADMIN" | "OPERATOR_ADMIN" | "ORGANIZER_ADMIN" | "SUPERVISOR" | "CASHIER" | "MERCHANT_ADMIN" | "VENDOR" | "CUSTOMER" | "PERSONALIZER";
         /**
          * @description Portée d'une attribution. Englobement : `PLATFORM` ⊃ `OPERATOR` ⊃ `ORGANIZER` ⊃ `EVENT` ; `OPERATOR` ⊃
          *     `MERCHANT` ; un événement englobe les commerçants qui y participent.
@@ -5339,6 +5907,293 @@ export type components = {
             trigger: "REALTIME" | "CLOSING";
             valid_from?: components["schemas"]["Timestamp"];
         };
+        /**
+         * @description Statut d'un lot (§7.7). Seul un lot `ACTIVE` paie.
+         * @enum {string}
+         */
+        MediaBatchStatus: "ORDERED" | "PERSONALIZED" | "DELIVERED" | "ACTIVE" | "SUSPENDED" | "CLOSED";
+        MediaBatch: {
+            /** Format: uuid */
+            batch_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            /** Format: uuid */
+            organizer_id: string;
+            /**
+             * Format: uuid
+             * @description Événement auquel le lot est réservé ; `null` = valable pour tous les événements de l'organisateur.
+             */
+            event_id?: string | null;
+            /** @enum {string} */
+            kind: "PUBLIC" | "STAFF" | "VIP";
+            quantity: number;
+            key_index: number;
+            /** @enum {string} */
+            key_mode: "SHARED" | "DEDICATED";
+            /** @enum {string} */
+            reuse_policy: "SINGLE_USE" | "PERSONAL" | "POOL";
+            print_order_ref?: string | null;
+            status: components["schemas"]["MediaBatchStatus"];
+            /**
+             * Format: int64
+             * @description Crédits offerts posés à l'activation ; 0 = aucun.
+             */
+            preload_promo_amount: number;
+            /**
+             * Format: int64
+             * @description Caution par bracelet ; 0 = pas de caution.
+             */
+            deposit_amount: number;
+            deposit_mode?: ("FROM_BALANCE" | "SEPARATE") | null;
+            /** @description Le fichier de commande des codes de rattachement a déjà été produit. */
+            claim_codes_issued: boolean;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        MediaBatchCreate: {
+            /** Format: uuid */
+            organizer_id: string;
+            /** Format: uuid */
+            event_id?: string | null;
+            /** @enum {string} */
+            kind: "PUBLIC" | "STAFF" | "VIP";
+            quantity: number;
+            key_index: number;
+            /**
+             * @default SHARED
+             * @enum {string}
+             */
+            key_mode: "SHARED" | "DEDICATED";
+            /**
+             * @default SINGLE_USE
+             * @enum {string}
+             */
+            reuse_policy: "SINGLE_USE" | "PERSONAL" | "POOL";
+            print_order_ref?: string;
+            /**
+             * Format: int64
+             * @description Crédits offerts posés à l'activation ; 0 = aucun.
+             */
+            preload_promo_amount?: number;
+            /**
+             * Format: int64
+             * @description Caution par bracelet ; 0 = pas de caution.
+             */
+            deposit_amount?: number;
+            /** @enum {string} */
+            deposit_mode?: "FROM_BALANCE" | "SEPARATE";
+        };
+        MediaBatchUpdate: {
+            quantity?: number;
+            print_order_ref?: string | null;
+            /**
+             * Format: int64
+             * @description Crédits offerts posés à l'activation ; 0 = aucun.
+             */
+            preload_promo_amount?: number;
+            /**
+             * Format: int64
+             * @description Caution par bracelet ; 0 = pas de caution.
+             */
+            deposit_amount?: number;
+            deposit_mode?: ("FROM_BALANCE" | "SEPARATE") | null;
+            /** @enum {string} */
+            reuse_policy?: "SINGLE_USE" | "PERSONAL" | "POOL";
+        };
+        MediaBatchStatusChange: {
+            /** @enum {string} */
+            status: "PERSONALIZED" | "DELIVERED" | "ACTIVE" | "SUSPENDED";
+            /** @description Obligatoire pour `SUSPENDED`. */
+            reason?: string;
+        };
+        /** @description Compteurs de la vue `batch_inventory` (§7.7). */
+        MediaBatchInventory: {
+            /** Format: uuid */
+            batch_id: string;
+            ordered: number;
+            registered: number;
+            in_stock: number;
+            issued: number;
+            active: number;
+            suspended: number;
+            blacklisted: number;
+            replaced: number;
+            released: number;
+            retired: number;
+            /** @description Commandés et jamais enregistrés. */
+            missing: number;
+        };
+        MediaBatchClosure: {
+            status: components["schemas"]["MediaBatchStatus"];
+            /** @description Cautions encore détenues ; tant que > 0, le lot n'est pas clos et l'appelant relance. */
+            remaining_deposits: number;
+            retired_media: number;
+            invalidated_claim_codes: number;
+        };
+        MediaBatchPreloadCatchUp: {
+            /** @description Bracelets préchargés par cet appel ; 0 = plus rien à rattraper. */
+            processed: number;
+        };
+        ClaimCodeAssociationResult: {
+            accepted: number;
+            rejected: {
+                /** @description Numéro de la ligne dans le fichier (1 = première ligne). */
+                line: number;
+                /** @enum {string} */
+                reason: "MALFORMED_LINE" | "BAD_CLAIM_CODE" | "BAD_UID" | "MEDIA_UNKNOWN" | "CLAIM_CODE_UNKNOWN" | "CLAIM_CODE_OTHER_BATCH" | "CLAIM_CODE_ALREADY_ASSOCIATED" | "CLAIM_CODE_INVALIDATED" | "MEDIA_ALREADY_HAS_CODE";
+            }[];
+        };
+        ClaimCodeAssociation: {
+            /** @description Code lu sur le QR ou saisi ; tirets, espaces et casse ignorés. */
+            claim_code: string;
+        };
+        /**
+         * @description `ACTIVE` : personnalise de nouveaux bracelets ; `DECRYPT_ONLY` : ne sert plus qu'à lire les bracelets existants ; `RETIRED` : clé retirée.
+         * @enum {string}
+         */
+        TagKeyStatus: "ACTIVE" | "DECRYPT_ONLY" | "RETIRED";
+        TagKey: {
+            /** Format: uuid */
+            operator_id: string;
+            key_index: number;
+            status: components["schemas"]["TagKeyStatus"];
+            /** @enum {string} */
+            scope: "SHARED" | "DEDICATED";
+            /** Format: uuid */
+            dedicated_event_id?: string | null;
+            /** @description Derniers caractères de la référence de la clé dans le service de clés (la référence complète n'est jamais rendue). */
+            kms_key_ref_suffix: string;
+            kms_disabled_at?: components["schemas"]["Timestamp"] | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        TagKeyDetail: components["schemas"]["TagKey"] & {
+            data_key_versions: {
+                version: number;
+                status: components["schemas"]["TagKeyStatus"];
+                created_at: components["schemas"]["Timestamp"];
+            }[];
+            /** @description Travaux non terminés de cette clé. */
+            jobs: components["schemas"]["TagKeyJob"][];
+        };
+        TagKeyRequest: {
+            /**
+             * @default SHARED
+             * @enum {string}
+             */
+            scope: "SHARED" | "DEDICATED";
+            /**
+             * Format: uuid
+             * @description Obligatoire pour `DEDICATED`, interdit sinon.
+             */
+            dedicated_event_id?: string;
+        };
+        TagKeyJob: {
+            /** Format: uuid */
+            job_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            key_index: number;
+            /** @enum {string} */
+            kind: "CREATE_KEY" | "ROTATE_DEK" | "REENCRYPT" | "RETIRE_KEY" | "DISABLE_KMS_KEY";
+            /** @enum {string} */
+            status: "PENDING" | "RUNNING" | "DONE" | "FAILED";
+            /** @description Le travail attend la commande d'administration des clés, lancée par l'exploitant. */
+            awaiting?: "KEY_ADMIN_COMMAND" | null;
+            attempts: number;
+            last_error?: string | null;
+            /** @description Avancement (compteurs) ; jamais de secret. */
+            progress?: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            approval_request_id?: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            finished_at?: components["schemas"]["Timestamp"] | null;
+        };
+        TagKeyCheckRun: {
+            /** Format: uuid */
+            run_id: string;
+            /** Format: uuid */
+            operator_id: string;
+            started_at: components["schemas"]["Timestamp"];
+            finished_at: components["schemas"]["Timestamp"];
+            sampled: number;
+            mismatches: number;
+            /** @enum {string} */
+            status: "OK" | "MISMATCH" | "ERROR";
+            detail?: string | null;
+        };
+        MediaReason: {
+            reason: string;
+        };
+        /** @description Bracelet vu du back-office. Jamais l'identité, son empreinte, l'UID, le mot de passe ni l'empreinte du code de rattachement. */
+        MediaAdmin: {
+            /** Format: uuid */
+            media_id: string;
+            status: components["schemas"]["MediaStatus"];
+            /** @enum {string} */
+            kind: "NFC_TAG" | "CARD" | "QR";
+            key_index: number;
+            personalized_at?: components["schemas"]["Timestamp"] | null;
+            /** Format: uuid */
+            batch_id?: string | null;
+            batch_kind?: ("PUBLIC" | "STAFF" | "VIP") | null;
+            batch_status?: components["schemas"]["MediaBatchStatus"] | null;
+            /** Format: uuid */
+            organizer_id?: string | null;
+            /** Format: uuid */
+            event_id?: string | null;
+            deposit_status: components["schemas"]["DepositStatus"];
+            /**
+             * Format: int64
+             * @description Caution détenue ; 0 = aucune.
+             */
+            deposit_held: number;
+            has_claim_code: boolean;
+            claim_code_used_at?: components["schemas"]["Timestamp"] | null;
+            wallets: {
+                /** Format: uuid */
+                wallet_id: string;
+                currency: components["schemas"]["Currency"];
+                /** Format: int64 */
+                spendable: number;
+                attached_to_account: boolean;
+            }[];
+        };
+        MediaAdminDetail: components["schemas"]["MediaAdmin"] & {
+            status_history: {
+                from_status?: components["schemas"]["MediaStatus"] | null;
+                to_status: components["schemas"]["MediaStatus"];
+                reason?: string | null;
+                /** Format: uuid */
+                actor_id?: string | null;
+                /** Format: uuid */
+                approved_by?: string | null;
+                at: components["schemas"]["Timestamp"];
+            }[];
+        };
+        MediaPersonalizationRequest: {
+            /** Format: uuid */
+            batch_id: string;
+            /** @description SHA-256 de l'identité de 16 octets écrite dans la puce (64 chiffres hexadécimaux). L'identité elle-même n'est jamais envoyée. */
+            token_hash: string;
+            nfc_uid: components["schemas"]["NfcUid"];
+            /** @description Signature d'originalité NXP lue par `READ_SIG` (§7.5). Le serveur n'en garde que l'empreinte (ADR-59). */
+            originality_signature: string;
+            /** @description Résultat de la vérification de la signature par le poste ; `false` fait refuser la puce. */
+            signature_ok: boolean;
+            /** @description Clé publique ECDH P-256 à usage unique du poste (point non compressé, 65 octets, base64url) ; le mot de passe est chiffré pour elle. */
+            station_public_key: string;
+        };
+        MediaPersonalization: {
+            /** Format: uuid */
+            media_id: string;
+            key_index: number;
+            /**
+             * @description `PWD‖PACK` (6 octets) sous enveloppe pour la clé du poste : ECDH-ES P-256 + HKDF-SHA256 + AES-256-GCM,
+             *     AAD = `"CASHLESS/PWDPACK/PERSO/v1" || media_id || nfc_uid`. Jamais transmis en clair.
+             */
+            pwd_pack: components["schemas"]["EncryptedBlob"];
+        };
     };
     responses: {
         /** @description Requête invalide (`VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REQUIRED`…). */
@@ -5614,6 +6469,10 @@ export type components = {
         PosId: string;
         /** @description Règle de frais. */
         FeeRuleId: string;
+        BatchId: string;
+        /** @description Index de clé de bracelet (octets 2-3 de la page 4, format B). */
+        KeyIndex: number;
+        TagKeyJobId: string;
     };
     requestBodies: never;
     headers: {
@@ -6307,7 +7166,15 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "tap_id": 918270,
+                 *       "tap": {
+                 *         "nfc_uid": "04a1b2c3d4e5f6",
+                 *         "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                 *         "counter": 1,
+                 *         "key_index": 1,
+                 *         "pack_verified": true,
+                 *         "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+                 *         "occurred_at": "2026-12-11T18:02:58Z"
+                 *       },
                  *       "channel": "DESK",
                  *       "wallet_id": null,
                  *       "customer_id": null,
@@ -6613,6 +7480,58 @@ export interface operations {
             422: components["responses"]["Unprocessable"];
         };
     };
+    reassignPoolMedia: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    new_token_hash: components["schemas"]["Hex32"];
+                };
+            };
+        };
+        responses: {
+            /** @description Bracelet remis en stock. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        media_id: string;
+                        media_status: components["schemas"]["MediaStatus"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     replaceMedia: {
         parameters: {
             query?: never;
@@ -6639,13 +7558,26 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "new_media_tap_id": 918410,
+                 *       "new_media_tap": {
+                 *         "nfc_uid": "04a1b2c3d4e5f6",
+                 *         "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                 *         "counter": 1,
+                 *         "key_index": 1,
+                 *         "pack_verified": true,
+                 *         "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+                 *         "occurred_at": "2026-12-12T10:14:00Z"
+                 *       },
                  *       "reason": "Bracelet déchiré, identité vérifiée sur pièce."
                  *     }
                  */
                 "application/json": {
-                    /** Format: int64 */
-                    new_media_tap_id: number;
+                    new_media_tap: components["schemas"]["TapInput"];
+                    /**
+                     * Format: int64
+                     * @deprecated
+                     * @description Sans effet (voir `new_media_tap`) ; une demande qui ne porte que ce champ est refusée (`422`).
+                     */
+                    new_media_tap_id?: number;
                     reason: string;
                 };
             };
@@ -6675,9 +7607,12 @@ export interface operations {
                     };
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     refundCashDue: {
@@ -8770,10 +9705,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        currency: string;
-                        balance: components["schemas"]["Balance"];
-                        media_status?: components["schemas"]["MediaStatus"];
-                        recent: components["schemas"]["WalletMovement"][];
+                        currency: components["schemas"]["Currency"];
+                        /**
+                         * Format: int64
+                         * @description Solde disponible (crédits payés + offerts).
+                         */
+                        spendable: number;
+                        media_status: components["schemas"]["MediaStatus"];
+                        recent: {
+                            occurred_at: components["schemas"]["Timestamp"];
+                            type: components["schemas"]["TransactionType"];
+                            amount: components["schemas"]["SignedAmount"];
+                        }[];
                     };
                 };
             };
@@ -12512,6 +13455,1126 @@ export interface operations {
                 };
             };
             202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listTagKeys: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de clés. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TagKey"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    requestTagKey: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagKeyRequest"];
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getTagKey: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Index de clé de bracelet (octets 2-3 de la page 4, format B). */
+                key_index: components["parameters"]["KeyIndex"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Clé de bracelet. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagKeyDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    requestDekRotation: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Index de clé de bracelet (octets 2-3 de la page 4, format B). */
+                key_index: components["parameters"]["KeyIndex"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    requestTagKeyRetirement: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Index de clé de bracelet (octets 2-3 de la page 4, format B). */
+                key_index: components["parameters"]["KeyIndex"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listTagKeyJobs: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de travaux. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TagKeyJob"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    retryTagKeyJob: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                job_id: components["parameters"]["TagKeyJobId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Travail remis en attente. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagKeyJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listTagKeyCheckRuns: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de comptes rendus. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TagKeyCheckRun"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listMediaBatches: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Lots de cet organisateur. */
+                organizer_id?: string;
+                /** @description Lots réservés à cet événement. */
+                event_id?: string;
+                /** @description Statut du lot. */
+                status?: components["schemas"]["MediaBatchStatus"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de lots. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MediaBatch"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createMediaBatch: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaBatchCreate"];
+            };
+        };
+        responses: {
+            /** @description Lot créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/operators/{operator_id}/media-batches/{batch_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatch"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getMediaBatch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lot. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatch"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateMediaBatch: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaBatchUpdate"];
+            };
+        };
+        responses: {
+            /** @description Lot modifié. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatch"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    setMediaBatchStatus: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaBatchStatusChange"];
+            };
+        };
+        responses: {
+            /** @description Lot dans son nouveau statut. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatch"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getMediaBatchInventory: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inventaire du lot. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatchInventory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    issueClaimCodeOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fichier de commande (une ligne par bracelet). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example rank,code,url
+                     *     1,K7QM-4XH9RT,https://pay.example/c/K7QM4XH9RT
+                     */
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    importClaimCodeAssociations: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example code,uid
+                 *     K7QM-4XH9RT,04A1B2C3D4E5F6
+                 */
+                "text/csv": string;
+            };
+        };
+        responses: {
+            /** @description Résultat de l'import. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimCodeAssociationResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    closeMediaBatch: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Avancement de la clôture. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatchClosure"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    catchUpBatchPreload: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                batch_id: components["parameters"]["BatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Nombre de bracelets préchargés par cet appel. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaBatchPreloadCatchUp"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listMedia: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Bracelets de ce lot. */
+                batch_id?: string;
+                /** @description Statut du bracelet. */
+                status?: components["schemas"]["MediaStatus"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de bracelets. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MediaAdmin"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getMediaAdmin: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bracelet. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAdminDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    blacklistMedia: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaReason"];
+            };
+        };
+        responses: {
+            /** @description Bracelet en liste noire. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAdmin"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    requestMediaReinstatement: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaReason"];
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    reportMediaLost: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaReason"];
+            };
+        };
+        responses: {
+            /** @description Bracelet suspendu. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAdmin"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    recoverMedia: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bracelet dans son nouveau statut. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAdmin"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    registerPersonalizedMedia: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaPersonalizationRequest"];
+            };
+        };
+        responses: {
+            /** @description Bracelet enregistré. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaPersonalization"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    associateClaimCode: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimCodeAssociation"];
+            };
+        };
+        responses: {
+            /** @description Code associé. */
+            204: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];

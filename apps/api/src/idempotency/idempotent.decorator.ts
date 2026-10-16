@@ -21,6 +21,12 @@ export interface IdempotentOptions {
    * par la route seulement : rien de ce que la requête transporte (en-tête, chemin, corps) n'en décide.
    */
   platform?: boolean | 'principal';
+  /**
+   * Réponse à ne jamais conserver (elle porte un secret remis une seule fois, comme le fichier de commande des codes
+   * de rattachement). La clé protège toujours contre un double envoi, mais le registre ne garde que « déjà exécutée,
+   * non rejouable » : un nouvel envoi de la même clé reçoit `409`, jamais la réponse d'origine.
+   */
+  transient?: boolean;
 }
 
 /** Route d'écriture : `Idempotency-Key` obligatoire, réponse enregistrée et rejouée (SPECIFICATION §10.2). */

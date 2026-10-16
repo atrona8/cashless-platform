@@ -7,7 +7,8 @@
   "types": "src/index.ts",
   "scripts": {
     "generate": "node scripts/generate.mjs",
-    "check": "node scripts/check.mjs",
+    "generate:dart": "bash scripts/generate-dart.sh",
+    "check": "node scripts/check.mjs && bash scripts/generate-dart.sh --check",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

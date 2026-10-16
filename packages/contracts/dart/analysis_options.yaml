@@ -1,0 +1,6 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  errors:
+    # Code généré par swagger_parser : conversions superflues dans les énumérations, sans effet.
+    unnecessary_cast: ignore

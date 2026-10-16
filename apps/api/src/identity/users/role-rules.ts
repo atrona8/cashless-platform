@@ -1,6 +1,7 @@
 // Qui peut attribuer quoi (contracts/identity.md « Attribution des rôles », research R-05) :
 //   PLATFORM_ADMIN  → OPERATOR_ADMIN (prestataire) ; PLATFORM_ADMIN : par createPlatformAdmin seulement ;
-//   OPERATOR_ADMIN  → OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR, CASHIER, MERCHANT_ADMIN dans son prestataire ;
+//   OPERATOR_ADMIN  → OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR, CASHIER, MERCHANT_ADMIN dans son prestataire, et
+//                     PERSONALIZER (poste de personnalisation des bracelets, mission bracelets-nfc) sur son prestataire ;
 //   ORGANIZER_ADMIN → SUPERVISOR, CASHIER sur son organisateur ou ses événements ; MERCHANT_ADMIN sur les
 //                     commerçants qui participent à ses événements.
 // Jamais à soi-même ; VENDOR et CUSTOMER ne sont pas attribuables ici. Le retrait suit la même règle.
@@ -9,7 +10,7 @@ import type { Principal, Role, ScopeType } from '../principal';
 import { exercisedRole, type ScopeLink, type ScopeRef } from '../scope-resolver';
 
 /** Rôles attribuables par `grantRole`. */
-export const GRANTABLE_ROLES = ['OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN'] as const;
+export const GRANTABLE_ROLES = ['OPERATOR_ADMIN', 'ORGANIZER_ADMIN', 'SUPERVISOR', 'CASHIER', 'MERCHANT_ADMIN', 'PERSONALIZER'] as const;
 export type GrantableRole = (typeof GRANTABLE_ROLES)[number];
 
 /** Portées compatibles avec chaque rôle attribuable (mêmes règles que la contrainte role_assignment_role_scope). */
@@ -19,6 +20,7 @@ const ROLE_SCOPES: Readonly<Record<GrantableRole, readonly ScopeType[]>> = {
   SUPERVISOR: ['ORGANIZER', 'EVENT'],
   CASHIER: ['ORGANIZER', 'EVENT'],
   MERCHANT_ADMIN: ['MERCHANT'],
+  PERSONALIZER: ['OPERATOR'],
 };
 
 /** Ce que chaque rôle d'administration peut attribuer, et sur quel englobement. */

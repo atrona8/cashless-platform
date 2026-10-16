@@ -27,6 +27,12 @@ la précédente est annulée), arrêté au bout de 20 minutes. Le job échoue à
 Variables du job : `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` (outils PostgreSQL et
 `tools/dev-db/env.sh`, qui garde les valeurs déjà posées), `CASHLESS_APP_PASSWORD` (mot de passe donné à
 `cashless_app` par les migrations), `DATABASE_URL_OWNER` (migrations, fixtures de test) et `DATABASE_URL_APP` (API).
+Depuis le 2026-10-15 : `TRUST_PROXY_HOPS` (OP-N53), nombre de répartiteurs de confiance devant les processus HTTP,
+entier de 0 à 5. `0` en CI (aucun répartiteur : `X-Forwarded-For` ignoré) ; **obligatoire en production**, sans
+défaut : un processus démarré avec `NODE_ENV=production` sans cette variable refuse de démarrer. En production, la
+valeur est le nombre exact de répartiteurs qui ajoutent une adresse à `X-Forwarded-For` devant l'API (ex. `1` pour un
+seul répartiteur de charge) : trop haute, un client choisit son adresse ; trop basse, tous les clients ont l'adresse
+du répartiteur et partagent la limite de 60 consultations anonymes par heure.
 
 ## Reproduire en local
 
@@ -57,6 +63,25 @@ d'où l'ordre du job (pgTAP, puis base recréée, puis Jest). Relancer `npm run 
 Sous Windows (Git Bash), ne pas `source tools/dev-db/env.sh` dans le shell qui lance ensuite `npm run test:pgtap` :
 la variable `PERL5LIB` traverse `cmd.exe`, revient sous la forme `C:/…`, et Perl la coupe sur `:` (`pg_prove` ne
 trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
+
+## Répétition locale du 2026-10-14 (mission bracelets-nfc, WP20)
+
+macOS (Intel), PostgreSQL 17 en Docker (colima, `127.0.0.1:5433`) avec pgTAP, `pg_prove` 3.37 (CPAN), Node 24.17,
+SDK Dart 3.8.3, branche de la lane WP20 (`kitty/mission-bracelets-nfc-01M4TD3W-lane-t`, toutes les lanes de la mission
+fusionnées). Toutes les étapes vertes.
+
+| Étape | Résultat |
+|---|---|
+| Lint, types | 0 erreur |
+| Types du contrat (TypeScript et Dart) | à jour ; `dart analyze` : aucun constat |
+| Bibliothèque de format (TypeScript) | 38 tests verts, 1 écarté (vecteurs du kit : module Python `cryptography` absent du poste ; exigé en CI) |
+| Bibliothèque de format (Dart) | `dart pub get --enforce-lockfile` (verrou `pubspec.lock` ajouté, absent depuis WP02), `dart analyze --fatal-infos` sans constat, 30 tests verts |
+| Base, migrations | `0001` à `0016` appliquées, `roles.sql` et `post-roles.sql` rejoués |
+| Suites pgTAP | 18 fichiers, **1267 assertions**, PASS |
+| Base recréée, Jest (`SKIP_LATENCY=1`) | 71 suites, **1223 tests** verts |
+| Latence des routes de configuration (seule) | créations p95 47 ms (seuil 500), lectures p95 18 ms (seuil 200) |
+| Latence des bracelets, NFR-006 (seule, 100 000 bracelets) | mot de passe p95 15 ms, p99 18 ms ; lecture p95 23 ms, p99 26 ms (seuils 200 / 500) ; activation p95 49 ms (seuil 500) |
+| Codes imprimés sans énumération, NFR-007 (seule) | 200 + 200 essais, même statut, corps et en-têtes ; médianes 20,4 et 20,6 ms, écart 0,2 ms (seuil 20 ms ; 0,1 à 0,2 ms selon les passages, voir ADR-90) |
 
 ## Répétition locale du 2026-10-12 (mission configuration-parties-evenements, WP13)
 

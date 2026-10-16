@@ -97,21 +97,39 @@ export async function migrate(client: Client, migrations: Migration[] = loadMigr
     report.applied.push(migration.version);
   }
 
-  // Droits du rôle applicatif, rejoués à chaque série (donne leurs droits aux tables nouvelles).
-  await client.query(readFileSync(ROLES_FILE, 'utf8'));
-  // Retraits et droits par colonne posés après roles.sql (qui rend INSERT, UPDATE et EXECUTE sur tout).
+  // Droits des rôles : roles.sql, post-roles.sql et mots de passe dans UNE transaction (lot 20, cycle 5). roles.sql
+  // rend INSERT, UPDATE et EXECUTE sur tout au rôle applicatif ; appliqué seul et validé, il rouvrirait ces droits
+  // (historiques, règles de passage, colonnes secrètes de `media`) jusqu'à ce que post-roles.sql les retire. Toutes
+  // les instructions des deux fichiers (CREATE/ALTER ROLE, GRANT, REVOKE, politiques, blocs DO) sont transactionnelles
+  // en PostgreSQL : une session concurrente voit les droits d'avant ou ceux d'après, jamais l'état intermédiaire, et un
+  // échec de post-roles.sql laisse les droits précédents intacts.
   report.postRoles = existsSync(POST_ROLES_FILE);
-  if (report.postRoles) await client.query(readFileSync(POST_ROLES_FILE, 'utf8'));
-  // roles.sql et post-roles.sql ne fixent volontairement aucun mot de passe : réglage local / CI seulement.
-  // cashless_platform est créé par post-roles.sql : sans ce fichier, son mot de passe n'est pas posé.
-  const passwords: [role: string, password: string | undefined][] = [
-    ['cashless_app', process.env.CASHLESS_APP_PASSWORD],
-    ['cashless_platform', report.postRoles ? process.env.CASHLESS_PLATFORM_PASSWORD : undefined],
-  ];
-  for (const [role, password] of passwords) {
-    if (!password) continue;
-    const { rows: quoted } = await client.query<{ literal: string }>('SELECT quote_literal($1) AS literal', [password]);
-    await client.query(`ALTER ROLE ${role} PASSWORD ${quoted[0]?.literal}`);
+  await client.query('BEGIN');
+  try {
+    // Droits du rôle applicatif, rejoués à chaque série (donne leurs droits aux tables nouvelles).
+    await client.query(readFileSync(ROLES_FILE, 'utf8'));
+    // Retraits et droits par colonne posés après roles.sql (qui rend INSERT, UPDATE et EXECUTE sur tout).
+    if (report.postRoles) await client.query(readFileSync(POST_ROLES_FILE, 'utf8'));
+    // roles.sql et post-roles.sql ne fixent volontairement aucun mot de passe : réglage local / CI seulement.
+    // cashless_platform est créé par post-roles.sql : sans ce fichier, son mot de passe n'est pas posé.
+    const passwords: [role: string, password: string | undefined][] = [
+      ['cashless_app', process.env.CASHLESS_APP_PASSWORD],
+      ['cashless_platform', report.postRoles ? process.env.CASHLESS_PLATFORM_PASSWORD : undefined],
+      // Rôles des processus des clés de bracelet (mission bracelets-nfc), créés eux aussi par post-roles.sql.
+      ['cashless_tagkeys', report.postRoles ? process.env.CASHLESS_TAGKEYS_PASSWORD : undefined],
+      ['cashless_perso', report.postRoles ? process.env.CASHLESS_PERSO_PASSWORD : undefined],
+      ['cashless_tagcheck', report.postRoles ? process.env.CASHLESS_TAGCHECK_PASSWORD : undefined],
+      ['cashless_keyadmin', report.postRoles ? process.env.CASHLESS_KEYADMIN_PASSWORD : undefined],
+    ];
+    for (const [role, password] of passwords) {
+      if (!password) continue;
+      const { rows: quoted } = await client.query<{ literal: string }>('SELECT quote_literal($1) AS literal', [password]);
+      await client.query(`ALTER ROLE ${role} PASSWORD ${quoted[0]?.literal}`);
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw new Error(`Échec de l'application des droits des rôles : ${(error as Error).message}`, { cause: error });
   }
   return report;
 }
