@@ -132,7 +132,7 @@ reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6
 > rafraîchissement (OP-N65, ADR-108, réexaminée en mission 13) ; `serial` unique par prestataire (ADR-109).
 
 - [x] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
-- [ ] /spec-kitty.tasks
+- [x] /spec-kitty.tasks (18 lots, 87 sous-tâches, 19/10/2026)
 - [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux-01M52R6H
 - [ ] /spec-kitty.review --mission identite-enrolement-terminaux-01M52R6H
 - [ ] /spec-kitty.accept --mission identite-enrolement-terminaux-01M52R6H
