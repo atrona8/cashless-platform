@@ -78,7 +78,7 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 Découpage du 16/10/2026 (décision du porteur au premier point de cadrage de la mission 5) : la mission 5 devient 5a
 puis 5b. Les héritages de la mission 4 notés « mission 5 » dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md`
-reviennent à la mission 5a. Slug proposé : `identite-enrolement-terminaux`, branche `feat/identite-enrolement-terminaux`.
+reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6H`, branche `feat/identite-enrolement-terminaux`.
 
 > **Hérité de la mission 4 (bracelets-nfc)** : remplacer le faux d'identité du terminal par la vérification du jeton
 > d'appareil, du mTLS et de la signature de chaque requête (OP-N42, ADR-88) ; le faux ne doit plus être câblé hors des
@@ -118,13 +118,21 @@ reviennent à la mission 5a. Slug proposé : `identite-enrolement-terminaux`, br
 > Ne pas rouvrir `INSERT` sur `tag_key_job`
 > (travaux par `enqueue_tag_key_job` et `enqueue_tag_key_child_job` seulement, migration 0020).
 
-- [ ] /spec-kitty.specify Identité et enrôlement des terminaux (SPECIFICATION §8.1, §8.2, §10.3, §13.2, §13.4, §14.2 S5, `docs/sync_protocol.md` §3.1, ADR-69, ADR-88). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; empreinte, expiration ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256 (clé d'accord écrite à l'enrôlement seulement, OP-N63), unicité du `serial` parmi les terminaux non révoqués, jeton d'appareil et rafraîchissement (`device_refresh_token`), requêtes signées par la clé du terminal et mTLS (OP-N42 : faux d'identité retiré hors des tests), suspension et révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Dettes de sécurité héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62, OP-N63 (voir ci-dessus).
+- [x] /spec-kitty.specify Identité et enrôlement des terminaux (SPECIFICATION §8.1, §8.2, §10.3, §13.2, §13.4, §14.2 S5, `docs/sync_protocol.md` §3.1, ADR-69, ADR-88). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; empreinte, expiration ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256 (clé d'accord écrite à l'enrôlement seulement, OP-N63), unicité du `serial` parmi les terminaux non révoqués, jeton d'appareil et rafraîchissement (`device_refresh_token`), requêtes signées par la clé du terminal et mTLS (OP-N42 : faux d'identité retiré hors des tests), suspension et révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Dettes de sécurité héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62, OP-N63 (voir ci-dessus).
+> **Décisions du porteur au specify (19/10/2026)** : chaque requête de terminal porte ensemble le jeton lié, le
+> mTLS et la signature de la requête (`DM-01M52R88ZPZEA0NXVSDY9PBXW5` ; SPEC §10.3 et `openapi.yaml` disent « l'un ou
+> l'autre » : contradiction signalée, contrat à mettre à jour dans le sens le plus sûr) ; attestation vérifiée sur
+> Android (Key Attestation) et iOS (App Attest) (`DM-01M59RR2KCM2NMTGNR62HXJD76`) ; OP-N50 levée en 5a
+> (`DM-01M59RSS09TMMZ9Y7VKGAQGQQ0`) ; routes back-office des terminaux ajoutées au contrat ; suspension, réactivation
+> et révocation à une personne ; attestation à l'enrôlement seulement ; autorité des terminaux derrière un port avec
+> faux refusé en production.
+
 - [ ] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux
-- [ ] /spec-kitty.review --mission identite-enrolement-terminaux
-- [ ] /spec-kitty.accept --mission identite-enrolement-terminaux
-- [ ] spec-kitty merge --mission identite-enrolement-terminaux
+- [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux-01M52R6H
+- [ ] /spec-kitty.review --mission identite-enrolement-terminaux-01M52R6H
+- [ ] /spec-kitty.accept --mission identite-enrolement-terminaux-01M52R6H
+- [ ] spec-kitty merge --mission identite-enrolement-terminaux-01M52R6H
 
 ## Mission 5b — Terminaux et paiement en ligne
 

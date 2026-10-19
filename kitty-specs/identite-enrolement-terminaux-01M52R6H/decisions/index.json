@@ -1,0 +1,79 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-16T16:20:50.294941Z",
+      "decision_id": "01M52R88ZPZEA0NXVSDY9PBXW5",
+      "final_answer": "Jeton, signature et mTLS",
+      "input_key": "device_auth_scheme",
+      "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+      "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+      "opened_by": "cli",
+      "options": [
+        "Jeton et signature de chaque requ\u00eate, sans mTLS",
+        "Jeton, signature et mTLS",
+        "Jeton et mTLS, sans signature par requ\u00eate",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Authentification des terminaux : jeton d'appareil li\u00e9 \u00e0 la cl\u00e9 + signature de chaque requ\u00eate, sans mTLS en V1 ; ou les trois (jeton, signature, mTLS avec une autorit\u00e9 de certification des terminaux) ; ou jeton + mTLS sans signature par requ\u00eate ?",
+      "rationale": "Condition de lev\u00e9e d'OP-N42 (ADR-88) tenue \u00e0 la lettre ; SPEC \u00a710.3 et openapi.yaml (\u00ab l'un OU l'autre \u00bb, mTLS + jeton li\u00e9 recommand\u00e9 en production) sont plus permissifs : contradiction signal\u00e9e, r\u00e9solue dans le sens le plus s\u00fbr.",
+      "resolved_at": "2026-10-19T09:41:33.205209Z",
+      "resolved_by": "porteur",
+      "slot_key": "specify.identity.transport",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-19T09:44:09.069104Z",
+      "decision_id": "01M59RR2KCM2NMTGNR62HXJD76",
+      "final_answer": "Android et iOS v\u00e9rifi\u00e9s en 5a",
+      "input_key": "key_attestation_scope",
+      "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+      "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+      "opened_by": "cli",
+      "options": [
+        "Android et iOS v\u00e9rifi\u00e9s en 5a",
+        "Android seulement, iOS refus\u00e9 jusqu \u00e0 une mission nomm\u00e9e",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Attestation \u00e0 l'enr\u00f4lement : v\u00e9rifier en 5a la cha\u00eene Android Key Attestation (cl\u00e9 mat\u00e9rielle, bootloader verrouill\u00e9, app sign\u00e9e) ET iOS App Attest ; ou Android seulement, l'enr\u00f4lement iOS refus\u00e9 jusqu'\u00e0 une mission nomm\u00e9e (\u00e9cart de s\u00e9curit\u00e9 consign\u00e9) ?",
+      "rationale": null,
+      "resolved_at": "2026-10-19T09:44:59.764439Z",
+      "resolved_by": "porteur",
+      "slot_key": "specify.enrollment.attestation",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-19T09:45:04.777225Z",
+      "decision_id": "01M59RSS09TMMZ9Y7VKGAQGQQ0",
+      "final_answer": "Lever en 5a",
+      "input_key": "op_n50_mission",
+      "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+      "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+      "opened_by": "cli",
+      "options": [
+        "Lever en 5a",
+        "Reporter en 5b",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "OP-N50 (consume_tap accepte encore une lecture qui a confirm\u00e9 un rattachement) touche le paiement par bracelet, livr\u00e9 en 5b : la lever en 5a comme pr\u00e9vu, ou la reporter en 5b (\u00e9cart consign\u00e9, mission de lev\u00e9e renomm\u00e9e) ?",
+      "rationale": null,
+      "resolved_at": "2026-10-19T09:45:51.593969Z",
+      "resolved_by": "porteur",
+      "slot_key": "specify.scope.op-n50",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+  "version": 1
+}
