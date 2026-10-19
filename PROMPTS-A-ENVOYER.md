@@ -319,6 +319,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > d'appareil, une représentation du jeton consommé est tolérée 60 s pour le même terminal. Mesurer en recette les
 > pertes de réponse réelles ; si la grâce ne sert pas, revenir au mode strict et lever la limite.
 >
+> **Hérité de la mission 5a, OP-N67 (ADR-110 ; décision du porteur du 19/10/2026)** : l'attestation Android lit
+> `attestationApplicationId` dans `softwareEnforced` (seul champ). Relever sur les appareils cibles où ce champ est
+> placé ; s'il est matériel, revenir à la lecture stricte, sinon décider d'une preuve d'intégrité de l'app
+> complémentaire (Play Integrity) ou garder la limite.
+>
 > **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
 >
 > **OP-N61 (ADR-98, décision du porteur du 15/10/2026)** — NFR-008 non prouvé à l'échelle : prouver que la clôture d'un

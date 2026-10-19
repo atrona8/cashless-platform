@@ -1399,3 +1399,18 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `<serial>:<seq>` restent rangées par prestataire (registre d'idempotence à `operator_id`).
 - **Références.** `sync_protocol.md` §3.1 ; `research.md` R-11 de la mission 5a ; décision
   `DM-01M59WP3HZ99VBEM3SPTQDYJSQ`.
+
+## ADR-110 — Attestation Android : `attestationApplicationId` lu dans la liste logicielle
+
+- **Statut** : Acceptée, 19 octobre 2026 (décision du porteur pendant l'implémentation de WP10, mission 5a, OP-N67).
+- **Contexte.** R-05 lisait tous les contrôles de Key Attestation dans la liste matérielle. Le service Keystore
+  d'Android écrit `attestationApplicationId` dans `softwareEnforced` : la règle stricte rendait Android inutilisable.
+- **Décision.** Écart qui affaiblit le plan, accepté et borné : seul `attestationApplicationId` est lu dans
+  `softwareEnforced` (la valeur matérielle prime si elle existe, et doit concorder). Tous les autres contrôles restent
+  lus dans la liste matérielle. Classé **bloque la production : non**.
+- **Mission qui la réexamine.** Mission 13 (recette V1), sur les appareils cibles.
+- **Condition de levée.** Champ présent dans la liste matérielle des appareils cibles, ou preuve d'intégrité de l'app
+  complémentaire.
+- **Conséquences.** Tests de borne dans `android.spec.ts` : un autre contrôle lu seulement en logiciel → refus ; champ
+  absent des deux listes → refus ; paquet ou empreinte faux → refus.
+- **Références.** `research.md` R-05 de la mission 5a ; OP-N67.

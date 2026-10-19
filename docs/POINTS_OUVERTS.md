@@ -474,6 +474,25 @@ réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 
 - **Test qui échoue si la limite s'élargit** : seconde représentation, plus de 60 s ou autre certificat → famille
   révoquée, jeton d'appareil de la famille refusé.
 
+### OP-N67 — Attestation Android : identité de l'app lue dans la liste logicielle (19 octobre 2026)
+
+Signalé par l'implémentation de WP10 (mission 5a). **Écart accepté, affaiblit le plan, bloque la production : non ;
+réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 ; ADR-110.**
+
+- **Constat.** `research.md` R-05 voulait lire `attestationApplicationId` (paquet et empreintes de signature de l'app)
+  dans la liste matérielle de Key Attestation. Sur les vrais appareils, ce champ est écrit par le service Keystore du
+  système, donc placé dans `softwareEnforced` : la lecture stricte refuserait tout terminal Android.
+- **Risque.** Un système d'exploitation compromis peut mentir sur l'app qui a créé la clé. Borné : la clé reste
+  générée dans le TEE ou StrongBox (`origin = GENERATED`, chaîne signée par le matériel), et `verifiedBootState =
+  Verified`, `deviceLocked`, les niveaux de correctif et la révocation restent lus dans la liste matérielle ; un système
+  modifié ne passe pas le démarrage vérifié sans casser le TEE.
+- **Ce qui est fait.** Seul ce champ est lu dans `softwareEnforced` ; s'il est aussi dans la liste matérielle, cette
+  valeur prime et les deux doivent concorder.
+- **Condition de levée.** Lecture dans la liste matérielle si les appareils cibles l'y placent, ou preuve d'intégrité
+  de l'app complémentaire (Play Integrity) décidée en recette.
+- **Test qui échoue si la limite s'élargit** : un autre contrôle (`verifiedBootState`, `deviceLocked`…) présent
+  seulement dans `softwareEnforced` → refus (`apps/api/test/unit/attestation/android.spec.ts`).
+
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 
 Constaté pendant la mission 5a (vérification de WP09), défaut antérieur à cette mission (mission 4). **Hors

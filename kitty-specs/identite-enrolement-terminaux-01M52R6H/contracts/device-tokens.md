@@ -38,7 +38,10 @@ interface TokenSignerPort { readonly isFake?: boolean; kid: string; sign(claims)
 interface DeviceCaPort { readonly isFake?: boolean; issue(csr: Pkcs10, subject: {deviceId, operatorId}, notAfter): Promise<{ pem: string; sha256: Buffer; notAfter: Date }>; caCertificatesPem(): string[] }
 ```
 
-Faux : clés générées au démarrage du test (jamais lues de l'environnement), `isFake = true`.
+Faux : clés jamais lues de l'environnement en production (démarrage refusé si `DEVICE_CA_FAKE_KEY_FILE` y est posé) ;
+en test, clés générées à l'exécution, en mémoire ou dans des fichiers temporaires désignés par
+`DEVICE_CA_CERT_FILE`/`DEVICE_CA_FAKE_KEY_FILE` (`test/support/tls.ts`), jamais écrites dans le dépôt ; `isFake = true`.
+(Alignement du contrat sur WP08/WP09, décision du porteur du 19/10/2026.)
 
 ## Tests imposés
 

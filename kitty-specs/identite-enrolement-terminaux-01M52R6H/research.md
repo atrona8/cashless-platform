@@ -91,7 +91,8 @@ dans le dossier `decisions/` (identifiants `DM-…`) ; celles qui touchent à la
     Verified`) ;
   - `osPatchLevel`, `vendorPatchLevel`, `bootPatchLevel` ≥ seuil réglable (`ANDROID_MIN_PATCH_LEVEL`) ;
   - `attestationApplicationId` : un seul paquet, le paquet attendu, et **toutes** ses empreintes de signature dans
-    l'ensemble autorisé ;
+    l'ensemble autorisé ; **seul champ lu dans `softwareEnforced`** (le Keystore l'y écrit sur les vrais appareils ;
+    valeur matérielle prioritaire si présente) — écart accepté par le porteur le 19/10/2026, OP-N67, ADR-110 ;
   - extension KeyDescription présente dans la feuille seulement ;
   - chaînage explicite (émetteur = sujet du suivant, dates de chaque certificat, contraintes de base des
     intermédiaires) en plus de `X509Certificate.verify` ;
