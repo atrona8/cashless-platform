@@ -22,13 +22,13 @@ history:
 agent_profile: node-norris
 authoritative_surface: apps/api/src/idempotency/request-hash.ts
 create_intent:
-- apps/api/src/devices/enrollment-code.ts
+- apps/api/src/enrollment-code/enrollment-code.ts
 - apps/api/test/unit/idempotency/request-hash.spec.ts
 - apps/api/test/unit/enrollment-code.spec.ts
 execution_mode: code_change
 owned_files:
 - apps/api/src/idempotency/request-hash.ts
-- apps/api/src/devices/enrollment-code.ts
+- apps/api/src/enrollment-code/enrollment-code.ts
 - apps/api/test/unit/idempotency/request-hash.spec.ts
 - apps/api/test/unit/enrollment-code.spec.ts
 role: implementer
@@ -64,7 +64,7 @@ Planification et merge sur `feat/identite-enrolement-terminaux`. Dépendances : 
 
 ### T064 — Code d'enrôlement
 
-`enrollment-code.ts` : `generateEnrollmentCode()` (60 bits, 12 caractères de l'alphabet de 32, `crypto.randomInt`), `formatEnrollmentCode` (`XXXX-XXXX-XXXX`), `normalizeEnrollmentCode` (tirets, espaces, casse ; caractère interdit → refus), `enrollmentCodeHash(code, key)` (HMAC-SHA256 du code normalisé).
+`enrollment-code/enrollment-code.ts` : `generateEnrollmentCode()` (60 bits, 12 caractères de l'alphabet de 32, `crypto.randomInt`), `formatEnrollmentCode` (`XXXX-XXXX-XXXX`), `normalizeEnrollmentCode` (tirets, espaces, casse ; caractère interdit → refus), `enrollmentCodeHash(code, key)` (HMAC-SHA256 du code normalisé).
 
 ### T065 — Tests
 
