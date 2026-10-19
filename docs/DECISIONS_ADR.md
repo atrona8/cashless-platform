@@ -115,6 +115,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-103 | `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête (contradiction contrat / schéma) | Acceptée (consignée le 16/10/2026) |
 | ADR-104 | Mission de levée d'OP-N47 (rotation de `CLAIM_CODE_HMAC_KEY`) : mission 10 | Proposée par l'agent, à confirmer par le porteur |
 | ADR-105 | Clé d'accord d'un terminal (`device.agreement_public_key`) réécrivable par l'API (OP-N63) : limite acceptée, levée par la mission 5 | Acceptée (décision du porteur du 16/10/2026) |
+| ADR-106 | Terminal iOS : clé de signature non attestée, liée à l'instance App Attest (OP-N64) : limite acceptée, réexaminée par la mission 12 | Acceptée (décision du porteur du 19/10/2026) |
+| ADR-107 | Terminaux : jeton lié, mTLS et signature de chaque requête exigés ensemble (contradiction avec SPEC §10.3 et le contrat) | Acceptée (décision du porteur du 19/10/2026) |
+| ADR-108 | Rafraîchissement d'un jeton d'appareil : grâce de 60 s pour le même terminal (OP-N65) : limite acceptée, réexaminée par la mission 13 | Acceptée (décision du porteur du 19/10/2026) |
+| ADR-109 | `serial` d'un terminal unique par prestataire (écart au schéma de référence) | Acceptée (décision du porteur du 19/10/2026) |
 
 ---
 
@@ -1334,3 +1338,64 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   à mettre à jour à la levée. Reports dans `PROMPTS-A-ENVOYER.md` (mission 5) et `PRD.md`
   (héritages de la mission 4). Fichiers à faire relire par une personne : `post-roles.sql`.
 - **Références.** ADR-102 ; OP-N42, OP-N63 ; `packages/ledger-sql/roles.sql`.
+
+## ADR-106 — Terminal iOS : clé de signature non attestée, liée à l'instance App Attest
+
+- **Statut** : Acceptée, 19 octobre 2026 (décision du porteur au plan de la mission 5a, OP-N64).
+- **Contexte.** La mission 5a vérifie l'attestation à l'enrôlement sur Android (Key Attestation) et sur iOS (App
+  Attest). Sur iOS, App Attest atteste sa propre clé (Secure Enclave) et l'intégrité de l'app, pas la clé de signature
+  ECDSA P-256 que le terminal utilise pour ses requêtes, son CSR et son certificat mTLS. La spécification de la mission
+  (FR-006) supposait la clé de signature prouvée dans la Secure Enclave.
+- **Décision.** Limite acceptée, classée **bloque la production : non**. Le défi d'enrôlement couvre le code, le
+  `serial` et les deux clés publiques : un tiers ne peut pas substituer ses clés à celles de l'instance attestée. La
+  non-exportabilité de la clé de signature iOS n'est pas prouvée. Risque borné : un terminal iOS encaisse en QR
+  seulement (`nfc_enabled = false`, contrainte de `device`) et ne reçoit jamais le mot de passe d'un bracelet.
+- **Mission qui la réexamine.** Mission 12 (app terminal).
+- **Condition de levée.** Requêtes iOS signées par assertion App Attest (ou preuve équivalente que la clé qui signe
+  est dans la Secure Enclave).
+- **Conséquences.** Test qui échoue si la borne s'élargit : `POST /media/auth-keys` refuse un terminal iOS. Reports
+  dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 12).
+- **Références.** `kitty-specs/identite-enrolement-terminaux-01M52R6H/research.md` R-06 ; décision
+  `DM-01M59SD0YNWKK8R4EKT2T7THJK` ; OP-N64.
+
+## ADR-107 — Terminaux : trois preuves exigées ensemble
+
+- **Statut** : Acceptée, 19 octobre 2026 (décision du porteur au specify de la mission 5a).
+- **Contexte.** SPECIFICATION §10.3 (« jeton d'appareil lié à la clé du Keystore, ou mTLS ») et `openapi.yaml` (« un
+  terminal utilise l'un OU l'autre ») permettent une seule preuve. La condition de levée d'OP-N42 (ADR-88) exige le
+  jeton, le mTLS et la signature de chaque requête. Contradiction signalée (§0.3).
+- **Décision.** Les trois preuves sont exigées ensemble, liées au même terminal, sur toute route de terminal. Le mTLS
+  est vérifié dans les processus Node, sans en-tête de répartiteur (décision du porteur au plan). Le contrat est mis
+  à jour dans ce sens ; §10.3 est à aligner à la prochaine révision de la spécification.
+- **Conséquences.** Renforcement de sécurité. Matrice de tests qui retire une preuve à la fois.
+- **Références.** OP-N42 ; ADR-88 ; décisions `DM-01M52R88ZPZEA0NXVSDY9PBXW5`, `DM-01M59SAEYDXFK29HMMFBTJ96KS`.
+
+## ADR-108 — Rafraîchissement d'un jeton d'appareil : grâce de 60 s pour le même terminal
+
+- **Statut** : Acceptée, 19 octobre 2026 (décision du porteur au plan de la mission 5a, OP-N65).
+- **Contexte.** Le jeton de rafraîchissement est à usage unique ; une réutilisation révoque toute la famille (vol
+  présumé). Sur un réseau de festival, une réponse de rafraîchissement perdue fait réessayer le terminal avec le jeton
+  déjà consommé : en mode strict, il perd sa famille et doit être ré-enrôlé en plein événement.
+- **Décision.** Limite acceptée, classée **bloque la production : non**. Une seule représentation du jeton consommé,
+  dans les 60 s, par le même terminal (même certificat client, preuve de possession valide) donne une nouvelle paire et
+  révoque la paire émise et jamais utilisée. Tout autre cas révoque la famille. Un voleur aurait besoin du jeton, de la
+  clé de signature et du certificat du terminal.
+- **Mission qui la réexamine.** Mission 13 (recette V1), selon les pertes réseau observées.
+- **Condition de levée.** Retour au mode strict si la recette montre que la grâce ne sert pas.
+- **Conséquences.** Test de borne : seconde représentation, plus de 60 s ou autre certificat → famille révoquée.
+- **Références.** `research.md` R-07 de la mission 5a ; décision `DM-01M59WNZSSTN4YP1W38GPTHMMP` ; OP-N65.
+
+## ADR-109 — `serial` d'un terminal unique par prestataire
+
+- **Statut** : Acceptée, 19 octobre 2026 (décision du porteur au plan de la mission 5a).
+- **Contexte.** L'index `device_serial_active (serial)` du schéma de référence rend le `serial` unique entre tous les
+  prestataires. Le `serial` est déclaré par le terminal, non attesté : un prestataire apprend qu'un `serial` existe
+  chez un autre (refus) et peut l'occuper pour bloquer l'enrôlement d'autrui ; le calcul de `next_seq` lirait le
+  compteur d'un terminal d'un autre prestataire.
+- **Décision.** La migration `0022` remplace l'index par `(operator_id, serial) WHERE status <> 'REVOKED'` ;
+  `next_seq` est calculé dans le prestataire. Écart au schéma de référence signalé (§0.3) ; renforcement du
+  cloisonnement. Le test de référence (même prestataire) reste vert.
+- **Conséquences.** Test à deux prestataires (même `serial`, deux terminaux, aucune fuite). Les clés d'opération
+  `<serial>:<seq>` restent rangées par prestataire (registre d'idempotence à `operator_id`).
+- **Références.** `sync_protocol.md` §3.1 ; `research.md` R-11 de la mission 5a ; décision
+  `DM-01M59WP3HZ99VBEM3SPTQDYJSQ`.

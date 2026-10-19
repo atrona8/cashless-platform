@@ -70,7 +70,7 @@ Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un cod
 
 ### User Story 2 - Un terminal s'enrôle (Priority: P1)
 
-À la première ouverture, l'app crée sa clé de signature et sa clé d'accord dans le matériel sécurisé, scanne le code, et s'enregistre avec ses clés publiques, son attestation et une demande de certificat. Elle reçoit son certificat client, son jeton d'appareil, son jeton de rafraîchissement et le premier numéro de séquence à utiliser.
+À la première ouverture, l'app scanne le code, puis crée sa clé de signature et sa clé d'accord dans le matériel sécurisé (l'attestation Android lie chaque clé au code), et s'enregistre avec ses clés publiques, son attestation et une demande de certificat. Elle reçoit son certificat client, son jeton d'appareil, son jeton de rafraîchissement et le premier numéro de séquence à utiliser.
 
 **Why this priority**: c'est l'entrée du terminal ; tout le reste en dépend.
 
@@ -78,14 +78,14 @@ Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un cod
 
 **Acceptance Scenarios**:
 
-1. **Given** un code valide et une attestation Android conforme (clé dans le matériel sécurisé, bootloader verrouillé, app signée et intacte), **When** le terminal s'enrôle, **Then** il est créé `ACTIVE` avec ses clés publiques, l'empreinte de son certificat et l'affectation du code ; il reçoit certificat, jeton d'appareil, jeton de rafraîchissement et `next_seq = 1`.
+1. **Given** un code valide et une attestation Android 12 ou plus récent conforme pour ses deux clés (clés générées dans le matériel sécurisé, bootloader verrouillé, app signée et intacte), **When** le terminal s'enrôle, **Then** il est créé `ACTIVE` avec ses clés publiques, l'empreinte de son certificat et l'affectation du code ; il reçoit certificat, jeton d'appareil, jeton de rafraîchissement et `next_seq = 1`.
 2. **Given** un code valide et une attestation iOS App Attest conforme, **When** un iPhone s'enrôle, **Then** il est créé sans NFC (QR seulement).
 3. **Given** un code déjà utilisé ou inconnu, **When** un terminal s'enrôle, **Then** la réponse est `422 ENROLLMENT_CODE_INVALID`, identique dans les deux cas ; un code expiré donne `422 ENROLLMENT_CODE_EXPIRED`.
-4. **Given** une attestation absente, invalide, d'une clé hors du matériel sécurisé, d'un appareil déverrouillé ou d'une app altérée, **When** le terminal s'enrôle, **Then** la réponse est `422 ATTESTATION_FAILED`, rien n'est créé et le code reste utilisable.
+4. **Given** une attestation absente, invalide, d'une clé hors du matériel sécurisé ou importée, d'un appareil déverrouillé, d'une app altérée, ou d'un Android antérieur à la version 12, **When** le terminal s'enrôle, **Then** la réponse est `422 ATTESTATION_FAILED`, rien n'est créé et le code reste utilisable.
 5. **Given** deux enrôlements simultanés avec le même code, **When** ils arrivent ensemble, **Then** un seul réussit.
-6. **Given** un `serial` déjà porté par un terminal non révoqué, **When** un autre terminal s'enrôle avec ce `serial`, **Then** il est refusé.
+6. **Given** un `serial` déjà porté par un terminal non révoqué du même prestataire, **When** un autre terminal s'enrôle avec ce `serial`, **Then** il est refusé ; chez un autre prestataire, le même `serial` est accepté et rien ne révèle l'autre terminal.
 7. **Given** un terminal révoqué dont le plus grand numéro vu est 88, **When** un nouveau terminal s'enrôle avec le même `serial`, **Then** il est créé comme un nouveau terminal et reçoit `next_seq = 89`.
-8. **Given** un téléphone personnel, **When** il s'enrôle, **Then** sa politique effective n'a jamais le hors ligne.
+8. **Given** un code émis pour un téléphone personnel (choix obligatoire de l'administrateur à l'émission), **When** le téléphone s'enrôle, **Then** sa politique effective n'a jamais le hors ligne.
 
 ---
 
@@ -119,7 +119,7 @@ Le terminal échange son jeton de rafraîchissement, avec une preuve de possessi
 **Acceptance Scenarios**:
 
 1. **Given** un jeton de rafraîchissement valide et une preuve de possession valide, **When** le terminal rafraîchit, **Then** il reçoit une nouvelle paire et l'ancien jeton de rafraîchissement est consommé.
-2. **Given** un jeton de rafraîchissement déjà consommé, **When** il est présenté de nouveau, **Then** la demande est refusée et toute la famille de jetons du terminal est révoquée (vol présumé), avec une trace d'audit.
+2. **Given** un jeton de rafraîchissement déjà consommé, **When** il est présenté de nouveau une seconde fois, après 60 s ou par un autre certificat, **Then** la demande est refusée et toute la famille de jetons du terminal est révoquée (vol présumé), avec une trace d'audit ; une seule représentation dans les 60 s par le même terminal (réponse perdue) donne une nouvelle paire (décision du porteur, OP-N65).
 3. **Given** une preuve de possession absente ou fausse, **When** le terminal rafraîchit, **Then** la demande est refusée.
 4. **Given** un terminal `SUSPENDED` ou `REVOKED`, **When** il rafraîchit, **Then** la réponse est `403 DEVICE_SUSPENDED` ou `403 DEVICE_REVOKED`.
 
@@ -183,6 +183,7 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 ### Edge Cases
 
 - Code d'enrôlement présenté deux fois en même temps : un seul enrôlement réussit.
+- Code qui fuit (QR photographié) : essais limités par code et par adresse ; seul un appareil attesté de l'app attendue peut l'utiliser, une fois.
 - Enrôlement refusé pour attestation : le code n'est pas consommé (un terminal compromis ne doit pas pouvoir brûler les codes d'un autre, et un vrai terminal peut réessayer).
 - Code lié à un événement clos ou annulé, ou à un point de vente supprimé entre l'émission et l'enrôlement : enrôlement refusé.
 - Code lié à un mode non permis pour l'appareil (`TOPUP_DESK` ou NFC sur iOS ; recharge, caution ou hors ligne sur téléphone personnel) : `422 DEVICE_MODE_NOT_ALLOWED`.
@@ -201,17 +202,17 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 
 | ID | Title | User Story | Priority | Status |
 |----|-------|------------|----------|--------|
-| FR-001 | Code d'enrôlement | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux créer un code d'enrôlement à usage unique, lié à mon prestataire et éventuellement à un événement, un point de vente et un mode, avec une durée de vie bornée (24 h par défaut), affiché une seule fois et dont le serveur ne garde que l'empreinte, afin d'autoriser l'enrôlement d'un terminal précis. | High | Open |
+| FR-001 | Code d'enrôlement | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux créer un code d'enrôlement à usage unique, lié à mon prestataire et éventuellement à un événement, un point de vente et un mode, en indiquant obligatoirement s'il s'agit d'un téléphone personnel, avec une durée de vie bornée (24 h par défaut), affiché une seule fois et dont le serveur ne garde que l'empreinte, afin d'autoriser l'enrôlement d'un terminal précis. | High | Open |
 | FR-002 | Refus du mode `PAIRED_TPE` | En tant que porteur du projet, je veux que toute création de code et tout enrôlement en mode `PAIRED_TPE` soient refusés `422 DEVICE_MODE_NOT_ALLOWED`, afin que la V2 n'entre pas par cette porte (ADR-43). | High | Open |
 | FR-003 | Enrôlement | En tant que terminal, je veux m'enregistrer avec un code valide, mon `serial`, mon système, la version de l'app, mes clés publiques de signature et d'accord (P-256), ma chaîne d'attestation et une demande de certificat signée par ma clé, et recevoir mon identifiant, un certificat client, un jeton d'appareil, un jeton de rafraîchissement et `next_seq`, afin d'être reconnu. | High | Open |
 | FR-004 | Consommation atomique du code | En tant que responsable de la sécurité, je veux qu'un code ne serve qu'à un seul enrôlement réussi, même sous enrôlements simultanés, qu'il ne soit consommé que par un enrôlement réussi, et qu'un code inconnu ou déjà utilisé donne la même réponse, afin qu'un code ne puisse ni servir deux fois ni être deviné par les réponses. | High | Open |
-| FR-005 | Attestation Android | En tant que responsable de la sécurité, je veux que l'enrôlement d'un terminal Android vérifie la chaîne Android Key Attestation jusqu'à une racine de confiance (clé de signature dans le matériel sécurisé, non exportable, bootloader verrouillé, app attendue signée et intacte, défi lié à l'enrôlement) et refuse sinon `422 ATTESTATION_FAILED`, afin qu'une clé copiable ou une app altérée n'entre pas. | High | Open |
-| FR-006 | Attestation iOS | En tant que responsable de la sécurité, je veux que l'enrôlement d'un terminal iOS vérifie l'attestation App Attest (app attendue, clé dans la Secure Enclave, défi lié à l'enrôlement) et refuse sinon `422 ATTESTATION_FAILED`, afin d'appliquer la même exigence aux iPhone. | High | Open |
-| FR-007 | Unicité du `serial` et ré-enrôlement | En tant que porteur du projet, je veux qu'un `serial` ne soit jamais porté par deux terminaux non révoqués, et qu'un ré-enrôlement après révocation crée un nouveau terminal qui reçoit `next_seq = max_seen_seq + 1` pour ce `serial`, afin que les numéros de séquence ne soient jamais réutilisés (sync_protocol §3.1). | High | Open |
+| FR-005 | Attestation Android | En tant que responsable de la sécurité, je veux que l'enrôlement d'un terminal Android (version 12 au moins) vérifie les chaînes Android Key Attestation de ses deux clés jusqu'à une racine de confiance (clés générées dans le matériel sécurisé, bootloader verrouillé, app attendue signée et intacte, défi lié à l'enrôlement) et refuse sinon `422 ATTESTATION_FAILED`, afin qu'une clé copiable ou une app altérée n'entre pas. | High | Open |
+| FR-006 | Attestation iOS | En tant que responsable de la sécurité, je veux que l'enrôlement d'un terminal iOS vérifie l'attestation App Attest (app attendue et intacte, défi qui lie les clés publiques du terminal à l'instance attestée) et refuse sinon `422 ATTESTATION_FAILED`, afin d'appliquer aux iPhone l'exigence que la plateforme permet ; la clé de signature iOS n'étant pas attestable, la limite est consignée (OP-N64, ADR-106). | High | Open |
+| FR-007 | Unicité du `serial` et ré-enrôlement | En tant que porteur du projet, je veux qu'un `serial` ne soit jamais porté par deux terminaux non révoqués d'un même prestataire (sans rien révéler d'un autre prestataire), et qu'un ré-enrôlement après révocation crée un nouveau terminal qui reçoit `next_seq = max_seen_seq + 1` pour ce `serial` dans le prestataire, afin que les numéros de séquence ne soient jamais réutilisés (sync_protocol §3.1). | High | Open |
 | FR-008 | Clé d'accord écrite à l'enrôlement seulement | En tant que responsable de la sécurité, je veux que la clé d'accord d'un terminal ne s'écrive qu'à l'enrôlement, par une fonction de la base, et que le rôle de l'API perde le droit de la modifier, afin qu'on ne puisse pas faire chiffrer le mot de passe d'un bracelet pour une clé choisie (OP-N63). | High | Open |
 | FR-009 | Certificat client des terminaux | En tant que porteur du projet, je veux qu'une autorité des terminaux délivre à l'enrôlement un certificat client lié à la clé de signature du terminal, à durée bornée, dont l'empreinte est enregistrée sur le terminal, la clé de l'autorité restant derrière un port avec un faux pour les tests seulement, afin de prouver l'identité du terminal au niveau du transport. | High | Open |
 | FR-010 | Jeton d'appareil lié | En tant que terminal, je veux un jeton d'appareil de 15 minutes lié à ma clé de signature, afin de m'authentifier sans secret partagé. | High | Open |
-| FR-011 | Rafraîchissement à rotation | En tant que terminal, je veux échanger mon jeton de rafraîchissement, avec une preuve de possession de ma clé, contre une nouvelle paire ; le jeton présenté est consommé, sa réutilisation révoque toute la famille et est tracée, et un terminal suspendu ou révoqué est refusé, afin qu'un jeton volé ne serve qu'une fois au plus. | High | Open |
+| FR-011 | Rafraîchissement à rotation | En tant que terminal, je veux échanger mon jeton de rafraîchissement, avec une preuve de possession de ma clé, contre une nouvelle paire ; le jeton présenté est consommé, une seule représentation dans les 60 s par le même terminal est tolérée, toute autre réutilisation révoque toute la famille (et ses jetons d'appareil) et est tracée, et un terminal suspendu ou révoqué est refusé, afin qu'un jeton volé ne serve qu'une fois au plus. | High | Open |
 | FR-012 | Trois preuves sur chaque requête | En tant que responsable de la sécurité, je veux que toute route de terminal exige ensemble un certificat client valide, un jeton d'appareil valide et une signature valide du contenu de la requête par la clé du terminal, les trois liées au même terminal, avec refus d'une requête rejouée, afin qu'aucune preuve seule ne suffise (décision du porteur, OP-N42). | High | Open |
 | FR-013 | Identité réelle derrière le port existant | En tant que porteur du projet, je veux que le port d'identité du terminal livré par la mission 4 soit servi par l'implémentation réelle, sans modification des routes qui l'utilisent, et que le faux ne soit plus branché hors des tests, afin de lever OP-N42. | High | Open |
 | FR-014 | Statut lu à chaque requête | En tant que responsable de la sécurité, je veux que le statut, le prestataire et l'affectation du terminal soient relus en base à chaque requête, jamais tirés du jeton ou du certificat, afin qu'une suspension ou une révocation prenne effet immédiatement. | High | Open |
@@ -239,7 +240,7 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 | NFR-005 | Aucun secret en clair au repos | 0 code d'enrôlement, 0 jeton de rafraîchissement et 0 jeton d'appareil en clair dans la base, les journaux, le journal d'audit et les réponses d'erreur ; vérifié par un test qui recherche les valeurs de test après un parcours complet. | Security | High | Open |
 | NFR-006 | Pas d'énumération des codes | Pour un code d'enrôlement inconnu et un code déjà utilisé : même statut, même corps, et un écart de temps de réponse médian inférieur à 20 ms sur 200 essais de chaque sorte. | Security | Medium | Open |
 | NFR-007 | Isolation entre prestataires | 0 terminal ou code d'un autre prestataire lisible ou modifiable ; vérifié par un test à deux prestataires sur chaque route de la mission et par un test en base sur chaque nouvelle table. | Security | High | Open |
-| NFR-008 | Concurrence | Sur 20 enrôlements simultanés avec le même code, exactement 1 réussit ; sur 20 rafraîchissements simultanés avec le même jeton, au plus 1 réussit. | Reliability | High | Open |
+| NFR-008 | Concurrence | Sur 20 enrôlements simultanés avec le même code, exactement 1 réussit ; sur 20 rafraîchissements simultanés avec le même jeton, exactement 1 réussit et la famille reste valide. | Reliability | High | Open |
 | NFR-009 | Latence | Vérification des trois preuves : ajout p95 ≤ 20 ms côté serveur par requête de terminal ; enrôlement p95 ≤ 1 s ; configuration et battement de cœur p95 ≤ 200 ms. | Performance | Medium | Open |
 | NFR-010 | Dettes levées prouvées | Chacune des 6 dettes de base (OP-N44, OP-N50, OP-N54, OP-N59, OP-N62, OP-N63) et OP-N42 a au moins un test qui échouait avant la mission et passe après ; les bornes anciennes des suites concernées sont inversées. | Security | High | Open |
 | NFR-011 | Tests existants verts | Les suites de la base, les tests des missions 1 à 4 et le rejeu du scénario de référence restent verts en CI à chaque commit. | Reliability | High | Open |
@@ -287,6 +288,7 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 
 - A1 — Les routes back-office des terminaux (liste, consultation, suspension, réactivation, révocation) sont ajoutées au contrat avec les conventions existantes (confirmé par le porteur le 19/10/2026).
 - A2 — Suspension, réactivation et révocation sont faites par une seule personne habilitée (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN` du périmètre) : la révocation protège, et la réactivation ne rend que les droits d'un terminal déjà enrôlé et attesté (confirmé par le porteur le 19/10/2026).
+- A6 — Android 12 au moins (clé d'accord matérielle et attestée), décision du porteur au plan du 19/10/2026 ; le `serial` est unique par prestataire (ADR-109) ; voir `research.md` R-05, R-11.
 - A3 — L'attestation est vérifiée à l'enrôlement seulement ; un contrôle d'intégrité périodique n'est pas dans cette mission (confirmé par le porteur le 19/10/2026).
 - A4 — La clé de l'autorité des terminaux est derrière un port, avec un faux pour les tests seulement ; en production, le démarrage est refusé tant que l'adaptateur réel manque, comme pour le KMS (OP-N11) (confirmé par le porteur le 19/10/2026). Le point de terminaison du mTLS (dans l'API ou en amont) est arrêté au plan.
 - A5 — Le terminal de test (clés, attestations et certificats de test) sert aux tests et est refusé en production (confirmé par le porteur le 19/10/2026).
@@ -305,3 +307,4 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 | 3 | Attestation à l'enrôlement | Android Key Attestation et iOS App Attest vérifiés en 5a — 19/10/2026 (`DM-01M59RR2KCM2NMTGNR62HXJD76`) |
 | 4 | OP-N50 en 5a ou en 5b | Levée en 5a, comme prévu — 19/10/2026 (`DM-01M59RSS09TMMZ9Y7VKGAQGQQ0`) |
 | 5 | Résumé d'intention et hypothèses A1 à A5 | Confirmés — 19/10/2026 |
+| 6 | Décisions de plan (19/10/2026) | mTLS vérifié dans les processus ; limite iOS consignée (OP-N64) ; Android 12 minimum ; grâce de 60 s au rafraîchissement (OP-N65) ; `serial` unique par prestataire — détail : `research.md` et `decisions/` |

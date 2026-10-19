@@ -42,6 +42,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N61 | Traitements par tranches (NFR-008) : clôture, rattrapage du préchargement et rechiffrement non prouvés sur un lot de 5 000 bracelets (ADR-98) | Non | **Oui** (preuve attendue de la recette, avant la production) | Mission 13 (recette V1), décision du porteur du 15/10/2026 |
 | OP-N62 | La personnalisation peut appeler `retire_dedicated_key` sans travail `RETIRE_KEY` en cours, et une demande de clé approuvée mais périmée est encore acceptée une fois (limites résiduelles de la correction de SEC-1, ADR-102) | Non | Non (limites acceptées) | Mission 5, avec OP-N44 : confirmé par le porteur le 16/10/2026 |
 | OP-N63 | `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des clés de bracelet chiffre le mot de passe d'un bracelet (ADR-105) | Non | **Oui** (confirmé par le porteur le 16/10/2026) | Mission 5, enrôlement réel des terminaux : confirmé par le porteur le 16/10/2026 |
+| OP-N64 | Terminal iOS : clé de signature ECDSA non attestée (App Attest atteste sa propre clé), liée à l'instance attestée par le défi d'enrôlement (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
+| OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -446,6 +448,31 @@ le 16/10/2026 ; ADR-105.**
 - **Test qui échoue si la limite s'élargit** : `tests/tests_tag_key_job_approval.sql`, section 7
   (liste exacte des colonnes de `device` que `cashless_app` peut mettre à jour, `INSERT`,
   `REFERENCES`, `DELETE`, `TRUNCATE`).
+
+### OP-N64 — Terminal iOS : clé de signature non attestée (19 octobre 2026)
+
+Signalé au plan de la mission 5a. **Écart accepté, bloque la production : non ; réexaminé par la mission 12 (app
+terminal) ; décision du porteur du 19/10/2026 ; ADR-106.**
+
+- **Constat.** App Attest atteste sa propre clé et l'intégrité de l'app, pas la clé de signature ECDSA P-256 du
+  terminal (requêtes signées, CSR, certificat mTLS).
+- **Risque.** Une app iOS dont la clé de signature serait extraite de l'appareil pourrait signer hors de lui. Borné :
+  un iPhone encaisse en QR seulement et ne reçoit jamais le mot de passe d'un bracelet.
+- **Ce qui est fait en attendant.** Le défi d'enrôlement couvre le code, le `serial` et les deux clés publiques ; le
+  jeton, le certificat et la signature restent exigés ensemble ; révocation immédiate.
+- **Condition de levée.** Requêtes iOS signées par assertion App Attest (ou preuve équivalente).
+- **Test qui échoue si la limite s'élargit** : `POST /media/auth-keys` refuse un terminal `os = IOS`.
+
+### OP-N65 — Rafraîchissement : grâce de 60 s pour le même terminal (19 octobre 2026)
+
+Signalé par la relecture contradictoire du plan de la mission 5a. **Écart accepté, bloque la production : non ;
+réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 ; ADR-108.**
+
+- **Constat.** Une réponse de rafraîchissement perdue fait réessayer le terminal avec un jeton déjà consommé.
+- **Risque.** Un jeton consommé volé, représenté dans les 60 s, donnerait une paire neuve, à condition d'avoir aussi la
+  clé de signature et le certificat du terminal (mTLS et preuve de possession exigés).
+- **Test qui échoue si la limite s'élargit** : seconde représentation, plus de 60 s ou autre certificat → famille
+  révoquée, jeton d'appareil de la famille refusé.
 
 ## 3. Relectures d'experts
 

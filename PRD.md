@@ -86,6 +86,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Cadrage de la mission 5a (porteur, 19/10/2026) : jeton lié, mTLS et signature de chaque requête exigés ensemble sur
   les routes de terminal (contradiction avec §10.3 signalée) ; attestation vérifiée à l'enrôlement sur Android et iOS ;
   routes back-office des terminaux (liste, suspension, réactivation, révocation) ajoutées au contrat ; OP-N50 levée en 5a.
+  Au plan (19/10/2026) : mTLS vérifié dans les processus ; terminaux Android 12 au moins ; `serial` unique par
+  prestataire (ADR-109) ; grâce de 60 s au rafraîchissement d'un jeton (OP-N65) ; limite iOS consignée (OP-N64).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
@@ -249,9 +251,13 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
 - mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
   requête (`tap`, `new_media_tap`), pas un identifiant de lecture (ADR-103) ;
+- mission 12, héritée de la mission 5a : sur iOS, signer les requêtes par assertion App Attest (ou preuve
+  équivalente) pour prouver la clé de signature dans la Secure Enclave ; d'ici là iOS reste borné au QR (OP-N64,
+  ADR-106, décision du porteur du 19/10/2026) ;
 - mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
-  aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45).
+  aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45) ; grâce de 60 s
+  au rafraîchissement d'un jeton d'appareil réexaminée selon les pertes réseau mesurées (OP-N65, ADR-108, mission 5a).
 
 ## 9. Notes non classées
 

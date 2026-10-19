@@ -126,8 +126,12 @@ reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6
 > (`DM-01M59RSS09TMMZ9Y7VKGAQGQQ0`) ; routes back-office des terminaux ajoutées au contrat ; suspension, réactivation
 > et révocation à une personne ; attestation à l'enrôlement seulement ; autorité des terminaux derrière un port avec
 > faux refusé en production.
+>
+> **Décisions du porteur au plan (19/10/2026)** : mTLS vérifié dans les processus Node (pas d'en-tête de répartiteur) ;
+> limite iOS consignée (OP-N64, ADR-106) ; Android 12 minimum (clé d'accord matérielle et attestée) ; grâce de 60 s au
+> rafraîchissement (OP-N65, ADR-108, réexaminée en mission 13) ; `serial` unique par prestataire (ADR-109).
 
-- [ ] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
+- [x] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux-01M52R6H
 - [ ] /spec-kitty.review --mission identite-enrolement-terminaux-01M52R6H
@@ -289,6 +293,15 @@ vendeurs et le catalogue : la mission les ajoute.
 > (`register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture), le contrat de départ
 > contredisait le schéma. L'app envoie donc la lecture complète au guichet, pas un identifiant de
 > lecture.
+>
+> **Hérité de la mission 5a, OP-N64 (ADR-106 ; décision du porteur du 19/10/2026)** : sur iOS, App Attest atteste sa
+> propre clé, pas la clé de signature ECDSA du terminal ; la mission 5a lie les clés publiques à l'instance attestée
+> par le défi d'enrôlement et borne iOS au QR (`POST /media/auth-keys` refusé à un terminal iOS). Réexaminer : signer
+> les requêtes iOS par assertion App Attest (ou preuve équivalente), puis lever la limite.
+> L'app implémente aussi le profil de signature des requêtes (RFC 9421 restreint), le défi d'enrôlement et le mTLS de
+> la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/contracts/`).
+> Android 12 minimum (décision du porteur du 19/10/2026) : à confronter au parc visé et au banc NFC. Faisabilité à
+> vérifier : mTLS en Flutter avec une clé Keystore ou Secure Enclave non exportable (canal natif).
 
 - [ ] /spec-kitty.specify App terminal Flutter (SPECIFICATION §7.6, §8.1, §8.2, §9.3 à §9.5, `docs/sync_protocol.md`, résultats du banc `tools/nfc-bench`). Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; enrôlement par QR, clés ECDSA et ECDH dans l'Android Keystore (StrongBox si disponible) ou la Secure Enclave ; connexion des vendeurs par PIN ; épinglage d'écran. Lecture NFC Android en mode lecteur (`NfcA.transceive`) : page 4, `READ_SIG` à chaque passage, PWD/PACK depuis le snapshot ou `/media/auth-keys`, `PWD_AUTH`, `FAST_READ`, CRC, `INCR_CNT`/`READ_CNT` sur le compteur 2, effacement des mots de passe. Paiement en ligne en un aller-retour avec repli hors ligne après 3 s ; règle d'autorisation hors ligne dans l'ordre imposé (§9.3), journal SQLCipher (WAL, `synchronous = FULL`, fsync avant succès), compteur `seq` commun, snapshots vérifiés et deltas, lots signés et chaînés, exposition par bracelet et par terminal, bascule vers la passerelle. QR (iOS : QR uniquement). Guichet : recharges, cautions, restitutions, remplacements, remboursements, jeton d'approbation de la seconde personne. Vecteurs du format B produits et vérifiés par l'app.
 - [ ] /spec-kitty.plan Flutter, Android et iOS ; `packages/tag-format` en Dart ; réglages de lecture par modèle de téléphone issus du banc. Aucune clé maître sur le terminal. Hors ligne jamais pour : QR, recharge PSP, remboursement, activation, caution, restitution, remplacement. Un refus en ligne est définitif. Latence NFC p95 ≤ 300 ms.
@@ -300,6 +313,10 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 13 — Recette V1
 
+> **Hérité de la mission 5a, OP-N65 (ADR-108 ; décision du porteur du 19/10/2026)** : au rafraîchissement d'un jeton
+> d'appareil, une représentation du jeton consommé est tolérée 60 s pour le même terminal. Mesurer en recette les
+> pertes de réponse réelles ; si la grâce ne sert pas, revenir au mode strict et lever la limite.
+>
 > **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
 >
 > **OP-N61 (ADR-98, décision du porteur du 15/10/2026)** — NFR-008 non prouvé à l'échelle : prouver que la clôture d'un
