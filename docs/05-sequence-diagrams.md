@@ -149,6 +149,7 @@ sequenceDiagram
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
 | Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
+| Enrôlement et requête signée d'un terminal | Terminal, API, base, autorité des terminaux | `identite-enrolement-terminaux-01M52R6H` (🚧 plan finalisé le 19/10/2026 : flux propres à la mission dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; à remonter ici à la review) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |

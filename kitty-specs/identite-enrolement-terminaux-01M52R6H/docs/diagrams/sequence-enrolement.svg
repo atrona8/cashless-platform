@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1176" viewBox="0 0 2006 1176">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="447.5" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="572.5,236 572.5,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="960.0,236 960.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="1347.5,236 1347.5,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="64" y="280.88" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="191.0,414.88 564.5,414.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="564.5,414.88 545.1931836384118,425.4273618492925 545.1931836384118,404.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="217.95" y="377.88" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,518.88 1727.0,518.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,518.88 1707.6931836384117,529.4273618492924 1707.6931836384117,508.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1018.95" y="481.88" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,622.88 952.0,622.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,622.88 932.6931836384118,633.4273618492924 932.6931836384118,612.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="595.05" y="585.88" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,726.88 1339.5,726.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1339.5,726.88 1320.1931836384117,737.4273618492924 1320.1931836384117,716.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="840.8" y="689.88" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,830.88 1727.0,830.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,830.88 1707.6931836384117,841.4273618492924 1707.6931836384117,820.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="992.95" y="793.88" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="566.5,934.88 193.0,934.88" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,934.88 212.3068163615882,924.3326381507076 212.3068163615882,945.4273618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="223.15" y="897.88" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Enrôlement d’un terminal</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Le code scanné d’abord, puis les clés, l’attestation et le certificat</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Vérif. attestation</text>
+<text x="1347.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Autorité terminaux</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="214.0" y="313.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Scanner le code, créer les clés</text>
+<text x="34.0" y="313.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="378.75" y="396.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Code, clés, attestations, CSR</text>
+<text x="34.0" y="417.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1153.75" y="500.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire le code (empreinte)</text>
+<text x="34.0" y="521.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="766.25" y="604.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vérifier les chaînes et le défi</text>
+<text x="34.0" y="625.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="960.0" y="708.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Émettre le certificat</text>
+<text x="34.0" y="729.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="1153.75" y="812.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">enroll_device (code consommé)</text>
+<text x="34.0" y="833.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="378.75" y="916.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Certificat, jetons, next_seq</text>
+<text x="34.0" y="937.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="60" y="1033.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Attestation refusée : code non consommé. Serial unique par prestataire. Essais limités par code et par adresse.</text>
+</g>
+</svg>
