@@ -14,5 +14,7 @@
   "retain_worktrees": true,
   "slug": "identite-enrolement-terminaux-01M52R6H",
   "target_branch": "feat/identite-enrolement-terminaux",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-19T11:30:15.173544+00:00"
 }
