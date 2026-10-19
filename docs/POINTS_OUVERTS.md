@@ -474,6 +474,24 @@ réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 
 - **Test qui échoue si la limite s'élargit** : seconde représentation, plus de 60 s ou autre certificat → famille
   révoquée, jeton d'appareil de la famille refusé.
 
+### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
+
+Constaté pendant la mission 5a (vérification de WP09), défaut antérieur à cette mission (mission 4). **Hors
+mission 5a, bloque la production : à évaluer ; décision du porteur du 19/10/2026 : point ouvert, pas de correctif dans
+la mission 5a.**
+
+- **Constat.** Le test « associe les lignes justes, refuse les autres… » de
+  `apps/api/test/integration/media/claim-code-order.spec.ts` (import `POST …/claim-code-associations`) dépasse son
+  délai Jest de 5 s dès que `test/integration/end-to-end/media-latency.spec.ts` a créé ~100 000 bracelets dans un lot.
+  Reproduit sur `feat/identite-enrolement-terminaux` sans le code de la mission 5a ; vert seul après `reset-db`. Il est
+  apparu quand l'ajout de suites a changé l'ordre d'exécution de Jest.
+- **Risque.** Probable recherche sans index adapté dans le chemin d'import (ou dans `associate_claim_code`), dont le
+  coût croît avec la table `media` : un import réel sur un prestataire à fort volume serait lent ; et la CI peut
+  devenir instable selon l'ordre des suites.
+- **Pistes.** `EXPLAIN ANALYZE` des requêtes de l'import sur une base peuplée ; index manquant ; ou isoler la suite de
+  latence (lot dédié nettoyé, ou exécution en fin de batterie).
+- **Condition de levée.** L'import de 7 lignes reste sous 1 s avec 100 000 bracelets en base, prouvé par un test.
+
 ## 3. Relectures d'experts
 
 | Expert | Objet | Points | Documents à fournir |
