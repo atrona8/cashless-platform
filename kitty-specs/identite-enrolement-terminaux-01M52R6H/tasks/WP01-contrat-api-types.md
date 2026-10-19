@@ -70,7 +70,7 @@ Planification et merge sur `feat/identite-enrolement-terminaux`. Dépendances : 
 
 - `DeviceEnrollmentRequest` : `csr_pem` requis ; ajoute `agreement_attestation_chain` (tableau base64, requis quand `os = ANDROID` : décris-le dans la description et par `if/then` JSON Schema si la version d'OpenAPI du fichier le permet) ; décris les défis de R-08 (Android : un par clé ; iOS : `clientDataHash`) et l'ordre (code scanné avant la génération des clés) ; Android 12 minimum.
 - `DeviceEnrollmentResponse` : `certificate_pem` requis, `type: string` (plus `null`).
-- Schéma de création de code (`createDeviceEnrollmentCode`, nom existant à garder) : ajoute `personal_phone` (boolean, **requis, sans défaut**, R-17) ; bornes de `expires_in_seconds` 300 à 604 800.
+- Schéma de création de code (`createDeviceEnrollmentCode`, nom existant à garder) : `event_id` **requis** (décision du 19/10/2026, analyse U1 : tout terminal est affecté à un événement, condition du schéma `DeviceConfig`) ; ajoute `personal_phone` (boolean, **requis, sans défaut**, R-17) ; bornes de `expires_in_seconds` 300 à 604 800.
 - `deviceToken` (description) : claims `sub`, `operator_id`, `serial`, `event_id`, `cnf.jkt`, `fid`, `typ = device+jwt`, `aud = cashless-device` ; rappelle que `operator_id` et `event_id` ne sont jamais crus.
 - `refreshDeviceToken` : réponse `409` (échange en cours), grâce de 60 s pour le même terminal décrite (OP-N65, ADR-108), preuve de possession `"cashless-refresh-v1" ‖ 0x00 ‖ nonce ‖ 0x00 ‖ serial ‖ 0x00 ‖ refresh_token`.
 - `enrollDevice` : réponse `429` (10 essais par code et par heure, 30 par adresse et par heure), `409 DEVICE_SERIAL_IN_USE`.

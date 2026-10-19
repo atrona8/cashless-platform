@@ -130,6 +130,8 @@ reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6
 > **Décisions du porteur au plan (19/10/2026)** : mTLS vérifié dans les processus Node (pas d'en-tête de répartiteur) ;
 > limite iOS consignée (OP-N64, ADR-106) ; Android 12 minimum (clé d'accord matérielle et attestée) ; grâce de 60 s au
 > rafraîchissement (OP-N65, ADR-108, réexaminée en mission 13) ; `serial` unique par prestataire (ADR-109).
+> **Décision du porteur à l'analyse (19/10/2026)** : tout code d'enrôlement vise un événement (terminal toujours
+> affecté ; réaffectation par révocation puis ré-enrôlement).
 
 - [x] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
 - [x] /spec-kitty.tasks (18 lots, 87 sous-tâches, 19/10/2026)

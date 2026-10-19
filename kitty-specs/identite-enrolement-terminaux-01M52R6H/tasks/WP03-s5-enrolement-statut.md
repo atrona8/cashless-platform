@@ -76,7 +76,7 @@ Planification et merge sur `feat/identite-enrolement-terminaux`. Dépendances : 
 
 ### T011 — `create_device_enrollment_code`
 
-`create_device_enrollment_code(p_code_hash bytea, p_event uuid, p_pos uuid, p_mode text, p_personal_phone boolean, p_ttl_seconds int, p_actor uuid) RETURNS uuid` : `assert_tenant` ; `p_mode = 'PAIRED_TPE'` → refus nommé (`CL` à choisir dans la plage libre, traduit en `DEVICE_MODE_NOT_ALLOWED`) **avant** tout `CHECK` ; `p_personal_phone` NULL refusé, vrai seulement avec `KEYPAD_TPE` ; événement et point de vente du même prestataire, point de vente de l'événement ; TTL de 300 à 604 800 s ; insertion. Documente le nouveau `CL` dans le commentaire et dans `apps/api/src/errors/sqlstate-map.ts` **par la note du compte rendu** (la carte est éditée par WP14).
+`create_device_enrollment_code(p_code_hash bytea, p_event uuid, p_pos uuid, p_mode text, p_personal_phone boolean, p_ttl_seconds int, p_actor uuid) RETURNS uuid` : `assert_tenant` ; `p_event` NULL refusé (événement obligatoire, analyse U1) ; `p_mode = 'PAIRED_TPE'` → refus nommé (`CL` à choisir dans la plage libre, traduit en `DEVICE_MODE_NOT_ALLOWED`) **avant** tout `CHECK` ; `p_personal_phone` NULL refusé, vrai seulement avec `KEYPAD_TPE` ; événement et point de vente du même prestataire, point de vente de l'événement ; TTL de 300 à 604 800 s ; insertion. Documente chaque nouveau `CL` dans le commentaire de la migration et dans le compte rendu : la carte `apps/api/src/errors/sqlstate-map.ts` est éditée par WP12.
 
 ### T012 — `enroll_device`
 

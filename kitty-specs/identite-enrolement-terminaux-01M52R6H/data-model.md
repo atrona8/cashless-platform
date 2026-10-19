@@ -50,7 +50,8 @@ Chaque transition écrit `device_status_history` et une ligne d'audit.
 | `id` | uuid PK | |
 | `operator_id` | uuid | prestataire de l'auteur |
 | `code_hash` | bytea UNIQUE | HMAC-SHA256 (clé `ENROLLMENT_CODE_HMAC_KEY`, hors base) du code normalisé |
-| `event_id`, `pos_id` | uuid NULL | même prestataire ; un `ORGANIZER_ADMIN` doit viser un événement de son organisateur |
+| `event_id` | uuid NOT NULL | obligatoire (analyse U1, 19/10/2026) ; même prestataire ; un `ORGANIZER_ADMIN` doit viser un événement de son organisateur |
+| `pos_id` | uuid NULL | point de vente de cet événement |
 | `app_mode` | text NULL | `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; `PAIRED_TPE` refusé par la fonction (`DEVICE_MODE_NOT_ALLOWED`) |
 | `personal_phone` | boolean NOT NULL | **sans défaut**, choisi par l'administrateur (R-17) ; vrai seulement avec `KEYPAD_TPE` |
 | `created_by` | uuid | personne |
@@ -113,7 +114,7 @@ base).
 | `revoke_device_token_family(device, reason)` | révocation |
 | `set_device_status(device, to, reason, actor)` | transitions ci-dessus |
 | `record_device_heartbeat(device, app_version, device_time)` | `last_seen_at`, `app_version` |
-| `consume_device_nonce(device, nonce, created)` | contrôle `created` contre `now()` de la base et la tolérance bornée (≤ 300 s) ; insertion ; doublon → refus |
+| `consume_device_nonce(device, nonce, created, tolerance_seconds)` | contrôle `created` contre `now()` de la base et la tolérance bornée (≤ 300 s) ; insertion ; doublon → refus |
 | `assert_device_active(device)` | relit le statut `FOR SHARE` dans la transaction métier (R-14) |
 
 ## Erreurs normalisées utilisées

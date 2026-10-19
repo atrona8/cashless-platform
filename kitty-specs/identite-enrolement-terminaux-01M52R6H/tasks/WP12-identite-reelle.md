@@ -43,6 +43,7 @@ owned_files:
 - apps/api/src/device-identity/**
 - apps/api/src/media/auth-keys/auth-keys.controller.ts
 - apps/api/src/processes/tag-keys.module.ts
+- apps/api/src/errors/sqlstate-map.ts
 - apps/api/test/support/test-terminal.ts
 - apps/api/test/support/fake-device.ts
 - apps/api/test/unit/request-signature.spec.ts
@@ -92,6 +93,7 @@ Implémente `DeviceIdentityPort.identify(req)` dans l'ordre exact de `contracts/
 - `DeviceGuard` : option `@DeviceAuth({ allowSuspended: true })` (défaut : suspendu refusé, comportement actuel). Le décorateur sans argument garde sa signature : les contrôleurs de la mission 4 ne changent pas.
 - `DeviceDirectory.find` lit aussi `public_key`, `cert_sha256`, `os`, `nfc_enabled` et l'état de la famille ; `req.device` reçoit `os` et `nfcEnabled`.
 - `createDeviceIdentity` : construit `RealDeviceIdentity` ; le faux n'est construit que si `production = false` **et** `DEVICE_IDENTITY_FAKE=1` (tests unitaires qui en ont besoin). Le processus des clés de bracelet (`tag-keys.module.ts`) reçoit la même identité réelle, avec sa propre lecture sous son rôle de base (droits posés par WP07).
+- `errors/sqlstate-map.ts` (ce lot en est propriétaire) : traduit tous les `CL` nouveaux des migrations 0022 à 0025 (liste dans les commentaires des migrations et les comptes rendus de WP03, WP04, WP06), dont `assert_device_active` → `DEVICE_SUSPENDED` / `DEVICE_REVOKED`, `PAIRED_TPE` → `DEVICE_MODE_NOT_ALLOWED`, code invalide ou expiré, `serial` actif → `DEVICE_SERIAL_IN_USE`, transition interdite → `CONFLICT_STATE`.
 
 ### T060 — Terminal de test
 

@@ -104,7 +104,7 @@ Dans `serve()` : `NestFactory.create(rootModule, { bufferLogs: true, rawBody: tr
 
 - `devices/devices.module.ts` : module Nest vide (`imports: []`), importé par `app.module.ts`. Les lots WP14 à WP17 y ajoutent chacun une ligne d'import.
 - `test/support/tls.ts` : génère une fois par exécution (avec `@peculiar/x509` et `node:crypto`), dans un répertoire temporaire, une autorité de test des terminaux (certificat et clé) et un certificat serveur pour `localhost` ; rend leurs chemins, posés dans la configuration de test (`TLS_CERT_FILE`, `TLS_KEY_FILE`, `DEVICE_CA_CERT_FILE`, `DEVICE_CA_FAKE_KEY_FILE`). Ainsi le serveur HTTPS de test fait confiance aux certificats que le faux de l'autorité (WP09) émet à l'enrôlement. Aucune clé de test n'est écrite dans le dépôt.
-- `test/support/app.ts` : en plus du mode actuel (supertest en clair, inchangé pour les tests existants), une fonction `startHttpsApp()` qui écoute sur un port libre en HTTPS avec ces certificats et rend l'URL de base et un `close()`.
+- `test/support/app.ts` : en plus du mode actuel (supertest en clair, inchangé pour les tests existants), une fonction `startHttpsApp(rootModule)` (module racine de l'API publique par défaut, ou celui du processus des clés de bracelet pour `/media/auth-keys`) qui écoute sur un port libre en HTTPS avec ces certificats et rend l'URL de base et un `close()`.
 
 ### T040 — Tests unitaires
 

@@ -46,7 +46,6 @@ execution_mode: code_change
 owned_files:
 - apps/api/src/devices/enrollment-codes/**
 - apps/api/src/devices/enrollment/**
-- apps/api/src/errors/sqlstate-map.ts
 - apps/api/test/integration/devices/enrollment-codes.spec.ts
 - apps/api/test/integration/devices/enrollment.spec.ts
 role: implementer
@@ -66,7 +65,7 @@ Servir `createDeviceEnrollmentCode`, `listDeviceEnrollmentCodes` et `enrollDevic
 
 ## Context
 
-Exigences : FR-001 à FR-009, FR-025, NFR-005, NFR-006, NFR-008 ; `contracts/enrollment.md` (ordre des étapes 1 à 10) ; `research.md` R-08, R-09, R-16, R-17 ; fonctions de base `create_device_enrollment_code`, `enroll_device`, `record_enrollment_attempt`, `enrollment_attempts_exceeded` (WP03) ; ports `DeviceCaPort`, `DeviceTokenService` (WP09), `AttestationVerifier` (WP10, WP11), `enrollment-code.ts` (WP13), terminal de test (WP12). Idempotence : option `transient` du décorateur `@Idempotent` (mission 1) pour la création de code. Ajoute les `CL` nouveaux de WP03 à `errors/sqlstate-map.ts`. Enregistre les modules par **une ligne** dans `devices/devices.module.ts` (retouche hors carte autorisée).
+Exigences : FR-001 à FR-009, FR-025, NFR-005, NFR-006, NFR-008 ; `contracts/enrollment.md` (ordre des étapes 1 à 10) ; `research.md` R-08, R-09, R-16, R-17 ; fonctions de base `create_device_enrollment_code`, `enroll_device`, `record_enrollment_attempt`, `enrollment_attempts_exceeded` (WP03) ; ports `DeviceCaPort`, `DeviceTokenService` (WP09), `AttestationVerifier` (WP10, WP11), `enrollment-code.ts` (WP13), terminal de test (WP12). Idempotence : option `transient` du décorateur `@Idempotent` (mission 1) pour la création de code. Les `CL` nouveaux de WP03, WP04 et WP06 sont traduits par `errors/sqlstate-map.ts` (WP12). Enregistre les modules par **une ligne** dans `devices/devices.module.ts` (retouche hors carte autorisée).
 
 **Règle de sécurité du projet (`CLAUDE.md`, C-011, C-012)** : si un point de ce lot ne peut être tenu qu'en affaiblissant la sécurité (droit plus large, contrôle retiré ou reporté, secret plus exposé, faux gardé plus longtemps), **arrête-toi sur ce point et soumets-le au porteur avant de coder**, avec le risque et les options ; continue le reste. Un renforcement se fait, puis se consigne dans le compte rendu du lot.
 
@@ -78,7 +77,7 @@ Planification et merge sur `feat/identite-enrolement-terminaux`. Dépendances : 
 
 ### T066 — Création d'un code
 
-`POST /v1/device-enrollment-codes` : rôles `OPERATOR_ADMIN` (prestataire) ou `ORGANIZER_ADMIN` (ses événements ; sinon `404`) ; `@Idempotent({ transient: true })` ; génère le code (WP13), appelle `create_device_enrollment_code` avec l'empreinte ; répond le code formaté et `expires_at` ; audit `DEVICE_ENROLLMENT_CODE_CREATED` sans le code. Vérifie qu'un rejeu de la même clé ne rend jamais le code.
+`POST /v1/device-enrollment-codes` : `event_id` obligatoire (validé avant la base) ; rôles `OPERATOR_ADMIN` (prestataire) ou `ORGANIZER_ADMIN` (ses événements ; sinon `404`) ; `@Idempotent({ transient: true })` ; génère le code (WP13), appelle `create_device_enrollment_code` avec l'empreinte ; répond le code formaté et `expires_at` ; audit `DEVICE_ENROLLMENT_CODE_CREATED` sans le code. Vérifie qu'un rejeu de la même clé ne rend jamais le code.
 
 ### T067 — Liste des codes
 

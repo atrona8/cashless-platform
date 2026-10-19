@@ -65,6 +65,7 @@ Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un cod
 2. **Given** une demande de code en mode `PAIRED_TPE`, **When** elle est envoyée, **Then** elle est refusée `422 DEVICE_MODE_NOT_ALLOWED`.
 3. **Given** une personne sans l'un des deux rôles, ou d'un autre prestataire, **When** elle demande un code ou vise un événement d'un autre prestataire, **Then** elle est refusée (`403`, ou `404` neutre pour l'objet d'un autre prestataire).
 4. **Given** une durée de vie demandée hors des bornes permises, **When** le code est demandé, **Then** il est refusé.
+5. **Given** une demande de code sans événement, **When** elle est envoyée, **Then** elle est refusée : tout terminal est affecté à un événement (décision du 19/10/2026).
 
 ---
 
@@ -202,7 +203,7 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 
 | ID | Title | User Story | Priority | Status |
 |----|-------|------------|----------|--------|
-| FR-001 | Code d'enrôlement | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux créer un code d'enrôlement à usage unique, lié à mon prestataire et éventuellement à un événement, un point de vente et un mode, en indiquant obligatoirement s'il s'agit d'un téléphone personnel, avec une durée de vie bornée (24 h par défaut), affiché une seule fois et dont le serveur ne garde que l'empreinte, afin d'autoriser l'enrôlement d'un terminal précis. | High | Open |
+| FR-001 | Code d'enrôlement | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux créer un code d'enrôlement à usage unique, lié à mon prestataire et obligatoirement à un événement (éventuellement aussi à un point de vente et à un mode), en indiquant obligatoirement s'il s'agit d'un téléphone personnel, avec une durée de vie bornée (24 h par défaut), affiché une seule fois et dont le serveur ne garde que l'empreinte, afin d'autoriser l'enrôlement d'un terminal précis. | High | Open |
 | FR-002 | Refus du mode `PAIRED_TPE` | En tant que porteur du projet, je veux que toute création de code et tout enrôlement en mode `PAIRED_TPE` soient refusés `422 DEVICE_MODE_NOT_ALLOWED`, afin que la V2 n'entre pas par cette porte (ADR-43). | High | Open |
 | FR-003 | Enrôlement | En tant que terminal, je veux m'enregistrer avec un code valide, mon `serial`, mon système, la version de l'app, mes clés publiques de signature et d'accord (P-256), ma chaîne d'attestation et une demande de certificat signée par ma clé, et recevoir mon identifiant, un certificat client, un jeton d'appareil, un jeton de rafraîchissement et `next_seq`, afin d'être reconnu. | High | Open |
 | FR-004 | Consommation atomique du code | En tant que responsable de la sécurité, je veux qu'un code ne serve qu'à un seul enrôlement réussi, même sous enrôlements simultanés, qu'il ne soit consommé que par un enrôlement réussi, et qu'un code inconnu ou déjà utilisé donne la même réponse, afin qu'un code ne puisse ni servir deux fois ni être deviné par les réponses. | High | Open |
@@ -269,6 +270,8 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 - **Jeton de rafraîchissement** (`device_refresh_token`, S5) : empreinte du jeton, terminal, famille, expiration, date de consommation, date et motif de révocation.
 - **Certificat client** : délivré par l'autorité des terminaux à l'enrôlement ; seule son empreinte est conservée sur le terminal.
 - **Historique des statuts du terminal** : changement, motif, auteur, date.
+- **Nonce de requête** : nonce à usage unique d'une requête signée, gardé le temps de la fenêtre de rejeu.
+- **Essai d'enrôlement** : trace d'un essai (code, adresse, résultat) qui sert aux limites de débit.
 - **Ligne d'audit** : action d'administration ou événement de sécurité d'un terminal.
 
 ## Success Criteria *(mandatory)*
@@ -281,7 +284,7 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 - **SC-004** : les deux dettes qui bloquent la production (OP-N59, OP-N63) et OP-N42 sont closes dans les points ouverts, chacune avec son test.
 - **SC-005** : aucun code d'enrôlement ni jeton en clair n'est retrouvé dans la base ni dans les journaux après le parcours.
 - **SC-006** : aucune fuite entre deux prestataires sur l'ensemble des routes de la mission.
-- **SC-007** : les routes de terminal de la mission 4 passent à l'identité réelle sans qu'une seule de leurs lignes change.
+- **SC-007** : les routes de terminal de la mission 4 passent à l'identité réelle sans qu'une seule de leurs lignes change, hormis la borne iOS de `POST /media/auth-keys` (OP-N64, ADR-106).
 - **SC-008** : à la fin de la mission, chaque écart de sécurité accepté est retrouvé dans les points ouverts avec la mission qui le lève ; la revue n'en trouve aucun non consigné.
 
 ## Assumptions
@@ -307,4 +310,5 @@ Le responsable de la sécurité obtient la fermeture, chacune avec son test, des
 | 3 | Attestation à l'enrôlement | Android Key Attestation et iOS App Attest vérifiés en 5a — 19/10/2026 (`DM-01M59RR2KCM2NMTGNR62HXJD76`) |
 | 4 | OP-N50 en 5a ou en 5b | Levée en 5a, comme prévu — 19/10/2026 (`DM-01M59RSS09TMMZ9Y7VKGAQGQQ0`) |
 | 5 | Résumé d'intention et hypothèses A1 à A5 | Confirmés — 19/10/2026 |
+| 7 | Terminal sans événement (analyse du 19/10/2026, U1) | Événement obligatoire sur tout code d'enrôlement en V1 : un terminal est toujours affecté ; une réaffectation passe par révocation et ré-enrôlement |
 | 6 | Décisions de plan (19/10/2026) | mTLS vérifié dans les processus ; limite iOS consignée (OP-N64) ; Android 12 minimum ; grâce de 60 s au rafraîchissement (OP-N65) ; `serial` unique par prestataire — détail : `research.md` et `decisions/` |

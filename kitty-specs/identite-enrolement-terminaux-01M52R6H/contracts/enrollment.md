@@ -4,7 +4,7 @@
 
 - Personnes `OPERATOR_ADMIN` (tout le prestataire) ou `ORGANIZER_ADMIN` (ses événements). `Idempotency-Key`
   obligatoire ; route **`transient`** : le code part une fois, le registre ne garde qu'un refus pour un rejeu.
-- Entrée : `event_id?`, `pos_id?`, `app_mode?`, `personal_phone` (obligatoire, sans défaut, R-17), `expires_in_seconds?`
+- Entrée : `event_id` (obligatoire : tout terminal est affecté à un événement), `pos_id?`, `app_mode?`, `personal_phone` (obligatoire, sans défaut, R-17), `expires_in_seconds?`
   (300 à 604 800, défaut 86 400).
 - Code : 12 caractères de l'alphabet de 32 sans ambiguïté (60 bits), affiché `XXXX-XXXX-XXXX` ; empreinte
   HMAC-SHA256 (`ENROLLMENT_CODE_HMAC_KEY`) du code normalisé.

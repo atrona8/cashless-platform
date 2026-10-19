@@ -73,7 +73,7 @@ Affectation, mode, `terminal_settings` de l'événement, `offline_policy` = `eff
 
 ### T082 — Tests d'intégration
 
-Configuration conforme au schéma (validation par les types générés) ; `304` ; changement d'un réglage de l'événement → nouvel ETag ; téléphone personnel sans hors ligne ; battement de cœur → `last_seen_at` ; suspendu permis, révoqué refusé ; p95 ≤ 200 ms sur 200 appels (NFR-009, mesure indicative en local).
+Configuration conforme au schéma (validation par les types générés) ; `304` ; changement d'un réglage de l'événement → nouvel ETag ; téléphone personnel sans hors ligne ; battement de cœur → `last_seen_at` ; terminal suspendu par `set_device_status` (WP03) : configuration et battement de cœur permis ; révoqué refusé ; p95 ≤ 200 ms sur 200 appels (NFR-009, mesure indicative en local).
 
 ## Test Strategy
 

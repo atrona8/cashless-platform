@@ -76,7 +76,7 @@ Filtres `event_id`, `pos_id`, `status`, `app_mode`, pagination par curseur ; fic
 
 ### T078 — Tests d'intégration
 
-Chaque route et chaque refus ; suspendu : `POST /taps` et `/media/auth-keys` → `403 DEVICE_SUSPENDED`, configuration et battement de cœur permis (quand WP17 est fusionné ; sinon note-le) ; révoqué : `403 DEVICE_REVOKED` dès la requête suivante avec un jeton encore valide (NFR-003) ; révocation **pendant** une requête en cours (requête retenue par un verrou ou un point d'arrêt de test) : aucune écriture acceptée après la révocation (R-14) ; `REVOKED` → `reactivate` refusé ; isolation à deux prestataires et entre deux organisateurs.
+Chaque route et chaque refus ; suspendu : `POST /taps` et `/media/auth-keys` → `403 DEVICE_SUSPENDED` (le cas « configuration et battement de cœur permis » est testé par WP17) ; révoqué : `403 DEVICE_REVOKED` dès la requête suivante avec un jeton encore valide (NFR-003) ; révocation **pendant** une requête en cours (requête retenue par un verrou ou un point d'arrêt de test) : aucune écriture acceptée après la révocation (R-14) ; `REVOKED` → `reactivate` refusé ; isolation à deux prestataires et entre deux organisateurs.
 
 ## Test Strategy
 

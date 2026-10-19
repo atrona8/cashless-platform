@@ -108,11 +108,12 @@ kitty-specs/identite-enrolement-terminaux-01M52R6H/
 ```
 packages/ledger-sql/
 ├── migrations/0021_definer_search_path.sql   # OP-N59 : search_path = public, pg_temp sur toutes les SECURITY DEFINER
-├── migrations/0022_device_enrollment.sql     # S5 : device_enrollment_code, device_refresh_token, device_request_nonce,
-│                                             #      device_status_history, colonnes de device, enroll_device, set_device_status
-├── migrations/0023_consume_tap_claim.sql     # OP-N50 : consume_tap refuse une lecture de rattachement
-├── migrations/0024_tag_key_retire_guard.sql  # OP-N62 : retrait de clé et demandes périmées
-├── migrations/0025_device_agreement_key.sql  # OP-N63 : clé d'accord écrite par enroll_device seulement
+├── migrations/0022_device_enrollment.sql     # S5 : device_enrollment_code, device_refresh_token, device_status_history,
+│                                             #      device_enrollment_attempt, colonnes de device, enroll_device (seule à écrire
+│                                             #      la clé d'accord, OP-N63), set_device_status, index du serial par prestataire
+├── migrations/0023_device_tokens_nonces.sql  # rotation des jetons (grâce), familles, device_request_nonce, assert_device_active
+├── migrations/0024_consume_tap_claim.sql     # OP-N50 : consume_tap refuse une lecture de rattachement
+├── migrations/0025_tag_key_retire_guard.sql  # OP-N62 : retrait de clé et demandes périmées
 ├── gen_tests.py                              # OP-N44 : plus d'EXECUTE attendu pour PUBLIC (droit accordé à app_probe)
 ├── tests_grand_livre_cashless.sql            # régénéré par gen_tests.py (jamais édité à la main)
 ├── post-roles.sql                            # REVOKE EXECUTE … FROM PUBLIC ; GRANT rôle par rôle ; REVOKE TEMPORARY ;
@@ -192,7 +193,7 @@ de jeton, de configuration et de battement de cœur vont à l'API publique ; le 
 
 - **Purpose**: tables S5, nonces, historique des statuts et fonctions `create_device_enrollment_code`, `enroll_device`, `set_device_status`, `rotate_device_refresh_token`, `revoke_device_token_family`, `record_device_heartbeat`.
 - **Relevant requirements**: FR-001 à FR-004, FR-007, FR-011, FR-015, FR-016, FR-019, FR-025, NFR-007, NFR-008, C-001, C-002
-- **Affected surfaces**: `packages/ledger-sql/migrations/0022_device_enrollment.sql`, `tests/tests_device_enrollment.sql`, `tests/tests_device_tokens.sql`, `post-roles.sql`
+- **Affected surfaces**: `packages/ledger-sql/migrations/0022_device_enrollment.sql`, `0023_device_tokens_nonces.sql`, `tests/tests_device_enrollment.sql`, `tests/tests_device_tokens.sql`, `post-roles.sql`
 - **Sequencing/depends-on**: IC-01
 - **Risks**: index du `serial` par prestataire (ADR-109) ; le ré-enrôlement d'un `serial` révoqué lit `max_seen_seq` des terminaux de ce `serial` **dans le prestataire du code** ; `cashless_app` perd toute écriture directe sur `device` et les tables S5 (R-11) ; limites de débit de l'enrôlement (R-16) ; `PAIRED_TPE` n'existe pas dans le `CHECK` de `device.app_mode` : le refus `DEVICE_MODE_NOT_ALLOWED` est fait par la fonction, avant le `CHECK`. Concurrence : `FOR UPDATE` sur le code, index unique `device_serial_active`.
 
@@ -200,7 +201,7 @@ de jeton, de configuration et de battement de cœur vont à l'API publique ; le 
 
 - **Purpose**: `cashless_app` perd `UPDATE (agreement_public_key)` ; seule `enroll_device` écrit la clé.
 - **Relevant requirements**: FR-008, NFR-010
-- **Affected surfaces**: `migrations/0025_device_agreement_key.sql`, `post-roles.sql`, `tests/tests_tag_key_job_approval.sql` §7 (borne inversée), `apps/api/test/support/fake-device.ts` (insère par la fonction)
+- **Affected surfaces**: `migrations/0022_device_enrollment.sql` (`enroll_device`), `post-roles.sql`, `tests/tests_tag_key_job_approval.sql` §7 (borne inversée), `apps/api/test/support/fake-device.ts` (insère par la fonction)
 - **Sequencing/depends-on**: IC-03
 - **Risks**: les fixtures de test de la mission 4 écrivent `device` directement ; elles passent par la fonction ou par le propriétaire. Les retraits couvrent aussi `status`, `public_key`, `cert_sha256` (R-11).
 
@@ -208,7 +209,7 @@ de jeton, de configuration et de battement de cœur vont à l'API publique ; le 
 
 - **Purpose**: une lecture de rattachement ne sert plus à `consume_tap` ; `retire_dedicated_key` exige un travail `RETIRE_KEY` `RUNNING` issu d'une demande exécutée ; `enqueue_tag_key_job` refuse une demande `APPROVED` expirée (`CL023`).
 - **Relevant requirements**: FR-022, FR-024, NFR-010, C-010
-- **Affected surfaces**: `migrations/0023_consume_tap_claim.sql`, `migrations/0024_tag_key_retire_guard.sql`, `tests/tests_media_claim_tap.sql`, `tests/tests_tag_key_job_approval.sql` §6, `tests/tests_consume_tap_claim.sql`
+- **Affected surfaces**: `migrations/0024_consume_tap_claim.sql`, `migrations/0025_tag_key_retire_guard.sql`, `tests/tests_media_claim_tap.sql`, `tests/tests_tag_key_job_approval.sql` §6, `tests/tests_consume_tap_claim.sql`
 - **Sequencing/depends-on**: IC-01
 - **Risks**: `consume_tap` vient du schéma de référence : la correction se fait par migration (`CREATE OR REPLACE` d'une enveloppe ou garde dans `consume_tap_for_claim` qui marque la lecture), jamais dans le fichier généré ; si la suite de référence attend le comportement actuel, la contradiction est signalée (§0.3) avant de choisir. Pas de réouverture d'`INSERT` sur `tag_key_job`.
 
@@ -266,7 +267,7 @@ de jeton, de configuration et de battement de cœur vont à l'API publique ; le 
 - **Relevant requirements**: FR-012, FR-013, FR-014, NFR-002, NFR-003, NFR-004, SC-007
 - **Affected surfaces**: `apps/api/src/device-identity/`, `processes/{public,tag-keys}.module.ts`, `test/integration/end-to-end/{device-auth-matrix,media-port-swap}.spec.ts`
 - **Sequencing/depends-on**: IC-07, IC-08, IC-03
-- **Risks**: ordre des contrôles fixé, nonce inséré après les trois preuves, une seule horloge (celle de la base), `400 CLOCK_SKEW_TOO_LARGE` (R-04) ; famille `fid` vérifiée ; statut relu dans la transaction métier (R-14) ; le processus des clés de bracelet a son propre rôle de base : il lit `device` et écrit `device_request_nonce` sous ce rôle (droit à accorder). Les routes de la mission 4 ne changent pas d'une ligne (SC-007).
+- **Risks**: ordre des contrôles fixé, nonce inséré après les trois preuves, une seule horloge (celle de la base), `400 CLOCK_SKEW_TOO_LARGE` (R-04) ; famille `fid` vérifiée ; statut relu dans la transaction métier (R-14) ; le processus des clés de bracelet a son propre rôle de base : il lit `device` et appelle `consume_device_nonce` sous ce rôle (droits posés par WP07). Les routes de la mission 4 ne changent pas d'une ligne, hormis la borne iOS de `/media/auth-keys` (SC-007, OP-N64).
 
 ### IC-13 — Jetons : rafraîchissement à rotation
 
