@@ -135,3 +135,37 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 ## Risks / Reviewer guidance
 
 Fichiers à faire relire par une personne : `post-roles.sql`, `gen_tests.py`. Le relecteur vérifie qu'aucun droit n'est élargi par rapport à l'existant (comparer les droits avant et après pour chaque rôle) et que la liste de `cashless_app` correspond aux appels réels.
+
+## Compte rendu du lot WP07
+
+Écarts au plan
+- Droit par défaut des fonctions futures non posé (forme par schéma sans effet, forme globale qui casse pgTAP) : soumis
+  au porteur, option retenue le 20/10 : `migrate.ts` applique la série et rejoue `roles.sql` puis `post-roles.sql`
+  dans une seule transaction (verrou consultatif en plus) ; dette résiduelle OP-N68 / ADR-111, levée par la mission 7.
+- Renforcements : `cashless_app` n'exécute plus les fonctions du schéma que l'API n'appelle pas (à ajouter en section 4a
+  de `post-roles.sql` par la mission qui les appellera) ; `cashless_platform` et les rôles des clés perdent tout EXECUTE
+  hérité de PUBLIC ; `cashless_tagcheck` n'exécute plus rien ; TEMPORARY retiré aussi nommément à chaque rôle
+  `cashless_*`.
+- Lecture élargie demandée par T032 : `cashless_tagkeys` lit `device.public_key`, `cert_sha256`, `os`, `nfc_enabled`
+  (données non secrètes).
+- `revoke_device_token_family` accordée à `cashless_app` seul ; purges `purge_device_enrollment_attempts` et
+  `purge_device_request_nonces` accordées à personne (WP12).
+
+Retouches hors carte
+- `migrations/0026_consume_tap_claim_definer.sql` (relecture WP05) : `consume_tap_for_claim` en SECURITY DEFINER,
+  garde OP-N50 de `consume_tap` complétée par `operator_id` ; corps copié de 0024.
+- Suites ajustées : `tests_consume_tap_claim.sql`, `tests_media_claim_tap.sql`, `tests_media_reinstate.sql`,
+  `tests_event_wallet.sql`, `tests_personalization_definer.sql` (tables temporaires créées par le propriétaire).
+- `check_media_transition` (déclencheur INVOKER) : `media_owner_session` et `media_reinstatement_approved` accordées à
+  `cashless_app`.
+- `src/migrate.ts` (option du porteur) et test `apps/api/test/integration/transverse/migrate-rights.spec.ts`.
+
+Points soumis au porteur : droits par défaut (tranché le 20/10, OP-N68) ; hypothèse « le propriétaire ignore la RLS »
+étendue à `consume_tap_for_claim`, bornée par `tests_device_rights.sql` §6.
+
+Limites et renvois : inchangé et non demandé, `cashless_app` peut encore modifier `device.next_seq_floor`,
+`last_seen_at` et l'affectation.
+
+Fichiers à faire relire par une personne : `packages/ledger-sql/post-roles.sql` (sections 0, 4, 5, ligne
+`media_claim`), `migrations/0026_consume_tap_claim_definer.sql`, `gen_tests.py`, `src/migrate.ts`,
+`apps/api/test/integration/transverse/migrate-rights.spec.ts`.

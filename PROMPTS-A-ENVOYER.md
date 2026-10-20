@@ -192,6 +192,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, un rôle IAM par processus (SPEC §3.2), après la
 > région (OP-N11) ; le faux reste refusé en production (`production-guard.spec.ts`).
 
+> **Hérité de la mission 5a, OP-N68 (ADR-111 ; décision du porteur du 20/10/2026)** : une fonction créée à la main,
+> hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au rejeu de `post-roles.sql` (la mission 5a rejoue les
+> droits dans la transaction des migrations). Poser le droit par défaut global `ALTER DEFAULT PRIVILEGES FOR ROLE
+> <propriétaire> REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC` et adapter les suites pgTAP qui en dépendent (pgTAP installé
+> avec des droits explicites, ou droit rendu dans chaque suite) ; inverser la première assertion de la §4 de
+> `tests_execute_grants.sql` ; test : fonction créée à la main non exécutable par `PUBLIC`.
+
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
 - [ ] /spec-kitty.tasks

@@ -128,6 +128,9 @@ Tests unitaires et d'intégration verts, dont toute la suite de la mission 4 rej
   d'accord (défi A), puis clé de signature (défi S, qui contient le SPKI de la clé d'accord).
 - Relecture WP11 : un terminal de test iOS passe la sortie de `iosClientDataHash` telle quelle comme `clientDataHash`
   (nonce = SHA-256(`authData` ‖ `clientDataHash`)), sans la hacher une seconde fois (R-06 précisé).
+- Compte rendu de WP07 : accorde `purge_device_enrollment_attempts` et `purge_device_request_nonces` (accordées à
+  personne) au seul rôle du processus qui les planifie, dans `post-roles.sql` ; `cashless_tagkeys` lit désormais
+  `device.public_key`, `cert_sha256`, `os` et `nfc_enabled` pour la garde.
 
 ## Risks / Reviewer guidance
 

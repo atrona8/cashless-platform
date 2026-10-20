@@ -135,6 +135,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Relecture WP11 : consigner pour la mission 12 que le `keyId` App Attest (credentialId) devra être renvoyé par le port et
   stocké (assertions App Attest, condition de levée d'OP-N64), et que l'app passe `iosClientDataHash` tel quel à
   `attestKey`. Recette (mission 13) : objet App Attest réel enregistré et vraie racine Apple.
+- Compte rendu de WP07 : lever OP-N44, la fin d'OP-N59 et OP-N63 (droits rôle par rôle, TEMPORARY retiré, colonnes de
+  `device` protégées : `tests_execute_grants.sql`, `tests_device_rights.sql`) ; OP-N68 / ADR-111 (droit par défaut des
+  fonctions futures) reste ouvert, mission 7 : le lister dans la revue des écarts de sécurité.
 
 ## Risks / Reviewer guidance
 

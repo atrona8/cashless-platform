@@ -235,7 +235,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   déclencheur, aux droits du propriétaire (OP-N58) ; deux faiblesses du kit relevées pendant la mission 4, qui
   bloquent toutes deux la production (décision du porteur du 15/10/2026) ; adaptateur AWS KMS réel du service de clés
   des bracelets, écrit avec celui de la signature des snapshots, après le choix de la région (OP-N41, bloque la
-  production) ;
+  production) ; droit par défaut global qui retire à `PUBLIC` l'exécution des fonctions futures, y compris créées à
+  la main hors de `migrate.ts` (OP-N68, ADR-111, mission 5a) ;
 - mission 9 : enchaînement du guichet de retour (caution, crédits offerts, solde, restitution), servi par la mission 9
   (décision du porteur du 15/10/2026, OP-N51, ADR-91) ; rendu des espèces dues d'un bracelet remplacé (OP-N55,
   ADR-100) ;

@@ -1415,3 +1415,18 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `softwareEnforced`) ; un autre contrôle lu seulement en logiciel → refus ; valeurs différentes entre les listes →
   refus ; champ absent des deux listes → refus ; paquet ou empreinte faux → refus.
 - **Références.** `research.md` R-05 de la mission 5a ; OP-N67.
+
+## ADR-111 — Fonctions nouvelles : droits rejoués dans la transaction des migrations, droit par défaut reporté
+
+- **Statut** : Acceptée, 20 octobre 2026 (décision du porteur pendant l'implémentation de WP07, mission 5a, OP-N68).
+- **Contexte.** Le plan de WP07 retirait à `PUBLIC` le droit par défaut d'exécuter les fonctions futures. La forme par
+  schéma est sans effet dans PostgreSQL ; la forme globale casse les suites pgTAP (pgTAP et fonctions `pg_temp`).
+- **Décision.** `migrate.ts` applique la série de migrations et le rejeu de `roles.sql` puis `post-roles.sql` dans une
+  seule transaction ; un échec du rejeu annule toute la série. Le droit par défaut global est reporté. Écart au plan
+  (contrôle non tenu) accepté et borné.
+- **Mission qui la lève.** Mission 7 (hors ligne), qui revoit déjà les droits de la base (OP-N57, OP-N58).
+- **Condition de levée.** Droit par défaut global posé pour le propriétaire, suites pgTAP adaptées.
+- **Conséquences.** Une fonction créée à la main hors de `migrate.ts` reste exécutable par `PUBLIC` jusqu'au rejeu :
+  règle d'exploitation « aucune fonction hors migration ». Tests de borne : `tests_execute_grants.sql` §4 et
+  `migrate-rights.spec.ts`.
+- **Références.** OP-N68 ; WP07 de la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/`).

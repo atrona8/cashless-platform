@@ -44,6 +44,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N63 | `cashless_app` peut réécrire `device.agreement_public_key`, clé sous laquelle le processus des clés de bracelet chiffre le mot de passe d'un bracelet (ADR-105) | Non | **Oui** (confirmé par le porteur le 16/10/2026) | Mission 5, enrôlement réel des terminaux : confirmé par le porteur le 16/10/2026 |
 | OP-N64 | Terminal iOS : clé de signature ECDSA non attestée (App Attest atteste sa propre clé), liée à l'instance attestée par le défi d'enrôlement (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
+| OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -495,6 +496,33 @@ réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 
   `attestationApplicationId` est lu dans `softwareEnforced`, et tests de comportement : un autre contrôle
   (`rootOfTrust`, `origin`…) présent seulement dans `softwareEnforced` → refus ; valeurs différentes entre les deux
   listes → refus (`apps/api/test/unit/attestation/android.spec.ts`).
+
+### OP-N68 — Fonction créée hors de `migrate.ts` : exécutable par PUBLIC jusqu'au rejeu des droits (20 octobre 2026)
+
+Signalé par l'implémentation de WP07 (mission 5a). **Écart au plan accepté (contrôle non tenu) ; levé par la
+mission 7 ; décisions du porteur du 20/10/2026 (option « une seule transaction », puis mission 7) ; ADR-111.**
+
+- **Constat.** Le plan de WP07 demandait `ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM
+  PUBLIC`. Cette forme est sans effet dans PostgreSQL : un défaut posé par schéma ne retire pas le défaut global. La
+  forme globale retire aussi `EXECUTE` à pgTAP et aux fonctions `pg_temp` des suites, qui cassent toutes.
+- **Ce qui est fait.** `post-roles.sql` retire `EXECUTE` à `PUBLIC` sur toutes les fonctions de `public`, et
+  `migrate.ts` applique la série de migrations et le rejeu de `roles.sql` et `post-roles.sql` dans une seule
+  transaction (avec un verrou consultatif) : une fonction livrée par une migration n'est jamais exécutable par
+  `PUBLIC`, même un instant.
+- **Risque.** Une fonction créée à la main par le propriétaire (correctif d'urgence en psql, script d'exploitation)
+  reçoit `EXECUTE` pour `PUBLIC` : tout rôle connecté, dont `cashless_app` et les processus des clés, peut l'appeler
+  jusqu'au prochain passage de `migrate.ts`. Si elle est `SECURITY DEFINER`, elle s'exécute avec les droits du
+  propriétaire, qui ignore la RLS.
+- **Garde.** Règle d'exploitation : aucune fonction créée hors d'une migration ; après un correctif manuel, relancer
+  `migrate.ts`.
+- **Condition de levée.** Droit par défaut global (`ALTER DEFAULT PRIVILEGES FOR ROLE <propriétaire> REVOKE EXECUTE ON
+  FUNCTIONS FROM PUBLIC`) une fois que les suites pgTAP n'en dépendent plus (pgTAP installé avec des droits
+  explicites, ou droit rendu dans la transaction de chaque suite) ; la première assertion de la §4 de
+  `tests_execute_grants.sql` s'inverse alors.
+- **Tests qui bornent la limite** : `packages/ledger-sql/tests/tests_execute_grants.sql` §4 (« LIMITE RESTANTE : fonction
+  créée à la main hors de migrate.ts exécutable par PUBLIC jusqu'au rejeu », puis fermeture au rejeu) ;
+  `apps/api/test/integration/transverse/migrate-rights.spec.ts` (série et droits dans une même transaction ; échoue si
+  le rejeu sort de la transaction ou si `post-roles.sql` cesse de retirer `PUBLIC`).
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 
