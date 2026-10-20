@@ -117,6 +117,10 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
 - Relecture WP11 : `data-model.md` décrit `agreement_public_key` en point non compressé de 65 octets, le port en SPKI DER.
   Le vérificateur iOS hache les octets reçus tels quels : l'enrôlement stocke et transmet exactement le format que l'app
   hache (le même pour Android et iOS) ; écris-le dans le contrat et teste-le.
+- Relecture WP07 : toute fonction de la base qu'appelle ta route s'accorde à son rôle dans la section 4a de
+  `post-roles.sql`, et les listes figées de `tests_execute_grants.sql` se mettent à jour dans le même commit (sinon
+  42501 ou test rouge). Une migration s'exécute désormais dans la transaction de `migrate.ts` : pas de
+  `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
 ## Risks / Reviewer guidance
 

@@ -97,6 +97,10 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   → `25000` et rien n'est écrit (pgTAP ne peut pas changer de niveau d'isolation).
 - Relecture : un WP15 approuvé sans le test à deux connexions qui TIENT réellement la transaction de rotation ouverte
   (ordre contrôlé, pas course au hasard) est un constat bloquant. Le client réessaie sur `409` : à tester.
+- Relecture WP07 : toute fonction de la base qu'appelle ta route s'accorde à son rôle dans la section 4a de
+  `post-roles.sql`, et les listes figées de `tests_execute_grants.sql` se mettent à jour dans le même commit (sinon
+  42501 ou test rouge). Une migration s'exécute désormais dans la transaction de `migrate.ts` : pas de
+  `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
 ## Risks / Reviewer guidance
 

@@ -45,6 +45,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N64 | Terminal iOS : clé de signature ECDSA non attestée (App Attest atteste sa propre clé), liée à l'instance attestée par le défi d'enrôlement (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
+| OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -523,6 +524,24 @@ mission 7 ; décisions du porteur du 20/10/2026 (option « une seule transaction
   créée à la main hors de migrate.ts exécutable par PUBLIC jusqu'au rejeu », puis fermeture au rejeu) ;
   `apps/api/test/integration/transverse/migrate-rights.spec.ts` (série et droits dans une même transaction ; échoue si
   le rejeu sort de la transaction ou si `post-roles.sql` cesse de retirer `PUBLIC`).
+
+### OP-N69 — Terminal : numérotation, présence et affectation écrites directement par l'API (20 octobre 2026)
+
+Relevé par la relecture indépendante de WP07 (mission 5a). **Défaut antérieur à la mission, ni créé ni aggravé par
+WP07 ; consigné, levé par la mission 7 ; décision du porteur du 20/10/2026 ; ADR-112.**
+
+- **Constat.** Après WP07, `cashless_app` n'insère plus dans `device` et ne touche plus au statut ni aux clés, mais
+  garde `UPDATE` sur neuf colonnes : `app_mode`, `nfc_enabled`, `event_id`, `pos_id`, `station_name`,
+  `last_snapshot_version`, `last_seen_at`, `next_seq_floor`, `personal_phone` (`post-roles.sql`, section 5).
+- **Risque.** Une session de l'API compromise peut déplacer un terminal vers un autre événement ou point de vente
+  (`event_id`, `pos_id`), abaisser ou relever le plancher de ses numéros de séquence (`next_seq_floor` : rejeu ou refus
+  de lots hors ligne), ou falsifier sa dernière présence. Le statut, les clés, l'empreinte du certificat et le
+  prestataire restent protégés ; chaque requête relit le statut et le prestataire en base.
+- **Condition de levée.** Ces écritures passent par des fonctions de la base qui contrôlent la transition (affectation
+  dans le périmètre de l'organisateur, plancher qui ne descend jamais, présence posée par l'heure de la base), et les
+  `UPDATE` directs correspondants sont retirés à `cashless_app`.
+- **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_rights.sql` §1 (« cashless_app :
+  colonnes de device modifiables, liste exacte »).
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 

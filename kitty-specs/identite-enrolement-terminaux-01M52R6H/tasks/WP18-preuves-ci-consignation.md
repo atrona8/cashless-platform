@@ -138,6 +138,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Compte rendu de WP07 : lever OP-N44, la fin d'OP-N59 et OP-N63 (droits rôle par rôle, TEMPORARY retiré, colonnes de
   `device` protégées : `tests_execute_grants.sql`, `tests_device_rights.sql`) ; OP-N68 / ADR-111 (droit par défaut des
   fonctions futures) reste ouvert, mission 7 : le lister dans la revue des écarts de sécurité.
+- Relecture WP07 : OP-N69 / ADR-112 (colonnes de `device` encore écrites par l'API, mission 7) à lister dans la revue
+  des écarts ; aucun test ne couvre le verrou consultatif de `migrate.ts` (deux exécutions simultanées), à ajouter
+  (renforcement).
 
 ## Risks / Reviewer guidance
 

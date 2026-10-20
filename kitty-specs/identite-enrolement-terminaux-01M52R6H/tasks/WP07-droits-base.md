@@ -161,10 +161,11 @@ Retouches hors carte
 - `src/migrate.ts` (option du porteur) et test `apps/api/test/integration/transverse/migrate-rights.spec.ts`.
 
 Points soumis au porteur : droits par défaut (tranché le 20/10, OP-N68) ; hypothèse « le propriétaire ignore la RLS »
-étendue à `consume_tap_for_claim`, bornée par `tests_device_rights.sql` §6.
+étendue à `consume_tap_for_claim` (qui filtre elle-même chaque lecture par le prestataire de la
+session ; la §6 de `tests_device_rights.sql` borne les sept autres fonctions, pas celle-ci).
 
 Limites et renvois : inchangé et non demandé, `cashless_app` peut encore modifier `device.next_seq_floor`,
-`last_seen_at` et l'affectation.
+`last_seen_at` et l'affectation : consigné après la relecture (OP-N69, ADR-112, mission 7).
 
 Fichiers à faire relire par une personne : `packages/ledger-sql/post-roles.sql` (sections 0, 4, 5, ligne
 `media_claim`), `migrations/0026_consume_tap_claim_definer.sql`, `gen_tests.py`, `src/migrate.ts`,

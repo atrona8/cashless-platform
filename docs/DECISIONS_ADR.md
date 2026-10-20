@@ -1430,3 +1430,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   règle d'exploitation « aucune fonction hors migration ». Tests de borne : `tests_execute_grants.sql` §4 et
   `migrate-rights.spec.ts`.
 - **Références.** OP-N68 ; WP07 de la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/`).
+
+## ADR-112 — Colonnes d'exploitation de `device` encore écrites par l'API : levée en mission 7
+
+- **Statut** : Acceptée, 20 octobre 2026 (décision du porteur après la relecture de WP07, mission 5a, OP-N69).
+- **Contexte.** WP07 retire à `cashless_app` l'insertion dans `device` et l'écriture du statut, des clés et de
+  l'empreinte du certificat. Neuf colonnes restent modifiables, dont `next_seq_floor`, `last_seen_at`, `event_id` et
+  `pos_id` : défaut antérieur à la mission, que le plan de WP07 ne couvrait pas.
+- **Décision.** Limite consignée, sans changement dans la mission 5a ; liste exacte des colonnes figée par un test.
+- **Mission qui la lève.** Mission 7 (hors ligne), qui revoit la numérotation des terminaux dont dépend
+  `next_seq_floor`.
+- **Condition de levée.** Écritures par des fonctions de la base qui contrôlent la transition ; `UPDATE` directs
+  retirés.
+- **Conséquences.** Test de borne : `tests_device_rights.sql` §1 (liste exacte des colonnes modifiables).
+- **Références.** OP-N69 ; WP07 de la mission 5a.

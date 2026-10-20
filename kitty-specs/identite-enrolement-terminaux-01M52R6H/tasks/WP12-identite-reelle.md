@@ -131,6 +131,10 @@ Tests unitaires et d'intégration verts, dont toute la suite de la mission 4 rej
 - Compte rendu de WP07 : accorde `purge_device_enrollment_attempts` et `purge_device_request_nonces` (accordées à
   personne) au seul rôle du processus qui les planifie, dans `post-roles.sql` ; `cashless_tagkeys` lit désormais
   `device.public_key`, `cert_sha256`, `os` et `nfc_enabled` pour la garde.
+- Relecture WP07 : toute fonction de la base qu'appelle ta route s'accorde à son rôle dans la section 4a de
+  `post-roles.sql`, et les listes figées de `tests_execute_grants.sql` se mettent à jour dans le même commit (sinon
+  42501 ou test rouge). Une migration s'exécute désormais dans la transaction de `migrate.ts` : pas de
+  `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
 ## Risks / Reviewer guidance
 
