@@ -4,12 +4,12 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: identite-enrolement-terminaux-01M52R6H
 mission_id: 01M52R6HAZ8DFYP97C5FFTDGSY
-generated_at: '2026-10-19T11:28:19.674660+00:00'
+generated_at: '2026-10-20T09:58:14.632012+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: kitty-specs/identite-enrolement-terminaux-01M52R6H/spec.md
-    sha256: 5aee4cd3b542af2bd46caa754dd51931361412b06e2155a410b6cc8985b8efff
+    sha256: a87739e98b33764bec4851067ef197a12a55fa9f1998c48a5ac3c3b93b362053
   plan.md:
     path: kitty-specs/identite-enrolement-terminaux-01M52R6H/plan.md
     sha256: 8ad1f79a964c63d0b6b10102316969cc8a0aa8566b9b6ebb1895ee22e4d6daca
@@ -21,57 +21,55 @@ input_artifacts:
     sha256:
 verdict: ready
 issue_counts:
-  critical: 0
+  medium: 1
+  low: 1
   high: 0
-  low: 0
-  medium: 0
+  critical: 0
   info: 0
-findings: []
+findings:
+- id: F1
+  severity: medium
+  category: inconsistency
+  summary: data-model.md (invariants du jeton de rafraîchissement) ne cite que FOR UPDATE NOWAIT ; le mécanisme de concurrence est désormais le verrou consultatif de famille (WP04 cycle 2), avec READ COMMITTED exigé.
+- id: F2
+  severity: low
+  category: inconsistency
+  summary: NFR-008 nomme le résultat interne IN_PROGRESS ; contracts/device-tokens.md nomme la réponse 409 CONFLICT_STATE et ne précise pas « arrivés pendant la rotation ».
 ---
 
 ## Specification Analysis Report
 
-Mission `identite-enrolement-terminaux-01M52R6H` · seconde passe du 19/10/2026, après les corrections du commit
-`218044b`. Aucune charte (`.kittify/charter/` absent) ; règles de `CLAUDE.md` respectées.
+Mission `identite-enrolement-terminaux-01M52R6H` · troisième passe, le 20/10/2026. Seul `spec.md` a changé depuis la
+deuxième passe (commit `db38fb3` : précision de NFR-008, décidée par le porteur après la relecture de WP04). `plan.md`
+et `tasks.md` sont inchangés. Il n'y a pas de charte (`.kittify/charter/` absent) ; les règles de `CLAUDE.md` sont
+respectées. Cette passe porte sur les effets de la précision de NFR-008 ; les constats de la deuxième passe restent
+clos.
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| — | — | — | — | Aucun constat ouvert | — |
-
-Constats de la première passe et leur suite :
-
-| ID | Suite |
-|----|-------|
-| U1 (HIGH) | Tranché par le porteur : événement obligatoire sur tout code d'enrôlement. Reporté dans `spec.md` (FR-001, US1 #5, décision 7), `data-model.md`, `contracts/enrollment.md`, WP01, WP03, WP14, `PRD.md`, `PROMPTS-A-ENVOYER.md` |
-| I1 | `plan.md` (structure, IC-03 à IC-05) et `contracts/database-debts.md` alignés sur la numérotation des lots (0021 à 0025) |
-| I2 | SC-007 précise l'exception de la borne iOS (OP-N64) ; `plan.md` IC-12 aligné |
-| I3 | `errors/sqlstate-map.ts` donné à WP12, qui traduit tous les `CL` des migrations 0022 à 0025 ; WP03 et WP14 renvoient à WP12 |
-| I4 | Signature de `consume_device_nonce` et migration de la table des nonces alignées (`data-model.md`, `plan.md`) |
-| C1 | Cas « suspendu : configuration et battement permis » déplacé de WP16 vers WP17 |
-| C2 | `startHttpsApp(rootModule)` démarre aussi le processus des clés de bracelet (WP08) |
-| S1 | Entités « Nonce de requête » et « Essai d'enrôlement » ajoutées à la spec |
+| F1 | Inconsistency | MEDIUM | data-model.md:79-80 | Les invariants citent `FOR UPDATE NOWAIT` comme seul mécanisme de concurrence. Le verrou consultatif de famille (essai dans la rotation, attente dans la révocation) et l'exigence READ COMMITTED de WP04 n'y figurent pas. | Compléter l'invariant au prochain lot de corrections de planification. |
+| F2 | Inconsistency | LOW | spec.md NFR-008 ; contracts/device-tokens.md:30,48 | Une même réponse a deux noms : `IN_PROGRESS` (résultat de la fonction) et `409 CONFLICT_STATE` (code de l'API). Le test du contrat ne précise pas « arrivés pendant la rotation ». | Écrire « `409 CONFLICT_STATE` (résultat `IN_PROGRESS`) » et aligner la ligne 48 sur NFR-008. |
 
 **Coverage Summary Table:**
 
 | Requirement Key | Has Task? | Task IDs | Notes |
 |-----------------|-----------|----------|-------|
-| FR-001 à FR-026 | Oui | voir `tasks.md` et `requirement_refs` des WP | 100 % des FR rattachés (validation `finalize-tasks`) |
-| NFR-001 à NFR-011 | Oui | WP04, WP07, WP08, WP09, WP12, WP14, WP17, WP18 | NFR-009 mesuré en local |
-| C-001 à C-012 | Oui | WP01, WP02, WP03, WP06, WP07, WP08, WP09, WP18 | |
+| FR-001 à FR-026 | Oui | voir `tasks.md` et `requirement_refs` | inchangé |
+| NFR-008 (précisé) | Oui | WP03, WP04, WP14, WP15 | WP15 porte le test à verrou tenu (section « Reports des relectures ») |
+| NFR-001 à NFR-011 (hors 008) | Oui | WP04, WP07, WP08, WP09, WP12, WP14, WP17, WP18 | inchangé |
+| C-001 à C-012 | Oui | WP01, WP02, WP03, WP06, WP07, WP08, WP09, WP18 | inchangé |
 
-**Charter Alignment Issues:** aucune.
+**Charter Alignment Issues:** aucune (pas de charte).
 
 **Unmapped Tasks:** aucune.
 
 **Metrics:**
 
 - Total Requirements : 49 (26 FR, 11 NFR, 12 C)
-- Total Tasks : 87 sous-tâches dans 18 lots
+- Total Tasks : 18 WP
 - Coverage % : 100 %
 - Ambiguity Count : 0
 - Duplication Count : 0
 - Critical Issues Count : 0
 
-## Next Actions
-
-Prêt pour l'implémentation (`spec-kitty-implement-review`).
+**Next Actions:** implémentation possible. F1 et F2 seront corrigés en un seul lot de corrections de planification, pour ne pas périmer l'analyse à chaque retouche.
