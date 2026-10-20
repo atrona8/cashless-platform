@@ -150,6 +150,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   `authentication.guard.ts` (route de personne et route publique non-terminal, M1) ; tests de `config.ts` : en
   production, `DEVICE_REQUEST_AUTHORITIES` obligatoire et joker `:*` refusé (M3). Mineur : contrôle de longueur à 64
   octets de `request-signature.ts:278` redondant avec `ieee-p1363` (M4).
+- ADR-114 (décision du porteur du 20/10) : test pgTAP qui échoue si `purge_device_request_nonces` retire un nonce
+  encore dans sa fenêtre, ou si `purge_device_enrollment_attempts` retire un essai de moins de 24 h, appelées en
+  `cashless_app` ; à citer dans la revue des écarts (droit plus large accepté).
 
 ## Risks / Reviewer guidance
 

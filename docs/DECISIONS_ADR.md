@@ -1463,3 +1463,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Suites (même date).** OP-N70 : les suites de la mission 4 servies en clair restent sous le faux d'identité du
   terminal ; WP18 les étend à l'identité réelle (une route par contrôleur en HTTPS, test de couverture). Borne iOS de
   `POST /media/auth-keys` : `422 DEVICE_MODE_NOT_ALLOWED` (statut de `openapi.yaml`), `device-lifecycle.md` corrigé.
+
+## ADR-114 — Purges des nonces et des essais d'enrôlement exécutées par l'API publique
+
+- **Statut** : Acceptée, 20 octobre 2026 (décision du porteur après la relecture de WP12, mission 5a).
+- **Contexte.** `purge_device_request_nonces` et `purge_device_enrollment_attempts` (SECURITY DEFINER) n'étaient
+  accordées à aucun rôle après WP07. Le travailleur `device-purge` qui les planifie tourne dans l'API publique ; les
+  relectures de WP03 et WP07 préféraient que `cashless_app` ne les exécute pas.
+- **Décision.** `EXECUTE` accordé à `cashless_app` (`post-roles.sql`, section 4a). Droit plus large pour l'API,
+  accepté : chaque purge ne retire que des lignes hors de leur fenêtre, à l'heure de la base (nonces expirés depuis plus
+  de la tolérance de 300 s, essais de plus de 24 h pour une limite calculée sur 1 h). `cashless_tagkeys` est refusé.
+- **Alternative écartée.** Rôle et connexion de maintenance dédiés (un rôle et un réglage de déploiement de plus).
+- **Conséquences.** Test de borne confié à WP18 : il échoue si une purge peut retirer une ligne encore dans sa fenêtre
+  (nonce non expiré, essai de moins de 24 h). Listes figées de `tests_execute_grants.sql`.
+- **Références.** WP07 et WP12 de la mission 5a ; ADR-113.
