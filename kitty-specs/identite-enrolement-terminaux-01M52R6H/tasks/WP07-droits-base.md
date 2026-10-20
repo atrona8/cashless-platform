@@ -123,6 +123,11 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
   passe `consume_tap_for_claim` en SECURITY DEFINER (`search_path = public, pg_temp`, même verrou), ou, à défaut, pose
   un déclencheur qui refuse un `confirmed_tap_id` sur une lecture qui porte déjà une écriture. Ajoute aussi
   `AND operator_id = t.operator_id` à la garde OP-N50 de `consume_tap` (0024, défense en profondeur). Tests de refus.
+- Relecture WP06 : retire `retire_dedicated_key` à `cashless_perso` et garde `retire_dedicated_key_for_job` à ce seul rôle ;
+  reprends les lignes de `post-roles.sql` posées par WP06 (GRANT à `cashless_perso`, REVOKE à `cashless_app`).
+  Dans `tests_tag_key_job_approval.sql` : §1 (colonne `retire_dedicated_key` de la personnalisation), §4 (le
+  `lives_ok` du retrait direct devient un refus 42501 ou passe par le travail), §6 à inverser (il échoue aujourd'hui
+  sur CL023, par construction).
 
 ## Risks / Reviewer guidance
 

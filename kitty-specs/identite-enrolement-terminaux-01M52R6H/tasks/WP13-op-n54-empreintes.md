@@ -60,7 +60,7 @@ Planification et merge sur `feat/identite-enrolement-terminaux`. Dépendances : 
 
 ### T063 — Empreinte à clé
 
-`requestHash(method, route, body, key)` → `'h1:' + HMAC-SHA256(key, METHOD ‖ '\n' ‖ route ‖ '\n' ‖ JCS(corps))` en hexadécimal ; l'intercepteur passe `config.idempotencyHmacKey` (retouche d'une ligne dans `idempotency.interceptor.ts`, hors carte, à consigner). `request_hash` de `journal_transaction` (schéma de référence) n'est pas concerné.
+`requestHash(method, route, body, key)` → `HMAC-SHA256(key, METHOD ‖ '\n' ‖ route ‖ '\n' ‖ JCS(corps))` en hexadécimal sur 64 caractères, sans préfixe (contrainte de 0002 ; décision du porteur du 20/10/2026) ; l'intercepteur passe `config.idempotencyHmacKey` (retouche d'une ligne dans `idempotency.interceptor.ts`, hors carte, à consigner). `request_hash` de `journal_transaction` (schéma de référence) n'est pas concerné.
 
 ### T064 — Code d'enrôlement
 
@@ -81,3 +81,20 @@ Tests unitaires verts et suite d'idempotence existante verte (`test/unit/idempot
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie qu'aucune empreinte sans clé ne reste au registre et que la clé n'est jamais journalisée.
+
+## Compte rendu du lot WP13
+
+Écarts au plan
+- Format de l'empreinte : hexadécimal 64 sans préfixe `h1:` (contrainte de 0002, §0.3) ; décision du porteur du
+  20/10/2026, documents corrigés (research.md R-13, contracts/database-debts.md, ce prompt).
+- Renforcement : `requestHash` et `enrollmentCodeHash` refusent une clé de moins de 32 octets ; `normalizeEnrollmentCode`
+  refuse une saisie de plus de 64 caractères avant tout traitement ; aucun message ne reprend la clé ni la saisie.
+
+Retouches hors carte : `idempotency.interceptor.ts` (une ligne, prévue) ; `test/integration/transverse/idempotency.spec.ts`
+(nouvelle signature).
+
+Point pour la mise en production : les lignes `api_idempotency` écrites avant le déploiement gardent une empreinte sans
+clé ; à purger avant la mise en production (reporté dans WP18).
+
+Fichiers à faire relire par une personne : `apps/api/src/idempotency/request-hash.ts`,
+`apps/api/src/enrollment-code/enrollment-code.ts`.

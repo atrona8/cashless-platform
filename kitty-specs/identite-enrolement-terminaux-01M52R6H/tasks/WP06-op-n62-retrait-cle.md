@@ -82,3 +82,22 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie que `INSERT` sur `tag_key_job` reste fermé et que le corps recopié d'`enqueue_tag_key_job` ne diffère de 0020 que par la garde d'expiration.
+
+## Compte rendu du lot WP06
+
+Écarts au plan
+- Renforcement : la garde d'expiration lit `clock_timestamp()` et non `now()` (même référence que le défaut de
+  `expires_at` et que `approval.service.ts`) ; une demande qui périme pendant une transaction longue est refusée.
+- Renforcement : les contrôles de la demande sont délégués à `tag_key_job_refusal` (0020), qui vérifie aussi le
+  résultat, l'index, l'auteur et le valideur.
+- Neutre : `enqueue_tag_key_child_job` inchangée (elle n'accepte qu'une demande EXECUTED, déjà consommée à temps).
+
+Retouches hors carte (`post-roles.sql`, fichier de WP07)
+- `GRANT EXECUTE` de `retire_dedicated_key_for_job` à `cashless_perso` (sans elle, le travailleur échouait en 42501
+  avant WP07) ; `REVOKE` de cette fonction à `cashless_app` (accordée par `roles.sql`, détecté par le test).
+
+Limite connue jusqu'à WP07 : `cashless_perso` garde l'EXECUTE direct sur `retire_dedicated_key` (OP-N62, comme prévu au
+plan, non élargie) ; `tests_tag_key_job_approval.sql` s'arrête au §6 (ancienne borne), WP07 l'inverse.
+
+Fichiers à faire relire par une personne : `packages/ledger-sql/migrations/0025_tag_key_retire_guard.sql`,
+`packages/ledger-sql/post-roles.sql`.

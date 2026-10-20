@@ -271,7 +271,8 @@ dans le dossier `decisions/` (identifiants `DM-…`) ; celles qui touchent à la
 ## R-13 — Empreinte de requête à clé (OP-N54)
 
 - **Decision** : `requestHash` devient `HMAC-SHA256(IDEMPOTENCY_HMAC_KEY, METHOD ‖ "\n" ‖ route ‖ "\n" ‖ JCS(corps))`,
-  préfixé `h1:`. Clé de 32 octets au moins, hors de la base, obligatoire en production (démarrage refusé sinon), même
+  en hexadécimal sur 64 caractères, sans préfixe (la contrainte `api_idempotency_hash_hex` de 0002 l'impose ; décision
+  du porteur du 20/10/2026, qui remplace le préfixe `h1:` prévu au plan). Clé de 32 octets au moins, hors de la base, obligatoire en production (démarrage refusé sinon), même
   mécanique que `CLAIM_CODE_HMAC_KEY`. Test : l'empreinte ne se recalcule pas sans la clé, et deux clés différentes
   donnent deux empreintes.
 - **Rationale** : garde la détection `IDEMPOTENCY_KEY_REUSED` sur tous les champs (l'exclusion des champs secrets la

@@ -126,6 +126,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Lever OP-N50 dans `docs/POINTS_OUVERTS.md` (migration 0024) et mettre à jour ADR-90 et ADR-101.
 - Test Jest à deux connexions sur la course entre une écriture et une demande de rattachement sur la même lecture
   (verrou `media-tap-use:` de 0024, vérifié à la main seulement).
+- Lever OP-N62 dans `docs/POINTS_OUVERTS.md` (migration 0025, puis droits de WP07) et mettre à jour ADR-102.
+- Mise en production : purger les lignes `api_idempotency` dont l'empreinte a été calculée sans clé (antérieures à WP13),
+  ou consigner la consigne de déploiement ; lever OP-N54 et mettre à jour ADR-99.
 
 ## Risks / Reviewer guidance
 
