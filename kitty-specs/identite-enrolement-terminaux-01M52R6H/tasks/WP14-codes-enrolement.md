@@ -114,6 +114,9 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
 - Petites retouches de `apps/api/src/enrollment-code/enrollment-code.ts` (WP13) : mise en majuscules ASCII seulement ou
   refus de tout caractère non ASCII avant (`ſ` → `S` aujourd'hui) ; `expect.assertions` dans les tests de non-écho
   (`enrollment-code.spec.ts:66-70`, `request-hash.spec.ts:49-53`) ; commentaires ramenés à 100 caractères.
+- Relecture WP11 : `data-model.md` décrit `agreement_public_key` en point non compressé de 65 octets, le port en SPKI DER.
+  Le vérificateur iOS hache les octets reçus tels quels : l'enrôlement stocke et transmet exactement le format que l'app
+  hache (le même pour Android et iOS) ; écris-le dans le contrat et teste-le.
 
 ## Risks / Reviewer guidance
 

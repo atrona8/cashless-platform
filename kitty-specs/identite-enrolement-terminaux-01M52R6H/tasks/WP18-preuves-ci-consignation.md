@@ -132,6 +132,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Relecture WP13 : `personalizationHash` (`apps/api/src/media/personalization/personalization.dto.ts:76`, portée `perso:`)
   écrit encore un SHA-256 sans clé dans `api_idempotency.request_hash`. Passe-le sous `idempotencyHmacKey` (renforcement)
   avant de déclarer OP-N54 levé ; test qui échoue si une empreinte sans clé est écrite.
+- Relecture WP11 : consigner pour la mission 12 que le `keyId` App Attest (credentialId) devra être renvoyé par le port et
+  stocké (assertions App Attest, condition de levée d'OP-N64), et que l'app passe `iosClientDataHash` tel quel à
+  `attestKey`. Recette (mission 13) : objet App Attest réel enregistré et vraie racine Apple.
 
 ## Risks / Reviewer guidance
 

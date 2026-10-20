@@ -89,3 +89,27 @@ Tests unitaires verts ; `npm run typecheck` et `npm run lint` verts. Chaque sous
 ## Risks / Reviewer guidance
 
 Fichier à faire relire par une personne : `ios-app-attest.ts`. Le relecteur vérifie que le défi couvre bien les deux clés publiques (seule protection contre la substitution de clés, R-06).
+
+## Compte rendu du lot WP11
+
+Écarts au plan (renforcements, codés)
+- Dates de toute la chaîne vérifiées, racine comprise ; bornes : objet ≤ 32 Kio, chaîne ≤ 5 certificats.
+- Extension de nonce unique et dans la feuille seulement, comparée octet à octet à son encodage DER attendu.
+- Clé de feuille P-256, drapeau AT, longueur du credentialId contrôlée ; clés de signature et d'accord distinctes.
+- CBOR strict (clés en double, flux et octets en trop rejetés) ; racine Apple obligatoire et racine de test refusée en
+  production ; environnement de développement refusé en production par le vérificateur aussi.
+
+Retouches hors carte
+- `attestation.module.ts` : branchement d'iOS, getter `isFake` du routeur (relecture WP10), racines factorisées
+  (`readRoots`) pour Android et iOS.
+- `android.spec.ts` : réglages iOS ajoutés à l'objet `base`. `jest.config.cjs` : `cbor2` et `@cto.af/wtf8` transformés
+  (modules ES).
+
+Points soumis au porteur : contradiction R-06 / R-08 sur un double hachage du défi (suivi : prompt et R-08,
+`clientDataHash = iosClientDataHash(...)` sans second hachage).
+
+Limites et renvois : reçu App Attest non exploité (R-06) ; `keyId` non renvoyé par le port (mission 12, levée
+d'OP-N64) ; non validé sur un vrai objet App Attest d'Apple (recette, mission 13).
+
+Fichiers à faire relire par une personne : `apps/api/src/attestation/ios-app-attest.ts`, diff de
+`apps/api/src/attestation/attestation.module.ts`.
