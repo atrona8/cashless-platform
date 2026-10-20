@@ -126,6 +126,8 @@ Tests unitaires et d'intégration verts, dont toute la suite de la mission 4 rej
   inutile après `open_offline_batch` ; jamais sur les routes `allowSuspended`. `CL030` → `403 DEVICE_SUSPENDED`.
 - Le terminal de test réutilise `apps/api/src/attestation/enrollment-challenge.ts` tel quel ; ordre Android : clé
   d'accord (défi A), puis clé de signature (défi S, qui contient le SPKI de la clé d'accord).
+- Relecture WP11 : un terminal de test iOS passe la sortie de `iosClientDataHash` telle quelle comme `clientDataHash`
+  (nonce = SHA-256(`authData` ‖ `clientDataHash`)), sans la hacher une seconde fois (R-06 précisé).
 
 ## Risks / Reviewer guidance
 

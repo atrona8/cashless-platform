@@ -115,8 +115,9 @@ dans le dossier `decisions/` (identifiants `DM-…`) ; celles qui touchent à la
 
 - **Decision** : l'objet App Attest (`key_attestation_chain[0]`, CBOR décodé par `cbor2`) est vérifié selon la
   procédure d'Apple : `fmt = apple-appattest` ; chaîne `x5c` jusqu'à la racine Apple App Attestation
-  (`IOS_APP_ATTEST_ROOT`) ; nonce = SHA-256(`authData` ‖ SHA-256(défi)) égal à l'extension
-  `1.2.840.113635.100.8.2` ; `rpIdHash` = SHA-256(`<team_id>.<bundle_id>`) ; compteur = 0 ; `aaguid` =
+  (`IOS_APP_ATTEST_ROOT`) ; nonce = SHA-256(`authData` ‖ `clientDataHash`) égal à l'extension
+  `1.2.840.113635.100.8.2`, où `clientDataHash` est le condensé de R-08, passé tel quel à
+  `attestKey(keyId, clientDataHash:)` sans second hachage (précisé après la relecture de WP11) ; `rpIdHash` = SHA-256(`<team_id>.<bundle_id>`) ; compteur = 0 ; `aaguid` =
   `appattest` (la valeur `appattestdevelop` est refusée en production, garde de démarrage) ; `credentialId` =
   identifiant de clé = SHA-256 de la clé publique attestée.
 - **Limite** (décision du porteur au plan, `DM-01M59SD0YNWKK8R4EKT2T7THJK`) : App Attest atteste sa propre clé, pas la
