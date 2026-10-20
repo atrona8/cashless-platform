@@ -1453,8 +1453,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   l'identité réelle, ces routes étaient toutes refusées (401, échec fermé).
 - **Décision.** Sur les seules routes de guichet, le jeton de la personne passe dans l'en-tête dédié
   `X-Staff-Authorization: Bearer <JWT>`, avec les mêmes vérifications que `humanBearer` ; le jeton d'appareil reste dans
-  `Authorization`, comme sur toutes les routes de terminal. Aucune preuve n'est retirée. Contrat `openapi.yaml` et types
-  générés mis à jour dans WP12.
+  `Authorization`, comme sur toutes les routes de terminal. Aucune preuve n'est retirée. Schéma `staffBearer` dans
+  `openapi.yaml` sur les 9 routes `@CounterAuth()` ; l'en-tête est refusé (401) sur toute autre route. Il n'est pas
+  couvert par la signature R-04 : le jeton de la personne reste rejouable par un tiers qui verrait la requête, comme
+  tout Bearer des routes humaines (pas de régression).
 - **Alternatives écartées.** Jeton d'appareil dans un en-tête dédié partout (toutes les routes de terminal changent) ;
   routes de guichet sans jeton d'appareil (une preuve retirée).
 - **Références.** WP01 et WP12 de la mission 5a ; ADR-107 (trois preuves).

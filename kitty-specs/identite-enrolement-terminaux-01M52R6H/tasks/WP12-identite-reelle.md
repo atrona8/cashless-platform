@@ -139,3 +139,48 @@ Tests unitaires et d'intégration verts, dont toute la suite de la mission 4 rej
 ## Risks / Reviewer guidance
 
 Fichiers à faire relire par une personne : `real-device-identity.ts`, `request-signature.ts`, `device.guard.ts`. Le relecteur vérifie l'ordre des contrôles, qu'aucune preuve n'est optionnelle, que le faux n'est atteignable que hors production et sous variable explicite, et qu'aucun message d'erreur ne révèle la preuve fautive.
+
+## Compte rendu du lot WP12
+
+Fait (commits `b52170b`, `a2fa1c5`, `ddc4520` de la lane l)
+- `RealDeviceIdentity` vérifie les trois preuves dans l'ordre de `contracts/device-authentication.md` : certificat
+  client (empreinte SHA-256), jeton d'appareil, terminal et famille relus en base (`app.operator_id` posé avant
+  `device_token_family_active`), `cert_sha256` et `cnf.jkt`, `Content-Digest`, signature RFC 9421 restreinte, nonce
+  consommé en dernier. Étapes 1 à 4 → `401 UNAUTHENTICATED` ; 5, 6 et rejeu → `401 DEVICE_SIGNATURE_INVALID` ;
+  horloge → `400 CLOCK_SKEW_TOO_LARGE`. Raison au journal seulement.
+- `@DeviceAuth({ allowSuspended, nfcOnly })` ; borne iOS de `POST /media/auth-keys` (`422`), seule ligne changée dans
+  les contrôleurs de la mission 4 (test `git diff`). Faux d'identité hors production et sous `DEVICE_IDENTITY_FAKE=1`
+  seulement ; en production, la variable fait refuser le démarrage.
+- `assert_device_active` avant `register_tap`, dans `CounterAccess` et avant la remise d'un mot de passe dans
+  `AuthKeysService` (test qui échoue sans lui). CL025 à CL030 traduits.
+- Purges des nonces et des essais d'enrôlement : travailleur `device-purge` de l'API publique, EXECUTE accordé à
+  `cashless_app` (`post-roles.sql` 4a ; l'assertion de WP07 « rôle du processus de maintenance » est inversée,
+  `cashless_tagkeys` refusé).
+- Terminal de test (`test/support/test-terminal.ts`) ; `fake-device.ts` enrôle par `enroll_device`.
+
+Décisions du porteur (20/10/2026)
+- Routes de guichet : jeton de la personne dans `X-Staff-Authorization` (schéma `staffBearer`, 9 routes
+  `@CounterAuth()`), jeton d'appareil dans `Authorization` ; en-tête refusé (401) sur toute autre route, avant toute
+  preuve (ADR-113). Non couvert par la signature R-04 : rejouable comme tout Bearer humain.
+- Borne iOS : `422 DEVICE_MODE_NOT_ALLOWED` (`device-lifecycle.md` corrigé).
+- Suites de la mission 4 servies en clair sous le faux d'identité : accepté, extension à l'identité réelle dans WP18
+  (OP-N70).
+
+Écarts au plan
+- Renforcements : `DEVICE_REQUEST_AUTHORITIES` (obligatoire en production, port `:*` refusé) contre le rejeu au central
+  d'une requête signée pour la passerelle ; `nfcOnly` refuse aussi un Android au NFC coupé ; `X-Request-Id` en UUID ;
+  paramètre de signature inconnu refusé ; tolérance d'horloge à 0 refusée au démarrage.
+- Neutres : `fake-device.ts` garde un INSERT direct pour les terminaux sans événement ou sans clé d'accord ; commit de
+  WP01 repris par cherry-pick (codes `DEVICE_SIGNATURE_INVALID`, `DEVICE_SERIAL_IN_USE`).
+
+Retouches hors carte : `config/config.ts`, `test/support/tls.ts`, `devices/devices.module.ts`, `tap.service.ts`,
+`counter-access.ts`, `test/support/app.ts`, `identity/authentication.guard.ts`, `identity/staff-token.decorator.ts`,
+`auth-keys.service.ts`, tests unitaires adaptés et tests de guichet de la mission 4 (en-tête de la personne).
+
+Limites et renvois : le test `git diff` exige l'historique de `main` (CI : WP18) ; WP14 remplace `TestTerminal.enroll`
+par la route ; WP15 lit le certificat comme `RealDeviceIdentity` ; WP16 et WP17 utilisent
+`@DeviceAuth({ allowSuspended: true })` sans `assert_device_active` après une fonction `FOR UPDATE`.
+
+Fichiers à faire relire par une personne : `real-device-identity.ts`, `request-signature.ts`, `device.guard.ts`,
+`nonce-store.ts`, `post-roles.sql` (section 4a), `config.ts` (`requestAuthorities`), `authentication.guard.ts`,
+`staff-token.decorator.ts`, `auth-keys.service.ts`.
