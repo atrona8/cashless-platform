@@ -109,6 +109,11 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   d'attestation fait refuser le démarrage en production (relecture WP10).
 - Documente `ANDROID_ATTESTATION_ROOTS` (aucun fichier ni document dans le dépôt) : racines Google à jour, ancienne
   racine RSA et nouvelle racine de la rotation annoncée, à vérifier au déploiement.
+- Relecture WP13 : appelle `enrollmentCodeHash(code, config.enrollmentCodeHmacKey)`, jamais un SHA simple ; ne journalise
+  ni le code saisi ni une erreur qui le reprend ; compare les empreintes en base (ou `timingSafeEqual`).
+- Petites retouches de `apps/api/src/enrollment-code/enrollment-code.ts` (WP13) : mise en majuscules ASCII seulement ou
+  refus de tout caractère non ASCII avant (`ſ` → `S` aujourd'hui) ; `expect.assertions` dans les tests de non-écho
+  (`enrollment-code.spec.ts:66-70`, `request-hash.spec.ts:49-53`) ; commentaires ramenés à 100 caractères.
 
 ## Risks / Reviewer guidance
 

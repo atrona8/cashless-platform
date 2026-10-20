@@ -128,6 +128,9 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
   Dans `tests_tag_key_job_approval.sql` : §1 (colonne `retire_dedicated_key` de la personnalisation), §4 (le
   `lives_ok` du retrait direct devient un refus 42501 ou passe par le travail), §6 à inverser (il échoue aujourd'hui
   sur CL023, par construction).
+- Relecture WP06 (suite) : §7 de `tests_tag_key_job_approval.sql` (lignes ~109 et ~215, qui attendent encore un appel direct
+  de `retire_dedicated_key` par `cashless_perso`) à inverser aussi ; ajoute le test « `cashless_perso` ne peut pas appeler
+  `retire_dedicated_key` » (condition de levée d'OP-N62).
 
 ## Risks / Reviewer guidance
 

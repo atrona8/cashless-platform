@@ -129,6 +129,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Lever OP-N62 dans `docs/POINTS_OUVERTS.md` (migration 0025, puis droits de WP07) et mettre à jour ADR-102.
 - Mise en production : purger les lignes `api_idempotency` dont l'empreinte a été calculée sans clé (antérieures à WP13),
   ou consigner la consigne de déploiement ; lever OP-N54 et mettre à jour ADR-99.
+- Relecture WP13 : `personalizationHash` (`apps/api/src/media/personalization/personalization.dto.ts:76`, portée `perso:`)
+  écrit encore un SHA-256 sans clé dans `api_idempotency.request_hash`. Passe-le sous `idempotencyHmacKey` (renforcement)
+  avant de déclarer OP-N54 levé ; test qui échoue si une empreinte sans clé est écrite.
 
 ## Risks / Reviewer guidance
 
