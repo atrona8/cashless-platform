@@ -46,6 +46,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
+| OP-N70 | Suites de la mission 4 servies en clair : elles tournent encore sous le faux d'identité du terminal (tests seulement, refusé en production) ; l'identité réelle n'est prouvée en HTTPS que sur deux routes et la matrice des preuves (ADR-113) | Non | Non (faux de test, refusé en production) | WP18 de la mission 5a, décision du porteur du 20/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -542,6 +543,22 @@ WP07 ; consigné, levé par la mission 7 ; décision du porteur du 20/10/2026 ; 
   `UPDATE` directs correspondants sont retirés à `cashless_app`.
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_rights.sql` §1 (« cashless_app :
   colonnes de device modifiables, liste exacte »).
+
+### OP-N70 — Suites de la mission 4 encore sous le faux d'identité du terminal (20 octobre 2026)
+
+Signalé par l'implémentation de WP12 (mission 5a). **Écart à la définition de fin de WP12, accepté ; levé par WP18 de
+la même mission ; décision du porteur du 20/10/2026 ; ADR-113.**
+
+- **Constat.** La définition de fin de WP12 voulait toute la suite de la mission 4 avec l'identité réelle. Ces suites
+  sont servies en clair par supertest, donc sans certificat client : elles tournent sous `DEVICE_IDENTITY_FAKE=1`
+  (posé par `apps/api/test/support/app.ts`). L'identité réelle est prouvée en HTTPS mTLS par `media-port-swap.spec.ts`
+  (`POST /v1/taps`, `POST /v1/media/auth-keys`, matrice des preuves NFR-002, rejeu, révocation, suspension).
+- **Risque.** Une route de terminal de la mission 4 dont le comportement dépendrait de l'identité réelle (par exemple
+  un champ lu autrement que par le faux) ne serait pas couverte. Le faux est refusé en production
+  (`production-guard.spec.ts`).
+- **Condition de levée (WP18).** Au moins une route de chaque contrôleur de terminal de la mission 4 servie en HTTPS
+  réel avec le terminal de test ; un test échoue si une route de terminal n'est couverte par aucun test en identité
+  réelle.
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 

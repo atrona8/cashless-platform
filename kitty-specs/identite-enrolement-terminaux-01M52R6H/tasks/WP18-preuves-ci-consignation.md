@@ -141,6 +141,11 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Relecture WP07 : OP-N69 / ADR-112 (colonnes de `device` encore écrites par l'API, mission 7) à lister dans la revue
   des écarts ; aucun test ne couvre le verrou consultatif de `migrate.ts` (deux exécutions simultanées), à ajouter
   (renforcement).
+- WP12 (décision du porteur du 20/10, OP-N70, ADR-113) : passe en HTTPS réel, avec le terminal de test, au moins
+  une route de chaque contrôleur de terminal de la mission 4 (les suites en clair restent sous
+  `DEVICE_IDENTITY_FAKE=1`), et ajoute un test qui échoue si une route de terminal n'est couverte par aucun test en
+  identité réelle ; puis lève OP-N70. Consigne aussi `DEVICE_REQUEST_AUTHORITIES` (renforcement de WP12) et prévois
+  l'historique git complet en CI pour le test `git diff` de WP12 (SC-007).
 
 ## Risks / Reviewer guidance
 

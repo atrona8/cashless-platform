@@ -1444,3 +1444,20 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   retirés.
 - **Conséquences.** Test de borne : `tests_device_rights.sql` §1 (liste exacte des colonnes modifiables).
 - **Références.** OP-N69 ; WP07 de la mission 5a.
+
+## ADR-113 — Routes de guichet : jeton de la personne dans `X-Staff-Authorization`
+
+- **Statut** : Acceptée, 20 octobre 2026 (décision du porteur pendant l'implémentation de WP12, mission 5a).
+- **Contexte.** Une route de guichet exige le terminal ET la personne. Le contrat déclarait `deviceToken` et
+  `humanBearer` comme deux jetons Bearer : tous deux dans `Authorization`, ce qu'une requête HTTP ne peut porter. Avec
+  l'identité réelle, ces routes étaient toutes refusées (401, échec fermé).
+- **Décision.** Sur les seules routes de guichet, le jeton de la personne passe dans l'en-tête dédié
+  `X-Staff-Authorization: Bearer <JWT>`, avec les mêmes vérifications que `humanBearer` ; le jeton d'appareil reste dans
+  `Authorization`, comme sur toutes les routes de terminal. Aucune preuve n'est retirée. Contrat `openapi.yaml` et types
+  générés mis à jour dans WP12.
+- **Alternatives écartées.** Jeton d'appareil dans un en-tête dédié partout (toutes les routes de terminal changent) ;
+  routes de guichet sans jeton d'appareil (une preuve retirée).
+- **Références.** WP01 et WP12 de la mission 5a ; ADR-107 (trois preuves).
+- **Suites (même date).** OP-N70 : les suites de la mission 4 servies en clair restent sous le faux d'identité du
+  terminal ; WP18 les étend à l'identité réelle (une route par contrôleur en HTTPS, test de couverture). Borne iOS de
+  `POST /media/auth-keys` : `422 DEVICE_MODE_NOT_ALLOWED` (statut de `openapi.yaml`), `device-lifecycle.md` corrigé.

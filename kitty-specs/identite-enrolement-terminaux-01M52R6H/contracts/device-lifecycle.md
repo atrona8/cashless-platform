@@ -36,5 +36,5 @@ Les lots hors ligne (`allowSuspended`) viennent avec la mission 7.
 
 ## Borne iOS (OP-N64)
 
-`POST /media/auth-keys` refuse un terminal `os = IOS` (`403 DEVICE_MODE_NOT_ALLOWED`) ; un test le prouve et échoue si
-la borne s'élargit.
+`POST /media/auth-keys` refuse un terminal `os = IOS` (`422 DEVICE_MODE_NOT_ALLOWED`, statut de `openapi.yaml`,
+confirmé par le porteur le 20/10/2026) ; un test le prouve et échoue si la borne s'élargit.
