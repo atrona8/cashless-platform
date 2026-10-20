@@ -115,6 +115,18 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 Tests unitaires et d'intégration verts, dont toute la suite de la mission 4 rejouée avec l'identité réelle (`npm test -w @cashless/api -- --runInBand`). Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- Branche `purge_device_request_nonces` sur `WorkerRegistry` (aucun lot ne le faisait, relecture WP04 M3) ; rythme
+  réglable, rôle de base qui l'exécute consigné pour WP07.
+- Pose `app.operator_id` avant `device_token_family_active` (sinon toujours faux).
+- `assert_device_active` est obligatoire dans la transaction avant `register_tap` et `post_transaction` (qui ne
+  contrôlent pas le statut), APRÈS toute fonction qui prend le terminal en `FOR UPDATE` (`record_device_seq`,
+  `waive_seq_gap`, `open_offline_batch`, `record_device_heartbeat`, `set_device_status`), sinon interblocage 40P01 ;
+  inutile après `open_offline_batch` ; jamais sur les routes `allowSuspended`. `CL030` → `403 DEVICE_SUSPENDED`.
+- Le terminal de test réutilise `apps/api/src/attestation/enrollment-challenge.ts` tel quel ; ordre Android : clé
+  d'accord (défi A), puis clé de signature (défi S, qui contient le SPKI de la clé d'accord).
+
 ## Risks / Reviewer guidance
 
 Fichiers à faire relire par une personne : `real-device-identity.ts`, `request-signature.ts`, `device.guard.ts`. Le relecteur vérifie l'ordre des contrôles, qu'aucune preuve n'est optionnelle, que le faux n'est atteignable que hors production et sous variable explicite, et qu'aucun message d'erreur ne révèle la preuve fautive.

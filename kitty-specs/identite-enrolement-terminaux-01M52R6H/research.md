@@ -219,7 +219,7 @@ dans le dossier `decisions/` (identifiants `DM-…`) ; celles qui touchent à la
   réels du code (test d'architecture). Extensions installées dans `public` (`pgcrypto`, `pgtap` en test) : vérifier
   qu'aucun rôle applicatif n'en a besoin (aucun appel trouvé dans le schéma), sinon les accorder nommément.
 - **OP-N50** : `consume_tap` refuse une lecture dont l'identifiant est `media_claim.confirmed_tap_id` (migration
-  `0023`) ; `tests_media_claim_tap.sql` passe de la borne à un test de refus.
+  `0024`) ; `tests_media_claim_tap.sql` passe de la borne à un test de refus.
 - **OP-N54** : R-13.
 - **OP-N62** : `retire_dedicated_key` n'est plus exécutable par `cashless_perso` ; une fonction
   `retire_dedicated_key_for_job(job)` exige un travail `RETIRE_KEY` `RUNNING` issu d'une demande `EXECUTED` ;

@@ -99,3 +99,34 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie que la grâce ne s'applique qu'une fois, au même certificat, dans les 60 s ; que rien n'est écrit pour une requête hors tolérance ; qu'aucune comparaison n'utilise une heure fournie par l'API pour la purge.
+
+## Compte rendu du lot WP04 (cycles 1 et 2)
+
+Écarts au plan
+- Renforcement (cycle 2, B1) : verrou consultatif de transaction par famille,
+  `hashtextextended('device-token-family:' || family_id, 0)`. Pris en essai par `rotate_device_refresh_token` (échec :
+  `IN_PROGRESS`, rien n'est écrit) et en attente par `revoke_device_token_family`, après le contrôle d'appartenance :
+  une révocation voit le successeur créé par un échange concurrent (FR-011).
+- Renforcement (cycle 2) : les deux fonctions exigent READ COMMITTED (`25000` sinon) ; sous REPEATABLE READ le verrou
+  ne garantirait plus que le successeur soit vu.
+- Renforcement (cycle 2, M5) : certificat contrôlé avant le statut du terminal ; un jeton présenté avec un certificat
+  étranger révoque la famille, même terminal suspendu.
+- Signature `revoke_device_token_family(p_device, p_family, p_reason)` : suit le prompt ; `data-model.md` corrigé (M6).
+
+Constats du schéma de référence (T019, M2)
+- Seul `open_offline_batch` refuse un terminal révoqué (`42501`) ; `register_tap` ne contrôle que le prestataire du
+  terminal, `post_transaction` pas le statut. Le prompt supposait le contraire : le schéma fait foi.
+- `assert_device_active` est donc obligatoire avant `register_tap` et `post_transaction`, après les fonctions qui
+  prennent le terminal en `FOR UPDATE` (M1, ordre documenté dans la migration). Reporté dans WP12 et WP15.
+
+Points soumis au porteur (décidés le 20/10/2026)
+- NFR-008 contre FR-011/ADR-108 : NFR-008 précisé (requêtes concurrentes → `409 IN_PROGRESS`), spec.md et WP15.
+- Hypothèse « le propriétaire ignore la RLS » étendue à `rotate_device_refresh_token` et
+  `purge_device_request_nonces`, bornée par WP07.
+
+Renvois : WP15 (test à deux connexions du verrou), WP12 (branchement de la purge, M3), WP07 (M4).
+Limite connue : un attaquant qui fait tourner sans arrêt un jeton volé retarde la détection (le terminal légitime reçoit
+`409` tant que le verrou est tenu ; chaque échange dure quelques ms).
+
+Fichiers à faire relire par une personne : `packages/ledger-sql/migrations/0023_device_tokens_nonces.sql`
+(SECURITY DEFINER, verrous, révocation de famille).

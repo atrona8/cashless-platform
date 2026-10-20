@@ -103,6 +103,13 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- Importe `AttestationModule` par une ligne dans `devices/devices.module.ts`, puis prouve de bout en bout qu'un faux
+  d'attestation fait refuser le démarrage en production (relecture WP10).
+- Documente `ANDROID_ATTESTATION_ROOTS` (aucun fichier ni document dans le dépôt) : racines Google à jour, ancienne
+  racine RSA et nouvelle racine de la rotation annoncée, à vérifier au déploiement.
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie que le code n'est consommé qu'en cas de succès, que le registre d'idempotence ne garde jamais le code, et que l'ordre des étapes est celui du contrat.

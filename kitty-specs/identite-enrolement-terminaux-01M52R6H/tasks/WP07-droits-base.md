@@ -105,6 +105,19 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 `reset-db`, `check:generated` et toutes les suites pgTAP vertes ; `npm test -w @cashless/api -- --runInBand` vert (une fonction oubliée casserait une route : relance toute la suite d'API). Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- Hypothèse « le propriétaire des fonctions ignore la RLS » étendue par le porteur le 20/10/2026 (relecture WP04, M4) à
+  `rotate_device_refresh_token` (appelée sans prestataire de session : le condensat du jeton désigne la famille) et
+  `purge_device_request_nonces` (maintenance globale). Ajoute-les au test de `tests_device_rights.sql` qui échoue si le
+  propriétaire perd cette capacité ; prouve que `rotate_device_refresh_token` ne touche qu'à la famille du condensat
+  présenté ; cite l'hypothèse étendue dans le compte rendu.
+- N'accorde pas `purge_device_request_nonces` à `cashless_app` (rôle du processus qui la planifie : voir WP12) ;
+  `revoke_device_token_family` : accorde-la seulement au rôle qui en a l'usage (WP15, réutilisation ; WP16, back-office),
+  justifie le choix dans le compte rendu.
+- WP05 (0024) remplace `consume_tap` et `consume_tap_for_claim` par `CREATE OR REPLACE` : vérifie que leurs droits par
+  rôle sont ceux que tu poses, après 0024.
+
 ## Risks / Reviewer guidance
 
 Fichiers à faire relire par une personne : `post-roles.sql`, `gen_tests.py`. Le relecteur vérifie qu'aucun droit n'est élargi par rapport à l'existant (comparer les droits avant et après pour chaque rôle) et que la liste de `cashless_app` correspond aux appels réels.

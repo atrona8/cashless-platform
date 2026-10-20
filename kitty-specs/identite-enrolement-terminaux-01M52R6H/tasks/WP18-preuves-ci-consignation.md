@@ -117,6 +117,13 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jour. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- `openapi.yaml` : la description de `TAP_UNUSABLE` ne cite pas le nouveau motif de WP05 (lecture liée à une demande de
+  rattachement, `CL022`) ; à compléter (WP01 étant approuvé).
+- Recette (mission 13) : essayer `@peculiar/asn1-android` 2.10.0 sur de vrais appareils (balise KeyDescription
+  inconnue : refus fermé probable, non vérifié).
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie qu'aucun écart de sécurité n'est resté hors des points ouverts (constat bloquant sinon) et que chaque dette close cite un test qui échouait avant la mission.

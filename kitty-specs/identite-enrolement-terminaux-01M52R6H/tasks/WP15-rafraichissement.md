@@ -82,6 +82,18 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- NFR-008 précisé par le porteur (20/10/2026) : les 20 requêtes sont lancées pendant que la rotation du premier tient le
+  verrou de famille (test qui contrôle l'ordre, pas une course au hasard) → 1 succès, 19 × `409 IN_PROGRESS`, famille
+  intacte. Une représentation après la validation relève de FR-011/ADR-108 (test de borne existant).
+- Test à deux connexions du verrou de famille de WP04 (dblink absent, verrou réentrant dans une session) : échange de
+  `s` tenu ouvert pendant que l'ancien jeton est réutilisé → `IN_PROGRESS`, puis `REUSED` une fois l'échange validé,
+  aucun jeton vivant dans la famille, `device_token_family_active` faux ; même scénario pour
+  `revoke_device_token_family`.
+- `IN_PROGRESS` → `409` ; `REUSED` → audit `DEVICE_TOKEN_REUSE` puis `401`. Les fonctions exigent READ COMMITTED
+  (`25000` sinon) : n'élève pas le niveau d'isolation de la transaction.
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie que la grâce est bornée exactement comme ADR-108 (une fois, même certificat, 60 s) et que l'audit d'une réutilisation survit au refus.

@@ -107,3 +107,17 @@ Tests unitaires verts ; `npm run typecheck` et `npm run lint` verts. Chaque sous
 ## Risks / Reviewer guidance
 
 Fichiers à faire relire par une personne : `android-key-attestation.ts`, `enrollment-challenge.ts`. Le relecteur vérifie qu'aucun contrôle ne lit `softwareEnforced`, que l'échec du cache est fermé, et que la liste à jour des racines Google a été vérifiée (rotation annoncée) au moment de configurer `androidAttestationRoots`.
+
+## Compte rendu du lot WP10 (cycles 1 et 2)
+
+- Écart accepté par le porteur : OP-N67 / ADR-110 (`attestationApplicationId` lu dans `softwareEnforced`, seul champ).
+- Renforcement (cycle 2) : liste de révocation en échec fermé quand l'horloge recule (âge négatif) ; rafraîchissement,
+  puis refus de toute attestation Android s'il échoue.
+- Renforcement (cycle 2) : les clés de signature et d'accord doivent venir du même appareil (`verifiedBootKey` égal ;
+  `verifiedBootHash` égal s'il est dans les deux chaînes, refus s'il n'est que dans une seule).
+- Renvois : WP11 (`isFake` propagé par `AttestationRouter`), WP12 (défis), WP14 (branchement du module, racines),
+  WP18 (essai de `@peculiar/asn1-android` sur de vrais appareils).
+- Pour l'app Android : générer les deux clés d'affilée, dans la même séance (sinon une mise à jour du système entre les
+  deux changerait `verifiedBootHash` et l'enrôlement serait refusé).
+- Fichiers à faire relire par une personne : `apps/api/src/attestation/{android-key-attestation,enrollment-challenge,
+  google-revocation-cache,attestation.module}.ts`.

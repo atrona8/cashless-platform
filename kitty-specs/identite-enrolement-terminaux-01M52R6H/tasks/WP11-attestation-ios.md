@@ -80,6 +80,12 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 
 Tests unitaires verts ; `npm run typecheck` et `npm run lint` verts. Chaque sous-tâche est marquée par `spec-kitty agent tasks mark-status Txxx --status done --mission identite-enrolement-terminaux-01M52R6H`. Le compte rendu du lot liste : écarts au plan (avec leur sens : renforcement ou non), retouches hors carte (avec une ligne de justification), points soumis au porteur, fichiers à faire relire par une personne (clés, droits de la base, cryptographie).
 
+## Reports des relectures (20/10/2026)
+
+- En branchant la classe iOS, `AttestationRouter` doit propager `isFake` : un faux iOS rangé dans le routeur serait
+  invisible pour la garde de production ; un test le prouve (relecture WP10).
+- `iosClientDataHash` est prêt et testé, sans appelant en production : branche-le.
+
 ## Risks / Reviewer guidance
 
 Fichier à faire relire par une personne : `ios-app-attest.ts`. Le relecteur vérifie que le défi couvre bien les deux clés publiques (seule protection contre la substitution de clés, R-06).

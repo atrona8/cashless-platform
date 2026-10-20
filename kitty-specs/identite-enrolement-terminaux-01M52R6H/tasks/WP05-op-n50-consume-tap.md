@@ -82,3 +82,14 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie qu'aucun fichier généré n'est touché et qu'une lecture ne peut pas être consommée deux fois par aucun chemin.
+
+## Compte rendu du lot WP05
+
+- T021, option (b) : `consume_tap` remplacé par `CREATE OR REPLACE` (SECURITY DEFINER, `search_path = public, pg_temp`,
+  compatible avec 0021) ; garde `CL022` après `assert_tenant` et après le contrôle « déjà utilisé ». L'option (a)
+  aurait élargi les droits de `consume_tap_for_claim` (écriture sur `media_tap`).
+- Renforcement hors prompt : verrou consultatif `media-tap-use:<tap>` pris par `consume_tap` et `consume_tap_for_claim`
+  (qui reste SECURITY INVOKER) ; une écriture et une demande concurrentes ne peuvent plus utiliser la même lecture
+  (course antérieure à la mission). Vérifié à la main à deux sessions ; pas de test à deux connexions (dblink absent).
+- `openapi.yaml` (`TAP_UNUSABLE`) à compléter : reporté dans WP18.
+- Fichiers à faire relire par une personne : `packages/ledger-sql/migrations/0024_consume_tap_claim.sql`.
