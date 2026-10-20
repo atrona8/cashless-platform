@@ -17,14 +17,18 @@ S'applique à toute route marquée `@DeviceAuth()` dans l'API publique et dans l
 2. Jeton : ES256 seul, `typ = device+jwt`, `iss`, `aud`, `exp`, `sub` → `device_id`, `operator_id` → prestataire
    annoncé (relu en base, jamais cru).
 3. Terminal relu en base sous le rôle du processus (`device_id`, prestataire) avec l'état de la famille `fid` :
-   inconnu ou famille révoquée → `401`.
+   inconnu → `401` ; famille révoquée d'un terminal qui n'est pas `REVOKED` → `401`. Pour un terminal `REVOKED`, la
+   famille (révoquée avec lui) n'est pas opposée ici : les étapes 4 à 6 s'appliquent, puis l'étape 6 bis (décision du
+   porteur du 20/10/2026, ADR-115).
 4. `cert_sha256` du terminal = empreinte du certificat présenté ; `cnf.jkt` = empreinte JWK de `device.public_key`.
 5. `Content-Digest` (`sha-256` seul) = SHA-256 des octets bruts du corps (`rawBody`).
 6. Signature : `keyid` = `device_id` ; composants exacts (dont `@authority` et `idempotency-key` sur une écriture) ;
    vérification ECDSA (`ieee-p1363`) avec `device.public_key` → sinon `401 DEVICE_SIGNATURE_INVALID`.
+6 bis. Terminal `REVOKED` dont le certificat, le jeton et la signature sont valides → `403 DEVICE_REVOKED`, sans
+   consommer de nonce ni rien écrire : seul le vrai terminal apprend qu'il est révoqué, et son app s'arrête.
 7. `consume_device_nonce` (heure de la base) : `created` hors tolérance → `400 CLOCK_SKEW_TOO_LARGE` avec en-tête
    `Date` ; nonce déjà vu → `401 DEVICE_SIGNATURE_INVALID`. Rien n'est écrit avant cette étape.
-8. Statut : `REVOKED` → `403 DEVICE_REVOKED` ; `SUSPENDED` → `403 DEVICE_SUSPENDED` sauf route
+8. Statut : `REVOKED` (déjà traité en 6 bis) → `403 DEVICE_REVOKED` ; `SUSPENDED` → `403 DEVICE_SUSPENDED` sauf route
    `allowSuspended`. Toute écriture faite ensuite pour ce terminal relit son statut dans sa propre transaction
    (`assert_device_active` ou contrôle de la fonction de base).
 9. `req.device` posé (prestataire, événement, point de vente, clé d'accord, `os`, `nfc_enabled`) ; la transaction pose

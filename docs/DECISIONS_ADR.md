@@ -1477,3 +1477,18 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Test de borne confié à WP18 : il échoue si une purge peut retirer une ligne encore dans sa fenêtre
   (nonce non expiré, essai de moins de 24 h). Listes figées de `tests_execute_grants.sql`.
 - **Références.** WP07 et WP12 de la mission 5a ; ADR-113.
+
+## ADR-115 — Terminal révoqué : `403 DEVICE_REVOKED` à la requête suivante
+
+- **Statut** : Acceptée, 20 octobre 2026 (décision du porteur pendant l'implémentation de WP16, mission 5a).
+- **Contexte.** FR-016 et la story 5 attendent `403 DEVICE_REVOKED` à la requête suivante d'un terminal révoqué. La
+  révocation révoque aussi ses familles de jetons, et `device-authentication.md` contrôlait la famille (étape 3, `401`)
+  avant le statut (étape 8) : la garde de WP12 rendait `401 UNAUTHENTICATED`. Contradiction signalée par WP16.
+- **Décision.** La spécification est gardée. Pour un terminal `REVOKED`, la famille n'est pas opposée à l'étape 3 ; si
+  le certificat, le jeton et la signature sont valides (étapes 4 à 6), la garde rend `403 DEVICE_REVOKED` sans consommer
+  de nonce ni rien écrire. Toute autre famille révoquée reste `401`.
+- **Pourquoi.** L'app du terminal doit distinguer « révoqué, s'arrêter » d'une erreur d'authentification ; seul le
+  détenteur des clés du terminal l'apprend. Le refus reste total dans les deux cas.
+- **Conséquences.** `real-device-identity.ts` (WP12) modifié dans WP16, avec ses tests ; `media-port-swap.spec.ts`
+  attend `403`. Contrat `device-authentication.md` mis à jour (étape 6 bis).
+- **Références.** FR-016 ; WP12 et WP16 de la mission 5a ; ADR-107.
