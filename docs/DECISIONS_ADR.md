@@ -1411,6 +1411,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Mission qui la réexamine.** Mission 13 (recette V1), sur les appareils cibles.
 - **Condition de levée.** Champ présent dans la liste matérielle des appareils cibles, ou preuve d'intégrité de l'app
   complémentaire.
-- **Conséquences.** Tests de borne dans `android.spec.ts` : un autre contrôle lu seulement en logiciel → refus ; champ
-  absent des deux listes → refus ; paquet ou empreinte faux → refus.
+- **Conséquences.** Tests de borne dans `android.spec.ts` : analyse du source (aucun autre champ lu dans
+  `softwareEnforced`) ; un autre contrôle lu seulement en logiciel → refus ; valeurs différentes entre les listes →
+  refus ; champ absent des deux listes → refus ; paquet ou empreinte faux → refus.
 - **Références.** `research.md` R-05 de la mission 5a ; OP-N67.

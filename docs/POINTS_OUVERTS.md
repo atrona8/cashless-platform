@@ -483,15 +483,18 @@ réexaminé par la mission 13 (recette V1) ; décision du porteur du 19/10/2026 
   dans la liste matérielle de Key Attestation. Sur les vrais appareils, ce champ est écrit par le service Keystore du
   système, donc placé dans `softwareEnforced` : la lecture stricte refuserait tout terminal Android.
 - **Risque.** Un système d'exploitation compromis peut mentir sur l'app qui a créé la clé. Borné : la clé reste
-  générée dans le TEE ou StrongBox (`origin = GENERATED`, chaîne signée par le matériel), et `verifiedBootState =
-  Verified`, `deviceLocked`, les niveaux de correctif et la révocation restent lus dans la liste matérielle ; un système
-  modifié ne passe pas le démarrage vérifié sans casser le TEE.
+  générée dans le TEE ou StrongBox (`origin = GENERATED`, chaîne signée par le matériel) ; `verifiedBootState =
+  Verified`, `deviceLocked` et les niveaux de correctif restent lus dans la liste matérielle, et chaque certificat de
+  la chaîne est contrôlé contre la liste de révocation de Google ; un système modifié ne passe pas le démarrage vérifié
+  sans casser le TEE.
 - **Ce qui est fait.** Seul ce champ est lu dans `softwareEnforced` ; s'il est aussi dans la liste matérielle, cette
   valeur prime et les deux doivent concorder.
 - **Condition de levée.** Lecture dans la liste matérielle si les appareils cibles l'y placent, ou preuve d'intégrité
   de l'app complémentaire (Play Integrity) décidée en recette.
-- **Test qui échoue si la limite s'élargit** : un autre contrôle (`verifiedBootState`, `deviceLocked`…) présent
-  seulement dans `softwareEnforced` → refus (`apps/api/test/unit/attestation/android.spec.ts`).
+- **Test qui échoue si la limite s'élargit** : analyse du source qui échoue si un autre champ que
+  `attestationApplicationId` est lu dans `softwareEnforced`, et tests de comportement : un autre contrôle
+  (`rootOfTrust`, `origin`…) présent seulement dans `softwareEnforced` → refus ; valeurs différentes entre les deux
+  listes → refus (`apps/api/test/unit/attestation/android.spec.ts`).
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 
