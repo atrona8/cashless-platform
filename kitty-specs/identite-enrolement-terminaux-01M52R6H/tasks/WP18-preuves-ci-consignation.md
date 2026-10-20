@@ -146,6 +146,10 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   `DEVICE_IDENTITY_FAKE=1`), et ajoute un test qui échoue si une route de terminal n'est couverte par aucun test en
   identité réelle ; puis lève OP-N70. Consigne aussi `DEVICE_REQUEST_AUTHORITIES` (renforcement de WP12) et prévois
   l'historique git complet en CI pour le test `git diff` de WP12 (SC-007).
+- Relecture WP12 : test qui échoue si le refus de `X-Staff-Authorization` hors des routes de guichet est retiré de
+  `authentication.guard.ts` (route de personne et route publique non-terminal, M1) ; tests de `config.ts` : en
+  production, `DEVICE_REQUEST_AUTHORITIES` obligatoire et joker `:*` refusé (M3). Mineur : contrôle de longueur à 64
+  octets de `request-signature.ts:278` redondant avec `ieee-p1363` (M4).
 
 ## Risks / Reviewer guidance
 

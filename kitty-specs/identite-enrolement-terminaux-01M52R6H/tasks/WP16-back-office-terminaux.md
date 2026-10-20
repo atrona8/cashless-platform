@@ -92,6 +92,9 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   42501 ou test rouge). Une migration s'exécute désormais dans la transaction de `migrate.ts` : pas de
   `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
+- Relecture WP12 (M2) : test de révocation (et de suspension) validée pendant une requête déjà passée par la garde,
+  sur `POST /v1/taps` (`tap.service.ts`) et sur une route de guichet (`counter-access.ts`) : il doit échouer si l'appel
+  à `assert_device_active` est retiré.
 
 ## Risks / Reviewer guidance
 
