@@ -123,6 +123,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   rattachement, `CL022`) ; à compléter (WP01 étant approuvé).
 - Recette (mission 13) : essayer `@peculiar/asn1-android` 2.10.0 sur de vrais appareils (balise KeyDescription
   inconnue : refus fermé probable, non vérifié).
+- Lever OP-N50 dans `docs/POINTS_OUVERTS.md` (migration 0024) et mettre à jour ADR-90 et ADR-101.
+- Test Jest à deux connexions sur la course entre une écriture et une demande de rattachement sur la même lecture
+  (verrou `media-tap-use:` de 0024, vérifié à la main seulement).
 
 ## Risks / Reviewer guidance
 

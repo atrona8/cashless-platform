@@ -93,6 +93,10 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   `revoke_device_token_family`.
 - `IN_PROGRESS` → `409` ; `REUSED` → audit `DEVICE_TOKEN_REUSE` puis `401`. Les fonctions exigent READ COMMITTED
   (`25000` sinon) : n'élève pas le niveau d'isolation de la transaction.
+- Test de comportement Jest à une connexion : `BEGIN ISOLATION LEVEL REPEATABLE READ` puis `rotate_device_refresh_token`
+  → `25000` et rien n'est écrit (pgTAP ne peut pas changer de niveau d'isolation).
+- Relecture : un WP15 approuvé sans le test à deux connexions qui TIENT réellement la transaction de rotation ouverte
+  (ordre contrôlé, pas course au hasard) est un constat bloquant. Le client réessaie sur `409` : à tester.
 
 ## Risks / Reviewer guidance
 

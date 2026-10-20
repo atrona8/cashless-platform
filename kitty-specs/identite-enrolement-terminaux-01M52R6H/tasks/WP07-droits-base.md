@@ -117,6 +117,12 @@ Tests demandés par la spec (pgTAP par contrainte et par refus, intégration HTT
   justifie le choix dans le compte rendu.
 - WP05 (0024) remplace `consume_tap` et `consume_tap_for_claim` par `CREATE OR REPLACE` : vérifie que leurs droits par
   rôle sont ceux que tu poses, après 0024.
+- Relecture WP05 : défaut antérieur (0016), `cashless_app` peut écrire `media_claim.confirmed_tap_id` directement
+  (`post-roles.sql:229`), sans passer par `consume_tap_for_claim` ni par le verrou `media-tap-use:` : une lecture déjà
+  consommée par une écriture peut encore être liée à une demande. Retire `confirmed_tap_id` de ce `GRANT UPDATE` et
+  passe `consume_tap_for_claim` en SECURITY DEFINER (`search_path = public, pg_temp`, même verrou), ou, à défaut, pose
+  un déclencheur qui refuse un `confirmed_tap_id` sur une lecture qui porte déjà une écriture. Ajoute aussi
+  `AND operator_id = t.operator_id` à la garde OP-N50 de `consume_tap` (0024, défense en profondeur). Tests de refus.
 
 ## Risks / Reviewer guidance
 
