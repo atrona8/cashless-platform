@@ -111,7 +111,7 @@ base).
 | `create_device_enrollment_code(code_hash, event, pos, mode, personal_phone, ttl, actor)` | contrôles de portée et de mode, insertion |
 | `enroll_device(code_hash, serial, os, app_version, public_key, agreement_key, cert_sha256, cert_not_after, attestation_kind, security_level, refresh_hash, refresh_expires)` | verrouille le code, contrôle expiration et mode, refuse un `serial` actif du même prestataire, crée le terminal (affectation et `personal_phone` du code), calcule `next_seq = max(last_seq de ce serial dans le prestataire) + 1`, pose `next_seq_floor`, consomme le code, crée la famille et le premier jeton ; rend `device_id`, `next_seq` |
 | `rotate_device_refresh_token(token_hash, cert_sha256, new_hash, new_expires)` | échange ; verrou pris → refus « en cours » ; grâce de 60 s ; sinon réutilisation → famille révoquée ; statut vérifié |
-| `revoke_device_token_family(device, reason)` | révocation |
+| `revoke_device_token_family(device, family, reason)` | révocation |
 | `set_device_status(device, to, reason, actor)` | transitions ci-dessus |
 | `record_device_heartbeat(device, app_version, device_time)` | `last_seen_at`, `app_version` |
 | `consume_device_nonce(device, nonce, created, tolerance_seconds)` | contrôle `created` contre `now()` de la base et la tolérance bornée (≤ 300 s) ; insertion ; doublon → refus |
