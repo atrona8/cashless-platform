@@ -335,6 +335,10 @@ en silence.
   écrites de la même façon.
 - **Rationale** : un échec ne consomme pas le code (FR-004) ; sans limite, un code qui fuit permet des essais
   illimités et chaque essai coûte une vérification d'attestation.
+- **Mise à jour (21/10/2026, ADR-117, relecture de WP14)** : limite par code appliquée à tout code bien formé (aucun
+  oracle « code existant / inconnu ») ; limite par adresse sur les seuls refus (un parc derrière un NAT n'est pas
+  bloqué) ; un audit pour chaque refus, dans la chaîne de la plateforme si le prestataire est inconnu ; au-delà d'une
+  limite, une seule écriture par fenêtre.
 
 ## R-17 — Téléphone personnel
 

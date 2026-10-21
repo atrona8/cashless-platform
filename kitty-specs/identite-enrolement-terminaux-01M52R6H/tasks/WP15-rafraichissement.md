@@ -110,6 +110,9 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   avec une preuve fausse → 401.
 - ADR-116 (décision du porteur du 21/10) : l'empreinte d'idempotence va changer dans WP18 (chemin concret, clé liée à
   l'appelant) ; n'écris pas de test qui dépende du modèle de route dans l'empreinte.
+- Relecture WP14 (N1) : `enrollment.spec.ts` gère la table `device_enrollment_attempt` et la limite par adresse de
+  127.0.0.1. Une suite qui doit seulement disposer d'un terminal l'enrôle par `TestTerminal.enroll` (propriétaire), pas
+  par la route ; une suite qui enrôle par la route n'efface que ses propres essais.
 
 ## Risks / Reviewer guidance
 

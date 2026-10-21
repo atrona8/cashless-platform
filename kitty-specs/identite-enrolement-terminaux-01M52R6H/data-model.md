@@ -97,8 +97,9 @@ base).
 
 ## Essais d'enrôlement (`device_enrollment_attempt`, R-16)
 
-`code_hash` (NULL si code inconnu), adresse, `at`, `result` ; écrite hors de la transaction d'enrôlement ; purge à
-24 h ; sert aux limites (10 par code et par heure, 30 par adresse et par heure).
+`code_hash` (empreinte HMAC de tout code bien formé, connu ou non ; NULL seulement si le code est mal formé), adresse,
+`at`, `result` ; écrite hors de la transaction d'enrôlement ; purge à 24 h ; sert aux limites (10 par code et par
+heure, 30 refus par adresse et par heure ; ADR-117).
 
 ## Historique des statuts (`device_status_history`)
 

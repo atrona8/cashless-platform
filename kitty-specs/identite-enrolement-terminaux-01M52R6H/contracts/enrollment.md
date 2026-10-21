@@ -15,11 +15,15 @@
 ## `POST /v1/device-enrollments` (`enrollDevice`)
 
 Sans certificat ni jeton (`security: []`). Le terminal scanne le code **avant** de générer ses clés (défis de R-08).
-Limites : 10 essais par code et par heure, 30 par adresse et par heure → `429` (R-16). Ordre :
+Limites : 10 essais par code et par heure (tout code bien formé, connu ou non), 30 essais **refusés** par adresse et
+par heure → `429` (R-16, ADR-117). Au-delà de la limite, un seul essai et un seul audit `RATE_LIMITED` par fenêtre ;
+les `429` suivants n'écrivent rien. Ordre :
 
 1. Validation du corps (schéma du contrat ; `csr_pem` obligatoire ; Android : `agreement_attestation_chain`
    obligatoire).
-2. Clés : `signing_public_key` et `agreement_public_key` sont des SPKI P-256 valides (point sur la courbe).
+2. Clés : `signing_public_key` et `agreement_public_key` sont des SPKI DER P-256 canoniques de 91 octets (point non
+   compressé sur la courbe), même forme sur Android et iOS, hachées telles quelles par les défis ; la base garde le
+   point de 65 octets extrait de ces octets (`openapi.yaml`).
 3. Code : empreinte → ligne non utilisée ; inconnu ou utilisé → `422 ENROLLMENT_CODE_INVALID` (même corps, temps
    comparable) ; expiré → `422 ENROLLMENT_CODE_EXPIRED`. Lecture seule à cette étape.
 4. Mode : `PAIRED_TPE`, `TOPUP_DESK` sur iOS, téléphone personnel hors `KEYPAD_TPE` → `422 DEVICE_MODE_NOT_ALLOWED`.
@@ -37,7 +41,9 @@ Un échec aux étapes 1 à 8 ne consomme pas le code. Un certificat émis pour u
 jamais accepté : son empreinte n'est enregistrée nulle part.
 
 Audit : `DEVICE_ENROLLED` (terminal, code, `serial`, système, niveau d'attestation) ; `DEVICE_ENROLLMENT_REFUSED`
-(raison, adresse ; sans code ni attestation complète), écrit avec l'essai hors de la transaction annulée.
+(raison, adresse ; sans code ni attestation complète), écrit avec l'essai hors de la transaction annulée, pour **tout**
+refus (validation, limite, code inconnu, utilisé, expiré, mode) : dans la chaîne du prestataire du code s'il est connu
+en base (même expiré ou utilisé), sinon dans la chaîne de la plateforme (`operator_id` NULL) ; ADR-117.
 
 ## Tests imposés
 

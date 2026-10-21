@@ -95,6 +95,9 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
 - Relecture WP16 (ADR-115) : un terminal révoqué reçoit le `403 DEVICE_REVOKED` de l'étape 6 bis sur la configuration
   servie et le battement de cœur ; à tester après une révocation faite par la route du back-office. Tester aussi
   `allowSuspended` après une suspension faite par la même route.
+- Relecture WP14 (N1) : `enrollment.spec.ts` gère la table `device_enrollment_attempt` et la limite par adresse de
+  127.0.0.1. Une suite qui doit seulement disposer d'un terminal l'enrôle par `TestTerminal.enroll` (propriétaire), pas
+  par la route ; une suite qui enrôle par la route n'efface que ses propres essais.
 
 ## Risks / Reviewer guidance
 

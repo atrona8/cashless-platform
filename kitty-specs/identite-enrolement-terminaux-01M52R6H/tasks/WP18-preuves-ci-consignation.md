@@ -170,6 +170,9 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   compensé par les étapes 4 à 6). Lignes de plus de 100 caractères laissées par WP16
   (`real-device-identity.ts:129`, `admin.spec.ts:612`, `test/unit/real-device-identity.spec.ts:4,248,258`) : couvertes
   par le reformatage Prettier à la fusion.
+- Relecture WP14 (N1) : `enrollment.spec.ts` gère la table `device_enrollment_attempt` et la limite par adresse de
+  127.0.0.1. Une suite qui doit seulement disposer d'un terminal l'enrôle par `TestTerminal.enroll` (propriétaire), pas
+  par la route ; une suite qui enrôle par la route n'efface que ses propres essais.
 
 ## Risks / Reviewer guidance
 

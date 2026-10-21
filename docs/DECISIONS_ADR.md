@@ -1516,3 +1516,27 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   inchangé.
 - **Références.** SPECIFICATION §10.2 ; `contracts/idempotency.md` (mission 1) ; WP16 et WP18 de la mission 5a ;
   OP-N71 ; ADR-99 (OP-N54).
+
+## ADR-117 — Enrôlement : audit de tous les refus, limites sans oracle
+
+- **Statut** : Acceptée, 21 octobre 2026 (décisions du porteur après la relecture de WP14, mission 5a).
+- **Contexte.** La relecture de WP14 a trouvé : (B1) l'audit `DEVICE_ENROLLMENT_REFUSED` n'était écrit qu'après un
+  contrôle de code réussi, donc ni pour un code expiré, utilisé, de mauvais mode, ni pour une erreur de validation ou
+  un `429` (contrat `enrollment.md` et FR-025) ; (B2) la limite par code ne valait que pour un code existant (essai
+  d'un code inconnu enregistré sans empreinte) : le 11e essai rend `429` pour un code existant et `422` pour un code
+  inconnu, ce qui révèle l'existence d'un code ; (N5) la limite par adresse comptait les réussites et bloquerait un
+  parc de plus de 30 terminaux derrière une même adresse ; (N3) les écritures d'une route sans compte n'étaient pas
+  bornées une fois la limite atteinte.
+- **Décision.** (1) Un audit pour chaque refus : dans la chaîne du prestataire si le code est connu en base (même
+  expiré ou utilisé), sinon dans la chaîne de la plateforme (`operator_id` NULL). (2) L'essai garde l'empreinte HMAC
+  de tout code bien formé, connu ou non ; la limite de 10 par code et par heure vaut pour tous. (3) La limite de 30 par
+  adresse et par heure ne compte que les refus. (4) Au-delà d'une limite, un seul essai et un seul audit
+  `RATE_LIMITED` par adresse (ou par code) et par fenêtre ; les `429` suivants n'écrivent rien (décision de
+  l'orchestrateur, qui borne l'amplification sans perdre la trace du franchissement).
+- **Pourquoi.** (1), (2), (4) renforcent la sécurité ou la traçabilité. (3) ne l'affaiblit pas : un enrôlement réussi
+  consomme un code valide émis par un administrateur ; les essais de codes restent bornés par les refus.
+- **Conséquences.** Nouvelle migration (fonctions d'essai et d'audit, contrainte `known_code` retirée) avec
+  `post-roles.sql` et `tests_execute_grants.sql` dans le même commit ; contrat `enrollment.md`, `data-model.md` et
+  R-16 mis à jour. Tests : audit de chaque refus (connu, inconnu, validation, limite) ; 11e essai d'un code inconnu →
+  `429` ; 31 enrôlements réussis depuis une adresse → aucun `429` ; une seule ligne au-delà de la limite.
+- **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
