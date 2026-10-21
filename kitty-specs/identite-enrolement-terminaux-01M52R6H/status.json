@@ -2,9 +2,9 @@
   "event_count": 145,
   "last_event_id": "01M5FMQT18D1RTE364GKEEZQZ7",
   "materialized_at": "2026-10-21T16:29:32.584452+00:00",
-  "mission_number": "1",
+  "mission_number": "",
   "mission_slug": "identite-enrolement-terminaux-01M52R6H",
-  "mission_type": "software-dev",
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,584 +20,288 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "done",
       "last_event_id": "01M5FKT5JJV04BJP5DDF23Q110",
       "last_transition_at": "2026-10-21T16:13:21.362540+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée ; generate sans écart, check du contrat (TS et Dart), lint, typecheck verts (orchestrateur)",
-        "Relecture indépendante : approuvé. 33 opérations de terminal recensées par script, toutes avec UNE entrée réunissant deviceMtls+deviceToken+deviceSignature (guichet : + humanBearer dans la même entrée ; routes mixtes : triple preuve OU humanBearer/posClient). refreshDeviceToken = deviceMtls seul (renforcement prévu), enrollDevice security: []. DeviceAdmin sans public_key/agreement_public_key/cert_sha256. ADR-107 cité (info.description, deviceSignature), ADR-108 pour la grâce de 60 s. getMedia aligné sur CounterAuth (code de la mission 4). Codes/messages fr-en neutres. check du contrat relancé : types TS et Dart à jour. Non bloquant : normalisation hors carte oneOf Timestamp|null -> [string,null] date-time (TagKey, TagKeyJob, MediaAdmin) non justifiée dans le commit ; X-Request-Id facultatif sur les routes mixtes pour un terminal (décrit seulement)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP01-contrat-api-types/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
       "shell_pid": 7111,
-      "shell_pid_created_at": "1792409407.598177",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done"
-      }
+      "shell_pid_created_at": "1792409407.598177"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FKT865PHE834RZK1ZAYEDK",
       "last_transition_at": "2026-10-21T16:13:24.037620+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée ; reset-db puis pgTAP vert (23 suites, 1453 tests), orchestrateur (premier passage : instabilité d'horloge Docker sur tests_event_ledger 63-66, repassée seule 3 fois verte puis batterie complète verte). --force : le garde kitty-specs ne signale que des artefacts du runtime (status.*, baseline-tests.json) issus de la branche de coordination ; commit e7543e0 limité à 3 fichiers SQL du lot",
-        "Relecture indépendante : approuvé. 0021 par parcours de pg_proc sans liste figée, idempotente, échec visible si autre propriétaire ; détournement par table temporaire prouvé sur les 7 tenant_of_* avec témoin négatif ; §4 à 0. Mineur : critère du catalogue accepte tout search_path finissant par pg_temp (à resserrer, WP18). TEMPORARY à PUBLIC reste à WP07 ; consignation OP-N59/ADR-96 à WP18. --force autorisé par le porteur (19/10/2026) : garde kitty-specs limité aux artefacts du runtime (status.*, review-cycle-*.md, baseline-tests.json), vérifié ; verdict du relecteur distinct enregistré par l'orchestrateur car le contrôle de permission refuse --force aux sous-agents"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP02-op-n59-search-path/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP02-op-n59-search-path/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 26638,
-      "shell_pid_created_at": "1792412676.023291",
-      "subtasks": {
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done"
-      }
+      "shell_pid": 21831,
+      "shell_pid_created_at": "1792412184.816248"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "lane": "done",
       "last_event_id": "01M5FKTAR9C90KDHPGZ2C2BT2V",
       "last_transition_at": "2026-10-21T16:13:26.665891+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée ; pgTAP vert (23 suites, 1590 tests) après reset-db, lancé par l'orchestrateur",
-        "Reprise cycle 1 (B1, R3) : 69 assertions ajoutées ; pgTAP vert (23 suites, 1659 tests) après reset-db (orchestrateur). --force : le garde kitty-specs ne signale que des artefacts du runtime (status.json, status.events.jsonl, review-cycle-1.md, baseline-tests.json) apportés par l'auto-rebase depuis la branche de coordination ; aucun fichier kitty-specs modifié par l'implémenteur (conflit connu garde/auto-rebase, #2274/#2626)",
-        "Relecture indépendante cycle 2 : approuvé. B1 couvert (69 assertions, chaque contrainte et refus, isolation en écriture avec témoin positif), migration inchangée hors commentaire R3, écarts R1 neutres. Pour WP07 : propriétaire des fonctions qui ignore la RLS (hypothèse acceptée par le porteur), check_device_enrollment_code à accorder, device_admin_allowed et purge_device_enrollment_attempts à ne pas accorder à cashless_app. --force autorisé par le porteur (19/10/2026) : garde kitty-specs limité aux artefacts du runtime (status.*, review-cycle-*.md, baseline-tests.json), vérifié ; verdict du relecteur distinct enregistré par l'orchestrateur car le contrôle de permission refuse --force aux sous-agents"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP03-s5-enrolement-statut/review-cycle-2.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP03-s5-enrolement-statut/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 23630,
-      "shell_pid_created_at": "1792412469.256178",
-      "subtasks": {
-        "T010": "done",
-        "T011": "done",
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
-      }
+      "shell_pid": 20676,
+      "shell_pid_created_at": "1792412058.960235"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5FMPW5DEKG0THBKXGGY073Q",
       "last_transition_at": "2026-10-21T16:29:01.997833+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée ; reset-db puis pgTAP vert (24 suites, 1784 tests, dont 125 de tests_device_tokens.sql), orchestrateur. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié ; commit 1bc65c4 sans fichier kitty-specs",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : REJETÉ. B1 : la révocation de famille (UPDATE seul, READ COMMITTED) peut manquer le successeur inséré par une rotation concurrente ; FR-011 non tenu. Correction : verrou consultatif par famille (essai dans rotate → IN_PROGRESS, bloquant dans revoke) + preuve. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié.",
-        "Cycle 2 (c69d634) : B1 verrou de famille, READ COMMITTED exigé, M5, M1. Orchestrateur : reset-db puis pgTAP vert (24 suites, 1797 tests). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement sur feat.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : approuvé (cycle 2, c69d634). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP04-jetons-nonces-garde/review-cycle-2.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP04-jetons-nonces-garde/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 13327,
-      "shell_pid_created_at": "1792490348.179129",
-      "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done"
-      }
+      "shell_pid": 5673,
+      "shell_pid_created_at": "1792489503.135007"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FKTDAJGTXKV7GF6GF5B6XR",
       "last_transition_at": "2026-10-21T16:13:29.298500+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation 51897d3. Orchestrateur : reset-db puis pgTAP vert (23 suites, 1457 tests) ; Jest API complet sur la base migrée avec 0024 (SKIP_LATENCY=1) : 72 suites, 1262 tests verts. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement sur feat.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : approuvé. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP05-op-n50-consume-tap/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP05-op-n50-consume-tap/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 13173,
-      "shell_pid_created_at": "1792490333.860811",
-      "subtasks": {
-        "T021": "done",
-        "T022": "done",
-        "T023": "done",
-        "T024": "done"
-      }
+      "shell_pid": 3246,
+      "shell_pid_created_at": "1792489170.524862"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FKTFWPY0GFEB6AE3NTJ1FN",
       "last_transition_at": "2026-10-21T16:13:31.926879+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation 9ca77da. Orchestrateur : reset-db puis pgTAP : 22 suites vertes ; tests_tag_key_job_approval.sql s'arrête au §6 (ancienne borne « une demande approuvée ne périme pas », désormais refusée CL023), inversion prévue par WP07. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : approuvé. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP06-op-n62-retrait-cle/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP06-op-n62-retrait-cle/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 24227,
-      "shell_pid_created_at": "1792491178.774352",
-      "subtasks": {
-        "T025": "done",
-        "T026": "done",
-        "T027": "done",
-        "T028": "done"
-      }
+      "shell_pid": 13630,
+      "shell_pid_created_at": "1792490373.64331"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQ7FYG61T1NPFY8Q8FT6M",
       "last_transition_at": "2026-10-21T16:29:13.598970+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Prêt pour relecture : commits a34a39f et ba927de (option c du porteur, OP-N68/ADR-111). Orchestrateur : pgTAP 1972/1972 et Jest API 1264/1264 (SKIP_LATENCY) sur la base partagée. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement.",
-        "Relecture indépendante (session distincte de l'implémenteur), verdict enregistré par l'orchestrateur. # WP07 : relecture indépendante, APPROUVÉ (20/10/2026)\n\nLot relu : commits a34a39f et ba927de (base ba927de~2 = a34a39f~1 = 1e3933f, vérifié). Les tests ont tourné sur un cluster PG 18 privé (port 5492), arrêté depuis.\n\n1. Droits avant et après, rôle par rôle (deux bases construites, catalogue comparé). Aucun droit n'est élargi, à une exception près : `cashless_tagkeys` reçoit la lecture de `device.public_key`, `cert_sha256`, `os` et `nfc_enabled`, et EXECUTE sur `consume_device_nonce`, `device_token_family_active` et `assert_device_active`. T032 le demande, et le compte rendu le consigne. Tout le reste est retiré : EXECUTE hérité de PUBLIC (112 à 141 fonctions par rôle), TEMPORARY, INSERT sur `device`, UPDATE sur `status`, `public_key`, `agreement_public_key` et `cert_sha256`, écritures sur les tables S5, et `media_claim.confirmed_tap_id`.\n2. Liste de `cashless_app`. Elle correspond aux appels de `apps/api/src` (51 fonctions appelées, recensement refait). Les fonctions retirées et encore appelées (`claim_tag_key_job*`, `finish_tag_key_job`) ne le sont que par les workers des processus des clés, qui les ont gardées. J'ai calculé la clôture des fonctions INVOKER et des déclencheurs pour chaque rôle : aucun manque. Le seul signalement (`check_media_transition` pour `cashless_tagkeys`) est un faux positif : le déclencheur porte sur `UPDATE OF status`, une colonne que ce rôle ne peut pas écrire. Aucune politique, aucun défaut de colonne, aucune contrainte et aucune vue n'appelle une fonction.\n3. OP-N44, la fin d'OP-N59 et OP-N63 sont levés. Mutations faites sur une copie de `post-roles.sql` : sans le retrait de PUBLIC, 16 assertions échouent ; sans le retrait de TEMPORARY, 13 ; sans le retrait sur `device`, 11 ; avec `confirmed_tap_id` rendu à `cashless_app`, 4.\n4. Migration 0026. Comparée à 0024, elle ne change que le filtre `operator_id` de la garde OP-N50 et le passage de `consume_tap_for_claim` en SECURITY DEFINER avec `search_path = public, pg_temp`. Chaque lecture est filtrée par le prestataire de la session. Le droit est retiré à PUBLIC.\n5. `migrate.ts`. Une seule transaction, et le verrou consultatif est pris dans cette transaction. Aucun secret n'est journalisé. `migrate-rights.spec.ts` échoue si la validation se fait avant le rejeu des droits (test 2) ou si le retrait de PUBLIC disparaît (tests 1 et 2). La base jetable est bien supprimée.\n6. `check:generated` est vert. pgTAP passe à 1972/1972 sur le cluster privé. Les commandes de format et de lint sont propres, ainsi que le contrôle de types de ledger-sql.\n\nPoints mineurs, non bloquants :\n- `tests_device_rights.sql` §6 ne contient pas `consume_tap_for_claim`, contrairement à ce que dit le compte rendu. C'est sans conséquence : la fonction filtre elle-même par le prestataire de la session. Il suffit de corriger le compte rendu.\n- Aucun test ne couvre le verrou consultatif : je l'ai retiré par mutation et les tests sont restés verts.\n- Défaut antérieur à la mission, non consigné : `cashless_app` peut toujours modifier `device.next_seq_floor`, `last_seen_at` et l'affectation du terminal. Je propose une entrée OP pour la mission 7. Orchestrateur : pgTAP 1972/1972 et Jest API 1264/1264 (SKIP_LATENCY) sur la base partagée. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP07-droits-base/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP07-droits-base/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 47616,
-      "shell_pid_created_at": "1792494714.311657",
-      "subtasks": {
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done",
-        "T033": "done",
-        "T034": "done"
-      }
+      "shell_pid": 34979,
+      "shell_pid_created_at": "1792492419.70201"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "done",
       "last_event_id": "01M5FKTJEME9T5JN3W67DSPVJZ",
       "last_transition_at": "2026-10-21T16:13:34.548372+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée ; npm ci sans scripts, lint, typecheck, Jest API (75 suites, 1307 tests) verts (orchestrateur)",
-        "Relecture indépendante WP08 : conforme à T035-T040, R-03, R-12, R-13. Aucun réglage nouveau avec défaut en production (tests par réglage) ; clé de l'autorité de test et secrets HMAC de test refusés en production ; HTTPS TLS 1.3, requestCert, ca = autorité des terminaux seule ; aucune écoute en clair et TRUST_PROXY_HOPS=0 exigés en production (assertSafeTransport) ; 3 nouveaux ports lus par assertProcessIsSafe, testés. rejectUnauthorized:false = décision du porteur (R-03), sans route de terminal à ce stade, compensé par la garde de WP12. Dépendances exactes, toutes publiées depuis plus de 2 semaines, aucune avec script d'installation ; .npmrc ignore-scripts=true. Les 19 vulnérabilités moderate (sprintf-js via Jest/istanbul) existaient déjà : aucune ne vient de WP08. Remarques non bloquantes : le branchement de assertSafeTransport dans serve() n'est pas testé en intégration ; les fixtures de production gardent TRUST_PROXY_HOPS=1 ; le processus de personnalisation passe aussi en TLS (renforcement à consigner) ; ADR-95 et OP-N53 à mettre à jour (hops=0 imposé)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP08-socle-https-config/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
       "shell_pid": 9046,
-      "shell_pid_created_at": "1792409614.791069",
-      "subtasks": {
-        "T035": "done",
-        "T036": "done",
-        "T037": "done",
-        "T038": "done",
-        "T039": "done",
-        "T040": "done"
-      }
+      "shell_pid_created_at": "1792409614.791069"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMPZD0DF3SABENS088KHE3",
       "last_transition_at": "2026-10-21T16:29:05.312921+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation + fix série (7e47007) ; lint, typecheck verts ; Jest API 1335/1336 : seul échec claim-code-order.spec.ts (délai 5 s), défaut antérieur reproduit sur feat quand media-latency a peuplé ~100 000 bracelets ; suite verte seule après reset-db (orchestrateur). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime (status.*), vérifiés",
-        "Revue indépendante WP09 : approuvé. ES256 seul (algorithms, kid pré-vérifié, typ, iss, aud, requiredClaims) ; HS256/none/autre kid/autre clé refusés et testés. CSR : P-256 exigée, preuve de possession (verify), sujet et extensions du CSR jamais recopiés, sujet imposé et filtré (identifiants). Série 0x01+128 bits (17 octets DER), notBefore -5 min, cnf.jkt RFC 7638, clés privées non exportables, faux refusés en production par les fabriques (tests de module). 29/29 tests unitaires, lint et typecheck verts. Modules non branchés : conforme (branchement WP12/WP14/WP15). Mineurs non bloquants : hash de signature du CSR non restreint, notAfter non borné dans le port, promesse rejetée mémorisée par sharedFake ; contrat device-tokens.md (faux jamais lus de l'environnement) vs prompt WP09 (DEVICE_CA_FAKE_KEY_FILE) à signaler. Aucun écart de sécurité ouvert. Relecture humaine : device-ca/*, device-tokens/*. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP09-autorite-signataire/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP09-autorite-signataire/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 29427,
-      "shell_pid_created_at": "1792413964.635419",
-      "subtasks": {
-        "T041": "done",
-        "T042": "done",
-        "T043": "done",
-        "T044": "done",
-        "T045": "done"
-      }
+      "shell_pid": 21680,
+      "shell_pid_created_at": "1792412177.594155"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5FMQ2767YTRTX92RJN94EVP",
       "last_transition_at": "2026-10-21T16:29:08.198336+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation (9e6c4f0) + correctif OP-N67/ADR-110 (050dba3) ; vérifié par l'orchestrateur : eslint, prettier, typecheck verts, 53 tests unitaires d'attestation verts (module non branché ailleurs, Jest DB non concerné). Planning réaligné sur feat (ac3fd10). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime (status.*, baseline-tests.json), vérifié.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : REJETÉ. Code de vérification juste, aucun contournement ; bloquants : T051 sans test de refus pour CA:true de l'émetteur (et feuille attestée qui signe une feuille forgée), émetteur ≠ sujet jamais déclenché, notBefore futur et intermédiaire expiré. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié.",
-        "Cycle 2 (504423f) : constats 1 à 4 traités, plus renforcement 5 (même appareil) ; vérifié par l'orchestrateur : eslint, prettier, typecheck verts, 60/60 tests d'attestation. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : approuvé (cycle 2, 504423f). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP10-attestation-android/review-cycle-2.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP10-attestation-android/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 9469,
-      "shell_pid_created_at": "1792489894.936935",
-      "subtasks": {
-        "T046": "done",
-        "T047": "done",
-        "T048": "done",
-        "T049": "done",
-        "T050": "done",
-        "T051": "done"
-      }
+      "shell_pid": 4521,
+      "shell_pid_created_at": "1792489353.8575"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQA5BH7NRP8X0KHMC8SJ3",
       "last_transition_at": "2026-10-21T16:29:16.331730+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation 2ee8aad. Orchestrateur : eslint, prettier, typecheck verts ; Jest unitaire 28 suites 840 tests (109 d'attestation) ; module d'attestation non branché, pas de Jest avec base. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement.",
-        "Relecture indépendante (session distincte de l'implémenteur), verdict enregistré par l'orchestrateur. WP11 approuvé (relecture indépendante, commit 2ee8aad, lane-k). Vérifié : le défi couvre le code, le serial et\nles deux SPKI (iosClientDataHash, préfixe de domaine et longueurs). Des tests refusent une autre clé de signature,\nune autre clé d'accord, des clés substituées après l'attestation, un autre code et un autre serial (R-06). Le\nnonce vaut SHA-256(authData ‖ clientDataHash) et l'extension 1.2.840.113635.100.8.2 est comparée en entier à son\nDER (30 24 a1 22 04 20 ‖ nonce). Sont aussi vérifiés : chaîne explicite jusqu'à la racine configurée, rpIdHash,\ncompteur nul, aaguid, credentialId = SHA-256(point non compressé). En production, l'absence de racine Apple, une\nracine de test ou l'environnement de développement font refuser le démarrage. AttestationRouter propage isFake.\nChaque refus a un test au motif précis. Les 192 tests unitaires (attestation, garde, config), le typecheck,\neslint et prettier passent.\nR-06/R-08 : il n'y a pas de vraie contradiction. Le « SHA-256(défi) » de R-06 est le clientDataHash de R-08, et\nattestKey(keyId, clientDataHash:) reçoit déjà le condensé : un seul hachage est correct.\nMineurs reportés :\n- WP12 (terminal de test) et mission 12 (app) : passer la sortie de iosClientDataHash telle quelle à attestKey,\n  sans la hacher une seconde fois. Clarifier la formule de R-06.\n- WP14/WP18 : keyId (credentialId) non rendu par le port, pour la levée d'OP-N64 (mission 12).\n- Recette (mission 13) : tester un vrai objet Apple (racine P-384, ECDSA-SHA384), car les tests n'utilisent qu'une\n  PKI P-256.\n- Fusion : attestation.module.ts, lignes 5 et 29 à plus de 100 caractères (héritées de WP10, à reformater).\nÀ faire relire par une personne : apps/api/src/attestation/ios-app-attest.ts et le diff de\napps/api/src/attestation/attestation.module.ts (cryptographie, garde de production). Orchestrateur : Jest API complet 1411/1411 sur la base (lane-k). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime (status.*, baseline-tests.json, review-cycle-*.md), vérifié après réalignement."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP11-attestation-ios/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP11-attestation-ios/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 34819,
-      "shell_pid_created_at": "1792492392.645498",
-      "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done"
-      }
+      "shell_pid": 16284,
+      "shell_pid_created_at": "1792490623.956684"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQCSP85G1KHR90H0EYH6M",
       "last_transition_at": "2026-10-21T16:29:19.030693+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Prêt pour relecture : commits b52170b, a2fa1c5, ddc4520 (décisions du porteur du 20/10 : ADR-113, 422 iOS, OP-N70). Orchestrateur : pgTAP 1972/1972 et Jest API 1493/1493 (SKIP_LATENCY) sur la base partagée. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement.",
-        "Relecture indépendante (session distincte de l'implémenteur), verdict enregistré par l'orchestrateur. # WP12 : relecture indépendante, APPROUVÉ (20/10/2026)\n\nDiff relu : `b52170b..ddc4520` (lane l). Tests sur un cluster PG18 privé (port 5494) : pgTAP 1972/1972, Jest 1493/1493.\nL'ordre des contrôles suit `contracts/device-authentication.md` (1 à 7, puis le statut dans la garde). Aucune preuve\nn'est facultative. Le nonce n'est écrit qu'après le certificat, le jeton, le terminal et sa famille, la liaison\ncert/jkt, le `Content-Digest`, l'`@authority` et la signature. Les refus ne disent pas quelle preuve a échoué ; le\njournal ne contient ni jeton, ni signature, ni certificat. Le faux d'identité n'existe que hors production et sous\n`DEVICE_IDENTITY_FAKE=1` ; en production, il fait refuser le démarrage (test). `X-Staff-Authorization` n'est lu que\nsur les 9 routes `@CounterAuth()` et il est refusé sur `/taps` et sur le processus des clés. Un jeton de personne\nplacé dans `Authorization` est refusé.\n\n20 mutations sur 23 font échouer au moins un test : TLS/authorized, validité, famille, cert_sha256, jkt, digest,\nauthority, rawBody, nonce sauté, nonce écrit trop tôt, keyid, composants, idempotency-key, expires, @query, refus du\njeton de la personne dans DeviceGuard, nfcOnly, suspendu, faux en production, source du jeton de la personne,\n`assert_device_active` dans AuthKeysService.\n\nTrois mutations passent tous les tests (mineurs, sans faille de sécurité constatée) :\n- M1 `authentication.guard.ts:37` : retirer le refus de `X-Staff-Authorization` hors des routes de guichet ne fait\n  échouer aucun test. Sur `/taps`, la garde des terminaux refuse quand même. Une route des personnes ou une route\n  publique de l'API publique n'est pas testée. Ajouter un test (WP18).\n- M2 `tap.service.ts:49` et `counter-access.ts:65` : aucun test ne couvre `assert_device_active` sur ces deux chemins.\n  Le test de révocation pendant une requête en cours est confié à WP16.\n- M3 `config.ts` `requestAuthorities` : rien ne teste que le joker `:*` est refusé en production, ni que le réglage\n  est obligatoire en production. C'est un renforcement, mais non prouvé.\n- M4 (redondance) `request-signature.ts:278` : le contrôle de longueur à 64 octets est redondant avec `ieee-p1363`.\n\nPoint à faire confirmer par le porteur : les purges sont accordées à `cashless_app`. Les relectures de WP03 et WP07\ndisaient « pas à cashless_app ». Les reports de WP04 et WP07 donnaient ce droit au processus qui les planifie, et ce\nprocessus est l'API publique. Le risque est faible : ce sont des fonctions SECURITY DEFINER qui ne retirent que des\nlignes au-delà de leur fenêtre. Orchestrateur : pgTAP 1972/1972 et Jest API 1493/1493 (SKIP_LATENCY) sur la base partagée. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP12-identite-reelle/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP12-identite-reelle/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 71934,
-      "shell_pid_created_at": "1792508743.124591",
-      "subtasks": {
-        "T056": "done",
-        "T057": "done",
-        "T058": "done",
-        "T059": "done",
-        "T060": "done",
-        "T061": "done",
-        "T062": "done"
-      }
+      "shell_pid": 56439,
+      "shell_pid_created_at": "1792495728.200989"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQ4VFFD1QFT914HYZ49NY",
       "last_transition_at": "2026-10-21T16:29:10.895451+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation 808b759. Orchestrateur : reset-db puis Jest idempotency + media-secrets 17/17, Jest API complet (SKIP_LATENCY=1) 74 suites 1322 tests verts. Préfixe h1: : décision du porteur du 20/10 = hexadécimal 64 sans préfixe (schéma 0002, §0.3). --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié après réalignement.",
-        "Verdict du relecteur indépendant (session distincte), enregistré par l'orchestrateur : approuvé. --force autorisé par le porteur : garde kitty-specs limité aux artefacts du runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP13-op-n54-empreintes/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP13-op-n54-empreintes/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 24894,
-      "shell_pid_created_at": "1792491204.158101",
-      "subtasks": {
-        "T063": "done",
-        "T064": "done",
-        "T065": "done"
-      }
+      "shell_pid": 16276,
+      "shell_pid_created_at": "1792490621.367825"
     },
     "WP14": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5FMQFH4N83RGVG6AY7ZQSCR",
       "last_transition_at": "2026-10-21T16:29:21.828341+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée (e2e7918, ea218e9). Intégration 38/38 (NFR-006 compris), suite API complète verte dans la lane (1554, 1 sauté : latence). --force autorisé par le porteur le 19/10 : seuls des artefacts du runtime diffèrent de feat, vérifié.",
-        "Verdict REJECT du relecteur distinct (cycle 1), enregistré par l'orchestrateur. B1 (audit des refus) bloquant ; décisions du porteur du 21/10 (ADR-117) jointes au retour. --force autorisé le 19/10 : seuls des artefacts du runtime diffèrent de feat.",
-        "Cycle 2 terminé (4ef9b95, migration 0027, ADR-117). pgTAP 2010/2010, suite API complète verte (1561, 1 sauté : latence). Lane réalignée sur feat (e8ac161). --force autorisé le 19/10 : seuls des artefacts du runtime diffèrent de feat, vérifié.",
-        "Verdict APPROVE du relecteur distinct (cycle 2), enregistré par l'orchestrateur. B1, B2, N5, N3, N1, N6 corrigés et testés. Non bloquants reportés vers WP18. --force autorisé le 19/10 : seuls des artefacts du runtime diffèrent de feat, vérifié (lane réalignée e8ac161)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP14-codes-enrolement/review-cycle-2.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP14-codes-enrolement/review-cycle-2.md",
         "reviewer": "claude (relecteur distinct)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 15709,
-      "shell_pid_created_at": "1792578697.815822",
-      "subtasks": {
-        "T066": "done",
-        "T067": "done",
-        "T068": "done",
-        "T069": "done",
-        "T070": "done"
-      }
+      "shell_pid": 9436,
+      "shell_pid_created_at": "1792577370.186549"
     },
     "WP15": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQMSJKCKT3MCBQ9P5Q0M6",
       "last_transition_at": "2026-10-21T16:29:27.218097+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation commitée d3ec00f par la session claude précédente ; vérifiée par l'orchestrateur : typecheck/lint/prettier OK, Jest complet de la lane 1578 OK (seul échec : course connue enrollment-codes.spec.ts de WP14, verte seule). --force (accord du porteur 19/10) : garde kitty-specs limité aux artefacts runtime (status.*, review-cycle-*, baseline-tests.json).",
-        "Verdict APPROVE du relecteur claude distinct (cycle 1, rapport complet en review-cycle-1.md), enregistré par l'orchestrateur. Aucun bloquant ; N1-N6 non bloquants (reports vers WP18, N2 contradiction DTO plus strict qu'openapi à soumettre au porteur). --force : garde limité aux artefacts runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP15-rafraichissement/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP15-rafraichissement/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 36179,
-      "shell_pid_created_at": "1792581501.448974",
-      "subtasks": {
-        "T071": "done",
-        "T072": "done",
-        "T073": "done",
-        "T074": "done"
-      }
+      "shell_pid": 17746,
+      "shell_pid_created_at": "1792579128.743078"
     },
     "WP16": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQJ4MKYJ6RWVYHGRN1N51",
       "last_transition_at": "2026-10-21T16:29:24.500345+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation terminée (9cc93d7, a277500 : ADR-115 étape 6 bis). Suite API complète verte dans la lane (1518/1518). --force autorisé par le porteur le 19/10 : seuls des artefacts du runtime diffèrent de feat (status.*, review-cycle-*.md, baseline-tests.json), vérifié.",
-        "Verdict APPROVE du relecteur distinct (cycle 1), enregistré par l'orchestrateur (--force refusé aux sous-agents). Aucun constat bloquant. Constat 1 (idempotence) : décision du porteur du 21/10 : correction transverse confiée à WP18 (ADR-116). --force autorisé le 19/10 : seuls des artefacts du runtime diffèrent de feat."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP16-back-office-terminaux/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP16-back-office-terminaux/review-cycle-1.md",
         "reviewer": "claude (relecteur distinct)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 6163,
-      "shell_pid_created_at": "1792576039.638208",
-      "subtasks": {
-        "T075": "done",
-        "T076": "done",
-        "T077": "done",
-        "T078": "done"
-      }
+      "shell_pid": 83790,
+      "shell_pid_created_at": "1792509970.329754"
     },
     "WP17": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQQEAGZX5RQEFSY7Y0HWK",
       "last_transition_at": "2026-10-21T16:29:29.930854+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation commitée 38cefa3 + a2a2af7 par la session claude précédente ; vérifiée : typecheck/lint/prettier OK, pgTAP PASS ; Jest de la lane : 2 échecs 403 DEVICE_REVOKED attendus faute de l'étape 6 bis (lane-p/WP16, hors dépendances) ; avec lanes o+p+q réunies : 1618 OK (seule la course connue de WP14). --force : garde limité aux artefacts runtime.",
-        "Verdict APPROVE du relecteur claude distinct (cycle 1, review-cycle-1.md), enregistré par l'orchestrateur. Coordination : les 2 tests 403 DEVICE_REVOKED exigent l'étape 6 bis de WP16 (lane-p) ; verts sur lanes o+p+q réunies ; WP18 relance la suite complète sur la fusion. N3 (renfort record_config_served) soumis au porteur. --force : garde limité aux artefacts runtime, vérifié."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP17-configuration-battement/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP17-configuration-battement/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 36191,
-      "shell_pid_created_at": "1792581502.940761",
-      "subtasks": {
-        "T079": "done",
-        "T080": "done",
-        "T081": "done",
-        "T082": "done"
-      }
+      "shell_pid": 18448,
+      "shell_pid_created_at": "1792579176.585366"
     },
     "WP18": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5FMQT18D1RTE364GKEEZQZ7",
       "last_transition_at": "2026-10-21T16:29:32.584452+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Prêt pour relecture : batterie verte (pgTAP 2072, Jest 1704, latences 17/17). --force : le garde ne liste que des artefacts du runtime (status.*, review-cycle-*.md, baseline-tests.json), vérifié ; accord du porteur du 19/10/2026",
-        "Verdict du relecteur indépendant (claude, cycle 1) : APPROUVÉ, aucun bloquant ; M1 (OP-N73/ADR-119), M2 (DEVICE_REQUEST_AUTHORITIES), M3 (OP-N66/N67) traités par l'orchestrateur sur feat (0c6226fa, 28bf2c2a) avec les décisions du porteur du 21/10. --force : garde limité aux artefacts du runtime, vérifié (accord du 19/10)"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP18-preuves-ci-consignation/review-cycle-1.md",
         "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP18-preuves-ci-consignation/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 55640,
-      "shell_pid_created_at": "1792594162.598568",
-      "subtasks": {
-        "T083": "done",
-        "T084": "done",
-        "T085": "done",
-        "T086": "done",
-        "T087": "done"
-      }
+      "shell_pid": 39653,
+      "shell_pid_created_at": "1792582499.362588"
     }
   }
 }
