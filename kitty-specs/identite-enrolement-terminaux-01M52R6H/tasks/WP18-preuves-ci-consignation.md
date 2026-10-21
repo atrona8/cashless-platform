@@ -173,6 +173,13 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
 - Relecture WP14 (N1) : `enrollment.spec.ts` gère la table `device_enrollment_attempt` et la limite par adresse de
   127.0.0.1. Une suite qui doit seulement disposer d'un terminal l'enrôle par `TestTerminal.enroll` (propriétaire), pas
   par la route ; une suite qui enrôle par la route n'efface que ses propres essais.
+- Relecture WP14 cycle 2 (ADR-117) : (N-b) limite non atomique : une rafale de K requêtes simultanées sur un code
+  fuité écrit K lignes d'audit dans la chaîne du prestataire ; borner (verrou consultatif du code pris AVANT le
+  contrôle de limite, ou compteur atomique) avec un test à requêtes simultanées. (N-c) chaque refus d'un code inconnu
+  sérialise sur la chaîne d'audit de la plateforme, et la limite par adresse vaut par adresse IPv6 complète : agréger
+  par /64, puis consigner la limite résiduelle (répartiteur) dans POINTS_OUVERTS. (N-a) la trace `RATE_LIMITED` ne
+  dit pas quelle limite a été franchie : ajouter `limit: code|address`. Revue des écarts : lister l'écriture par
+  `cashless_app` dans la chaîne d'audit de la plateforme (migration 0027).
 
 ## Risks / Reviewer guidance
 

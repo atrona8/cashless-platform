@@ -1544,5 +1544,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   code (sinon l'oracle de B2 renaîtrait). Limite non atomique (contrôle puis écriture dans deux transactions) : des
   requêtes simultanées passent toutes le contrôle ; sans effet pratique avec 60 bits d'entropie par code. Chaque refus
   d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme : une limite en amont (répartiteur) reste
-  utile.
+  utile. Non-atomicité, autre effet (relecture du cycle 2) : avec un code fuité, une rafale de K requêtes simultanées
+  écrit K lignes dans la chaîne d'audit du prestataire avant que la limite ne se voie ; suite confiée à WP18.
+  `cashless_app` écrit désormais dans la chaîne d'audit de la plateforme, par cette seule fonction
+  (`DEVICE_ENROLLMENT_REFUSED`, sans acteur, champs bornés) : à connaître pour la vérification de cette chaîne.
 - **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
