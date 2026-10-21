@@ -1510,6 +1510,11 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   tout Bearer des routes humaines (pas de régression).
 - **Alternatives écartées.** Jeton d'appareil dans un en-tête dédié partout (toutes les routes de terminal changent) ;
   routes de guichet sans jeton d'appareil (une preuve retirée).
+- **Renforcement de WP12 (20/10/2026), consigné le 21/10/2026.** `DEVICE_REQUEST_AUTHORITIES` : liste des autorités
+  (`host[:port]`) auxquelles un terminal adresse une requête signée ; `@authority` est signé, une requête signée pour
+  une autre autorité (passerelle locale, autre déploiement) est refusée. Obligatoire en production (démarrage refusé
+  sinon), port joker `host:*` refusé en production. Tests : `test/unit/config-device-authorities.spec.ts`
+  (« production : obligatoire… », « production : port joker refusé »). Valeur à fixer au déploiement (mission 13).
 - **Levée d'OP-N70 (21/10/2026, WP18).** `device-auth-matrix.spec.ts` sert chaque route de terminal en HTTPS réel
   et échoue si une route de terminal n'a pas de cas.
 - **Références.** WP01 et WP12 de la mission 5a ; ADR-107 (trois preuves).

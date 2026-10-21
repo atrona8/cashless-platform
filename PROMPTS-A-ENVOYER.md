@@ -356,7 +356,8 @@ vendeurs et le catalogue : la mission les ajoute.
 >
 > **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
 > par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que
-> leur compte est nul.
+> leur compte est nul. Fixer aussi `DEVICE_REQUEST_AUTHORITIES` (autorités `host[:port]` de l'API, sans joker ;
+> obligatoire en production, ADR-113).
 >
 > **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
 >

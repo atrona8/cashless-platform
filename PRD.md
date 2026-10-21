@@ -266,7 +266,7 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   (OP-N67, ADR-110, mission 5a) ; limite de débit en amont sur l'enrôlement des terminaux, sans compte (OP-N72,
   ADR-117, mission 5a, à confirmer par le porteur) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
   les appareils cibles ; à la mise en production, purge des lignes `api_idempotency` antérieures à T + 720 h (OP-N54,
-  OP-N71).
+  OP-N71) et réglage de `DEVICE_REQUEST_AUTHORITIES` (ADR-113).
 
 ## 9. Notes non classées
 

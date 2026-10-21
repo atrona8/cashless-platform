@@ -44,6 +44,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N63 | Clé d'accord d'un terminal réécrite par l'API — **levé** le 21/10/2026 par la mission 5a (clé écrite à l'enrôlement seulement, ADR-105 ; `tests_device_rights.sql` §1 et §2) | Non | Non | — |
 | OP-N64 | Terminal iOS : clé de signature ECDSA non attestée (App Attest atteste sa propre clé), liée à l'instance attestée par le défi d'enrôlement (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
+| OP-N66 | Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (> 5 s avec ~100 000 bracelets) ; antérieur à la mission 5a | Non | À évaluer | Porteur du projet (point ouvert du 19/10/2026, hors mission 5a) |
+| OP-N67 | Attestation Android : `attestationApplicationId` lu dans la liste logicielle de Key Attestation (seul champ ; écart accepté au plan, ADR-110) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N70 | Suites de la mission 4 sous le faux d'identité du terminal — **levé** le 21/10/2026 par WP18 de la mission 5a (chaque route de terminal en HTTPS réel, test de couverture : `device-auth-matrix.spec.ts`) | Non | Non | — |
@@ -632,7 +634,7 @@ Signalé par la relecture de WP16 (mission 5a), défaut antérieur (mission 1, `
   « 422 » corrigé, décision du porteur du 21/10/2026), même clé par deux personnes → aucune réponse de l'autre, rejeu
   légitime inchangé ; consigne de déploiement pour les lignes antérieures.
 - **Levé le 21/10/2026 par WP18 (ADR-116).** Empreinte sur le chemin concret (sans la chaîne de requête) et liée à
-  l'appelant (personne, terminal ou processus) ; règle 3 de `kitty-specs/fondations-grand-livre-01M4AY8M/contracts/
+  l'appelant (personne, terminal ou festivalier, posés par les gardes) ; règle 3 de `kitty-specs/fondations-grand-livre-01M4AY8M/contracts/
   idempotency.md` mise à jour. Tests : `apps/api/test/integration/devices/admin.spec.ts` (« ADR-116 : même clé sur deux
   `:id` → 409… ; B traité par sa clé », « ADR-116 : même clé par une autre personne du prestataire → aucune réponse de
   l'autre »), `integration/transverse/idempotency.spec.ts` (chaîne de requête hors de l'empreinte : rejeu),
