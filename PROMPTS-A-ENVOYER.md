@@ -211,6 +211,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > retirer les `UPDATE` directs ; mettre à jour la liste exacte de `tests_device_rights.sql` §1 ; test : écriture
 > directe refusée depuis `cashless_app`.
 
+> **Hérité de la mission 5a, OP-N73 (ADR-119 ; décision du porteur du 21/10/2026 ; bloque la production)** :
+> l'autorité des terminaux (`DeviceCaPort`) et le signataire des jetons d'appareil (`TokenSignerPort`) n'ont que des
+> faux (`fake-device-ca.ts`, `fake-token-signer.ts`). Avec l'adaptateur KMS d'OP-N41, écrire leurs adaptateurs réels
+> (clés hors du code et de l'environnement, SPEC §13.2) et lever la garde de production pour ces deux ports seulement
+> (`device-latency.spec.ts`, `production-guard.spec.ts`).
+
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
 - [ ] /spec-kitty.tasks
@@ -348,7 +354,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > appareils (balise KeyDescription inconnue : refus fermé probable, non vérifié), et App Attest avec un objet réel
 > enregistré et la vraie racine Apple.
 >
-> **Hérité de la mission 5a, OP-N72 (ADR-117 ; proposé par l'agent le 21/10/2026, à confirmer par le porteur)** :
+> **Hérité de la mission 5a, OP-N72 (ADR-117 ; confirmé par le porteur le 21/10/2026)** :
 > `POST /v1/device-enrollments` (sans compte) n'a pas de limite en amont ; chaque refus d'un code inconnu écrit dans
 > la chaîne d'audit de la plateforme, et un attaquant aux nombreuses adresses n'est borné que par /64. Poser une
 > limite de débit au répartiteur (ou à la passerelle) sur cette route, la vérifier sur l'environnement de recette,

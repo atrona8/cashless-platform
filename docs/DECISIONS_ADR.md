@@ -128,6 +128,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-116 | Idempotence : chemin concret et appelant dans la clé (OP-N71) | Acceptée (décision du porteur du 21/10/2026) ; mise en œuvre par WP18 |
 | ADR-117 | Enrôlement : audit de tous les refus, limites sans oracle, atomiques (OP-N72) | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
+| ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
 
 ---
 
@@ -1015,7 +1016,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Levée d'OP-N42 par la mission 5a (21/10/2026).** `DeviceIdentityPort` a son implémentation réelle (jeton lié,
   mTLS et signature de chaque requête, ADR-107) ; le faux n'est câblé que sous `DEVICE_IDENTITY_FAKE=1` et refusé en
   production. Tests : `test/integration/end-to-end/device-auth-matrix.spec.ts`, `test/unit/production-guard.spec.ts`,
-  `device-latency.spec.ts` (un test de garde par faux). OP-N41 et OP-N43 restent ouverts (missions 7 et 10).
+  `device-latency.spec.ts` (un test de garde par faux). OP-N41 et OP-N43 restent ouverts (missions 7 et 10). Les
+  ports de l'autorité des terminaux et du signataire des jetons n'ont que des faux : OP-N73 (ADR-119).
 - **Références.** SPEC §3.2, §7.3 ; NFR-010 ; `apps/api/src/kms/`, `device-identity/`, `customer-identity/` ; OP-N41 à OP-N43.
 
 ## ADR-89 — Pas de compte de caisse avant la mission des caisses
@@ -1621,7 +1623,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   en IPv6 (IPv4 encapsulée ramenée à IPv4). (N-a) La trace `RATE_LIMITED` nomme la limite (`limit: code|address`).
   Tests : `tests/tests_enrollment_limits.sql`, `test/integration/devices/enrollment-limits.spec.ts` ; attentes de
   `tests_enrollment_refusal.sql` adaptées. Limite résiduelle (chaîne d'audit de la plateforme, absence de limite en
-  amont) : OP-N72, mission 13 proposée, à confirmer par le porteur. Revue des écarts : `cashless_app` écrit dans la
+  amont) : OP-N72, mission 13 (confirmée par le porteur le 21/10/2026). Revue des écarts : `cashless_app` écrit dans la
   chaîne d'audit de la plateforme (migration 0027).
 - **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
 
@@ -1652,3 +1654,20 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `openapi.yaml` (avec `TAP_UNUSABLE`/`CL022` et `409 CONFLICT_STATE` déclaré pour la configuration et le battement,
   atteignable).
 - **Références.** FR-018, FR-019 ; R-10, R-14 ; relectures WP15 et WP17 (cycle 1) de la mission 5a ; ADR-108, ADR-115.
+
+## ADR-119 — Autorité des terminaux et signataire des jetons d'appareil : faux seulement jusqu'à la mission 7
+
+- **Statut** : Acceptée, 21 octobre 2026 (décision du porteur après la relecture de WP18, mission 5a, OP-N73). Dette
+  nommée (règle 3 de `CLAUDE.md`) ; **bloque la production**.
+- **Contexte.** La mission 5a place l'autorité des terminaux (`DeviceCaPort`) et le signataire des jetons d'appareil
+  (`TokenSignerPort`) derrière des ports, avec des faux refusés en production (contrainte C-004 : pas d'adaptateur AWS
+  avant la région, OP-N11). La levée d'OP-N42 ne couvre que la vérification des trois preuves : les clés qui émettent
+  certificats et jetons ne sont pas encore réelles.
+- **Décision.** Dette consignée, levée par la **mission 7** (hors ligne), avec OP-N41 : premier vrai KMS, adaptateurs
+  écrits ensemble une fois la région arrêtée.
+- **Condition de levée.** Adaptateurs réels des deux ports, clés hors du code et de l'environnement (SPEC §13.2) ;
+  garde de production levée pour ces deux ports seulement.
+- **Conséquences.** Tests qui échouent si la limite s'élargit : `device-latency.spec.ts` (démarrage refusé avec le
+  faux de l'autorité seul, puis du signataire seul), `production-guard.spec.ts`. Reports dans `PROMPTS-A-ENVOYER.md`
+  et `PRD.md` (mission 7).
+- **Références.** OP-N73 ; OP-N41, OP-N42 ; ADR-88, ADR-107 ; C-004 de la mission 5a.

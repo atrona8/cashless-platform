@@ -50,7 +50,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N70 | Suites de la mission 4 sous le faux d'identité du terminal — **levé** le 21/10/2026 par WP18 de la mission 5a (chaque route de terminal en HTTPS réel, test de couverture : `device-auth-matrix.spec.ts`) | Non | Non | — |
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
-| OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle, à confirmer par le porteur) | Mission 13 (recette V1) : proposée par l'agent le 21/10/2026, à confirmer par le porteur |
+| OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
+| OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 7 (hors ligne), avec OP-N41 : décision du porteur du 21/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -131,7 +132,8 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
   production). Tests : `apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts` (chaque route de terminal du
   contrat, refusée pour chaque preuve absente, fausse, expirée, d'un autre terminal, rejouée ou d'une autre autorité),
   `apps/api/test/unit/production-guard.spec.ts` (« terminal : identité réelle par défaut… »),
-  `device-latency.spec.ts` (garde de production, un test par faux).
+  `device-latency.spec.ts` (garde de production, un test par faux). L'autorité des terminaux et le signataire des
+  jetons restent des faux, refusés en production : dette OP-N73 (mission 7).
 - **OP-N44** : `post-roles.sql` retire `EXECUTE` à `PUBLIC` et l'accorde rôle par rôle ; la suite de référence
   (`gen_tests.py`) ne l'exige plus pour `PUBLIC`. Test : `packages/ledger-sql/tests/tests_execute_grants.sql` (listes
   figées par rôle, refus à l'appel). Limite résiduelle séparée : OP-N68 (ADR-111).
@@ -645,7 +647,7 @@ Signalé par la relecture de WP16 (mission 5a), défaut antérieur (mission 1, `
 ### OP-N72 — Enrôlement : limite en amont absente, chaîne d'audit de la plateforme sollicitée (21 octobre 2026)
 
 Limite résiduelle de la correction d'ADR-117 (relecture de WP14, cycle 2 ; mise en œuvre par WP18, migration 0030).
-**Proposé par l'agent le 21/10/2026, à confirmer par le porteur ; bloque la production : non ; mission proposée :
+**Proposé par l'agent le 21/10/2026, confirmé par le porteur le même jour ; bloque la production : non ; levé par la
 mission 13 (recette V1).**
 
 - **Constat.** `POST /v1/device-enrollments` est une route sans compte. La migration 0030 rend les limites atomiques
@@ -663,6 +665,24 @@ mission 13 (recette V1).**
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_enrollment_limits.sql` §3 (limite par
   /64) et §5 (rafale qui a passé le contrôle préalable : écritures bornées) ;
   `apps/api/test/integration/devices/enrollment-limits.spec.ts` (requêtes simultanées, IPv6).
+
+### OP-N73 — Autorité des terminaux et signataire des jetons d'appareil : faux seulement (21 octobre 2026)
+
+Signalé par la relecture de WP18 (mission 5a, constat M1) ; prévu par la contrainte C-004 de la mission (« pas
+d'adaptateur AWS »), jamais nommé en dette. **Bloque la production : oui ; levé par la mission 7, avec OP-N41 ;
+décision du porteur du 21/10/2026 ; ADR-119.**
+
+- **Constat.** `DeviceCaPort` et `TokenSignerPort` n'ont que des faux (`apps/api/src/device-ca/fake-device-ca.ts`,
+  `apps/api/src/device-tokens/fake-token-signer.ts`) ; l'adaptateur réel (KMS ou HSM) attend la région (OP-N11).
+- **Risque.** Aucun en production tant que la garde tient : le démarrage est refusé ; la dette bloque la mise en
+  service. Un faux câblé en production rendrait les certificats et les jetons d'appareil forgeables par qui lit le
+  code.
+- **En place.** Les deux faux refusent de se construire en production et la garde de démarrage refuse un processus qui
+  en porte un.
+- **Condition de levée.** Adaptateurs réels des deux ports (clé de l'autorité et clé de signature des jetons hors du
+  code et de l'environnement, SPEC §13.2), garde levée pour ces deux ports seulement.
+- **Test qui échoue si la limite s'élargit** : `apps/api/test/integration/end-to-end/device-latency.spec.ts` (« faux de
+  … seul : démarrage refusé », pour l'autorité et pour le signataire), `apps/api/test/unit/production-guard.spec.ts`.
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 
