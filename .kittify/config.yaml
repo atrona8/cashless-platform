@@ -3,6 +3,10 @@ project:
   slug: cashless-platform
   node_id: 8fdd0288adcb
   build_id: 11334802-e83a-5942-bec8-26a60b280cb5
+  # Monorepo : code dans apps/ et packages/, tests de l'API dans apps/api/test/ (pas de src/ ni tests/ à la racine).
+  path_conventions:
+    workspace: apps/
+    tests: apps/api/test/
 mission_type_activations:
 - software-dev
 - documentation
