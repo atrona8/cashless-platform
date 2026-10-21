@@ -16,8 +16,9 @@ Transition interdite → `409 CONFLICT_STATE`. Autre prestataire ou hors périm�
 
 ## `GET /v1/device/config` (`getDeviceConfig`, `allowSuspended`)
 
-Schéma `DeviceConfig` du contrat. Contenu dans cette mission : `research.md` R-10. ETag = `config_id` ;
-`If-None-Match` égal → `304`.
+Schéma `DeviceConfig` du contrat. Contenu dans cette mission : `research.md` R-10. `config_id` =
+`device_config_served.id` (`openapi.yaml`) ; ETag = SHA-256 du contenu canonique (JCS) hors `server_time`, qui change
+aussi avec le statut du terminal (ADR-118) ; `If-None-Match` égal → `304`.
 
 ## `POST /v1/device/heartbeat` (`postDeviceHeartbeat`, `allowSuspended`)
 

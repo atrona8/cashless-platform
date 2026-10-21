@@ -180,6 +180,21 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   par /64, puis consigner la limite résiduelle (répartiteur) dans POINTS_OUVERTS. (N-a) la trace `RATE_LIMITED` ne
   dit pas quelle limite a été franchie : ajouter `limit: code|address`. Revue des écarts : lister l'écriture par
   `cashless_app` dans la chaîne d'audit de la plateforme (migration 0027).
+- Relecture WP15 et WP17 (21/10, ADR-118, décisions du porteur) : (1) migration `0029` : `record_config_served`
+  refuse un terminal `REVOKED` et applique `assert_tenant` au prestataire de `p_config_version` ; test pgTAP par
+  `gen_tests.py` sous `cashless_app` (terminal d'un autre prestataire, terminal révoqué, `config_version` d'un autre
+  prestataire → refus, aucune ligne) ; `post-roles.sql` et `tests_execute_grants.sql` dans le même commit si la
+  signature change. (2) `openapi.yaml`, `DeviceTokenRefreshRequest` : `nonce` `pattern: '^[A-Za-z0-9+/=_-]{16,64}$'`,
+  `refresh_token` 16-128 base64url, signature `ieee-p1363` de 64 octets, alignés sur `refresh.dto.ts` ; déclarer ou
+  retirer le `409 CONFLICT_STATE` de `GET /v1/device/config` et `POST /v1/device/heartbeat`.
+  (3) Bout en bout sur la fusion des lanes : `POST /v1/devices/:id/revoke` (back-office) puis rafraîchissement,
+  configuration et battement de cœur → `403 DEVICE_REVOKED` avec preuves valides, `401` avec une preuve fausse, rien
+  écrit ; `POST /v1/devices/:id/suspend` puis configuration et battement de cœur → `200` (`allowSuspended`) et `/taps`
+  → `403 DEVICE_SUSPENDED`. Les tests 403 de `config.spec.ts` et `heartbeat.spec.ts` n'ont passé que sur la
+  combinaison des lanes o+p+q (l'étape 6 bis est dans WP16) : suite complète sur la fusion. (4) Assertion de
+  `request_id` dans l'audit `DEVICE_TOKEN_REUSE`. (5) `enrollment-codes.spec.ts` (« event_id obligatoire… aucun code
+  créé ») compte toutes les lignes de `device_enrollment_code` et échoue quand `enrollment.spec.ts` tourne en
+  parallèle : compter les seules lignes de son prestataire.
 
 ## Risks / Reviewer guidance
 

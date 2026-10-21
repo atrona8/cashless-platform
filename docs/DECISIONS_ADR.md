@@ -1379,7 +1379,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Décision.** Limite acceptée, classée **bloque la production : non**. Une seule représentation du jeton consommé,
   dans les 60 s, par le même terminal (même certificat client, preuve de possession valide) donne une nouvelle paire et
   révoque la paire émise et jamais utilisée. Tout autre cas révoque la famille. Un voleur aurait besoin du jeton, de la
-  clé de signature et du certificat du terminal.
+  clé de signature et du certificat du terminal. La paire remplacée est celle dont le jeton de rafraîchissement n'a
+  jamais été échangé ; son jeton d'appareil, s'il a déjà servi, reste valable jusqu'à son expiration (15 min)
+  (précision du porteur du 21/10/2026, relecture de WP15).
 - **Mission qui la réexamine.** Mission 13 (recette V1), selon les pertes réseau observées.
 - **Condition de levée.** Retour au mode strict si la recette montre que la grâce ne sert pas.
 - **Conséquences.** Test de borne : seconde représentation, plus de 60 s ou autre certificat → famille révoquée.
@@ -1549,3 +1551,25 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `cashless_app` écrit désormais dans la chaîne d'audit de la plateforme, par cette seule fonction
   (`DEVICE_ENROLLMENT_REFUSED`, sans acteur, champs bornés) : à connaître pour la vérification de cette chaîne.
 - **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
+
+## ADR-118 — Relectures de WP15 et WP17 : configuration servie durcie en base, deux contradictions tranchées
+
+- **Statut** : Acceptée, 21 octobre 2026 (décisions du porteur après les relectures de WP15 et WP17, mission 5a).
+- **Contexte.** (1) WP17 accorde `EXECUTE` de `record_config_served(uuid, uuid)` à `cashless_app`. La fonction ne
+  refuse pas un terminal `REVOKED` et ne vérifie pas que `p_config_version` appartient au prestataire du terminal
+  (clé étrangère seule). Sans effet aujourd'hui (la route relit le statut sous verrou et ne passe pas ce paramètre),
+  mais un `cashless_app` compromis pourrait enregistrer une configuration pour un terminal révoqué ou citer la
+  `config_version` d'un autre prestataire. (2) Le DTO du rafraîchissement borne `nonce` (16-64, `[A-Za-z0-9+/=_-]`) et
+  `refresh_token` (16-128, base64url) plus strictement que `openapi.yaml` (`minLength: 16` seul). (3) Le prompt T079
+  et `contracts/device-lifecycle.md` (« ETag = `config_id` ») contredisent `openapi.yaml` (`config_id` = id de ligne de
+  `device_config_served`).
+- **Décision.** (1) Corrigé dans la mission, pas reporté : WP18 ajoute la migration `0029` (`record_config_served`
+  refuse un terminal `REVOKED` et applique `assert_tenant` au prestataire de la `config_version`) et un test pgTAP par
+  `gen_tests.py` (terminal d'un autre prestataire, terminal révoqué, `config_version` d'un autre prestataire → refus,
+  aucune ligne). (2) `openapi.yaml` s'aligne sur le DTO (`pattern`, `maxLength`) ; le code ne change pas.
+  (3) `openapi.yaml` et le code font foi (§0.3) : `config_id` = `device_config_served.id` ; ETag = SHA-256 du contenu
+  canonique (JCS) hors `server_time`, qui change avec le statut du terminal (un `304` ne masque pas une suspension).
+  `device-lifecycle.md` est corrigé.
+- **Pourquoi.** (1) et (2) renforcent la sécurité ; (3) garde le choix le plus sûr.
+- **Conséquences.** Aucun point ouvert ni dette : la limite (1) est levée avant la fusion de la mission.
+- **Références.** FR-018, FR-019 ; R-10, R-14 ; relectures WP15 et WP17 (cycle 1) de la mission 5a ; ADR-108, ADR-115.
