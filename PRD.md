@@ -82,7 +82,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   les codes d'enrôlement (S5), l'enrôlement, la révocation, la configuration servie et le battement de cœur ; la
   mission 5b livre les vendeurs (S2), le catalogue et les lignes de vente (S18), le paiement par bracelet et par QR,
   l'annulation et l'identification au guichet (S24). Le schéma de référence n'a ni tables ni routes de contrat pour
-  le catalogue et les vendeurs : la mission 5b les ajoute.
+  le catalogue et les vendeurs : la mission 5b les ajoute. Héritage de la mission 5a : l'enrôlement d'un terminal sur
+  un événement clos ou un point de vente supprimé doit être refusé (OP-N74, ADR-120).
 - Cadrage de la mission 5a (porteur, 19/10/2026) : jeton lié, mTLS et signature de chaque requête exigés ensemble sur
   les routes de terminal (contradiction avec §10.3 signalée) ; attestation vérifiée à l'enrôlement sur Android et iOS ;
   routes back-office des terminaux (liste, suspension, réactivation, révocation) ajoutées au contrat ; OP-N50 levée en 5a.
@@ -239,7 +240,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   la main hors de `migrate.ts` (OP-N68, ADR-111, mission 5a) ; numérotation, présence et affectation d'un terminal
   écrites par des fonctions de la base, plus directement par l'API (OP-N69, ADR-112, mission 5a) ; adaptateurs réels
   de l'autorité des terminaux et du signataire des jetons d'appareil, avec celui d'OP-N41 (OP-N73, ADR-119,
-  mission 5a, bloque la production) ;
+  mission 5a, bloque la production) ; rôle de maintenance dédié aux purges des nonces et des essais d'enrôlement
+  (OP-N75, ADR-114, mission 5a) ;
 - mission 9 : enchaînement du guichet de retour (caution, crédits offerts, solde, restitution), servi par la mission 9
   (décision du porteur du 15/10/2026, OP-N51, ADR-91) ; rendu des espèces dues d'un bracelet remplacé (OP-N55,
   ADR-100) ;

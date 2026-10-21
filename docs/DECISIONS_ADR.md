@@ -129,6 +129,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-117 | Enrôlement : audit de tous les refus, limites sans oracle, atomiques (OP-N72) | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
+| ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, levé par la mission 5b | Acceptée (décision du porteur du 21/10/2026) |
 
 ---
 
@@ -1378,6 +1379,11 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Levée par la mission 5a (21/10/2026, WP03 et WP07).** Clé d'accord écrite à l'enrôlement seulement, par la
   fonction qui consomme le code ; `UPDATE (agreement_public_key)` et `INSERT` sur `device` retirés à `cashless_app`.
   Tests : `tests/tests_device_rights.sql` §1 et §2. OP-N63 tranché ; colonnes restantes : OP-N69 (ADR-112).
+- **Limite restante (revue post-fusion de la mission 5a, SEC-2, 21/10/2026).** `enroll_device` accepte les clés,
+  l'empreinte du certificat et le type d'attestation tels que l'API les donne, et croit l'auteur : la base ne prouve ni
+  l'attestation ni l'auteur (même limite qu'OP-N56). La barrière est l'autorité des terminaux et le signataire des
+  jetons, hors de la base (OP-N73). Renforcement décidé par le porteur : la lecture de
+  `device_enrollment_code.code_hash` est retirée à `cashless_app` (correctif post-fusion de la mission 5a).
 - **Références.** ADR-102 ; OP-N42, OP-N63 ; `packages/ledger-sql/roles.sql`.
 
 ## ADR-106 — Terminal iOS : clé de signature non attestée, liée à l'instance App Attest
@@ -1539,6 +1545,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Test de borne (21/10/2026, WP18).** `tests/tests_device_purge_window.sql` : sous `cashless_app` et sans
   prestataire, aucune purge ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h. Droit plus large
   accepté, listé dans la revue des écarts de sécurité.
+- **Mission de levée (21/10/2026, décision du porteur après la revue post-fusion de la mission 5a, SEC-1).** Mission 7 :
+  rôle et connexion de maintenance dédiés, `EXECUTE` retiré à `cashless_app` ; fiche OP-N75.
 - **Références.** WP07 et WP12 de la mission 5a ; ADR-113.
 
 ## ADR-115 — Terminal révoqué : `403 DEVICE_REVOKED` à la requête suivante
@@ -1671,3 +1679,19 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   faux de l'autorité seul, puis du signataire seul), `production-guard.spec.ts`. Reports dans `PROMPTS-A-ENVOYER.md`
   et `PRD.md` (mission 7).
 - **Références.** OP-N73 ; OP-N41, OP-N42 ; ADR-88, ADR-107 ; C-004 de la mission 5a.
+
+## ADR-120 — Enrôlement sur un événement clos : écart consigné jusqu'à la mission 5b
+
+- **Statut** : Acceptée, 21 octobre 2026 (décision du porteur après la revue post-fusion de la mission 5a, DRIFT-1,
+  OP-N74). Dette nommée (règle 3 de `CLAUDE.md`).
+- **Contexte.** La spécification de la mission 5a exige le refus d'un enrôlement dont le code vise un événement clos ou
+  annulé, ou un point de vente supprimé depuis l'émission. Les fonctions de la migration 0022 ne lisent pas ces états ;
+  aucun lot ni test ne portait ce cas.
+- **Décision.** Écart consigné, non corrigé dans la mission 5a ; classé **bloque la production : non** (le terminal
+  n'encaisse rien avant la mission 5b). **Mission qui le lève : mission 5b** (paiement en ligne), qui fixe aussi quels
+  états de clôture bloquent l'enrôlement (`event_status` n'a pas d'état « annulé »).
+- **Condition de levée.** Refus dans `create_device_enrollment_code` et `enroll_device` ; test pgTAP par refus, aucune
+  ligne écrite.
+- **Conséquences.** Aucun test ne fige ce manque (contrôle absent). Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md`
+  (mission 5b).
+- **Références.** OP-N74 ; spécification de la mission 5a (cas limites) ; `packages/ledger-sql/migrations/0022_device_enrollment.sql`.

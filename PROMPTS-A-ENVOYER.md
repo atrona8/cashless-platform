@@ -152,6 +152,11 @@ branche `feat/terminaux-paiement-en-ligne` (à remettre sur `main` après la fus
 consignée dans son dossier `decisions/`. Le schéma de référence n'a ni tables (S2, S18) ni routes de contrat pour les
 vendeurs et le catalogue : la mission les ajoute.
 
+> **Hérité de la mission 5a, OP-N74 (ADR-120 ; décision du porteur du 21/10/2026)** : l'enrôlement d'un terminal ne
+> relit pas l'état de l'événement ni du point de vente du code. Faire refuser par `create_device_enrollment_code` et
+> `enroll_device` un événement `CLOSED` (et les états de clôture jugés bloquants) et un point de vente supprimé ; test
+> pgTAP par refus, aucune ligne écrite ; puis lever OP-N74.
+
 - [ ] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
 - [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement. Téléphone personnel : en ligne seulement. iOS : QR uniquement.
 - [ ] /spec-kitty.tasks
@@ -209,7 +214,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > les réglages (`app_mode`, `nfc_enabled`, `station_name`, `personal_phone`). Faire passer ces écritures par des
 > fonctions de la base (plancher qui ne descend jamais, affectation dans le périmètre, présence à l'heure de la base) et
 > retirer les `UPDATE` directs ; mettre à jour la liste exacte de `tests_device_rights.sql` §1 ; test : écriture
-> directe refusée depuis `cashless_app`.
+> directe refusée depuis `cashless_app`. Inclure `personal_phone` et `app_mode` (contournement de la règle du
+> téléphone personnel, revue post-fusion de la 5a).
+
+> **Hérité de la mission 5a, OP-N75 (ADR-114 ; décision du porteur du 21/10/2026)** : les purges des nonces et des
+> essais d'enrôlement sont exécutées par `cashless_app`. Créer un rôle et une connexion de maintenance dédiés, retirer
+> `EXECUTE` à `cashless_app` (`post-roles.sql`, `tests_execute_grants.sql`), garder `tests_device_purge_window.sql`.
 
 > **Hérité de la mission 5a, OP-N73 (ADR-119 ; décision du porteur du 21/10/2026 ; bloque la production)** :
 > l'autorité des terminaux (`DeviceCaPort`) et le signataire des jetons d'appareil (`TokenSignerPort`) n'ont que des

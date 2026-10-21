@@ -52,6 +52,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
 | OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 7 (hors ligne), avec OP-N41 : décision du porteur du 21/10/2026 |
+| OP-N74 | Enrôlement accepté sur un code lié à un événement clos (`CLOSED`) ou à un point de vente supprimé depuis l'émission : la base ne relit pas leur état (cas limite de la spécification de la mission 5a non livré ; ADR-120) | Non | Non (le terminal enrôlé n'encaisse rien avant la mission 5b) | Mission 5b (paiement en ligne) : décision du porteur du 21/10/2026 |
+| OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -283,6 +285,14 @@ Limite résiduelle d'ADR-94 (levée d'OP-N52), consignée à la relecture du lot
   de l'API compromise peut donc attribuer un passage réel à un valideur inventé ou à une autre personne. Cela ne
   débloque aucune règle (la sortie de liste noire exige une demande approuvée concordante, migration 0017) ; la trace
   n'est pas une preuve d'identité, au même titre que la décision elle-même. Levée avec ce point (mission 11).
+
+- **Même limite à l'enrôlement des terminaux (revue post-fusion de la mission 5a, SEC-2, 21/10/2026).**
+  `enroll_device` (migration 0022) croit l'auteur (`p_actor`) et accepte tels que l'API les donne les clés publiques,
+  l'empreinte du certificat et le type d'attestation : la base ne prouve ni l'attestation ni l'auteur. Une session de
+  l'API compromise pourrait créer un terminal aux clés choisies ; il resterait inutilisable sans certificat de
+  l'autorité des terminaux ni jeton du signataire, deux clés hors de la base (barrière réelle, OP-N73 pour leurs
+  adaptateurs). Renforcement décidé le même jour : retirer à `cashless_app` la lecture de
+  `device_enrollment_code.code_hash` (correctif post-fusion de la mission 5a).
 
 ### OP-N57 — `offline_snapshot` : version plantée, déni de service hors ligne (15 octobre 2026)
 
@@ -590,8 +600,10 @@ WP07 ; consigné, levé par la mission 7 ; décision du porteur du 20/10/2026 ; 
   `last_snapshot_version`, `last_seen_at`, `next_seq_floor`, `personal_phone` (`post-roles.sql`, section 5).
 - **Risque.** Une session de l'API compromise peut déplacer un terminal vers un autre événement ou point de vente
   (`event_id`, `pos_id`), abaisser ou relever le plancher de ses numéros de séquence (`next_seq_floor` : rejeu ou refus
-  de lots hors ligne), ou falsifier sa dernière présence. Le statut, les clés, l'empreinte du certificat et le
-  prestataire restent protégés ; chaque requête relit le statut et le prestataire en base.
+  de lots hors ligne), ou falsifier sa dernière présence. Elle peut aussi réécrire `personal_phone` et `app_mode`, et
+  contourner ainsi la règle du téléphone personnel (mode `KEYPAD_TPE` seulement ; revue post-fusion de la mission 5a,
+  SEC-3). Le statut, les clés, l'empreinte du certificat et le prestataire restent protégés ; chaque requête relit le
+  statut et le prestataire en base.
 - **Condition de levée.** Ces écritures passent par des fonctions de la base qui contrôlent la transition (affectation
   dans le périmètre de l'organisateur, plancher qui ne descend jamais, présence posée par l'heure de la base), et les
   `UPDATE` directs correspondants sont retirés à `cashless_app`.
@@ -683,6 +695,40 @@ décision du porteur du 21/10/2026 ; ADR-119.**
   code et de l'environnement, SPEC §13.2), garde levée pour ces deux ports seulement.
 - **Test qui échoue si la limite s'élargit** : `apps/api/test/integration/end-to-end/device-latency.spec.ts` (« faux de
   … seul : démarrage refusé », pour l'autorité et pour le signataire), `apps/api/test/unit/production-guard.spec.ts`.
+
+### OP-N74 — Enrôlement sur un événement clos ou un point de vente supprimé (21 octobre 2026)
+
+Relevé par la revue post-fusion de la mission 5a (DRIFT-1). **Écart à la spécification, consigné ; bloque la production :
+non ; levé par la mission 5b ; décision du porteur du 21/10/2026 ; ADR-120.**
+
+- **Constat.** La spécification de la mission 5a (cas limites) exige le refus d'un enrôlement dont le code vise un
+  événement clos ou annulé, ou un point de vente supprimé entre l'émission et l'enrôlement.
+  `create_device_enrollment_code`, `check_device_enrollment_code` et `enroll_device` (migration 0022) ne lisent ni
+  l'état de l'événement ni celui du point de vente. L'état « annulé » n'existe pas dans `event_status` (le plus proche
+  est `CLOSED`).
+- **Risque.** Un code encore valide (24 h par défaut, 7 jours au plus) enrôle un terminal affecté à un événement clos.
+  Faible en 5a : le terminal n'encaisse rien tant que la mission 5b n'a pas livré le paiement ; il grandit avec elle.
+- **En place.** Le code est à usage unique, borné dans le temps, révocable avec le terminal ; l'enrôlement est audité.
+- **Condition de levée.** `create_device_enrollment_code` et `enroll_device` refusent un événement `CLOSED` (et les
+  états de clôture que la mission 5b jugera bloquants) et un point de vente supprimé ; test pgTAP par refus, aucune
+  ligne écrite.
+- **Test.** Aucun test ne fige ce manque : c'est un contrôle absent, pas un droit qui peut s'élargir (même cas
+  qu'OP-N55).
+
+### OP-N75 — Purges des nonces et des essais d'enrôlement exécutées par l'API publique (21 octobre 2026)
+
+Fiche de la limite acceptée par ADR-114 (décision du porteur du 20/10/2026), complétée après la revue post-fusion de
+la mission 5a (SEC-1). **Bloque la production : non ; levée par la mission 7 ; décision du porteur du 21/10/2026.**
+
+- **Constat.** `post-roles.sql` (section 4a) accorde à `cashless_app` `EXECUTE` sur `purge_device_request_nonces` et
+  `purge_device_enrollment_attempts` (SECURITY DEFINER), appelées par le travailleur `device-purge` de l'API publique.
+- **Risque.** Droit plus large que le plan : une session de l'API compromise peut lancer les purges à volonté. Chaque
+  purge ne retire que des lignes hors de leur fenêtre, à l'heure de la base.
+- **Condition de levée.** Rôle et connexion de maintenance dédiés (mission 7, qui revoit déjà les droits de la base :
+  OP-N68, OP-N69), `EXECUTE` retiré à `cashless_app`.
+- **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_purge_window.sql` (aucune purge
+  ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h) et les listes figées de
+  `tests_execute_grants.sql`.
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 
