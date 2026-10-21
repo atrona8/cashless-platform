@@ -423,7 +423,7 @@
   {
     "mission": "identite-enrolement-terminaux-01M52R6H",
     "titre_cas_usage": "Identité et enrôlement des terminaux",
-    "statut": "review terminée, acceptation en attente",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "L'administrateur émet un code d'enrôlement",

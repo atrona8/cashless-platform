@@ -2,7 +2,7 @@
 
 > Statut de complétude : voir `06-docs-status.md`. Dernière mise à jour motivée par :
 > initialisation du 07/10/2026 (à partir de `PRD.md`, lui-même tiré de `SPECIFICATION.md` v1.2) ; 21/10/2026 :
-> domaine « Terminaux et encaissement », identité et enrôlement des terminaux (review terminée, acceptation en attente).
+> domaine « Terminaux et encaissement », identité et enrôlement des terminaux (mergée le 21/10/2026).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision

@@ -1,6 +1,6 @@
 # Notes d'architecture — mission identite-enrolement-terminaux-01M52R6H
 
-> État : **review terminée, acceptation en attente** (18/18 lots approuvés le 21/10/2026). Rédigé au plan le
+> État : **mergée** le 21/10/2026 (18/18 lots ; acceptée et fusionnée dans `feat/identite-enrolement-terminaux`). Rédigé au plan le
 > 19/10/2026, recalé le 21/10/2026 sur le code de la lane finale (`lane-r`).
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission

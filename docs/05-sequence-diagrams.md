@@ -5,7 +5,7 @@
 > dans le détail local de la mission concernée). Flux écrits avant la mission « Bracelets NFC » : Mermaid ; flux
 > ajoutés depuis : `/illustre` (préférence du porteur du 13/10/2026), sources dans [`diagrams/`](diagrams/).
 > Dernière mise à jour : 21/10/2026 (flux « Enrôlement et requête signée d'un terminal », mission « Identité et
-> enrôlement des terminaux », review terminée, acceptation en attente).
+> enrôlement des terminaux », mergée le 21/10/2026).
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
@@ -163,7 +163,7 @@ sequenceDiagram
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
 | Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
-| Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (🔎 review terminée le 21/10/2026, acceptation en attente : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
+| Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (✅ mergée le 21/10/2026 : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |

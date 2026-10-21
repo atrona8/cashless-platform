@@ -4,7 +4,7 @@
 > supportée nativement par Mermaid (`C4Context`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
 > Dernière mise à jour : initialisation du 07/10/2026 (`SPECIFICATION.md` §1.2, §3, §11, §13 ; `PRD.md` §4).
 > Complément du 21/10/2026 : liste de révocation des attestations Android et racine Apple App Attest (mission
-> « Identité et enrôlement des terminaux », review terminée, acceptation en attente).
+> « Identité et enrôlement des terminaux », mergée le 21/10/2026).
 
 ## Vue d'ensemble
 
