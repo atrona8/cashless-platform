@@ -99,7 +99,10 @@ base).
 
 `code_hash` (empreinte HMAC de tout code bien formé, connu ou non ; NULL seulement si le code est mal formé), adresse,
 `at`, `result` ; écrite hors de la transaction d'enrôlement ; purge à 24 h ; sert aux limites (10 par code et par
-heure, 30 refus par adresse et par heure ; ADR-117).
+heure, 30 refus par adresse et par heure ; ADR-117). Contrainte : `operator_id IS NULL OR code_hash IS NOT NULL`.
+Un refus passe par `record_enrollment_refusal(code_hash, address, result, reason, serial, os, origin, request_id)`
+(migration 0027) : essai et audit `DEVICE_ENROLLMENT_REFUSED` dans la chaîne du code ou de la plateforme, une seule
+trace au-delà d'une limite.
 
 ## Historique des statuts (`device_status_history`)
 

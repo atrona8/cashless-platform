@@ -17,7 +17,8 @@
 Sans certificat ni jeton (`security: []`). Le terminal scanne le code **avant** de générer ses clés (défis de R-08).
 Limites : 10 essais par code et par heure (tout code bien formé, connu ou non), 30 essais **refusés** par adresse et
 par heure → `429` (R-16, ADR-117). Au-delà de la limite, un seul essai et un seul audit `RATE_LIMITED` par fenêtre ;
-les `429` suivants n'écrivent rien. Ordre :
+les `429` suivants n'écrivent rien. Les limites sont lues avant l'étape 1 ; les réussites ne comptent dans aucune
+limite. Ordre :
 
 1. Validation du corps (schéma du contrat ; `csr_pem` obligatoire ; Android : `agreement_attestation_chain`
    obligatoire).

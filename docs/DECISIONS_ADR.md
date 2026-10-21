@@ -1539,4 +1539,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `post-roles.sql` et `tests_execute_grants.sql` dans le même commit ; contrat `enrollment.md`, `data-model.md` et
   R-16 mis à jour. Tests : audit de chaque refus (connu, inconnu, validation, limite) ; 11e essai d'un code inconnu →
   `429` ; 31 enrôlements réussis depuis une adresse → aucun `429` ; une seule ligne au-delà de la limite.
+- **Mise en œuvre (WP14, cycle 2).** Migration 0027 (`record_enrollment_refusal`). Limites lues avant l'étape 1 (un
+  corps invalide au-delà de la limite n'écrit plus rien) ; les réussites ne comptent pas non plus dans la limite par
+  code (sinon l'oracle de B2 renaîtrait). Limite non atomique (contrôle puis écriture dans deux transactions) : des
+  requêtes simultanées passent toutes le contrôle ; sans effet pratique avec 60 bits d'entropie par code. Chaque refus
+  d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme : une limite en amont (répartiteur) reste
+  utile.
 - **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
