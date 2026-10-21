@@ -48,7 +48,12 @@ describe('garde du terminal', () => {
             posId: null,
             agreementPublicKey: Buffer.alloc(65, 4),
             status,
+            os: 'ANDROID',
+            nfcEnabled: true,
+            publicKey: null,
+            certSha256: null,
           },
+    findForAuthentication: async () => null,
   });
   const guard = (status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED' | null) =>
     new DeviceGuard(new FakeDeviceIdentity(), directory(status));

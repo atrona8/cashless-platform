@@ -1,8 +1,12 @@
 // Exécuteur de migrations du grand livre (research R-02, data-model `ops.schema_migrations`).
 // Rôle d'exécution : le propriétaire des tables (DATABASE_URL_OWNER), jamais `cashless_app`.
-// Chaque migration s'exécute dans sa propre transaction ; une migration déjà appliquée dont la somme de contrôle
-// a changé provoque un refus. Après la série, `roles.sql` est rejoué (idempotent), puis `post-roles.sql` s'il existe
-// (droits que `roles.sql`, fichier du kit, ne peut pas poser : mission identite-roles).
+// La série (migrations non encore appliquées), puis le rejeu de `roles.sql` (idempotent) et de `post-roles.sql`
+// s'il existe (droits que `roles.sql`, fichier du kit, ne peut pas poser : mission identite-roles), s'exécutent
+// dans UNE transaction (mission 5a, lot WP07, décision du porteur du 20/10/2026) : une fonction créée par une
+// migration n'est jamais validée avec l'EXECUTE que PUBLIC reçoit à sa création, et une série dont le rejeu des
+// droits échoue n'applique rien. Une migration déjà appliquée dont la somme de contrôle a changé provoque un
+// refus. Une migration ne doit donc contenir aucune instruction interdite en transaction (CREATE INDEX
+// CONCURRENTLY, VACUUM, ALTER TYPE … ADD VALUE suivi d'un usage de la valeur dans la même série…).
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -55,66 +59,78 @@ export interface MigrationReport {
   postRoles?: boolean;
 }
 
+/** Contenu des fichiers de droits rejoués après la série ; remplaçable par les tests. */
+export interface RoleFiles {
+  roles: string;
+  /** `undefined` : pas de post-roles.sql. */
+  postRoles?: string;
+}
+
+export function loadRoleFiles(): RoleFiles {
+  return {
+    roles: readFileSync(ROLES_FILE, 'utf8'),
+    postRoles: existsSync(POST_ROLES_FILE) ? readFileSync(POST_ROLES_FILE, 'utf8') : undefined,
+  };
+}
+
+// Deux exécutions simultanées (deux déploiements) se suivent au lieu de se croiser.
+const MIGRATE_LOCK = "SELECT pg_advisory_xact_lock(hashtextextended('ledger-sql:migrate', 0))";
+
 export async function migrate(
   client: Client,
   migrations: Migration[] = loadMigrations(),
+  roleFiles: RoleFiles = loadRoleFiles(),
 ): Promise<MigrationReport> {
-  await client.query('CREATE SCHEMA IF NOT EXISTS ops');
-  await client.query('REVOKE ALL ON SCHEMA ops FROM PUBLIC');
-  await client.query(`CREATE TABLE IF NOT EXISTS ops.schema_migrations (
-    version text PRIMARY KEY,
-    checksum text NOT NULL,
-    applied_at timestamptz NOT NULL DEFAULT now()
-  )`);
-
-  const { rows } = await client.query<{ version: string; checksum: string }>(
-    'SELECT version, checksum FROM ops.schema_migrations',
-  );
-  const known = new Map(rows.map((row) => [row.version, row.checksum]));
   const report: MigrationReport = { applied: [], skipped: [] };
+  // Toutes les instructions des migrations, de roles.sql et de post-roles.sql (CREATE/ALTER ROLE, GRANT,
+  // REVOKE, politiques, blocs DO) sont transactionnelles en PostgreSQL : une session concurrente voit l'état
+  // d'avant la série ou celui d'après, jamais une fonction nouvelle encore exécutable par PUBLIC, ni les droits
+  // que roles.sql rend au rôle applicatif (historiques, règles de passage, colonnes secrètes de `media`) avant
+  // que post-roles.sql les retire (lot 20, cycle 5).
+  await client.query('BEGIN');
+  let step = 'préparation';
+  try {
+    await client.query(MIGRATE_LOCK);
+    await client.query('CREATE SCHEMA IF NOT EXISTS ops');
+    await client.query('REVOKE ALL ON SCHEMA ops FROM PUBLIC');
+    await client.query(`CREATE TABLE IF NOT EXISTS ops.schema_migrations (
+      version text PRIMARY KEY,
+      checksum text NOT NULL,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    )`);
 
-  for (const migration of migrations) {
-    const appliedChecksum = known.get(migration.version);
-    if (appliedChecksum !== undefined) {
-      if (appliedChecksum !== migration.checksum) {
-        throw new Error(
-          `Migration ${migration.version} déjà appliquée avec une autre somme de contrôle ` +
-            `(${appliedChecksum} en base, ${migration.checksum} sur disque) : refus.`,
-        );
+    const { rows } = await client.query<{ version: string; checksum: string }>(
+      'SELECT version, checksum FROM ops.schema_migrations',
+    );
+    const known = new Map(rows.map((row) => [row.version, row.checksum]));
+
+    for (const migration of migrations) {
+      const appliedChecksum = known.get(migration.version);
+      if (appliedChecksum !== undefined) {
+        if (appliedChecksum !== migration.checksum) {
+          throw new Error(
+            `Migration ${migration.version} déjà appliquée avec une autre somme de contrôle ` +
+              `(${appliedChecksum} en base, ${migration.checksum} sur disque) : refus.`,
+          );
+        }
+        report.skipped.push(migration.version);
+        continue;
       }
-      report.skipped.push(migration.version);
-      continue;
-    }
-    await client.query('BEGIN');
-    try {
+      step = `migration ${migration.version}`;
       await client.query(migration.sql);
       await client.query('INSERT INTO ops.schema_migrations (version, checksum) VALUES ($1, $2)', [
         migration.version,
         migration.checksum,
       ]);
-      await client.query('COMMIT');
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw new Error(`Échec de la migration ${migration.version} : ${(error as Error).message}`, {
-        cause: error,
-      });
+      report.applied.push(migration.version);
     }
-    report.applied.push(migration.version);
-  }
 
-  // Droits des rôles : roles.sql, post-roles.sql et mots de passe dans UNE transaction (lot 20, cycle 5). roles.sql
-  // rend INSERT, UPDATE et EXECUTE sur tout au rôle applicatif ; appliqué seul et validé, il rouvrirait ces droits
-  // (historiques, règles de passage, colonnes secrètes de `media`) jusqu'à ce que post-roles.sql les retire. Toutes
-  // les instructions des deux fichiers (CREATE/ALTER ROLE, GRANT, REVOKE, politiques, blocs DO) sont transactionnelles
-  // en PostgreSQL : une session concurrente voit les droits d'avant ou ceux d'après, jamais l'état intermédiaire, et un
-  // échec de post-roles.sql laisse les droits précédents intacts.
-  report.postRoles = existsSync(POST_ROLES_FILE);
-  await client.query('BEGIN');
-  try {
-    // Droits du rôle applicatif, rejoués à chaque série (donne leurs droits aux tables nouvelles).
-    await client.query(readFileSync(ROLES_FILE, 'utf8'));
+    // Droits des rôles, rejoués à chaque série (donne leurs droits aux tables et fonctions nouvelles).
+    step = 'droits des rôles';
+    report.postRoles = roleFiles.postRoles !== undefined;
+    await client.query(roleFiles.roles);
     // Retraits et droits par colonne posés après roles.sql (qui rend INSERT, UPDATE et EXECUTE sur tout).
-    if (report.postRoles) await client.query(readFileSync(POST_ROLES_FILE, 'utf8'));
+    if (roleFiles.postRoles !== undefined) await client.query(roleFiles.postRoles);
     // roles.sql et post-roles.sql ne fixent volontairement aucun mot de passe : réglage local / CI seulement.
     // cashless_platform est créé par post-roles.sql : sans ce fichier, son mot de passe n'est pas posé.
     const passwords: [role: string, password: string | undefined][] = [
@@ -137,9 +153,10 @@ export async function migrate(
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
-    throw new Error(`Échec de l'application des droits des rôles : ${(error as Error).message}`, {
-      cause: error,
-    });
+    throw new Error(
+      `Échec de la série (${step}) : ${(error as Error).message} ; aucune migration appliquée.`,
+      { cause: error },
+    );
   }
   return report;
 }

@@ -49,7 +49,7 @@ describe('rattachement par code imprimé', () => {
     request(app.getHttpServer())
       .post('/v1/media/claims/confirmations')
       .set(dev.headers)
-      .set('Authorization', `Bearer ${person.token}`)
+      .set('X-Staff-Authorization', `Bearer ${person.token}`)
       .set('Idempotency-Key', randomUUID())
       .send(body);
   const lookup = (code: string, ip = '203.0.113.7') =>

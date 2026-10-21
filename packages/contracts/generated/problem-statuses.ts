@@ -93,4 +93,6 @@ export const PROBLEM_STATUSES: Readonly<Record<components['schemas']['ProblemCod
   APPROVAL_INVALID: [403, 409],
   LATE_CLAIM_INVALID: [409],
   CARD_DAILY_LIMIT: [422],
+  DEVICE_SIGNATURE_INVALID: [401],
+  DEVICE_SERIAL_IN_USE: [409],
 };

@@ -354,5 +354,13 @@
   "CARD_DAILY_LIMIT": {
     "title": "Card daily limit reached",
     "detail": "The daily top-up limit for this card has been reached."
+  },
+  "DEVICE_SIGNATURE_INVALID": {
+    "title": "Device request rejected",
+    "detail": "The device request could not be authenticated."
+  },
+  "DEVICE_SERIAL_IN_USE": {
+    "title": "Serial number already in use",
+    "detail": "This serial number is already used by an active or suspended device; revoke it before re-enrolling the device."
   }
 }

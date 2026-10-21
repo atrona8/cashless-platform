@@ -70,21 +70,31 @@ LANGUAGE sql AS $$
     '\x04190000000' || lpad(n::text, 3, '0'), batch, dek)
 $$;
 
--- 0. Tables temporaires de l'appelant, depuis cashless_perso ------------------------------------------------------------
+-- 0. Tables temporaires de la session de l'appelant, appel depuis cashless_perso -----------------------------------------
 -- Avant tout appel de la fonction dans cette session : un plan déjà en cache ignorerait la table temporaire, et le
 -- test ne prouverait rien. L'une imite le lot actif « en préparation », l'autre donne à A la clé de données de B :
--- sans effet, pg_temp est cherché en dernier.
+-- sans effet, pg_temp est cherché en dernier. cashless_perso n'a plus TEMPORARY (OP-N59, lot WP07 :
+-- seconde barrière, refus prouvé ci-dessous) : les tables sont créées par le propriétaire dans la
+-- même session, dont pg_temp est celui que voit la fonction appelée ensuite sous cashless_perso
+-- (première barrière, search_path de 0021).
 SET LOCAL ROLE cashless_perso;
-SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000019a001', true);
+SELECT throws_ok($$CREATE TEMP TABLE media_batch (id uuid)$$, '42501', NULL,
+  'cashless_perso : création d''une table temporaire refusée (TEMPORARY retiré)');
+RESET ROLE;
 CREATE TEMP TABLE media_batch (id uuid, operator_id uuid, status text, quantity int, key_index int);
 INSERT INTO pg_temp.media_batch VALUES ('00000000-0000-0000-0000-000000199002','00000000-0000-0000-0000-00000019a001','ORDERED', 99, 1);
 CREATE TEMP TABLE tag_data_key (id uuid, operator_id uuid, key_index int, status text);
 INSERT INTO pg_temp.tag_data_key VALUES ('00000000-0000-0000-0000-00000019e002','00000000-0000-0000-0000-00000019a001', 1, 'ACTIVE');
+GRANT SELECT ON pg_temp.media_batch, pg_temp.tag_data_key TO cashless_perso;
+SET LOCAL ROLE cashless_perso;
+SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000019a001', true);
 SELECT throws_like($$SELECT pg_temp.reg('00000000-0000-0000-0000-000000199002', 67)$$, '%BATCH_NOT_IN_PREPARATION%',
   'table temporaire media_batch de l''appelant : ignorée');
 SELECT throws_like($$SELECT pg_temp.reg('00000000-0000-0000-0000-000000199004', 68, '00000000-0000-0000-0000-00000019e002')$$,
   '%TAG_DATA_KEY_NOT_ACTIVE%', 'table temporaire tag_data_key de l''appelant : ignorée');
+RESET ROLE;
 DROP TABLE pg_temp.media_batch, pg_temp.tag_data_key;
+SET LOCAL ROLE cashless_perso;
 
 -- 1. Accès direct depuis cashless_perso : refusé (42501) -------------------------------------------------------------------
 SELECT throws_ok(pg_temp.direct('00000000-0000-0000-0000-000000199002', 51), '42501', NULL,

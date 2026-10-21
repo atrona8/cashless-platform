@@ -44,7 +44,7 @@ describe('caution d’un bracelet', () => {
       .post(path)
       .set(who.device.headers)
       .set('Idempotency-Key', key);
-    if (who.person) req = req.set('Authorization', `Bearer ${who.person.token}`);
+    if (who.person) req = req.set('X-Staff-Authorization', `Bearer ${who.person.token}`);
     if (language) req = req.set('Accept-Language', language);
     return req.send(body);
   };

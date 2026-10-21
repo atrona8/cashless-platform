@@ -13,13 +13,13 @@ class DeviceEnrollmentResponse {
   const DeviceEnrollmentResponse({
     required this.deviceId,
     required this.serial,
+    required this.certificatePem,
     required this.accessToken,
     required this.tokenType,
     required this.expiresIn,
     required this.refreshToken,
     required this.nextSeq,
     required this.serverTime,
-    this.certificatePem,
   });
 
   factory DeviceEnrollmentResponse.fromJson(Map<String, Object?> json) =>
@@ -28,8 +28,10 @@ class DeviceEnrollmentResponse {
   @JsonKey(name: 'device_id')
   final String deviceId;
   final String serial;
+
+  /// Certificat client X.509 (PEM) émis par l'autorité des terminaux, à présenter en mTLS.
   @JsonKey(name: 'certificate_pem')
-  final String? certificatePem;
+  final String certificatePem;
   @JsonKey(name: 'access_token')
   final String accessToken;
   @JsonKey(name: 'token_type')

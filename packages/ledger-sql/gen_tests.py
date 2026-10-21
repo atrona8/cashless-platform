@@ -688,7 +688,11 @@ is_("(SELECT count(*) FROM debit_authority_handover)::int", "0", "autre prestata
 run(f"RESET ROLE; SET app.operator_id = '{SN}'")
 
 section("Fonctions internes, terminaux, anomalies")
-run("DROP ROLE IF EXISTS app_probe; CREATE ROLE app_probe")
+# OP-N44 (mission 5a) : post-roles.sql retire EXECUTE à PUBLIC sur toutes les fonctions ; la sonde
+# reçoit nommément la fonction de bascule dont elle vérifie l'exposition, au lieu de compter sur
+# PUBLIC.
+run("DROP ROLE IF EXISTS app_probe; CREATE ROLE app_probe; "
+    "GRANT EXECUTE ON FUNCTION grant_edge_authority(uuid,uuid,uuid) TO app_probe")
 is_("has_function_privilege('app_probe', 'set_debit_authority(uuid,text,uuid)', 'EXECUTE')", "false", "bascule directe interdite au rôle applicatif")
 is_("has_function_privilege('app_probe', 'tenant_of_media(uuid)', 'EXECUTE')", "false", "fonctions tenant_of_* non exposées")
 is_("has_function_privilege('app_probe', 'grant_edge_authority(uuid,uuid,uuid)', 'EXECUTE')", "true", "fonctions de bascule exposées")

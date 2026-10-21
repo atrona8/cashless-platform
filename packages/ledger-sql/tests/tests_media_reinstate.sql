@@ -252,8 +252,9 @@ SELECT is((SELECT string_agg(a.attname, ', ' ORDER BY a.attname) FROM pg_attribu
 SELECT is((SELECT string_agg(a.attname, ', ' ORDER BY a.attname) FROM pg_attribute a
             WHERE a.attrelid = 'media_claim'::regclass AND a.attnum > 0 AND NOT a.attisdropped
               AND has_column_privilege('cashless_app', 'media_claim', a.attname, 'UPDATE')),
-  'attempts, confirmed_at, confirmed_by, confirmed_device_id, confirmed_tap_id, status',
-  'cashless_app : UPDATE sur media_claim limité aux colonnes des fonctions');
+  'attempts, confirmed_at, confirmed_by, confirmed_device_id, status',
+  'cashless_app : UPDATE sur media_claim limité aux colonnes des fonctions (confirmed_tap_id : '
+  || 'consume_tap_for_claim seule, 0026)');
 
 -- 5. Session du propriétaire : règle du schéma de référence (deux personnes distinctes) --------------------------------
 SELECT ok(media_owner_session(), 'session de test : propriétaire du schéma');

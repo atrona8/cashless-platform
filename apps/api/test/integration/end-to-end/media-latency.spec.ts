@@ -153,7 +153,7 @@ describe('latence des routes des bracelets', () => {
     request(app.getHttpServer())
       .post('/v1/media/activations')
       .set(device.headers)
-      .set('Authorization', `Bearer ${w.cashierA.token}`)
+      .set('X-Staff-Authorization', `Bearer ${w.cashierA.token}`)
       .set('Idempotency-Key', randomUUID())
       .send({ tap: tapBody(m, next()), channel: 'DESK', occurred_at: new Date().toISOString() });
   const tapOk = (body: Record<string, unknown>) => body.result === 'OK';

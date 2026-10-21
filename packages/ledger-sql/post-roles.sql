@@ -3,6 +3,31 @@
 -- retire ensuite ce qui ne doit pas l'être et accorde les colonnes nouvelles. Idempotent ; exécuté par le
 -- propriétaire des tables, rejoué par migrate.ts juste après roles.sql.
 
+-- 0. EXECUTE et TEMPORARY remis à zéro (OP-N44, ADR-101 ; OP-N59, ADR-96 ; mission 5a, WP07) ---
+-- Le schéma de référence et les migrations laissent EXECUTE à PUBLIC sur la plupart des fonctions,
+-- et roles.sql accorde EXECUTE sur toutes à cashless_app : un droit hérité de PUBLIC ne se retire
+-- pas à un seul rôle. On retire tout ici, avant tout GRANT de ce fichier ; chaque rôle reçoit
+-- ensuite sa liste nommée (sections 4 et 5). Les fonctions de déclencheur n'ont pas besoin
+-- d'EXECUTE pour se déclencher (vérifié à CREATE TRIGGER seulement), et aucune politique, aucun
+-- défaut de colonne, aucune contrainte ni aucune vue n'appelle une fonction de public. Extensions :
+-- pgcrypto n'est appelée ni par le schéma ni par l'API (ses fonctions perdent aussi PUBLIC) ; pgtap
+-- n'existe que dans la transaction d'une suite de test, créée par le propriétaire.
+-- Fonctions futures (décision du porteur du 20/10/2026, option c) : aucun droit par défaut n'est
+-- posé (la forme « ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE … FROM PUBLIC » est sans effet
+-- en PostgreSQL ; la forme globale retirerait EXECUTE à PUBLIC sur pgtap et sur les fonctions
+-- pg_temp des suites). migrate.ts applique la série et rejoue ce fichier dans UNE transaction : une
+-- fonction créée par une migration n'est jamais validée exécutable par PUBLIC
+-- (apps/api/test/integration/transverse/migrate-rights.spec.ts). Limite restante : une fonction
+-- créée à la main hors de migrate.ts le reste jusqu'au prochain rejeu (tests_execute_grants.sql §4).
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM cashless_app;
+-- Tables temporaires (OP-N59, seconde barrière ; la première est le search_path des fonctions
+-- SECURITY DEFINER, migration 0021) : aucun rôle n'en crée hors du propriétaire. Les rôles
+-- cashless_* n'ont pas de TEMPORARY propre (retiré à chacun en section 5, après leur création).
+DO $$ BEGIN
+  EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
+END $$;
+
 -- Journal d'audit : ajout seul (les déclencheurs refusent aussi, pour tout rôle) ; scellements : fonctions seules.
 REVOKE UPDATE, DELETE, TRUNCATE ON audit_log FROM cashless_app;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON audit_seal FROM cashless_app;
@@ -21,10 +46,8 @@ REVOKE EXECUTE ON FUNCTION active_platform_admins(uuid, uuid) FROM cashless_app,
 -- Résultat de l'action exécutée (R-02) : écrit au passage APPROVED -> EXECUTED.
 GRANT UPDATE (result) ON approval_request TO cashless_app;
 
--- Fonctions d'API SECURITY DEFINER retirées à PUBLIC par leur migration : accordées explicitement ici (les migrations
--- ne nomment jamais cashless_app, qui n'existe qu'après roles.sql sur une base neuve).
-GRANT EXECUTE ON FUNCTION identify_person(text, text) TO cashless_app;
-GRANT EXECUTE ON FUNCTION create_platform_admin(uuid, text, text, text, text, text, text, uuid) TO cashless_app;
+-- Fonctions d'API de cashless_app (dont identify_person, create_platform_admin) : liste nommée en
+-- section 4.
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Portée plateforme (mission configuration-parties-evenements, research R-01, R-02, X-3 ; contrat platform-access).
@@ -35,10 +58,8 @@ GRANT EXECUTE ON FUNCTION create_platform_admin(uuid, text, text, text, text, te
 REVOKE INSERT, UPDATE ON jurisdiction_profile, currency_exponent FROM cashless_app;
 --   Fonctions internes des gardes de configuration (lisent une partie hors RLS) et test de session de la plateforme.
 REVOKE EXECUTE ON FUNCTION party_kind_of(uuid), platform_session() FROM cashless_app, PUBLIC;
---   Fonctions d'API de la mission : open_* s'exécutent sous la RLS de l'appelant ; event_transition_conditions est
---   SECURITY DEFINER, retirée à PUBLIC par sa migration.
-GRANT EXECUTE ON FUNCTION open_event_ledger(uuid), open_participation_account(uuid),
-  event_transition_conditions(uuid, event_status) TO cashless_app;
+--   Fonctions d'API de la mission (open_* sous la RLS de l'appelant, event_transition_conditions
+--   SECURITY DEFINER) : section 4.
 --   Un prestataire lit son contrat avec la plateforme et ses redevances, sans jamais les écrire. Politiques
 --   restrictives : elles s'ajoutent (ET) aux politiques tenant_* existantes, qui ne regardent que operator_id.
 --   Une version PLATFORM rattachée à son propre prestataire passerait tenant_write et prendrait un numéro de
@@ -74,10 +95,8 @@ END $$;
 
 -- Droits : remis à zéro puis accordés un à un (idempotent ; un droit retiré de ce fichier disparaît au rejeu).
 -- Aucun droit sur event, ledger, account, journal_transaction, posting, account_balance (NFR-002).
--- Limite connue : le schéma de référence laisse EXECUTE à PUBLIC sur ses fonctions d'API (la suite de référence le
--- vérifie : « fonctions de bascule exposées »), et un droit hérité de PUBLIC ne se retire pas à un seul rôle. Ces
--- fonctions restent donc appelables par ce rôle ; chacune commence par assert_tenant, et le pool de la plateforme
--- ne pose jamais app.operator_id (contrat platform-access, règle 2).
+-- EXECUTE : PUBLIC n'exécute plus aucune fonction de public (section 0, OP-N44 levée par la mission
+-- 5a) ; ce rôle n'exécute que les deux fonctions nommées ci-dessous.
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM cashless_platform;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM cashless_platform;
 REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM cashless_platform;
@@ -162,13 +181,12 @@ END $$;
 --   migrations. L'empreinte du code (claim_code_hash) ne s'écrit que par associate_claim_code (SECURITY DEFINER,
 --   0019) : lot 20, cycle 7, renforcement (ADR-94).
 GRANT UPDATE (status, claim_code_used_at, claim_attempts) ON media TO cashless_app;
---   Enregistrement d'un bracelet : processus de personnalisation seul (migration 0019). roles.sql vient de rendre
---   EXECUTE sur toutes les fonctions à ce rôle : retrait explicite.
+--   Enregistrement d'un bracelet : processus de personnalisation seul (migration 0019) ; jamais
+--   accordé à ce rôle (section 4), retrait redit pour qu'il ne dépende pas de l'ordre du fichier.
 REVOKE EXECUTE ON FUNCTION register_personalized_media(uuid, uuid, bytea, bytea, bytea, boolean, bytea, uuid, uuid)
   FROM cashless_app;
---   Association d'un code : appelée par l'import du fichier de l'imprimeur (claim-codes.service.ts). Retirée à
---   PUBLIC par 0019, accordée ici nommément (et non par le seul GRANT global de roles.sql).
-GRANT EXECUTE ON FUNCTION associate_claim_code(bytea, uuid) TO cashless_app;
+--   Association d'un code : appelée par l'import du fichier de l'imprimeur (claim-codes.service.ts)
+--   ; section 4.
 --   Clés : lecture sans la clé de données chiffrée ; aucune écriture (la commande d'administration et la
 --   personnalisation les créent).
 REVOKE SELECT, INSERT, UPDATE ON tag_data_key FROM cashless_app;
@@ -183,17 +201,16 @@ REVOKE ALL ON offline_snapshot_rows FROM cashless_app;
 --   clé, que les processus des clés exécutaient (revue post-fusion, SEC-1 ; ADR-102).
 REVOKE INSERT, UPDATE ON tag_key_job FROM cashless_app;
 GRANT UPDATE (status, locked_until) ON tag_key_job TO cashless_app;
-GRANT EXECUTE ON FUNCTION enqueue_tag_key_job(uuid) TO cashless_app;
---   Fonctions des processus des clés : roles.sql vient de rendre EXECUTE sur toutes les
---   fonctions à ce rôle. retire_dedicated_key retire une clé dédiée sans travail ni approbation
---   (EXECUTE retiré à PUBLIC par 0020).
+--   enqueue_tag_key_job : section 4. Fonctions des processus des clés : jamais accordées à ce
+--   rôle (retrait redit). retire_dedicated_key retire une clé dédiée sans travail ni approbation
+--   (EXECUTE retiré à PUBLIC par 0020) ; retire_dedicated_key_for_job (0025) est réservée à la
+--   personnalisation.
 REVOKE EXECUTE ON FUNCTION enqueue_tag_key_child_job(uuid, uuid), tag_key_job_refusal(uuid),
-  retire_dedicated_key(uuid, integer) FROM cashless_app;
+  retire_dedicated_key(uuid, integer), retire_dedicated_key_for_job(uuid) FROM cashless_app;
 --   Comptes rendus du contrôle quotidien et essais de code : jamais modifiés par l'API.
 REVOKE INSERT, UPDATE ON tag_key_check_run FROM cashless_app;
 REVOKE UPDATE ON claim_attempt FROM cashless_app;
---   Consultation anonyme du solde : fonction SECURITY DEFINER retirée à PUBLIC par sa migration (décision n° 8).
-GRANT EXECUTE ON FUNCTION public_balance_lookup(bytea, text) TO cashless_app;
+--   Consultation anonyme du solde (public_balance_lookup, décision n° 8) : section 4.
 --   Historiques des bracelets et des lots : écrits par leurs seuls déclencheurs (lot 20, cycles 4 et 5 ; relectures
 --   du 15/10/2026, ADR-94). log_media_status et log_batch_status sont SECURITY DEFINER depuis la migration 0018 :
 --   l'API n'y a ni INSERT, ni UPDATE, ni DELETE. media_reinstatement_approved (0017) prend pour épisode en cours le
@@ -225,8 +242,13 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON media_transition, media_batch_transit
 --   codes jamais associés (lot 20, cycle 7, renforcement).
 REVOKE UPDATE ON claim_code FROM cashless_app;
 GRANT UPDATE (invalidated_at) ON claim_code TO cashless_app;
+--   La lecture liée à une demande (confirmed_tap_id) ne s'écrit que par consume_tap_for_claim
+--   (SECURITY DEFINER depuis 0026 : verrou media-tap-use:, fenêtre de renvoi, lecture encore
+--   libre). Avec UPDATE (confirmed_tap_id), une session de l'API liait à une demande une lecture
+--   déjà consommée par une écriture (relecture de WP05, défaut antérieur de 0016 ; renforcement,
+--   mission 5a, lot WP07).
 REVOKE UPDATE ON media_claim FROM cashless_app;
-GRANT UPDATE (status, attempts, confirmed_at, confirmed_by, confirmed_device_id, confirmed_tap_id) ON media_claim
+GRANT UPDATE (status, attempts, confirmed_at, confirmed_by, confirmed_device_id) ON media_claim
   TO cashless_app;
 
 -- 2. Rôles des processus des clés ---------------------------------------------------------------------------------------
@@ -253,9 +275,9 @@ BEGIN
   END LOOP;
 END $$;
 -- Aucun de ces rôles n'a de droit sur journal_transaction, posting, account_balance, account, wallet ni ledger.
--- Limite connue (ADR-80) : EXECUTE sur les fonctions d'API du schéma de référence est hérité de PUBLIC et ne se retire
--- pas à un seul rôle ; chacune commence par assert_tenant et écrit par ses propres droits de propriétaire. Ces rôles
--- peuvent donc les appeler pour un prestataire dont ils posent l'identifiant : c'est vrai aussi de cashless_app.
+-- EXECUTE : plus rien n'est hérité de PUBLIC (section 0 ; ADR-80 et OP-N44 levées par la mission
+-- 5a, lot WP07) ; chaque rôle n'exécute que les fonctions nommées ci-dessous et en section 5
+-- (tests_execute_grants.sql).
 
 --   2a. Clés de bracelet : sert POST /media/auth-keys et rechiffre après une rotation. Lit le chiffré ; n'écrit que
 --       le chiffré et le statut d'une clé de données.
@@ -265,7 +287,11 @@ GRANT UPDATE (pwd_pack_enc, pwd_pack_dek_id) ON media TO cashless_tagkeys;
 GRANT SELECT ON tag_key, tag_data_key, tag_key_job TO cashless_tagkeys;
 GRANT UPDATE (status) ON tag_data_key TO cashless_tagkeys;
 GRANT UPDATE (status, attempts, last_error, progress, started_at, locked_until, finished_at) ON tag_key_job TO cashless_tagkeys;
-GRANT SELECT (id, operator_id, event_id, pos_id, status, agreement_public_key) ON device TO cashless_tagkeys;
+--       Terminal relu par la garde des requêtes de terminal (contracts/device-authentication.md,
+--       étapes 3, 4, 6 et 9 ; mission 5a) : clés publiques et empreinte du certificat, lues jamais
+--       écrites ; os et nfc_enabled pour req.device (un terminal iOS n'a jamais nfc_enabled).
+GRANT SELECT (id, operator_id, event_id, pos_id, status, agreement_public_key, public_key,
+              cert_sha256, os, nfc_enabled) ON device TO cashless_tagkeys;
 GRANT SELECT, INSERT ON audit_log TO cashless_tagkeys;
 GRANT USAGE, SELECT ON SEQUENCE audit_log_id_seq TO cashless_tagkeys;
 
@@ -291,8 +317,12 @@ GRANT SELECT (id, operator_id, key_index, version, wrapping_kms_key_ref, status,
 --       Travaux suivants (rechiffrement, désactivation) : par enqueue_tag_key_child_job
 --       seulement (0020, SEC-1).
 GRANT INSERT ON tag_data_key, audit_log, api_idempotency TO cashless_perso;
-GRANT EXECUTE ON FUNCTION enqueue_tag_key_child_job(uuid, uuid), retire_dedicated_key(uuid, integer)
-  TO cashless_perso;
+GRANT EXECUTE ON FUNCTION enqueue_tag_key_child_job(uuid, uuid) TO cashless_perso;
+--       Retrait d'une clé dédiée par son travail RETIRE_KEY en cours, issu d'une demande exécutée
+--       (0025, OP-N62). Le retrait direct (retire_dedicated_key, sans travail ni approbation) ne
+--       lui est plus accordé (OP-N44 et OP-N62 levées, lot WP07) : il n'est exécuté que par
+--       retire_dedicated_key_for_job, sous les droits du propriétaire.
+GRANT EXECUTE ON FUNCTION retire_dedicated_key_for_job(uuid) TO cashless_perso;
 GRANT UPDATE (status) ON tag_data_key TO cashless_perso;
 GRANT UPDATE (status, attempts, last_error, progress, started_at, locked_until, finished_at) ON tag_key_job TO cashless_perso;
 GRANT UPDATE ON api_idempotency TO cashless_perso;
@@ -365,3 +395,127 @@ CREATE POLICY cashless_tagcheck_keys ON tag_key FOR SELECT TO cashless_tagcheck 
 -- contrôler) pose app.operator_id à l'identifiant nul ('00000000-0000-0000-0000-000000000000'). Une valeur vide,
 -- laissée par une transaction précédente sur la même connexion, ferait échouer la conversion en uuid des politiques
 -- tenant_* du schéma.
+
+-- -----------------------------------------------------------------------------------------------
+-- 4. API publique (cashless_app) : fonctions et terminaux (mission 5a,
+-- identite-enrolement-terminaux, lot WP07 ; OP-N44, ADR-101 ; OP-N63, ADR-105 ; research R-11 ;
+-- contracts/database-debts.md).
+-- -----------------------------------------------------------------------------------------------
+
+-- 4a. EXECUTE, fonction par fonction. Liste dérivée des appels réels de apps/api/src (fichiers du
+-- processus de l'API publique, hors *.spec.ts : `<fonction>(` dans le texte des requêtes), plus les
+-- fonctions qu'appellent les fonctions SECURITY INVOKER de la liste et les déclencheurs SECURITY
+-- INVOKER des tables que l'API écrit (les uns et les autres s'exécutent sous ce rôle). Une fonction
+-- SECURITY DEFINER appelle les siennes sous les droits du propriétaire. Recensement consigné dans
+-- le compte rendu du lot WP07 ; tests_execute_grants.sql compare cette liste à une liste figée. Une
+-- fonction du schéma de référence que l'API n'appelle pas encore (synchronisation hors ligne,
+-- passerelle, scellements) n'est pas accordée : la mission qui l'appelle l'ajoute ici.
+GRANT EXECUTE ON FUNCTION
+  -- Personnes, approbations, configuration et événements
+  identify_person(text, text),
+  create_platform_admin(uuid, text, text, text, text, text, text, uuid),
+  decide_approval_request(uuid, uuid, boolean, text),
+  open_event_ledger(uuid), open_participation_account(uuid),
+  event_transition_conditions(uuid, event_status), set_event_status(uuid, event_status, uuid),
+  -- Grand livre (ledger-queries.ts)
+  post_transaction(uuid, text, text, timestamptz, text, jsonb, uuid, uuid, uuid, uuid, uuid, uuid,
+                   uuid, jsonb),
+  preload_media(uuid), take_deposit(uuid, uuid), refund_deposit(uuid, uuid), forfeit_deposit(uuid),
+  refund_cash_due(uuid, uuid, text, uuid, uuid, uuid), wallet_topup_headroom(uuid, timestamptz),
+  -- Bracelets : lots, codes de rattachement, cycle de vie, liste noire, lectures
+  preload_batch(uuid, integer), close_batch(uuid), forfeit_batch_deposits(uuid, integer),
+  set_media_batch_status(uuid, text, text, uuid), invalidate_unassociated_codes(uuid),
+  issue_claim_codes(uuid, bytea[]), associate_claim_code(bytea, uuid),
+  activate_media(uuid, uuid, text, uuid), open_event_wallet(uuid, uuid), release_media(uuid, text),
+  reassign_pool_media(uuid, bytea), replace_media(uuid, uuid), recover_media(uuid),
+  suspend_media(uuid, text, uuid), blacklist_media(uuid, text, uuid),
+  reinstate_media(uuid, uuid, uuid, text),
+  media_event(uuid), media_set_actor(uuid, text), media_summary(uuid), media_status_log(uuid),
+  wallet_spendable(uuid),
+  register_tap(uuid, bytea, bytea, bigint, timestamptz, uuid, text, uuid, bigint, bytea),
+  consume_tap(bigint, uuid),
+  -- Rattachement par le festivalier
+  claim_media(bytea, uuid, text, uuid, bytea), confirm_media_claim(uuid, uuid, bytea, uuid, uuid),
+  mark_claim_code_used(uuid), consume_tap_for_claim(bigint, uuid),
+  public_balance_lookup(bytea, text),
+  -- Travaux de clé : inscription d'un travail approuvé, relance d'un travail en échec
+  enqueue_tag_key_job(uuid), retry_tag_key_job(uuid),
+  -- Appelées par les fonctions SECURITY INVOKER ci-dessus (suspend_media, blacklist_media,
+  -- set_media_batch_status -> media_set_status -> media_session_operator ; claim_media ->
+  -- claim_attempts_exceeded, expire_media_claims ; mark_claim_code_used, claim_media,
+  -- confirm_media_claim -> claim_session_operator)
+  media_set_status(uuid, text, text, uuid), media_session_operator(),
+  claim_attempts_exceeded(uuid, uuid, text), expire_media_claims(uuid), claim_session_operator(),
+  -- Appelées par le déclencheur SECURITY INVOKER check_media_transition (statut d'un bracelet écrit
+  -- par l'API) : une fonction de déclencheur s'exécute sous le rôle qui écrit, ses appels exigent
+  -- EXECUTE
+  media_owner_session(), media_reinstatement_approved(uuid, uuid, uuid),
+  -- Terminaux (migrations 0022, 0023 ; routes des lots WP12 à WP16). Pas device_admin_allowed
+  -- (fonction interne de set_device_status et create_device_enrollment_code).
+  -- revoke_device_token_family : révocation d'une famille par la réutilisation (WP15) et le
+  -- back-office (WP16), deux routes de l'API publique ; aucun processus des clés n'en a l'usage.
+  -- Purges purge_device_request_nonces et purge_device_enrollment_attempts (maintenance globale,
+  -- SECURITY DEFINER, lignes expirées seulement, heure de la base) : planifiées par le travailleur
+  -- device-purge du registre de l'API publique (lot WP12, device-identity/device-maintenance.ts),
+  -- le seul processus qui les charge ; aucun autre rôle ne les exécute.
+  create_device_enrollment_code(bytea, uuid, uuid, text, boolean, integer, uuid),
+  check_device_enrollment_code(bytea, text),
+  enroll_device(bytea, text, text, text, bytea, bytea, bytea, timestamptz, text, text, bytea,
+                timestamptz, uuid),
+  set_device_status(uuid, text, text, uuid), record_device_heartbeat(uuid, text, timestamptz),
+  record_enrollment_attempt(bytea, inet, text), enrollment_attempts_exceeded(bytea, inet),
+  -- Refus d'enrôlement : essai et audit ensemble, chaîne du code ou de la plateforme (0027, ADR-117)
+  record_enrollment_refusal(bytea, inet, text, text, text, text, text, uuid),
+  rotate_device_refresh_token(bytea, bytea, bytea, timestamptz),
+  revoke_device_token_family(uuid, uuid, text),
+  device_token_family_active(uuid, uuid), consume_device_nonce(uuid, bytea, timestamptz, integer),
+  assert_device_active(uuid),
+  purge_device_request_nonces(integer), purge_device_enrollment_attempts(),
+  -- Configuration servie (lot WP17, S10) : enregistre la configuration servie et rend config_id ;
+  -- assert_tenant sur le prestataire du terminal. La route relit d'abord le statut du terminal
+  -- (verrou, révoqué refusé) dans la même transaction. Migration 0029 (ADR-118) : la fonction
+  -- refuse elle-même un terminal révoqué et une config_version d'un autre prestataire.
+  record_config_served(uuid, uuid)
+TO cashless_app;
+
+-- 4b. Terminaux (OP-N63, ADR-105) : identité, clés, certificat, statut et prestataire ne s'écrivent
+-- que par les fonctions SECURITY DEFINER de 0022 et 0023 (enroll_device, set_device_status,
+-- rotate_device_refresh_token…). roles.sql vient de rendre INSERT et UPDATE sur toutes les tables :
+-- sans ce retrait, une session de l'API repassait ACTIVE un terminal REVOKED, remplaçait sa clé
+-- publique ou son certificat, ou remettait à neuf un code d'enrôlement ou un jeton de
+-- rafraîchissement. La lecture reste permise (sous la RLS) : la garde lit public_key et cert_sha256
+-- pour vérifier la signature ; code_hash est un HMAC à clé hors base, token_hash un SHA-256 d'un
+-- jeton aléatoire. Colonnes encore modifiables : affectation et réglages d'exploitation,
+-- numérotation (next_seq_floor) et suivi (last_seen_at, last_snapshot_version) ; la suite de
+-- référence et le schéma bornent les autres.
+REVOKE INSERT, UPDATE ON device FROM cashless_app;
+GRANT UPDATE (app_mode, nfc_enabled, event_id, pos_id, station_name, last_snapshot_version,
+              last_seen_at, next_seq_floor, personal_phone) ON device TO cashless_app;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device_enrollment_code, device_refresh_token,
+  device_status_history, device_request_nonce, device_enrollment_attempt FROM cashless_app;
+
+-- -----------------------------------------------------------------------------------------------
+-- 5. Processus des clés : fonctions de la file des travaux et de la garde des terminaux ; TEMPORARY
+-- (lot WP07).
+-- -----------------------------------------------------------------------------------------------
+-- La file des travaux (claim_tag_key_job, claim_tag_key_job_for, finish_tag_key_job : SECURITY
+-- INVOKER, sous la RLS et les politiques par sorte de travail de la section 3) était exécutée par
+-- droit hérité de PUBLIC ; elle est accordée aux trois exécutants nommément. Le contrôle quotidien
+-- (cashless_tagcheck) n'exécute aucune fonction.
+GRANT EXECUTE ON FUNCTION claim_tag_key_job(text[], integer),
+  claim_tag_key_job_for(uuid[], text[], integer),
+  finish_tag_key_job(uuid, text, text, jsonb, integer)
+  TO cashless_tagkeys, cashless_perso, cashless_keyadmin;
+-- Garde des requêtes de terminal dans le processus des clés de bracelet (POST /media/auth-keys ;
+-- lot WP12).
+GRANT EXECUTE ON FUNCTION consume_device_nonce(uuid, bytea, timestamptz, integer),
+  device_token_family_active(uuid, uuid), assert_device_active(uuid) TO cashless_tagkeys;
+-- Aucun rôle applicatif n'a de TEMPORARY propre (PUBLIC le perd en section 0).
+DO $$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['cashless_app','cashless_platform','cashless_tagkeys','cashless_perso',
+                           'cashless_tagcheck','cashless_keyadmin'] LOOP
+    EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM %I', current_database(), r);
+  END LOOP;
+END $$;

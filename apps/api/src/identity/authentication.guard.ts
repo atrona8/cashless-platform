@@ -1,6 +1,8 @@
 // Garde d'authentification globale (contracts/identity.md, FR-003, NFR-002) : toute route non `@Public()` exige un
 // jeton d'accès vérifié et une personne ACTIVE retrouvée en base ; pose `req.principal`. Une requête SQL par requête
 // HTTP (NFR-005) ; les clés publiques sont mises en cache par `jose`.
+// Route de guichet (`@StaffToken()`, mission 5a) : le jeton de la personne est lu dans
+// `X-Staff-Authorization` et nulle part ailleurs ; cet en-tête sur une autre route : 401.
 import { Inject, Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TenantTx } from '../db/tenant-tx';
@@ -13,6 +15,7 @@ import {
 } from './oidc-verifier';
 import type { Assignment, PrincipalRequest, Role, ScopeType } from './principal';
 import { IS_PUBLIC } from './public.decorator';
+import { STAFF_AUTHORIZATION_HEADER, STAFF_TOKEN_ROUTE } from './staff-token.decorator';
 
 const BEARER = /^Bearer\s+(\S+)\s*$/i;
 
@@ -26,16 +29,17 @@ export class AuthenticationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return true;
-    if (
-      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
-        context.getHandler(),
-        context.getClass(),
-      ])
-    )
-      return true;
+    const targets = [context.getHandler(), context.getClass()];
     const req = context.switchToHttp().getRequest<PrincipalRequest>();
+    const staffRoute =
+      this.reflector.getAllAndOverride<boolean>(STAFF_TOKEN_ROUTE, targets) === true;
+    // Refus avant toute autre règle, routes publiques comprises.
+    if (!staffRoute && req.header(STAFF_AUTHORIZATION_HEADER) !== undefined)
+      throw new ProblemException('UNAUTHENTICATED');
+    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets)) return true;
 
-    const token = BEARER.exec(req.header('authorization') ?? '')?.[1];
+    const source = staffRoute ? STAFF_AUTHORIZATION_HEADER : 'authorization';
+    const token = BEARER.exec(req.header(source) ?? '')?.[1];
     if (!token) throw new ProblemException('UNAUTHENTICATED');
     const verified = await this.verify(token);
 

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import type { Client } from 'pg';
 import request from 'supertest';
+import { APP_CONFIG, type AppConfig } from '../../../src/config/config';
 import { requestHash } from '../../../src/idempotency/request-hash';
 import { createTestApp, TEST_OPERATOR_HEADER } from '../../support/app';
 import { connect, OWNER_URL, withOwner } from '../../support/db';
@@ -23,6 +24,9 @@ describe('idempotence applicative (S21)', () => {
   afterAll(async () => {
     await app.close();
   });
+
+  /** Clé de l'empreinte (OP-N54) : celle de la configuration de l'application de test. */
+  const hmacKey = () => app.get<AppConfig>(APP_CONFIG, { strict: false }).idempotencyHmacKey;
 
   const post = (operatorId: string, key: string | undefined, body: object) => {
     const req = request(app.getHttpServer()).post(NOTES).set(TEST_OPERATOR_HEADER, operatorId);
@@ -85,6 +89,20 @@ describe('idempotence applicative (S21)', () => {
     expect(await keyRow(ops.a, key)).toEqual({ status: 'COMPLETED', response_status: 201 });
   });
 
+  it('la chaîne de requête n’entre pas dans l’empreinte (ADR-116) : rejeu', async () => {
+    const key = randomUUID();
+    const first = await post(ops.a, key, { note: 'chaîne' });
+    expect(first.status).toBe(201);
+    const replay = await request(app.getHttpServer())
+      .post(`${NOTES}?trace=1`)
+      .set(TEST_OPERATOR_HEADER, ops.a)
+      .set('Idempotency-Key', key)
+      .send({ note: 'chaîne' });
+    expect([replay.status, replay.headers['idempotency-replayed']]).toEqual([201, 'true']);
+    expect(replay.body).toEqual(first.body);
+    expect(await noteCount(ops.a, 'chaîne')).toBe(1);
+  });
+
   it('même clé, autre corps : 409 IDEMPOTENCY_KEY_REUSED', async () => {
     const key = randomUUID();
     expect((await post(ops.a, key, { note: 'original' })).status).toBe(201);
@@ -142,7 +160,7 @@ describe('idempotence applicative (S21)', () => {
       client.query(
         `INSERT INTO api_idempotency (operator_id, scope, idempotency_key, request_hash, status, lease_until, expires_at)
          VALUES ($1, 'app:', $2, $3, 'IN_PROGRESS', now() - interval '1 second', now() + interval '1 day')`,
-        [ops.a, key, requestHash('POST', NOTES, body)],
+        [ops.a, key, requestHash('POST', NOTES, {}, body, hmacKey())],
       ),
     );
     const res = await post(ops.a, key, body);

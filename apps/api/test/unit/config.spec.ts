@@ -1,5 +1,6 @@
 // Configuration lue dans l'environnement : pools applicatif et de plateforme (contrat platform-access).
 import { loadConfig } from '../../src/config/config';
+import { DEVICE_PRODUCTION } from '../support/tls';
 
 const PRODUCTION = {
   NODE_ENV: 'production',
@@ -13,6 +14,8 @@ const PRODUCTION = {
   TAG_WRAPPING_KEY_REF: 'arn:aws:kms:eu-west-3:1:key/wrap',
   CLAIM_CODE_DOMAIN: 'pay.example.org',
   TRUST_PROXY_HOPS: '1',
+  // Mission identite-enrolement-terminaux : réglages obligatoires en production.
+  ...DEVICE_PRODUCTION,
 };
 
 /** Hors production : `NODE_ENV` reste obligatoire (RISK-3). */
@@ -171,4 +174,199 @@ describe('loadConfig', () => {
       );
     },
   );
+
+  // ----- Mission identite-enrolement-terminaux (T036) -----
+
+  it.each(Object.keys(DEVICE_PRODUCTION))(
+    'production : %s obligatoire, absent ou vide refusé',
+    (name) => {
+      const { [name]: _omitted, ...without } = PRODUCTION as Record<string, string>;
+      expect(() => loadConfig(without)).toThrow(new RegExp(`${name} manquant`));
+      expect(() => loadConfig({ ...PRODUCTION, [name]: '' })).toThrow(
+        new RegExp(`${name} manquant`),
+      );
+    },
+  );
+
+  it('production : réglages complets lus tels quels', () => {
+    const config = loadConfig(PRODUCTION);
+    expect(config).toMatchObject({
+      tlsCertFile: '/etc/cashless/tls/server.crt',
+      tlsKeyFile: '/etc/cashless/tls/server.key',
+      deviceCaCertFile: '/etc/cashless/tls/device-ca.crt',
+      deviceCaFakeKeyFile: null,
+      deviceTokenIssuer: 'https://api.cashless.example',
+      deviceTokenTtlSeconds: 900,
+      deviceRefreshTokenTtlDays: 30,
+      deviceCertValidityDays: 365,
+      androidAttestationRoots: '/etc/cashless/attestation/google-roots.pem',
+      androidAppPackage: 'org.cashless.terminal',
+      androidAppSigningDigests: ['cd'.repeat(32)],
+      androidMinPatchLevel: 202501,
+      iosAppAttestRoot: '/etc/cashless/attestation/apple-app-attest-root.pem',
+      iosTeamId: 'ABCDE12345',
+      iosBundleId: 'org.cashless.terminal',
+      iosAppAttestEnvironment: 'production',
+      clockToleranceSeconds: 120,
+    });
+    expect(config.idempotencyHmacKey.equals(Buffer.alloc(32, 0x01))).toBe(true);
+    expect(config.enrollmentCodeHmacKey.equals(Buffer.alloc(32, 0x02))).toBe(true);
+  });
+
+  it('hors production : valeurs de test, aucun certificat (écoute en clair permise)', () => {
+    const config = loadConfig(LOCAL);
+    expect(config).toMatchObject({
+      tlsCertFile: null,
+      tlsKeyFile: null,
+      deviceCaCertFile: null,
+      deviceCaFakeKeyFile: null,
+      deviceTokenIssuer: 'https://api.cashless.test',
+      deviceTokenTtlSeconds: 900,
+      deviceRefreshTokenTtlDays: 30,
+      deviceCertValidityDays: 365,
+      androidAttestationRoots: null,
+      iosAppAttestRoot: null,
+      iosAppAttestEnvironment: 'development',
+      clockToleranceSeconds: 120,
+    });
+    expect(config.idempotencyHmacKey.length).toBeGreaterThanOrEqual(32);
+    expect(config.enrollmentCodeHmacKey.length).toBeGreaterThanOrEqual(32);
+  });
+
+  it('production : la clé de l’autorité DE TEST des terminaux fait refuser le démarrage', () => {
+    expect(() =>
+      loadConfig({ ...PRODUCTION, DEVICE_CA_FAKE_KEY_FILE: '/tmp/device-ca.key' }),
+    ).toThrow(/DEVICE_CA_FAKE_KEY_FILE posé/);
+    expect(
+      loadConfig({ ...LOCAL, DEVICE_CA_FAKE_KEY_FILE: '/tmp/device-ca.key' }).deviceCaFakeKeyFile,
+    ).toBe('/tmp/device-ca.key');
+  });
+
+  it('TLS : certificat et clé ensemble ; autorité des terminaux exigée dès que TLS est configuré', () => {
+    expect(() => loadConfig({ ...LOCAL, TLS_CERT_FILE: '/c.crt' })).toThrow(/les deux ou aucun/);
+    expect(() => loadConfig({ ...LOCAL, TLS_KEY_FILE: '/c.key' })).toThrow(/les deux ou aucun/);
+    expect(() => loadConfig({ ...LOCAL, TLS_CERT_FILE: '/c.crt', TLS_KEY_FILE: '/c.key' })).toThrow(
+      /DEVICE_CA_CERT_FILE manquant/,
+    );
+    const config = loadConfig({
+      ...LOCAL,
+      TLS_CERT_FILE: '/c.crt',
+      TLS_KEY_FILE: '/c.key',
+      DEVICE_CA_CERT_FILE: '/ca.crt',
+    });
+    expect([config.tlsCertFile, config.tlsKeyFile, config.deviceCaCertFile]).toEqual([
+      '/c.crt',
+      '/c.key',
+      '/ca.crt',
+    ]);
+  });
+
+  it.each([
+    ['DEVICE_TOKEN_TTL_SECONDS', ['59', '3601', '0', '-1', '9.5', 'quinze'], ['60', '3600']],
+    ['DEVICE_REFRESH_TOKEN_TTL_DAYS', ['0', '91', '1.5', 'trente'], ['1', '90']],
+    ['DEVICE_CERT_VALIDITY_DAYS', ['0', '731', '-1', '365 '], ['1', '730']],
+    ['CLOCK_TOLERANCE_SECONDS', ['301', '-1', '1e2', 'deux'], ['0', '300']],
+  ])('%s : bornes', (name, bad, good) => {
+    for (const value of bad)
+      expect(() => loadConfig({ ...PRODUCTION, [name]: value })).toThrow(new RegExp(name));
+    for (const value of good)
+      expect(() => loadConfig({ ...PRODUCTION, [name]: value })).not.toThrow();
+  });
+
+  it.each(['IDEMPOTENCY_HMAC_KEY', 'ENROLLMENT_CODE_HMAC_KEY'])(
+    '%s : 32 octets au moins, hexadécimal ou base64',
+    (name) => {
+      for (const env of [PRODUCTION, LOCAL]) {
+        expect(() => loadConfig({ ...env, [name]: 'abcd' })).toThrow(/32 octets/);
+        expect(() => loadConfig({ ...env, [name]: '0f'.repeat(31) })).toThrow(/32 octets/);
+      }
+      const config = loadConfig({ ...PRODUCTION, [name]: Buffer.alloc(48, 9).toString('base64') });
+      const key =
+        name === 'IDEMPOTENCY_HMAC_KEY' ? config.idempotencyHmacKey : config.enrollmentCodeHmacKey;
+      expect(key.equals(Buffer.alloc(48, 9))).toBe(true);
+    },
+  );
+
+  it('les trois secrets HMAC sont distincts deux à deux', () => {
+    expect(() =>
+      loadConfig({ ...PRODUCTION, IDEMPOTENCY_HMAC_KEY: PRODUCTION.CLAIM_CODE_HMAC_KEY }),
+    ).toThrow(/CLAIM_CODE_HMAC_KEY et IDEMPOTENCY_HMAC_KEY : secrets distincts/);
+    expect(() =>
+      loadConfig({ ...PRODUCTION, ENROLLMENT_CODE_HMAC_KEY: PRODUCTION.CLAIM_CODE_HMAC_KEY }),
+    ).toThrow(/CLAIM_CODE_HMAC_KEY et ENROLLMENT_CODE_HMAC_KEY/);
+    expect(() =>
+      loadConfig({ ...PRODUCTION, ENROLLMENT_CODE_HMAC_KEY: PRODUCTION.IDEMPOTENCY_HMAC_KEY }),
+    ).toThrow(/IDEMPOTENCY_HMAC_KEY et ENROLLMENT_CODE_HMAC_KEY/);
+    // Même octets écrits autrement (base64 au lieu d'hexadécimal) : toujours refusé.
+    expect(() =>
+      loadConfig({
+        ...PRODUCTION,
+        IDEMPOTENCY_HMAC_KEY: Buffer.alloc(32, 0x02).toString('base64'),
+      }),
+    ).toThrow(/secrets distincts/);
+    const local = loadConfig(LOCAL);
+    expect(local.idempotencyHmacKey.equals(local.enrollmentCodeHmacKey)).toBe(false);
+    expect(local.idempotencyHmacKey.equals(local.claimCodeHmacKey)).toBe(false);
+  });
+
+  it('production : les secrets de test sont refusés même posés explicitement', () => {
+    const local = loadConfig(LOCAL);
+    for (const [name, key] of [
+      ['CLAIM_CODE_HMAC_KEY', local.claimCodeHmacKey],
+      ['IDEMPOTENCY_HMAC_KEY', local.idempotencyHmacKey],
+      ['ENROLLMENT_CODE_HMAC_KEY', local.enrollmentCodeHmacKey],
+    ] as const) {
+      expect(() => loadConfig({ ...PRODUCTION, [name]: key.toString('hex') })).toThrow(
+        new RegExp(`${name} : secret de test refusé en production`),
+      );
+    }
+  });
+
+  it('iOS : IOS_APP_ATTEST_ENVIRONMENT = development refusé en production, permis hors production', () => {
+    expect(() => loadConfig({ ...PRODUCTION, IOS_APP_ATTEST_ENVIRONMENT: 'development' })).toThrow(
+      /« production » exigé en production/,
+    );
+    expect(
+      loadConfig({ ...LOCAL, IOS_APP_ATTEST_ENVIRONMENT: 'development' }).iosAppAttestEnvironment,
+    ).toBe('development');
+    for (const bad of ['prod', 'Production', 'dev'])
+      expect(() => loadConfig({ ...LOCAL, IOS_APP_ATTEST_ENVIRONMENT: bad })).toThrow(
+        /production ou development attendu/,
+      );
+  });
+
+  it('identifiants Android et iOS : formes attendues', () => {
+    for (const bad of ['terminal', 'org..cashless', '1org.cashless', 'org.cashless-terminal'])
+      expect(() => loadConfig({ ...PRODUCTION, ANDROID_APP_PACKAGE: bad })).toThrow(
+        /ANDROID_APP_PACKAGE/,
+      );
+    for (const bad of ['abcde12345', 'ABCDE1234', 'ABCDE-1234'])
+      expect(() => loadConfig({ ...PRODUCTION, IOS_TEAM_ID: bad })).toThrow(/IOS_TEAM_ID/);
+    for (const bad of ['terminal', 'org.cashless.', 'org cashless'])
+      expect(() => loadConfig({ ...PRODUCTION, IOS_BUNDLE_ID: bad })).toThrow(/IOS_BUNDLE_ID/);
+    expect(() => loadConfig({ ...PRODUCTION, DEVICE_TOKEN_ISSUER: 'https://a b' })).toThrow(
+      /DEVICE_TOKEN_ISSUER/,
+    );
+  });
+
+  it('empreintes de signature Android : liste hexadécimale, `:` admis, minuscules, sans doublon', () => {
+    const upper = 'AB:'.repeat(31) + 'AB';
+    const config = loadConfig({
+      ...PRODUCTION,
+      ANDROID_APP_SIGNING_DIGESTS: `${upper}, ${'cd'.repeat(32)},${'ab'.repeat(32)}`,
+    });
+    expect(config.androidAppSigningDigests).toEqual(['ab'.repeat(32), 'cd'.repeat(32)]);
+    for (const bad of ['ab'.repeat(31), 'zz'.repeat(32), `${'ab'.repeat(32)},`, ','])
+      expect(() => loadConfig({ ...PRODUCTION, ANDROID_APP_SIGNING_DIGESTS: bad })).toThrow(
+        /ANDROID_APP_SIGNING_DIGESTS/,
+      );
+  });
+
+  it('niveau de correctif Android : AAAAMM', () => {
+    expect(loadConfig(LOCAL).androidMinPatchLevel).toBe(202201);
+    for (const bad of ['2025', '20250101', '202513', '202500', '201612', 'mars'])
+      expect(() => loadConfig({ ...PRODUCTION, ANDROID_MIN_PATCH_LEVEL: bad })).toThrow(
+        /ANDROID_MIN_PATCH_LEVEL/,
+      );
+  });
 });

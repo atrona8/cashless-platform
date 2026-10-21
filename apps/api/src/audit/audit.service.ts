@@ -68,7 +68,17 @@ export type AuditAction =
   | 'MEDIA_CLAIM_PENDING'
   | 'MEDIA_CLAIM_BLOCKED'
   | 'MEDIA_CLAIM_CONFIRMED'
-  | 'MEDIA_SELF_ACTIVATED';
+  | 'MEDIA_SELF_ACTIVATED'
+  // Mission identite-enrolement-terminaux (lot WP14)
+  | 'DEVICE_ENROLLMENT_CODE_CREATED'
+  | 'DEVICE_ENROLLED'
+  | 'DEVICE_ENROLLMENT_REFUSED'
+  // Lot WP15 : réutilisation d'un jeton de rafraîchissement (famille révoquée)
+  | 'DEVICE_TOKEN_REUSE'
+  // Mission identite-enrolement-terminaux, lot WP16 : transitions de statut d'un terminal
+  | 'DEVICE_SUSPENDED'
+  | 'DEVICE_REACTIVATED'
+  | 'DEVICE_REVOKED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

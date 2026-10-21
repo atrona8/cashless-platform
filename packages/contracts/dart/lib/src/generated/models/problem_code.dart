@@ -36,6 +36,10 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `DEVICE_MODE_NOT_ALLOWED` (422) : mode d'application non permis ; en V1, tout usage de `PAIRED_TPE`.
 ///   ou de `payment_intent_id` (V2, ADR-43).
 /// - `CLOCK_SKEW_TOO_LARGE` (400) : horloge du terminal hors de la tolérance (`clock_tolerance_seconds`).
+///   Sur une route de terminal, l'heure du serveur est renvoyée dans l'en-tête `Date`.
+/// - `DEVICE_SIGNATURE_INVALID` (401) : signature de la requête du terminal absente, invalide ou rejouée.
+///   (`deviceSignature`) ; la réponse ne dit pas quel élément a échoué.
+/// - `DEVICE_SERIAL_IN_USE` (409) : `serial` déjà porté par un terminal non révoqué du même prestataire.
 /// - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
 /// - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
 /// - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
@@ -65,6 +69,7 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `TAP_ALREADY_USED` (409) : `tap_id` déjà consommé par une autre opération, ou présenté par un autre.
 ///   terminal (contrôle de l'API avant écriture).
 /// - `TAP_UNUSABLE` (409, `CL022`) : refus de `consume_tap` : passage déjà utilisé par une autre écriture, ou.
+///   par une demande de rattachement (lecture qui a confirmé un rattachement, `consume_tap_for_claim`), ou.
 ///   écriture en ligne plus de `tap_replay_window_seconds` après la lecture ; relire le bracelet.
 /// - `ACTIVATION_MODE_NOT_ALLOWED` (422) : mode d'activation absent de `event.activation_modes`.
 /// - `ACCOUNT_REQUIRED` (422) : `identity_mode = ACCOUNT_REQUIRED` et aucun compte client fourni.
@@ -297,7 +302,11 @@ enum ProblemCode {
   @JsonValue('LATE_CLAIM_INVALID')
   lateClaimInvalid('LATE_CLAIM_INVALID'),
   @JsonValue('CARD_DAILY_LIMIT')
-  cardDailyLimit('CARD_DAILY_LIMIT');
+  cardDailyLimit('CARD_DAILY_LIMIT'),
+  @JsonValue('DEVICE_SIGNATURE_INVALID')
+  deviceSignatureInvalid('DEVICE_SIGNATURE_INVALID'),
+  @JsonValue('DEVICE_SERIAL_IN_USE')
+  deviceSerialInUse('DEVICE_SERIAL_IN_USE');
 
   const ProblemCode(this.json);
 

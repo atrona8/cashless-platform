@@ -39,7 +39,12 @@ describe('activation d’un bracelet au guichet', () => {
   ) => {
     let req = request(app.getHttpServer())[method](path);
     if (who.device) req = req.set(who.device.headers);
-    if (who.person) req = req.set('Authorization', `Bearer ${who.person.token}`);
+    // Terminal ET personne : route de guichet, jeton de la personne dans X-Staff-Authorization.
+    if (who.person)
+      req = req.set(
+        who.device ? 'X-Staff-Authorization' : 'Authorization',
+        `Bearer ${who.person.token}`,
+      );
     if (key !== null && method === 'post') req = req.set('Idempotency-Key', key);
     if (language) req = req.set('Accept-Language', language);
     return method === 'post' ? req.send(body ?? {}) : req;

@@ -9,6 +9,7 @@ import { ConfigurationCoreModule } from './configuration/configuration-core.modu
 import { CustomerIdentityModule } from './customer-identity/customer-identity.module';
 import { DbModule } from './db/db.module';
 import { DeviceIdentityModule } from './device-identity/device-identity.module';
+import { DevicesModule } from './devices/devices.module';
 import { ProblemFilter } from './errors/problem.filter';
 import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.controller';
@@ -42,6 +43,8 @@ import { WorkerRegistry } from './processes/worker';
     DeviceIdentityModule,
     CustomerIdentityModule,
     MediaPublicModule,
+    // Mission identite-enrolement-terminaux : routes des terminaux (enrôlement, jetons, configuration, back-office).
+    DevicesModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

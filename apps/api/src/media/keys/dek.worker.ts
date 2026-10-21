@@ -3,8 +3,9 @@
 // de passe et d'ouverture d'une clé de données — jamais de déchiffrement.
 //   ROTATE_DEK : ouvre une nouvelle version ACTIVE (son clair est effacé aussitôt, il ne sert pas ici), les autres
 //                ne servent plus qu'à déchiffrer ; inscrit le rechiffrement, fait par le processus des clés.
-//   RETIRE_KEY : `retire_dedicated_key` (clé et clés de données retirées, mots de passe effacés, bracelets en fin de
-//                vie) ; inscrit la désactivation dans le service de clés, faite par la commande d'administration.
+//   RETIRE_KEY : `retire_dedicated_key_for_job` (clé et clés de données retirées, mots de passe
+//                effacés, bracelets en fin de vie) ; inscrit la désactivation dans le service de
+//                clés, faite par la commande d'administration.
 import { Inject, Injectable } from '@nestjs/common';
 import { AuditService, type AuditAction } from '../../audit/audit.service';
 import { APP_CONFIG, type AppConfig } from '../../config/config';
@@ -97,9 +98,11 @@ export class DekWorker implements ProcessWorker {
 
   private async retire(job: TagKeyJobRow): Promise<void> {
     await this.tx.run(job.operator_id, async (client) => {
+      // La base exige un travail RETIRE_KEY en cours issu d'une demande exécutée, et prend la clé
+      // dans le travail (`retire_dedicated_key_for_job`, migration 0025, OP-N62).
       const { rows } = await client.query<{ retired: number }>(
-        'SELECT retire_dedicated_key($1, $2) AS retired',
-        [job.operator_id, job.key_index],
+        'SELECT retire_dedicated_key_for_job($1) AS retired',
+        [job.id],
       );
       await this.child(client, job, null);
       await this.record(client, job, 'TAG_KEY_RETIRED', {

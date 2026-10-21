@@ -33,7 +33,7 @@ import {
 } from './idempotency.repository';
 import { IDEMPOTENT, type IdempotentOptions, type IdempotentRequest } from './idempotent.decorator';
 import { assertPlatformAdmin, isPlatformPerson } from './platform-person';
-import { requestHash, routeTemplate } from './request-hash';
+import { concretePath, requestCaller, requestHash, routeTemplate } from './request-hash';
 
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
 export const REPLAYED_HEADER = 'Idempotency-Replayed';
@@ -78,12 +78,16 @@ export class IdempotencyInterceptor implements NestInterceptor {
     if (platform) assertPlatformAdmin(req);
     const operatorId = platform ? null : this.tenant().current(req).operatorId;
     const scope = typeof options.scope === 'function' ? options.scope(req) : options.scope;
-    const outcome = await this.repository.reserve(
-      operatorId,
-      scope,
-      key,
-      requestHash(req.method, routeTemplate(req), req.body),
+    // Empreinte sur le chemin concret et liée à l'appelant (ADR-116) : la même clé sur une autre
+    // ressource, ou présentée par un autre appelant, ne rejoue jamais la réponse d'origine.
+    const hash = requestHash(
+      req.method,
+      concretePath(req),
+      requestCaller(req),
+      req.body,
+      this.config.idempotencyHmacKey,
     );
+    const outcome = await this.repository.reserve(operatorId, scope, key, hash);
 
     if (outcome.kind === 'replay') {
       res.setHeader(REPLAYED_HEADER, 'true');

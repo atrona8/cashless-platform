@@ -51,7 +51,7 @@ describe('espèces dues rendues au guichet', () => {
       .set((options.device ?? device).headers)
       .set('Idempotency-Key', options.key ?? randomUUID());
     const person = options.person === undefined ? w.cashierA : options.person;
-    if (person) req = req.set('Authorization', `Bearer ${person.token}`);
+    if (person) req = req.set('X-Staff-Authorization', `Bearer ${person.token}`);
     if (options.token) req = req.set('X-Approval-Token', options.token);
     if (options.language) req = req.set('Accept-Language', options.language);
     return req.send(body);
@@ -76,7 +76,7 @@ describe('espèces dues rendues au guichet', () => {
       .post('/v1/media/activations')
       .set(device.headers)
       .set('Idempotency-Key', randomUUID())
-      .set('Authorization', `Bearer ${w.cashierA.token}`)
+      .set('X-Staff-Authorization', `Bearer ${w.cashierA.token}`)
       .send({ tap: tapBody(m, next()), channel: 'DESK', occurred_at: new Date().toISOString() });
     expect(res.status).toBe(201);
     return m;
@@ -211,7 +211,7 @@ describe('espèces dues rendues au guichet', () => {
       .post(`/v1/media/${m.id}/release`)
       .set(device.headers)
       .set('Idempotency-Key', randomUUID())
-      .set('Authorization', `Bearer ${w.cashierA.token}`)
+      .set('X-Staff-Authorization', `Bearer ${w.cashierA.token}`)
       .send({});
     expect(released.status).toBe(200);
     await sound();

@@ -6,9 +6,11 @@ import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { derivationMessage, openPwdPack, pwdPackAad, splitPwdPack } from '@cashless/tag-format';
 import vectors from '@cashless/tag-format/vectors/vectors.json';
+import { APP_CONFIG, type AppConfig } from '../../../src/config/config';
 import { ClaimHasher } from '../../../src/kms/claim-hash';
 import { FakeKms, KIT_VECTOR_HMAC_KEY_REF, TEST_WRAPPING_KEY_REF } from '../../../src/kms/fake-kms';
 import { SessionDataKeyProvider } from '../../../src/media/keys/session-data-key';
+import { parsePersonalization } from '../../../src/media/personalization/personalization.dto';
 import { createKeyProcess, type KeyProcessApp } from '../../support/app';
 import type { TestPerson } from '../../support/fake-idp';
 import { commitWhileWaiting, withOwner } from '../../support/db';
@@ -278,6 +280,69 @@ describe('poste de personnalisation', () => {
           [w.ops.a, key],
         ),
       ).toEqual([{ response_status: 201, response_body: { media_id: mediaId } }]);
+    });
+
+    it('registre d’idempotence : empreinte à clé liée à la personne, jamais un SHA-256 sans clé (OP-N54)', async () => {
+      // Relecture WP13 : l'ancienne empreinte (SHA-256 sans clé de lot ‖ jeton ‖ UID ‖ signature)
+      // laissait retrouver l'UID par essais depuis la base. Ce test échoue si elle revient.
+      const input = parsePersonalization(personalizationBody(batchA, chip, station));
+      const fields = [
+        Buffer.from(input.batchId),
+        input.tokenHash,
+        input.uid,
+        input.signatureSha256,
+      ];
+      const unkeyed = createHash('sha256');
+      for (const field of fields) unkeyed.update(field);
+      const hmacKey = perso.app.get<AppConfig>(APP_CONFIG, { strict: false }).idempotencyHmacKey;
+      const keyed = createHmac('sha256', hmacKey)
+        .update(Buffer.from('CASHLESS/IDEMPOTENCY/PERSO/v1', 'ascii'))
+        .update(w.personalizerA.userId, 'utf8');
+      for (const field of fields) keyed.update(field);
+      const [stored] = await rows<{ request_hash: string }>(
+        `SELECT request_hash FROM api_idempotency WHERE operator_id = $1 AND scope = 'perso:' AND idempotency_key = $2`,
+        [w.ops.a, key],
+      );
+      expect(stored!.request_hash).not.toBe(unkeyed.digest('hex'));
+      expect(stored!.request_hash).toBe(keyed.digest('hex'));
+      // Aucune ligne `perso:` du registre n'a l'empreinte sans clé de sa propre puce.
+      const all = await rows<{
+        request_hash: string;
+        batch_id: string;
+        token_hash: Buffer;
+        uid: Buffer;
+        sig: Buffer;
+      }>(
+        `SELECT i.request_hash, m.batch_id, m.token_hash, m.nfc_uid AS uid, m.originality_sig_sha256 AS sig
+           FROM api_idempotency i JOIN media m ON m.id = (i.response_body->>'media_id')::uuid
+          WHERE i.operator_id = $1 AND i.scope = 'perso:'`,
+        [w.ops.a],
+      );
+      expect(all.length).toBeGreaterThan(0);
+      for (const row of all) {
+        const plain = createHash('sha256')
+          .update(Buffer.from(row.batch_id))
+          .update(row.token_hash)
+          .update(row.uid)
+          .update(row.sig)
+          .digest('hex');
+        expect(row.request_hash).not.toBe(plain);
+      }
+    });
+
+    it('la même clé par une autre personne du prestataire : 409, aucune enveloppe (ADR-116)', async () => {
+      const colleague = await withOwner((db) =>
+        w.idp.createPerson(db, {
+          operatorId: w.ops.a,
+          roles: [{ role: 'PERSONALIZER', scopeType: 'OPERATOR', scopeId: w.ops.a }],
+        }),
+      );
+      perso.kms.resetCalls();
+      const res = await post(colleague, pathA(), personalizationBody(batchA, chip, station), key);
+      expect(res.status).toBe(409);
+      expect(res.body.code).toBe('IDEMPOTENCY_KEY_REUSED');
+      expect(res.body.pwd_pack).toBeUndefined();
+      expect(perso.kms.calls.generateMac).toBe(0);
     });
 
     it('la recherche au repos trouve bien une valeur quand elle y est (contrôle du contrôle)', async () => {

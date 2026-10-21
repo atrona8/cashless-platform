@@ -449,7 +449,10 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     });
     const desk = (label: string, device: TestDevice, person: TestPerson) => ({
       label,
-      headers: async () => ({ ...device.headers, ...bearer(person) }),
+      headers: async () => ({
+        ...device.headers,
+        'X-Staff-Authorization': `Bearer ${person.token}`,
+      }),
     });
     switch (c.who) {
       case 'staff':

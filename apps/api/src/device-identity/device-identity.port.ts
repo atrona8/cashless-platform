@@ -1,8 +1,10 @@
 // Identité du terminal (mission bracelets-nfc, research R-07, contracts/identity-ports.md).
-// Les routes appelées par un terminal reçoivent son identité d'un fournisseur remplaçable. Cette mission ne livre
-// qu'un FAUX (lecture d'en-têtes de test) : l'enrôlement, le jeton d'appareil, le mTLS et la signature des requêtes
-// arrivent avec la mission des terminaux, qui branchera sa propre implémentation de `DeviceIdentityPort` sans toucher
-// aux routes. Dettes consignées dans docs/POINTS_OUVERTS.md ; jamais de faux en production (NFR-010).
+// Les routes appelées par un terminal reçoivent son identité d'un fournisseur remplaçable. Depuis
+// la mission 5a (lot WP12, OP-N42), le fournisseur est `RealDeviceIdentity` : certificat client,
+// jeton d'appareil lié et signature de la requête, liés au même terminal
+// (contracts/device-authentication.md). Le faux (en-têtes de test) ne se construit plus que hors
+// production et sur demande explicite (`DEVICE_IDENTITY_FAKE=1`) ; jamais de faux en production
+// (NFR-010).
 import type { Request } from 'express';
 import { ProblemException } from '../errors/problem';
 
@@ -27,14 +29,37 @@ export interface DeviceContext {
   posId: string | null;
   /** Clé publique d'accord ECDH P-256 (65 octets) : sert à lui chiffrer un mot de passe de bracelet. */
   agreementPublicKey: Buffer | null;
+  /** Posé par `DeviceGuard` (lu en base) ; facultatif pour les contextes construits à la main. */
+  os?: 'ANDROID' | 'IOS';
+  /** Faux pour un terminal iOS (contrainte de `device`) ou dont le NFC est coupé. */
+  nfcEnabled?: boolean;
+}
+
+export type DeviceStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
+
+/** Terminal lu en base, et ce qui sert aux preuves (clé de signature, empreinte du certificat). */
+export interface DeviceRecord extends DeviceContext {
+  status: DeviceStatus;
+  os: 'ANDROID' | 'IOS';
+  nfcEnabled: boolean;
+  /** Clé publique de signature (SPKI DER, P-256) ; `null` pour un terminal d'avant l'enrôlement. */
+  publicKey: Buffer | null;
+  /** SHA-256 du certificat client (DER) ; `null` pour un terminal d'avant l'enrôlement. */
+  certSha256: Buffer | null;
 }
 
 /** Lecture du terminal en base, sous le rôle du processus qui sert la route. */
 export interface DeviceDirectory {
-  find(
+  find(operatorId: string, deviceId: string): Promise<DeviceRecord | null>;
+  /**
+   * Terminal ET état de la famille de jetons `familyId` (claim `fid`), lus dans une même
+   * transaction sous le prestataire annoncé (contracts/device-authentication.md, étape 3).
+   */
+  findForAuthentication(
     operatorId: string,
     deviceId: string,
-  ): Promise<(DeviceContext & { status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED' }) | null>;
+    familyId: string,
+  ): Promise<{ device: DeviceRecord; familyActive: boolean } | null>;
 }
 
 export const DEVICE_IDENTITY = Symbol('DEVICE_IDENTITY');

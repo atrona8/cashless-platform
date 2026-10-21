@@ -27,7 +27,6 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "identite-enrolement-terminaux-01M52R6H",
-  "status_phase": "1",
   "target_branch": "feat/identite-enrolement-terminaux",
   "topology": "coord",
   "vcs": "git",

@@ -26,10 +26,14 @@ SELECT open_event_ledger('00000000-0000-0000-0000-00000015d001');
 
 SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname = 'open_event_wallet' AND NOT prosecdef), 1, 'SECURITY INVOKER');
 
+-- Table temporaire créée par le propriétaire : les rôles cashless_* n'ont plus TEMPORARY (OP-N59,
+-- lot WP07).
+CREATE TEMP TABLE opened (anonymous uuid, named uuid) ON COMMIT DROP;
+GRANT INSERT, SELECT ON pg_temp.opened TO cashless_app;
 SET LOCAL ROLE cashless_app;
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000015a001', true);
-CREATE TEMP TABLE opened ON COMMIT DROP AS SELECT open_event_wallet('00000000-0000-0000-0000-00000015d001') AS anonymous,
-                                                  open_event_wallet('00000000-0000-0000-0000-00000015d001', '00000000-0000-0000-0000-00000015b002') AS named;
+INSERT INTO pg_temp.opened SELECT open_event_wallet('00000000-0000-0000-0000-00000015d001'),
+                                  open_event_wallet('00000000-0000-0000-0000-00000015d001', '00000000-0000-0000-0000-00000015b002');
 SELECT is((SELECT w.customer_id FROM wallet w, opened o WHERE w.id = o.anonymous), NULL, 'portefeuille anonyme : aucun titulaire');
 SELECT is((SELECT w.customer_id FROM wallet w, opened o WHERE w.id = o.named), '00000000-0000-0000-0000-00000015b002'::uuid, 'portefeuille d''un compte festivalier');
 SELECT is((SELECT w.ledger_id FROM wallet w, opened o WHERE w.id = o.anonymous),

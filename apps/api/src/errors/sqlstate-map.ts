@@ -32,9 +32,18 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL022: { code: 'TAP_UNUSABLE', status: 409 },
   CL023: { code: 'APPROVAL_INVALID', status: 409 },
   CL024: { code: 'LATE_CLAIM_INVALID', status: 409 },
+  // Terminaux (mission 5a : migrations 0022, 0023 ; traduction par le lot WP12).
+  CL025: { code: 'ENROLLMENT_CODE_INVALID', status: 422 },
+  CL026: { code: 'ENROLLMENT_CODE_EXPIRED', status: 422 },
+  CL027: { code: 'DEVICE_MODE_NOT_ALLOWED', status: 422 },
+  CL028: { code: 'DEVICE_SERIAL_IN_USE', status: 409 },
+  CL029: { code: 'CONFLICT_STATE', status: 409 },
+  CL030: { code: 'DEVICE_SUSPENDED', status: 403 },
   P0002: { code: 'NOT_FOUND', status: 404 },
-  // FR-024 : seul usage prévu en V1, le terminal révoqué. Le SQLSTATE seul ne distingue pas un refus de politique
-  // RLS (aussi 42501) ; il ne peut survenir qu'en cas de défaut de l'API (toute requête passe par TenantTx).
+  // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
+  // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus
+  // de politique RLS ni un droit refusé (aussi 42501) ; ils ne peuvent survenir qu'en cas de défaut
+  // de l'API (toute requête passe par TenantTx).
   '42501': { code: 'DEVICE_REVOKED', status: 403 },
   P0001: { code: 'INTERNAL_ERROR', status: 500 },
 };

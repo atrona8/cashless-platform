@@ -48,7 +48,7 @@ describe('restitution d’un bracelet', () => {
       .set((options.device ?? device).headers)
       .set('Idempotency-Key', options.key ?? randomUUID());
     const person = options.person === undefined ? w.cashierA : options.person;
-    if (person) req = req.set('Authorization', `Bearer ${person.token}`);
+    if (person) req = req.set('X-Staff-Authorization', `Bearer ${person.token}`);
     if (options.language) req = req.set('Accept-Language', options.language);
     return req.send(body);
   };

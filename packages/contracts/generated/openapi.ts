@@ -9,14 +9,31 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Lister les codes d'enrôlement en cours (back-office)
+         * @description Codes non expirés et non utilisés du prestataire : portée (événement, point de vente, mode, téléphone
+         *     personnel), auteur, création et expiration. Le code lui-même n'est jamais renvoyé (seule son empreinte est
+         *     gardée). Rôles : `OPERATOR_ADMIN` (tout le prestataire) ; `ORGANIZER_ADMIN` (codes des événements de son
+         *     organisateur). Pagination par curseur.
+         */
+        get: operations["listDeviceEnrollmentCodes"];
         put?: never;
         /**
          * Créer un code d'enrôlement à usage unique
-         * @description Réservé à `OPERATOR_ADMIN` / `ORGANIZER_ADMIN`. Pas de MDM (ADR-69) : le code est affiché en QR dans le
-         *     back-office et scanné par l'app du terminal, ou saisi à la main. Usage unique, durée de vie courte (défaut 24 h), lié au prestataire et
-         *     optionnellement à un événement, un point de vente et un mode d'application.
-         *     `app_mode = PAIRED_TPE` (V2, ADR-43) est refusé en V1 : `422 DEVICE_MODE_NOT_ALLOWED`.
+         * @description Réservé à `OPERATOR_ADMIN` (tout le prestataire) / `ORGANIZER_ADMIN` (événements de son organisateur).
+         *     Pas de MDM (ADR-69) : le code est affiché en QR dans le
+         *     back-office et scanné par l'app du terminal, ou saisi à la main. Usage unique, durée de vie courte (défaut 24 h,
+         *     bornes 5 min à 7 jours), lié au prestataire, à un événement (obligatoire : tout terminal est affecté à un
+         *     événement), et optionnellement à un point de vente.
+         *     Code de 12 caractères (alphabet de 32 sans ambiguïté, 60 bits), affiché `XXXX-XXXX-XXXX` ; le serveur n'en
+         *     garde qu'une empreinte HMAC-SHA256. Le code part une seule fois : un rejeu de la même clé d'idempotence ne le
+         *     renvoie pas (route `transient`, refus au rejeu), et il n'apparaît dans aucun journal ni ligne d'audit.
+         *     `personal_phone` est obligatoire, sans défaut (choix de l'administrateur) ; `true` impose
+         *     `app_mode = KEYPAD_TPE` (sinon `422 DEVICE_MODE_NOT_ALLOWED`) et une politique effective sans hors ligne, sans
+         *     recharge, remboursement ni caution.
+         *     `app_mode = PAIRED_TPE` (V2, ADR-43) est refusé en V1 : `422 DEVICE_MODE_NOT_ALLOWED`. Durée hors bornes :
+         *     `422 VALIDATION_FAILED`. Événement ou point de vente d'un autre prestataire, ou hors du périmètre de la
+         *     personne : `404`.
          */
         post: operations["createDeviceEnrollmentCode"];
         delete?: never;
@@ -36,19 +53,36 @@ export type paths = {
         put?: never;
         /**
          * Enrôler un terminal (code à usage unique → identité d'appareil)
-         * @description Le terminal génère dans l'Android Keystore (StrongBox si disponible) une clé de signature ECDSA P-256
-         *     non exportable et une clé d'accord ECDH P-256 (chiffrement des PWD/PACK et du snapshot), puis envoie
-         *     les clés publiques, la chaîne d'attestation de clé et un CSR. Le serveur vérifie le code (usage unique),
-         *     l'attestation (clé dans le matériel sécurisé, bootloader verrouillé, application signée et intacte), crée ou met à jour
-         *     `device` (serial, public_key, status ACTIVE), et renvoie un certificat client
-         *     (mTLS), un jeton d'appareil et un jeton de rafraîchissement.
-         *     `next_seq` indique le premier numéro de séquence utilisable (jamais inférieur à `device.last_seq + 1`,
-         *     voir sync_protocol.md §3).
+         * @description Ordre imposé côté terminal : il scanne (ou saisit) le code d'enrôlement **avant** de générer ses clés, car
+         *     les défis d'attestation dérivent du code. Il génère alors dans le matériel sécurisé (Android Keystore,
+         *     StrongBox si disponible ; iOS Secure Enclave) une clé de signature ECDSA P-256 non exportable et une clé
+         *     d'accord ECDH P-256 (chiffrement des PWD/PACK et du snapshot), puis envoie les clés publiques, les preuves
+         *     d'attestation et un CSR PKCS#10 signé par la clé de signature.
+         *     Défis (champs de longueur fixe ou préfixés par leur longueur ; `code` = code normalisé) :
+         *     - Android (12 au moins, attestation KeyMint) : un défi par clé, fixé à sa génération
+         *       (`setAttestationChallenge`). Clé d'accord : `A = SHA-256("cashless-enroll-v1/agree" ‖ code ‖ serial)` ;
+         *       clé de signature : `S = SHA-256("cashless-enroll-v1/sign" ‖ code ‖ serial ‖ SPKI de la clé d'accord)`.
+         *       `key_attestation_chain` atteste la clé de signature, `agreement_attestation_chain` la clé d'accord.
+         *     - iOS (App Attest) : `clientDataHash = SHA-256("cashless-enroll-v1/ios" ‖ code ‖ serial ‖ SPKI signature ‖
+         *       SPKI accord)` ; la clé App Attest est distincte des deux clés enregistrées.
+         *     Le serveur vérifie dans cet ordre : corps ; clés (SPKI P-256, point sur la courbe) ; code (lecture seule) ;
+         *     mode ; défis ; attestation (clé dans le matériel sécurisé, générée et non importée, bootloader verrouillé,
+         *     application signée et intacte) ; CSR (clé = `signing_public_key`, signature valide). Puis, dans une seule
+         *     transaction, il verrouille le code, revérifie usage et expiration, crée `device` (status `ACTIVE`, affectation
+         *     et `personal_phone` repris du code), consomme le code et crée la famille de jetons. Il renvoie le certificat
+         *     client (mTLS, toujours présent), un jeton d'appareil et un jeton de rafraîchissement.
+         *     Un échec avant cette transaction ne consomme pas le code.
+         *     `next_seq` indique le premier numéro de séquence utilisable (jamais inférieur à `last_seq + 1` du même
+         *     `serial` dans le prestataire, voir sync_protocol.md §3).
          *     Pas de MDM (ADR-69) : un téléphone personnel (`device.personal_phone = true`) n'a jamais le hors ligne
          *     (`offline_enabled = false` dans sa politique effective).
-         *     Refus : code inconnu ou déjà utilisé (`422 ENROLLMENT_CODE_INVALID`), expiré (`422 ENROLLMENT_CODE_EXPIRED`),
-         *     attestation non conforme (`422 ATTESTATION_FAILED`), mode d'application `PAIRED_TPE` (V2, ADR-43)
-         *     ou non permis pour ce type de terminal (`422 DEVICE_MODE_NOT_ALLOWED`).
+         *     Refus : code inconnu ou déjà utilisé (`422 ENROLLMENT_CODE_INVALID`, réponse identique et en temps
+         *     comparable), expiré (`422 ENROLLMENT_CODE_EXPIRED`), attestation ou CSR non conforme
+         *     (`422 ATTESTATION_FAILED`, y compris Android antérieur à 12), mode d'application `PAIRED_TPE` (V2, ADR-43),
+         *     `TOPUP_DESK` sur iOS, ou téléphone personnel hors `KEYPAD_TPE` (`422 DEVICE_MODE_NOT_ALLOWED`) ;
+         *     `serial` d'un terminal non révoqué du même prestataire (`409 DEVICE_SERIAL_IN_USE`).
+         *     Limites : 10 essais par code et par heure, 30 essais par adresse et par heure ; au-delà `429 RATE_LIMITED`
+         *     avec `Retry-After`. Chaque essai, réussi ou non, compte.
          */
         post: operations["enrollDevice"];
         delete?: never;
@@ -68,9 +102,20 @@ export type paths = {
         put?: never;
         /**
          * Rafraîchir le jeton d'appareil
-         * @description Le terminal présente son jeton de rafraîchissement ET une preuve de possession : signature ECDSA P-256
-         *     (clé Keystore) de `nonce || serial || refresh_token`. Le jeton de rafraîchissement est à rotation
-         *     (usage unique) ; la réutilisation d'un jeton déjà consommé révoque toute la famille (vol présumé).
+         * @description Le terminal présente, sur une connexion mTLS avec SON certificat client (celui du terminal de ce `serial`),
+         *     son jeton de rafraîchissement ET une preuve de possession : signature ECDSA P-256 (clé de signature du
+         *     terminal) de `"cashless-refresh-v1" ‖ 0x00 ‖ nonce ‖ 0x00 ‖ serial ‖ 0x00 ‖ refresh_token` (séparateur
+         *     de domaine). Le jeton d'appareil n'est pas exigé (il peut être expiré). Exiger le mTLS ici renforce le
+         *     contrat (`research.md` R-07, ADR-107).
+         *     Le jeton de rafraîchissement (30 jours) est à rotation (usage unique) dans une famille créée à l'enrôlement :
+         *     - échange en cours sur le même jeton : `409 CONFLICT_STATE`, à réessayer (ce n'est pas une réutilisation) ;
+         *     - grâce de 60 s (OP-N65, ADR-108) : un jeton déjà consommé, représenté UNE seule fois dans les 60 s par le
+         *       même terminal (même certificat) avec une preuve valide, donne une nouvelle paire ; la paire émise
+         *       auparavant et jamais utilisée est révoquée ;
+         *     - toute autre représentation d'un jeton consommé (seconde fois, au-delà de 60 s, autre certificat) révoque
+         *       toute la famille (vol présumé, audit `DEVICE_TOKEN_REUSE`) : `401 REFRESH_TOKEN_INVALID` ; les jetons
+         *       d'appareil de la famille sont refusés dès la requête suivante et le terminal doit être ré-enrôlé ;
+         *     - jeton inconnu, expiré, révoqué ou preuve invalide : `401 REFRESH_TOKEN_INVALID`.
          *     Un appareil `SUSPENDED` ou `REVOKED` reçoit `403 DEVICE_SUSPENDED` / `DEVICE_REVOKED`.
          */
         post: operations["refreshDeviceToken"];
@@ -168,6 +213,126 @@ export type paths = {
         get: operations["getEventDeviceSyncStatus"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les terminaux (back-office)
+         * @description Terminaux du prestataire de la personne. Rôles : `OPERATOR_ADMIN` (tout le prestataire) ; `ORGANIZER_ADMIN`
+         *     (terminaux des événements de son organisateur). Aucune clé, aucune empreinte de certificat ni aucun jeton
+         *     n'est renvoyé. Pagination par curseur.
+         */
+        get: operations["listDevices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un terminal (back-office)
+         * @description Statut, affectation, système, mode, téléphone personnel, version de l'app, niveau d'attestation, dernière
+         *     présence, fin de validité du certificat client et historique des statuts. Jamais de clé publique, de clé
+         *     d'accord, d'empreinte de certificat ni de jeton. Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` pour un terminal
+         *     d'un événement de son organisateur. Terminal d'un autre prestataire ou hors du périmètre : `404` (réponse
+         *     neutre).
+         */
+        get: operations["getDevice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices/{device_id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suspendre un terminal (back-office)
+         * @description `ACTIVE` → `SUSPENDED`, motif obligatoire. Un terminal suspendu garde sa configuration et son battement de
+         *     cœur ; toute autre route de terminal lui répond `403 DEVICE_SUSPENDED`, y compris le rafraîchissement de jeton.
+         *     Autre statut de départ : `409 CONFLICT_STATE`. Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` pour un terminal
+         *     d'un événement de son organisateur ; une personne suffit. Terminal d'un autre prestataire ou hors du
+         *     périmètre : `404`. Historique des statuts et audit écrits dans la même transaction.
+         */
+        post: operations["suspendDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices/{device_id}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Réactiver un terminal suspendu (back-office)
+         * @description `SUSPENDED` → `ACTIVE`, motif obligatoire. Autre statut de départ (dont `REVOKED`, définitif) :
+         *     `409 CONFLICT_STATE`. Rôles : `OPERATOR_ADMIN` ; `ORGANIZER_ADMIN` pour un terminal d'un événement de son
+         *     organisateur ; une personne suffit. Terminal d'un autre prestataire ou hors du périmètre : `404`. Historique
+         *     des statuts et audit écrits dans la même transaction.
+         */
+        post: operations["reactivateDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices/{device_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Révoquer un terminal (back-office, définitif)
+         * @description `ACTIVE` ou `SUSPENDED` → `REVOKED`, motif obligatoire, définitif. Toutes les familles de jetons du terminal
+         *     sont révoquées dans la même transaction : ses jetons d'appareil et de rafraîchissement sont refusés dès la
+         *     requête suivante, et toute écriture en cours pour ce terminal qui relit son statut après la révocation est
+         *     refusée. Pour réutiliser l'appareil, le ré-enrôler avec un nouveau code (`next_seq` reprend après le dernier
+         *     numéro du même `serial`). Terminal déjà `REVOKED` : `409 CONFLICT_STATE`. Rôles : `OPERATOR_ADMIN` ;
+         *     `ORGANIZER_ADMIN` pour un terminal d'un événement de son organisateur ; une personne suffit. Terminal d'un
+         *     autre prestataire ou hors du périmètre : `404`. Historique des statuts et audit écrits dans la même
+         *     transaction.
+         */
+        post: operations["revokeDevice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -284,8 +449,8 @@ export type paths = {
          *     Le `tap_id` renvoyé (entier, `media_tap.id`) sert à UNE opération (paiement, recharge, activation, caution,
          *     restitution, rendu d'espèces) sur le MÊME terminal. L'écriture le consomme par `consume_tap`, qui relie
          *     `media_tap.transaction_id` à l'écriture. Une écriture en ligne doit suivre la lecture de moins de
-         *     `tap_replay_window_seconds` (défaut 120 s) ; au-delà, ou si le passage a déjà servi à une autre écriture :
-         *     `409 TAP_UNUSABLE` (`CL022`). Une opération peut aussi embarquer directement la lecture (`tap`) : le
+         *     `tap_replay_window_seconds` (défaut 120 s) ; au-delà, ou si le passage a déjà servi à une autre écriture
+         *     ou à une demande de rattachement : `409 TAP_UNUSABLE` (`CL022`). Une opération peut aussi embarquer directement la lecture (`tap`) : le
          *     serveur appelle alors `register_tap` lui-même (un seul aller-retour).
          *     Une même lecture (même terminal, même UID, même compteur) jamais utilisée pour une écriture est réutilisée,
          *     quel que soit le délai. Déjà utilisée : un renvoi réseau reçu dans `tap_replay_window_seconds` (ADR-50)
@@ -340,7 +505,11 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Consulter un bracelet (staff) */
+        /**
+         * Consulter un bracelet (guichet)
+         * @description Route de guichet : un terminal enrôlé (trois preuves) ET une personne `CASHIER` ou `SUPERVISOR` de
+         *     l'événement de ce terminal (ou de son organisateur), comme le sert l'API depuis la mission 4.
+         */
         get: operations["getMedia"];
         put?: never;
         post?: never;
@@ -3469,6 +3638,10 @@ export type components = {
          *     - `DEVICE_MODE_NOT_ALLOWED` (422) : mode d'application non permis ; en V1, tout usage de `PAIRED_TPE`
          *       ou de `payment_intent_id` (V2, ADR-43).
          *     - `CLOCK_SKEW_TOO_LARGE` (400) : horloge du terminal hors de la tolérance (`clock_tolerance_seconds`).
+         *       Sur une route de terminal, l'heure du serveur est renvoyée dans l'en-tête `Date`.
+         *     - `DEVICE_SIGNATURE_INVALID` (401) : signature de la requête du terminal absente, invalide ou rejouée
+         *       (`deviceSignature`) ; la réponse ne dit pas quel élément a échoué.
+         *     - `DEVICE_SERIAL_IN_USE` (409) : `serial` déjà porté par un terminal non révoqué du même prestataire.
          *     - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
          *     - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
          *     - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
@@ -3498,6 +3671,7 @@ export type components = {
          *     - `TAP_ALREADY_USED` (409) : `tap_id` déjà consommé par une autre opération, ou présenté par un autre
          *       terminal (contrôle de l'API avant écriture).
          *     - `TAP_UNUSABLE` (409, `CL022`) : refus de `consume_tap` : passage déjà utilisé par une autre écriture, ou
+         *       par une demande de rattachement (lecture qui a confirmé un rattachement, `consume_tap_for_claim`), ou
          *       écriture en ligne plus de `tap_replay_window_seconds` après la lecture ; relire le bracelet.
          *     - `ACTIVATION_MODE_NOT_ALLOWED` (422) : mode d'activation absent de `event.activation_modes`.
          *     - `ACCOUNT_REQUIRED` (422) : `identity_mode = ACCOUNT_REQUIRED` et aucun compte client fourni.
@@ -3552,7 +3726,7 @@ export type components = {
          *     - `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).
          * @enum {string}
          */
-        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT";
+        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE";
         PageMeta: {
             next_cursor: string | null;
             has_more: boolean;
@@ -3613,9 +3787,116 @@ export type components = {
         DeviceKind: "POS" | "TOPUP";
         /** @enum {string} */
         DeviceStatus: "ACTIVE" | "SUSPENDED" | "REVOKED";
-        EnrollmentCodeCreate: {
+        /**
+         * @description Terminal vu du back-office (nommé comme `MediaAdmin` : `Device` désigne déjà, dans les types Dart, l'objet
+         *     `device` de `DeviceConfig`). Ne porte JAMAIS de clé publique (`public_key`), de clé d'accord
+         *     (`agreement_public_key`), d'empreinte de certificat (`cert_sha256`) ni de jeton.
+         */
+        DeviceAdmin: {
             /** Format: uuid */
-            event_id?: string;
+            device_id: string;
+            serial: string;
+            kind: components["schemas"]["DeviceKind"];
+            app_mode: components["schemas"]["DeviceAppMode"];
+            /** @enum {string} */
+            os: "ANDROID" | "IOS";
+            personal_phone: boolean;
+            nfc_enabled: boolean;
+            /** @enum {string} */
+            provided_by?: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "MERCHANT";
+            status: components["schemas"]["DeviceStatus"];
+            /** @description Motif du dernier changement de statut. */
+            status_reason: string | null;
+            /** Format: uuid */
+            event_id: string | null;
+            /** Format: uuid */
+            pos_id: string | null;
+            station_name: string | null;
+            /** @description Version de l'app à l'enrôlement, mise à jour par le battement de cœur. */
+            app_version: string | null;
+            /**
+             * @description Preuve d'attestation vérifiée à l'enrôlement (`null` pour un terminal antérieur à la mission).
+             * @enum {string|null}
+             */
+            attestation_kind: "ANDROID_KEY_ATTESTATION" | "IOS_APP_ATTEST" | null;
+            /**
+             * @description Android : niveau de sécurité de la clé attestée ; iOS : `null`.
+             * @enum {string|null}
+             */
+            attestation_security_level: "TRUSTED_ENVIRONMENT" | "STRONGBOX" | null;
+            /** Format: date-time */
+            enrolled_at: string | null;
+            /** Format: date-time */
+            last_seen_at: string | null;
+            /**
+             * Format: date-time
+             * @description Fin de validité du certificat client.
+             */
+            cert_not_after: string | null;
+        };
+        /** @description Changement de statut d'un terminal (ajout seul). */
+        DeviceStatusHistoryEntry: {
+            /**
+             * @description `null` pour l'enrôlement.
+             * @enum {string|null}
+             */
+            from_status: "ACTIVE" | "SUSPENDED" | "REVOKED" | null;
+            to_status: components["schemas"]["DeviceStatus"];
+            reason: string | null;
+            /**
+             * Format: uuid
+             * @description Personne auteur du changement (`null` pour l'enrôlement).
+             */
+            actor_id: string | null;
+            at: components["schemas"]["Timestamp"];
+        };
+        /** @description Terminal et historique de ses statuts (du plus récent au plus ancien). */
+        DeviceAdminDetail: components["schemas"]["DeviceAdmin"] & {
+            status_history: components["schemas"]["DeviceStatusHistoryEntry"][];
+        };
+        DevicePage: {
+            data: components["schemas"]["DeviceAdmin"][];
+            next_cursor?: string | null;
+            has_more: boolean;
+        };
+        DeviceStatusChangeRequest: {
+            /** @description Motif du changement de statut (historique et audit). */
+            reason: string;
+        };
+        /** @description Code d'enrôlement en cours, vu du back-office. Ne porte JAMAIS le code ni son empreinte. */
+        DeviceEnrollmentCodeSummary: {
+            /** Format: uuid */
+            enrollment_code_id: string;
+            /** Format: uuid */
+            event_id: string | null;
+            /** Format: uuid */
+            pos_id: string | null;
+            station_name: string | null;
+            /** @enum {string|null} */
+            app_mode: "CATALOG_POS" | "KEYPAD_TPE" | "TOPUP_DESK" | null;
+            /** @enum {string|null} */
+            kind: "POS" | "TOPUP" | null;
+            personal_phone: boolean;
+            /** Format: uuid */
+            created_by: string;
+            created_at: components["schemas"]["Timestamp"];
+            expires_at: components["schemas"]["Timestamp"];
+        };
+        DeviceEnrollmentCodePage: {
+            data: components["schemas"]["DeviceEnrollmentCodeSummary"][];
+            next_cursor?: string | null;
+            has_more: boolean;
+        };
+        /**
+         * @description Création d'un code d'enrôlement (`createDeviceEnrollmentCode`). `event_id` est obligatoire : tout terminal
+         *     est affecté à un événement (condition de `DeviceConfig`). `personal_phone` est obligatoire et sans défaut.
+         */
+        EnrollmentCodeCreate: {
+            /**
+             * Format: uuid
+             * @description Événement du terminal (même prestataire ; pour `ORGANIZER_ADMIN`, un événement de son organisateur).
+             */
+            event_id: string;
             /** Format: uuid */
             pos_id?: string;
             station_name?: string;
@@ -3627,7 +3908,17 @@ export type components = {
              * @enum {string}
              */
             provided_by: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "MERCHANT";
-            /** @default 86400 */
+            /**
+             * @description Téléphone personnel (sans MDM) : choix obligatoire de l'administrateur, sans défaut (un défaut `false`
+             *     donnerait le hors ligne par oubli). `true` impose `app_mode = KEYPAD_TPE` (sinon
+             *     `422 DEVICE_MODE_NOT_ALLOWED`) et une politique effective sans hors ligne, sans recharge, remboursement
+             *     ni caution. Le terminal ne le déclare jamais lui-même.
+             */
+            personal_phone: boolean;
+            /**
+             * @description Durée de validité du code, de 5 min à 7 jours (défaut 24 h) ; hors bornes `422 VALIDATION_FAILED`.
+             * @default 86400
+             */
             expires_in_seconds: number;
         };
         EnrollmentCode: {
@@ -3637,6 +3928,12 @@ export type components = {
             expires_at: components["schemas"]["Timestamp"];
             app_mode: components["schemas"]["DeviceAppMode"];
         };
+        /**
+         * @description Demande d'enrôlement. Le code est scanné AVANT la génération des clés : les défis d'attestation en dérivent
+         *     (voir `enrollDevice`). Android : version 12 au moins, deux chaînes d'attestation (une par clé), défis
+         *     `A` (clé d'accord) et `S` (clé de signature). iOS : objet App Attest dans `key_attestation_chain`, défi
+         *     `clientDataHash` qui lie le code, le `serial` et les deux clés publiques.
+         */
         DeviceEnrollmentRequest: {
             enrollment_code: string;
             /** @description Numéro de série logique du terminal (préfixe des clés d'idempotence). */
@@ -3644,20 +3941,42 @@ export type components = {
             /** @enum {string} */
             os: "ANDROID" | "IOS";
             app_version: string;
-            /** @description Clé publique ECDSA P-256 (SubjectPublicKeyInfo DER) → `device.public_key`. */
+            /**
+             * @description Clé publique ECDSA P-256 : SubjectPublicKeyInfo DER canonique (point non compressé, 91 octets) →
+             *     `device.public_key`. Le serveur réencode la clé et exige les mêmes octets ; les défis hachent ces
+             *     octets tels quels.
+             */
             signing_public_key: string;
-            /** @description Clé publique ECDH P-256 (SPKI DER) pour le chiffrement des PWD/PACK. */
+            /**
+             * @description Clé publique ECDH P-256 pour le chiffrement des PWD/PACK : SubjectPublicKeyInfo DER canonique (point
+             *     non compressé, 91 octets), même forme sur Android et iOS. Le serveur réencode la clé et exige les
+             *     mêmes octets ; les défis `S` (Android) et `clientDataHash` (iOS) hachent ces octets tels quels. Le
+             *     serveur garde le point non compressé de 65 octets qu'ils contiennent (`device.agreement_public_key`).
+             */
             agreement_public_key: string;
-            /** @description Chaîne d'attestation Android Key Attestation (iOS : App Attest). */
+            /**
+             * @description Android : chaîne d'attestation de clé (KeyMint) de la clé de signature, feuille en tête, générée avec le
+             *     défi `S`. iOS : objet d'attestation App Attest (défi `clientDataHash`).
+             */
             key_attestation_chain: string[];
-            /** @description CSR PKCS#10 signé par la clé de signature (pour obtenir un certificat mTLS). */
-            csr_pem?: string;
+            /**
+             * @description Android (obligatoire quand `os = ANDROID`) : chaîne d'attestation de clé (KeyMint) de la clé d'accord,
+             *     feuille en tête, générée avec le défi `A`. iOS : absent (la clé d'accord est liée par
+             *     `clientDataHash`).
+             */
+            agreement_attestation_chain?: string[];
+            /**
+             * @description CSR PKCS#10 (PEM) signé par la clé de signature, dont la clé publique est `signing_public_key` ; sinon
+             *     `422 ATTESTATION_FAILED`. Obligatoire : le certificat client (mTLS) est l'une des trois preuves.
+             */
+            csr_pem: string;
         };
         DeviceEnrollmentResponse: {
             /** Format: uuid */
             device_id: string;
             serial: string;
-            certificate_pem?: string | null;
+            /** @description Certificat client X.509 (PEM) émis par l'autorité des terminaux, à présenter en mTLS. */
+            certificate_pem: string;
             access_token: string;
             /** @constant */
             token_type: "Bearer";
@@ -3667,10 +3986,24 @@ export type components = {
             next_seq: number;
             server_time: components["schemas"]["Timestamp"];
         };
+        /**
+         * @description Bornes identiques à celles du serveur (`refresh.dto.ts`, ADR-118) : un champ hors de son motif est refusé
+         *     en `400 VALIDATION_FAILED`. Aucun champ ne peut contenir l'octet nul : le découpage du message signé est
+         *     unique.
+         */
         DeviceTokenRefreshRequest: {
             serial: string;
+            /** @description Jeton de rafraîchissement reçu (`drt_` puis 256 bits en base64url), 16 à 128 caractères. */
             refresh_token: string;
+            /** @description Nonce choisi par le terminal, 16 à 64 caractères base64 ou base64url. */
             nonce: string;
+            /**
+             * @description Preuve de possession : signature ECDSA P-256 / SHA-256, par la clé de signature du terminal, de
+             *     `"cashless-refresh-v1" ‖ 0x00 ‖ nonce ‖ 0x00 ‖ serial ‖ 0x00 ‖ refresh_token` (octets UTF-8), au
+             *     format brut `r ‖ s` de 64 octets (`ieee-p1363`, comme la signature des requêtes), en base64 (88
+             *     caractères). Une signature qui n'est pas du base64 : `400` ; d'une autre longueur, ou invalide :
+             *     `401 REFRESH_TOKEN_INVALID`.
+             */
             signature: string;
         };
         TokenResponse: {
@@ -6062,7 +6395,8 @@ export type components = {
             dedicated_event_id?: string | null;
             /** @description Derniers caractères de la référence de la clé dans le service de clés (la référence complète n'est jamais rendue). */
             kms_key_ref_suffix: string;
-            kms_disabled_at?: components["schemas"]["Timestamp"] | null;
+            /** Format: date-time */
+            kms_disabled_at?: string | null;
             created_at: components["schemas"]["Timestamp"];
         };
         TagKeyDetail: components["schemas"]["TagKey"] & {
@@ -6107,7 +6441,8 @@ export type components = {
             /** Format: uuid */
             approval_request_id?: string | null;
             created_at: components["schemas"]["Timestamp"];
-            finished_at?: components["schemas"]["Timestamp"] | null;
+            /** Format: date-time */
+            finished_at?: string | null;
         };
         TagKeyCheckRun: {
             /** Format: uuid */
@@ -6133,7 +6468,8 @@ export type components = {
             /** @enum {string} */
             kind: "NFC_TAG" | "CARD" | "QR";
             key_index: number;
-            personalized_at?: components["schemas"]["Timestamp"] | null;
+            /** Format: date-time */
+            personalized_at?: string | null;
             /** Format: uuid */
             batch_id?: string | null;
             batch_kind?: ("PUBLIC" | "STAFF" | "VIP") | null;
@@ -6149,7 +6485,8 @@ export type components = {
              */
             deposit_held: number;
             has_claim_code: boolean;
-            claim_code_used_at?: components["schemas"]["Timestamp"] | null;
+            /** Format: date-time */
+            claim_code_used_at?: string | null;
             wallets: {
                 /** Format: uuid */
                 wallet_id: string;
@@ -6224,7 +6561,11 @@ export type components = {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description Authentification absente ou invalide (`UNAUTHENTICATED`, `WEBHOOK_SIGNATURE_INVALID`). */
+        /**
+         * @description Authentification absente ou invalide (`UNAUTHENTICATED`, `DEVICE_SIGNATURE_INVALID`,
+         *     `REFRESH_TOKEN_INVALID`, `WEBHOOK_SIGNATURE_INVALID`). Pour un terminal, la réponse ne dit pas quelle
+         *     preuve a échoué.
+         */
         Unauthorized: {
             headers: {
                 "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -6433,6 +6774,37 @@ export type components = {
         AuthorityEpoch: number;
         /** @description Identifiant de corrélation fourni par le client. */
         RequestId: string;
+        /**
+         * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+         *     `"x-request-id"` (`deviceSignature`).
+         */
+        DeviceRequestId: string;
+        /**
+         * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+         *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+         * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+         */
+        SignatureInput: string;
+        /**
+         * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+         * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+         */
+        Signature: string;
+        /**
+         * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+         *     vide. Composant signé `"content-digest"`.
+         * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+         */
+        ContentDigest: string;
+        /**
+         * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+         *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+         */
+        SignatureInputIfDevice: string;
+        /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+        SignatureIfDevice: string;
+        /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+        ContentDigestIfDevice: string;
         /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
         Cursor: string;
         Limit: number;
@@ -6489,6 +6861,64 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
+    listDeviceEnrollmentCodes: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Codes de cet événement. */
+                event_id?: string;
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de codes en cours. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "enrollment_code_id": "5a0c2c1e-0b9d-4b1e-8f7f-3f0e8d1d2c33",
+                     *           "event_id": "7b1e4a52-8f0c-4c1d-9d3e-2a6b0f1c9e11",
+                     *           "pos_id": "0c6f0d7e-11aa-4b8b-9c3e-5d2f1a7b8c90",
+                     *           "station_name": null,
+                     *           "app_mode": "CATALOG_POS",
+                     *           "kind": "POS",
+                     *           "personal_phone": false,
+                     *           "created_by": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+                     *           "created_at": "2026-12-09T08:00:00Z",
+                     *           "expires_at": "2026-12-10T08:00:00Z"
+                     *         }
+                     *       ],
+                     *       "next_cursor": null,
+                     *       "has_more": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DeviceEnrollmentCodePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
     createDeviceEnrollmentCode: {
         parameters: {
             query?: never;
@@ -6517,6 +6947,7 @@ export interface operations {
                  *       "pos_id": "0c6f0d7e-11aa-4b8b-9c3e-5d2f1a7b8c90",
                  *       "app_mode": "CATALOG_POS",
                  *       "kind": "POS",
+                 *       "personal_phone": false,
                  *       "expires_in_seconds": 86400
                  *     }
                  */
@@ -6545,6 +6976,8 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
         };
     };
@@ -6575,6 +7008,10 @@ export interface operations {
                  *       "agreement_public_key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEq1l3Zt6m2xY3fQ9m8u0X4bP0dL2c7aQ5eR9tY1uI3oP5aS7dF9gH1jK3lA4Zm2Lq9c0kqg8n1dXo3f0cC1mW3Q==",
                  *       "key_attestation_chain": [
                  *         "MIIC...leaf",
+                 *         "MIIC...intermediate"
+                 *       ],
+                 *       "agreement_attestation_chain": [
+                 *         "MIIC...leaf-agreement",
                  *         "MIIC...intermediate"
                  *       ],
                  *       "csr_pem": "-----BEGIN CERTIFICATE REQUEST-----\nMIIB...\n-----END CERTIFICATE REQUEST-----"
@@ -6608,9 +7045,41 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            409: components["responses"]["Conflict"];
+            /** @description `serial` déjà porté par un terminal non révoqué du même prestataire (`DEVICE_SERIAL_IN_USE`). */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/DEVICE_SERIAL_IN_USE",
+                     *       "title": "Numéro de série déjà utilisé",
+                     *       "status": 409,
+                     *       "code": "DEVICE_SERIAL_IN_USE",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b",
+                     *       "retryable": false
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             422: components["responses"]["Unprocessable"];
-            429: components["responses"]["TooManyRequests"];
+            /**
+             * @description Trop d'essais d'enrôlement (`RATE_LIMITED`) : plus de 10 essais pour ce code, ou plus de 30 essais depuis
+             *     cette adresse, dans l'heure. Réessayer après `Retry-After`.
+             */
+            429: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     refreshDeviceToken: {
@@ -6635,7 +7104,7 @@ export interface operations {
                  *       "serial": "TPE-FOOD-02",
                  *       "refresh_token": "drt_2wq0mXn9vBv4c1s8u7yT",
                  *       "nonce": "6f1c2b8e9a0d4e7f",
-                 *       "signature": "MEUCIQDx...base64"
+                 *       "signature": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QA=="
                  *     }
                  */
                 "application/json": components["schemas"]["DeviceTokenRefreshRequest"];
@@ -6663,14 +7132,54 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            /** @description Échange déjà en cours pour ce jeton de rafraîchissement (`CONFLICT_STATE`) ; réessayer. */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/CONFLICT_STATE",
+                     *       "title": "État incompatible",
+                     *       "status": 409,
+                     *       "code": "CONFLICT_STATE",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b",
+                     *       "retryable": true
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     getDeviceConfig: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -6796,14 +7305,57 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            /**
+             * @description Affectation incomplète (`CONFLICT_STATE`) : terminal affecté à aucun événement, événement introuvable,
+             *     ou grand livre de l'événement non ouvert. Rien de valide à servir (aucune valeur inventée) ; à
+             *     corriger dans le back-office (réaffectation), non à réessayer tel quel.
+             */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/CONFLICT_STATE",
+                     *       "title": "État incompatible",
+                     *       "status": 409,
+                     *       "code": "CONFLICT_STATE",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     postDeviceHeartbeat: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -6857,14 +7409,58 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /**
+             * @description Affectation incomplète (`CONFLICT_STATE`) : terminal affecté à aucun événement, événement introuvable,
+             *     ou grand livre de l'événement non ouvert. Rien de valide à servir (aucune valeur inventée) ; à
+             *     corriger dans le back-office (réaffectation), non à réessayer tel quel.
+             */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/CONFLICT_STATE",
+                     *       "title": "État incompatible",
+                     *       "status": 409,
+                     *       "code": "CONFLICT_STATE",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     getDeviceSeqStatus: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -6956,6 +7552,269 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    listDevices: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Terminaux affectés à cet événement. */
+                event_id?: string;
+                /** @description Terminaux affectés à ce point de vente. */
+                pos_id?: string;
+                /** @description Statut du terminal. */
+                status?: components["schemas"]["DeviceStatus"];
+                /** @description Mode d'application du terminal. */
+                app_mode?: components["schemas"]["DeviceAppMode"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de terminaux. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevicePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getDevice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Terminal et historique de ses statuts. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "device_id": "3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f",
+                     *       "serial": "TPE-FOOD-02",
+                     *       "kind": "POS",
+                     *       "app_mode": "CATALOG_POS",
+                     *       "os": "ANDROID",
+                     *       "personal_phone": false,
+                     *       "nfc_enabled": true,
+                     *       "provided_by": "OPERATOR",
+                     *       "status": "ACTIVE",
+                     *       "status_reason": null,
+                     *       "event_id": "7b1e4a52-8f0c-4c1d-9d3e-2a6b0f1c9e11",
+                     *       "pos_id": "0c6f0d7e-11aa-4b8b-9c3e-5d2f1a7b8c90",
+                     *       "station_name": null,
+                     *       "app_version": "1.4.2",
+                     *       "attestation_kind": "ANDROID_KEY_ATTESTATION",
+                     *       "attestation_security_level": "STRONGBOX",
+                     *       "enrolled_at": "2026-12-09T08:12:03Z",
+                     *       "last_seen_at": "2026-12-13T21:00:00Z",
+                     *       "cert_not_after": "2027-12-09T08:12:03Z",
+                     *       "status_history": [
+                     *         {
+                     *           "from_status": null,
+                     *           "to_status": "ACTIVE",
+                     *           "reason": "Enrôlement",
+                     *           "actor_id": null,
+                     *           "at": "2026-12-09T08:12:03Z"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DeviceAdminDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    suspendDevice: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Terminal signalé perdu par le commerçant, en cours de recherche."
+                 *     }
+                 */
+                "application/json": components["schemas"]["DeviceStatusChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Terminal suspendu. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceAdminDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    reactivateDevice: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Terminal retrouvé et contrôlé par le superviseur du site."
+                 *     }
+                 */
+                "application/json": components["schemas"]["DeviceStatusChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Terminal réactivé. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceAdminDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    revokeDevice: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Terminal volé, plainte déposée le 13/12."
+                 *     }
+                 */
+                "application/json": components["schemas"]["DeviceStatusChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Terminal révoqué. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceAdminDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     waiveSeqGap: {
         parameters: {
             query?: never;
@@ -7039,9 +7898,29 @@ export interface operations {
     getMediaAuthKey: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7096,9 +7975,29 @@ export interface operations {
     createTap: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7151,8 +8050,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7229,9 +8148,29 @@ export interface operations {
     getMedia: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7286,8 +8225,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7347,8 +8306,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7421,8 +8400,28 @@ export interface operations {
                  *     nécessité, il est vérifié puis consommé de la même façon.
                  */
                 "X-Approval-Token"?: components["parameters"]["ApprovalToken"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7489,8 +8488,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7541,8 +8560,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7637,8 +8676,28 @@ export interface operations {
                  *     nécessité, il est vérifié puis consommé de la même façon.
                  */
                 "X-Approval-Token"?: components["parameters"]["ApprovalToken"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7709,8 +8768,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7772,6 +8851,15 @@ export interface operations {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
+                /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
                  */
@@ -7815,6 +8903,15 @@ export interface operations {
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7893,8 +8990,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -7966,6 +9083,15 @@ export interface operations {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
+                /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
                  */
@@ -8028,6 +9154,15 @@ export interface operations {
             header?: {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8405,10 +9540,30 @@ export interface operations {
                 /** @description Dernière version appliquée par le terminal (delta demandé). */
                 since_version?: number;
             };
-            header?: {
+            header: {
                 "Accept-Encoding"?: string;
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8500,9 +9655,29 @@ export interface operations {
     ackOfflineSnapshot: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8554,8 +9729,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8705,9 +9900,29 @@ export interface operations {
     getOfflineBatchResult: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8827,6 +10042,15 @@ export interface operations {
             header?: {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -8962,9 +10186,29 @@ export interface operations {
             query?: {
                 wait?: number;
             };
-            header?: {
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -9131,8 +10375,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -9198,6 +10462,15 @@ export interface operations {
             header?: {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -9304,6 +10577,15 @@ export interface operations {
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -9843,8 +11125,28 @@ export interface operations {
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.

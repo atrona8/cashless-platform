@@ -11,13 +11,13 @@ DeviceEnrollmentResponse _$DeviceEnrollmentResponseFromJson(
 ) => DeviceEnrollmentResponse(
   deviceId: json['device_id'] as String,
   serial: json['serial'] as String,
+  certificatePem: json['certificate_pem'] as String,
   accessToken: json['access_token'] as String,
   tokenType: json['token_type'] as String,
   expiresIn: (json['expires_in'] as num).toInt(),
   refreshToken: json['refresh_token'] as String,
   nextSeq: (json['next_seq'] as num).toInt(),
   serverTime: DateTime.parse(json['server_time'] as String),
-  certificatePem: json['certificate_pem'] as String?,
 );
 
 Map<String, dynamic> _$DeviceEnrollmentResponseToJson(

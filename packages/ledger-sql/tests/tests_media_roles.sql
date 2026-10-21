@@ -57,6 +57,27 @@ SELECT is((SELECT count(*)::int FROM unnest(ARRAY['cashless_tagkeys','cashless_p
                   unnest(ARRAY['DELETE','TRUNCATE']) p WHERE has_table_privilege(r, t, p)), 0,
   'aucune suppression nulle part, pour aucun rôle');
 
+-- 2b. Fonctions d'API du schéma de référence (OP-N44, ADR-80 et ADR-101 ; levée par la mission 5a, lot WP07) -----------
+-- Limite d'avant : EXECUTE hérité de PUBLIC, ces rôles appelaient post_transaction, preload_media,
+-- activate_media… pour un prestataire dont ils posaient l'identifiant. Désormais refusé, avant
+-- toute lecture des arguments.
+SELECT is((SELECT count(*)::int FROM unnest(ARRAY['cashless_tagkeys','cashless_perso','cashless_tagcheck','cashless_keyadmin']) r,
+                  unnest(ARRAY['post_transaction(uuid,text,text,timestamptz,text,jsonb,uuid,uuid,uuid,uuid,uuid,uuid,uuid,jsonb)',
+                               'preload_media(uuid)', 'activate_media(uuid,uuid,text,uuid)', 'register_tap(uuid,bytea,bytea,bigint,timestamptz,uuid,text,uuid,bigint,bytea)',
+                               'consume_tap(bigint,uuid)', 'grant_edge_authority(uuid,uuid,uuid)', 'set_event_status(uuid,event_status,uuid)',
+                               'open_offline_batch(uuid,uuid,uuid,bigint,bytea,bytea[],bytea,bytea,text)']) f
+            WHERE has_function_privilege(r, f, 'EXECUTE')), 0,
+  'OP-N44 : aucun rôle des clés n''exécute une fonction d''API du schéma de référence');
+SET LOCAL ROLE cashless_tagkeys;
+SELECT pg_temp.a();
+SELECT throws_ok($$SELECT preload_media('00000000-0000-0000-0000-00000014d001')$$, '42501', NULL,
+  'OP-N44 : clés de bracelet, préchargement d''un bracelet refusé');
+SET LOCAL ROLE cashless_perso;
+SELECT pg_temp.a();
+SELECT throws_ok($$SELECT activate_media('00000000-0000-0000-0000-00000014d001', NULL, NULL, NULL)$$, '42501', NULL,
+  'OP-N44 : personnalisation, activation d''un bracelet refusée');
+RESET ROLE;
+
 -- 3. API publique : ne lit plus les secrets chiffrés ---------------------------------------------------------------------------
 SELECT ok(NOT has_column_privilege('cashless_app', 'media', 'pwd_pack_enc', 'SELECT'), 'API publique : pas de lecture de media.pwd_pack_enc');
 SELECT ok(NOT has_column_privilege('cashless_app', 'media', 'pwd_pack_dek_id', 'SELECT'), 'API publique : pas de lecture de media.pwd_pack_dek_id');

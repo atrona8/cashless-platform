@@ -9,7 +9,6 @@ import 'media_admin_batch_kind.dart';
 import 'media_admin_kind.dart';
 import 'media_batch_status.dart';
 import 'media_status.dart';
-import 'timestamp.dart';
 import 'wallets2.dart';
 
 part 'media_admin.g.dart';
@@ -45,7 +44,7 @@ class MediaAdmin {
   @JsonKey(name: 'key_index')
   final int keyIndex;
   @JsonKey(name: 'personalized_at')
-  final Timestamp? personalizedAt;
+  final DateTime? personalizedAt;
   @JsonKey(name: 'batch_id')
   final String? batchId;
   @JsonKey(name: 'batch_kind')
@@ -65,7 +64,7 @@ class MediaAdmin {
   @JsonKey(name: 'has_claim_code')
   final bool hasClaimCode;
   @JsonKey(name: 'claim_code_used_at')
-  final Timestamp? claimCodeUsedAt;
+  final DateTime? claimCodeUsedAt;
   final List<Wallets2> wallets;
 
   Map<String, Object?> toJson() => _$MediaAdminToJson(this);

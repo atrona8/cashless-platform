@@ -33,12 +33,18 @@ export class TapRefused extends Error {
 export class TapService {
   constructor(private readonly tx: TenantTx) {}
 
-  /** `register_tap` en ligne, dans la transaction de l'appelant. */
+  /**
+   * `register_tap` en ligne, dans la transaction de l'appelant. Le statut du terminal est relu
+   * d'abord dans CETTE transaction (`assert_device_active`, FOR SHARE ; mission 5a, R-14) :
+   * `register_tap` ne le contrôle pas, et une révocation validée après la garde serait sinon
+   * ignorée. Aucune fonction de ce service ne prend le terminal FOR UPDATE avant (interblocage).
+   */
   async registerEmbedded(
     client: TxClient,
     device: DeviceContext,
     tap: TapInput,
   ): Promise<RegisteredTap> {
+    await client.query('SELECT assert_device_active($1)', [device.deviceId]);
     const { rows } = await client.query<{ result: TapResult; tap_id: bigint | null }>(
       `SELECT result, tap_id FROM register_tap($1, $2, $3, $4, $5, $6, 'ONLINE', NULL, NULL, $7)`,
       [

@@ -1,7 +1,7 @@
 // Poste de personnalisation (contracts/openapi-additions.md) : forme de la demande d'enregistrement d'un bracelet.
 // Le poste n'envoie jamais l'identité de la puce, seulement son empreinte ; il fournit une clé publique à usage unique
 // pour laquelle le mot de passe sera chiffré.
-import { createECDH, createHash } from 'node:crypto';
+import { createECDH, createHash, createHmac } from 'node:crypto';
 import { P256_PUBLIC_KEY_LENGTH } from '@cashless/tag-format';
 import { invalid, isUuid, objectBody } from '../../organization/platform/platform.dto';
 
@@ -72,9 +72,30 @@ function stationPublicKey(value: unknown): Buffer {
   );
 }
 
-/** Empreinte de la demande pour l'idempotence : ce qui désigne la puce, pas la clé du poste (elle change à chaque envoi). */
-export function personalizationHash(input: PersonalizationInput): string {
-  return createHash('sha256')
+/** Préfixe de domaine de l'empreinte d'idempotence du poste (distincte de celle de l'intercepteur). */
+const PERSONALIZATION_HASH_PREFIX = Buffer.from('CASHLESS/IDEMPOTENCY/PERSO/v1', 'ascii');
+/** Taille minimale de la clé, comme les autres secrets HMAC du serveur. */
+const MIN_HASH_KEY_LENGTH = 32;
+
+/**
+ * Empreinte de la demande pour l'idempotence : ce qui désigne la puce, pas la clé du poste (elle
+ * change à chaque envoi), et la personne qui l'envoie (ADR-116). HMAC-SHA256 sous
+ * `IDEMPOTENCY_HMAC_KEY` (OP-N54, ADR-99) : l'UID et l'empreinte du jeton ne se retrouvent pas par
+ * essais depuis `api_idempotency.request_hash` si la base fuit. Champs de longueur fixe : la
+ * concaténation n'est pas ambiguë.
+ */
+export function personalizationHash(
+  input: PersonalizationInput,
+  personId: string,
+  key: Buffer,
+): string {
+  if (key.length < MIN_HASH_KEY_LENGTH)
+    throw new Error(
+      `Empreinte de personnalisation : clé de ${MIN_HASH_KEY_LENGTH} octets au moins`,
+    );
+  return createHmac('sha256', key)
+    .update(PERSONALIZATION_HASH_PREFIX)
+    .update(personId, 'utf8')
     .update(input.batchId)
     .update(input.tokenHash)
     .update(input.uid)
