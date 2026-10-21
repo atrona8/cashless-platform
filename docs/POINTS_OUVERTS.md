@@ -47,6 +47,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N70 | Suites de la mission 4 servies en clair : elles tournent encore sous le faux d'identité du terminal (tests seulement, refusé en production) ; l'identité réelle n'est prouvée en HTTPS que sur deux routes et la matrice des preuves (ADR-113) | Non | Non (faux de test, refusé en production) | WP18 de la mission 5a, décision du porteur du 20/10/2026 |
+| OP-N71 | Idempotence : l'empreinte ignore les paramètres de chemin et la clé n'est pas liée à la personne ; même clé sur un autre `:id` rejoue la réponse de la première ressource, un collègue qui connaît la clé reçoit une réponse hors de sa portée ; antérieur à la mission 5a (ADR-116) | Non | **Oui** (renforcement décidé, à corriger avant la fusion de la mission) | WP18 de la mission 5a, décision du porteur du 21/10/2026 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -559,6 +560,22 @@ la même mission ; décision du porteur du 20/10/2026 ; ADR-113.**
 - **Condition de levée (WP18).** Au moins une route de chaque contrôleur de terminal de la mission 4 servie en HTTPS
   réel avec le terminal de test ; un test échoue si une route de terminal n'est couverte par aucun test en identité
   réelle.
+
+### OP-N71 — Idempotence : rejeu sur une autre ressource et entre personnes (21 octobre 2026)
+
+Signalé par la relecture de WP16 (mission 5a), défaut antérieur (mission 1, `contracts/idempotency.md` règle 3).
+**Correction transverse décidée par le porteur le 21/10/2026 ; confiée à WP18 de la mission 5a ; ADR-116.**
+
+- **Constat.** `requestHash` (`apps/api/src/idempotency/request-hash.ts`) prend le modèle de route, pas le chemin
+  concret, et `api_idempotency` range la clé sous (prestataire, portée, clé). `POST /v1/devices/A/revoke` puis
+  `POST /v1/devices/B/revoke` avec la même `Idempotency-Key` et le même motif : le second rejoue le 200 du premier, B
+  reste actif. Toutes les routes `/:id` idempotentes sont concernées (prestataire, personnes, événements, approbations,
+  médias, terminaux).
+- **Risque.** Action de sécurité (révocation, suspension) crue faite et non faite ; réponse d'une ressource rendue à
+  une personne du même prestataire qui n'y a pas droit, si elle connaît la clé.
+- **Condition de levée (WP18).** Empreinte sur le chemin concret et clé liée à l'appelant (ADR-116), règle 3 du contrat
+  mise à jour ; tests : même clé sur deux `:id` → `422 IDEMPOTENCY_KEY_REUSED`, même clé par deux personnes → aucune
+  réponse de l'autre, rejeu légitime inchangé ; consigne de déploiement pour les lignes antérieures.
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 

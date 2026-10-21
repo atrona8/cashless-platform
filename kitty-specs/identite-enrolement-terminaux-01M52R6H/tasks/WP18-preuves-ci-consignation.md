@@ -154,6 +154,23 @@ CI verte sur la branche ; toutes les suites vertes ; points ouverts et ADR à jo
   encore dans sa fenêtre, ou si `purge_device_enrollment_attempts` retire un essai de moins de 24 h, appelées en
   `cashless_app` ; à citer dans la revue des écarts (droit plus large accepté).
 
+## Reports des relectures (21/10/2026)
+
+- ADR-116 / OP-N71 (décision du porteur du 21/10, relecture de WP16) : correction transverse de l'idempotence.
+  `requestHash` prend le chemin concret (paramètres de chemin compris, sans chaîne de requête) au lieu du modèle de
+  route, et la clé est liée à l'appelant (personne, terminal ou processus) ; mise à jour de la règle 3 de
+  `kitty-specs/fondations-grand-livre-01M4AY8M/contracts/idempotency.md`. Tests : même clé sur deux `:id`
+  (`POST /v1/devices/{A,B}/revoke`) → `422 IDEMPOTENCY_KEY_REUSED` et B réellement traité seulement par sa propre clé ;
+  même clé par deux personnes du même prestataire → aucune réponse de l'autre ; rejeu légitime inchangé. Consigne de
+  déploiement des lignes `api_idempotency` antérieures, avec celle d'OP-N54. Puis lever OP-N71.
+- Relecture WP16 : test de ré-enrôlement du `serial` après une révocation faite par le back-office (FR-016) ; FR-025 :
+  vérifier l'adresse IP et le `request_id` dans l'audit des transitions ; `deviceScope` (défense en profondeur) :
+  vérifier le type et l'identifiant de la portée d'une attribution OPERATOR_ADMIN.
+- Revue des écarts de sécurité : lister ADR-115 (contrôle de famille relâché à l'étape 3 pour un terminal `REVOKED`,
+  compensé par les étapes 4 à 6). Lignes de plus de 100 caractères laissées par WP16
+  (`real-device-identity.ts:129`, `admin.spec.ts:612`, `test/unit/real-device-identity.spec.ts:4,248,258`) : couvertes
+  par le reformatage Prettier à la fusion.
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie qu'aucun écart de sécurité n'est resté hors des points ouverts (constat bloquant sinon) et que chaque dette close cite un test qui échouait avant la mission.

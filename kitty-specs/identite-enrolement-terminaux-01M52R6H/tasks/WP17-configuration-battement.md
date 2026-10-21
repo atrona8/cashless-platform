@@ -90,6 +90,12 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
 
+## Reports des relectures (21/10/2026)
+
+- Relecture WP16 (ADR-115) : un terminal révoqué reçoit le `403 DEVICE_REVOKED` de l'étape 6 bis sur la configuration
+  servie et le battement de cœur ; à tester après une révocation faite par la route du back-office. Tester aussi
+  `allowSuspended` après une suspension faite par la même route.
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie qu'aucun contenu des missions suivantes n'est inventé et que l'ETag ne change pas d'un appel à l'autre sans changement réel.

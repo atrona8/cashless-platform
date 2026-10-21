@@ -1492,3 +1492,27 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** `real-device-identity.ts` (WP12) modifié dans WP16, avec ses tests ; `media-port-swap.spec.ts`
   attend `403`. Contrat `device-authentication.md` mis à jour (étape 6 bis).
 - **Références.** FR-016 ; WP12 et WP16 de la mission 5a ; ADR-107.
+
+## ADR-116 — Idempotence : chemin concret et personne dans la clé
+
+- **Statut** : Acceptée, 21 octobre 2026 (décision du porteur après la relecture de WP16, mission 5a). Mise en œuvre
+  par WP18 de la mission 5a ; OP-N71 levé à sa fusion.
+- **Contexte.** `contracts/idempotency.md` (mission 1, règle 3) calcule l'empreinte sur le **modèle** de route
+  (`/v1/devices/:device_id/revoke`) et range la clé sous (prestataire, portée, clé). Même clé et même corps sur un autre
+  `:id` rejouent la réponse de la première ressource : le second terminal n'est pas révoqué alors que le client croit
+  l'avoir fait. Un collègue du même prestataire qui connaît la clé reçoit la réponse enregistrée, même hors de sa portée.
+  Défaut antérieur à la mission 5a, présent sur toutes les routes `/:id` idempotentes ; SPECIFICATION §10.2 attend
+  `IDEMPOTENCY_KEY_REUSED` pour « même clé, contenu différent ». Contradiction entre le contrat et SPECIFICATION
+  signalée par la relecture de WP16.
+- **Décision.** L'empreinte porte sur le chemin concret (paramètres de chemin compris, sans la chaîne de requête) au
+  lieu du modèle de route : même clé sur un autre `:id` → `422 IDEMPOTENCY_KEY_REUSED`. La clé est liée à la personne
+  authentifiée (ou au terminal, ou au processus) qui l'a créée : un autre appelant ne rejoue jamais une réponse qu'il
+  n'a pas obtenue lui-même. La règle 3 du contrat est mise à jour dans le même lot.
+- **Pourquoi.** Renforcement : supprime le rejeu sur une autre ressource et la fuite d'une réponse hors portée.
+  SPECIFICATION §10.2 l'emporte sur le contrat (§0.3).
+- **Conséquences.** Les lignes `api_idempotency` antérieures ne rejouent plus après le déploiement (empreinte
+  différente : `IDEMPOTENCY_KEY_REUSED` sur un rejeu en vol) ; consigne de déploiement à écrire avec celle d'OP-N54.
+  Tests : même clé sur deux `:id` → 422 ; même clé par deux personnes → aucune réponse de l'autre ; rejeu légitime
+  inchangé.
+- **Références.** SPECIFICATION §10.2 ; `contracts/idempotency.md` (mission 1) ; WP16 et WP18 de la mission 5a ;
+  OP-N71 ; ADR-99 (OP-N54).

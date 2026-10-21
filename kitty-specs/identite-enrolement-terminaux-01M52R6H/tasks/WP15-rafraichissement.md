@@ -102,6 +102,15 @@ Tests d'intégration verts ; suite complète de l'API verte. Chaque sous-tâche 
   42501 ou test rouge). Une migration s'exécute désormais dans la transaction de `migrate.ts` : pas de
   `CREATE INDEX CONCURRENTLY`, pas d'`ALTER TYPE … ADD VALUE` utilisée dans la même série.
 
+## Reports des relectures (21/10/2026)
+
+- Relecture WP16 (ADR-115) : au rafraîchissement, un terminal `REVOKED` ne reçoit `403 DEVICE_REVOKED` qu'après
+  preuve de possession (certificat, signature, jeton de rafraîchissement valides) ; sinon `401`, et rien n'est écrit
+  dans les deux cas. Tests : révocation par la route du back-office, puis rafraîchissement avec preuves valides → 403,
+  avec une preuve fausse → 401.
+- ADR-116 (décision du porteur du 21/10) : l'empreinte d'idempotence va changer dans WP18 (chemin concret, clé liée à
+  l'appelant) ; n'écris pas de test qui dépende du modèle de route dans l'empreinte.
+
 ## Risks / Reviewer guidance
 
 Le relecteur vérifie que la grâce est bornée exactement comme ADR-108 (une fois, même certificat, 60 s) et que l'audit d'une réutilisation survit au refus.
