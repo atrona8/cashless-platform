@@ -19,6 +19,9 @@ Transition interdite → `409 CONFLICT_STATE`. Autre prestataire ou hors périm�
 Schéma `DeviceConfig` du contrat. Contenu dans cette mission : `research.md` R-10. `config_id` =
 `device_config_served.id` (`openapi.yaml`) ; ETag = SHA-256 du contenu canonique (JCS) hors `server_time`, qui change
 aussi avec le statut du terminal (ADR-118) ; `If-None-Match` égal → `304`.
+Chaque configuration servie est enregistrée par `record_config_served` ; depuis la migration 0029 (WP18, ADR-118),
+la fonction refuse un terminal `REVOKED` (`42501`) et une `config_version` inconnue, d'un autre prestataire ou de
+niveau `PLATFORM` (`P0002`), sans rien écrire (`tests_config_served_guard.sql`).
 
 ## `POST /v1/device/heartbeat` (`postDeviceHeartbeat`, `allowSuspended`)
 

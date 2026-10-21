@@ -18,7 +18,11 @@ Sans certificat ni jeton (`security: []`). Le terminal scanne le code **avant** 
 Limites : 10 essais **refusés** par code et par heure (tout code bien formé, connu ou non), 30 essais **refusés** par
 adresse et par heure → `429` (R-16, ADR-117). Au-delà de la limite, un seul essai et un seul audit `RATE_LIMITED` par fenêtre ;
 les `429` suivants n'écrivent rien. Les limites sont lues avant l'étape 1 ; les réussites ne comptent dans aucune
-limite. Ordre :
+limite. Migration 0030 (WP18, ADR-117) : la limite par adresse vaut par /64 en IPv6 (IPv4 encapsulée ramenée à
+IPv4) ; les limites sont atomiques (verrous de l'adresse puis du code pris avant le contrôle, même transaction que
+l'écriture) ; une rafale simultanée garde ses codes HTTP d'origine, ses écritures sont bornées (10 refus et une trace,
+`429` dès la requête suivante) ; la trace `RATE_LIMITED` porte `limit` (`code`, `address` ou `code,address`) et
+`refusal` (le refus d'origine). Limite résiduelle : OP-N72 (pas de limite en amont). Ordre :
 
 1. Validation du corps (schéma du contrat ; `csr_pem` obligatoire ; Android : `agreement_attestation_chain`
    obligatoire).
