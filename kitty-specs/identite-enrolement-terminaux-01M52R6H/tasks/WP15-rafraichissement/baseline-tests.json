@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP15",
+  "captured_at": "2026-10-21T10:39:07Z",
+  "base_branch": "feat/identite-enrolement-terminaux",
+  "base_commit": "9031cd5e5440deeb0e0c74d642798128d86eb086",
+  "test_runner": "pytest",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<gate-coverage-junit>",
+      "error": "no JUnit XML artifact produced by the scoped run",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
