@@ -1,0 +1,512 @@
+{
+  "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 — Code d'enrôlement",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment-codes.spec.ts (« OPERATOR_ADMIN : code affiché une fois, empreinte HMAC seule, audit sans code » : clés de réponse, HMAC-SHA256 ≠ SHA-256, durée, auteur, audit sans le code ; « durée par défaut 24 h ; personal_phone true en KEYPAD_TPE » ; « event_id obligatoire et validé avant la base : 400, aucun code créé » ; « refus : %s » (durées 299 s / 604 801 s, personal_phone absent, mode absent) ; « durées limites 300 s et 604 800 s acceptées » ; « ORGANIZER_ADMIN : ses événements seulement (autre organisateur : 404) » ; « autres rôles : 403 ; événement d’un autre prestataire : 404 » ; « isolation ») ; packages/ledger-sql/tests/tests_device_enrollment.sql §3 (« émission : événement obligatoire », « téléphone personnel à choisir (NULL refusé) », bornes de durée, périmètre) ; apps/api/test/unit/enrollment-code.spec.ts (alphabet, 12 caractères, empreinte HMAC liée à la clé) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 — Refus du mode PAIRED_TPE",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment-codes.spec.ts (« refus : PAIRED_TPE » → 422 DEVICE_MODE_NOT_ALLOWED) ; packages/ledger-sql/tests/tests_device_enrollment.sql (« émission : PAIRED_TPE refusé par un code nommé (DEVICE_MODE_NOT_ALLOWED) » CL027, « code : app_mode PAIRED_TPE refusé par la table » 23514) ; enrôlement : le mode vient du seul code (corps d’enrôlement sans app_mode), aucun code PAIRED_TPE ne peut exister (contrainte de table) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Enrôlement PAIRED_TPE fermé par construction (mode tiré du code, contrainte de table) plutôt que par un test de route dédié ; jugé suffisant."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 — Enrôlement",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment.spec.ts (« nominal Android : 201, certificat, jetons, terminal en base, code consommé » : clés de réponse, expires_in 900, next_seq 1, drt_…, certificat au sujet CN=device/O=prestataire sur la clé de signature, ligne device ACTIVE avec clés, cert_sha256, affectation ; garde des terminaux acceptant les preuves reçues ; « nominal iOS : App Attest réel » ; « CSR : ECDSA-SHA1 refusé, clé autre que signing_public_key refusée » ; « corps et clés : refus 400 / 422 VALIDATION_FAILED avant le code » (point compressé, clés identiques)) ; apps/api/test/integration/end-to-end/device-journey.spec.ts (« 1. … enrôler un Android et un iPhone par la route ») — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 — Consommation atomique du code",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment.spec.ts (« NFR-008 : 20 enrôlements simultanés sur un code, exactement un 201 », « code inconnu ou utilisé : même refus ; expiré : ENROLLMENT_CODE_EXPIRED » (corps identiques), « attestation refusée : 422, code encore utilisable… », « %s : 422 ATTESTATION_FAILED, code non consommé », « même serial actif… code intact », « mode : TOPUP_DESK refusé sur iOS…, code intact ») ; packages/ledger-sql/tests/tests_device_enrollment.sql §5 (« code inconnu : même refus que le code utilisé », même SQLSTATE et même message, « serial refusé : code non consommé ») ; contrainte device_enrollment_code_once — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 — Attestation Android",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/attestation/android.spec.ts (64 cas : deux chaînes, chaîne jusqu’à la racine, basicConstraints, expiration, attestationVersion 4 avant Android 12, niveau Software, défi faux, origin IMPORTED, appareil déverrouillé, démarrage non vérifié, paquet et empreinte de signature, liste de révocation en échec fermé, garde de production) ; apps/api/test/unit/attestation/challenge.spec.ts (défi lié au code, au serial et aux deux SPKI) ; apps/api/test/integration/devices/enrollment.spec.ts (« attestation refusée : 422… », « Android 11 (attestationVersion < 100) », « clé importée (origin ≠ GENERATED) ») — vérificateur réel, racines de test générées à l’exécution — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Écart accepté : OP-N67 / ADR-110 (attestationApplicationId lu dans la liste logicielle, borné par « borne OP-N67 : … », mission 13) ; validation de @peculiar/asn1-android sur vrais appareils reportée à la mission 13."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 — Attestation iOS",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/attestation/ios.spec.ts (objet CBOR, chaîne x5c jusqu’à la racine Apple, nonce et clientDataHash liés aux deux clés publiques, au code et au serial (« clés annoncées substituées après l’attestation → refus »), rpIdHash, aaguid de production, compteur, garde de production) ; apps/api/test/integration/devices/enrollment.spec.ts (« nominal iOS : App Attest réel, aucun niveau de sécurité », nfc_enabled false) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Écart accepté : OP-N64 / ADR-106 (clé de signature iOS non attestable, mission 12), borné par « borne iOS (OP-N64) : seule /media/auth-keys refuse un terminal iOS » (device-auth-matrix.spec.ts, media-port-swap.spec.ts)."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 — Unicité du serial et ré-enrôlement",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment.spec.ts (« même serial actif dans le prestataire : 409 DEVICE_SERIAL_IN_USE », « même serial chez deux prestataires : deux terminaux, rien de l’autre », « ré-enrôlement après révocation : next_seq = last_seq + 1 (88 → 89) ») ; apps/api/test/integration/end-to-end/device-isolation.spec.ts (« même serial chez deux prestataires… », « chacun sa configuration ; next_seq calculé dans son prestataire ») ; apps/api/test/integration/end-to-end/device-journey.spec.ts (« 8. ré-enrôler le même serial : nouveau terminal, next_seq suivant ») ; packages/ledger-sql/tests/tests_device_enrollment.sql (index device_serial_active par (prestataire, serial) parmi les non révoqués) ; ADR-109 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 — Clé d'accord écrite à l'enrôlement seulement",
+      "proof_type": "automated_test",
+      "evidence": "packages/ledger-sql/tests/tests_device_rights.sql §1 (« cashless_app : colonnes de device modifiables, liste exacte », sans agreement_public_key), §2 (« cashless_app : UPDATE direct de device.<colonne> refusé » pour chaque colonne protégée, agreement_public_key comprise ; « insertion directe d’un terminal refusée (enroll_device seule) ») ; écriture par enroll_device (SECURITY DEFINER, migration 0022) vérifiée par enrollment.spec.ts (« nominal Android » : point de 65 octets du SPKI reçu) ; ADR-105 ; OP-N63 levé — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 — Certificat client des terminaux",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/device-ca.spec.ts (« émet un certificat client au sujet imposé, avec les extensions de R-09 », CSR falsifié, CSR signé par une autre clé, clé non P-256, échéance passée, « la fabrique refuse le faux en production ») ; apps/api/test/unit/enrollment-not-after.spec.ts (durée bornée par DEVICE_CERT_VALIDITY_DAYS et par l’autorité) ; apps/api/test/integration/devices/enrollment.spec.ts (« nominal Android » : clé du certificat = clé de signature, validTo borné, cert_sha256 enregistré = SHA-256 du certificat) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Limite conforme à C-004 : autorité des terminaux en faux seulement, démarrage refusé en production ; dette nommée OP-N73 / ADR-119 (mission 7, après OP-N11)."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 — Jeton d'appareil lié",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/device-token.spec.ts (« émet les claims du contrat, lié à la clé du terminal », expiration et tolérance, alg none, HS256 avec la clé publique, aud/iss/typ, autre clé) ; apps/api/test/unit/real-device-identity.spec.ts (« 4. certificat d’un autre terminal, jeton lié à une autre clé : refus ») ; enrollment.spec.ts et refresh.spec.ts (expires_in 900 = 15 min) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Signataire des jetons en faux seulement (C-004) : OP-N73 / ADR-119, démarrage refusé en production."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 — Rafraîchissement à rotation",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/refresh.spec.ts (« rotation : nouvelle paire de la même famille, ancien jeton consommé », « réponse perdue : représentation sous 60 s → nouvelle paire », « borne d’OP-N65 : seconde représentation / après 60 s / par un autre terminal → famille révoquée » (audit DEVICE_TOKEN_REUSE avec request_id, jeton d’appareil refusé ensuite), « jeton dans la grâce, autre certificat → famille révoquée », « preuve fausse… : 401 », « terminal suspendu : 403 DEVICE_SUSPENDED », « ADR-115 : révoqué… → 403 ») ; packages/ledger-sql/tests/tests_device_tokens.sql §2 (rotation, grâce, réutilisation, 59 s / 61 s) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Écart accepté : OP-N65 / ADR-108 (grâce de 60 s, mission 13) ; ADR-115 (famille non opposée à un terminal REVOKED)."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 — Trois preuves sur chaque requête",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts (« routes : contrat × processus, chaque route de terminal a son cas (OP-N70) » ; « trois preuves : chaque route servie par l’identité réelle, un nonce consommé » ; « preuve absente, fausse, expirée ou d’un autre terminal : refusée, sans nonce » (16 variantes × 11 contrôleurs) ; « NFR-004 : rejeu exact… refusé sur chaque route ») ; apps/api/test/unit/real-device-identity.spec.ts (ordre fixé des preuves) ; apps/api/test/unit/request-signature.spec.ts (profil RFC 9421) ; ADR-107 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Le rafraîchissement (POST /device-tokens/refresh) n’exige que mTLS et une preuve de possession signée dans le corps (pas de jeton d’appareil, par nature) : le test l’assert comme seule exception du contrat. Horloge hors tolérance : 400 CLOCK_SKEW_TOO_LARGE (refus qui nomme l’écart, cas limite de la spec)."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 — Identité réelle derrière le port existant",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-port-swap.spec.ts (« les deux processus portent l’identité réelle (aucun faux) », « SC-007 : aucune ligne des contrôleurs de la mission 4 n’a bougé, hormis la borne iOS ») ; apps/api/test/unit/production-guard.spec.ts (« terminal : identité réelle par défaut, en production comme ailleurs (OP-N42) », « faux terminal : construction refusée en production, même demandé ») ; device-latency.spec.ts (« DEVICE_IDENTITY_FAKE=1 en production : la construction de l’API est refusée ») ; OP-N42 levé (ADR-107) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Levée d’OP-N42 limitée au port d’identité ; autorité et signataire : OP-N73 / ADR-119."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 — Statut lu à chaque requête",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/real-device-identity.spec.ts (« trois preuves valides : identité du terminal relu en base, nonce consommé en dernier ») ; apps/api/test/integration/devices/admin.spec.ts (« FR-016, NFR-003 : révoqué au back-office, requête suivante → 403 DEVICE_REVOKED », « R-14 : révocation / suspension pendant un /taps passé par la garde : 403, rien écrit ») ; apps/api/test/integration/end-to-end/media-port-swap.spec.ts (« NFR-003 : révocation entre deux requêtes, la seconde refusée avec un jeton encore valide ») ; device-auth-matrix.spec.ts (« NFR-003, ADR-115 … ») — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 — Suspension et réactivation",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/admin.spec.ts (« suspendre, réactiver, révoquer : historique, audit, familles », « suspendu : /taps et /media/auth-keys → 403 DEVICE_SUSPENDED ; réactivé : 200 », « motif de 10 à 500 caractères ») ; apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts (« R-14 : suspendu, servi sur la configuration et le battement de cœur seulement », rafraîchissement 403) ; config.spec.ts et heartbeat.spec.ts (« suspendu : … servie / admis ») ; device-journey.spec.ts (étapes 5 et 6) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "La remontée des lots par un terminal suspendu ne peut être prouvée ici : aucune route de lots dans la mission (C-006, mission 7)."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 — Révocation",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/admin.spec.ts (« … REVOKED final » : familles révoquées DEVICE_REVOKED, toute transition ultérieure 409 ; « révocation depuis SUSPENDED permise » ; « FR-016, NFR-003 : révoqué au back-office, requête suivante → 403 DEVICE_REVOKED ») ; device-auth-matrix.spec.ts (« NFR-003, ADR-115 : révoqué, 403 partout ; preuve fausse, 401 ; rien écrit ») ; device-journey.spec.ts (« 7. révoquer… », « 8. ré-enrôler le même serial… ») ; packages/ledger-sql/tests/tests_device_rights.sql §3 (REVOKED → ACTIVE par écriture directe refusé) — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "ADR-115 : un terminal révoqué reçoit 403 DEVICE_REVOKED seulement si ses preuves sont valides (401 sinon)."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 — Liste et consultation des terminaux",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/admin.spec.ts (« OPERATOR_ADMIN : tous les terminaux de son prestataire, aucun d’un autre », « ORGANIZER_ADMIN : les seuls terminaux des événements de son organisateur », « filtres event_id, pos_id, status, app_mode », « pagination par curseur », « statut, affectation, système, attestation, certificat, historique », « jamais de clé, d’empreinte de certificat ni de jeton (noms ni valeurs) », « … : 404 neutre », rôles 403/401) ; apps/api/test/unit/device-scope.spec.ts — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 — Configuration servie",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/config.spec.ts (« DeviceConfig conforme ; config_id = ligne de device_config_served ; R-10 » (validation au schéma du contrat, parties ultérieures sous forme minimale, plancher, tolérance d’horloge, heure serveur, ETag), « ETag stable ; If-None-Match égal → 304 », « changement d’un réglage de l’événement → 200, nouvel ETag et nouveau config_id », « téléphone personnel : jamais hors ligne… », « terminal iOS : servi, sans NFC », « isolation ») ; packages/ledger-sql/tests/tests_config_served_guard.sql (migration 0029) ; ADR-118 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 — Battement de cœur",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/heartbeat.spec.ts (« réponse conforme ; config_etag = ETag servi ; last_seen_at, app_version écrits », « aucun numéro de séquence consommé ni avancé », « suspendu : admis », « révoqué : 403 DEVICE_REVOKED, rien écrit », « corps invalide : 400 ») — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 — Fonctions privilégiées protégées (OP-N59)",
+      "proof_type": "automated_test",
+      "evidence": "packages/ledger-sql/tests/tests_definer_search_path.sql (témoin search_path = public qui lit la table temporaire, puis chaque tenant_of_* ignore la table temporaire ; contrôle du catalogue avec trois témoins) ; packages/ledger-sql/tests/tests_device_rights.sql §5 (TEMPORARY refusé à PUBLIC et à chaque rôle cashless_*) ; packages/ledger-sql/tests/tests_definer_trigger_writers.sql §4 (borne inversée : de « au plus 77 » à 0) ; migration 0021 ; OP-N59 levé — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 — Droits d'exécution rôle par rôle (OP-N44)",
+      "proof_type": "automated_test",
+      "evidence": "packages/ledger-sql/tests/tests_execute_grants.sql (« PUBLIC : aucune fonction de public exécutable (OP-N44) », droit par défaut compris ; liste exacte par rôle cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck, cashless_keyadmin ; refus à l’appel ; rejeu idempotent) ; apps/api/test/integration/transverse/migrate-rights.spec.ts (« après la série, aucune fonction de public n’est exécutable par PUBLIC, même ajoutée ») ; suite de référence adaptée par gen_tests.py (sonde app_probe), check:generated sans écart ; ADR-101 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Limite acceptée : OP-N68 / ADR-111 (fonction créée à la main hors de migrate.ts, exécutable par PUBLIC jusqu’au rejeu de post-roles.sql ; bornée par tests_execute_grants.sql §4 ; mission 7)."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 — Lecture de rattachement non réutilisable (OP-N50)",
+      "proof_type": "automated_test",
+      "evidence": "packages/ledger-sql/tests/tests_consume_tap_claim.sql (« OP-N50 : lecture qui a confirmé une demande… : refusée (CL022) », lecture liée par un autre chemin, écriture hors ligne, témoins acceptés, même verrou consultatif) ; apps/api/test/integration/media/tap-claim-race.spec.ts (« écriture d’abord : la demande attend le verrou, puis refuse (CL022) », « demande d’abord : l’écriture attend le verrou, puis refuse (CL022) ») ; migrations 0024, 0026 ; OP-N50 levé — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 — Empreinte de requête à clé (OP-N54)",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/unit/idempotency/request-hash.spec.ts (« est un HMAC-SHA256 sous la clé, jamais le SHA-256 de la requête seule », clé ≥ 32 octets, chemin concret et appelant : OP-N71 / ADR-116) ; apps/api/test/unit/media/personalization-hash.spec.ts ; apps/api/test/integration/media/personalization.spec.ts (« registre d’idempotence : empreinte à clé liée à la personne, jamais un SHA-256 sans clé (OP-N54) ») ; enrollment-codes.spec.ts (« rejeu de la clé d’idempotence : 409, jamais le code, absent du registre ») ; ADR-99 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Consigne de déploiement encore à appliquer : purge des lignes api_idempotency antérieures (T + 720 h, OP-N54, OP-N71)."
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 — Retrait de clé et demandes périmées (OP-N62)",
+      "proof_type": "automated_test",
+      "evidence": "packages/ledger-sql/tests/tests_tag_key_retire_guard.sql (« demande approuvée périmée : refusée (CL023) », « chemin nominal : clé dédiée retirée par son travail en cours », rejeu refusé CL020, refus sans travail / travail inexistant / autre travail / API, « INSERT sur tag_key_job toujours fermé ») ; packages/ledger-sql/tests/tests_tag_key_job_approval.sql §6 (borne inversée : « OP-N62 : une demande approuvée périmée est refusée (CL023) ») et retrait direct refusé à cashless_perso ; migration 0025 ; OP-N62 levé — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025 — Audit",
+      "proof_type": "automated_test",
+      "evidence": "Création de code : enrollment-codes.spec.ts (audit DEVICE_ENROLLMENT_CODE_CREATED, rôle, sans code) ; enrôlement réussi : enrollment.spec.ts (« nominal Android » : DEVICE_ENROLLED) ; refus : enrollment.spec.ts (« ADR-117 : chaque refus audité, chaîne du prestataire du code connu, sinon plateforme »), packages/ledger-sql/tests/tests_enrollment_refusal.sql §4 ; statuts : admin.spec.ts (acteur, rôle, avant, après, motif), device-journey.spec.ts (« 9. … FR-025 : audit des transitions avec adresse et X-Request-Id ») ; famille révoquée : refresh.spec.ts (DEVICE_TOKEN_REUSE avec origine et request_id) ; ADR-117 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Écart accepté : écriture par cashless_app dans la chaîne d’audit de la plateforme (0027) ; OP-N72 (mission 13)."
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026 — Contrat d'API et types générés",
+      "proof_type": "automated_test",
+      "evidence": "packages/contracts/openapi.yaml (routes de terminal : une entrée security deviceMtls + deviceToken + deviceSignature) ; npm run check -w @cashless/contracts : « types à jour », « types Dart à jour » ; apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts (« routes : contrat × processus… », « routes du contrat non servies : 404 ») ; apps/api/test/integration/end-to-end/device-isolation.spec.ts (« le contrat déclare les routes de la mission, et chacune a un cas dans ce fichier ») ; validation des réponses au schéma (contractViolations) dans config.spec.ts et heartbeat.spec.ts — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "C-003 : contradiction §10.3 / contrat (« l’un ou l’autre ») résolue dans le sens le plus sûr. Constat mineur m2 de la relecture WP18 non corrigé (DeviceTokenRefreshRequest.signature sans minLength ; le DTO refuse la chaîne vide, 400) ; avertissement non bloquant du générateur (LATE_CLAIM_INVALID, mission 4)."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 — Aucun faux en production",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-latency.spec.ts (« faux de %s seul : démarrage refusé, et seul ce faux est nommé » pour l’identité du terminal, l’autorité, le signataire, le vérificateur d’attestation, le festivalier, sur le vrai PublicProcessModule en production ; « DEVICE_IDENTITY_FAKE=1 en production… refusée » ; « terminal de test : son autorité (DEVICE_CA_FAKE_KEY_FILE) refusée en production » ; « terminal de test : aucun fichier servi (src/) n’importe le code de test ») ; apps/api/test/unit/production-guard.spec.ts (« aucun réglage d’environnement ne désactive la garde ») ; device-ca.spec.ts, device-token.spec.ts, attestation/*.spec.ts (fabriques refusant le faux en production) ; enrollment.spec.ts (« un faux d’attestation fait refuser le démarrage ») — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Conforme à C-004 et à la règle 2 du porteur ; autorité et signataire sans adaptateur réel : OP-N73 / ADR-119."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 — Aucune preuve seule ne suffit",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts (matrice route × variante : certificat absent / d’un autre terminal / expiré / hors autorité, jeton absent / d’un autre terminal / expiré / falsifié / de personne, signature absente / d’un autre terminal / autre autorité / requête ou corps modifiés, horloge ; aucun nonce écrit ; « le refus ne dit pas quelle preuve a échoué ») ; media-port-swap.spec.ts (« NFR-002 : chaque preuve absente, fausse… ») ; SC-002 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 — Effet immédiat de la révocation",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/media-port-swap.spec.ts (« NFR-003 : révocation entre deux requêtes, la seconde refusée avec un jeton encore valide », « auth-keys : terminal révoqué entre la garde et la remise, aucun mot de passe ne part ») ; admin.spec.ts (« FR-016, NFR-003 … », quatre tests R-14 pendant la requête) ; device-auth-matrix.spec.ts (« NFR-003, ADR-115 … ») ; config.spec.ts et heartbeat.spec.ts (« révoqué pendant la requête… : refusé, rien enregistré ») ; SC-003 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 — Pas de rejeu",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts (« NFR-004 : rejeu exact d’une requête acceptée, refusé sur chaque route », variante « horloge hors tolérance (une heure) » → 400 CLOCK_SKEW_TOO_LARGE, rejeu de rafraîchissement refusé) ; media-port-swap.spec.ts (« NFR-004 … », « horloge du terminal hors tolérance… ») ; packages/ledger-sql/tests/tests_device_tokens.sql §4 (REPLAY même terminal / autre heure, CLOCK_SKEW passé et futur, borne de 60 s) ; apps/api/test/unit/real-device-identity.spec.ts (« 7. rejeu ou horloge ») — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 — Aucun secret en clair au repos",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-secrets.spec.ts (parcours produisant 5 codes et ≥ 14 jetons ; balayage de toutes les tables public (liste attendue contrôlée), des journaux Nest/console/stdout/stderr et des corps d’erreur, sous chaque forme ; contrôle du balayage) ; enrollment.spec.ts (« NFR-005 : ni code ni jeton en clair (base, audit, registre, journaux) ») ; SC-005 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Jetons de rafraîchissement stockés en SHA-256 sans clé (aléa de 256 bits) : pas de clair, conforme."
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 — Pas d'énumération des codes",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment.spec.ts (« NFR-006 : code inconnu et code utilisé, même réponse, écart des médianes < 20 ms » : 200 + 200 essais, un seul couple statut/corps 422 ENROLLMENT_CODE_INVALID, écart des médianes < MAX_MEDIAN_GAP_MS) ; mêmes corps aussi prouvés hors mesure : « code inconnu ou utilisé : même refus » et packages/ledger-sql/tests/tests_device_enrollment.sql (même SQLSTATE et même message). Test écarté par SKIP_LATENCY=1 (un des 6 ignorés de la passe Jest) et absent des mesures en série 17/17 (device-latency, media-latency, configuration-latency) ; l’étape CI qui le lance seul (.github/workflows/ledger-tests.yml, « NFR-009 et NFR-006 ») n’a pas été exécutée — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats — exécuté seul sur la lane (cc1f0ff) le 21/10/2026 par l'orchestrateur, sans SKIP_LATENCY : médianes inconnu 20,1 ms, utilisé 20,2 ms, écart 0,2 ms (seuil 20 ms) ; enrollment.spec.ts 24/24.",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:39:04Z",
+      "notes": "Mesure locale (base Docker) ; à reconfirmer par l'étape CI dédiée."
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "NFR-007 — Isolation entre prestataires",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-isolation.spec.ts (« le contrat déclare les routes de la mission, et chacune a un cas », « B sur les objets de A : jamais 2xx, rien ne fuit, rien ne change », listes croisées, « deviceScope : OPERATOR_ADMIN sur un autre prestataire refusé par la base », guichet de la mission 4) ; cas d’isolation dans admin.spec.ts, enrollment-codes.spec.ts, refresh.spec.ts, config.spec.ts ; pgTAP : RLS activée et forcée sur les quatre tables S5 (packages/ledger-sql/tests/tests_device_enrollment.sql) et device_request_nonce (packages/ledger-sql/tests/tests_device_tokens.sql), tests_config_served_guard.sql ; SC-006 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "NFR-008",
+      "description": "NFR-008 — Concurrence",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/devices/enrollment.spec.ts (« NFR-008 : 20 enrôlements simultanés sur un code, exactement un 201 », un seul terminal en base) ; apps/api/test/integration/devices/refresh.spec.ts (« NFR-008 : 20 échanges, le premier tenu ouvert → 1 succès, 19 × 409 » sans révocation, « deux connexions : … IN_PROGRESS puis REUSED », « la révocation attend l’échange ») ; enrollment-limits.spec.ts (rafales, ADR-117) ; ADR-108 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence)."
+    },
+    {
+      "criterion_id": "NFR-009",
+      "description": "NFR-009 — Latence",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/end-to-end/device-latency.spec.ts lancée en série le 2026-10-21 : surcoût p95 des trois preuves 17,3 ms (seuil 20, mesuré dans identify, réel contre faux de référence sur la même charge) ; enrôlement p95 61 ms (seuil 1 s) ; configuration p95 44 ms, battement p95 46 ms (seuil 200 ms) ; mesures locales — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence). Mesures indicatives sur le poste local (pas de CI GitHub exécutée)."
+    },
+    {
+      "criterion_id": "NFR-010",
+      "description": "NFR-010 — Dettes levées prouvées",
+      "proof_type": "automated_test",
+      "evidence": "OP-N44 : tests_execute_grants.sql (suite neuve) ; OP-N50 : tests_consume_tap_claim.sql, tap-claim-race.spec.ts ; OP-N54 : request-hash.spec.ts, personalization.spec.ts (« … (OP-N54) ») ; OP-N59 : tests_definer_search_path.sql (témoin d’avant 0021), tests_definer_trigger_writers.sql §4 (77 → 0) ; OP-N62 : tests_tag_key_retire_guard.sql, tests_tag_key_job_approval.sql §6 (borne inversée) ; OP-N63 : tests_device_rights.sql §1-§2 ; OP-N42 : production-guard.spec.ts (« … (OP-N42) »), device-auth-matrix.spec.ts ; levées inscrites dans docs/POINTS_OUVERTS.md (vue d’ensemble : « levé le 21/10/2026 ») ; SC-004 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence). « Échouait avant la mission » établi par les témoins et bornes inversées (non rejoué sur la base d’avant)."
+    },
+    {
+      "criterion_id": "NFR-011",
+      "description": "NFR-011 — Tests existants verts",
+      "proof_type": "automated_test",
+      "evidence": "Suites de référence pgTAP (400) et scénario (64) incluses dans les 2072 assertions PASS ; check:generated « suites pgTAP à jour » (relancé par le vérificateur) ; Jest 1704 réussis / 0 échec inclut les suites des missions 1 à 4 et le rejeu du scénario ; mesures media-latency et configuration-latency comprises dans 17/17 — lane r (cc1f0ff, code identique à 2181daf8 : seuls kitty-specs/ et des transitions ont changé depuis), batterie de l'orchestrateur du 2026-10-21 vers 14:40 UTC, en série : lint/typecheck verts, pgTAP 2072/2072 (33 fichiers, PASS), Jest API 1704 réussis / 6 ignorés / 0 échec (101 suites, SKIP_LATENCY=1), mesures en série 17/17 ; relancés par le vérificateur le 2026-10-21 : 20 suites unitaires sans base (360/360), lint, typecheck, check:generated, check des contrats",
+      "pass_fail": "pass",
+      "verified_by": "claude (vérificateur d'acceptation, délégation du porteur du 21/10/2026)",
+      "verified_at": "2026-10-21T15:37:47Z",
+      "notes": "Preuve vérifiée dans la lane r (tests lus ; assertions conformes à l'exigence). Exécution locale seulement : le workflow .github/workflows/ledger-tests.yml est mis à jour mais n’a pas été exécuté sur GitHub pour cette lane."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun fichier .sql généré du kit modifié à la main ; ni gen_golden.py, ni scenario_reference.json, ni schéma de référence, ni roles.sql, ni migrations 0001-0020 ; gen_tests.py modifié (WP07, OP-N44) et sortie régénérée sans écart",
+      "verification_method": "custom_command",
+      "verification_command": "git diff --quiet main...kitty/mission-identite-enrolement-terminaux-01M52R6H-lane-r -- packages/ledger-sql/schema_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql packages/ledger-sql/gen_golden.py packages/ledger-sql/scenario_reference.json packages/ledger-sql/roles.sql 'packages/ledger-sql/migrations/000*.sql' 'packages/ledger-sql/migrations/001*.sql' 'packages/ledger-sql/migrations/0020*.sql' && npm run check:generated -w @cashless/ledger-sql",
+      "result": "confirmed_absent",
+      "evidence": "Diff vide ; check:generated : « suites pgTAP à jour » (400 assertions, 48 transactions / 64 tests), relancé le 2026-10-21. Seuls écarts sur les générés : tests_grand_livre_cashless.sql, produit par gen_tests.py (sonde app_probe, OP-N44) ; migrations de la mission : 0021-0027, 0029, 0030 (ajouts)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun faux (identité du terminal, autorité, signataire, attestation, terminal de test, festivalier, KMS) ne démarre en production",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- production-guard processes device-ca device-token attestation && npm test -w @cashless/api -- --runInBand end-to-end/device-latency",
+      "result": "confirmed_absent",
+      "evidence": "Suites unitaires relancées par le vérificateur (vertes, 360/360 avec les autres) ; device-latency.spec.ts (« faux de %s seul : démarrage refusé » ×5, DEVICE_IDENTITY_FAKE, DEVICE_CA_FAKE_KEY_FILE) vert dans les mesures en série 17/17 du 2026-10-21",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun code d’enrôlement, jeton de rafraîchissement ni jeton d’appareil en clair en base, au journal d’audit, dans les journaux ou les réponses d’erreur",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- device-secrets devices/enrollment.spec",
+      "result": "confirmed_absent",
+      "evidence": "device-secrets.spec.ts (5 tests, contrôle du balayage compris) et « NFR-005 : ni code ni jeton en clair… » verts dans Jest 1704/0 du 2026-10-21",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucune route de terminal servie sans les trois preuves (contrat et deux processus croisés)",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- device-auth-matrix media-port-swap",
+      "result": "confirmed_absent",
+      "evidence": "device-auth-matrix.spec.ts (contrat × DeviceGuard des deux processus, seule exception : le rafraîchissement, mTLS + preuve de possession) et media-port-swap.spec.ts verts le 2026-10-21",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Aucune fonction du schéma public exécutable par PUBLIC (droit par défaut compris) après migrate.ts",
+      "verification_method": "custom_command",
+      "verification_command": "npm run test:pgtap -w @cashless/ledger-sql (tests/tests_execute_grants.sql) && npm test -w @cashless/api -- migrate-rights",
+      "result": "confirmed_absent",
+      "evidence": "tests_execute_grants.sql §1 PASS dans pgTAP 2072/2072 ; migrate-rights.spec.ts vert. Limite acceptée et bornée : fonction créée à la main hors de migrate.ts (OP-N68 / ADR-111, mission 7)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-006",
+      "description": "Aucune écriture directe par l’API des colonnes protégées de device (clés, empreinte du certificat, statut, prestataire, séquences hors plancher…) ni des tables S5",
+      "verification_method": "custom_command",
+      "verification_command": "npm run test:pgtap -w @cashless/ledger-sql (tests/tests_device_rights.sql §1 à §4)",
+      "result": "confirmed_absent",
+      "evidence": "tests_device_rights.sql PASS : liste exacte des 9 colonnes modifiables, UPDATE refusé (42501) sur chaque autre colonne dont agreement_public_key, INSERT refusé, aucune écriture sur les tables S5. Les 9 colonnes restantes sont l’écart accepté OP-N69 / ADR-112 (mission 7)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-007",
+      "description": "Aucune fonction SECURITY DEFINER sans pg_temp en dernier dans son search_path",
+      "verification_method": "custom_command",
+      "verification_command": "npm run test:pgtap -w @cashless/ledger-sql (tests/tests_definer_trigger_writers.sql §4, tests_definer_search_path.sql)",
+      "result": "confirmed_absent",
+      "evidence": "Borne à 0 PASS dans pgTAP 2072/2072 du 2026-10-21",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-008",
+      "description": "Aucun INSERT sur tag_key_job rouvert (C-010)",
+      "verification_method": "custom_command",
+      "verification_command": "npm run test:pgtap -w @cashless/ledger-sql (tests/tests_tag_key_retire_guard.sql)",
+      "result": "confirmed_absent",
+      "evidence": "« INSERT sur tag_key_job toujours fermé à tout rôle applicatif ou processus » PASS le 2026-10-21",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-009",
+      "description": "Aucun adaptateur AWS (KMS, autorité) livré (C-004)",
+      "verification_method": "custom_command",
+      "verification_command": "! grep -rlE 'aws-sdk|@aws-sdk|KMSClient' apps packages --exclude-dir=node_modules",
+      "result": "confirmed_absent",
+      "evidence": "Aucune occurrence (relancé le 2026-10-21)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-010",
+      "description": "Aucun code servi (apps/api/src) n’importe le terminal de test ni un autre code de test (C-006, A5)",
+      "verification_method": "custom_command",
+      "verification_command": "! grep -rnE \"from '(\\.\\./)+test/\" apps/api/src",
+      "result": "confirmed_absent",
+      "evidence": "Aucune occurrence (relancé le 2026-10-21) ; même contrôle dans device-latency.spec.ts",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-011",
+      "description": "Aucune application de terminal, NFC ou écran livrée (C-006, C-009)",
+      "verification_method": "custom_command",
+      "verification_command": "! grep -rliE 'NfcAdapter|android\\.nfc|nfc_manager|MifareUltralight|flutter' apps/api/src packages --exclude-dir=node_modules --exclude-dir=dart && test \"$(ls apps)\" = api",
+      "result": "confirmed_absent",
+      "evidence": "Aucune occurrence ; apps/ ne contient que api (packages/tag-format/dart est le format des bracelets de la mission 4, hors du contrôle)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "NI-012",
+      "description": "Aucun type du contrat écrit à la main (C-008)",
+      "verification_method": "custom_command",
+      "verification_command": "npm run check -w @cashless/contracts",
+      "result": "confirmed_absent",
+      "evidence": "« types à jour », « types Dart à jour » (relancé le 2026-10-21)",
+      "verified_ref": "cc1f0ff66198a0b50b979e37b42f39e64f383899",
+      "verified_surface_kind": "lane",
+      "provenance_origin": "recorded"
+    }
+  ]
+}
