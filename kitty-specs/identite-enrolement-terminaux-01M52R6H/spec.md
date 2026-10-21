@@ -53,7 +53,7 @@ stateDiagram-v2
 
 ### User Story 1 - L'administrateur émet un code d'enrôlement (Priority: P1)
 
-Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, éventuellement lié à un événement, un point de vente et un mode d'application, et l'affiche en QR.
+Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, lié obligatoirement à un événement (et éventuellement à un point de vente et à un mode d'application), et l'affiche en QR.
 
 **Why this priority**: sans code, aucun terminal n'entre dans le système.
 
