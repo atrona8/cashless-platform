@@ -423,11 +423,11 @@
   {
     "mission": "identite-enrolement-terminaux-01M52R6H",
     "titre_cas_usage": "Identité et enrôlement des terminaux",
-    "statut": "planifiée",
+    "statut": "review terminée, acceptation en attente",
     "user_stories": [
       {
         "titre": "L'administrateur émet un code d'enrôlement",
-        "detail": "Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, éventuellement lié à un événement, un point de vente et un mode d'application, et l'affiche en QR."
+        "detail": "Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, lié obligatoirement à un événement (FR-001 ; la story de `spec.md` dit encore « éventuellement »), éventuellement à un point de vente et à un mode d'application, en indiquant obligatoirement s'il s'agit d'un téléphone personnel, et l'affiche en QR ; le code n'est rendu qu'une fois."
       },
       {
         "titre": "Un terminal s'enrôle",
@@ -439,11 +439,11 @@
       },
       {
         "titre": "Le terminal renouvelle son jeton",
-        "detail": "Le terminal échange son jeton de rafraîchissement, avec une preuve de possession de sa clé, contre un nouveau jeton d'appareil et un nouveau jeton de rafraîchissement."
+        "detail": "Le terminal échange son jeton de rafraîchissement, sur une connexion à certificat client et avec une preuve signée de possession de sa clé, contre un nouveau jeton d'appareil et un nouveau jeton de rafraîchissement ; une seule représentation dans les 60 s est tolérée (OP-N65), toute autre réutilisation révoque la famille."
       },
       {
         "titre": "L'administrateur suspend, réactive ou révoque un terminal",
-        "detail": "Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` liste les terminaux de son périmètre, en consulte un, le suspend, le réactive, ou le révoque définitivement (perte, vol, appareil compromis)."
+        "detail": "Un `OPERATOR_ADMIN` (portée prestataire pour voir tout le prestataire) ou un `ORGANIZER_ADMIN` liste les terminaux de son périmètre, en consulte un, le suspend, le réactive, ou le révoque définitivement (perte, vol, appareil compromis) ; le terminal révoqué reçoit `403 DEVICE_REVOKED` à sa requête suivante."
       },
       {
         "titre": "Le terminal reçoit sa configuration et envoie son battement de cœur",
@@ -451,7 +451,7 @@
       },
       {
         "titre": "Les dettes de sécurité de la base sont levées",
-        "detail": "Le responsable de la sécurité obtient la fermeture, chacune avec son test, des dettes héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62 et OP-N63."
+        "detail": "Le responsable de la sécurité obtient la fermeture, chacune avec son test, des dettes héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62 et OP-N63 ; OP-N42, OP-N70 et OP-N71 sont levées en plus."
       }
     ],
     "entites_cles": [
@@ -464,13 +464,13 @@
       "Essai d'enrôlement",
       "Ligne d'audit"
     ],
-    "resultat_mesurable": "Parcours complet d'un terminal (code, enrôlement Android 12+ et iPhone, configuration, présence, lecture, rafraîchissement, suspension, révocation, ré-enrôlement) par l'API sans intervention en base ; 100 % des tentatives d'usurpation refusées (preuve manquante, fausse, d'un autre terminal ou rejouée) ; révocation effective dès la requête suivante ; OP-N42, OP-N59 et OP-N63 closes avec leur test ; aucun code ni jeton en clair ; 0 fuite entre deux prestataires.",
+    "resultat_mesurable": "Parcours complet d'un terminal (code, enrôlement Android 12+ et iPhone, configuration, présence, lecture, rafraîchissement, suspension, révocation, ré-enrôlement) par l'API sans intervention en base ; 100 % des tentatives d'usurpation refusées (preuve manquante, fausse, d'un autre terminal ou rejouée) ; révocation effective dès la requête suivante ; OP-N42, OP-N59 et OP-N63 closes avec leur test ; aucun code ni jeton en clair ; 0 fuite entre deux prestataires. Mesuré le 21/10/2026 : pgTAP 2072, Jest 1704 sans échec ; surcoût des trois preuves p95 17,3 ms (seuil 20), enrôlement p95 61 ms, configuration 44 ms, battement 46 ms.",
     "hypotheses": [
       "A1 — Les routes back-office des terminaux (liste, consultation, suspension, réactivation, révocation) sont ajoutées au contrat avec les conventions existantes (confirmé par le porteur le 19/10/2026).",
       "A2 — Suspension, réactivation et révocation sont faites par une seule personne habilitée (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN` du périmètre) : la révocation protège, et la réactivation ne rend que les droits d'un terminal déjà enrôlé et attesté (confirmé par le porteur le 19/10/2026).",
       "A6 — Android 12 au moins (clé d'accord matérielle et attestée), décision du porteur au plan du 19/10/2026 ; le `serial` est unique par prestataire (ADR-109) ; voir `research.md` R-05, R-11.",
       "A3 — L'attestation est vérifiée à l'enrôlement seulement ; un contrôle d'intégrité périodique n'est pas dans cette mission (confirmé par le porteur le 19/10/2026).",
-      "A4 — La clé de l'autorité des terminaux est derrière un port, avec un faux pour les tests seulement ; en production, le démarrage est refusé tant que l'adaptateur réel manque, comme pour le KMS (OP-N11) (confirmé par le porteur le 19/10/2026). Le point de terminaison du mTLS (dans l'API ou en amont) est arrêté au plan.",
+      "A4 — La clé de l'autorité des terminaux est derrière un port, avec un faux pour les tests seulement ; en production, le démarrage est refusé tant que l'adaptateur réel manque, comme pour le KMS (OP-N11) (confirmé par le porteur le 19/10/2026). Livré : mTLS vérifié dans les processus ; autorité et signataire des jetons en faux seulement, dette OP-N73 levée en mission 7 (ADR-119).",
       "A5 — Le terminal de test (clés, attestations et certificats de test) sert aux tests et est refusé en production (confirmé par le porteur le 19/10/2026).",
       "Les parties de `DeviceConfig` qui dépendent de missions ultérieures (catalogue, clés publiques du snapshot, autorité de débit et époque) sont servies sous la forme minimale que le schéma du contrat permet ; leur contenu réel arrive avec ces missions.",
       "Le format de la signature d'une requête (en-têtes, contenu signé, horodatage, nonce) et la fenêtre de rejeu sont arrêtés au plan et décrits au contrat.",
@@ -482,7 +482,7 @@
       "Les fonctions de la base font les règles",
       "Fichiers générés du kit intouchables",
       "Trois preuves exigées",
-      "Pas d'adaptateur AWS",
+      "Pas d'adaptateur AWS (autorité et signataire en faux, OP-N73)",
       "Pas d'encaissement",
       "Pas de hors ligne ni d'application",
       "Pas de MDM",
@@ -505,7 +505,11 @@
       "Révocation pendant qu'une requête du terminal est en cours",
       "Terminal suspendu",
       "Réutilisation d'un jeton de rafraîchissement par un voleur après que le vrai terminal l'a déjà utilisé",
-      "Certificat client valide mais jeton d'un autre terminal du même prestataire"
+      "Certificat client valide mais jeton d'un autre terminal du même prestataire",
+      "Rafale d'enrôlements simultanés avec un code fuité (limites atomiques, une seule trace au-delà)",
+      "Terminal révoqué qui présente des preuves valides (`403 DEVICE_REVOKED`, rien écrit)",
+      "Même clé d'idempotence sur un autre terminal ou par une autre personne (`409`)",
+      "Requête signée pour une autre autorité (passerelle, autre déploiement)"
     ],
     "fonctionnel": [
       "Code d'enrôlement",
@@ -533,7 +537,9 @@
       "Empreinte de requête à clé (OP-N54)",
       "Retrait de clé et demandes périmées (OP-N62)",
       "Audit",
-      "Contrat d'API et types générés"
+      "Contrat d'API et types générés",
+      "Idempotence liée au chemin concret et à l'appelant (ADR-116)",
+      "Audit de tous les refus d'enrôlement (ADR-117)"
     ],
     "non_fonctionnel": [
       "Aucun faux en production",

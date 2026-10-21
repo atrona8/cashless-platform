@@ -75,24 +75,24 @@ files.append(usecase('usecase-terminaux','Terminaux — identité et enrôlement
  [('Admin prestataire','Émettre un code d’enrôlement'),('Admin prestataire','Suivre les terminaux'),('Admin prestataire','Suspendre ou réactiver'),('Admin prestataire','Révoquer un terminal'),
   ('Admin organisateur','Émettre un code d’enrôlement'),('Admin organisateur','Suivre les terminaux'),('Admin organisateur','Suspendre ou réactiver'),('Admin organisateur','Révoquer un terminal'),
   ('Terminal','S’enrôler (attestation)'),('Terminal','Renouveler son jeton'),('Terminal','Lire sa configuration'),('Terminal','Signaler sa présence'),('Terminal','Appeler une route signée')],
- note="En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Android 12+ ; iOS en QR seulement (OP-N64).",H=980))
+ note="En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Suspendu : configuration et présence seulement. iOS : QR seulement (OP-N64).",H=980))
 P=lambda k,l,s='neutral':(k,l,s)
-files.append(sequence('sequence-enrolement','Enrôlement d’un terminal','Le code scanné d’abord, puis les clés, l’attestation et le certificat',
- [P('t','Terminal','data'),P('a','API publique','primary'),P('v','Vérif. attestation','accent'),P('c','Autorité terminaux','accent'),P('b','Base centrale')],
- [('t','t','Scanner le code, créer les clés'),('t','a','Code, clés, attestations, CSR'),('a','b','Lire le code (empreinte)'),('a','v','Vérifier les chaînes et le défi'),('a','c','Émettre le certificat'),('a','b','enroll_device (code consommé)'),('a','t','Certificat, jetons, next_seq','ret')],
- note="Attestation refusée : code non consommé. Serial unique par prestataire. Essais limités par code et par adresse."))
-files.append(sequence('sequence-requete-terminal','Requête d’un terminal','Trois preuves liées au même terminal, vérifiées dans l’ordre',
+files.append(sequence('sequence-enrolement','Enrôlement d’un terminal','Limites d’abord, puis le code, l’attestation, le certificat ; tout refus est audité',
+ [P('t','Terminal','data'),P('a','API publique','primary'),P('v','Vérif. attestation','accent'),P('c','Autorité, signataire','accent'),P('b','Base centrale')],
+ [('t','t','Scanner le code, créer les clés'),('t','a','Code, clés, attestations, CSR'),('a','b','Limites (refus seuls) : 429'),('a','b','Lire le code (empreinte HMAC)'),('a','v','Chaînes, défi, révocations'),('a','c','Certificat client'),('a','b','enroll_device + audit'),('a','c','Jeton d’appareil signé'),('a','t','201 : certificat, jetons, next_seq','ret'),('a','b','Refus : essai + audit, sous verrou','bad')],
+ note="Code inconnu : audit dans la chaîne de la plateforme. 10 refus par code, 30 par adresse (/64 en IPv6). Autorité et signataire : faux (OP-N73)."))
+files.append(sequence('sequence-requete-terminal','Requête d’un terminal','Trois preuves liées au même terminal, vérifiées dans l’ordre ; rien n’est écrit avant le nonce',
  [P('t','Terminal','data'),P('g','Garde du terminal','primary'),P('b','Base centrale'),P('r','Route métier','primary')],
- [('t','g','mTLS + jeton + requête signée'),('g','g','Certificat et jeton'),('g','b','Terminal, famille, empreinte'),('g','g','Corps et signature'),('g','b','Nonce consommé (heure base)'),('g','r','Terminal relu, statut actif'),('r','b','Écriture, statut revérifié'),('r','t','Réponse','ret')],
- note="Une preuve manquante ou fausse : 401. Horloge hors tolérance : 400 avec l’heure. Révoqué : 403."))
-files.append(sequence('sequence-rafraichissement','Renouvellement du jeton','Jeton à usage unique, grâce de 60 s pour une réponse perdue',
+ [('t','g','mTLS + jeton + requête signée'),('g','g','Certificat et jeton'),('g','b','Terminal et famille relus'),('g','g','Empreintes, corps, signature'),('g','g','Révoqué : 403, rien écrit','bad'),('g','b','Nonce consommé (heure base)'),('g','g','Suspendu : 403 hors config','bad'),('g','r','Terminal vérifié'),('r','b','Écriture, statut revérifié'),('r','t','Réponse','ret')],
+ note="Preuve absente ou fausse : 401, sans dire laquelle. Horloge hors tolérance : 400 avec l’heure. Autorité non servie : 401."))
+files.append(sequence('sequence-rafraichissement','Renouvellement du jeton','Jeton à usage unique, grâce de 60 s pour une réponse perdue (OP-N65)',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('b','Base centrale')],
- [('t','a','mTLS + jeton + preuve'),('a','b','Échanger (verrou)'),('b','a','Nouvelle paire','ret'),('a','t','Réponse perdue','bad'),('t','a','Même jeton, < 60 s'),('a','b','Grâce : paire neuve'),('a','t','Nouvelle paire','ret'),('t','a','Réutilisation hors grâce','bad'),('a','b','Famille révoquée','bad')],
- note="Échange en cours : 409, à réessayer. Famille révoquée : ses jetons d’appareil refusés aussitôt."))
-files.append(sequence('sequence-revocation','Révocation d’un terminal','Effet à la requête suivante, sans liste de révocation',
+ [('t','a','mTLS + jeton + preuve signée'),('a','b','Terminal relu, nonce consommé'),('a','b','Échanger (verrou)'),('b','a','Nouvelle paire','ret'),('a','t','Réponse perdue','bad'),('t','a','Même jeton, < 60 s'),('a','b','Grâce : paire neuve'),('a','t','Nouvelle paire','ret'),('t','a','Réutilisation hors grâce','bad'),('a','b','Famille révoquée, audit','bad')],
+ note="Échange en cours : 409, à réessayer. Terminal suspendu ou révoqué : 403. Famille révoquée : ses jetons d’appareil refusés aussitôt."))
+files.append(sequence('sequence-revocation','Révocation d’un terminal','Une personne suffit ; effet à la requête suivante, sans liste de révocation',
  [P('x','Admin','data'),P('a','API publique','primary'),P('b','Base centrale'),P('t','Terminal','data')],
- [('x','a','Révoquer (motif)'),('a','b','set_device_status REVOKED'),('b','b','Jetons révoqués, audit'),('t','a','Requête suivante'),('a','b','Statut relu'),('a','t','403 DEVICE_REVOKED','bad')],
- note="Le serial redevient libre : un ré-enrôlement crée un nouveau terminal, next_seq = dernier vu + 1."))
+ [('x','a','Révoquer (motif, clé bo:)'),('a','b','set_device_status REVOKED'),('b','b','Jetons, historique, audit'),('a','x','200 : terminal révoqué','ret'),('t','a','Requête suivante, 3 preuves'),('a','b','Terminal relu'),('a','t','403 DEVICE_REVOKED','bad')],
+ note="Rien n’est écrit pour la requête refusée (pas de nonce). Le serial redevient libre : nouveau terminal, next_seq = dernier vu + 1."))
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
 for f in files: print(r.render(f))

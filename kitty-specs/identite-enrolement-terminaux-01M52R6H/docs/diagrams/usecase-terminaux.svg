@@ -42,6 +42,6 @@
 <text x="1225.0" y="882.7277777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Lire sa configuration</text>
 <text x="1225.0" y="991.6166666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Signaler sa présence</text>
 <text x="1225.0" y="1100.5055555555555" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Appeler une route signée</text>
-<text x="60" y="1191.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Android 12+ ; iOS en QR seulement (OP-N64).</text>
+<text x="60" y="1191.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Suspendu : configuration et présence seulement. iOS : QR seulement (OP-N64).</text>
 </g>
 </svg>

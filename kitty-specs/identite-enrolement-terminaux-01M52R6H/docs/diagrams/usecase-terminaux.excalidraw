@@ -1493,13 +1493,13 @@
    "updated": 1,
    "link": null,
    "locked": false,
-   "text": "En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Android 12+ ; iOS en QR seulement (OP-N64).",
+   "text": "En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Suspendu : configuration et présence seulement. iOS : QR seulement (OP-N64).",
    "fontSize": 20,
    "fontFamily": 2,
    "textAlign": "left",
    "verticalAlign": "middle",
    "containerId": null,
-   "originalText": "En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Android 12+ ; iOS en QR seulement (OP-N64).",
+   "originalText": "En bleu : trois preuves (certificat, jeton lié, signature). En orange : définitif. Suspendu : configuration et présence seulement. iOS : QR seulement (OP-N64).",
    "lineHeight": 1.25,
    "baseline": 20
   }

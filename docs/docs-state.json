@@ -30,10 +30,10 @@
       "spec_index_a_jour": true
     },
     "identite-enrolement-terminaux-01M52R6H": {
-      "statut": "plan finalisé",
-      "verifie_le": "2026-10-19T12:00:00Z",
+      "statut": "review terminée, acceptation en attente",
+      "verifie_le": "2026-10-21T15:12:50Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     },
     "terminaux-paiement-en-ligne-01M52QB9": {

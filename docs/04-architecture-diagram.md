@@ -5,7 +5,8 @@
 > Dernière mise à jour : initialisation du 07/10/2026. **Architecture cible** (`SPECIFICATION.md` §1.2, §2) :
 > aucun conteneur n'est encore déployé. Mise à jour du 15/10/2026 : le service des clés de bracelet est découpé en
 > processus à droits séparés, comme l'a livré la mission « Bracelets NFC » (approuvée, acceptation et fusion en
-> attente).
+> attente). Mise à jour du 21/10/2026 : identité réelle des terminaux (HTTPS et mTLS dans les processus, trois
+> preuves), livrée par la mission « Identité et enrôlement des terminaux » (review terminée, acceptation en attente).
 
 ## Vue d'ensemble (cible V1)
 
@@ -43,12 +44,12 @@ C4Container
     Rel(staff, term, "Utilise")
     Rel(bo, api, "Appelle", "REST")
     Rel(app, api, "Appelle", "REST")
-    Rel(term, api, "Appelle, lots", "REST signé")
+    Rel(term, api, "Appelle, lots", "HTTPS, mTLS, jeton lié, signé")
     Rel(term, edge, "Appelle en coupure", "LAN")
     Rel(edge, api, "Réplique, rejoue", "mTLS")
     Rel(edge, edgedb, "Lit/écrit")
     Rel(api, db, "Lit/écrit")
-    Rel(term, tagkeys, "Demande le mot de passe", "REST")
+    Rel(term, tagkeys, "Demande le mot de passe", "HTTPS, mTLS, jeton lié, signé")
     Rel(tagkeys, db, "Lit les chiffrés")
     Rel(tagkeys, kms, "Decrypt")
     Rel(perso, db, "Enregistre les bracelets")
@@ -82,7 +83,7 @@ C4Container
 | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée)) | API centrale (`identity/`, `identity/users/`, `approval/`, `approval/onsite/`, `audit/` ; `TenantTx.identify`/`withoutTenant`), base de données (migrations `0003`-`0006`, `post-roles.sql`, `bootstrap-admin`), contrat (`openapi.yaml`, tag `Personnes`), serveur d'identité OIDC (externe) | [`kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md`](../kitty-specs/identite-roles-double-validation-01M4DNDN/docs/architecture-notes.md) |
 | `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte)) | Base de données (migrations `0007`-`0009`, rôle `cashless_platform` dans `post-roles.sql`), API centrale (second pool `PlatformTx`, modules `configuration/`, `organization/`, `events/`, `SqlConfigResolver`), moteur d'écritures (`fee_rule_id` sur les lignes de frais), contrat (48 opérations back-office sur 28 chemins) | [`kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md`](../kitty-specs/configuration-parties-evenements-01M4GCJ9/docs/architecture-notes.md) |
 | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 (20/20 WP, acceptée le 15/10/2026, squash `7b1b8c2` ; dans `main` par la PR #3, CI verte)) | Bibliothèque `packages/tag-format` (TypeScript et Dart), API centrale découpée en quatre processus (API publique, clés de bracelet, personnalisation, contrôle quotidien) et une commande d'administration des clés, module `media/`, ports et faux (`kms/`, `device-identity/`, `customer-identity/`), base de données (migrations `0010`-`0019`, quatre rôles de base de plus dans `post-roles.sql`), contrat (27 opérations ajoutées sur 24 chemins, `x-process` sur 39 opérations, types TypeScript et Dart) | [`kitty-specs/bracelets-nfc-01M4TD3W/docs/architecture-notes.md`](../kitty-specs/bracelets-nfc-01M4TD3W/docs/architecture-notes.md) |
-| `identite-enrolement-terminaux-01M52R6H` (🚧 plan finalisé le 19/10/2026) | API publique et processus des clés de bracelet en HTTPS avec mTLS vérifié dans le processus ; identité réelle du terminal (`device-identity/`), ports `DeviceCaPort` et `TokenSignerPort`, vérificateurs d'attestation ; base de données (migrations `0021`-`0025`, `post-roles.sql`, `gen_tests.py`) ; contrat (trois preuves, six routes back-office) | [`kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/architecture-notes.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/architecture-notes.md) |
+| `identite-enrolement-terminaux-01M52R6H` (🔎 review terminée le 21/10/2026, 18/18 WP approuvés ; acceptation en attente) | API publique et processus des clés de bracelet en HTTPS (TLS 1.3) avec certificat client vérifié dans le processus ; identité réelle du terminal (`device-identity/`), autorité des terminaux et signataire des jetons derrière des ports (faux seulement, OP-N73), vérificateurs d'attestation (`attestation/`), routes `devices/`, idempotence à clé (`request-hash.ts`) ; base de données (migrations `0021`-`0027`, `0029`, `0030`, `post-roles.sql` rôle par rôle, `gen_tests.py`, `migrate.ts`) ; contrat (trois preuves, `staffBearer`, six opérations back-office ; 136 chemins, 165 opérations) ; CI (`ledger-tests.yml`) | [`kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/architecture-notes.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/architecture-notes.md) |
 
 ## Pile logicielle
 
@@ -122,8 +123,10 @@ arrêtée le 09/10/2026 (ADR-78 : l'existant prime). Redis, Fastify, Prisma et N
 | Travaux de clé en table (`tag_key_job`, aucun secret, contrainte en base) : une action approuvée dans l'API publique est exécutée par le processus qui a le droit. Depuis la migration 0020 (correctif post-fusion n° 1, ADR-102), un travail ne naît que d'une demande approuvée à deux, par deux fonctions `SECURITY DEFINER` (aucun `INSERT` direct pour l'API ni la personnalisation) ; chaque exécutant revérifie la demande avant d'appeler le service de clés, sinon refus audité `TAG_KEY_JOB_REFUSED` | Pas d'appel entre processus ; reprise sans double effet (ADR-83) | `bracelets-nfc-01M4TD3W` (implémentation) |
 | Aucun compte de caisse avant la mission des caisses : caution en espèces et espèces dues répondent `409` (ADR-89) ; guichet de retour sans enchaînement, `settle_balance` et `refund_deposit_by` refusés en `422` (ADR-91, proposée, à trancher) | Aucun argent liquide sans session de caisse ; enchaînement renvoyé à la mission 9 par le plan, alors que `openapi.yaml` le décrit | `bracelets-nfc-01M4TD3W` (implémentation) |
 | Contrôle quotidien des mots de passe : compte rendu et alerte d'audit, code de sortie 2 sur écart, 3 sur panne ; aucune sorte d'anomalie nouvelle (ADR-92) | Liste des anomalies fermée (§12.2) | `bracelets-nfc-01M4TD3W` (implémentation) |
-| Terminaux : jeton lié, mTLS et signature de chaque requête exigés ensemble (ADR-107) ; mTLS vérifié dans les processus Node, répartiteur en passage TCP, `TRUST_PROXY_HOPS = 0` exigé ; révocation sans liste, par relecture en base | Aucune preuve volée seule ne suffit ; aucun en-tête de répartiteur cru | `identite-enrolement-terminaux-01M52R6H` (plan) |
-| Autorité des terminaux et signataire des jetons derrière des ports, faux refusés en production ; attestation Android 12+ (deux clés) et App Attest (limite OP-N64) ; `serial` unique par prestataire (ADR-109) | Clés de signature hors du code (§13.2) ; cloisonnement entre prestataires | `identite-enrolement-terminaux-01M52R6H` (plan) |
+| Terminaux : jeton lié, mTLS et signature de chaque requête exigés ensemble (ADR-107), sur les deux processus qui servent des routes de terminal ; mTLS vérifié dans les processus Node (TLS 1.3), répartiteur en passage TCP, `TRUST_PROXY_HOPS = 0` exigé ; nonces en base à l'heure de la base ; autorités signées listées (`DEVICE_REQUEST_AUTHORITIES`, obligatoire en production) ; révocation sans liste, par relecture en base, `403 DEVICE_REVOKED` après preuves valides (ADR-115) | Aucune preuve volée seule ne suffit ; aucun en-tête de répartiteur cru ; rejeu refusé sur toutes les instances | `identite-enrolement-terminaux-01M52R6H` (implémentation) |
+| Autorité des terminaux et signataire des jetons derrière des ports, faux seulement et refusés en production (dette OP-N73, ADR-119, levée en mission 7 avec le KMS) ; attestation Android 12+ (deux clés ; identité de l'app lue dans la liste logicielle, OP-N67) et App Attest (limite OP-N64) ; `serial` unique par prestataire (ADR-109) | Clés de signature hors du code (§13.2) ; cloisonnement entre prestataires | `identite-enrolement-terminaux-01M52R6H` (implémentation) |
+| Droits de la base rôle par rôle (`EXECUTE` retiré à `PUBLIC`, OP-N44 ; `TEMPORARY` retiré ; toute fonction SECURITY DEFINER en `search_path = public, pg_temp`, OP-N59) ; clés du terminal écrites par `enroll_device` seulement (OP-N63) ; purges par l'API publique, bornées par test (ADR-114) | Une connexion de l'API compromise n'appelle que ce que son rôle exige ; aucune table temporaire ne détourne une fonction privilégiée | `identite-enrolement-terminaux-01M52R6H` (implémentation) |
+| Idempotence : empreinte à clé HMAC (OP-N54) sur le chemin concret et l'appelant (ADR-116) ; enrôlement : limites sur les refus, atomiques en base, /64 en IPv6, tout refus audité (ADR-117) | Aucun rejeu sur une autre ressource ni entre personnes ; aucun oracle d'existence d'un code ; écritures bornées sur une route sans compte | `identite-enrolement-terminaux-01M52R6H` (implémentation) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

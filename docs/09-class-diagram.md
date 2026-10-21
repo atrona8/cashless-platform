@@ -2,7 +2,9 @@
 
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
 > `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
-> 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3). Seuls les attributs utiles à la compréhension sont montrés ; les
+> 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3).
+> Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
+> terminaux » (review terminée, pas encore fusionnée), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
 > Conventions : chaque table porte `operator_id` (cloisonnement par prestataire, RLS) — non répété sur chaque classe.
@@ -62,10 +64,14 @@ classDiagram
   class Device {
     text kind
     text app_mode
+    text os
     text serial
     text status
     bigint last_seq
     bytea public_key
+    bytea agreement_public_key
+    bytea cert_sha256
+    bool personal_phone
   }
   class FeeRule {
     text scope_type
@@ -312,9 +318,72 @@ classDiagram
   class AppUser
 ```
 
+## 4 bis. Terminaux : enrôlement, jetons et nonces (mission « Identité et enrôlement des terminaux »)
+
+Un code d'enrôlement (empreinte HMAC seulement) est consommé par un seul terminal ; chaque terminal a des familles de
+jetons de rafraîchissement (empreinte SHA-256, rotation, grâce), un historique de statuts en ajout seul et des nonces
+de requête. Les essais d'enrôlement servent aux limites et ne sont pas liés au terminal. Depuis la migration 0022,
+`device` porte aussi la version de l'app, le type et le niveau d'attestation, la fin du certificat, le code consommé
+et le motif du dernier statut ; `serial` est unique par prestataire parmi les terminaux non révoqués.
+
+```mermaid
+classDiagram
+  direction LR
+  class Device {
+    text serial
+    text status
+    bytea cert_sha256
+    timestamptz cert_not_after
+    text attestation_kind
+  }
+  class DeviceEnrollmentCode {
+    bytea code_hash
+    text app_mode
+    bool personal_phone
+    timestamptz expires_at
+    timestamptz used_at
+  }
+  class DeviceRefreshToken {
+    uuid family_id
+    bytea token_hash
+    timestamptz consumed_at
+    text revoked_reason
+    timestamptz grace_used_at
+  }
+  class DeviceStatusHistory {
+    text from_status
+    text to_status
+    text reason
+  }
+  class DeviceRequestNonce {
+    bytea nonce
+    timestamptz expires_at
+  }
+  class DeviceEnrollmentAttempt {
+    bytea code_hash
+    inet address
+    inet address_key
+    text result
+  }
+  class Event
+  class PointOfSale
+  class AppUser
+
+  DeviceEnrollmentCode "*" --> "1" Event : affecte à
+  DeviceEnrollmentCode "*" --> "0..1" PointOfSale
+  DeviceEnrollmentCode "*" --> "1" AppUser : émis par
+  DeviceEnrollmentCode "0..1" --> "0..1" Device : consommé par
+  Device "1" --> "*" DeviceRefreshToken : familles
+  DeviceRefreshToken "0..1" --> "0..1" DeviceRefreshToken : successeur
+  Device "1" --> "*" DeviceStatusHistory
+  DeviceStatusHistory "*" --> "0..1" AppUser : auteur
+  Device "1" --> "*" DeviceRequestNonce
+```
+
 ## 5. Description des tables
 
-Toutes les tables du schéma (58), groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux »),
+groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
 ### Organisation, événements, configuration
@@ -362,7 +431,12 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 |---|---|---|
 | `device` | Terminal (Android ou iOS) : mode d'application, numéro de série, clés publiques, statut, événement et point de vente, numérotation et chaînage de ses opérations. | réf. |
 | `device_seq_registry` | Registre des numéros de séquence de chaque terminal : idempotence des lots et détection des trous ; écrit avec l'écriture comptable. | réf. |
-| `device_config_served` | Configuration figée servie à un terminal (politique effective, époque, plancher de séquence), citée par chaque opération hors ligne. | réf. |
+| `device_config_served` | Configuration figée servie à un terminal (politique effective, époque, plancher de séquence), citée par chaque opération hors ligne ; écrite par `record_config_served`, qui refuse un terminal révoqué et une version d'un autre prestataire (0029). | réf. (+0029) |
+| `device_enrollment_code` | Code d'enrôlement à usage unique : empreinte HMAC seulement, événement obligatoire, point de vente et mode facultatifs, téléphone personnel (KEYPAD_TPE seulement), durée de 5 min à 7 jours, terminal qui l'a consommé. | 0022 |
+| `device_refresh_token` | Jeton de rafraîchissement d'un terminal (empreinte SHA-256) : famille, consommation, successeur, grâce de 60 s, révocation et motif (réutilisation, terminal révoqué, ré-enrôlement). | 0022 (+0023) |
+| `device_status_history` | Historique des statuts d'un terminal, en ajout seul : de, vers, motif, auteur (aucun à l'enrôlement) ; `REVOKED` définitif. | 0022 |
+| `device_enrollment_attempt` | Essai d'enrôlement (empreinte de tout code bien formé, adresse, clé d'adresse /64, résultat) ; sert aux limites, purgé à 24 h. | 0022 (+0027, 0030) |
+| `device_request_nonce` | Nonce d'une requête signée d'un terminal, gardé jusqu'à la fin de la fenêtre de rejeu (heure de la base) ; ajout seul sauf la purge. | 0023 |
 | `offline_policy` | Politique hors ligne par portée (organisateur, événement, terminal, plafonds du prestataire) : activation et plafonds par vente, par bracelet, par terminal. | réf. |
 | `offline_policy_history` | Historique des politiques hors ligne : une opération est jugée sur les plafonds en vigueur quand elle a été faite. | réf. |
 | `offline_snapshot` | Instantané signé envoyé aux terminaux pour autoriser hors ligne (soldes, bracelets bloqués, mots de passe chiffrés). | réf. |
@@ -408,5 +482,5 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaines : mission 5 terminaux, mission 6 caisses et PSP). Le bloc de chaque diagramme reste du texte :
+domaine (prochaines : mission 5b encaissement, mission 6 caisses et PSP). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
