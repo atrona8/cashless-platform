@@ -93,32 +93,41 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-81 | Profils de législation gérés par la plateforme ; colonnes de configuration ajoutées au schéma | Acceptée |
 | ADR-82 | Configuration : rôle strict par réglage, règle de frais portée par les lignes, dates d'effet par défaut | Acceptée |
 | ADR-83 | Quatre processus à droits séparés sur les clés, et une commande d'administration | Acceptée |
-| ADR-84 | Rôles de base distincts : seuls les processus des clés lisent les chiffrés | Acceptée |
+| ADR-84 | Rôles de base distincts : seuls les processus des clés lisent les chiffrés | Acceptée (OP-N44 levé par la mission 5a le 21/10/2026) |
 | ADR-85 | Rôle `PERSONALIZER` dédié | Acceptée |
 | ADR-86 | Mot de passe de bracelet jamais en clair hors du processus qui le calcule | Acceptée |
 | ADR-87 | Codes imprimés : empreinte à clé, consultation anonyme par une fonction dédiée | Acceptée |
-| ADR-88 | Ports et faux pour le KMS, l'identité du terminal et celle du festivalier | Acceptée |
+| ADR-88 | Ports et faux pour le KMS, l'identité du terminal et celle du festivalier | Acceptée (OP-N42 levé par la mission 5a le 21/10/2026) |
 | ADR-89 | Pas de compte de caisse avant la mission des caisses | Acceptée |
-| ADR-90 | Rattachement par code : consultation réduite, lecture consommée, activation depuis l'app | Acceptée |
+| ADR-90 | Rattachement par code : consultation réduite, lecture consommée, activation depuis l'app | Acceptée (OP-N50 levé par la mission 5a le 21/10/2026) |
 | ADR-91 | Guichet de retour : enchaînement des étapes servi par la mission 9 | Acceptée |
 | ADR-92 | Contrôle quotidien des mots de passe : alerte d'audit, pas d'anomalie | Acceptée |
 | ADR-93 | Remise en stock d'un bracelet rendu : route `reassignPoolMedia` distincte de la restitution | Acceptée |
 | ADR-94 | Sortie de liste noire vérifiée par la base (demande approuvée concordante) | Acceptée |
 | ADR-95 | Adresse du client : `trust proxy` borné par `TRUST_PROXY_HOPS`, obligatoire en production | Acceptée |
-| ADR-96 | Fonctions SECURITY DEFINER sans `pg_temp` (OP-N59) : limite acceptée, levée par la mission 5, bloque la production | Acceptée |
+| ADR-96 | Fonctions SECURITY DEFINER sans `pg_temp` (OP-N59) : limite acceptée, levée par la mission 5, bloque la production | Acceptée ; **levée par la mission 5a le 21/10/2026** |
 | ADR-97 | Écritures directes de `cashless_app` sur `media_batch` (OP-N60) : limite acceptée, levée par la mission 11, bloque la production | Acceptée |
 | ADR-98 | Traitements par tranches (NFR-008, OP-N61) : preuve sur 5 000 bracelets reportée à la mission 13, bloque la production | Acceptée |
-| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (mission de levée confirmée par le porteur le 15/10/2026) |
+| ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (mission de levée confirmée par le porteur le 15/10/2026) ; **levée par la mission 5a le 21/10/2026** |
 | ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée |
 | ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Acceptée (confirmée par le porteur le 15/10/2026) |
-| ADR-102 | Travaux de clé nés d'une demande approuvée à deux seulement, vérifiés par la base et par les exécutants (SEC-1) | Acceptée (décision du porteur du 16/10/2026) |
+| ADR-102 | Travaux de clé nés d'une demande approuvée à deux seulement, vérifiés par la base et par les exécutants (SEC-1) | Acceptée (décision du porteur du 16/10/2026) ; **levée par la mission 5a le 21/10/2026** |
 | ADR-103 | `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête (contradiction contrat / schéma) | Acceptée (consignée le 16/10/2026) |
 | ADR-104 | Mission de levée d'OP-N47 (rotation de `CLAIM_CODE_HMAC_KEY`) : mission 10 | Proposée par l'agent, à confirmer par le porteur |
-| ADR-105 | Clé d'accord d'un terminal (`device.agreement_public_key`) réécrivable par l'API (OP-N63) : limite acceptée, levée par la mission 5 | Acceptée (décision du porteur du 16/10/2026) |
+| ADR-105 | Clé d'accord d'un terminal (`device.agreement_public_key`) réécrivable par l'API (OP-N63) : limite acceptée, levée par la mission 5 | Acceptée (décision du porteur du 16/10/2026) ; **levée par la mission 5a le 21/10/2026** |
 | ADR-106 | Terminal iOS : clé de signature non attestée, liée à l'instance App Attest (OP-N64) : limite acceptée, réexaminée par la mission 12 | Acceptée (décision du porteur du 19/10/2026) |
 | ADR-107 | Terminaux : jeton lié, mTLS et signature de chaque requête exigés ensemble (contradiction avec SPEC §10.3 et le contrat) | Acceptée (décision du porteur du 19/10/2026) |
 | ADR-108 | Rafraîchissement d'un jeton d'appareil : grâce de 60 s pour le même terminal (OP-N65) : limite acceptée, réexaminée par la mission 13 | Acceptée (décision du porteur du 19/10/2026) |
 | ADR-109 | `serial` d'un terminal unique par prestataire (écart au schéma de référence) | Acceptée (décision du porteur du 19/10/2026) |
+| ADR-110 | Attestation Android : `attestationApplicationId` lu dans la liste logicielle (OP-N67) : limite acceptée, réexaminée par la mission 13 | Acceptée (décision du porteur du 19/10/2026) |
+| ADR-111 | Fonctions nouvelles : droits rejoués dans la transaction des migrations, droit par défaut reporté (OP-N68, mission 7) | Acceptée (décision du porteur du 20/10/2026) |
+| ADR-112 | Colonnes d'exploitation de `device` encore écrites par l'API (OP-N69) : levée en mission 7 | Acceptée (décision du porteur du 20/10/2026) |
+| ADR-113 | Routes de guichet : jeton de la personne dans `X-Staff-Authorization` | Acceptée (décision du porteur du 20/10/2026) |
+| ADR-114 | Purges des nonces et des essais d'enrôlement exécutées par l'API publique (droit plus large, borné par test) | Acceptée (décision du porteur du 20/10/2026) |
+| ADR-115 | Terminal révoqué : `403 DEVICE_REVOKED` à la requête suivante | Acceptée (décision du porteur du 20/10/2026) |
+| ADR-116 | Idempotence : chemin concret et appelant dans la clé (OP-N71) | Acceptée (décision du porteur du 21/10/2026) ; mise en œuvre par WP18 |
+| ADR-117 | Enrôlement : audit de tous les refus, limites sans oracle, atomiques (OP-N72) | Acceptée (décisions du porteur du 21/10/2026) |
+| ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
 
 ---
 
@@ -962,6 +971,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Contexte.** Les droits sur le KMS ne suffisent pas : une base lisible par l'API publique exposerait les mots de passe chiffrés et les clés de données chiffrées.
 - **Décision.** Quatre rôles de base (`cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin`) reçoivent des droits colonne par colonne (`post-roles.sql`). `cashless_app` perd la lecture de `media.pwd_pack_enc`, `media.pwd_pack_dek_id` et `tag_data_key.encrypted_dek`. **Décision n° 9 (13/10/2026)** : ces rôles héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence, comme `cashless_platform` (ADR-80), parce que la suite de référence l'exige.
 - **Conséquences.** Deux barrières indépendantes (KMS et base) protègent les mots de passe. La limite d'exécution est une dette (OP-N44), levée quand le générateur de la suite de référence n'exigera plus `EXECUTE` pour `PUBLIC`.
+- **Levée d'OP-N44 (21/10/2026, mission 5a, WP07).** `post-roles.sql` retire `EXECUTE` à `PUBLIC` et l'accorde rôle
+  par rôle ; `gen_tests.py` ne l'exige plus pour `PUBLIC`. Test : `tests/tests_execute_grants.sql` (listes figées par
+  rôle, refus à l'appel). Limite résiduelle : OP-N68 (ADR-111).
 - **Références.** SPEC §3.2, §7.4 ; `packages/ledger-sql/post-roles.sql` ; `tests/tests_media_roles.sql` ; ADR-80 ; OP-N44.
 
 ## ADR-85 — Rôle `PERSONALIZER` dédié
@@ -1000,6 +1012,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Contexte.** L'adaptateur AWS KMS dépend de la région et des comptes (OP-N11) ; l'enrôlement des terminaux vient en mission 5, les comptes festivaliers en mission 10.
 - **Décision.** La mission livre les services derrière des ports (`MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, `DeviceIdentityPort`, `CustomerIdentityPort`) avec des faux pour les tests. Aucun faux en production : chacun refuse de se construire, et la garde de démarrage refuse un processus qui en porte un (`production-guard.spec.ts`). Le changement d'implémentation d'un port ne touche pas les contrôleurs : `media-port-swap.spec.ts` remplace l'identité du terminal (lecture `POST /v1/taps`) et celle du festivalier (rattachement `POST /v1/me/media`) par des jetons signés. La bibliothèque de format est livrée en TypeScript et en Dart, prouvée en CI.
 - **Conséquences.** Trois dettes nommées par cette décision : OP-N41 (KMS), OP-N42 (terminal, mission 5), OP-N43 (festivalier, mission 10). Le prompt du lot 20 en annonçait quatre : la quatrième, OP-N44 (`EXECUTE` hérité de `PUBLIC` par les rôles de base des processus des clés), relève des rôles de base distincts et est rattachée à l'ADR-84, pas à celle-ci.
+- **Levée d'OP-N42 par la mission 5a (21/10/2026).** `DeviceIdentityPort` a son implémentation réelle (jeton lié,
+  mTLS et signature de chaque requête, ADR-107) ; le faux n'est câblé que sous `DEVICE_IDENTITY_FAKE=1` et refusé en
+  production. Tests : `test/integration/end-to-end/device-auth-matrix.spec.ts`, `test/unit/production-guard.spec.ts`,
+  `device-latency.spec.ts` (un test de garde par faux). OP-N41 et OP-N43 restent ouverts (missions 7 et 10).
 - **Références.** SPEC §3.2, §7.3 ; NFR-010 ; `apps/api/src/kms/`, `device-identity/`, `customer-identity/` ; OP-N41 à OP-N43.
 
 ## ADR-89 — Pas de compte de caisse avant la mission des caisses
@@ -1020,6 +1036,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   3. **n° 13** : un code valide d'un bracelet jamais activé l'active sur un portefeuille du festivalier si l'événement autorise `SELF_APP`, que le lot sert un seul événement et qu'il n'a pas de caution payée à part.
   4. Pas d'énumération : un code inconnu et un code utilisé suivent le même chemin et reçoivent la même réponse ; écart des médianes de 0,1 à 0,2 ms selon les passages sur 200 + 200 essais, seuil 20 ms (`claims-timing.spec.ts` ; 0,2 ms à la répétition de CI consignée dans `.github/CI.md`).
 - **Conséquences.** Limite du n° 12 : `consume_tap` ignore le lien ; une lecture qui a confirmé une demande peut encore servir à une écriture du même bracelet pendant la fenêtre de l'événement (OP-N50, `tests_media_claim_tap.sql`).
+- **Levée de la limite du n° 12 (OP-N50) par la mission 5a (21/10/2026, WP05).** Migrations 0024 et 0026 :
+  `consume_tap` refuse une lecture liée à une demande de rattachement ; la lecture d'une demande ne s'écrit plus
+  directement. Tests : `tests/tests_consume_tap_claim.sql`, `test/integration/media/tap-claim-race.spec.ts` (course à
+  deux connexions, verrou `media-tap-use:`).
 - **Références.** SPEC §7.8, §8.5 ; ADR-57 ; FR-030 à FR-033, NFR-007 ; `apps/api/src/media/claims/` ; `migrations/0016_media_claim_tap.sql` ; OP-N50.
 
 ## ADR-91 — Guichet de retour : enchaînement des étapes servi par la mission 9
@@ -1093,6 +1113,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   fonctions SECURITY DEFINER sans `pg_temp` ; une nouvelle fonction fixe `search_path = public, pg_temp`). Contrôle du
   contrôle : une fonction SECURITY DEFINER de plus avec `search_path = public` fait échouer le test. Report dans
   `PROMPTS-A-ENVOYER.md` (mission 5) et `PRD.md` (héritages de la mission 4).
+- **Levée par la mission 5a (21/10/2026, WP02 et WP07 ; options A et B).** Migration 0021 (`search_path = public,
+  pg_temp` sur toute fonction SECURITY DEFINER du schéma `public`) et `TEMPORARY` retiré à `PUBLIC` et aux rôles
+  `cashless_*`. Tests : `tests/tests_definer_search_path.sql`, `tests/tests_device_rights.sql` §5,
+  `tests/tests_definer_trigger_writers.sql` §4 (égalité à 0). OP-N59 tranché.
 - **Références.** OP-N59 ; ADR-94 (complément du cycle 7) ; `packages/ledger-sql/migrations/0019_personalization_definer.sql`.
 
 ## ADR-97 — Écritures directes de `cashless_app` sur `media_batch` : limite acceptée jusqu'à la mission 11 (OP-N60)
@@ -1157,6 +1181,12 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Test qui échoue si la limite s'élargit (code conservé en clair, en hexadécimal ou en base64) :
   `apps/api/test/integration/end-to-end/media-secrets.spec.ts`. Report dans `PROMPTS-A-ENVOYER.md` (mission 5) et
   `PRD.md` (héritages de la mission 4).
+- **Levée par la mission 5a (21/10/2026, WP13 et WP18).** `request_hash` et l'empreinte de personnalisation sont des
+  HMAC sous `IDEMPOTENCY_HMAC_KEY`. Tests : `test/unit/idempotency/request-hash.spec.ts`,
+  `test/unit/media/personalization-hash.spec.ts`, `test/integration/media/personalization.spec.ts` (« registre
+  d'idempotence : empreinte à clé… (OP-N54) »). Consigne de déploiement (décision du porteur du 21/10/2026) : purge
+  des lignes `api_idempotency` antérieures par le propriétaire à T + `IDEMPOTENCY_TTL_HOURS` (720 h), compte nul
+  vérifié ensuite (`POINTS_OUVERTS.md`, OP-N54). OP-N54 tranché.
 - **Références.** OP-N54 ; ADR-79 ; ADR-87 ; `apps/api/src/idempotency/`.
 
 ## ADR-100 — Espèces dues d'un bracelet remplacé : limite acceptée jusqu'à la mission 9 (OP-N55)
@@ -1198,6 +1228,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Les conditions de levée et les tests qui bornent les limites restent ceux d'OP-N41 à OP-N50.
   Reports dans `PROMPTS-A-ENVOYER.md` (missions 5, 7, 12, 13) et `PRD.md` (héritages de la
   mission 4).
+- **Suites (21/10/2026).** OP-N44 et OP-N50 levés par la mission 5a (ADR-84, ADR-90 ; `tests_execute_grants.sql`,
+  `tests_consume_tap_claim.sql`, `tap-claim-race.spec.ts`). OP-N41, OP-N45 et OP-N46 restent confiés aux missions 7,
+  13 et 12.
 - **Références.** OP-N41, OP-N44, OP-N45, OP-N46, OP-N50 ; ADR-83 à ADR-85, ADR-88, ADR-90, ADR-96.
 
 ## ADR-102 — Travaux de clé : demande approuvée à deux exigée par la base et par les exécutants
@@ -1263,6 +1296,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   mission 5 : l'inscription refuse une demande `APPROVED` périmée (code `CL023`). Test qui
   documente le comportement actuel : `tests/tests_tag_key_job_approval.sql`, section 6, à inverser
   par la mission 5. Report dans `PROMPTS-A-ENVOYER.md` (mission 5).
+- **Levée d'OP-N62 par la mission 5a (21/10/2026, WP06 puis WP07).** Migration 0025 : le retrait d'une clé dédiée
+  exige le travail `RETIRE_KEY` `RUNNING` de la même clé ; une demande approuvée périmée est refusée (`CL023`). Test :
+  `tests/tests_tag_key_retire_guard.sql`.
 - **Références.** SPEC §3.2, §7.3, §7.4, §7.7 ; ADR-83, ADR-84, ADR-94 ; OP-N56, OP-N62, OP-N63 ;
   `contracts/key-services.md` ; `mission-review-report.md` (SEC-1).
 
@@ -1337,6 +1373,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   colonne (`tests/tests_tag_key_job_approval.sql`, section 7) : il échoue si un droit s'élargit ;
   à mettre à jour à la levée. Reports dans `PROMPTS-A-ENVOYER.md` (mission 5) et `PRD.md`
   (héritages de la mission 4). Fichiers à faire relire par une personne : `post-roles.sql`.
+- **Levée par la mission 5a (21/10/2026, WP03 et WP07).** Clé d'accord écrite à l'enrôlement seulement, par la
+  fonction qui consomme le code ; `UPDATE (agreement_public_key)` et `INSERT` sur `device` retirés à `cashless_app`.
+  Tests : `tests/tests_device_rights.sql` §1 et §2. OP-N63 tranché ; colonnes restantes : OP-N69 (ADR-112).
 - **Références.** ADR-102 ; OP-N42, OP-N63 ; `packages/ledger-sql/roles.sql`.
 
 ## ADR-106 — Terminal iOS : clé de signature non attestée, liée à l'instance App Attest
@@ -1355,6 +1394,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   est dans la Secure Enclave).
 - **Conséquences.** Test qui échoue si la borne s'élargit : `POST /media/auth-keys` refuse un terminal iOS. Reports
   dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 12).
+- **Vérifiée contre le code livré (21/10/2026, WP18).** Bornes « borne iOS (OP-N64) » de
+  `device-auth-matrix.spec.ts` et `media-port-swap.spec.ts`. Pour la mission 12 : `keyId` App Attest (credentialId)
+  renvoyé par le port et stocké ; `iosClientDataHash` passé tel quel à `attestKey`.
 - **Références.** `kitty-specs/identite-enrolement-terminaux-01M52R6H/research.md` R-06 ; décision
   `DM-01M59SD0YNWKK8R4EKT2T7THJK` ; OP-N64.
 
@@ -1368,6 +1410,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   est vérifié dans les processus Node, sans en-tête de répartiteur (décision du porteur au plan). Le contrat est mis
   à jour dans ce sens ; §10.3 est à aligner à la prochaine révision de la spécification.
 - **Conséquences.** Renforcement de sécurité. Matrice de tests qui retire une preuve à la fois.
+- **Vérifiée contre le code livré (21/10/2026, WP18).** `device-auth-matrix.spec.ts` : chaque route de terminal du
+  contrat refusée pour chaque preuve absente, fausse, expirée, d'un autre terminal, rejouée ou d'une autre autorité.
 - **Références.** OP-N42 ; ADR-88 ; décisions `DM-01M52R88ZPZEA0NXVSDY9PBXW5`, `DM-01M59SAEYDXFK29HMMFBTJ96KS`.
 
 ## ADR-108 — Rafraîchissement d'un jeton d'appareil : grâce de 60 s pour le même terminal
@@ -1385,6 +1429,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Mission qui la réexamine.** Mission 13 (recette V1), selon les pertes réseau observées.
 - **Condition de levée.** Retour au mode strict si la recette montre que la grâce ne sert pas.
 - **Conséquences.** Test de borne : seconde représentation, plus de 60 s ou autre certificat → famille révoquée.
+- **Vérifiée contre le code livré (21/10/2026, WP18).** « borne d'OP-N65 » (trois tests) de
+  `test/integration/devices/refresh.spec.ts` ; `tests/tests_device_tokens.sql` §2.
 - **Références.** `research.md` R-07 de la mission 5a ; décision `DM-01M59WNZSSTN4YP1W38GPTHMMP` ; OP-N65.
 
 ## ADR-109 — `serial` d'un terminal unique par prestataire
@@ -1399,6 +1445,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   cloisonnement. Le test de référence (même prestataire) reste vert.
 - **Conséquences.** Test à deux prestataires (même `serial`, deux terminaux, aucune fuite). Les clés d'opération
   `<serial>:<seq>` restent rangées par prestataire (registre d'idempotence à `operator_id`).
+- **Vérifiée contre le code livré (21/10/2026, WP18).** `device-isolation.spec.ts` (« même serial chez deux
+  prestataires : deux terminaux, chacun chez lui », « next_seq calculé dans son prestataire ») ; ré-enrôlement du
+  même `serial` après révocation : `device-journey.spec.ts` (étape 8).
 - **Références.** `sync_protocol.md` §3.1 ; `research.md` R-11 de la mission 5a ; décision
   `DM-01M59WP3HZ99VBEM3SPTQDYJSQ`.
 
@@ -1461,6 +1510,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   tout Bearer des routes humaines (pas de régression).
 - **Alternatives écartées.** Jeton d'appareil dans un en-tête dédié partout (toutes les routes de terminal changent) ;
   routes de guichet sans jeton d'appareil (une preuve retirée).
+- **Levée d'OP-N70 (21/10/2026, WP18).** `device-auth-matrix.spec.ts` sert chaque route de terminal en HTTPS réel
+  et échoue si une route de terminal n'a pas de cas.
 - **Références.** WP01 et WP12 de la mission 5a ; ADR-107 (trois preuves).
 - **Suites (même date).** OP-N70 : les suites de la mission 4 servies en clair restent sous le faux d'identité du
   terminal ; WP18 les étend à l'identité réelle (une route par contrôleur en HTTPS, test de couverture). Borne iOS de
@@ -1478,6 +1529,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Alternative écartée.** Rôle et connexion de maintenance dédiés (un rôle et un réglage de déploiement de plus).
 - **Conséquences.** Test de borne confié à WP18 : il échoue si une purge peut retirer une ligne encore dans sa fenêtre
   (nonce non expiré, essai de moins de 24 h). Listes figées de `tests_execute_grants.sql`.
+- **Test de borne (21/10/2026, WP18).** `tests/tests_device_purge_window.sql` : sous `cashless_app` et sans
+  prestataire, aucune purge ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h. Droit plus large
+  accepté, listé dans la revue des écarts de sécurité.
 - **Références.** WP07 et WP12 de la mission 5a ; ADR-113.
 
 ## ADR-115 — Terminal révoqué : `403 DEVICE_REVOKED` à la requête suivante
@@ -1507,15 +1561,21 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `IDEMPOTENCY_KEY_REUSED` pour « même clé, contenu différent ». Contradiction entre le contrat et SPECIFICATION
   signalée par la relecture de WP16.
 - **Décision.** L'empreinte porte sur le chemin concret (paramètres de chemin compris, sans la chaîne de requête) au
-  lieu du modèle de route : même clé sur un autre `:id` → `422 IDEMPOTENCY_KEY_REUSED`. La clé est liée à la personne
+  lieu du modèle de route : même clé sur un autre `:id` → `409 IDEMPOTENCY_KEY_REUSED` (statut de `openapi.yaml` et
+  du code ; « 422 » corrigé, décision du porteur du 21/10/2026). La clé est liée à la personne
   authentifiée (ou au terminal, ou au processus) qui l'a créée : un autre appelant ne rejoue jamais une réponse qu'il
   n'a pas obtenue lui-même. La règle 3 du contrat est mise à jour dans le même lot.
 - **Pourquoi.** Renforcement : supprime le rejeu sur une autre ressource et la fuite d'une réponse hors portée.
   SPECIFICATION §10.2 l'emporte sur le contrat (§0.3).
 - **Conséquences.** Les lignes `api_idempotency` antérieures ne rejouent plus après le déploiement (empreinte
   différente : `IDEMPOTENCY_KEY_REUSED` sur un rejeu en vol) ; consigne de déploiement à écrire avec celle d'OP-N54.
-  Tests : même clé sur deux `:id` → 422 ; même clé par deux personnes → aucune réponse de l'autre ; rejeu légitime
+  Tests : même clé sur deux `:id` → 409 ; même clé par deux personnes → aucune réponse de l'autre ; rejeu légitime
   inchangé.
+- **Mise en œuvre (21/10/2026, WP18).** `request-hash.ts` et `idempotency.interceptor.ts` ; règle 3 du contrat de la
+  mission 1 mise à jour. Tests : `admin.spec.ts` (deux tests « ADR-116 »), `transverse/idempotency.spec.ts` (chaîne de
+  requête hors de l'empreinte), `unit/idempotency/request-hash.spec.ts`, `media/personalization.spec.ts`. Effet : sur
+  une route de guichet, une autre personne qui reprend la même clé reçoit `409`. Consigne de déploiement commune avec
+  ADR-99 (purge à T + 720 h). OP-N71 tranché.
 - **Références.** SPECIFICATION §10.2 ; `contracts/idempotency.md` (mission 1) ; WP16 et WP18 de la mission 5a ;
   OP-N71 ; ADR-99 (OP-N54).
 
@@ -1550,6 +1610,14 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   écrit K lignes dans la chaîne d'audit du prestataire avant que la limite ne se voie ; suite confiée à WP18.
   `cashless_app` écrit désormais dans la chaîne d'audit de la plateforme, par cette seule fonction
   (`DEVICE_ENROLLMENT_REFUSED`, sans acteur, champs bornés) : à connaître pour la vérification de cette chaîne.
+- **Suites (21/10/2026, WP18, migration 0030).** (N-b) Verrous de l'adresse puis du code pris avant le contrôle,
+  dans la même transaction : limites atomiques. Une rafale garde ses codes HTTP d'origine (décision du porteur) ; les
+  écritures sont bornées à 10 refus et une trace, `429` dès la requête suivante. (N-c) Clé d'adresse agrégée par /64
+  en IPv6 (IPv4 encapsulée ramenée à IPv4). (N-a) La trace `RATE_LIMITED` nomme la limite (`limit: code|address`).
+  Tests : `tests/tests_enrollment_limits.sql`, `test/integration/devices/enrollment-limits.spec.ts` ; attentes de
+  `tests_enrollment_refusal.sql` adaptées. Limite résiduelle (chaîne d'audit de la plateforme, absence de limite en
+  amont) : OP-N72, mission 13 proposée, à confirmer par le porteur. Revue des écarts : `cashless_app` écrit dans la
+  chaîne d'audit de la plateforme (migration 0027).
 - **Références.** FR-025 ; R-16 ; WP03 et WP14 de la mission 5a ; ADR-114.
 
 ## ADR-118 — Relectures de WP15 et WP17 : configuration servie durcie en base, deux contradictions tranchées
@@ -1564,12 +1632,18 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   et `contracts/device-lifecycle.md` (« ETag = `config_id` ») contredisent `openapi.yaml` (`config_id` = id de ligne de
   `device_config_served`).
 - **Décision.** (1) Corrigé dans la mission, pas reporté : WP18 ajoute la migration `0029` (`record_config_served`
-  refuse un terminal `REVOKED` et applique `assert_tenant` au prestataire de la `config_version`) et un test pgTAP par
-  `gen_tests.py` (terminal d'un autre prestataire, terminal révoqué, `config_version` d'un autre prestataire → refus,
-  aucune ligne). (2) `openapi.yaml` s'aligne sur le DTO (`pattern`, `maxLength`) ; le code ne change pas.
+  refuse un terminal `REVOKED` et applique `assert_tenant` au prestataire de la `config_version`) et un test pgTAP
+  hors de la suite de référence, `tests/tests_config_served_guard.sql` (décision du porteur du 21/10/2026 : la suite de
+  `gen_tests.py` vérifie le schéma du kit seul) : terminal d'un autre prestataire, terminal révoqué, `config_version`
+  d'un autre prestataire → refus, aucune ligne. (2) `openapi.yaml` s'aligne sur le DTO (`pattern`, `maxLength`) ; le code ne change pas.
   (3) `openapi.yaml` et le code font foi (§0.3) : `config_id` = `device_config_served.id` ; ETag = SHA-256 du contenu
   canonique (JCS) hors `server_time`, qui change avec le statut du terminal (un `304` ne masque pas une suspension).
   `device-lifecycle.md` est corrigé.
 - **Pourquoi.** (1) et (2) renforcent la sécurité ; (3) garde le choix le plus sûr.
 - **Conséquences.** Aucun point ouvert ni dette : la limite (1) est levée avant la fusion de la mission.
+- **Mise en œuvre (21/10/2026, WP18).** Migration 0029 (`REVOKED` → `42501` ; `config_version` inconnue, d'un autre
+  prestataire ou de niveau `PLATFORM` → `P0002` ; `FOR SHARE` ; signature inchangée). Une version `PLATFORM` est donc
+  refusée : choix gardé par le porteur, à rouvrir si une mission doit servir une version plateforme. (2) fait dans
+  `openapi.yaml` (avec `TAP_UNUSABLE`/`CL022` et `409 CONFLICT_STATE` déclaré pour la configuration et le battement,
+  atteignable).
 - **Références.** FR-018, FR-019 ; R-10, R-14 ; relectures WP15 et WP17 (cycle 1) de la mission 5a ; ADR-108, ADR-115.

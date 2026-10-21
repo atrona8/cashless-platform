@@ -132,6 +132,11 @@ reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6
 > rafraîchissement (OP-N65, ADR-108, réexaminée en mission 13) ; `serial` unique par prestataire (ADR-109).
 > **Décision du porteur à l'analyse (19/10/2026)** : tout code d'enrôlement vise un événement (terminal toujours
 > affecté ; réaffectation par révocation puis ré-enrôlement).
+>
+> **Bilan de WP18 (21/10/2026)** : OP-N42, OP-N44, OP-N50, OP-N54, OP-N59, OP-N62, OP-N63, OP-N70 et OP-N71 levés,
+> chacun avec son test (`docs/POINTS_OUVERTS.md` §5) ; restent ouverts et hérités : OP-N64 (mission 12), OP-N65,
+> OP-N67, OP-N72 (mission 13), OP-N68, OP-N69 (mission 7). Consigne de déploiement : purge des lignes
+> `api_idempotency` antérieures à T + 720 h (OP-N54, OP-N71).
 
 - [x] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
 - [x] /spec-kitty.tasks (18 lots, 87 sous-tâches, 19/10/2026)
@@ -316,6 +321,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > les requêtes iOS par assertion App Attest (ou preuve équivalente), puis lever la limite.
 > L'app implémente aussi le profil de signature des requêtes (RFC 9421 restreint), le défi d'enrôlement et le mTLS de
 > la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/contracts/`).
+> Pour lever OP-N64 (relecture de WP11 de la mission 5a) : le port d'attestation iOS doit renvoyer le `keyId` App
+> Attest (credentialId) et le serveur le stocker (vérification des assertions) ; l'app passe `iosClientDataHash` tel
+> quel à `attestKey`.
 > Android 12 minimum (décision du porteur du 19/10/2026) : à confronter au parc visé et au banc NFC. Faisabilité à
 > vérifier : mTLS en Flutter avec une clé Keystore ou Secure Enclave non exportable (canal natif).
 
@@ -336,7 +344,19 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la mission 5a, OP-N67 (ADR-110 ; décision du porteur du 19/10/2026)** : l'attestation Android lit
 > `attestationApplicationId` dans `softwareEnforced` (seul champ). Relever sur les appareils cibles où ce champ est
 > placé ; s'il est matériel, revenir à la lecture stricte, sinon décider d'une preuve d'intégrité de l'app
-> complémentaire (Play Integrity) ou garder la limite.
+> complémentaire (Play Integrity) ou garder la limite. Essayer aussi `@peculiar/asn1-android` 2.10.0 sur de vrais
+> appareils (balise KeyDescription inconnue : refus fermé probable, non vérifié), et App Attest avec un objet réel
+> enregistré et la vraie racine Apple.
+>
+> **Hérité de la mission 5a, OP-N72 (ADR-117 ; proposé par l'agent le 21/10/2026, à confirmer par le porteur)** :
+> `POST /v1/device-enrollments` (sans compte) n'a pas de limite en amont ; chaque refus d'un code inconnu écrit dans
+> la chaîne d'audit de la plateforme, et un attaquant aux nombreuses adresses n'est borné que par /64. Poser une
+> limite de débit au répartiteur (ou à la passerelle) sur cette route, la vérifier sur l'environnement de recette,
+> puis lever la limite (bornes : `tests_enrollment_limits.sql` §3 et §5).
+>
+> **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
+> par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que
+> leur compte est nul.
 >
 > **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
 >
