@@ -221,7 +221,14 @@ vendeurs et le catalogue : la mission les ajoute.
 > fonctions de la base (plancher qui ne descend jamais, affectation dans le périmètre, présence à l'heure de la base) et
 > retirer les `UPDATE` directs ; mettre à jour la liste exacte de `tests_device_rights.sql` §1 ; test : écriture
 > directe refusée depuis `cashless_app`. Inclure `personal_phone` et `app_mode` (contournement de la règle du
-> téléphone personnel, revue post-fusion de la 5a).
+> téléphone personnel, revue post-fusion de la 5a). La mission 5b retire déjà l'`UPDATE` direct de `event_id` et
+> `pos_id` (aucun usage dans l'API ; contournement d'OP-N74) : l'affectation par fonction de la base reste à faire si
+> une réaffectation sans ré-enrôlement est voulue.
+>
+> **Hérité de la mission 5b (décision du porteur du 22/10/2026)** : le PIN des vendeurs est vérifié par le serveur
+> (session de vendeur liée au terminal, empreinte argon2id avec secret hors base, jamais servie au terminal). Le hors
+> ligne doit trancher comment un vendeur se connecte sans réseau sans envoyer d'empreinte de PIN au terminal (ou en
+> nommer la dette).
 
 > **Hérité de la mission 5a, OP-N75 (ADR-114 ; décision du porteur du 21/10/2026)** : les purges des nonces et des
 > essais d'enrôlement sont exécutées par `cashless_app`. Créer un rôle et une connexion de maintenance dédiés, retirer
@@ -284,6 +291,17 @@ vendeurs et le catalogue : la mission les ajoute.
 > pendant une période bornée (double empreinte avec version du secret), extinction des anciennes
 > empreintes, retrait de l'ancien secret ; test : un code émis sous l'ancien secret se rattache
 > pendant la période et plus après, aucun code conservé en clair.
+>
+> **Hérité de la mission 5b (décisions du porteur au plan, 22/10/2026)** : (1) **identification au guichet**
+> (SPECIFICATION §6.3, S24, `createKycVerification`, `revokeKycVerification`), reportée de la 5b : la base n'avait ni
+> numéro vérifié du festivalier ni lien agent-festivalier. L'écrire par une fonction de la base qui exige un compte au
+> numéro vérifié et refuse un agent titulaire du portefeuille (lien personne ↔ compte festivalier à créer) ; révocation
+> par la demande d'approbation `KYC_REVOCATION` à deux personnes (contrat ; §6.3 dit « un administrateur » :
+> contradiction à garder signalée) ; le registre des actions n'accepte qu'un rôle par action, le contrat en demande
+> deux (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`). La 5b a retiré à `cashless_app` les écritures directes dans
+> `kyc_verification`. (2) **côté festivalier du QR** (`payPaymentRequest`, `createCustomerQrToken`) servi par la 5b
+> derrière le port d'identité du festivalier : il devient utilisable en production quand l'identité réelle remplace le
+> faux (OP-N43 complété).
 
 - [ ] /spec-kitty.specify App festivalier Flutter, Android et iOS (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques. Côté app : connexion, solde et historique, recharge en ligne, paiement par QR commerçant (confirmation par PIN ou biométrie) et QR client à usage unique (60 s, jamais préchargé), rattachement par QR ou code imprimé (demande en attente avec code de confirmation si le bracelet contient de l'argent), déclaration de perte (suspension immédiate, proposition de payer par QR), demande de remboursement, consultation anonyme du solde par code (`POST /public/balance-lookups`, lecture seule). L'app ne lit jamais la puce. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan Flutter, types Dart générés depuis `openapi.yaml`. Pas de connexion Google ou Apple. Pas de portail web. Fournisseurs OTP réels à choisir sur devis (action 10 de POINTS_OUVERTS) : adaptateurs derrière le port seulement.
@@ -303,6 +321,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > demande → refusée. Ne pas rouvrir les droits de `cashless_app` sur les historiques, les règles de passage,
 > `media_assignment` et `device_config_served`, et garder `log_media_status` / `log_batch_status` en SECURITY DEFINER
 > (migration 0018).
+>
+> **Hérité de la mission 5b, OP-N76 (ADR-121 ; décision du porteur du 22/10/2026)** : le PIN des vendeurs est vérifié
+> dans l'API ; la base rend l'empreinte (`begin_vendor_pin_check`) et ouvre la session sur la transaction de l'API
+> (`open_vendor_session`). À lever avec OP-N56 : processus séparé, seul détenteur de `VENDOR_PIN_SECRET` et d'un rôle
+> de base qui seul exécute ces deux fonctions (ou preuve infalsifiable par l'API) ; test : `cashless_app` n'exécute
+> plus ces fonctions, une session sans vérification du processus dédié est refusée.
 >
 > **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
 > toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,

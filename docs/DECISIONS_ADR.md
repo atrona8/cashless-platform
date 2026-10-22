@@ -130,6 +130,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
 | ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, levé par la mission 5b | Acceptée (décision du porteur du 21/10/2026) |
+| ADR-121 | PIN des vendeurs vérifié dans l'API, session ouverte par la base sur la transaction de l'API (OP-N76) : limite acceptée, levée avec OP-N56 | Acceptée (décision du porteur du 22/10/2026) |
 
 ---
 
@@ -1699,3 +1700,19 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Aucun test ne fige ce manque (contrôle absent). Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md`
   (mission 5b).
 - **Références.** OP-N74 ; spécification de la mission 5a (cas limites) ; `packages/ledger-sql/migrations/0022_device_enrollment.sql`.
+
+## ADR-121 — PIN des vendeurs : vérification dans l'API, limite acceptée jusqu'à la mission 11
+
+- **Statut** : Acceptée, 22 octobre 2026 (décision du porteur au plan de la mission 5b,
+  `DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15). Dette nommée (règle 3 de `CLAUDE.md`).
+- **Contexte.** S2 impose argon2id ; PostgreSQL ne le calcule pas. Le PIN est vérifié dans l'API (décision du porteur
+  du 22/10/2026 : serveur, jamais le terminal), avec un secret hors base (`VENDOR_PIN_SECRET`).
+- **Décision.** « Compter d'abord » : la base compte l'essai et rend l'empreinte (`begin_vendor_pin_check`), l'API
+  vérifie, la base ouvre la session (`open_vendor_session`) en revérifiant l'éligibilité. La base croit l'API sur le
+  résultat de la vérification. **Bloque la production : non** (même classe qu'OP-N56 : une connexion de l'API
+  compromise écrit déjà des ventes). **Mission qui la lève : mission 11**, avec OP-N56.
+- **Condition de levée.** Processus séparé, seul détenteur du secret et d'un rôle de base qui seul exécute ces deux
+  fonctions ; ou preuve infalsifiable par l'API.
+- **Conséquences.** Tests de borne : liste figée des droits, aucune session sans essai compté, audit de chaque
+  ouverture. Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 11).
+- **Références.** OP-N76, OP-N56 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/contracts/vendors.md`.

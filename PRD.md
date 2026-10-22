@@ -100,6 +100,16 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   prix actuel. OP-N74 : enrôlement refusé dès `CLOSING` pour `CATALOG_POS` et `KEYPAD_TPE`, permis en `TOPUP_DESK`
   jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout. Révocation d'une identification à deux
   (contrat ; §6.3 dit « un administrateur », contradiction signalée).
+- Plan de la mission 5b (porteur, 22/10/2026) : pile du document 08 (Node 22, `argon2` 0.44.0, la 0.45 n'ayant pas de
+  binaire macOS Intel) ; empreinte du PIN avec un secret hors base (`VENDOR_PIN_SECRET`, exigé en production) ; une
+  session de vendeur par terminal, désignée par son identifiant dans chaque vente ; côté festivalier du QR servi
+  derrière le port d'identité du festivalier (utilisable en production avec la mission 10) ; **identification au
+  guichet reportée à la mission 10** (comptes festivaliers au numéro vérifié). Renforcements : annulation unique
+  garantie par la base, demandes QR écrites par fonctions de la base, écritures directes de `kyc_verification` et
+  réaffectation directe d'un terminal retirées à l'API. Passe contradictoire (27 constats, tous traités) : registre des
+  numéros des terminaux, PIN « compté d'abord », annulation par un `SUPERVISOR` au terminal (jeton sur place) ou au
+  back-office (demande à deux). Limite acceptée : OP-N76 / ADR-121 (la base croit l'API pour la vérification du PIN),
+  levée avec OP-N56 en mission 11.
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
