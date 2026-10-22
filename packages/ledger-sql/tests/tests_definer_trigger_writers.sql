@@ -12,8 +12,9 @@
 --      liste des fonctions de déclencheur SECURITY DEFINER ;
 --   3. les droits d'écriture actuels sur `offline_snapshot` et `offline_policy_history` (OP-N57, OP-N58, mission 7)
 --      sont figés : la suite échoue si la limite s'élargit ;
---   4. OP-N59 (mission 5) : le nombre de fonctions SECURITY DEFINER sans pg_temp dans leur search_path ne dépasse
---      pas 77 ; OP-N60 (mission 11) : les droits de cashless_app sur media_batch sont figés, colonne par colonne.
+--   4. OP-N59, levée par la mission 5a (migration 0021) : aucune fonction SECURITY DEFINER sans pg_temp en dernier
+--      dans son search_path ; OP-N60 (mission 11) : les droits de cashless_app sur media_batch sont figés, colonne par
+--      colonne.
 -- Lancer : pg_prove -d <base> tests/tests_definer_trigger_writers.sql (base créée par les migrations, roles.sql et
 -- post-roles.sql rejoués).
 \set ON_ERROR_STOP 1
@@ -181,14 +182,19 @@ SELECT is((SELECT string_agg(tgname, ' ' ORDER BY tgname) FROM pg_trigger
 SELECT ok(NOT (SELECT prosecdef FROM pg_proc WHERE proname = 'log_offline_policy'),
   'OP-N58 : log_offline_policy reste aux droits de l''appelant (comportement inchangé dans cette mission)');
 
--- 4. Limites acceptées par le porteur le 15/10/2026 (OP-N59, ADR-96 ; OP-N60, ADR-97) -----------------------------------
--- OP-N59 : fonctions SECURITY DEFINER du schéma public dont le search_path ne nomme pas pg_temp (une table temporaire
--- de l'appelant y masque une table de la base). 77 au 15/10/2026 (81 au total, dont 4 corrigées par 0019). Le nombre
--- ne doit pas croître : une nouvelle fonction SECURITY DEFINER fixe `search_path = public, pg_temp`. Mission 5.
-SELECT cmp_ok((SELECT count(*)::int FROM pg_proc
-                WHERE pronamespace = 'public'::regnamespace AND prosecdef
-                  AND NOT coalesce(array_to_string(proconfig, ',') LIKE '%pg_temp%', false)),
-  '<=', 77, 'OP-N59 : au plus 77 fonctions SECURITY DEFINER sans pg_temp dans leur search_path (limite figée, mission 5)');
+-- 4. OP-N59 (ADR-96, levée) ; limite acceptée par le porteur le 15/10/2026 : OP-N60 (ADR-97) ---------------------------
+-- OP-N59 : levée par la mission 5a (identite-enrolement-terminaux, migration 0021). Toute fonction SECURITY DEFINER du
+-- schéma public (hors extensions) fixe un search_path qui finit par pg_temp : une table temporaire de l'appelant ne
+-- masque plus une table de la base. La borne est passée de « au plus 77 » à 0 : une fonction future qui oublie
+-- `search_path = public, pg_temp` (ou un CREATE OR REPLACE qui efface le réglage) fait échouer la suite. Preuves
+-- détaillées (tables temporaires sur chaque tenant_of_*, témoins) : tests_definer_search_path.sql.
+SELECT is((SELECT count(*)::int FROM pg_proc p
+            WHERE p.pronamespace = 'public'::regnamespace AND p.prosecdef
+              AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                               WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e')
+              AND NOT EXISTS (SELECT 1 FROM unnest(coalesce(p.proconfig, '{}'::text[])) c
+                               WHERE c LIKE 'search_path=%pg\_temp')),
+  0, 'OP-N59 : aucune fonction SECURITY DEFINER sans pg_temp en dernier dans son search_path (levée, migration 0021)');
 -- OP-N60 : droits actuels de cashless_app sur media_batch, colonne par colonne (une colonne ajoutée à la table, ou un
 -- droit ajouté, fait échouer le test : à revoir avec la mission 11, back-office). Aucune suppression.
 SELECT is((SELECT string_agg(p || ':' || (SELECT string_agg(a.attname, ',' ORDER BY a.attname) FROM pg_attribute a

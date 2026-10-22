@@ -53,7 +53,7 @@ class TagKeyJob {
   @JsonKey(name: 'created_at')
   final Timestamp createdAt;
   @JsonKey(name: 'finished_at')
-  final Timestamp? finishedAt;
+  final DateTime? finishedAt;
 
   Map<String, Object?> toJson() => _$TagKeyJobToJson(this);
 }

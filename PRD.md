@@ -69,7 +69,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   mission 9, la mission 4 servant la restitution seule (décision du porteur du 15/10/2026, ADR-91, OP-N51).
 - Cadrage de la mission 4 (porteur, 13/10/2026) : la bibliothèque de format existe en TypeScript et en Dart dès la
   mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
-  des terminaux venant en mission 5 et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
+  des terminaux venant en mission 5a et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
   l'adaptateur AWS réel venant quand la région et les comptes seront arrêtés (OP-N11) ; la caution payée à part se
   règle en espèces tant que la mission 6 (PSP) n'est pas livrée. Les routes back-office des lots, des clés, de la
   personnalisation et de la liste noire sont à ajouter au contrat.
@@ -78,6 +78,18 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` (`PAIRED_TPE` refusé en V1). Catalogue à prix TTC fixe. (§8.1)
 - Enrôlement sans MDM par code à usage unique ; clés dans le Keystore ; vendeurs par code PIN ; révocation. (§8.2)
 - Paiement par QR (`MERCHANT_QR`, `CUSTOMER_QR`), toujours en ligne. (§8.3)
+- Découpage (16/10/2026) : la mission 5a livre l'identité réelle du terminal (jeton d'appareil, mTLS, requêtes signées),
+  les codes d'enrôlement (S5), l'enrôlement, la révocation, la configuration servie et le battement de cœur ; la
+  mission 5b livre les vendeurs (S2), le catalogue et les lignes de vente (S18), le paiement par bracelet et par QR,
+  l'annulation et l'identification au guichet (S24). Le schéma de référence n'a ni tables ni routes de contrat pour
+  le catalogue et les vendeurs : la mission 5b les ajoute. Héritage de la mission 5a : l'enrôlement d'un terminal sur
+  un événement clos ou un point de vente supprimé doit être refusé (OP-N74, ADR-120).
+- Cadrage de la mission 5a (porteur, 19/10/2026) : jeton lié, mTLS et signature de chaque requête exigés ensemble sur
+  les routes de terminal (contradiction avec §10.3 signalée) ; attestation vérifiée à l'enrôlement sur Android et iOS ;
+  routes back-office des terminaux (liste, suspension, réactivation, révocation) ajoutées au contrat ; OP-N50 levée en 5a.
+  Au plan (19/10/2026) : mTLS vérifié dans les processus ; terminaux Android 12 au moins ; `serial` unique par
+  prestataire (ADR-109) ; grâce de 60 s au rafraîchissement d'un jeton (OP-N65) ; limite iOS consignée (OP-N64).
+  À l'analyse (19/10/2026) : tout terminal est enrôlé pour un événement (code d'enrôlement lié à un événement).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
@@ -191,7 +203,9 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 2. Identité, rôles et double validation
 3. Configuration, parties et événements
 4. Bracelets NFC (format, clés, lots, cycle de vie)
-5. Terminaux et paiement en ligne
+5. Terminaux, découpée en deux missions le 16/10/2026 (décision du porteur) :
+   5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
+   5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
@@ -204,13 +218,13 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
 **Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
 dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,
 OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le 15/10/2026) :
-- mission 5 : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
+- mission 5a : identité réelle du terminal, requêtes signées (OP-N42) ; fonctions SECURITY DEFINER de la base
   protégées contre les tables temporaires de l'appelant (`pg_temp` ou `TEMPORARY` retiré), pour fermer un
   contournement probable du cloisonnement entre prestataires (OP-N59, ADR-96, bloque la production) ; droits
   d'exécution des fonctions du schéma accordés rôle par rôle, sans héritage de `PUBLIC` (OP-N44) ; lecture qui a
   confirmé un rattachement refusée par `consume_tap` (OP-N50) ; empreinte de requête à clé au registre d'idempotence,
   pour qu'un code imprimé ne se retrouve pas par essais (OP-N54, ADR-99) ;
-- mission 5, suite (correctif post-fusion n° 1 ; confirmé par le porteur le 16/10/2026) :
+- mission 5a, suite (correctif post-fusion n° 1 ; confirmé par le porteur le 16/10/2026) :
   retrait d'une clé dédiée possible seulement pendant un travail de retrait approuvé, y compris
   pour la personnalisation, et demande approuvée périmée refusée à l'inscription (OP-N62, ADR-102) ;
   clé d'accord d'un terminal écrite à l'enrôlement seulement, jamais réécrite par la connexion de
@@ -222,7 +236,12 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   déclencheur, aux droits du propriétaire (OP-N58) ; deux faiblesses du kit relevées pendant la mission 4, qui
   bloquent toutes deux la production (décision du porteur du 15/10/2026) ; adaptateur AWS KMS réel du service de clés
   des bracelets, écrit avec celui de la signature des snapshots, après le choix de la région (OP-N41, bloque la
-  production) ;
+  production) ; droit par défaut global qui retire à `PUBLIC` l'exécution des fonctions futures, y compris créées à
+  la main hors de `migrate.ts` (OP-N68, ADR-111, mission 5a) ; numérotation, présence et affectation d'un terminal
+  écrites par des fonctions de la base, plus directement par l'API (OP-N69, ADR-112, mission 5a) ; adaptateurs réels
+  de l'autorité des terminaux et du signataire des jetons d'appareil, avec celui d'OP-N41 (OP-N73, ADR-119,
+  mission 5a, bloque la production) ; rôle de maintenance dédié aux purges des nonces et des essais d'enrôlement
+  (OP-N75, ADR-114, mission 5a) ;
 - mission 9 : enchaînement du guichet de retour (caution, crédits offerts, solde, restitution), servi par la mission 9
   (décision du porteur du 15/10/2026, OP-N51, ADR-91) ; rendu des espèces dues d'un bracelet remplacé (OP-N55,
   ADR-100) ;
@@ -239,9 +258,19 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
 - mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
   requête (`tap`, `new_media_tap`), pas un identifiant de lecture (ADR-103) ;
+- mission 12, héritée de la mission 5a : sur iOS, signer les requêtes par assertion App Attest (ou preuve
+  équivalente) pour prouver la clé de signature dans la Secure Enclave ; d'ici là iOS reste borné au QR (OP-N64,
+  ADR-106, décision du porteur du 19/10/2026) ; le port d'attestation iOS renvoie le `keyId` App Attest, stocké par le
+  serveur, et l'app passe `iosClientDataHash` tel quel à `attestKey` ;
 - mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
-  aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45).
+  aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45) ; grâce de 60 s
+  au rafraîchissement d'un jeton d'appareil réexaminée selon les pertes réseau mesurées (OP-N65, ADR-108, mission 5a) ;
+  identité de l'app Android lue dans la liste logicielle de Key Attestation, réexaminée sur les appareils cibles
+  (OP-N67, ADR-110, mission 5a) ; limite de débit en amont sur l'enrôlement des terminaux, sans compte (OP-N72,
+  ADR-117, mission 5a, confirmé par le porteur le 21/10/2026) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
+  les appareils cibles ; à la mise en production, purge des lignes `api_idempotency` antérieures à T + 720 h (OP-N54,
+  OP-N71) et réglage de `DEVICE_REQUEST_AUTHORITIES` (ADR-113).
 
 ## 9. Notes non classées
 

@@ -12,11 +12,15 @@ import { requestDevice, type DeviceContext } from '../../device-identity/device-
 import { ProblemException } from '../../errors/problem';
 import { requestPrincipal, type Role } from '../../identity/principal';
 import type { RolesRequest } from '../../identity/roles.guard';
+import { StaffToken } from '../../identity/staff-token.decorator';
 import { conflict } from '../../organization/platform/platform.dto';
 
-/** Route de guichet : jeton d'une personne (garde globale) et identité du terminal. */
+/**
+ * Route de guichet : jeton d'une personne (garde globale, lu dans `X-Staff-Authorization`, contrat
+ * `staffBearer`) et identité du terminal (`Authorization` et les deux autres preuves).
+ */
 export const CounterAuth = (): MethodDecorator & ClassDecorator =>
-  applyDecorators(UseGuards(DeviceGuard));
+  applyDecorators(StaffToken(), UseGuards(DeviceGuard));
 
 const COUNTER_ROLES: readonly Role[] = ['CASHIER', 'SUPERVISOR'];
 
@@ -56,6 +60,9 @@ export class CounterAccess {
     // Une personne n'agit qu'avec un terminal de son prestataire (sinon : comme un terminal inconnu).
     if (principal.operatorId !== device.operatorId) throw new ProblemException('NOT_FOUND');
     if (!device.eventId) throw conflict('Ce terminal n’est affecté à aucun événement.');
+    // Statut relu dans la transaction de l'écriture (mission 5a, R-14) : une révocation ou une
+    // suspension validée après la garde est vue ici (FOR SHARE, avant toute écriture).
+    await client.query('SELECT assert_device_active($1)', [device.deviceId]);
     const { rows } = await client.query<CounterRow>(
       `SELECT e.organizer_id, e.activation_modes, e.identity_mode, l.id AS ledger_id, l.currency, l.debit_authority,
               (SELECT a.code FROM account a WHERE a.ledger_id = l.id AND a.purpose = 'CASH_DESK' AND a.is_active AND a.code = 'A-CAISSE-' || d.serial) AS cash_desk_code

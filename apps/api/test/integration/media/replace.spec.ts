@@ -53,7 +53,9 @@ describe('remplacement, perte et bracelet retrouvé', () => {
     const dev = options.device === undefined ? device : options.device;
     if (dev) req = req.set(dev.headers);
     const person = options.person === undefined ? w.cashierA : options.person;
-    if (person) req = req.set('Authorization', `Bearer ${person.token}`);
+    // Terminal ET personne : route de guichet, jeton de la personne dans X-Staff-Authorization.
+    if (person)
+      req = req.set(dev ? 'X-Staff-Authorization' : 'Authorization', `Bearer ${person.token}`);
     if (options.language) req = req.set('Accept-Language', options.language);
     return req.send(body);
   };

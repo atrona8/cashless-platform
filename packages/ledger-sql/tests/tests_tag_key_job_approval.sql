@@ -106,19 +106,23 @@ CREATE FUNCTION pg_temp.can(p_role text) RETURNS boolean[] LANGUAGE sql AS $$
   SELECT ARRAY[has_function_privilege(p_role, 'enqueue_tag_key_job(uuid)', 'EXECUTE'),
                has_function_privilege(p_role, 'enqueue_tag_key_child_job(uuid,uuid)', 'EXECUTE'),
                has_function_privilege(p_role, 'tag_key_job_refusal(uuid)', 'EXECUTE'),
-               has_function_privilege(p_role, 'retire_dedicated_key(uuid,integer)', 'EXECUTE')]
+               has_function_privilege(p_role, 'retire_dedicated_key(uuid,integer)', 'EXECUTE'),
+               has_function_privilege(p_role, 'retire_dedicated_key_for_job(uuid)', 'EXECUTE')]
 $$;
-SELECT is(pg_temp.can('tag_job_probe'), ARRAY[false, false, false, false],
-  'aucune des quatre fonctions n''est exécutable par PUBLIC');
-SELECT is(pg_temp.can('cashless_app'), ARRAY[true, false, false, false],
-  'API : inscription racine seulement ; ni travail suivant, ni retrait direct d''une clé');
-SELECT is(pg_temp.can('cashless_perso'), ARRAY[false, true, true, true],
-  'personnalisation : travaux suivants, revérification, retrait');
-SELECT is(pg_temp.can('cashless_tagkeys'), ARRAY[false, false, true, false],
+SELECT is(pg_temp.can('tag_job_probe'), ARRAY[false, false, false, false, false],
+  'aucune des cinq fonctions n''est exécutable par PUBLIC');
+SELECT is(pg_temp.can('cashless_app'), ARRAY[true, false, false, false, false],
+  'API : inscription racine seulement ; ni travail suivant, ni retrait d''une clé');
+-- OP-N62 levée (0025, lot WP07) : la personnalisation ne retire une clé dédiée que par son travail.
+SELECT is(pg_temp.can('cashless_perso'), ARRAY[false, true, true, false, true],
+  'personnalisation : travaux suivants, revérification, retrait par le travail seulement');
+SELECT is(pg_temp.can('cashless_tagkeys'), ARRAY[false, false, true, false, false],
   'clés de bracelet : revérification seulement');
-SELECT is(pg_temp.can('cashless_keyadmin'), ARRAY[false, false, true, false],
+SELECT is(pg_temp.can('cashless_keyadmin'), ARRAY[false, false, true, false, false],
   'commande d''administration : revérification seulement');
-SELECT is(pg_temp.can('cashless_platform'), ARRAY[false, false, false, false],
+SELECT is(pg_temp.can('cashless_tagcheck'), ARRAY[false, false, false, false, false],
+  'contrôle quotidien : aucune');
+SELECT is(pg_temp.can('cashless_platform'), ARRAY[false, false, false, false, false],
   'plateforme : aucune');
 SELECT is((SELECT count(*)::int
              FROM unnest(ARRAY['cashless_app', 'cashless_platform', 'cashless_tagkeys',
@@ -212,8 +216,13 @@ SELECT is((SELECT kind
   'RETIRE_KEY', 'la personnalisation prend le retrait');
 SELECT throws_ok(format('SELECT enqueue_tag_key_child_job(%L)', pg_temp.job('209003')),
   'CL020', NULL, 'désactivation dans le service de clés d''une clé ACTIVE : refusée');
-SELECT lives_ok($$SELECT retire_dedicated_key(pg_temp.id('20a001'), 2)$$,
-  'la personnalisation retire la clé dédiée (EXECUTE accordé nommément)');
+-- OP-N62 (condition de levée) : le retrait direct, sans travail, est refusé à la personnalisation.
+SELECT throws_ok($$SELECT retire_dedicated_key(pg_temp.id('20a001'), 2)$$, '42501', NULL,
+  'personnalisation : retrait direct d''une clé dédiée refusé (EXECUTE retiré, OP-N62)');
+SELECT is(retire_dedicated_key_for_job(pg_temp.job('209003')) IS NOT NULL, true,
+  'la personnalisation retire la clé dédiée par son travail RETIRE_KEY en cours (0025)');
+SELECT is((SELECT status FROM tag_key WHERE operator_id = pg_temp.id('20a001') AND key_index = 2),
+  'RETIRED', 'clé dédiée retirée');
 SELECT is((SELECT kind || ':' || key_index
              FROM enqueue_tag_key_child_job(pg_temp.job('209003'))),
   'DISABLE_KMS_KEY:2', 'chemin nominal : désactivation inscrite après le retrait');
@@ -294,11 +303,9 @@ SELECT throws_ok($$INSERT INTO tag_key_job (operator_id, key_index, kind, approv
                    VALUES (pg_temp.id('20a001'), 41, 'CREATE_KEY', pg_temp.id('209001'))$$,
   '23505', NULL, 'même pour le propriétaire, une demande ne produit pas deux travaux racines');
 
--- 6. Limite connue : une demande approuvée ne périme pas (OP-N62, ADR-102, complément) -----------
--- enqueue_tag_key_job ne lit pas expires_at : une demande APPROVED dont le délai est dépassé
--- s'inscrit encore, une seule fois. Ce test DOCUMENTE le comportement actuel. La mission 5 doit
--- corriger ce point (refus d'une demande approuvée périmée) ; ce test devra alors être INVERSÉ :
--- l'inscription sera refusée (throws_ok) et la demande restera sans travail.
+-- 6. Une demande approuvée périmée est refusée (OP-N62, ADR-102, complément ; levée par 0025) -------
+-- Borne inversée (lot WP07) : avant 0025, enqueue_tag_key_job ne lisait pas expires_at et une
+-- demande APPROVED dont le délai était dépassé s'inscrivait encore, une fois.
 INSERT INTO approval_request (id, operator_id, action, payload, requested_by, expires_at)
 VALUES (pg_temp.id('209020'), pg_temp.id('20a001'), 'TAG_DEK_ROTATE',
         '{"key_index":1}'::jsonb || jsonb_build_object('operator_id', pg_temp.id('20a001')),
@@ -310,29 +317,28 @@ SELECT ok((SELECT clock_timestamp() > expires_at AND status = 'APPROVED'
   'demande approuvée dont expires_at est dépassé');
 SET LOCAL ROLE cashless_app;
 SELECT pg_temp.a();
-SELECT is((SELECT kind || ':' || key_index FROM enqueue_tag_key_job(pg_temp.id('209020'))),
-  'ROTATE_DEK:1',
-  'LIMITE ACTUELLE (OP-N62) : une demande approuvée périmée est encore acceptée');
 SELECT throws_ok($$SELECT enqueue_tag_key_job(pg_temp.id('209020'))$$, 'CL023', NULL,
-  'LIMITE ACTUELLE (OP-N62) : acceptée une seule fois, la seconde inscription est refusée');
+  'OP-N62 : une demande approuvée périmée est refusée (CL023)');
 RESET ROLE;
+SELECT is(pg_temp.job('209020'), NULL::uuid, 'OP-N62 : la demande périmée reste sans travail');
+SELECT is((SELECT status FROM approval_request WHERE id = pg_temp.id('209020')), 'APPROVED',
+  'OP-N62 : la demande périmée n''est pas consommée');
 
--- 7. Droits de cashless_app sur device, colonne par colonne (OP-N63, ADR-105) ---------------------
--- Fige les droits actuels, y compris UPDATE (agreement_public_key) : limite acceptée jusqu'à la
--- mission 5 (enrôlement réel). Le test échoue si un droit s'élargit. Quand la mission 5 retirera
--- UPDATE (agreement_public_key), retirer cette colonne de la liste attendue ci-dessous.
+-- 7. Droits de cashless_app sur device, colonne par colonne (OP-N63, ADR-105 ; levée, lot WP07) ----
+-- Borne inversée : identité, clés, certificat, statut et prestataire ne s'écrivent plus que par
+-- les fonctions de 0022 et 0023 (enroll_device, set_device_status) ; aucune insertion directe.
+-- Le test échoue si un droit s'élargit (tests_device_rights.sql prouve les refus par écriture).
 SELECT is((SELECT array_agg(attname::text ORDER BY attname)
              FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'UPDATE')),
-  ARRAY['agreement_public_key', 'app_mode', 'cert_sha256', 'event_id', 'last_seen_at',
-        'last_snapshot_version', 'next_seq_floor', 'nfc_enabled', 'personal_phone', 'pos_id',
-        'public_key', 'station_name', 'status'],
+  ARRAY['app_mode', 'event_id', 'last_seen_at', 'last_snapshot_version', 'next_seq_floor',
+        'nfc_enabled', 'personal_phone', 'pos_id', 'station_name'],
   'cashless_app : UPDATE sur device colonne par colonne, liste exacte (OP-N63)');
 SELECT is((SELECT count(*)::int FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
-              AND NOT has_column_privilege('cashless_app', 'device', attname, 'INSERT')), 0,
-  'cashless_app : INSERT sur toutes les colonnes de device (inchangé)');
+              AND has_column_privilege('cashless_app', 'device', attname, 'INSERT')), 0,
+  'cashless_app : INSERT sur aucune colonne de device (OP-N63)');
 SELECT is((SELECT count(*)::int FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'REFERENCES')), 0,

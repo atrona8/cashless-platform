@@ -19,6 +19,7 @@ import { TagKeysProcessModule } from '../../src/processes/tag-keys.module';
 import { WorkerRegistry } from '../../src/processes/worker';
 import { createKeyProcess, createTestApp, type KeyProcessName } from '../support/app';
 import { FakeIdp } from '../support/fake-idp';
+import { DEVICE_PRODUCTION } from '../support/tls';
 
 const PORTS = {
   mac: MAC_PORT,
@@ -162,6 +163,8 @@ describe('aucun faux en production (démarrage réel)', () => {
     TAG_WRAPPING_KEY_REF: 'arn:aws:kms:eu-west-3:1:key/wrap',
     CLAIM_CODE_DOMAIN: 'pay.example.org',
     TRUST_PROXY_HOPS: '1',
+    // Mission identite-enrolement-terminaux : réglages des terminaux obligatoires en production.
+    ...DEVICE_PRODUCTION,
   };
   const saved = { ...process.env };
   beforeEach(() => Object.assign(process.env, PRODUCTION));

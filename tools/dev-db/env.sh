@@ -47,3 +47,33 @@ export DATABASE_URL_TAGKEYS="${DATABASE_URL_TAGKEYS:-postgres://cashless_tagkeys
 export DATABASE_URL_PERSO="${DATABASE_URL_PERSO:-postgres://cashless_perso:$CASHLESS_PERSO_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_TAGCHECK="${DATABASE_URL_TAGCHECK:-postgres://cashless_tagcheck:$CASHLESS_TAGCHECK_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_KEYADMIN="${DATABASE_URL_KEYADMIN:-postgres://cashless_keyadmin:$CASHLESS_KEYADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+
+# Mission identite-enrolement-terminaux : VALEURS DE TEST seulement (publiques), identiques aux défauts hors
+# production de apps/api/src/config/config.ts ; refusées en production même posées (secrets de test). En production,
+# chaque réglage ci-dessous est obligatoire et vient du déploiement.
+# Secrets HMAC (research R-13), 32 octets au moins, distincts de CLAIM_CODE_HMAC_KEY et entre eux.
+export IDEMPOTENCY_HMAC_KEY="${IDEMPOTENCY_HMAC_KEY:-$(printf '%s' 'cashless-idempotency-hmac-key-de-test-uniquement-00' | od -An -tx1 | tr -d ' \n')}"
+export ENROLLMENT_CODE_HMAC_KEY="${ENROLLMENT_CODE_HMAC_KEY:-$(printf '%s' 'cashless-enrollment-code-hmac-key-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
+# Jetons d'appareil (R-07) et certificat client (R-09).
+export DEVICE_TOKEN_ISSUER="${DEVICE_TOKEN_ISSUER:-https://api.cashless.test}"
+export DEVICE_TOKEN_TTL_SECONDS="${DEVICE_TOKEN_TTL_SECONDS:-900}"
+export DEVICE_REFRESH_TOKEN_TTL_DAYS="${DEVICE_REFRESH_TOKEN_TTL_DAYS:-30}"
+export DEVICE_CERT_VALIDITY_DAYS="${DEVICE_CERT_VALIDITY_DAYS:-365}"
+export CLOCK_TOLERANCE_SECONDS="${CLOCK_TOLERANCE_SECONDS:-120}"
+# Attestation (R-05, R-06) : application de test ; App Attest en développement (refusé en production).
+export IOS_APP_ATTEST_ENVIRONMENT="${IOS_APP_ATTEST_ENVIRONMENT:-development}"
+# Racines d'attestation (R-05, R-06 ; lot WP14) : fichiers PEM, obligatoires en production,
+# absents ici.
+# - ANDROID_ATTESTATION_ROOTS : TOUTES les racines que Google publie pour l'attestation de clé
+#   (developer.android.com/privacy-and-security/security-key-attestation, « Root certificates » ;
+#   liste JSON : https://android.googleapis.com/attestation/root), soit l'ancienne racine RSA
+#   4096 bits et la ou les nouvelles racines de la rotation annoncée par Google, tant que des
+#   appareils sont attestés par l'une ou l'autre. Au déploiement, chaque empreinte SHA-256 est
+#   comparée à la publication de Google (jamais recopiée d'un autre dépôt) ; à revoir à chaque
+#   annonce de rotation. Liste de révocation : https://android.googleapis.com/attestation/status.
+# - IOS_APP_ATTEST_ROOT : « Apple App Attestation Root CA » (www.apple.com/certificateauthority).
+# Sans ANDROID_ATTESTATION_ROOTS (hors production seulement) : faux vérificateur, refusé en
+# production ; une racine de test (sujet marqué cashless-test-attestation-root) y est refusée aussi.
+# TLS (R-03) : aucun certificat sur le poste local, l'API écoute en clair. Les tests HTTPS génèrent leurs certificats
+# à l'exécution (apps/api/test/support/tls.ts) ; aucune clé n'est écrite dans le dépôt. Pour servir en HTTPS à la
+# main : TLS_CERT_FILE, TLS_KEY_FILE et DEVICE_CA_CERT_FILE ensemble.

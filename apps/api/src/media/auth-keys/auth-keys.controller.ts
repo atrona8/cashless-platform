@@ -15,7 +15,7 @@ export class AuthKeysController {
 
   @Post()
   @HttpCode(200)
-  @DeviceAuth()
+  @DeviceAuth({ nfcOnly: true })
   get(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() raw: unknown) {
     const body = objectBody(raw);
     if (typeof body.nfc_uid !== 'string' || !UID.test(body.nfc_uid))

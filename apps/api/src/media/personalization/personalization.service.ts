@@ -19,6 +19,7 @@ import {
   type EncryptedBlob,
 } from '@cashless/tag-format';
 import { AuditService, type AuditContext } from '../../audit/audit.service';
+import { APP_CONFIG, type AppConfig } from '../../config/config';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { isSqlError } from '../../errors/sqlstate-map';
@@ -56,6 +57,7 @@ export class PersonalizationService {
     private readonly dataKeys: DataKeyRepository,
     private readonly hasher: ClaimHasher,
     @Inject(MAC_PORT) private readonly kms: MacPort,
+    @Inject(APP_CONFIG) private readonly config: Pick<AppConfig, 'idempotencyHmacKey'>,
   ) {}
 
   async register(
@@ -64,7 +66,9 @@ export class PersonalizationService {
     idempotencyKey: string,
     actor: AuditContext,
   ): Promise<PersonalizedMedia> {
-    const hash = personalizationHash(input);
+    // Empreinte à clé, liée à la personne (OP-N54, ADR-116) : jamais un SHA-256 sans clé au registre.
+    if (actor.actorId === null) throw new ProblemException('UNAUTHENTICATED');
+    const hash = personalizationHash(input, actor.actorId, this.config.idempotencyHmacKey);
     // Deux envois simultanés de la même clé : le second attend le premier, puis rejoue.
     for (let attempt = 1; ; attempt += 1) {
       const prepared = await this.tx.run(operatorId, (client) =>

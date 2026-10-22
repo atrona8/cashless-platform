@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1178" viewBox="0 0 2006 1178">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,288.56 693.6666666666666,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,288.56 674.3598503050785,299.1073618492925 674.3598503050785,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="282.5333333333333" y="251.56" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="551.6666666666666" y="331.56" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="707.6666666666666,434.55999999999995 1210.3333333333333,434.55999999999995" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,434.55999999999995 1191.026516971745,445.10736184929243 1191.026516971745,424.01263815070746" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="820.0" y="397.55999999999995" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="551.6666666666666" y="477.56" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<rect x="551.6666666666666" y="550.56" width="300" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<polyline points="707.6666666666666,653.56 1210.3333333333333,653.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,653.56 1191.026516971745,664.1073618492924 1191.026516971745,643.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="809.6" y="616.56" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="551.6666666666666" y="696.56" width="300" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<polyline points="707.6666666666666,799.56 1727.0,799.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,799.56 1707.6931836384117,810.1073618492924 1707.6931836384117,789.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1125.1333333333332" y="762.56" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,872.5600000000001 1226.3333333333333,872.5600000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1226.3333333333333,872.5600000000001 1245.6401496949215,862.0126381507076 1245.6401496949215,883.1073618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1331.4666666666665" y="835.5600000000001" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,945.5600000000001 193.0,945.5600000000001" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,945.5600000000001 212.3068163615882,935.0126381507076 212.3068163615882,956.1073618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="913.6" y="908.5600000000001" width="92.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Requête d’un terminal</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Trois preuves liées au même terminal, vérifiées dans l’ordre ; rien n’est écrit avant le nonce</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">Garde du terminal</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">Route métier</text>
+<text x="443.3333333333333" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">mTLS + jeton + requête signée</text>
+<text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="701.6666666666666" y="363.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Certificat et jeton</text>
+<text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="960.0" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal et famille relus</text>
+<text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="701.6666666666666" y="509.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Empreintes, corps, signature</text>
+<text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="701.6666666666666" y="582.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Révoqué : 403, rien écrit</text>
+<text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nonce consommé (heure base)</text>
+<text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="701.6666666666666" y="728.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Suspendu : 403 hors config</text>
+<text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="1218.3333333333335" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal vérifié</text>
+<text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="1476.6666666666665" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Écriture, statut revérifié</text>
+<text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="960.0" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Réponse</text>
+<text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Preuve absente ou fausse : 401, sans dire laquelle. Horloge hors tolérance : 400 avec l’heure. Autorité non servie : 401.</text>
+</g>
+</svg>

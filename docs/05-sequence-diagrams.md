@@ -2,8 +2,10 @@
 
 > Statut de complétude : voir `06-docs-status.md`. Un diagramme par flux critique
 > qui traverse plusieurs composants (les flux internes à un seul composant vivent
-> dans le détail local de la mission concernée). Rendu en repli Mermaid (skill `/illustre` non installé).
-> Dernière mise à jour : 15/10/2026 (index : mission « Bracelets NFC », mergée le 16/10/2026).
+> dans le détail local de la mission concernée). Flux écrits avant la mission « Bracelets NFC » : Mermaid ; flux
+> ajoutés depuis : `/illustre` (préférence du porteur du 13/10/2026), sources dans [`diagrams/`](diagrams/).
+> Dernière mise à jour : 21/10/2026 (flux « Enrôlement et requête signée d'un terminal », mission « Identité et
+> enrôlement des terminaux », mergée le 21/10/2026).
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
@@ -29,6 +31,18 @@ sequenceDiagram
     API-->>Terminal: 201 Payé
     Terminal-->>Vendeur: Succès affiché
 ```
+
+## Flux : Enrôlement et requête signée d'un terminal (§8.1, §8.2, §10.3 ; `sync_protocol.md` §3.1)
+
+![Enrôlement et requête signée d'un terminal](diagrams/sequence-terminal-transverse.png)
+
+Sources : [`sequence-terminal-transverse.excalidraw`](diagrams/sequence-terminal-transverse.excalidraw),
+[`sequence-terminal-transverse.svg`](diagrams/sequence-terminal-transverse.svg), produits par
+[`diagrams/generate.py`](diagrams/generate.py). Implémenté (mission « Identité et enrôlement des terminaux ») :
+code d'enrôlement émis par un administrateur, enrôlement sans compte (attestation, certificat client, jetons), puis
+chaque requête du terminal avec ses trois preuves. Les flux détaillés (limites et refus audités, ordre des contrôles,
+rafraîchissement avec grâce de 60 s, révocation) sont dans le `sequence.md` de la mission. Autorité des terminaux et
+signataire des jetons : faux seulement, refusés en production (OP-N73).
 
 ## Flux : Vente hors ligne puis synchronisation (§9.3 à §9.6)
 
@@ -148,11 +162,12 @@ sequenceDiagram
 
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
-| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
+| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
+| Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (✅ mergée le 21/10/2026 : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
-| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026 : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
+| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
 | Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision

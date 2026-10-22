@@ -123,7 +123,12 @@ describe('parcours complet d’un bracelet : de la clé à la clôture du lot', 
     let req = request(target.getHttpServer())[method](path);
     if (who.device) req = req.set(who.device.headers);
     if (who.customer) req = req.set(who.customer.headers);
-    if (who.person) req = req.set('Authorization', `Bearer ${who.person.token}`);
+    // Terminal ET personne : route de guichet, jeton de la personne dans X-Staff-Authorization.
+    if (who.person)
+      req = req.set(
+        who.device ? 'X-Staff-Authorization' : 'Authorization',
+        `Bearer ${who.person.token}`,
+      );
     if (method === 'get') return req;
     return req.set('Idempotency-Key', randomUUID()).send(body ?? {});
   };

@@ -74,7 +74,11 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 - [x] /spec-kitty.accept --mission bracelets-nfc-01M4TD3W
 - [x] spec-kitty merge --mission bracelets-nfc-01M4TD3W
 
-## Mission 5 — Terminaux et paiement en ligne
+## Mission 5a — Identité et enrôlement des terminaux
+
+Découpage du 16/10/2026 (décision du porteur au premier point de cadrage de la mission 5) : la mission 5 devient 5a
+puis 5b. Les héritages de la mission 4 notés « mission 5 » dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md`
+reviennent à la mission 5a. Slug réel : `identite-enrolement-terminaux-01M52R6H`, branche `feat/identite-enrolement-terminaux`.
 
 > **Hérité de la mission 4 (bracelets-nfc)** : remplacer le faux d'identité du terminal par la vérification du jeton
 > d'appareil, du mTLS et de la signature de chaque requête (OP-N42, ADR-88) ; le faux ne doit plus être câblé hors des
@@ -114,13 +118,52 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > Ne pas rouvrir `INSERT` sur `tag_key_job`
 > (travaux par `enqueue_tag_key_job` et `enqueue_tag_key_child_job` seulement, migration 0020).
 
-- [ ] /spec-kitty.specify API des terminaux et encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S5, S18, S24). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256, unicité du `serial` parmi les terminaux non révoqués, rafraîchissement du jeton, révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
-- [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement ; requêtes des terminaux signées par la clé du Keystore. Téléphone personnel : en ligne seulement. iOS : QR uniquement. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`).
+- [x] /spec-kitty.specify Identité et enrôlement des terminaux (SPECIFICATION §8.1, §8.2, §10.3, §13.2, §13.4, §14.2 S5, `docs/sync_protocol.md` §3.1, ADR-69, ADR-88). Codes d'enrôlement à usage unique (portée événement, point de vente, mode ; empreinte, expiration ; `PAIRED_TPE` refusé `422 DEVICE_MODE_NOT_ALLOWED`), enrôlement avec clés ECDSA et ECDH P-256 (clé d'accord écrite à l'enrôlement seulement, OP-N63), unicité du `serial` parmi les terminaux non révoqués, jeton d'appareil et rafraîchissement (`device_refresh_token`), requêtes signées par la clé du terminal et mTLS (OP-N42 : faux d'identité retiré hors des tests), suspension et révocation, configuration servie (`DeviceConfig`, `config_id`, `terminal_settings`), battement de cœur. Dettes de sécurité héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62, OP-N63 (voir ci-dessus).
+> **Décisions du porteur au specify (19/10/2026)** : chaque requête de terminal porte ensemble le jeton lié, le
+> mTLS et la signature de la requête (`DM-01M52R88ZPZEA0NXVSDY9PBXW5` ; SPEC §10.3 et `openapi.yaml` disent « l'un ou
+> l'autre » : contradiction signalée, contrat à mettre à jour dans le sens le plus sûr) ; attestation vérifiée sur
+> Android (Key Attestation) et iOS (App Attest) (`DM-01M59RR2KCM2NMTGNR62HXJD76`) ; OP-N50 levée en 5a
+> (`DM-01M59RSS09TMMZ9Y7VKGAQGQQ0`) ; routes back-office des terminaux ajoutées au contrat ; suspension, réactivation
+> et révocation à une personne ; attestation à l'enrôlement seulement ; autorité des terminaux derrière un port avec
+> faux refusé en production.
+>
+> **Décisions du porteur au plan (19/10/2026)** : mTLS vérifié dans les processus Node (pas d'en-tête de répartiteur) ;
+> limite iOS consignée (OP-N64, ADR-106) ; Android 12 minimum (clé d'accord matérielle et attestée) ; grâce de 60 s au
+> rafraîchissement (OP-N65, ADR-108, réexaminée en mission 13) ; `serial` unique par prestataire (ADR-109).
+> **Décision du porteur à l'analyse (19/10/2026)** : tout code d'enrôlement vise un événement (terminal toujours
+> affecté ; réaffectation par révocation puis ré-enrôlement).
+>
+> **Bilan de WP18 (21/10/2026)** : OP-N42, OP-N44, OP-N50, OP-N54, OP-N59, OP-N62, OP-N63, OP-N70 et OP-N71 levés,
+> chacun avec son test (`docs/POINTS_OUVERTS.md` §5) ; restent ouverts et hérités : OP-N64 (mission 12), OP-N65,
+> OP-N67, OP-N72 (mission 13), OP-N68, OP-N69 (mission 7). Consigne de déploiement : purge des lignes
+> `api_idempotency` antérieures à T + 720 h (OP-N54, OP-N71).
+
+- [x] /spec-kitty.plan Requêtes des terminaux signées par la clé du Keystore ; aucune clé maître sur le terminal. Terminal `SUSPENDED` : envoie ses lots mais n'autorise plus ; `REVOKED` : refusé (`DEVICE_REVOKED`). Téléphone personnel : en ligne seulement. Les deux dettes qui bloquent la production (OP-N59, OP-N63) sont levées avec leur test.
+- [x] /spec-kitty.tasks (18 lots, 87 sous-tâches, 19/10/2026)
+- [ ] spec-kitty next --agent claude --mission identite-enrolement-terminaux-01M52R6H
+- [ ] /spec-kitty.review --mission identite-enrolement-terminaux-01M52R6H
+- [ ] /spec-kitty.accept --mission identite-enrolement-terminaux-01M52R6H
+- [ ] spec-kitty merge --mission identite-enrolement-terminaux-01M52R6H
+
+## Mission 5b — Terminaux et paiement en ligne
+
+Après la fusion de la mission 5a. Mission déjà créée avant le découpage : slug réel `terminaux-paiement-en-ligne-01M52QB9`,
+branche `feat/terminaux-paiement-en-ligne` (à remettre sur `main` après la fusion de 5a) ; décision de découpage
+consignée dans son dossier `decisions/`. Le schéma de référence n'a ni tables (S2, S18) ni routes de contrat pour les
+vendeurs et le catalogue : la mission les ajoute.
+
+> **Hérité de la mission 5a, OP-N74 (ADR-120 ; décision du porteur du 21/10/2026)** : l'enrôlement d'un terminal ne
+> relit pas l'état de l'événement ni du point de vente du code. Faire refuser par `create_device_enrollment_code` et
+> `enroll_device` un événement `CLOSED` (et les états de clôture jugés bloquants) et un point de vente supprimé ; test
+> pgTAP par refus, aucune ligne écrite ; puis lever OP-N74.
+
+- [ ] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
+- [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement. Téléphone personnel : en ligne seulement. iOS : QR uniquement.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne
-- [ ] /spec-kitty.review --mission terminaux-paiement-en-ligne
-- [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne
-- [ ] spec-kitty merge --mission terminaux-paiement-en-ligne
+- [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] /spec-kitty.review --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne-01M52QB9
+- [ ] spec-kitty merge --mission terminaux-paiement-en-ligne-01M52QB9
 
 ## Mission 6 — Recharges, caisses et PSP
 
@@ -158,6 +201,31 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > (`apps/api/src/kms/fake-kms.ts`). Avec l'adaptateur KMS de la signature des snapshots, écrire l'adaptateur AWS des
 > ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort`, un rôle IAM par processus (SPEC §3.2), après la
 > région (OP-N11) ; le faux reste refusé en production (`production-guard.spec.ts`).
+
+> **Hérité de la mission 5a, OP-N68 (ADR-111 ; décision du porteur du 20/10/2026)** : une fonction créée à la main,
+> hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au rejeu de `post-roles.sql` (la mission 5a rejoue les
+> droits dans la transaction des migrations). Poser le droit par défaut global `ALTER DEFAULT PRIVILEGES FOR ROLE
+> <propriétaire> REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC` et adapter les suites pgTAP qui en dépendent (pgTAP installé
+> avec des droits explicites, ou droit rendu dans chaque suite) ; inverser la première assertion de la §4 de
+> `tests_execute_grants.sql` ; test : fonction créée à la main non exécutable par `PUBLIC`.
+
+> **Hérité de la mission 5a, OP-N69 (ADR-112 ; décision du porteur du 20/10/2026)** : `cashless_app` modifie encore
+> directement `device.next_seq_floor`, `last_seen_at`, `last_snapshot_version`, l'affectation (`event_id`, `pos_id`) et
+> les réglages (`app_mode`, `nfc_enabled`, `station_name`, `personal_phone`). Faire passer ces écritures par des
+> fonctions de la base (plancher qui ne descend jamais, affectation dans le périmètre, présence à l'heure de la base) et
+> retirer les `UPDATE` directs ; mettre à jour la liste exacte de `tests_device_rights.sql` §1 ; test : écriture
+> directe refusée depuis `cashless_app`. Inclure `personal_phone` et `app_mode` (contournement de la règle du
+> téléphone personnel, revue post-fusion de la 5a).
+
+> **Hérité de la mission 5a, OP-N75 (ADR-114 ; décision du porteur du 21/10/2026)** : les purges des nonces et des
+> essais d'enrôlement sont exécutées par `cashless_app`. Créer un rôle et une connexion de maintenance dédiés, retirer
+> `EXECUTE` à `cashless_app` (`post-roles.sql`, `tests_execute_grants.sql`), garder `tests_device_purge_window.sql`.
+
+> **Hérité de la mission 5a, OP-N73 (ADR-119 ; décision du porteur du 21/10/2026 ; bloque la production)** :
+> l'autorité des terminaux (`DeviceCaPort`) et le signataire des jetons d'appareil (`TokenSignerPort`) n'ont que des
+> faux (`fake-device-ca.ts`, `fake-token-signer.ts`). Avec l'adaptateur KMS d'OP-N41, écrire leurs adaptateurs réels
+> (clés hors du code et de l'environnement, SPEC §13.2) et lever la garde de production pour ces deux ports seulement
+> (`device-latency.spec.ts`, `production-guard.spec.ts`).
 
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
@@ -262,6 +330,18 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 > (`register_tap` répond `NOT_ACTIVATED` sans enregistrer de lecture), le contrat de départ
 > contredisait le schéma. L'app envoie donc la lecture complète au guichet, pas un identifiant de
 > lecture.
+>
+> **Hérité de la mission 5a, OP-N64 (ADR-106 ; décision du porteur du 19/10/2026)** : sur iOS, App Attest atteste sa
+> propre clé, pas la clé de signature ECDSA du terminal ; la mission 5a lie les clés publiques à l'instance attestée
+> par le défi d'enrôlement et borne iOS au QR (`POST /media/auth-keys` refusé à un terminal iOS). Réexaminer : signer
+> les requêtes iOS par assertion App Attest (ou preuve équivalente), puis lever la limite.
+> L'app implémente aussi le profil de signature des requêtes (RFC 9421 restreint), le défi d'enrôlement et le mTLS de
+> la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/contracts/`).
+> Pour lever OP-N64 (relecture de WP11 de la mission 5a) : le port d'attestation iOS doit renvoyer le `keyId` App
+> Attest (credentialId) et le serveur le stocker (vérification des assertions) ; l'app passe `iosClientDataHash` tel
+> quel à `attestKey`.
+> Android 12 minimum (décision du porteur du 19/10/2026) : à confronter au parc visé et au banc NFC. Faisabilité à
+> vérifier : mTLS en Flutter avec une clé Keystore ou Secure Enclave non exportable (canal natif).
 
 - [ ] /spec-kitty.specify App terminal Flutter (SPECIFICATION §7.6, §8.1, §8.2, §9.3 à §9.5, `docs/sync_protocol.md`, résultats du banc `tools/nfc-bench`). Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; enrôlement par QR, clés ECDSA et ECDH dans l'Android Keystore (StrongBox si disponible) ou la Secure Enclave ; connexion des vendeurs par PIN ; épinglage d'écran. Lecture NFC Android en mode lecteur (`NfcA.transceive`) : page 4, `READ_SIG` à chaque passage, PWD/PACK depuis le snapshot ou `/media/auth-keys`, `PWD_AUTH`, `FAST_READ`, CRC, `INCR_CNT`/`READ_CNT` sur le compteur 2, effacement des mots de passe. Paiement en ligne en un aller-retour avec repli hors ligne après 3 s ; règle d'autorisation hors ligne dans l'ordre imposé (§9.3), journal SQLCipher (WAL, `synchronous = FULL`, fsync avant succès), compteur `seq` commun, snapshots vérifiés et deltas, lots signés et chaînés, exposition par bracelet et par terminal, bascule vers la passerelle. QR (iOS : QR uniquement). Guichet : recharges, cautions, restitutions, remplacements, remboursements, jeton d'approbation de la seconde personne. Vecteurs du format B produits et vérifiés par l'app.
 - [ ] /spec-kitty.plan Flutter, Android et iOS ; `packages/tag-format` en Dart ; réglages de lecture par modèle de téléphone issus du banc. Aucune clé maître sur le terminal. Hors ligne jamais pour : QR, recharge PSP, remboursement, activation, caution, restitution, remplacement. Un refus en ligne est définitif. Latence NFC p95 ≤ 300 ms.
@@ -273,6 +353,28 @@ festivalier), adaptateur AWS KMS (après OP-N11).
 
 ## Mission 13 — Recette V1
 
+> **Hérité de la mission 5a, OP-N65 (ADR-108 ; décision du porteur du 19/10/2026)** : au rafraîchissement d'un jeton
+> d'appareil, une représentation du jeton consommé est tolérée 60 s pour le même terminal. Mesurer en recette les
+> pertes de réponse réelles ; si la grâce ne sert pas, revenir au mode strict et lever la limite.
+>
+> **Hérité de la mission 5a, OP-N67 (ADR-110 ; décision du porteur du 19/10/2026)** : l'attestation Android lit
+> `attestationApplicationId` dans `softwareEnforced` (seul champ). Relever sur les appareils cibles où ce champ est
+> placé ; s'il est matériel, revenir à la lecture stricte, sinon décider d'une preuve d'intégrité de l'app
+> complémentaire (Play Integrity) ou garder la limite. Essayer aussi `@peculiar/asn1-android` 2.10.0 sur de vrais
+> appareils (balise KeyDescription inconnue : refus fermé probable, non vérifié), et App Attest avec un objet réel
+> enregistré et la vraie racine Apple.
+>
+> **Hérité de la mission 5a, OP-N72 (ADR-117 ; confirmé par le porteur le 21/10/2026)** :
+> `POST /v1/device-enrollments` (sans compte) n'a pas de limite en amont ; chaque refus d'un code inconnu écrit dans
+> la chaîne d'audit de la plateforme, et un attaquant aux nombreuses adresses n'est borné que par /64. Poser une
+> limite de débit au répartiteur (ou à la passerelle) sur cette route, la vérifier sur l'environnement de recette,
+> puis lever la limite (bornes : `tests_enrollment_limits.sql` §3 et §5).
+>
+> **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
+> par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que
+> leur compte est nul. Fixer aussi `DEVICE_REQUEST_AUTHORITIES` (autorités `host[:port]` de l'API, sans joker ;
+> obligatoire en production, ADR-113).
+>
 > **Hérité de la mission 4 (bracelets-nfc)**, à lever avant la production :
 >
 > **OP-N61 (ADR-98, décision du porteur du 15/10/2026)** — NFR-008 non prouvé à l'échelle : prouver que la clôture d'un

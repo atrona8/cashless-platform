@@ -38,7 +38,7 @@ class TagKey {
   @JsonKey(name: 'kms_key_ref_suffix')
   final String kmsKeyRefSuffix;
   @JsonKey(name: 'kms_disabled_at')
-  final Timestamp? kmsDisabledAt;
+  final DateTime? kmsDisabledAt;
   @JsonKey(name: 'created_at')
   final Timestamp createdAt;
 

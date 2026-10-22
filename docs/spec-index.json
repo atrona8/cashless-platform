@@ -419,5 +419,141 @@
       "Tests existants verts"
     ],
     "source": "kitty-specs/bracelets-nfc-01M4TD3W/spec.md"
+  },
+  {
+    "mission": "identite-enrolement-terminaux-01M52R6H",
+    "titre_cas_usage": "Identité et enrôlement des terminaux",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "L'administrateur émet un code d'enrôlement",
+        "detail": "Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, lié obligatoirement à un événement (FR-001 ; la story de `spec.md` dit encore « éventuellement »), éventuellement à un point de vente et à un mode d'application, en indiquant obligatoirement s'il s'agit d'un téléphone personnel, et l'affiche en QR ; le code n'est rendu qu'une fois."
+      },
+      {
+        "titre": "Un terminal s'enrôle",
+        "detail": "À la première ouverture, l'app scanne le code, puis crée sa clé de signature et sa clé d'accord dans le matériel sécurisé (l'attestation Android lie chaque clé au code), et s'enregistre avec ses clés publiques, son attestation et une demande de certificat. Elle reçoit son certificat client, son jeton d'appareil, son jeton de rafraîchissement et le premier numéro de séquence à utiliser."
+      },
+      {
+        "titre": "Le serveur reconnaît chaque requête du terminal",
+        "detail": "Toute route appelée par un terminal (configuration, battement de cœur, lecture d'un bracelet, mot de passe d'un bracelet, et toutes celles des missions suivantes) n'est servie que si la requête porte un certificat client valide, un jeton d'appareil valide lié à la clé du terminal, et une signature valide du contenu de la requête par cette clé. Le faux d'identité de la mission 4 n'est plus branché hors des tests."
+      },
+      {
+        "titre": "Le terminal renouvelle son jeton",
+        "detail": "Le terminal échange son jeton de rafraîchissement, sur une connexion à certificat client et avec une preuve signée de possession de sa clé, contre un nouveau jeton d'appareil et un nouveau jeton de rafraîchissement ; une seule représentation dans les 60 s est tolérée (OP-N65), toute autre réutilisation révoque la famille."
+      },
+      {
+        "titre": "L'administrateur suspend, réactive ou révoque un terminal",
+        "detail": "Un `OPERATOR_ADMIN` (portée prestataire pour voir tout le prestataire) ou un `ORGANIZER_ADMIN` liste les terminaux de son périmètre, en consulte un, le suspend, le réactive, ou le révoque définitivement (perte, vol, appareil compromis) ; le terminal révoqué reçoit `403 DEVICE_REVOKED` à sa requête suivante."
+      },
+      {
+        "titre": "Le terminal reçoit sa configuration et envoie son battement de cœur",
+        "detail": "Le terminal lit sa configuration (affectation, mode, réglages de fonctionnement de l'événement, politique hors ligne effective, numéro de séquence plancher, heure serveur) et envoie régulièrement un battement de cœur qui met à jour sa dernière présence."
+      },
+      {
+        "titre": "Les dettes de sécurité de la base sont levées",
+        "detail": "Le responsable de la sécurité obtient la fermeture, chacune avec son test, des dettes héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62 et OP-N63 ; OP-N42, OP-N70 et OP-N71 sont levées en plus."
+      }
+    ],
+    "entites_cles": [
+      "Terminal",
+      "Code d'enrôlement",
+      "Jeton de rafraîchissement",
+      "Certificat client",
+      "Nonce de requête",
+      "Historique des statuts du terminal",
+      "Essai d'enrôlement",
+      "Ligne d'audit"
+    ],
+    "resultat_mesurable": "Parcours complet d'un terminal (code, enrôlement Android 12+ et iPhone, configuration, présence, lecture, rafraîchissement, suspension, révocation, ré-enrôlement) par l'API sans intervention en base ; 100 % des tentatives d'usurpation refusées (preuve manquante, fausse, d'un autre terminal ou rejouée) ; révocation effective dès la requête suivante ; OP-N42, OP-N59 et OP-N63 closes avec leur test ; aucun code ni jeton en clair ; 0 fuite entre deux prestataires. Mesuré le 21/10/2026 : pgTAP 2072, Jest 1704 sans échec ; surcoût des trois preuves p95 17,3 ms (seuil 20), enrôlement p95 61 ms, configuration 44 ms, battement 46 ms.",
+    "hypotheses": [
+      "A1 — Les routes back-office des terminaux (liste, consultation, suspension, réactivation, révocation) sont ajoutées au contrat avec les conventions existantes (confirmé par le porteur le 19/10/2026).",
+      "A2 — Suspension, réactivation et révocation sont faites par une seule personne habilitée (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN` du périmètre) : la révocation protège, et la réactivation ne rend que les droits d'un terminal déjà enrôlé et attesté (confirmé par le porteur le 19/10/2026).",
+      "A6 — Android 12 au moins (clé d'accord matérielle et attestée), décision du porteur au plan du 19/10/2026 ; le `serial` est unique par prestataire (ADR-109) ; voir `research.md` R-05, R-11.",
+      "A3 — L'attestation est vérifiée à l'enrôlement seulement ; un contrôle d'intégrité périodique n'est pas dans cette mission (confirmé par le porteur le 19/10/2026).",
+      "A4 — La clé de l'autorité des terminaux est derrière un port, avec un faux pour les tests seulement ; en production, le démarrage est refusé tant que l'adaptateur réel manque, comme pour le KMS (OP-N11) (confirmé par le porteur le 19/10/2026). Livré : mTLS vérifié dans les processus ; autorité et signataire des jetons en faux seulement, dette OP-N73 levée en mission 7 (ADR-119).",
+      "A5 — Le terminal de test (clés, attestations et certificats de test) sert aux tests et est refusé en production (confirmé par le porteur le 19/10/2026).",
+      "Les parties de `DeviceConfig` qui dépendent de missions ultérieures (catalogue, clés publiques du snapshot, autorité de débit et époque) sont servies sous la forme minimale que le schéma du contrat permet ; leur contenu réel arrive avec ces missions.",
+      "Le format de la signature d'une requête (en-têtes, contenu signé, horodatage, nonce) et la fenêtre de rejeu sont arrêtés au plan et décrits au contrat.",
+      "Les durées de vie (code : 24 h par défaut ; jeton d'appareil : 15 min ; jeton de rafraîchissement ; certificat client) et leurs bornes sont arrêtées au plan, dans les valeurs du contrat quand il en donne.",
+      "Les racines de confiance des attestations (Google pour Android, Apple pour App Attest) et l'identité attendue de l'app (empreinte du certificat de signature, identifiant d'app) sont des réglages de déploiement.",
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1 ; les erreurs `DEVICE_*`, `ENROLLMENT_*` et `ATTESTATION_FAILED` du contrat sont utilisées."
+    ],
+    "contraintes": [
+      "Les fonctions de la base font les règles",
+      "Fichiers générés du kit intouchables",
+      "Trois preuves exigées",
+      "Pas d'adaptateur AWS (autorité et signataire en faux, OP-N73)",
+      "Pas d'encaissement",
+      "Pas de hors ligne ni d'application",
+      "Pas de MDM",
+      "Contrat d'abord",
+      "Aucun écran",
+      "Pas d'`INSERT` sur `tag_key_job`",
+      "Écart de sécurité soumis au porteur",
+      "Dette de sécurité nommée"
+    ],
+    "cas_limites": [
+      "Code d'enrôlement présenté deux fois en même temps",
+      "Code qui fuit (QR photographié)",
+      "Enrôlement refusé pour attestation",
+      "Code lié à un événement clos ou annulé, ou à un point de vente supprimé entre l'émission et l'enrôlement",
+      "Code lié à un mode non permis pour l'appareil (`TOPUP_DESK` ou NFC sur iOS ; recharge, caution ou hors ligne sur téléphone personnel)",
+      "Clé publique de signature ou d'accord mal formée (pas un point P-256 valide)",
+      "Demande de certificat (CSR) non signée par la clé de signature annoncée",
+      "Requête signée rejouée dans la fenêtre de validité",
+      "Horloge du terminal décalée",
+      "Révocation pendant qu'une requête du terminal est en cours",
+      "Terminal suspendu",
+      "Réutilisation d'un jeton de rafraîchissement par un voleur après que le vrai terminal l'a déjà utilisé",
+      "Certificat client valide mais jeton d'un autre terminal du même prestataire",
+      "Rafale d'enrôlements simultanés avec un code fuité (limites atomiques, une seule trace au-delà)",
+      "Terminal révoqué qui présente des preuves valides (`403 DEVICE_REVOKED`, rien écrit)",
+      "Même clé d'idempotence sur un autre terminal ou par une autre personne (`409`)",
+      "Requête signée pour une autre autorité (passerelle, autre déploiement)"
+    ],
+    "fonctionnel": [
+      "Code d'enrôlement",
+      "Refus du mode `PAIRED_TPE`",
+      "Enrôlement",
+      "Consommation atomique du code",
+      "Attestation Android",
+      "Attestation iOS",
+      "Unicité du `serial` et ré-enrôlement",
+      "Clé d'accord écrite à l'enrôlement seulement",
+      "Certificat client des terminaux",
+      "Jeton d'appareil lié",
+      "Rafraîchissement à rotation",
+      "Trois preuves sur chaque requête",
+      "Identité réelle derrière le port existant",
+      "Statut lu à chaque requête",
+      "Suspension et réactivation",
+      "Révocation",
+      "Liste et consultation des terminaux",
+      "Configuration servie",
+      "Battement de cœur",
+      "Fonctions privilégiées protégées (OP-N59)",
+      "Droits d'exécution rôle par rôle (OP-N44)",
+      "Lecture de rattachement non réutilisable (OP-N50)",
+      "Empreinte de requête à clé (OP-N54)",
+      "Retrait de clé et demandes périmées (OP-N62)",
+      "Audit",
+      "Contrat d'API et types générés",
+      "Idempotence liée au chemin concret et à l'appelant (ADR-116)",
+      "Audit de tous les refus d'enrôlement (ADR-117)"
+    ],
+    "non_fonctionnel": [
+      "Aucun faux en production",
+      "Aucune preuve seule ne suffit",
+      "Effet immédiat de la révocation",
+      "Pas de rejeu",
+      "Aucun secret en clair au repos",
+      "Pas d'énumération des codes",
+      "Isolation entre prestataires",
+      "Concurrence",
+      "Latence",
+      "Dettes levées prouvées",
+      "Tests existants verts"
+    ],
+    "source": "kitty-specs/identite-enrolement-terminaux-01M52R6H/spec.md"
   }
 ]

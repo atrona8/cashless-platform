@@ -176,4 +176,6 @@ const _$ProblemCodeEnumMap = {
   ProblemCode.approvalInvalid: 'APPROVAL_INVALID',
   ProblemCode.lateClaimInvalid: 'LATE_CLAIM_INVALID',
   ProblemCode.cardDailyLimit: 'CARD_DAILY_LIMIT',
+  ProblemCode.deviceSignatureInvalid: 'DEVICE_SIGNATURE_INVALID',
+  ProblemCode.deviceSerialInUse: 'DEVICE_SERIAL_IN_USE',
 };

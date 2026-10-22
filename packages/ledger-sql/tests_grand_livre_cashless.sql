@@ -533,7 +533,7 @@ SELECT is(((SELECT count(*) FROM debit_authority_handover)::int)::text, (0)::tex
 RESET ROLE; SET app.operator_id = '00000000-0000-0000-0000-000000000002';
 
 -- ===== Fonctions internes, terminaux, anomalies
-DROP ROLE IF EXISTS app_probe; CREATE ROLE app_probe;
+DROP ROLE IF EXISTS app_probe; CREATE ROLE app_probe; GRANT EXECUTE ON FUNCTION grant_edge_authority(uuid,uuid,uuid) TO app_probe;
 SELECT is((has_function_privilege('app_probe', 'set_debit_authority(uuid,text,uuid)', 'EXECUTE'))::text, (false)::text,$Q$bascule directe interdite au rôle applicatif$Q$);
 SELECT is((has_function_privilege('app_probe', 'tenant_of_media(uuid)', 'EXECUTE'))::text, (false)::text,$Q$fonctions tenant_of_* non exposées$Q$);
 SELECT is((has_function_privilege('app_probe', 'grant_edge_authority(uuid,uuid,uuid)', 'EXECUTE'))::text, (true)::text,$Q$fonctions de bascule exposées$Q$);

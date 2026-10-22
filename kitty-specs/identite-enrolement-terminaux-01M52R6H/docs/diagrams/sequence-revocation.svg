@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1176" viewBox="0 0 2006 1176">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="1735.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,988" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,310.88 693.6666666666666,310.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,310.88 674.3598503050785,321.4273618492925 674.3598503050785,300.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="303.3333333333333" y="273.88" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,414.88 1210.3333333333333,414.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,414.88 1191.026516971745,425.4273618492925 1191.026516971745,404.3326381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="820.0" y="377.88" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1068.3333333333333" y="488.88" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="695.6666666666666,622.88 193.0,622.88" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,622.88 212.3068163615882,612.3326381507076 212.3068163615882,633.4273618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="318.9333333333333" y="585.88" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,726.88 709.6666666666666,726.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="709.6666666666666,726.88 728.9734830282548,716.3326381507076 728.9734830282548,737.4273618492924" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1067.9333333333332" y="689.88" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,830.88 1210.3333333333333,830.88" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,830.88 1191.026516971745,841.4273618492924 1191.026516971745,820.3326381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="882.4" y="793.88" width="155.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,934.88 1727.0,934.88" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1727.0,934.88 1707.6931836384117,945.4273618492924 1707.6931836384117,924.3326381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="1114.7333333333333" y="897.88" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Révocation d’un terminal</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Une personne suffit ; effet à la requête suivante, sans liste de révocation</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Admin</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="443.3333333333333" y="292.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Révoquer (motif, clé bo:)</text>
+<text x="34.0" y="313.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="960.0" y="396.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">set_device_status REVOKED</text>
+<text x="34.0" y="417.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1218.3333333333333" y="521.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jetons, historique, audit</text>
+<text x="34.0" y="521.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="443.3333333333333" y="604.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : terminal révoqué</text>
+<text x="34.0" y="625.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1218.3333333333335" y="708.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Requête suivante, 3 preuves</text>
+<text x="34.0" y="729.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="812.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal relu</text>
+<text x="34.0" y="833.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1218.3333333333335" y="916.155" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">403 DEVICE_REVOKED</text>
+<text x="34.0" y="937.93" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="60" y="1033.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Rien n’est écrit pour la requête refusée (pas de nonce). Le serial redevient libre : nouveau terminal, next_seq = dernier vu + 1.</text>
+</g>
+</svg>

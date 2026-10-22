@@ -9,8 +9,10 @@ part of 'enrollment_code_create.dart';
 EnrollmentCodeCreate _$EnrollmentCodeCreateFromJson(
   Map<String, dynamic> json,
 ) => EnrollmentCodeCreate(
+  eventId: json['event_id'] as String,
   appMode: $enumDecode(_$DeviceAppModeEnumMap, json['app_mode']),
   kind: $enumDecode(_$DeviceKindEnumMap, json['kind']),
+  personalPhone: json['personal_phone'] as bool,
   providedBy:
       $enumDecodeNullable(
         _$EnrollmentCodeCreateProvidedByEnumMap,
@@ -18,7 +20,6 @@ EnrollmentCodeCreate _$EnrollmentCodeCreateFromJson(
       ) ??
       EnrollmentCodeCreateProvidedBy.valueOperator,
   expiresInSeconds: (json['expires_in_seconds'] as num?)?.toInt() ?? 86400,
-  eventId: json['event_id'] as String?,
   posId: json['pos_id'] as String?,
   stationName: json['station_name'] as String?,
 );
@@ -32,6 +33,7 @@ Map<String, dynamic> _$EnrollmentCodeCreateToJson(
   'app_mode': instance.appMode,
   'kind': instance.kind,
   'provided_by': instance.providedBy,
+  'personal_phone': instance.personalPhone,
   'expires_in_seconds': instance.expiresInSeconds,
 };
 

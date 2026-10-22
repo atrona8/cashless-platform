@@ -39,7 +39,7 @@ INSERT INTO media_tap (id, operator_id, media_id, counter, nfc_uid, occurred_at,
  (9016004, '00000000-0000-0000-0000-00000016a001', '00000000-0000-0000-0000-00000016d001', 3, '\x04160000000001', now(), '00000000-0000-0000-0000-00000016e001', 'ONLINE', gen_random_uuid(), clock_timestamp()),
  (9016005, '00000000-0000-0000-0000-00000016a001', '00000000-0000-0000-0000-00000016d001', 4, '\x04160000000001', now(), '00000000-0000-0000-0000-00000016e001', 'ONLINE', NULL, clock_timestamp());
 -- Écriture comptable EN LIGNE du bracelet 1 (sans lignes : seul `consume_tap` la lit ici), sur un grand livre de A.
--- Sert au cas « limite connue » ci-dessous : `consume_tap` exige une écriture existante du même prestataire.
+-- Sert au refus OP-N50 ci-dessous : `consume_tap` exige une écriture existante du même prestataire.
 INSERT INTO ledger (id, operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id) VALUES
  ('00000000-0000-0000-0000-00000016f071','00000000-0000-0000-0000-00000016a001','ORGANIZER','00000000-0000-0000-0000-00000016a011','XOF',
   '00000000-0000-0000-0000-00000016a011','00000000-0000-0000-0000-00000016a011');
@@ -47,7 +47,10 @@ INSERT INTO journal_transaction (id, operator_id, ledger_id, type, idempotency_k
  ('00000000-0000-0000-0000-00000016f081','00000000-0000-0000-0000-00000016a001','00000000-0000-0000-0000-00000016f071','PURCHASE',
   'tap-0016:1', 'empreinte 0016', now(), 'ONLINE', '00000000-0000-0000-0000-00000016e001', '00000000-0000-0000-0000-00000016d001');
 
-SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname = 'consume_tap_for_claim' AND NOT prosecdef), 1, 'SECURITY INVOKER');
+-- SECURITY DEFINER depuis 0026 (lot WP07) : l'API n'a plus UPDATE (confirmed_tap_id) sur
+-- media_claim.
+SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname = 'consume_tap_for_claim' AND prosecdef), 1,
+  'SECURITY DEFINER (0026)');
 
 SET LOCAL ROLE cashless_app;
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000016a001', true);
@@ -68,19 +71,19 @@ SELECT throws_ok($Q$SELECT consume_tap_for_claim(9016005, '00000000-0000-0000-00
 SELECT lives_ok($Q$SELECT consume_tap_for_claim(9016005, '00000000-0000-0000-0000-00000016c003')$Q$, 'autre demande confirmée, autre lecture récente : consommée');
 SELECT throws_ok($Q$UPDATE media_tap SET transaction_id = gen_random_uuid() WHERE id = 9016002$Q$, '42501', NULL, 'le rôle de l''API ne modifie pas les lectures');
 
--- LIMITE CONNUE (ADR-90, OP-N50) : `consume_tap` (schéma de référence, non modifiable) ignore `confirmed_tap_id`.
--- La lecture 9016001, qui a confirmé la demande c001, récente, sert ENCORE à une écriture en ligne du même bracelet.
--- Ce cas documente l'état actuel : quand la limite sera levée, il doit basculer en throws_ok(..., 'CL022', ...).
-SELECT lives_ok($Q$SELECT consume_tap(9016001, '00000000-0000-0000-0000-00000016f081')$Q$,
-  'LIMITE ADR-90/OP-N50 : consume_tap accepte une lecture déjà liée à une demande confirmée, dans la fenêtre '
-  '(à basculer en refus CL022 quand la limite sera levée)');
-SELECT is((SELECT transaction_id FROM media_tap WHERE id = 9016001), '00000000-0000-0000-0000-00000016f081'::uuid,
-  'LIMITE ADR-90/OP-N50 : la lecture porte l''écriture tout en restant liée à la demande (double usage, état actuel)');
+-- OP-N50 levée (migration 0024, mission 5a ; ce cas figeait la limite d'ADR-90) : la lecture
+-- 9016001, qui a confirmé la demande c001, récente, ne sert plus à une écriture en ligne du même
+-- bracelet. Cas détaillés et témoins : tests/tests_consume_tap_claim.sql.
+SELECT throws_ok($Q$SELECT consume_tap(9016001, '00000000-0000-0000-0000-00000016f081')$Q$, 'CL022',
+  'Passage 9016001 déjà utilisé par une demande de rattachement',
+  'OP-N50 : consume_tap refuse une lecture déjà liée à une demande confirmée, dans la fenêtre');
+SELECT is((SELECT transaction_id FROM media_tap WHERE id = 9016001), NULL::uuid,
+  'OP-N50 : la lecture ne porte aucune écriture (pas de double usage)');
 SELECT is((SELECT confirmed_tap_id FROM media_claim WHERE id = '00000000-0000-0000-0000-00000016c001'), 9016001::bigint,
-  'LIMITE ADR-90/OP-N50 : la demande c001 garde la même lecture');
--- La limite ne s'élargit pas : la lecture consommée par une écriture ne confirme plus aucune demande.
+  'OP-N50 : la demande c001 garde la lecture');
+-- Et dans l'autre sens, comme avant : la lecture liée à c001 ne confirme pas une seconde demande.
 SELECT throws_ok($Q$SELECT consume_tap_for_claim(9016001, '00000000-0000-0000-0000-00000016c002')$Q$, 'CL022', NULL,
-  'lecture consommée par une écriture après la demande : ne confirme pas une seconde demande');
+  'lecture liée à une demande : ne confirme pas une seconde demande');
 
 -- Autre prestataire : ni la demande ni la lecture n'existent pour lui.
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000016a002', true);

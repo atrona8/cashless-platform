@@ -354,5 +354,13 @@
   "CARD_DAILY_LIMIT": {
     "title": "Plafond journalier de la carte atteint",
     "detail": "Le plafond de recharge par carte et par jour est atteint."
+  },
+  "DEVICE_SIGNATURE_INVALID": {
+    "title": "Requête du terminal refusée",
+    "detail": "La requête du terminal n'a pas pu être authentifiée."
+  },
+  "DEVICE_SERIAL_IN_USE": {
+    "title": "Numéro de série déjà utilisé",
+    "detail": "Ce numéro de série est déjà porté par un terminal actif ou suspendu ; révoquez-le avant de ré-enrôler l'appareil."
   }
 }

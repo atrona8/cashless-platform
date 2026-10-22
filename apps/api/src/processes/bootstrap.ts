@@ -1,12 +1,21 @@
 // Démarrage commun des processus (mission bracelets-nfc) : garde « aucun faux en production » (NFR-010), puis écoute
-// HTTP ou passage des travailleurs. Chaque point d'entrée (`main*.ts`) n'est qu'un appel à ces fonctions.
-import type { INestApplication, INestApplicationContext, Type } from '@nestjs/common';
+// HTTPS (ou en clair hors production sans certificat) ou passage des travailleurs. Chaque point d'entrée (`main*.ts`)
+// n'est qu'un appel à ces fonctions.
+import { readFileSync } from 'node:fs';
+import type { ServerOptions } from 'node:https';
+import type {
+  INestApplication,
+  INestApplicationContext,
+  NestApplicationOptions,
+  Type,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { API_PREFIX, APP_CONFIG, type AppConfig } from '../config/config';
+import { API_PREFIX, APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { CUSTOMER_IDENTITY } from '../customer-identity/customer-identity.port';
 import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
 import { KMS_PROVIDER } from '../kms/kms.module';
-import { assertNoFakeInProduction } from '../kms/production-guard';
+import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
+import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../security/port-tokens';
 import { WorkerRegistry } from './worker';
 
 function optional(app: INestApplicationContext, token: symbol): object | null {
@@ -24,6 +33,9 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'le service de clés': optional(app, KMS_PROVIDER),
     'l’identité du terminal': optional(app, DEVICE_IDENTITY),
     'l’identité du festivalier': optional(app, CUSTOMER_IDENTITY),
+    'l’autorité des terminaux': optional(app, DEVICE_CA),
+    'le signataire des jetons d’appareil': optional(app, TOKEN_SIGNER),
+    'le vérificateur d’attestation': optional(app, ATTESTATION_VERIFIER),
   });
   return config;
 }
@@ -38,6 +50,33 @@ export function applyTrustProxy(app: INestApplication, hops: number): void {
   express.set('trust proxy', hops === 0 ? false : hops);
 }
 
+/** Options HTTPS de Nest, plus `minVersion` (Nest passe l'objet entier à `https.createServer`). */
+export type TlsServerOptions = NonNullable<NestApplicationOptions['httpsOptions']> &
+  Pick<ServerOptions, 'minVersion'>;
+
+/**
+ * Options du serveur HTTPS (research R-03), ou `undefined` sans certificat configuré (hors production seulement : la
+ * configuration l'exige en production). Le certificat client est DEMANDÉ, pas imposé (`rejectUnauthorized: false`) :
+ * les personnes et la route d'enrôlement n'en ont pas ; la garde des terminaux exige `socket.authorized` et
+ * l'empreinte du terminal, route par route. Seule autorité cliente : celle des terminaux (`ca`), jamais les
+ * autorités publiques. TLS 1.3 minimum : aucune renégociation.
+ */
+export function tlsServerOptions(
+  config: Pick<AppConfig, 'tlsCertFile' | 'tlsKeyFile' | 'deviceCaCertFile'>,
+): TlsServerOptions | undefined {
+  if (config.tlsCertFile === null || config.tlsKeyFile === null) return undefined;
+  if (config.deviceCaCertFile === null)
+    throw new Error('DEVICE_CA_CERT_FILE manquant : autorité des terminaux exigée avec TLS');
+  return {
+    key: readFileSync(config.tlsKeyFile),
+    cert: readFileSync(config.tlsCertFile),
+    ca: readFileSync(config.deviceCaCertFile),
+    requestCert: true,
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.3',
+  };
+}
+
 function pollSeconds(): number {
   const raw = process.env.TAG_JOB_POLL_SECONDS;
   if (raw === undefined || raw === '') return 5;
@@ -47,9 +86,25 @@ function pollSeconds(): number {
   return parsed;
 }
 
-/** Processus HTTP : écoute sur `port`, et fait tourner ses travailleurs à intervalle (0 = jamais). */
+/**
+ * Processus HTTP : écoute sur `port` (HTTPS dès qu'un certificat est configuré, toujours en production), et fait
+ * tourner ses travailleurs à intervalle (0 = jamais). `rawBody` garde le corps brut pour `Content-Digest` (R-04) ; le
+ * corps JSON reste analysé comme avant.
+ */
 export async function serve(rootModule: Type<unknown>, port: number): Promise<void> {
-  const app = await NestFactory.create(rootModule, { bufferLogs: true });
+  // Même environnement que la configuration injectée (APP_CONFIG) : il faut le certificat avant de créer le serveur.
+  const transport = loadConfig();
+  const httpsOptions = tlsServerOptions(transport);
+  assertSafeTransport({
+    production: transport.production,
+    tls: httpsOptions !== undefined,
+    trustProxyHops: transport.trustProxyHops,
+  });
+  const app = await NestFactory.create(rootModule, {
+    bufferLogs: true,
+    rawBody: true,
+    ...(httpsOptions ? { httpsOptions } : {}),
+  });
   const config = assertProcessIsSafe(app);
   applyTrustProxy(app, config.trustProxyHops);
   app.setGlobalPrefix(API_PREFIX);

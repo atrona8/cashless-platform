@@ -18,7 +18,11 @@ DeviceEnrollmentRequest _$DeviceEnrollmentRequestFromJson(
   keyAttestationChain: (json['key_attestation_chain'] as List<dynamic>)
       .map((e) => e as String)
       .toList(),
-  csrPem: json['csr_pem'] as String?,
+  csrPem: json['csr_pem'] as String,
+  agreementAttestationChain:
+      (json['agreement_attestation_chain'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
 );
 
 Map<String, dynamic> _$DeviceEnrollmentRequestToJson(
@@ -31,6 +35,7 @@ Map<String, dynamic> _$DeviceEnrollmentRequestToJson(
   'signing_public_key': instance.signingPublicKey,
   'agreement_public_key': instance.agreementPublicKey,
   'key_attestation_chain': instance.keyAttestationChain,
+  'agreement_attestation_chain': instance.agreementAttestationChain,
   'csr_pem': instance.csrPem,
 };
 

@@ -36,7 +36,14 @@ Règles :
    tout.
 2. Réponse 2xx et 4xx métier : enregistrée et rejouée à l'identique. Erreur 5xx : la Tx 2 est annulée, la ligne
    `IN_PROGRESS` est relâchée (bail remis à maintenant) pour permettre la reprise avec la même clé.
-3. Empreinte : SHA-256 hex de `METHOD + "\n" + modèle de route + "\n" + JCS(corps)` (RFC 8785).
+3. Empreinte : HMAC-SHA256 hex, sous `IDEMPOTENCY_HMAC_KEY` (secret hors de la base ; OP-N54, ADR-99), de
+   `METHOD + "\n" + chemin concret + "\n" + JCS(appelant) + "\n" + JCS(corps)` (RFC 8785). Chemin concret :
+   paramètres de chemin compris, chaîne de requête exclue (`/v1/devices/<id>/revoke`, jamais le modèle
+   `/v1/devices/:device_id/revoke`) : la même clé sur une autre ressource → `409 IDEMPOTENCY_KEY_REUSED`. Appelant :
+   identités posées par les gardes (`{"person": <app_user.id>, "device": <device.id>, "customer": <id>}`, membres
+   absents omis ; une route de guichet porte la personne et le terminal) : la même clé présentée par un autre
+   appelant → `409 IDEMPOTENCY_KEY_REUSED`, jamais la réponse d'origine. Révisé le 21/10/2026 (mission 5a, WP18,
+   ADR-116, OP-N71) ; auparavant SHA-256 sans clé sur le modèle de route.
 4. Portée : `(operator_id, scope, key)` ; `operator_id` vient du contexte authentifié.
 5. Expiration : `expires_at = created_at + 24 h` (paramétrable) ; au-delà, la clé est traitée comme neuve.
 6. Les écritures au grand livre restent en plus protégées par `UNIQUE (ledger_id, idempotency_key)` et

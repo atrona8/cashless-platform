@@ -459,7 +459,7 @@ describe('aucun secret des bracelets en clair au repos (NFR-002, SC-004)', () =>
         await request(api.getHttpServer())
           .post('/v1/media/claims/confirmations')
           .set(device.headers)
-          .set('Authorization', `Bearer ${w.cashierA.token}`)
+          .set('X-Staff-Authorization', `Bearer ${w.cashierA.token}`)
           .set('Idempotency-Key', randomUUID())
           .send({ tap_id: 2_000_000_000, claim_code: codes[0], confirmation_code: wrongDigits }),
       );

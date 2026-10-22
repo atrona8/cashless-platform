@@ -1,0 +1,307 @@
+{
+  "event_count": 145,
+  "last_event_id": "01M5FMQT18D1RTE364GKEEZQZ7",
+  "materialized_at": "2026-10-21T16:29:32.584452+00:00",
+  "mission_number": "",
+  "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 18,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5FKT5JJV04BJP5DDF23Q110",
+      "last_transition_at": "2026-10-21T16:13:21.362540+00:00",
+      "review_result": {
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP01-contrat-api-types/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7111,
+      "shell_pid_created_at": "1792409407.598177"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FKT865PHE834RZK1ZAYEDK",
+      "last_transition_at": "2026-10-21T16:13:24.037620+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP02-op-n59-search-path/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP02-op-n59-search-path/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 21831,
+      "shell_pid_created_at": "1792412184.816248"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "lane": "done",
+      "last_event_id": "01M5FKTAR9C90KDHPGZ2C2BT2V",
+      "last_transition_at": "2026-10-21T16:13:26.665891+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP03-s5-enrolement-statut/review-cycle-2.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP03-s5-enrolement-statut/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20676,
+      "shell_pid_created_at": "1792412058.960235"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5FMPW5DEKG0THBKXGGY073Q",
+      "last_transition_at": "2026-10-21T16:29:01.997833+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP04-jetons-nonces-garde/review-cycle-2.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP04-jetons-nonces-garde/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 5673,
+      "shell_pid_created_at": "1792489503.135007"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FKTDAJGTXKV7GF6GF5B6XR",
+      "last_transition_at": "2026-10-21T16:13:29.298500+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP05-op-n50-consume-tap/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP05-op-n50-consume-tap/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3246,
+      "shell_pid_created_at": "1792489170.524862"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FKTFWPY0GFEB6AE3NTJ1FN",
+      "last_transition_at": "2026-10-21T16:13:31.926879+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP06-op-n62-retrait-cle/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP06-op-n62-retrait-cle/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 13630,
+      "shell_pid_created_at": "1792490373.64331"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQ7FYG61T1NPFY8Q8FT6M",
+      "last_transition_at": "2026-10-21T16:29:13.598970+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP07-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP07-droits-base/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 34979,
+      "shell_pid_created_at": "1792492419.70201"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5FKTJEME9T5JN3W67DSPVJZ",
+      "last_transition_at": "2026-10-21T16:13:34.548372+00:00",
+      "review_result": {
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP08-socle-https-config/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 9046,
+      "shell_pid_created_at": "1792409614.791069"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMPZD0DF3SABENS088KHE3",
+      "last_transition_at": "2026-10-21T16:29:05.312921+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP09-autorite-signataire/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP09-autorite-signataire/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 21680,
+      "shell_pid_created_at": "1792412177.594155"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5FMQ2767YTRTX92RJN94EVP",
+      "last_transition_at": "2026-10-21T16:29:08.198336+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP10-attestation-android/review-cycle-2.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP10-attestation-android/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 4521,
+      "shell_pid_created_at": "1792489353.8575"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQA5BH7NRP8X0KHMC8SJ3",
+      "last_transition_at": "2026-10-21T16:29:16.331730+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP11-attestation-ios/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP11-attestation-ios/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 16284,
+      "shell_pid_created_at": "1792490623.956684"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQCSP85G1KHR90H0EYH6M",
+      "last_transition_at": "2026-10-21T16:29:19.030693+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP12-identite-reelle/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP12-identite-reelle/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 56439,
+      "shell_pid_created_at": "1792495728.200989"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQ4VFFD1QFT914HYZ49NY",
+      "last_transition_at": "2026-10-21T16:29:10.895451+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP13-op-n54-empreintes/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP13-op-n54-empreintes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16276,
+      "shell_pid_created_at": "1792490621.367825"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5FMQFH4N83RGVG6AY7ZQSCR",
+      "last_transition_at": "2026-10-21T16:29:21.828341+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP14-codes-enrolement/review-cycle-2.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP14-codes-enrolement/review-cycle-2.md",
+        "reviewer": "claude (relecteur distinct)",
+        "verdict": "approved"
+      },
+      "shell_pid": 9436,
+      "shell_pid_created_at": "1792577370.186549"
+    },
+    "WP15": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQMSJKCKT3MCBQ9P5Q0M6",
+      "last_transition_at": "2026-10-21T16:29:27.218097+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP15-rafraichissement/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP15-rafraichissement/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 17746,
+      "shell_pid_created_at": "1792579128.743078"
+    },
+    "WP16": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQJ4MKYJ6RWVYHGRN1N51",
+      "last_transition_at": "2026-10-21T16:29:24.500345+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP16-back-office-terminaux/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP16-back-office-terminaux/review-cycle-1.md",
+        "reviewer": "claude (relecteur distinct)",
+        "verdict": "approved"
+      },
+      "shell_pid": 83790,
+      "shell_pid_created_at": "1792509970.329754"
+    },
+    "WP17": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQQEAGZX5RQEFSY7Y0HWK",
+      "last_transition_at": "2026-10-21T16:29:29.930854+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP17-configuration-battement/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP17-configuration-battement/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 18448,
+      "shell_pid_created_at": "1792579176.585366"
+    },
+    "WP18": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5FMQT18D1RTE364GKEEZQZ7",
+      "last_transition_at": "2026-10-21T16:29:32.584452+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP18-preuves-ci-consignation/review-cycle-1.md",
+        "reference": "review-cycle://identite-enrolement-terminaux-01M52R6H/WP18-preuves-ci-consignation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 39653,
+      "shell_pid_created_at": "1792582499.362588"
+    }
+  }
+}

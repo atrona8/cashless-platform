@@ -1,0 +1,464 @@
+schema_version: 1
+mission_id: 01M52R6HAZ8DFYP97C5FFTDGSY
+mission_slug: identite-enrolement-terminaux-01M52R6H
+mission_number:
+friendly_name: Identité et enrôlement des terminaux
+mission_type: software-dev
+target_branch: feat/identite-enrolement-terminaux
+created_at: '2026-10-21T16:29:54.679942+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-21T16:29:54.679942+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-003
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-004
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-005
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-006
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-007
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-008
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-009
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-010
+  category: implementation
+  summary: WP13 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-011
+  category: implementation
+  summary: WP15 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-012
+  category: implementation
+  summary: WP16 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-013
+  category: implementation
+  summary: WP17 completed without rejection cycles
+  evidence_refs:
+  - e-023
+- id: h-014
+  category: implementation
+  summary: WP18 completed without rejection cycles
+  evidence_refs:
+  - e-023
+not_helpful:
+- id: n-025
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-048
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-021
+  category: implementation
+  summary: WP03 needed 2 implementation cycles
+  evidence_refs:
+  - e-044
+  details: WP WP03 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-022
+  category: implementation
+  summary: WP04 needed 2 implementation cycles
+  evidence_refs:
+  - e-045
+  details: WP WP04 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-023
+  category: implementation
+  summary: WP10 needed 2 implementation cycles
+  evidence_refs:
+  - e-046
+  details: WP WP10 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-024
+  category: implementation
+  summary: WP14 needed 2 implementation cycles
+  evidence_refs:
+  - e-047
+  details: WP WP14 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-005
+  category: process
+  summary: WP02 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-028
+  details: WP WP02 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-004
+  category: process
+  summary: WP03 had 1 lane bounce(s) before approval
+  evidence_refs:
+  - e-027
+  details: WP WP03 moved backward across workflow lanes 1 time(s) outside the documented reviewer-feedback flow.
+- id: n-006
+  category: process
+  summary: WP03 required 3 --force override(s) during workflow
+  evidence_refs:
+  - e-029
+  details: WP WP03 required 3 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-007
+  category: process
+  summary: WP04 required 4 --force override(s) during workflow
+  evidence_refs:
+  - e-030
+  details: WP WP04 required 4 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-008
+  category: process
+  summary: WP05 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-031
+  details: WP WP05 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-009
+  category: process
+  summary: WP06 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-032
+  details: WP WP06 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-010
+  category: process
+  summary: WP07 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-033
+  details: WP WP07 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-011
+  category: process
+  summary: WP09 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-034
+  details: WP WP09 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-012
+  category: process
+  summary: WP10 required 4 --force override(s) during workflow
+  evidence_refs:
+  - e-035
+  details: WP WP10 required 4 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-013
+  category: process
+  summary: WP11 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-036
+  details: WP WP11 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-014
+  category: process
+  summary: WP12 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-037
+  details: WP WP12 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-015
+  category: process
+  summary: WP13 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-038
+  details: WP WP13 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-016
+  category: process
+  summary: WP14 required 4 --force override(s) during workflow
+  evidence_refs:
+  - e-039
+  details: WP WP14 required 4 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-017
+  category: process
+  summary: WP15 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-040
+  details: WP WP15 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-018
+  category: process
+  summary: WP16 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-041
+  details: WP WP16 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-019
+  category: process
+  summary: WP17 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-042
+  details: WP WP17 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-020
+  category: process
+  summary: WP18 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-043
+  details: WP WP18 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP04 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-024
+  details: WP WP04 was sent back from review to planning 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP10 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-025
+  details: WP WP10 was sent back from review to planning 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP14 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-026
+  details: WP WP14 was sent back from review to planning 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP01-contrat-api-types.md
+- id: e-006
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP02-op-n59-search-path.md
+- id: e-007
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP03-s5-enrolement-statut.md
+- id: e-008
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP04-jetons-nonces-garde.md
+- id: e-009
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP05-op-n50-consume-tap.md
+- id: e-010
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP06-op-n62-retrait-cle.md
+- id: e-011
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP07-droits-base.md
+- id: e-012
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP08-socle-https-config.md
+- id: e-013
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP09-autorite-signataire.md
+- id: e-014
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP10-attestation-android.md
+- id: e-015
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP11-attestation-ios.md
+- id: e-016
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP12-identite-reelle.md
+- id: e-017
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP13-op-n54-empreintes.md
+- id: e-018
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP14-codes-enrolement.md
+- id: e-019
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP15-rafraichissement.md
+- id: e-020
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP16-back-office-terminaux.md
+- id: e-021
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP17-configuration-battement.md
+- id: e-022
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/tasks/WP18-preuves-ci-consignation.md
+- id: e-023
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+- id: e-024
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CB4G2AARRGZMJ4C3F8THQK
+- id: e-025
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CB125DTYT7KGYFBJ43WVEV
+- id: e-026
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5EYYXPPP3QD7H783C0ZHA8P
+- id: e-027
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5A182ZE2BM4MXSWQ3ARW5QM
+- id: e-028
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5A1WFK539Q04M2MPVRV95RG..01M5A36C53KWZXTRFK12NR3QK2
+- id: e-029
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5A182ZE2BM4MXSWQ3ARW5QM..01M5A35YTC437A37B0DR4FH7W3
+- id: e-030
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5A52808XVECNPKNHA8PME8Y..01M5CC332EH6B6ST2BGJZQH7QD
+- id: e-031
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CBSY4R8ARV4F38TWKNSH92..01M5CC1ZA70Q2BPMM7MPZSYN8K
+- id: e-032
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CCR9F1NW10TPM8BZMRS47V..01M5CD0BYHFJNFQVEDJN0GQCMG
+- id: e-033
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CG5NYKZ1AD93D0W02AT1JQ..01M5CGV4ANX3XWQGGZBX5NV5WG
+- id: e-034
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5A3447TJ0RR2EBXTGXFRG53..01M5A38YW3GFVBY0YG3ZJN2M19
+- id: e-035
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CAPSJ9W59P0EF5TEPDAMXX..01M5CBRT9S96YZSSNFS11YVXXK
+- id: e-036
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CDBV4TZPBKM1SBCXBWK2Q0..01M5CE7J6Z115EFQ1CRB82KX8P
+- id: e-037
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CXHX0B6AM1Z411FT8QTYRM..01M5CYAZZM1XN2N0RTSMX94ZBF
+- id: e-038
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5CCPNFS0JRSHEZMHCH8T2PV..01M5CD0WVRNGV0KZNGY7BS4H3P
+- id: e-039
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5EXXC443ES3FYEHNZKE9VM5..01M5F0HYFJMXY84PH7Y6RG7NVD
+- id: e-040
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5F2VFF05WCW7NR92NED79R0..01M5F36BM64Y2EJ1XB34NS4VQ3
+- id: e-041
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5EXPDR1W25F5KHFJR5HCRQJ..01M5EY6Z02WX5H9ZPDB8E4C1M3
+- id: e-042
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5F2VVMKK1RY5JPA36KZDA90..01M5F37TASWN24WWAH6BFMKHF1
+- id: e-043
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: 01M5FEXVE6WH27JWZXEKYVG6Q4..01M5FFSEW3YV59SFJB96XF80S3
+- id: e-044
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: implementation_cycles
+- id: e-045
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: implementation_cycles
+- id: e-046
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: implementation_cycles
+- id: e-047
+  kind: event_range
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/status.events.jsonl
+  range: implementation_cycles
+- id: e-048
+  kind: file
+  path: kitty-specs/identite-enrolement-terminaux-01M52R6H/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

@@ -103,6 +103,13 @@ export class AuthKeysService {
             aad: pwdPackAad({ mediaId: media.id, operatorId, keyIndex, uid }),
           }),
       );
+      // Statut du terminal relu juste avant la remise (mission 5a, lot WP12, décision du porteur
+      // du 20/10/2026) : une révocation ou une suspension validée après la garde est vue ici, et
+      // aucun mot de passe ne part (42501 -> 403 DEVICE_REVOKED, CL030 -> 403 DEVICE_SUSPENDED).
+      // Aucune fonction ne prend le terminal FOR UPDATE dans cette transaction.
+      await this.tx.run(operatorId, (client) =>
+        client.query('SELECT assert_device_active($1)', [device.deviceId]),
+      );
       return {
         nfc_uid: uid.toString('hex'),
         key_index: keyIndex,

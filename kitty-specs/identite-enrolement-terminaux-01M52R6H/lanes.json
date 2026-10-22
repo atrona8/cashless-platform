@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "mission_slug": "identite-enrolement-terminaux-01M52R6H",
+  "mission_id": "01M52R6HAZ8DFYP97C5FFTDGSY",
+  "mission_branch": "kitty/mission-identite-enrolement-terminaux-01M52R6H",
+  "target_branch": "feat/identite-enrolement-terminaux",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "apps/api/src/http/messages.en.json",
+        "apps/api/src/http/messages.fr.json",
+        "packages/contracts/dart/**",
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0021_definer_search_path.sql",
+        "packages/ledger-sql/tests/tests_definer_search_path.sql",
+        "packages/ledger-sql/tests/tests_definer_trigger_writers.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0022_device_enrollment.sql",
+        "packages/ledger-sql/tests/tests_device_enrollment.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0024_consume_tap_claim.sql",
+        "packages/ledger-sql/tests/tests_consume_tap_claim.sql",
+        "packages/ledger-sql/tests/tests_media_claim_tap.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/media/keys/dek.worker.ts",
+        "packages/ledger-sql/migrations/0025_tag_key_retire_guard.sql",
+        "packages/ledger-sql/tests/tests_tag_key_retire_guard.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        ".npmrc",
+        "apps/api/package.json",
+        "apps/api/src/app.module.ts",
+        "apps/api/src/config/config.ts",
+        "apps/api/src/devices/devices.module.ts",
+        "apps/api/src/kms/production-guard.ts",
+        "apps/api/src/processes/bootstrap.ts",
+        "apps/api/src/security/port-tokens.ts",
+        "apps/api/test/support/app.ts",
+        "apps/api/test/support/tls.ts",
+        "apps/api/test/unit/config.spec.ts",
+        "apps/api/test/unit/production-guard.spec.ts",
+        "package-lock.json",
+        "package.json",
+        "tools/dev-db/env.sh",
+        "tools/dev-db/env.test.example"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0023_device_tokens_nonces.sql",
+        "packages/ledger-sql/tests/tests_device_tokens.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/device-ca/**",
+        "apps/api/src/device-tokens/**",
+        "apps/api/test/unit/device-ca.spec.ts",
+        "apps/api/test/unit/device-token.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/attestation/android-key-attestation.ts",
+        "apps/api/src/attestation/attestation.module.ts",
+        "apps/api/src/attestation/attestation.port.ts",
+        "apps/api/src/attestation/enrollment-challenge.ts",
+        "apps/api/src/attestation/fake-attestation.ts",
+        "apps/api/src/attestation/google-revocation-cache.ts",
+        "apps/api/test/support/attestation/android.ts",
+        "apps/api/test/unit/attestation/android.spec.ts",
+        "apps/api/test/unit/attestation/challenge.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "apps/api/src/enrollment-code/enrollment-code.ts",
+        "apps/api/src/idempotency/request-hash.ts",
+        "apps/api/test/unit/enrollment-code.spec.ts",
+        "apps/api/test/unit/idempotency/request-hash.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/gen_tests.py",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/tests/tests_device_rights.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql",
+        "packages/ledger-sql/tests/tests_media_roles.sql",
+        "packages/ledger-sql/tests/tests_tag_key_job_approval.sql",
+        "packages/ledger-sql/tests_grand_livre_cashless.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/attestation/ios-app-attest.ts",
+        "apps/api/test/support/attestation/ios.ts",
+        "apps/api/test/unit/attestation/ios.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "apps/api/src/device-identity/**",
+        "apps/api/src/media/auth-keys/auth-keys.controller.ts",
+        "apps/api/src/processes/tag-keys.module.ts",
+        "apps/api/test/integration/end-to-end/media-port-swap.spec.ts",
+        "apps/api/test/support/fake-device.ts",
+        "apps/api/test/support/test-terminal.ts",
+        "apps/api/test/unit/real-device-identity.spec.ts",
+        "apps/api/test/unit/request-signature.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-g",
+        "lane-h",
+        "lane-i"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-n",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        "apps/api/src/devices/enrollment-codes/**",
+        "apps/api/src/devices/enrollment/**",
+        "apps/api/src/errors/sqlstate-map.ts",
+        "apps/api/test/integration/devices/enrollment-codes.spec.ts",
+        "apps/api/test/integration/devices/enrollment.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-c",
+        "lane-g",
+        "lane-i",
+        "lane-j",
+        "lane-k",
+        "lane-l",
+        "lane-m"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-p",
+      "wp_ids": [
+        "WP16"
+      ],
+      "write_scope": [
+        "apps/api/src/devices/admin/**",
+        "apps/api/test/integration/devices/admin.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-c",
+        "lane-d",
+        "lane-g",
+        "lane-l"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-o",
+      "wp_ids": [
+        "WP15"
+      ],
+      "write_scope": [
+        "apps/api/src/devices/tokens/**",
+        "apps/api/test/integration/devices/refresh.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-i",
+        "lane-l",
+        "lane-n"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-q",
+      "wp_ids": [
+        "WP17"
+      ],
+      "write_scope": [
+        "apps/api/src/devices/config/**",
+        "apps/api/src/devices/heartbeat/**",
+        "apps/api/test/integration/devices/config.spec.ts",
+        "apps/api/test/integration/devices/heartbeat.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-l",
+        "lane-n"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-r",
+      "wp_ids": [
+        "WP18"
+      ],
+      "write_scope": [
+        ".github/workflows/ledger-tests.yml",
+        "apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts",
+        "apps/api/test/integration/end-to-end/device-isolation.spec.ts",
+        "apps/api/test/integration/end-to-end/device-journey.spec.ts",
+        "apps/api/test/integration/end-to-end/device-latency.spec.ts",
+        "apps/api/test/integration/end-to-end/device-secrets.spec.ts",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-j",
+        "lane-k",
+        "lane-l",
+        "lane-m",
+        "lane-n",
+        "lane-o",
+        "lane-p",
+        "lane-q"
+      ],
+      "parallel_group": 6
+    }
+  ],
+  "computed_at": "2026-10-19T11:20:48.902335+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "c8cd0435b9f2f0fefc81dedfecf0df7d66aec196"
+}

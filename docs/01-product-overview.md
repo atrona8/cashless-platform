@@ -1,7 +1,8 @@
 # Description produit — orientée fonctionnelle
 
 > Statut de complétude : voir `06-docs-status.md`. Dernière mise à jour motivée par :
-> initialisation du 07/10/2026 (à partir de `PRD.md`, lui-même tiré de `SPECIFICATION.md` v1.2).
+> initialisation du 07/10/2026 (à partir de `PRD.md`, lui-même tiré de `SPECIFICATION.md` v1.2) ; 21/10/2026 :
+> domaine « Terminaux et encaissement », identité et enrôlement des terminaux (mergée le 21/10/2026).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -55,7 +56,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Bracelets NFC
 - Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
   avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
-- Statut : ✅ mergée le 16/10/2026 dans `feat/bracelets-nfc` (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
+- Statut : ✅ mergée le 16/10/2026, dans `main` par la PR #3 avec CI verte (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
   Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
   sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0020` (0020 au correctif post-fusion n° 1) ; 27 opérations
   d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
@@ -69,8 +70,18 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Terminaux et encaissement
 - Description : caisse à catalogue, TPE clavier, guichet de recharge ; enrôlement sans MDM ; paiement QR ;
   recharges, remboursements (§8).
-- Statut : 📋 planifié (app terminal conditionnée à la validation NFC sur vrais bracelets)
-- Mission(s) associée(s) : à définir
+- Statut : 🔎 identité et enrôlement des terminaux : review terminée le 21/10/2026 (18/18 WP approuvés), acceptation
+  et fusion en attente. Livré : code d'enrôlement à usage unique (événement et choix « téléphone personnel »
+  obligatoires), enrôlement sans compte avec attestation (Android 12+ ; iOS par App Attest, limite OP-N64), certificat
+  client, jeton d'appareil lié et signature de chaque requête exigés ensemble sur toute route de terminal (dont celles
+  de la mission « Bracelets NFC »), rafraîchissement à usage unique (grâce de 60 s, OP-N65), configuration et
+  battement de cœur, back-office des terminaux (liste, fiche, suspension, réactivation, révocation par une personne) ;
+  dettes de base de la mission 4 levées (OP-N44, N50, N54, N59, N62, N63) et OP-N42. Limites : autorité des terminaux
+  et signataire des jetons en faux, refusés en production (OP-N73, mission 7) ; pas de limite en amont de l'enrôlement
+  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR) : 📋 planifié (mission 5b) ; app terminal
+  conditionnée à la validation NFC sur vrais bracelets
+- Mission(s) associée(s) : `identite-enrolement-terminaux-01M52R6H` (Identité et enrôlement des terminaux) ;
+  `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, spécification non commencée)
 
 ### Hors ligne et passerelle locale
 - Description : snapshot signé, plafonds hors ligne, lots numérotés, conflits, passerelle locale qui prend
