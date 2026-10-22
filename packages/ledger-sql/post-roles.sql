@@ -484,15 +484,34 @@ TO cashless_app;
 -- sans ce retrait, une session de l'API repassait ACTIVE un terminal REVOKED, remplaçait sa clé
 -- publique ou son certificat, ou remettait à neuf un code d'enrôlement ou un jeton de
 -- rafraîchissement. La lecture reste permise (sous la RLS) : la garde lit public_key et cert_sha256
--- pour vérifier la signature ; code_hash est un HMAC à clé hors base, token_hash un SHA-256 d'un
--- jeton aléatoire. Colonnes encore modifiables : affectation et réglages d'exploitation,
--- numérotation (next_seq_floor) et suivi (last_seen_at, last_snapshot_version) ; la suite de
--- référence et le schéma bornent les autres.
+-- pour vérifier la signature ; token_hash est un SHA-256 d'un jeton aléatoire ; code_hash (HMAC à
+-- clé hors base) n'est plus lisible (SEC-2, ci-dessous). Colonnes encore modifiables :
+-- affectation et réglages d'exploitation, numérotation (next_seq_floor) et suivi (last_seen_at,
+-- last_snapshot_version) ; la suite de référence et le schéma bornent les autres.
 REVOKE INSERT, UPDATE ON device FROM cashless_app;
 GRANT UPDATE (app_mode, nfc_enabled, event_id, pos_id, station_name, last_snapshot_version,
               last_seen_at, next_seq_floor, personal_phone) ON device TO cashless_app;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device_enrollment_code, device_refresh_token,
   device_status_history, device_request_nonce, device_enrollment_attempt FROM cashless_app;
+-- Empreinte des codes d'enrôlement (SEC-2 de la revue post-fusion de la mission 5a, renforcement
+-- décidé par le porteur le 21/10/2026) : la base croit l'auteur et les preuves que l'API lui donne
+-- (ADR-105, OP-N56) ; avec la connexion de l'API compromise, une empreinte lue préparait un
+-- enrôlement. code_hash n'est plus lisible par cashless_app, ni dans device_enrollment_code ni dans
+-- device_enrollment_attempt (un essai refusé d'un code valide en garde l'empreinte). L'API ne la
+-- lit jamais : création, contrôle, enrôlement et limites passent par les fonctions SECURITY DEFINER
+-- de 0022, 0027 et 0030 ; la liste des codes nomme ses colonnes. Lecture accordée par colonne,
+-- liste calculée (toutes sauf code_hash) comme pour media.
+REVOKE SELECT ON device_enrollment_code, device_enrollment_attempt FROM cashless_app;
+DO $$
+DECLARE t text; cols text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['device_enrollment_code', 'device_enrollment_attempt'] LOOP
+    SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+     WHERE attrelid = format('public.%I', t)::regclass AND attnum > 0 AND NOT attisdropped
+       AND attname <> 'code_hash';
+    EXECUTE format('GRANT SELECT (%s) ON %I TO cashless_app', cols, t);
+  END LOOP;
+END $$;
 
 -- -----------------------------------------------------------------------------------------------
 -- 5. Processus des clés : fonctions de la file des travaux et de la garde des terminaux ; TEMPORARY

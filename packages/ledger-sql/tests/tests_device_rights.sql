@@ -91,6 +91,40 @@ SELECT is((SELECT array_agg(attname::text ORDER BY attname) FROM pg_attribute
         'pos_id', 'public_key', 'status'],
   'cashless_tagkeys : lecture de device limitée à la garde (clés, empreinte, statut, affectation)');
 
+-- 1 bis. Empreinte des codes d'enrôlement illisible par cashless_app (SEC-2, 21/10/2026) ---------
+SELECT is((SELECT array_agg(attname::text ORDER BY attname) FROM pg_attribute
+            WHERE attrelid = 'device_enrollment_code'::regclass AND attnum > 0 AND NOT attisdropped
+              AND has_column_privilege('cashless_app', 'device_enrollment_code', attname,
+                                       'SELECT')),
+  ARRAY['app_mode', 'created_at', 'created_by', 'device_id', 'event_id', 'expires_at', 'id',
+        'operator_id', 'personal_phone', 'pos_id', 'used_at'],
+  'cashless_app : colonnes de device_enrollment_code lisibles, liste exacte (sans code_hash)');
+SELECT is((SELECT array_agg(attname::text ORDER BY attname) FROM pg_attribute
+            WHERE attrelid = 'device_enrollment_attempt'::regclass AND attnum > 0
+              AND NOT attisdropped
+              AND has_column_privilege('cashless_app', 'device_enrollment_attempt', attname,
+                                       'SELECT')),
+  ARRAY['address', 'address_key', 'at', 'id', 'operator_id', 'result'],
+  'cashless_app : colonnes de device_enrollment_attempt lisibles, liste exacte (sans code_hash)');
+SELECT ok(NOT has_table_privilege('cashless_app', t, 'SELECT'),
+  'cashless_app : pas de SELECT sur toute la table ' || t)
+  FROM unnest(ARRAY['device_enrollment_code', 'device_enrollment_attempt']) t;
+-- Le refus tient aux droits (contrôlés à la préparation de la requête), avec ou sans ligne visible.
+SET LOCAL ROLE cashless_app;
+SELECT pg_temp.a();
+SELECT throws_ok(q, '42501', NULL, 'cashless_app : ' || q || ' refusé')
+  FROM unnest(ARRAY['SELECT code_hash FROM device_enrollment_code',
+                    'SELECT * FROM device_enrollment_code',
+                    'SELECT c FROM device_enrollment_code c',
+                    'SELECT id FROM device_enrollment_code WHERE code_hash IS NOT NULL',
+                    'SELECT code_hash FROM device_enrollment_attempt',
+                    'SELECT * FROM device_enrollment_attempt']) q;
+SELECT lives_ok($$SELECT id, event_id, pos_id, app_mode, personal_phone, created_by, created_at,
+                         expires_at, used_at, device_id
+                    FROM device_enrollment_code$$,
+  'témoin : colonnes de la liste des codes (listDeviceEnrollmentCodes) lisibles');
+RESET ROLE;
+
 -- 2. Réécriture directe de chaque colonne protégée : refusée --------------------------------------
 SET LOCAL ROLE cashless_app;
 SELECT pg_temp.a();
