@@ -55,6 +55,9 @@
   terminal révoqué (ADR-115), écriture de `cashless_app` dans la chaîne d'audit de la plateforme (0027).
 - Limites nouvelles : OP-N72 (pas de limite en amont de l'enrôlement, mission 13), OP-N73 (autorité et signataire
   en faux, mission 7).
+- Correctif post-fusion n° 1 (22/10/2026, relu et approuvé) : `code_hash` illisible par `cashless_app` dans
+  `device_enrollment_code` et `device_enrollment_attempt` (SEC-2, ADR-105, OP-N56) ; jeton d'appareil de 900 s au
+  plus en production (DRIFT-2). Renforcements, aucun droit élargi.
 
 ## Lien avec la synthèse globale
 Contribue à : `docs/04-architecture-diagram.md`, table « Décisions d'architecture notables » et domaine « Terminaux ».
