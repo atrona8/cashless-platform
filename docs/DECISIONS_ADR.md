@@ -1384,6 +1384,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   l'attestation ni l'auteur (même limite qu'OP-N56). La barrière est l'autorité des terminaux et le signataire des
   jetons, hors de la base (OP-N73). Renforcement décidé par le porteur : la lecture de
   `device_enrollment_code.code_hash` est retirée à `cashless_app` (correctif post-fusion de la mission 5a).
+  **Fait le 22/10/2026** (`814710c`) : `SELECT` accordé colonne par colonne, sans `code_hash`, sur
+  `device_enrollment_code` et aussi sur `device_enrollment_attempt` (renforcement en plus : un essai refusé d'un code
+  valide en garde l'empreinte). L'API ne lisait la colonne nulle part ; test `tests/tests_device_rights.sql` §1 bis
+  (liste exacte des colonnes lisibles, refus de `code_hash`). La limite sur l'auteur et les preuves reste (OP-N56).
 - **Références.** ADR-102 ; OP-N42, OP-N63 ; `packages/ledger-sql/roles.sql`.
 
 ## ADR-106 — Terminal iOS : clé de signature non attestée, liée à l'instance App Attest

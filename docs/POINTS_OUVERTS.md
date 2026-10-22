@@ -292,7 +292,9 @@ Limite résiduelle d'ADR-94 (levée d'OP-N52), consignée à la relecture du lot
   l'API compromise pourrait créer un terminal aux clés choisies ; il resterait inutilisable sans certificat de
   l'autorité des terminaux ni jeton du signataire, deux clés hors de la base (barrière réelle, OP-N73 pour leurs
   adaptateurs). Renforcement décidé le même jour : retirer à `cashless_app` la lecture de
-  `device_enrollment_code.code_hash` (correctif post-fusion de la mission 5a).
+  `device_enrollment_code.code_hash` (correctif post-fusion de la mission 5a). **Fait le 22/10/2026** (`814710c`,
+  aussi pour `device_enrollment_attempt.code_hash` ; test `tests_device_rights.sql` §1 bis) : une session compromise
+  ne lit plus d'empreinte de code. La confiance dans l'auteur et les preuves reste, avec ce point (mission 11).
 
 ### OP-N57 — `offline_snapshot` : version plantée, déni de service hors ligne (15 octobre 2026)
 

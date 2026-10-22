@@ -36,3 +36,22 @@ défaut inchangé.
 - Lignes de 100 caractères au plus, commentaires en français, `npm run format:check` vert.
 - Fichiers à faire relire par une personne : `post-roles.sql`, `tests_execute_grants.sql` ou le nouveau test de droits,
   `config.ts`.
+
+## Compte rendu de l'implémentation (22/10/2026)
+
+- **SEC-2** (`814710c`) : lecteurs de `code_hash` sous `cashless_app` vérifiés. L'API n'en lit aucun : création,
+  contrôle, enrôlement et limites passent par les fonctions SECURITY DEFINER (0022, 0027, 0030), la liste des codes
+  nomme ses colonnes ; seuls des tests Jest lisent la colonne, par le propriétaire. `post-roles.sql` §4b : `SELECT`
+  retiré puis accordé colonne par colonne (liste calculée, toutes sauf `code_hash`, comme pour `media`), sur
+  `device_enrollment_code` **et sur `device_enrollment_attempt`** : renforcement en plus de la consigne, car un essai
+  refusé d'un code valide (attestation, numéro de série) garde son empreinte. Aucune fonction créée, aucun `.sql`
+  généré modifié. Test : `tests_device_rights.sql` §1 bis (listes exactes, `code_hash`, `SELECT *` et filtre sur
+  `code_hash` refusés, témoin des colonnes de `listDeviceEnrollmentCodes`).
+- **DRIFT-2** (`941434f`) : `DEVICE_TOKEN_TTL_MAX_PRODUCTION = 900` dans `config.ts` ; en production, 60 à 900, au-delà
+  refus de démarrer (« entier de 60 à 900 attendu ») ; hors production, 60 à 3600, défaut 900. Test : `config.spec.ts`
+  (901 et 3600 refusés en production, 900 accepté, 3600 accepté hors production, défaut et absence en production).
+- **Tests** : pgTAP 2083/2083 ; Jest 1704 passés sur 1711 (6 ignorés), un échec de délai de `claim-code-order.spec.ts`
+  (instabilité connue), vert relancé seul avec les suites des terminaux (118/118) ; lint, typecheck,
+  `format:check`, `check:generated` verts.
+- **À faire relire par une personne** : `packages/ledger-sql/post-roles.sql` (§4b),
+  `packages/ledger-sql/tests/tests_device_rights.sql` (§1 bis), `apps/api/src/config/config.ts`.
