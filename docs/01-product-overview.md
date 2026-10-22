@@ -70,15 +70,16 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
 ### Terminaux et encaissement
 - Description : caisse à catalogue, TPE clavier, guichet de recharge ; enrôlement sans MDM ; paiement QR ;
   recharges, remboursements (§8).
-- Statut : 🔎 identité et enrôlement des terminaux : review terminée le 21/10/2026 (18/18 WP approuvés), acceptation
-  et fusion en attente. Livré : code d'enrôlement à usage unique (événement et choix « téléphone personnel »
+- Statut : ✅ identité et enrôlement des terminaux : mergée le 21/10/2026 (18/18 WP, acceptée), dans `main` par la
+  PR #4 le 22/10/2026 avec CI verte, correctif post-fusion n° 1 compris (empreinte des codes illisible par l'API,
+  jeton d'appareil de 15 min au plus en production). Livré : code d'enrôlement à usage unique (événement et choix « téléphone personnel »
   obligatoires), enrôlement sans compte avec attestation (Android 12+ ; iOS par App Attest, limite OP-N64), certificat
   client, jeton d'appareil lié et signature de chaque requête exigés ensemble sur toute route de terminal (dont celles
   de la mission « Bracelets NFC »), rafraîchissement à usage unique (grâce de 60 s, OP-N65), configuration et
   battement de cœur, back-office des terminaux (liste, fiche, suspension, réactivation, révocation par une personne) ;
   dettes de base de la mission 4 levées (OP-N44, N50, N54, N59, N62, N63) et OP-N42. Limites : autorité des terminaux
   et signataire des jetons en faux, refusés en production (OP-N73, mission 7) ; pas de limite en amont de l'enrôlement
-  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR) : 📋 planifié (mission 5b) ; app terminal
+  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR, identification au guichet) : 🖊 spécifié le 22/10/2026 (mission 5b) ; app terminal
   conditionnée à la validation NFC sur vrais bracelets
 - Mission(s) associée(s) : `identite-enrolement-terminaux-01M52R6H` (Identité et enrôlement des terminaux) ;
   `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, spécification non commencée)
