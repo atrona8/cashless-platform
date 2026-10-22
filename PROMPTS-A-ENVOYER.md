@@ -157,7 +157,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > `enroll_device` un événement `CLOSED` (et les états de clôture jugés bloquants) et un point de vente supprimé ; test
 > pgTAP par refus, aucune ligne écrite ; puis lever OP-N74.
 
-- [ ] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
+> **Cadrage du 22/10/2026** (7 décisions du porteur, `decisions/`) : branche remise sur `main` après la fusion de 5a
+> (PR #4) et du correctif SC-007 (PR #5). PIN vérifié par le serveur, session de vendeur liée au terminal, attribution
+> par le serveur ; PIN de 6 chiffres, blocage dur après 5 échecs ; annulation par le seul vendeur de la vente dans la
+> fenêtre ; prix des lignes contre la configuration servie ; OP-N74 : dès `CLOSING` sauf `TOPUP_DESK`. Le PIN hors
+> ligne revient à la mission 7.
+
+- [x] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
 - [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement. Téléphone personnel : en ligne seulement. iOS : QR uniquement.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne-01M52QB9

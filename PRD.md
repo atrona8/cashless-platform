@@ -90,6 +90,16 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   Au plan (19/10/2026) : mTLS vérifié dans les processus ; terminaux Android 12 au moins ; `serial` unique par
   prestataire (ADR-109) ; grâce de 60 s au rafraîchissement d'un jeton (OP-N65) ; limite iOS consignée (OP-N64).
   À l'analyse (19/10/2026) : tout terminal est enrôlé pour un événement (code d'enrôlement lié à un événement).
+- Cadrage de la mission 5b (porteur, 22/10/2026) : périmètre complet (vendeurs, catalogue, paiement par bracelet en un
+  aller-retour ou en deux temps, annulation, QR commerçant et client, identification au guichet, OP-N74). Le PIN d'un
+  vendeur (6 chiffres) est vérifié par le serveur, qui ouvre une session de vendeur liée au terminal (12 h au plus) et
+  attribue lui-même chaque vente ; aucune empreinte de PIN ne quitte le serveur ; 5 échecs, comptés par vendeur sur
+  tous les terminaux, bloquent le vendeur jusqu'au déblocage par le commerçant. Le PIN hors ligne est tranché par la
+  mission 7. Seul le vendeur de la vente l'annule depuis le terminal d'origine dans la fenêtre, sinon un
+  `SUPERVISOR`. Le prix d'une ligne de vente doit être celui du catalogue de la configuration servie au terminal ou le
+  prix actuel. OP-N74 : enrôlement refusé dès `CLOSING` pour `CATALOG_POS` et `KEYPAD_TPE`, permis en `TOPUP_DESK`
+  jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout. Révocation d'une identification à deux
+  (contrat ; §6.3 dit « un administrateur », contradiction signalée).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
