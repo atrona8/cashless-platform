@@ -1716,3 +1716,19 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Tests de borne : liste figée des droits, aucune session sans essai compté, audit de chaque
   ouverture. Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 11).
 - **Références.** OP-N76, OP-N56 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/contracts/vendors.md`.
+
+## ADR-122 — Annulation au back-office : `SALE_REVERSAL` demandable par un `SUPERVISOR` ou un `ORGANIZER_ADMIN`
+
+- **Statut** : Acceptée, 22 octobre 2026 (décision du porteur aux tâches de la mission 5b, constat I6 de
+  `analysis-report.md`). Écart à la spécification qui élargit un droit, accepté (règle 3 de `CLAUDE.md`).
+- **Contexte.** FR-017 réserve l'annulation hors fenêtre, ou d'une vente d'un autre vendeur, au `SUPERVISOR` de
+  l'événement. Le contrat (`openapi.yaml`, action `SALE_REVERSAL`) permet aussi à un `ORGANIZER_ADMIN` de la demander.
+  Le contrat prime (SPECIFICATION §0.3), mais il donne un droit plus large que la spécification.
+- **Décision.** On suit le contrat : la demande peut venir d'un `SUPERVISOR` ou d'un `ORGANIZER_ADMIN` de l'événement
+  de la vente ; elle n'est exécutée qu'à l'approbation d'une seconde personne distincte (source `BACKOFFICE`).
+  L'annulation au terminal par jeton sur place reste réservée au `SUPERVISOR`. **Bloque la production : non.**
+- **Condition de bornage.** Test (WP12) qui échoue si un autre rôle peut demander `SALE_REVERSAL`, si la portée sort
+  de l'événement de la vente, ou si une seule personne suffit.
+- **Conséquences.** `requiredRole` du registre des actions devient une liste (retouche d'une ligne dans
+  `approval.service.ts`). FR-017 est à compléter dans `spec.md` à la clôture de la mission.
+- **Références.** FR-017 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP12-annulation.md`.

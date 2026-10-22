@@ -100,7 +100,7 @@ Décisions prises à la génération des lots ; tous dans le sens le plus strict
 affaiblissement, règle 1 de `CLAUDE.md`). Elles priment sur les « points à trancher » du texte ci-dessus et
 ci-dessous. Reporter dans le compte rendu du lot les écarts au plan qui en découlent.
 
-- `SALE_REVERSAL` demandable par `SUPERVISOR` **ou** `ORGANIZER_ADMIN` (contrat) : `requiredRole` devient une liste ; retouche hors carte d'une ligne dans `apps/api/src/approval/approval.service.ts`, consignée.
+- `SALE_REVERSAL` demandable par `SUPERVISOR` **ou** `ORGANIZER_ADMIN` (contrat ; **décision du porteur du 22/10/2026, ADR-122** : droit plus large que FR-017, accepté ; test de bornage obligatoire : aucun autre rôle, portée de l'événement de la vente, deux personnes distinctes) : `requiredRole` devient une liste ; retouche hors carte d'une ligne dans `apps/api/src/approval/approval.service.ts`, consignée.
 - `reversePayment` par un appelant personne (`humanBearer`) : `403 APPROVAL_REQUIRED` sans écriture ; le back-office passe par `SALE_REVERSAL`.
 - `assert_reversible` à trois modes avec preuve en base de l'approbation (arbitrage WP04).
 
