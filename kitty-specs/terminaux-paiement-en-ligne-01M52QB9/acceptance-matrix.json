@@ -1,0 +1,459 @@
+{
+  "mission_slug": "terminaux-paiement-en-ligne-01M52QB9",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pending",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 — Vendeurs d'un commerçant",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 — Code PIN du vendeur",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 — Session de vendeur",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 — Blocage après échecs",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 — Fin d'une session",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 — Attribution par le serveur",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 — Catalogue d'un point de vente",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 — Catalogue servi au terminal",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 — Paiement par bracelet en un aller-retour",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 — Paiement en deux temps",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 — Lignes de vente",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 — Prix vérifiés",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 — Montant saisi",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 — Refus d'un paiement",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 — Moyens selon le terminal",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 — Annulation",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 — Annulation par un responsable",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 — QR commerçant",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 — QR client",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 — Jetons QR",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 — Identification au guichet",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "Reporté à la mission 10 (décision du porteur au plan) ; la 5b retire seulement les écritures directes dans kyc_verification (WP07). Jamais « pass ».",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 — Révocation d'une identification à deux",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "Reporté à la mission 10 (décision du porteur au plan) ; la 5b retire seulement les écritures directes dans kyc_verification (WP07). Jamais « pass ».",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 — Niveau d'identification appliqué",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "Reporté à la mission 10 (décision du porteur au plan) ; la 5b retire seulement les écritures directes dans kyc_verification (WP07). Jamais « pass ».",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 — Enrôlement et état de l'événement (OP-N74)",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025 — Consultation d'un paiement",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026 — Audit",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "FR-027 — Contrat et types",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 — Latence du paiement",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 — Aucun PIN en clair",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 — Blocage du PIN",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 — Pas d'énumération des vendeurs",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 — Un passage, une vente",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 — Tout ou rien",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "NFR-007 — Isolation",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-008",
+      "description": "NFR-008 — Aucun jeton QR en clair",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-009",
+      "description": "NFR-009 — Pas de faux en production",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "NFR-010",
+      "description": "NFR-010 — Tests existants verts",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001 — Parcours complet par l'API",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002 — Attribution et lignes à 100 %",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003 — Aucun secret en clair après le parcours",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004 — Vendeur bloqué sur tous les terminaux",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-005",
+      "description": "SC-005 — Aucun double usage sous envois simultanés",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-006",
+      "description": "SC-006 — p95 ≤ 200 ms côté serveur",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-007",
+      "description": "SC-007 — Aucune fuite entre prestataires ou commerçants",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    },
+    {
+      "criterion_id": "SC-008",
+      "description": "SC-008 — OP-N74 clos ; écarts de sécurité consignés",
+      "proof_type": "automated_test",
+      "evidence": "",
+      "notes": "",
+      "pass_fail": null,
+      "verified_at": null,
+      "verified_by": null
+    }
+  ],
+  "negative_invariants": []
+}
