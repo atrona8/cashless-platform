@@ -262,7 +262,7 @@ describe('loadConfig', () => {
   });
 
   it.each([
-    ['DEVICE_TOKEN_TTL_SECONDS', ['59', '3601', '0', '-1', '9.5', 'quinze'], ['60', '3600']],
+    ['DEVICE_TOKEN_TTL_SECONDS', ['59', '901', '3601', '0', '-1', '9.5', 'quinze'], ['60', '900']],
     ['DEVICE_REFRESH_TOKEN_TTL_DAYS', ['0', '91', '1.5', 'trente'], ['1', '90']],
     ['DEVICE_CERT_VALIDITY_DAYS', ['0', '731', '-1', '365 '], ['1', '730']],
     ['CLOCK_TOLERANCE_SECONDS', ['301', '-1', '1e2', 'deux'], ['0', '300']],
@@ -271,6 +271,28 @@ describe('loadConfig', () => {
       expect(() => loadConfig({ ...PRODUCTION, [name]: value })).toThrow(new RegExp(name));
     for (const value of good)
       expect(() => loadConfig({ ...PRODUCTION, [name]: value })).not.toThrow();
+  });
+
+  it('DEVICE_TOKEN_TTL_SECONDS : 900 s au plus en production, 3600 s ailleurs (DRIFT-2)', () => {
+    expect(() => loadConfig({ ...PRODUCTION, DEVICE_TOKEN_TTL_SECONDS: '901' })).toThrow(
+      /DEVICE_TOKEN_TTL_SECONDS : entier de 60 à 900 attendu/,
+    );
+    expect(() => loadConfig({ ...PRODUCTION, DEVICE_TOKEN_TTL_SECONDS: '3600' })).toThrow(
+      /DEVICE_TOKEN_TTL_SECONDS/,
+    );
+    expect(
+      loadConfig({ ...PRODUCTION, DEVICE_TOKEN_TTL_SECONDS: '900' }).deviceTokenTtlSeconds,
+    ).toBe(900);
+    expect(loadConfig({ ...LOCAL, DEVICE_TOKEN_TTL_SECONDS: '3600' }).deviceTokenTtlSeconds).toBe(
+      3600,
+    );
+    expect(() => loadConfig({ ...LOCAL, DEVICE_TOKEN_TTL_SECONDS: '3601' })).toThrow(
+      /DEVICE_TOKEN_TTL_SECONDS/,
+    );
+    // Défaut inchangé hors production ; en production, la valeur reste obligatoire.
+    expect(loadConfig(LOCAL).deviceTokenTtlSeconds).toBe(900);
+    const { DEVICE_TOKEN_TTL_SECONDS: _ttl, ...withoutTtl } = PRODUCTION;
+    expect(() => loadConfig(withoutTtl)).toThrow(/DEVICE_TOKEN_TTL_SECONDS manquant/);
   });
 
   it.each(['IDEMPOTENCY_HMAC_KEY', 'ENROLLMENT_CODE_HMAC_KEY'])(

@@ -50,7 +50,11 @@ export interface AppConfig {
   deviceCaFakeKeyFile: string | null;
   /** Émetteur (`iss`) des jetons d'appareil (`DEVICE_TOKEN_ISSUER`, contracts/device-tokens.md). */
   deviceTokenIssuer: string;
-  /** Durée du jeton d'appareil en secondes (`DEVICE_TOKEN_TTL_SECONDS`, 60 à 3600 ; 900 en test, R-07). */
+  /**
+   * Durée du jeton d'appareil en secondes (`DEVICE_TOKEN_TTL_SECONDS`, R-07) : 60 à 900 en
+   * production (15 min au plus, spécification et contrat ; DRIFT-2 de la revue post-fusion), 60 à
+   * 3600 ailleurs ; 900 en test.
+   */
   deviceTokenTtlSeconds: number;
   /** Durée du jeton de rafraîchissement en jours (`DEVICE_REFRESH_TOKEN_TTL_DAYS`, 1 à 90 ; 30 en test, R-07). */
   deviceRefreshTokenTtlDays: number;
@@ -349,6 +353,12 @@ function filePath(
   return null;
 }
 
+/**
+ * Durée maximale du jeton d'appareil en production, en secondes : 15 min (spécification, contrat ;
+ * DRIFT-2 de la revue post-fusion de la mission 5a). Au-delà, refus de démarrer.
+ */
+export const DEVICE_TOKEN_TTL_MAX_PRODUCTION = 900;
+
 /** Entier borné : obligatoire en production, `testValue` ailleurs. */
 function boundedInt(
   env: NodeJS.ProcessEnv,
@@ -584,7 +594,7 @@ function deviceSettings(
     deviceTokenTtlSeconds: boundedInt(
       env,
       'DEVICE_TOKEN_TTL_SECONDS',
-      { min: 60, max: 3600, test: 900 },
+      { min: 60, max: production ? DEVICE_TOKEN_TTL_MAX_PRODUCTION : 3600, test: 900 },
       production,
     ),
     deviceRefreshTokenTtlDays: boundedInt(
