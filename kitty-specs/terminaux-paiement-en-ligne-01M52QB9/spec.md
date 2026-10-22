@@ -11,7 +11,7 @@
 
 ## Contexte
 
-Depuis la mission 5a, un terminal est enrôlé, reconnu à chaque requête par trois preuves et reçoit sa configuration. Il n'encaisse encore rien. Cette mission livre l'encaissement en ligne : les vendeurs qui se connectent au terminal par un code PIN, le catalogue d'articles de chaque point de vente, le paiement par bracelet en un seul aller-retour (ou en deux temps), l'annulation d'une vente, le paiement par QR (commerçant et client) et l'identification d'un festivalier au guichet, qui fixe ses plafonds de recharge.
+Depuis la mission 5a, un terminal est enrôlé, reconnu à chaque requête par trois preuves et reçoit sa configuration. Il n'encaisse encore rien. Cette mission livre l'encaissement en ligne : les vendeurs qui se connectent au terminal par un code PIN, le catalogue d'articles de chaque point de vente, le paiement par bracelet en un seul aller-retour (ou en deux temps), l'annulation d'une vente et le paiement par QR (commerçant et client). L'identification d'un festivalier au guichet, d'abord prévue ici, part à la mission 10 (décision du porteur au plan, 22/10/2026) : elle exige le compte du festivalier au numéro vérifié, qui n'existe pas encore.
 
 Elle lève aussi OP-N74, hérité de la mission 5a : un code d'enrôlement et un enrôlement ne relisent pas encore l'état de l'événement ni du point de vente.
 
@@ -160,7 +160,9 @@ Avec un QR commerçant, le terminal affiche un QR (montant, jeton à usage uniqu
 
 ---
 
-### User Story 7 - L'agent du guichet identifie un festivalier (Priority: P2)
+### User Story 7 - L'agent du guichet identifie un festivalier (Priority: P2) — reportée à la mission 10
+
+> **Reportée à la mission 10** (décision du porteur au plan, 22/10/2026, `DM-01M5HQE0V4PC23YBJKEZTEQVET`) : la base n'a ni numéro vérifié du festivalier ni lien entre un agent et un festivalier ; les règles « compte au numéro vérifié » et « l'agent n'identifie pas son propre portefeuille » ne sont pas tenables avant les comptes festivaliers. Sans identification, tout portefeuille reste `NONE` : les plafonds les plus stricts s'appliquent. Le texte ci-dessous reste comme référence pour la mission 10.
 
 Un `CASHIER` ou un `ORGANIZER_ADMIN` contrôle la pièce d'identité d'un festivalier qui a un compte au numéro vérifié, et enregistre l'identification. Deux administrateurs peuvent la révoquer.
 
@@ -234,9 +236,9 @@ Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôleme
 | FR-018 | QR commerçant | En tant que vendeur, je veux créer une demande de paiement affichée en QR (montant, jeton à usage unique, 60 s), que le festivalier paie dans son app ; je peux l'annuler tant qu'elle n'est pas payée. | Medium | Open |
 | FR-019 | QR client | En tant que vendeur, je veux présenter au paiement le QR à usage unique (60 s) affiché par l'app du festivalier, avec le montant de la vente. | Medium | Open |
 | FR-020 | Jetons QR | En tant que plateforme, je veux que le serveur ne garde que l'empreinte d'un jeton QR, qu'un jeton serve une seule fois, et qu'un jeton expiré, utilisé, annulé ou inconnu soit refusé sans dire lequel ; les deux sens sont toujours permis, en ligne seulement. | High | Open |
-| FR-021 | Identification au guichet | En tant que `CASHIER` ou `ORGANIZER_ADMIN`, je veux identifier un festivalier au numéro vérifié (type de pièce, pays d'émission, 4 derniers caractères, date d'expiration ; méthode `DESK`), sauf pour un portefeuille dont je suis titulaire, afin de relever ses plafonds. | Medium | Open |
-| FR-022 | Révocation d'une identification à deux | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux demander la révocation d'une identification avec un motif ; elle n'est exécutée qu'à l'approbation d'une seconde personne distincte (action `KYC_REVOCATION`). | Medium | Open |
-| FR-023 | Niveau d'identification appliqué | En tant que plateforme, je veux que le niveau d'identification soit calculé à la date de chaque opération et que les plafonds du profil de législation s'appliquent en conséquence ; une annulation qui rend un solde n'est jamais refusée pour le plafond de solde. | Medium | Open |
+| FR-021 | Identification au guichet | En tant que `CASHIER` ou `ORGANIZER_ADMIN`, je veux identifier un festivalier au numéro vérifié (type de pièce, pays d'émission, 4 derniers caractères, date d'expiration ; méthode `DESK`), sauf pour un portefeuille dont je suis titulaire, afin de relever ses plafonds. | Medium | Deferred (mission 10) |
+| FR-022 | Révocation d'une identification à deux | En tant qu'`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`, je veux demander la révocation d'une identification avec un motif ; elle n'est exécutée qu'à l'approbation d'une seconde personne distincte (action `KYC_REVOCATION`). | Medium | Deferred (mission 10) |
+| FR-023 | Niveau d'identification appliqué | En tant que plateforme, je veux que le niveau d'identification soit calculé à la date de chaque opération et que les plafonds du profil de législation s'appliquent en conséquence ; une annulation qui rend un solde n'est jamais refusée pour le plafond de solde. | Medium | Deferred (mission 10) |
 | FR-024 | Enrôlement et état de l'événement (OP-N74) | En tant que plateforme, je veux que la création d'un code d'enrôlement et l'enrôlement soient refusés pour un événement `CLOSED` ou un point de vente supprimé, et, dès `CLOSING`, pour les modes `CATALOG_POS` et `KEYPAD_TPE` (le mode `TOPUP_DESK` reste permis jusqu'à `CLOSED`), sans rien écrire. | High | Open |
 | FR-025 | Consultation d'un paiement | En tant que terminal ou personne habilitée, je veux consulter un paiement de mon périmètre (montant, moyen, vendeur, lignes, annulation éventuelle). | Medium | Open |
 | FR-026 | Audit | En tant qu'auditeur, je veux une ligne d'audit pour chaque création, modification, désactivation et déblocage d'un vendeur, chaque ouverture et fermeture de session, chaque échec et blocage de PIN, chaque modification du catalogue, chaque annulation, chaque identification et chaque révocation. | High | Open |
@@ -252,7 +254,7 @@ Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôleme
 | NFR-004 | Pas d'énumération des vendeurs | PIN faux, vendeur inconnu, vendeur d'un autre commerçant : même statut et même corps de réponse. | Security | High | Open |
 | NFR-005 | Un passage, une vente | 20 paiements simultanés avec la même lecture ou le même `tap_id` : exactement 1 vente ; 20 paiements simultanés avec le même jeton QR : exactement 1 vente ; 20 annulations simultanées d'une vente : exactement 1 annulation. | Reliability | High | Open |
 | NFR-006 | Tout ou rien | 0 vente sans ses lignes, 0 ligne sans vente, 0 passage consommé par un paiement refusé : vérifié sur chaque refus. | Reliability | High | Open |
-| NFR-007 | Isolation | 0 vendeur, session, article, vente ou identification d'un autre prestataire ou commerçant lisible ou modifiable, sur chaque route et chaque nouvelle table. | Security | High | Open |
+| NFR-007 | Isolation | 0 vendeur, session, article, vente ou demande de paiement d'un autre prestataire ou commerçant lisible ou modifiable, sur chaque route et chaque nouvelle table. | Security | High | Open |
 | NFR-008 | Aucun jeton QR en clair | 0 jeton QR en clair dans la base, les journaux et l'audit ; seules les empreintes sont gardées. | Security | High | Open |
 | NFR-009 | Pas de faux en production | Les garde-fous de démarrage des missions 4 et 5a restent actifs ; aucun nouveau faux n'est atteignable en production, un test par faux ajouté. | Security | High | Open |
 | NFR-010 | Tests existants verts | Suites de la base, tests des missions 1 à 5a et rejeu du scénario de référence verts en CI à chaque commit. | Reliability | High | Open |
@@ -268,10 +270,10 @@ Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôleme
 | C-005 | Pas de hors ligne | Snapshot, lots hors ligne, ventes hors ligne et vérification du PIN sans réseau relèvent de la mission 7 ; un terminal de cette mission encaisse en ligne seulement. | Business | High | Open |
 | C-006 | Pas d'application ni d'écran | L'application du festivalier (mission 10), le back-office web (mission 11) et l'application du terminal (mission 12) ne sont pas dans cette mission ; le terminal de test et des appels d'API servent aux tests. | Business | High | Open |
 | C-007 | Pas d'intention de paiement | Les intentions de paiement des caisses tierces et le mode `PAIRED_TPE` sont V2 (ADR-43) : refusés. | Business | High | Open |
-| C-008 | Pas de vérification en ligne de l'identité | Seule la méthode `DESK` est servie ; la méthode `ONLINE` reste prévue par l'interface sans être implémentée (§6.3). | Business | Medium | Open |
+| C-008 | Pas d'identification au guichet | L'identification d'un festivalier (`kyc_verification`, méthodes `DESK` et `ONLINE`) relève de la mission 10 ; la 5b retire seulement à l'API les écritures directes dans la table (renforcement). | Business | Medium | Open |
 | C-009 | Écart de sécurité soumis au porteur | Tout écart au plan ou à la spécification qui affaiblit la sécurité est soumis au porteur avant d'être codé, avec le risque et les options ; un écart qui renforce la sécurité est fait puis consigné. | Business | High | Open |
 | C-010 | Dette de sécurité nommée | Chaque écart de sécurité accepté a une entrée dans `docs/POINTS_OUVERTS.md` et une décision dans `docs/DECISIONS_ADR.md` (risque, raison, mission qui le lève, condition de levée), un test qui échoue si la limite s'élargit, et un report dans `PROMPTS-A-ENVOYER.md` et `PRD.md` pour la mission qui en hérite. | Business | High | Open |
-| C-011 | Révocation d'une identification à deux | Le contrat (`revokeKycVerification`) exige deux personnes ; SPECIFICATION §6.3 dit « un administrateur PEUT révoquer ». Contradiction signalée ; le contrat prime (§0.3) et il est le plus sûr. | Technical | High | Open |
+| C-011 | Révocation d'une identification à deux | Le contrat (`revokeKycVerification`) exige deux personnes ; SPECIFICATION §6.3 dit « un administrateur PEUT révoquer ». Contradiction signalée ; le contrat prime (§0.3) et il est le plus sûr. Transmis à la mission 10 avec l'identification. | Technical | High | Open |
 
 ### Key Entities
 
@@ -290,7 +292,7 @@ Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôleme
 
 ### Measurable Outcomes
 
-- **SC-001** : un parcours complet (créer un vendeur et le catalogue, ouvrir une session, payer par bracelet en un aller-retour et en deux temps, payer par QR commerçant et par QR client, annuler, identifier un festivalier puis révoquer l'identification à deux) se déroule par l'API sans intervention directe en base.
+- **SC-001** : un parcours complet (créer un vendeur et le catalogue, ouvrir une session, payer par bracelet en un aller-retour et en deux temps, payer par QR commerçant et par QR client, annuler) se déroule par l'API sans intervention directe en base.
 - **SC-002** : 100 % des ventes du parcours sont attribuées au bon vendeur, et 100 % des ventes au catalogue ont des lignes dont la somme fait le montant.
 - **SC-003** : aucun PIN, empreinte de PIN ni jeton QR en clair n'est retrouvé dans la base, les journaux ni les réponses après le parcours.
 - **SC-004** : un vendeur bloqué après 5 échecs ne peut plus ouvrir de session sur aucun terminal tant que le commerçant ne l'a pas débloqué.
@@ -321,3 +323,4 @@ Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôleme
 | 6 | États de l'événement qui bloquent l'enrôlement (OP-N74) | Dès `CLOSING` pour `CATALOG_POS` et `KEYPAD_TPE` ; `TOPUP_DESK` jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout — 22/10/2026 (`DM-01M5HKDXSTFR5JS88GZ4B2EA5J`) |
 | 7 | Règles du PIN | 6 chiffres ; 5 échecs par vendeur, tous terminaux, bloquent jusqu'au déblocage par le commerçant ; session de 12 h au plus — 22/10/2026 (`DM-01M5HKT8GW5ZCAESAJC6WV5S6H`) |
 | 8 | Résumé d'intention | Confirmé — 22/10/2026 |
+| 9 | Décisions de plan (22/10/2026) | Pile du document 08 (Node 22, `argon2` 0.44.0) ; secret hors base pour le PIN ; session de vendeur du terminal, identifiant renvoyé ; côté festivalier du QR derrière le port d'identité (mission 10 pour la production) ; identification au guichet reportée à la mission 10 — détail : `research.md` et `decisions/` |
