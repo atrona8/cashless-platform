@@ -69,16 +69,19 @@ function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
 }
 
-/** Base de comparaison : la branche principale (fin de la mission 4), locale ou distante. */
+/**
+ * Base de comparaison : la fin de la mission 4, fusion de la PR #3 dans main. Une base calculée
+ * (merge-base avec main) devenait le commit courant une fois la mission 5a fusionnée dans main, et le
+ * test échouait sur main et sur les branches qui en partent (CI de main, 22/10/2026).
+ */
+const MISSION_4_END = '89d46518ba19957351e12a4905e4fb9a4855f56d';
+
 function mainBase(): string {
-  for (const ref of ['main', 'origin/main']) {
-    try {
-      return git('merge-base', 'HEAD', ref).trim();
-    } catch {
-      // essai suivant
-    }
+  try {
+    return git('rev-parse', '--verify', `${MISSION_4_END}^{commit}`).trim();
+  } catch {
+    throw new Error('fin de la mission 4 introuvable : historique git complet exigé par ce test');
   }
-  throw new Error('branche principale introuvable : historique git complet exigé par ce test');
 }
 
 describe('SC-007 : les routes de terminal de la mission 4 servies par l’identité réelle', () => {
