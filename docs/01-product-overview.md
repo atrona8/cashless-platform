@@ -79,7 +79,7 @@ fil du découpage (`PROMPTS-A-ENVOYER.md`).
   battement de cœur, back-office des terminaux (liste, fiche, suspension, réactivation, révocation par une personne) ;
   dettes de base de la mission 4 levées (OP-N44, N50, N54, N59, N62, N63) et OP-N42. Limites : autorité des terminaux
   et signataire des jetons en faux, refusés en production (OP-N73, mission 7) ; pas de limite en amont de l'enrôlement
-  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR, identification au guichet) : 🖊 spécifié le 22/10/2026 (mission 5b) ; app terminal
+  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR, identification au guichet) : 📋 plan finalisé le 22/10/2026 (mission 5b ; identification au guichet reportée à la mission 10) ; app terminal
   conditionnée à la validation NFC sur vrais bracelets
 - Mission(s) associée(s) : `identite-enrolement-terminaux-01M52R6H` (Identité et enrôlement des terminaux) ;
   `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, spécification non commencée)

@@ -162,7 +162,7 @@ sequenceDiagram
 
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
-| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) |
+| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) ; `terminaux-paiement-en-ligne-01M52QB9` (📋 planifiée : vente attribuée au vendeur, lignes, annulation, QR — flux locaux dans [`sequence.md`](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/sequence.md)) |
 | Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (✅ mergée le 21/10/2026, dans `main` par la PR #4 : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |

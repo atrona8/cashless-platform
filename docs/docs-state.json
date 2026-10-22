@@ -37,11 +37,11 @@
       "spec_index_a_jour": true
     },
     "terminaux-paiement-en-ligne-01M52QB9": {
-      "statut": "spécifiée",
-      "verifie_le": "2026-10-22T11:30:00Z",
-      "addendum_plan_applique": false,
+      "statut": "planifiée",
+      "verifie_le": "2026-10-22T12:45:00Z",
+      "addendum_plan_applique": true,
       "addendum_review_applique": false,
-      "spec_index_a_jour": false
+      "spec_index_a_jour": true
     }
   }
 }
