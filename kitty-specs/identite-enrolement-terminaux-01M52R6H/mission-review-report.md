@@ -395,3 +395,21 @@ Séquence après fusion : revue de mission → rétrospective → constats. `ret
 - `spec-kitty retrospect summary` : vue d'ensemble des missions (lecture seule)
 - `spec-kitty agent retrospect synthesize --mission identite-enrolement-terminaux-01M52R6H` : propositions (à blanc par
   défaut ; `--apply` pour les appliquer)
+
+## Suivi après la revue (22/10/2026)
+
+**Verdict inchangé : PASS WITH NOTES.** Les deux renforcements décidés par le porteur le 21/10/2026 sont faits dans le
+correctif post-fusion n° 1 (`post-merge-fix-1.md`), approuvé par une relecture distincte (`post-merge-fix-1-review.md`) :
+- SEC-2 (`814710c`) : `code_hash` illisible par `cashless_app` dans `device_enrollment_code` et, en renforcement en
+  plus, dans `device_enrollment_attempt` ; test `tests_device_rights.sql` §1 bis, qui échoue si la limite s'élargit
+  (vérifié par le relecteur). La confiance de la base dans l'auteur et les preuves reste consignée (ADR-105, OP-N56).
+- DRIFT-2 (`941434f`) : jeton d'appareil de 900 s au plus en production, refus de démarrer au-delà ; test de
+  `config.spec.ts`.
+- Tests au moment du correctif : pgTAP 2083/2083 ; Jest 1704 passés sur 1711 (6 ignorés, une instabilité connue de
+  `claim-code-order.spec.ts`, verte relancée seule).
+- Observations du relecteur, non bloquantes : O2 (la protection ne vaut pas contre une API qui détient
+  `ENROLLMENT_CODE_HMAC_KEY`, déjà dit dans ADR-105) ; O3 (contrôle de `exp - iat` à la vérification du jeton, défense
+  en profondeur à prévoir avec le vrai signataire, mission 7, OP-N73).
+
+Open items restants : 1, 2, 4, 5, 7 à 10 (items 3 et 6 levés). Fichiers à faire relire par une personne :
+`post-roles.sql` §4b, `tests_device_rights.sql` §1 bis, `config.ts`.
