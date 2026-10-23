@@ -55,6 +55,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N74 | Enrôlement accepté sur un code lié à un événement clos (`CLOSED`) ou à un point de vente supprimé depuis l'émission : la base ne relit pas leur état (cas limite de la spécification de la mission 5a non livré ; ADR-120) | Non | Non (le terminal enrôlé n'encaisse rien avant la mission 5b) | Mission 5b (paiement en ligne) : décision du porteur du 21/10/2026 |
 | OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
+| OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -732,6 +733,20 @@ la mission 5a (SEC-1). **Bloque la production : non ; levée par la mission 7 ; 
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_purge_window.sql` (aucune purge
   ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h) et les listes figées de
   `tests_execute_grants.sql`.
+
+### OP-N77 — Secrets de l'API exigés par tous les processus (23 octobre 2026)
+
+Constaté par la relecture de WP08 de la mission 5b (constat 2) ; défaut antérieur à la mission. ADR-125.
+**Bloque la production : non ; levée : mission 13 (recette V1).**
+
+- **Constat.** `loadConfig` est commun à tous les processus ; en production, les trois secrets HMAC de l'API sont
+  obligatoires dans l'environnement des processus des clés, d'administration des clés et de personnalisation.
+- **Risque.** Un processus compromis qui n'a pas besoin de ces secrets les obtient quand même (empreintes des PIN,
+  codes d'enrôlement, registre d'idempotence) : surface d'exposition plus large que nécessaire.
+- **Condition de levée.** Chaque processus n'exige et ne reçoit que ses propres secrets ; test qui le prouve par
+  processus.
+- **Test qui échoue si la limite s'élargit** : `apps/api/test/unit/config.spec.ts` (liste fermée des secrets
+  obligatoires en production).
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

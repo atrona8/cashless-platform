@@ -288,7 +288,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   au rafraîchissement d'un jeton d'appareil réexaminée selon les pertes réseau mesurées (OP-N65, ADR-108, mission 5a) ;
   identité de l'app Android lue dans la liste logicielle de Key Attestation, réexaminée sur les appareils cibles
   (OP-N67, ADR-110, mission 5a) ; limite de débit en amont sur l'enrôlement des terminaux, sans compte (OP-N72,
-  ADR-117, mission 5a, confirmé par le porteur le 21/10/2026) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
+  ADR-117, mission 5a, confirmé par le porteur le 21/10/2026) ; secrets de l'API lus par processus, chacun ne recevant que les siens (OP-N77, ADR-125,
+  mission 5b, décision du porteur du 23/10/2026) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
   les appareils cibles ; à la mise en production, purge des lignes `api_idempotency` antérieures à T + 720 h (OP-N54,
   OP-N71) et réglage de `DEVICE_REQUEST_AUTHORITIES` (ADR-113).
 

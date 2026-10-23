@@ -400,6 +400,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > limite de débit au répartiteur (ou à la passerelle) sur cette route, la vérifier sur l'environnement de recette,
 > puis lever la limite (bornes : `tests_enrollment_limits.sql` §3 et §5).
 >
+> **Hérité de la mission 5b, OP-N77 (ADR-125 ; décision du porteur du 23/10/2026)** : `loadConfig` est commun à tous
+> les processus ; en production, `IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY` et `VENDOR_PIN_SECRET` sont exigés
+> aussi par les processus des clés et de personnalisation, qui ne s'en servent pas. Faire lire à chaque processus ses
+> seuls secrets, le prouver par un test par processus, puis lever le point (borne : `config.spec.ts`).
+>
 > **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
 > par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que
 > leur compte est nul. Fixer aussi `DEVICE_REQUEST_AUTHORITIES` (autorités `host[:port]` de l'API, sans joker ;

@@ -316,3 +316,8 @@ attribution, ne consomme pas le passage, et laisse au registre `REJECTED` avec s
 et `assert_wallet_payable` sur chaque moyen concerné ; vendeur attribué par `record_sale_attribution` seulement ;
 `getPayment` sans repli d'un chemin vers l'autre, `404` hors périmètre ; aucun jeton ni empreinte de jeton dans une
 réponse, un journal ou `api_idempotency`.
+
+## Reports de l'orchestrateur (23/10/2026, relecture WP08 cycle 1)
+- Constat 3 : `<seq>` de la clé `<serial>:<seq>` n'a pas de borne haute (`device-key.ts:24`, motif `[0-9]{4,}`) ;
+  au-delà de 2^63−1, `record_device_seq` lève `22003` → `500` au lieu de `422 VALIDATION_FAILED`. Borner
+  `seq ≤ 9223372036854775807` dans `parseDeviceKey` (retouche hors carte justifiée) ; test aux deux bornes.

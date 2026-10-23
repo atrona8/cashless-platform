@@ -255,3 +255,7 @@ verrous ; aucune règle d'annulation réécrite en API à la place de la base (C
 - ADR-123 (décision du porteur, 23/10) : refus d'annulation → `422 REVERSAL_NOT_ALLOWED` ; fenêtre seule dépassée
   → `409 REVERSAL_WINDOW_EXPIRED` (`CL040`, levé après terminal et vendeur). Remplace le `403` du texte ci-dessus.
   Tests : autre vendeur hors fenêtre → `422` ; bon vendeur hors fenêtre → `409`.
+- Relecture WP04 cycle 1 (constat 4) : l'API insère `approval_token_use` sans renseigner `used_at` (valeur par défaut
+  `clock_timestamp()`), remplit `target_id` avec la vente annulée et consomme le jeton **avant**
+  `assert_reversible` ; la vérification du JWT d'approbation par l'API reste indispensable (la preuve en base borne le
+  rejeu, elle ne la remplace pas). Test : jeton d'une autre vente → refus.

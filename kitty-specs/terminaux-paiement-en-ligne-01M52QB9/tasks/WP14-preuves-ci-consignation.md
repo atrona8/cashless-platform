@@ -227,3 +227,10 @@ chaque nouvelle table couvertes ; secrets cherchés sous toutes leurs formes, da
 `$argon2id$` confiné à `vendor.pin_hash` ; latence en série, seuils exacts (200/500 ms, 200 paiements) ; 20 envois
 simultanés → 1 dans chaque cas, sans écriture partielle ; CI : rien retiré, latence lancée seule ; OP-N74 levé avec ses
 tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ; liste T072 complète.
+
+## Reports de l'orchestrateur (23/10/2026)
+- Relecture WP08 cycle 1 (constat 4) : `argon2-supply-chain.spec.ts` doit échouer si une entrée nouvelle apparaît dans
+  l'arbre d'argon2 : comparer l'ensemble des transitives résolues à `EXPECTED_NEW_LOCK_ENTRIES` (qui inclut
+  `@epic-web/invariant@1.0.0`, acceptée par le porteur le 23/10, R-01).
+- Consignation à vérifier : ADR-124 (clé relâchée sur `DEBIT_AUTHORITY_*`, SPECIFICATION §10.2 mise à jour), ADR-125 /
+  OP-N77 (secrets exigés par tous les processus, mission 13).

@@ -215,3 +215,15 @@ retrait et son test ; `REVOKE` de table avant `GRANT` par colonne ; `vendor_publ
 fonction accordée hors de la liste du contrat (toute extra est justifiée et soumise) ; signatures égales à celles de
 `pg_proc` ; listes des autres rôles inchangées ; borne OP-N76 exacte ; `device` réduit aux quatre colonnes ;
 `roles.sql` et les `.sql` générés intacts ; le rejeu de `post-roles.sql` est idempotent.
+
+## Reports de l'orchestrateur (23/10/2026, relecture WP04 cycle 1)
+- Constat 1 : `roles.sql:15` donne `INSERT, UPDATE` sur toutes les tables à `cashless_app` ; un `INSERT` direct dans
+  `sale_attribution` contourne `record_sale_attribution` et peut attribuer une vente à un autre vendeur (qui pourrait
+  ensuite l'annuler en mode `VENDOR`). Dans `post-roles.sql` : `REVOKE INSERT, UPDATE ON sale_attribution FROM
+  cashless_app` ; test qui échoue si le droit revient. Durcissement à évaluer ici : `vendor_id` dans la clé composite
+  (`UNIQUE (id, device_id, operator_id, vendor_id)` sur `vendor_session`) ; toute retouche de 0033 est hors carte,
+  la justifier ou la soumettre.
+- Constats 2 et 3 (tests manquants de `tests_payments.sql`, mutants survivants) : `assert_reversible` avec une session
+  expirée (`expires_at` dépassé) → `CL036` ; mode `SUPERVISOR_DEVICE` avec un valideur qui a un autre rôle que
+  `SUPERVISOR` sur l'événement (`CASHIER`, `ORGANIZER_ADMIN`) → `CL036`. Retouche hors carte justifiée de
+  `tests_payments.sql`.

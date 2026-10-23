@@ -1750,3 +1750,32 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conditions de bornage.** Tests de WP04 (ordre : autre vendeur hors fenêtre → `CL036`, jamais `CL040`), WP12
   (statuts HTTP) et WP13 (réponse unique `422` du QR client, aucun corps différent selon la cause).
 - **Références.** `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP04-…`, `WP08-…`, `WP12-…`, `WP13-…`.
+
+## ADR-124 — Idempotence : un refus non définitif (`DEBIT_AUTHORITY_*`) relâche la clé, sur toutes les routes
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur après la relecture de WP08 de la mission 5b, constat 1).
+  Sans effet de sécurité : rien n'est écrit lors de ces refus.
+- **Contexte.** La passe contradictoire du plan de la 5b (A14, `research.md`) a décidé de ne plus enregistrer les 409
+  non définitifs. WP08 l'applique dans l'intercepteur commun : la décision vaut donc aussi pour les routes existantes
+  (activation, caution, libération, confirmation au guichet), où SPECIFICATION §10.2 prévoyait jusque-là d'enregistrer
+  le refus et de le rejouer à l'identique.
+- **Décision.** `DEBIT_AUTHORITY_EDGE` et `DEBIT_AUTHORITY_MOVING` sont des refus transitoires : la clé est relâchée,
+  rien n'est enregistré, et un nouvel essai avec la même clé s'exécute (il peut réussir quand l'autorité est revenue au
+  central). Liste fermée. Tout autre refus 4xx reste enregistré et rejoué. SPECIFICATION §10.2 est mise à jour.
+- **Conditions de bornage.** `apps/api/test/unit/device-route/device-key.spec.ts` (la liste `NON_FINAL_CODES` est
+  exactement ces deux codes ; un ajout fait échouer le test). Ces refus sont levés dans la transaction métier, annulée.
+- **Références.** `apps/api/src/idempotency/idempotency.interceptor.ts`, `device-key.ts` ;
+  `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP08-…/review-cycle-1.md`.
+
+## ADR-125 — Secrets de l'API exigés par tous les processus : exposition acceptée jusqu'à la mission 13
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur après la relecture de WP08 de la mission 5b, constat 2 ;
+  défaut antérieur à la mission). Affaiblissement résiduel consigné : OP-N77.
+- **Contexte.** `loadConfig` est commun à tous les processus (`bootstrap.ts`). En production, `IDEMPOTENCY_HMAC_KEY`,
+  `ENROLLMENT_CODE_HMAC_KEY` et, depuis WP08, `VENDOR_PIN_SECRET` sont obligatoires aussi dans l'environnement des
+  processus des clés, d'administration des clés et de personnalisation, qui ne s'en servent pas.
+- **Décision.** On garde ce schéma dans la mission 5b ; lecture des secrets par processus (chacun n'exige et ne reçoit
+  que les siens) dans la mission 13 (recette V1), proposée par l'agent.
+- **Conditions de bornage.** `apps/api/test/unit/config.spec.ts` (liste des secrets obligatoires en production, secrets
+  distincts deux à deux, démarrage refusé sans eux) ; aucun nouveau secret ne s'ajoute à `loadConfig` sans entrée ici.
+- **Références.** `apps/api/src/config/config.ts` ; OP-N77.
