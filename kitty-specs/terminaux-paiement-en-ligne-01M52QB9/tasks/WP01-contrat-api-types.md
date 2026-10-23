@@ -1,20 +1,22 @@
 ---
 work_package_id: WP01
-title: "Contrat d'API et types"
+title: Contrat d'API et types
 dependencies: []
 requirement_refs: [FR-027, C-003, C-004, C-007, FR-024, FR-017]
 planning_base_branch: feat/terminaux-paiement-en-ligne
 merge_target_branch: feat/terminaux-paiement-en-ligne
 branch_strategy: Planning artifacts for this mission were generated on feat/terminaux-paiement-en-ligne. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/terminaux-paiement-en-ligne unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-terminaux-paiement-en-ligne-01M52QB9
+base_commit: bd397f19aa1623d54f72edab02a3eded981b3d33
+created_at: '2026-10-22T15:14:06.362384+00:00'
 subtasks: [T001, T002, T003, T004, T005]
-phase: "Phase 1 - Contrat et base de données"
+phase: Phase 1 - Contrat et base de données
+agent: claude
 history:
 - timestamp: '2026-10-22T14:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks-packages
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: packages/contracts/
 create_intent: []
 execution_mode: code_change
@@ -25,6 +27,7 @@ owned_files:
 - packages/contracts/src/**
 - apps/api/src/http/messages.fr.json
 - apps/api/src/http/messages.en.json
+role: implementer
 tags: []
 tracker_refs: []
 ---

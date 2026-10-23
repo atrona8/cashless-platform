@@ -1,24 +1,27 @@
 ---
 work_package_id: WP03
-title: "Catalogue versionné et lignes de vente (migration 0032)"
+title: Catalogue versionné et lignes de vente (migration 0032)
 dependencies: []
 requirement_refs: [FR-007, FR-008, FR-011, FR-012, FR-026, NFR-006, NFR-007, C-001, C-002]
 planning_base_branch: feat/terminaux-paiement-en-ligne
 merge_target_branch: feat/terminaux-paiement-en-ligne
 branch_strategy: Planning artifacts for this mission were generated on feat/terminaux-paiement-en-ligne. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/terminaux-paiement-en-ligne unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-terminaux-paiement-en-ligne-01M52QB9
+base_commit: b43adc75815fa3d38a3bdb526349c707c06ce6c2
+created_at: '2026-10-22T15:15:32.233378+00:00'
 subtasks: [T011, T012, T013, T014, T015]
-phase: "Phase 1 - Contrat et base de données"
+phase: Phase 1 - Contrat et base de données
+agent: claude
 history:
 - timestamp: '2026-10-22T14:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks-packages
 agent_profile: implementer-ivan
-role: implementer
-agent: claude
 authoritative_surface: packages/ledger-sql/
 create_intent: [packages/ledger-sql/migrations/0032_catalog.sql, packages/ledger-sql/tests/tests_catalog.sql]
 execution_mode: code_change
 owned_files: [packages/ledger-sql/migrations/0032_catalog.sql, packages/ledger-sql/tests/tests_catalog.sql]
+role: implementer
 tags: []
 tracker_refs: []
 ---
