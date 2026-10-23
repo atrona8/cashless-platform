@@ -247,3 +247,12 @@ sur **tous** les modes, et `recorded_at` + fenêtre à l'heure de la base en mod
 `journal_transaction_reverses_once` ; `approval_token_use` : exactement un appelant, session du terminal appelant,
 règle « deux personnes » intacte pour l'appelant personne ; liste des actions = 0011 + `SALE_REVERSAL` ;
 `search_path` et `REVOKE … FROM PUBLIC` sur chaque fonction ; aucun `GRANT` ; aucun fichier généré modifié.
+
+## Reports de l'orchestrateur (23/10/2026)
+
+- ADR-123 (décision du porteur, 23/10) : `assert_reversible` contrôle d'abord terminal, vendeur, type `PURCHASE`,
+  non annulée (`CL036` / `CL035`), et **seulement ensuite** la fenêtre : dépassée → nouveau `CL040` (au lieu de
+  `CL036`). Tests : autre vendeur hors fenêtre → `CL036` (jamais `CL040`) ; bon vendeur hors fenêtre → `CL040` ;
+  mode `SUPERVISOR` : fenêtre levée, donc jamais `CL040`.
+- Reçu de WP03 (approuvé) : la clé de `device_catalog_served` est `(device_id, pos_id, version)` ; signatures de
+  `check_sale_lines` / `record_sale_lines` inchangées.

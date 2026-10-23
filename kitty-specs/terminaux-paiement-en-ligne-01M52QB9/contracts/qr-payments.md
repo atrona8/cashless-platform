@@ -49,7 +49,7 @@ qui confirme (A10).
 2. **Terminal** `POST /payments` avec `customer_qr_token` : dans la transaction de la vente,
    `lock_customer_qr_token(nonce_hash, device)` (demande `FOR UPDATE`, `CUSTOMER_QR`, `PENDING`, non expirée, même
    événement que le terminal, portefeuille `ACTIVE`) rend le portefeuille ; moteur ; `confirm_payment_request(id, tx)`.
-   Sinon `409 PAYMENT_REQUEST_NOT_PENDING`.
+   Sinon `CL037`, traduit sur cette route en `422 QR_TOKEN_INVALID`, réponse unique (ADR-123).
 
 ## Règles communes
 

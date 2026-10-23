@@ -250,3 +250,8 @@ verrous ; aucune règle d'annulation réécrite en API à la place de la base (C
 - Relecture WP01 cycle 1, mineur 2 : la fenêtre d'annulation se contrôle **après** le vendeur et le terminal, sinon
   `409 REVERSAL_WINDOW_EXPIRED` révélerait l'âge d'une vente à un autre vendeur. Compléter la description de
   `reversePayment` au contrat (retouche hors carte justifiée) et prouver l'ordre par un test.
+
+## Reports de l'orchestrateur (23/10/2026)
+- ADR-123 (décision du porteur, 23/10) : refus d'annulation → `422 REVERSAL_NOT_ALLOWED` ; fenêtre seule dépassée
+  → `409 REVERSAL_WINDOW_EXPIRED` (`CL040`, levé après terminal et vendeur). Remplace le `403` du texte ci-dessus.
+  Tests : autre vendeur hors fenêtre → `422` ; bon vendeur hors fenêtre → `409`.

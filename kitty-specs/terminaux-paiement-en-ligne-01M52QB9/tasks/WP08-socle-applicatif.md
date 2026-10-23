@@ -299,3 +299,6 @@ nommée ; registre sans fichier index et matrice inchangée en contenu.
   Prouver par un test d'intégration qu'un refus `CL031` à l'enrôlement est compté et audité, sans terminal créé ni
   code consommé. Si la lane n'a pas encore 0035 (WP06 non fusionné), écrire le test et le signaler : l'orchestrateur
   le jouera sur la combinaison des lanes.
+- ADR-123 : `sqlstate-map.ts` : `CL036` → `422 REVERSAL_NOT_ALLOWED` (et non 403) ; nouveau `CL040` →
+  `409 REVERSAL_WINDOW_EXPIRED`. La traduction de `CL037` en `422 QR_TOKEN_INVALID` sur le QR client se fait dans la
+  route (WP13), pas dans la table globale.

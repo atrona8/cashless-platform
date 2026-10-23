@@ -243,3 +243,8 @@ Le relecteur distinct vérifie :
 - la configuration : version servie = dernière version, écrite une fois par terminal et par version, `config_id`
   stable, ETag qui change ; aucune donnée d'un autre point de vente dans `items` ;
 - aucune régression des tests de configuration de la 5a.
+
+## Reports de l'orchestrateur (23/10/2026)
+
+- Reçu de WP03 (approuvé) : `device_catalog_served` est unique sur `(device_id, pos_id, version)` ; « dernière
+  version servie » s'entend pour ce terminal **et** ce point de vente.

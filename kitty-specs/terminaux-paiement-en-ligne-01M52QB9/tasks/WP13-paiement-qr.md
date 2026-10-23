@@ -216,3 +216,8 @@ en production (test) ; aucune écriture directe dans `payment_request` (droits r
   d'oracle). Ce lot retire le `404` de `openapi.yaml` (retouche hors carte justifiée) et le prouve par un test.
 - Relecture WP01 cycle 1, mineur 3 : envisager `vendor_session_id` `required` sur `createPaymentRequest` si la base
   l'exige (WP05) ; sinon le justifier.
+
+## Reports de l'orchestrateur (23/10/2026)
+- ADR-123 (décision du porteur, 23/10) : `POST /payments` avec `customer_qr_token` : tout `CL037` de
+  `lock_customer_qr_token` → `422 QR_TOKEN_INVALID`, réponse unique (même corps quelle que soit la cause). Les
+  demandes de QR commerçant gardent `409 PAYMENT_REQUEST_NOT_PENDING`.

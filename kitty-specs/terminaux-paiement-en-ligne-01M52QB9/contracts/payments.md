@@ -66,7 +66,8 @@ prestataire, non annulée, événement de la vente ; l'heure vient de la base (`
 
 - **Terminal, vendeur de la vente** (garde exclusive, clé `<serial>:<seq>`, `vendor_session_id`) : même terminal, même
   vendeur (session ouverte), `now() ≤ recorded_at + reversal_window_minutes` (heure **de la base** à l'écriture de la
-  vente, A5 ; valeur de l'événement au moment de l'annulation). Sinon `CL036` → `403 REVERSAL_NOT_ALLOWED`.
+  vente, A5 ; valeur de l'événement au moment de l'annulation). Sinon `CL036` → `422 REVERSAL_NOT_ALLOWED` ; fenêtre seule dépassée
+  (terminal et vendeur justes) → `CL040` → `409 REVERSAL_WINDOW_EXPIRED` (ADR-123).
 - **Terminal, avec un `SUPERVISOR`** (A8) : jeton d'approbation sur place dans l'en-tête `X-Approval-Token` seulement
   (le champ `supervisor_pin_proof` du corps est refusé : il rendrait l'empreinte de la requête circulaire). Variante de
   la garde pour un appelant terminal : appelant enregistré = terminal + session de vendeur (colonnes

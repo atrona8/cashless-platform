@@ -83,7 +83,8 @@ Index unique partiel `(device_id) WHERE closed_at IS NULL` : une session ouverte
 
 ## device_catalog_served
 
-`(device_id, pos_id, version, served_at)`, en ajout seul, unique `(device_id, version)` : écrite par la construction de
+`(device_id, pos_id, version, served_at)`, en ajout seul, unique `(device_id, pos_id, version)` (renforcement de WP03, relecture du cycle 1 : un terminal
+ramené sur un point de vente ne réutilise pas une version servie ailleurs) : écrite par la construction de
 la configuration d'un terminal `CATALOG_POS`. Sert au contrôle des prix (contracts/catalog.md).
 
 ## sale_line (S18)
@@ -145,8 +146,9 @@ Même contrôles qu'en 0022 ; ferme en plus les sessions de vendeur ouvertes du 
 | CL033 | `VENDOR_PIN_INVALID` | 401 | PIN faux, vendeur inconnu, bloqué, désactivé ou d'un autre commerçant (même réponse) |
 | CL034 | `SALE_LINES_INVALID` | 422 | article inconnu, inactif, d'un autre point de vente, prix ou taux non servi, somme fausse |
 | CL035 | `ALREADY_REVERSED` | 409 | annulation déjà écrite |
-| CL036 | `REVERSAL_NOT_ALLOWED` | 403 | autre vendeur, autre terminal, hors fenêtre |
-| CL037 | `PAYMENT_REQUEST_NOT_PENDING` | 409 | demande payée, annulée ou expirée ; jeton inconnu |
+| CL036 | `REVERSAL_NOT_ALLOWED` | 422 | autre vendeur, autre terminal, vente non `PURCHASE` (ADR-123) |
+| CL040 | `REVERSAL_WINDOW_EXPIRED` | 409 | hors fenêtre, contrôlé après terminal et vendeur (ADR-123) |
+| CL037 | `PAYMENT_REQUEST_NOT_PENDING` | 409 | demande payée, annulée ou expirée ; jeton inconnu ; sur `POST /payments` avec un QR client : `422 QR_TOKEN_INVALID` (ADR-123) |
 | — | `422 MEDIA_BLOCKED`, `422 WALLET_BLOCKED`, `409 TAP_UNUSABLE` | | existants ; levés aussi par `assert_tap_payable` et `assert_wallet_payable` |
 
 Les noms de problème sont arrêtés avec le contrat (contracts/openapi-additions.md) ; ceux qui existent déjà au contrat

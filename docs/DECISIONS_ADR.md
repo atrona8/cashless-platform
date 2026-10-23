@@ -1732,3 +1732,21 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** `requiredRole` du registre des actions devient une liste (retouche d'une ligne dans
   `approval.service.ts`). FR-017 est à compléter dans `spec.md` à la clôture de la mission.
 - **Références.** FR-017 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP12-annulation.md`.
+
+## ADR-123 — Codes de refus de l'annulation et du QR client : le contrat existant est gardé
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur pendant la mission 5b, contradictions §0.3 signalées par
+  WP01). Sans effet de sécurité : le refus a lieu dans tous les cas.
+- **Contexte.** Le contrat avait déjà `REVERSAL_NOT_ALLOWED` en 422, `REVERSAL_WINDOW_EXPIRED` en 409 et
+  `QR_TOKEN_INVALID` en 422 pour le QR client. Le plan de la 5b (data-model, `contracts/payments.md`,
+  `contracts/qr-payments.md`) disait `CL036` → 403 pour tout refus d'annulation, fenêtre comprise, et
+  `409 PAYMENT_REQUEST_NOT_PENDING` pour un QR client refusé.
+- **Décision.** Annulation : `CL036` → `422 REVERSAL_NOT_ALLOWED` (autre vendeur, autre terminal, vente non
+  `PURCHASE`…) ; nouveau `CL040` → `409 REVERSAL_WINDOW_EXPIRED`, levé **seulement après** les contrôles du terminal et
+  du vendeur, pour qu'un autre vendeur n'apprenne pas l'âge d'une vente. QR client présenté par `POST /payments` :
+  tout refus de `lock_customer_qr_token` (`CL037` en base) est traduit en `422 QR_TOKEN_INVALID`, réponse unique pour
+  inconnu, expiré, déjà utilisé, autre événement ou portefeuille non actif. Les demandes de QR commerçant gardent
+  `409 PAYMENT_REQUEST_NOT_PENDING`.
+- **Conditions de bornage.** Tests de WP04 (ordre : autre vendeur hors fenêtre → `CL036`, jamais `CL040`), WP12
+  (statuts HTTP) et WP13 (réponse unique `422` du QR client, aucun corps différent selon la cause).
+- **Références.** `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP04-…`, `WP08-…`, `WP12-…`, `WP13-…`.
