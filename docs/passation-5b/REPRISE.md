@@ -12,7 +12,7 @@ test, générateur du document Word.
 | WP02 | Vendeurs, sessions, `set_device_status` (0031) | Approuvé (cycle 2) | lane-b |
 | WP03 | Catalogue versionné, lignes de vente (0032) | Approuvé (cycle 2) | lane-c |
 | WP04 | Paiement, annulation, approbation sur place (0033) | Approuvé (cycle 1, `f46a5d2b`) | lane-d |
-| WP05 | Demandes de paiement QR (0034) | **En cours** (implémenteur lancé le 23/10) | lane-e |
+| WP05 | Demandes de paiement QR (0034) | **Implémenté** (`e91f142d`, pgTAP 2652 sur sa base) : à rejouer et relire | lane-e |
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
 | WP07 | Droits de la base | Prévu (attend WP05) | — |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
@@ -23,10 +23,12 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 
 ## Prochaines actions, dans l'ordre
 
-1. **WP05** : si `rapports/WP05-implementation.md` n'existe pas dans le scratchpad de la session précédente, regarder
-   `git -C .worktrees/terminaux-paiement-en-ligne-01M52QB9-lane-e log` et `status` : commit fait ou travail non commité
-   (le reprendre comme pour WP08). Puis rejouer sur `cashless_test` : pgTAP complet après `reset-db`, Jest complet
-   (`scripts/jest-lane.sh <lane> <log>`). Passer en relecture, lancer un relecteur distinct.
+1. **WP05** : implémenté (`rapports/WP05-implementation.md`). Rejouer sur `cashless_test` : pgTAP complet après
+   `reset-db`, Jest complet (`scripts/jest-lane.sh <lane-e> <log>`). Réaligner la lane, `move-task --to for_review
+   --force`, lancer un relecteur distinct. Points à lui faire vérifier : `payment_request_for_token(p_id,
+   p_nonce_hash)` à deux paramètres (plus strict que l'arbitrage, à reporter à WP13) ; `lock_payment_request_for_pay`
+   écrit `wallet_id` dans la demande en attente ; définition du montant débité (somme des débits WALLET_PAID/
+   WALLET_PROMO du portefeuille) ; droits que WP07 doit accorder et retirer (voir le compte rendu).
 2. **WP07** (droits de la base) dès WP05 approuvé : son prompt contient les reports de la relecture WP04
    (`REVOKE INSERT, UPDATE ON sale_attribution`, tests manquants).
 3. **WP09 et WP10** en parallèle après WP07 ; puis WP11 ; puis WP12 et WP13 ; WP14 ferme la mission.
