@@ -244,3 +244,9 @@ appelée sur les trois chemins ; variante : `act`, `act_hash` (corps exact), pre
 vente**, usage unique dans la transaction, raison seulement au journal ; garde existante inchangée ; `SALE_REVERSAL` :
 auteur ≠ valideur, rôles limités à `SUPERVISOR` et `ORGANIZER_ADMIN` ; 20 annulations simultanées → 1 ; ordre des
 verrous ; aucune règle d'annulation réécrite en API à la place de la base (C-001).
+
+## Reports de relecture (orchestrateur, 23/10/2026)
+
+- Relecture WP01 cycle 1, mineur 2 : la fenêtre d'annulation se contrôle **après** le vendeur et le terminal, sinon
+  `409 REVERSAL_WINDOW_EXPIRED` révélerait l'âge d'une vente à un autre vendeur. Compléter la description de
+  `reversePayment` au contrat (retouche hors carte justifiée) et prouver l'ordre par un test.

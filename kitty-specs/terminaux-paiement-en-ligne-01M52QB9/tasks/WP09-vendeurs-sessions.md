@@ -281,3 +281,9 @@ Le relecteur distinct vérifie, refus par refus :
 - Garde de session : appelée dans la transaction de l'écriture, après le terminal ; refus `409` ; aucune voie qui
   accepte un `vendor_id` envoyé par le terminal pour attribuer une vente (FR-006).
 - Isolation : `404` neutre hors périmètre ; le terminal ne voit que les vendeurs actifs de son commerçant.
+
+## Reports de relecture (orchestrateur, 23/10/2026)
+
+- Relecture WP02 cycle 1, mineur 2 : deux ouvertures de session simultanées sur un même terminal pour deux vendeurs
+  différents rendent `23505` (unicité) en base. L'API doit le traduire en réponse prévue par le contrat (429 / refus
+  propre), jamais en 500, avec un test.

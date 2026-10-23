@@ -208,3 +208,11 @@ Vérifier, refus par refus : même `409` et même corps pour les cinq cas d'éch
 60 bits tirés par `randomBytes`, seul le SHA-256 part en base ; consultation et annulation par le festivalier sans
 jeton refusées ; terminal autre que celui d'origine → `404` ; garde exclusive sans repli ; faux du festivalier refusé
 en production (test) ; aucune écriture directe dans `payment_request` (droits retirés par WP07).
+
+## Reports de relecture (orchestrateur, 23/10/2026)
+
+- Relecture WP01 cycle 1, mineur 1 (sécurité, FR-020) : `payPaymentRequest` liste encore une réponse `404` au
+  contrat. Une demande inconnue doit rendre le même `409 PAYMENT_REQUEST_NOT_PENDING` que les autres refus (pas
+  d'oracle). Ce lot retire le `404` de `openapi.yaml` (retouche hors carte justifiée) et le prouve par un test.
+- Relecture WP01 cycle 1, mineur 3 : envisager `vendor_session_id` `required` sur `createPaymentRequest` si la base
+  l'exige (WP05) ; sinon le justifier.
