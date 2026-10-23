@@ -1,24 +1,27 @@
 ---
 work_package_id: WP05
-title: "Demandes de paiement QR (migration 0034)"
+title: Demandes de paiement QR (migration 0034)
 dependencies: [WP04]
 requirement_refs: [FR-018, FR-019, FR-020, NFR-005, NFR-007, NFR-008, C-001, C-009]
 planning_base_branch: feat/terminaux-paiement-en-ligne
 merge_target_branch: feat/terminaux-paiement-en-ligne
 branch_strategy: Planning artifacts for this mission were generated on feat/terminaux-paiement-en-ligne. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/terminaux-paiement-en-ligne unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-terminaux-paiement-en-ligne-01M52QB9
+base_commit: 20040dbab88fe72bdb68f5b3a31440c50db27b44
+created_at: '2026-10-23T11:18:58.923925+00:00'
 subtasks: [T021, T022, T023, T024]
-phase: "Phase 1 - Contrat et base de données"
+phase: Phase 1 - Contrat et base de données
+agent: claude
 history:
 - timestamp: '2026-10-22T14:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks-packages
 agent_profile: implementer-ivan
-role: implementer
-agent: claude
 authoritative_surface: packages/ledger-sql/
 create_intent: [packages/ledger-sql/migrations/0034_payment_requests.sql, packages/ledger-sql/tests/tests_payment_requests.sql]
 execution_mode: code_change
 owned_files: [packages/ledger-sql/migrations/0034_payment_requests.sql, packages/ledger-sql/tests/tests_payment_requests.sql]
+role: implementer
 tags: []
 tracker_refs: []
 ---
