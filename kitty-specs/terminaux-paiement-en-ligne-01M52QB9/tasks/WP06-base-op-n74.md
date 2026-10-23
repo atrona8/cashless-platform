@@ -9,6 +9,9 @@ requirement_refs:
 planning_base_branch: feat/terminaux-paiement-en-ligne
 merge_target_branch: feat/terminaux-paiement-en-ligne
 branch_strategy: Planning artifacts for this mission were generated on feat/terminaux-paiement-en-ligne. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/terminaux-paiement-en-ligne unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-terminaux-paiement-en-ligne-01M52QB9
+base_commit: 979507377cfef49c3fd2f2297bed8126d3afb01c
+created_at: '2026-10-23T10:22:53.161475+00:00'
 subtasks:
 - T025
 - T026
