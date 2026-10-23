@@ -29,7 +29,7 @@
       "description": "FR-003 — Session de vendeur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -59,7 +59,7 @@
       "description": "FR-006 — Attribution par le serveur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -89,7 +89,7 @@
       "description": "FR-009 — Paiement par bracelet en un aller-retour",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -99,7 +99,7 @@
       "description": "FR-010 — Paiement en deux temps",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -139,7 +139,7 @@
       "description": "FR-014 — Refus d'un paiement",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -149,7 +149,7 @@
       "description": "FR-015 — Moyens selon le terminal",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -159,7 +159,7 @@
       "description": "FR-016 — Annulation",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -169,7 +169,7 @@
       "description": "FR-017 — Annulation par un responsable",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -249,7 +249,7 @@
       "description": "FR-025 — Consultation d'un paiement",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -289,7 +289,7 @@
       "description": "NFR-002 — Aucun PIN en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). (argon2id, VENDOR_PIN_SECRET hors base, redactSecrets étendu) Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -309,7 +309,7 @@
       "description": "NFR-004 — Pas d'énumération des vendeurs",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -319,7 +319,7 @@
       "description": "NFR-005 — Un passage, une vente",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -329,7 +329,7 @@
       "description": "NFR-006 — Tout ou rien",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -349,7 +349,7 @@
       "description": "NFR-008 — Aucun jeton QR en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -359,7 +359,7 @@
       "description": "NFR-009 — Pas de faux en production",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Démarrage refusé en production sans VENDOR_PIN_SECRET, avec le secret de test, secret égal à un autre, vecteur RFC 9106 faux (config.spec.ts) ; reste la revue de fin de mission (WP14).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
