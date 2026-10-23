@@ -12,7 +12,7 @@ test, générateur du document Word.
 | WP02 | Vendeurs, sessions, `set_device_status` (0031) | Approuvé (cycle 2) | lane-b |
 | WP03 | Catalogue versionné, lignes de vente (0032) | Approuvé (cycle 2) | lane-c |
 | WP04 | Paiement, annulation, approbation sur place (0033) | Approuvé (cycle 1, `f46a5d2b`) | lane-d |
-| WP05 | Demandes de paiement QR (0034) | **En relecture** (`e91f142d` ; rejoué sur cashless_test : pgTAP 2652, Jest 1705, tout vert ; relecteur lancé le 23/10) | lane-e |
+| WP05 | Demandes de paiement QR (0034) | **En relecture, cycle 2** (cycle 1 rejeté pour ses tests ; cycle 2 `2ec3dee3` rejoué : pgTAP 2668, Jest 1705, tout vert) | lane-e |
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
 | WP07 | Droits de la base | Prévu (attend WP05) | — |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
@@ -23,7 +23,7 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 
 ## Prochaines actions, dans l'ordre
 
-1. **WP05** : rejoué et passé en relecture le 23/10. Si `review-cycle-1.md` de WP05 manque, relancer un relecteur
+1. **WP05** : cycle 2 en relecture le 23/10. Si `review-cycle-2.md` de WP05 manque, relancer un relecteur
    distinct ; si le verdict est rendu mais non enregistré, l'enregistrer avec `--force` au nom du relecteur. Points à lui faire vérifier : `payment_request_for_token(p_id,
    p_nonce_hash)` à deux paramètres (plus strict que l'arbitrage, à reporter à WP13) ; `lock_payment_request_for_pay`
    écrit `wallet_id` dans la demande en attente ; définition du montant débité (somme des débits WALLET_PAID/
