@@ -289,3 +289,13 @@ messages d'erreur ; `DEVICE_QUERY` et droits de `cashless_tagkeys` inchangés ; 
 `req.device` posé par la garde ; `<serial>` contrôlé avant réservation ; seuls les deux codes non définitifs
 relâchent la clé ; marqueur de terminal → trois preuves sans repli ; `23505` traduit seulement pour la contrainte
 nommée ; registre sans fichier index et matrice inchangée en contenu.
+
+## Reports de l'orchestrateur (23/10/2026)
+
+- Transféré de WP06 (arbitrage « audit de tous les refus », ADR-117) : ajouter `ENROLLMENT_EVENT_CLOSED:
+  'EVENT_CLOSED'` à `ATTEMPT_RESULTS` dans `apps/api/src/devices/enrollment/enrollment.service.ts` (retouche hors
+  carte autorisée). WP06 ne pouvait pas le faire : sa lane n'a pas le `ProblemCode` de WP01. La base est prête
+  (0035 élargit `device_enrollment_attempt.result` à `EVENT_CLOSED` et remplace `record_enrollment_attempt`).
+  Prouver par un test d'intégration qu'un refus `CL031` à l'enrôlement est compté et audité, sans terminal créé ni
+  code consommé. Si la lane n'a pas encore 0035 (WP06 non fusionné), écrire le test et le signaler : l'orchestrateur
+  le jouera sur la combinaison des lanes.
