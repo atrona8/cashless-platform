@@ -268,11 +268,11 @@
       "criterion_id": "FR-027",
       "description": "FR-027 — Contrat et types",
       "proof_type": "automated_test",
-      "evidence": "",
-      "notes": "",
-      "pass_fail": null,
-      "verified_at": null,
-      "verified_by": null
+      "evidence": "WP01 approuvé (lane-a 60b24a43) : `npm run check -w @cashless/contracts` vert (TS et Dart régénérés) ; 15 opérations ajoutées (Vendeurs, Catalogue, sessions, paiements) ; les 3 routes de terminal exigent les trois preuves dans une seule entrée de sécurité (script de contrôle du relecteur) ; Jest API 101 suites / 1705 tests verts (orchestrateur).",
+      "notes": "C-004 tenu au contrat ; à confirmer au service par WP09/WP10/WP11 (routes servies seulement si décrites).",
+      "pass_fail": "pass",
+      "verified_at": "2026-10-23",
+      "verified_by": "relecteur distinct WP01 (cycle 1), consigné par l'orchestrateur"
     },
     {
       "criterion_id": "NFR-001",
