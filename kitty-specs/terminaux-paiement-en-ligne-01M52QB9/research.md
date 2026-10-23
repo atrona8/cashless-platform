@@ -33,6 +33,11 @@ porteur (`decisions/`), `docs/08-pile-logicielle.md`.
   - **au démarrage** : chargement et vecteur connu vérifiés, démarrage refusé sinon ; la CI (linux-x64 glibc) le
     prouve ; la plateforme de production n'est pas arrêtée (OP-N11) : le test de démarrage y sera rejoué ;
   - `cross-env` devient une dépendance installée en production (inutile à l'exécution, sans script) : signalé.
+  - **Complément du 23/10/2026 (WP08)** : `cross-env` tire une entrée non prévue ci-dessus,
+    `@epic-web/invariant@1.0.0` (MIT, sans script d'installation, intégrité
+    `sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==`, signature
+    du registre vérifiée par `npm audit signatures`). Signalée par l'implémenteur selon la consigne du lot ;
+    **acceptée par le porteur** le 23/10/2026. La liste des transitives attendues de WP08 l'inclut désormais.
 - **Passe contradictoire**: faite sur le plan après rédaction (R-11) ; constats et suites consignés là.
 
 ## R-02 — Session de vendeur
