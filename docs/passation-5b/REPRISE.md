@@ -24,7 +24,7 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 ## Prochaines actions, dans l'ordre
 
 1. **WP05** : approuvé au cycle 2 (le 23/10).
-2. **WP07** (droits de la base), en cours : si `rapports/WP07-implementation.md` manque, regarder `git log`/`status` de lane-g ; puis rejeu en série, relecture distincte. Le runtime signalait « 1 pre-existing test failure » à la ligne de base. Son prompt son prompt contient les reports de la relecture WP04
+2. **WP07** (droits de la base), en cours : si `rapports/WP07-implementation.md` manque, regarder `git log`/`status` de lane-g ; puis rejeu en série, relecture distincte. Le runtime signalait « 1 pre-existing test failure » à la ligne de base. Son prompt contient les reports de la relecture WP04
    (`REVOKE INSERT, UPDATE ON sale_attribution`, tests manquants).
 3. **WP09 et WP10** en parallèle après WP07 ; puis WP11 ; puis WP12 et WP13 ; WP14 ferme la mission.
 4. Après la dernière relecture : `spec-kitty-docs-maintain` (addendum post-relecture), avant `accept`/`merge`
