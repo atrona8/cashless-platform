@@ -221,3 +221,9 @@ en production (test) ; aucune écriture directe dans `payment_request` (droits r
 - ADR-123 (décision du porteur, 23/10) : `POST /payments` avec `customer_qr_token` : tout `CL037` de
   `lock_customer_qr_token` → `422 QR_TOKEN_INVALID`, réponse unique (même corps quelle que soit la cause). Les
   demandes de QR commerçant gardent `409 PAYMENT_REQUEST_NOT_PENDING`.
+
+## Reports de l'orchestrateur (23/10/2026, relecture WP05 cycle 1)
+- `payment_request_for_token(p_id uuid, p_nonce_hash bytea)` : l'API passe l'identifiant et l'empreinte du jeton.
+- `lock_payment_request_for_pay` écrit `wallet_id` dans la demande encore en attente : verrouillage, écriture par le
+  moteur et `confirm_payment_request` doivent tenir dans **une seule transaction** de l'API ; un test le prouve (aucune
+  demande laissée avec un `wallet_id` posé après un refus ou une erreur).

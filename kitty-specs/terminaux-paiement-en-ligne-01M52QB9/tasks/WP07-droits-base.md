@@ -227,3 +227,6 @@ fonction accordée hors de la liste du contrat (toute extra est justifiée et so
   expirée (`expires_at` dépassé) → `CL036` ; mode `SUPERVISOR_DEVICE` avec un valideur qui a un autre rôle que
   `SUPERVISOR` sur l'événement (`CASHIER`, `ORGANIZER_ADMIN`) → `CL036`. Retouche hors carte justifiée de
   `tests_payments.sql`.
+- Relecture WP05 cycle 1 : `payment_request_for_token` a la signature `(uuid, bytea)` (identifiant **et** empreinte du
+  jeton, plus strict que l'arbitrage) : l'accorder sous cette signature, et aligner `contracts/database-rights.md`
+  (retouche hors carte justifiée) ; liste figée et test des droits à jour.
