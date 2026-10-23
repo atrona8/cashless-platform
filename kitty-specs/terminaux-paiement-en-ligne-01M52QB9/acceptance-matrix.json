@@ -179,7 +179,7 @@
       "description": "FR-018 — QR commerçant",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -189,7 +189,7 @@
       "description": "FR-019 — QR client",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -199,7 +199,7 @@
       "description": "FR-020 — Jetons QR",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -319,7 +319,7 @@
       "description": "NFR-005 — Un passage, une vente",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -339,7 +339,7 @@
       "description": "NFR-007 — Isolation",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -349,7 +349,7 @@
       "description": "NFR-008 — Aucun jeton QR en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
