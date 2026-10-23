@@ -1,0 +1,47 @@
+{
+  "derniere_verification_globale": "2026-10-21T16:41:15Z",
+  "missions": {
+    "fondations-grand-livre-01M4AY8M": {
+      "statut": "mergée",
+      "verifie_le": "2026-10-08T11:29:53Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "identite-roles-double-validation-01M4DNDN": {
+      "statut": "mergée",
+      "verifie_le": "2026-10-09T12:06:11Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "configuration-parties-evenements-01M4GCJ9": {
+      "statut": "mergée",
+      "verifie_le": "2026-10-13T10:31:26Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "bracelets-nfc-01M4TD3W": {
+      "statut": "mergée",
+      "verifie_le": "2026-10-16T16:10:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "identite-enrolement-terminaux-01M52R6H": {
+      "statut": "mergée (dans main, PR #4)",
+      "verifie_le": "2026-10-22T11:30:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "terminaux-paiement-en-ligne-01M52QB9": {
+      "statut": "planifiée",
+      "verifie_le": "2026-10-22T12:45:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
+      "spec_index_a_jour": true
+    }
+  }
+}

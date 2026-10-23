@@ -1,0 +1,162 @@
+# Description produit — orientée fonctionnelle
+
+> Statut de complétude : voir `06-docs-status.md`. Dernière mise à jour motivée par :
+> initialisation du 07/10/2026 (à partir de `PRD.md`, lui-même tiré de `SPECIFICATION.md` v1.2) ; 21/10/2026 :
+> domaine « Terminaux et encaissement », identité et enrôlement des terminaux (mergée le 21/10/2026).
+> 23/10/2026 : état du projet (5 missions fusionnées, mission 5b en implémentation).
+> Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
+
+## Vision
+Un système de paiement fermé (cashless) multi-tenant pour festivals, concerts et lieux permanents : le festivalier
+paie avec un bracelet NFC ou un QR code, même quand le réseau tombe, et le système tient une comptabilité exacte,
+en partie double, de l'argent encaissé et dû à chaque intervenant (§1.1).
+
+## Personas
+| Persona | Objectifs | Frustrations actuelles |
+|---|---|---|
+| Festivalier (`CUSTOMER`, ou anonyme) | Payer vite, connaître son solde, récupérer son reste à la fin | Files d'attente aux caisses, soldes perdus, remboursement opaque |
+| Vendeur (`VENDOR`) | Encaisser en une seconde, même sans réseau | Terminal qui refuse quand le réseau tombe |
+| Caissier de guichet (`CASHIER`) | Recharger, poser une caution, rembourser, remplacer un bracelet | Erreurs de caisse, contrôle à deux personnes lourd |
+| Commerçant (`MERCHANT_ADMIN`) | Être payé de toutes ses ventes, hors ligne comprises | Ventes hors ligne contestées, relevés incomplets |
+| Organisateur (`ORGANIZER_ADMIN`, `SUPERVISOR`) | Configurer l'événement, maîtriser le risque hors ligne, clôturer et verser | Clôture longue, écarts entre caisses, PSP et ventes |
+| Prestataire cashless (`OPERATOR_ADMIN`) | Fournir bracelets et terminaux à plusieurs organisateurs, isolés entre eux | Données mélangées, clés de bracelets exposées |
+| Plateforme (`PLATFORM_ADMIN`) | Superviser les prestataires, percevoir la redevance | Visibilité sur l'ensemble |
+
+*(Frustrations déduites du contexte : la spécification décrit les exigences, pas les irritants actuels.)*
+
+## Périmètre fonctionnel actuel
+Au 23/10/2026, cinq missions sont fusionnées dans `main` : 1 (grand livre), 2 (identité, rôles, double validation),
+3 (configuration, parties, événements), 4 (bracelets NFC) et 5a (identité et enrôlement des terminaux). La mission 5b
+(encaissement en ligne) est en implémentation sur `feat/terminaux-paiement-en-ligne` : 6 lots sur 14 approuvés
+(contrat d'API, vendeurs, catalogue, paiement et annulation en base, OP-N74, socle applicatif), WP05 (demandes QR) au
+second cycle de relecture. Les missions 6 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
+
+### Grand livre et moteur d'écritures
+- Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
+  calculs entiers des frais, taxes et partages ; erreurs métier stables (§5).
+- Statut : ✅ mergée le 08/10/2026 (14/14 WP, acceptée) — moteur d'écritures (26 types, matrice des statuts, idempotence par clé), migrations `0001`/`0002`,
+  CI complète, garanties transverses de l'API (S21, problem+json, isolation, `X-Request-Id`, langue) ; scénario de
+  référence rejoué au centime près jusqu'à `CLOSED`/`LOCKED`
+- Mission(s) associée(s) : `fondations-grand-livre-01M4AY8M` (Fondations du grand livre et de l'API)
+
+### Configuration, contrats et détenteur des fonds
+- Description : cascade versionnée plateforme → prestataire → organisateur → événement → commerçant, bornée par
+  le profil de législation ; contrats ; détenteur des fonds par événement (§4). La mission couvre aussi
+  l'organisation des parties (prestataires, organisateurs, commerçants, participations, points de vente), les
+  profils de législation (gérés par la plateforme), les règles de frais des quatre flux, la création du grand livre
+  d'un événement et le passage de ses statuts, par l'API du back-office (sans écran).
+- Statut : ✅ mergée le 13/10/2026 (13/13 WP, acceptée, squash `d9e3779` ; dans `main` par la PR #2, CI verte) — migrations `0007`-`0009`, rôle de base `cashless_platform`, 48 opérations back-office servies,
+  cascade versionnée avec bornes, grand livre ouvert à la création de l'événement, passages de statut (`LIVE` à deux),
+  scénario de référence rejoué sur une configuration construite par l'API
+- Mission(s) associée(s) : `configuration-parties-evenements-01M4GCJ9` (Configuration, parties et événements)
+
+### Portefeuilles, identification et plafonds
+- Description : portefeuille séparé du bracelet, crédits payés et offerts, plafonds réglementaires, identification
+  au guichet, plusieurs devises, règles du réseau limité (§6).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### Bracelets NFC
+- Description : format B, mot de passe par bracelet dérivé par KMS et stocké chiffré, personnalisation, lecture
+  avec détection de copie, lots, cycle de vie, code de rattachement imprimé, caution (§7).
+- Statut : ✅ mergée le 16/10/2026, dans `main` par la PR #3 avec CI verte (20/20 WP relus, WP20 au cycle 9 ; acceptée le 15/10/2026, matrice 46/46 avec réserve OP-N61).
+  Livré : bibliothèque de format en TypeScript et en Dart (mêmes vecteurs du kit) ; quatre processus à droits séparés
+  sur les clés et une commande d'administration ; rôles de base distincts ; migrations `0010`-`0020` (0020 au correctif post-fusion n° 1) ; 27 opérations
+  d'API ajoutées (clés à deux, lots et codes imprimés, personnalisation, mot de passe pour le terminal, lecture,
+  activation, caution, restitution, remplacement, espèces dues, remise en stock, perte, liste noire, rattachement par
+  code, consultation anonyme) ; contrôle quotidien des mots de passe. Limites : service de clés, identité du terminal
+  et identité du festivalier sont des faux qui refusent la production (OP-N41 à OP-N43) ; caution en espèces et espèces
+  dues répondent `409` tant que la mission des caisses n'existe pas (ADR-89) ; le guichet de retour n'enchaîne pas les
+  étapes (ADR-91, à trancher)
+- Mission(s) associée(s) : `bracelets-nfc-01M4TD3W` (Bracelets NFC : format, clés, lots, cycle de vie)
+
+### Terminaux et encaissement
+- Description : caisse à catalogue, TPE clavier, guichet de recharge ; enrôlement sans MDM ; paiement QR ;
+  recharges, remboursements (§8).
+- Statut : ✅ identité et enrôlement des terminaux : mergée le 21/10/2026 (18/18 WP, acceptée), dans `main` par la
+  PR #4 le 22/10/2026 avec CI verte, correctif post-fusion n° 1 compris (empreinte des codes illisible par l'API,
+  jeton d'appareil de 15 min au plus en production). Livré : code d'enrôlement à usage unique (événement et choix « téléphone personnel »
+  obligatoires), enrôlement sans compte avec attestation (Android 12+ ; iOS par App Attest, limite OP-N64), certificat
+  client, jeton d'appareil lié et signature de chaque requête exigés ensemble sur toute route de terminal (dont celles
+  de la mission « Bracelets NFC »), rafraîchissement à usage unique (grâce de 60 s, OP-N65), configuration et
+  battement de cœur, back-office des terminaux (liste, fiche, suspension, réactivation, révocation par une personne) ;
+  dettes de base de la mission 4 levées (OP-N44, N50, N54, N59, N62, N63) et OP-N42. Limites : autorité des terminaux
+  et signataire des jetons en faux, refusés en production (OP-N73, mission 7) ; pas de limite en amont de l'enrôlement
+  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR) : 🔨 en implémentation depuis le 22/10/2026 (mission 5b ; 6/14 lots approuvés au 23/10 ; identification au guichet reportée à la mission 10) ; app terminal
+  conditionnée à la validation NFC sur vrais bracelets
+- Mission(s) associée(s) : `identite-enrolement-terminaux-01M52R6H` (Identité et enrôlement des terminaux) ;
+  `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, en implémentation)
+
+### Hors ligne et passerelle locale
+- Description : snapshot signé, plafonds hors ligne, lots numérotés, conflits, passerelle locale qui prend
+  l'autorité de débit pendant une coupure (§9, `sync_protocol.md`).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### Argent réel : PSP, caisses, rapprochements, versements
+- Description : Wave, Orange Money, carte (PayDunya, Stripe) ; sessions de caisse ; rapprochements ; versements
+  manuels à deux personnes (§11).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### Cycle de l'événement et clôture
+- Description : statuts `DRAFT` à `CLOSED`, conditions de clôture vérifiées par la base, droit de place, casse
+  réversible, contrôles permanents, relevés et export comptable (§12).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### App festivalier
+- Description : compte par téléphone vérifié, solde et historique, recharge, paiement QR, rattachement, perte,
+  remboursement ; consultation anonyme du solde par code (§8.5).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### Back-office web
+- Description : interfaces plateforme, prestataire, organisateur, commerçant ; double validation par demande puis
+  approbation (§1.2, §3.2, §10.4).
+- Statut : 📋 planifié
+- Mission(s) associée(s) : à définir
+
+### Identité, rôles et double validation
+- Description : personnes du personnel authentifiées par le serveur d'identité OIDC, rôles par portée
+  (plateforme, prestataire, organisateur, événement, commerçant), journal d'audit en ajout seul chaîné et scellé,
+  double validation (jeton sur place au guichet, demande puis approbation au back-office) (§3.2, §10.3, §13.3).
+- Statut : ✅ mergée le 09/10/2026 (10/10 WP, acceptée)
+- Mission(s) associée(s) : `identite-roles-double-validation-01M4DNDN` (Identité, rôles et double validation)
+
+## Hors périmètre (confirmé)
+- Caisses tierces : intentions de paiement, TPE associé (`PAIRED_TPE`), webhooks sortants, SDK (V2, ADR-43).
+- Contrôle d'accès, billetterie, bracelet-billet (ADR-41).
+- Versements automatiques ; portail web festivalier ; paiement NFC sur iOS.
+- Puces anti-clonage cryptographiques ; conversion de devises dans un grand livre.
+- Remboursement par carte ; vérification d'identité en ligne (interface prévue seulement).
+- Variantes, remises et stock au catalogue.
+
+## Glossaire métier
+(Source : `SPECIFICATION.md`, annexe A, qui fait foi.)
+
+| Terme | Définition |
+|---|---|
+| Pool | Réserve d'argent réel dans une devise, avec la liste des droits sur cet argent ; un grand livre |
+| Prestataire | Opérateur cashless ; unité d'isolation des données (tenant) |
+| Détenteur des fonds | Titulaire des comptes d'argent d'un événement |
+| Émetteur | Partie qui doit les crédits aux festivaliers |
+| Casse | Soldes non réclamés à l'échéance du délai de remboursement |
+| Compte chaud | Compte à très fort volume, sans solde en cache ni verrou |
+| Compte de contrepartie | Sous-compte de droit à solde normal débiteur (charges, versements reçus) |
+| Snapshot | Liste signée des bracelets et soldes envoyée aux terminaux pour le hors ligne |
+| Marge de recharge | Montant qu'une recharge peut encore créditer sans dépasser le plafond de solde ni le plafond mensuel |
+| Droit net | Somme de tous les comptes de droits d'une partie dans un grand livre |
+| Position soldée | Droit net nul pour une partie titulaire ; solde nul pour un compte sans titulaire |
+| Passage (`tap_id`) | Lecture d'un bracelet enregistrée ; sert à une seule écriture |
+| Espèces dues | Espèces encaissées hors ligne au-delà d'un plafond, à rendre au client |
+| Passerelle | Serveur local d'un site qui peut prendre l'autorité de débit pendant une coupure |
+| Époque d'autorité | Entier incrémenté à chaque bascule de l'autorité de débit |
+| `seq` | Numéro d'opération d'un terminal, unique et croissant |
+| PSP | Prestataire de services de paiement (Wave, Orange Money, carte) |
+| HT, TTC | Hors taxe, toutes taxes comprises |
+
+## Questions de nécessité/complétude posées lors de la dernière révision
+- Nécessaire pour ce projet ? Voir `06-docs-status.md`.
+- Complet au vu de l'état actuel du système ? Voir `06-docs-status.md`.
+- Validé par : en attente.
