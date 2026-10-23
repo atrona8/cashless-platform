@@ -9,7 +9,7 @@
       "description": "FR-001 — Vendeurs d'un commerçant",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -19,7 +19,7 @@
       "description": "FR-002 — Code PIN du vendeur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -29,7 +29,7 @@
       "description": "FR-003 — Session de vendeur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -39,7 +39,7 @@
       "description": "FR-004 — Blocage après échecs",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -49,7 +49,7 @@
       "description": "FR-005 — Fin d'une session",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -59,7 +59,7 @@
       "description": "FR-006 — Attribution par le serveur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -259,7 +259,7 @@
       "description": "FR-026 — Audit",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -289,7 +289,7 @@
       "description": "NFR-002 — Aucun PIN en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -299,7 +299,7 @@
       "description": "NFR-003 — Blocage du PIN",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -339,7 +339,7 @@
       "description": "NFR-007 — Isolation",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
