@@ -142,7 +142,7 @@ NULL`, `vendor_session_id uuid NOT NULL` (→ `vendor_session`), `idempotency_ke
 - `confirm_payment_request(p_id uuid, p_tx uuid) RETURNS void` : reprend la demande `FOR UPDATE NOWAIT` (déjà tenue
   par cette transaction : immédiat ; tenue par une autre : `55P03` → `CL037`) ; `PENDING` et non expirée ; `p_tx` du
   prestataire, `PURCHASE`, `source = 'ONLINE'`, montant débité au portefeuille (Σ des débits sur les comptes
-  `WALLET_PAID`/`WALLET_PROMO` du portefeuille, même définition que `record_sale_lines`) ; `MERCHANT_QR` : montant =
+  `WALLET_PAID`/`WALLET_PROMO` du portefeuille ; correction du 23/10 : ce n'est pas la définition de `record_sale_lines`) ; `MERCHANT_QR` : montant =
   `amount`, portefeuille = celui verrouillé, `tx.device_id = device_id` de la demande, `tx.idempotency_key =
   detail.idempotency_key` ; `CUSTOMER_QR` : portefeuille = `wallet_id` de la demande, `tx.device_id` non nul.
   Écrit `status = 'CONFIRMED'`, `transaction_id = p_tx` (et, pour `CUSTOMER_QR`, `amount` et `device_id` de la vente :
@@ -218,3 +218,11 @@ jamais de jeton en clair (paramètres `bytea` de 32 octets) ; ordre des verrous 
 et au type exacts ; attribution `MERCHANT_QR` par la session de la demande ; QR client sur l'événement du grand
 livre ; isolation à deux prestataires ; `search_path` et `REVOKE … FROM PUBLIC` ; aucun `GRANT` ; aucun fichier
 généré modifié.
+
+## Reports de l'orchestrateur (23/10/2026, relecture WP05 cycle 1)
+- La forme `payment_request_for_token(p_id, p_nonce_hash)` à deux paramètres est retenue (plus stricte, sans fuite
+  sur l'existence d'un identifiant) ; WP07 et WP13 s'alignent dessus.
+- Cycle 2 : corriger les tests signalés par `review-cycle-1.md` (vendeur désactivé ou bloqué prouvé sur une session
+  ouverte ; contrôle `direction` de `lock_customer_qr_token` prouvé sur une demande non payée ; session expirée au
+  verrouillage et à la confirmation ; devise du portefeuille et terminal d'un QR client à la confirmation) ;
+  `VOLATILE` au lieu de `STABLE` pour une fonction qui lit `clock_timestamp()`.
