@@ -1778,6 +1778,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   que les siens) dans la mission 13 (recette V1), proposée par l'agent.
 - **Conditions de bornage.** `apps/api/test/unit/config.spec.ts` (liste des secrets obligatoires en production, secrets
   distincts deux à deux, démarrage refusé sans eux) ; aucun nouveau secret ne s'ajoute à `loadConfig` sans entrée ici.
+- **Secrets ajoutés depuis.** `VENDOR_PIN_IDEMPOTENCY_SECRET` (26/10/2026, ADR-126, WP09 cycle 3) : même schéma,
+  même levée à la mission 13.
 - **Références.** `apps/api/src/config/config.ts` ; OP-N77.
 
 ## ADR-126 — Idempotence : un PIN n'entre dans l'empreinte de la requête que sous un dérivé argon2
@@ -1795,4 +1797,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conditions de bornage.** Test qui échoue si un corps portant un PIN produit une empreinte calculable sans argon2
   (empreinte différente du HMAC du corps en clair) ; test qu'une même clé avec un autre PIN est refusée (`409`), jamais
   rejouée.
-- **Références.** WP09 cycle 2 (`apps/api/src/vendors/`, `apps/api/src/idempotency/`) ; relecture WP09 cycle 1.
+- **Complément du 26/10/2026** (décision du porteur après la relecture de WP09 cycle 2, constats 1 à 3 ; renforcements) :
+  - **Secret distinct.** Le dérivé se calcule sous un secret propre, `VENDOR_PIN_IDEMPOTENCY_SECRET` (mêmes règles
+    que `VENDOR_PIN_SECRET` : 32 octets au moins, exigé en production, secret de test refusé, distinct de tous les
+    autres secrets), et non sous `VENDOR_PIN_SECRET`. Sa rotation invalide seulement les empreintes d'idempotence en
+    vol (une requête rejouée avec la même clé reçoit `409 IDEMPOTENCY_KEY_REUSED`) ; celle de `VENDOR_PIN_SECRET`
+    n'y touche plus. Ajouté à la liste d'ADR-125 (OP-N77).
+  - **Verrou avant le dérivé.** À l'ouverture de session, le verrou « un essai de PIN à la fois par terminal » est
+    pris avant tout calcul argon2 (dérivé compris) et tenu jusqu'à la fin de la requête : un essai concurrent reçoit
+    `429` sans payer d'argon2.
+  - **Bornage ajouté.** Le test « empreinte ≠ HMAC du corps en clair » couvre les trois routes (création de vendeur
+    comprise) et compare l'empreinte stockée au HMAC du corps dérivé (égalité) ; un test prouve qu'un essai refusé
+    en `429` ne calcule aucun argon2 ; un test prouve que le dérivé ne dépend pas de `VENDOR_PIN_SECRET`.
+- **Références.** WP09 cycles 2 et 3 (`apps/api/src/vendors/`, `apps/api/src/idempotency/`,
+  `apps/api/src/vendor-pin/`, `apps/api/src/config/config.ts`) ; relectures WP09 cycles 1 et 2.

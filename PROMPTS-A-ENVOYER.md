@@ -404,7 +404,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > puis lever la limite (bornes : `tests_enrollment_limits.sql` §3 et §5).
 >
 > **Hérité de la mission 5b, OP-N77 (ADR-125 ; décision du porteur du 23/10/2026)** : `loadConfig` est commun à tous
-> les processus ; en production, `IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY` et `VENDOR_PIN_SECRET` sont exigés
+> les processus ; en production, `IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET` et
+> `VENDOR_PIN_IDEMPOTENCY_SECRET` (ADR-126, 26/10/2026) sont exigés
 > aussi par les processus des clés et de personnalisation, qui ne s'en servent pas. Faire lire à chaque processus ses
 > seuls secrets, le prouver par un test par processus, puis lever le point (borne : `config.spec.ts`).
 >

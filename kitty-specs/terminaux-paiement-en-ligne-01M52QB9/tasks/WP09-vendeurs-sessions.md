@@ -301,3 +301,27 @@ Le relecteur distinct vérifie, refus par refus :
 - Mineurs du relecteur à traiter si simples : `429` enregistré puis rejoué sous la même clé ; clé d'idempotence non
   contrôlée comme UUID. Sinon, les décrire.
 
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP09 cycle 2 : rejet, cycle 3)
+
+Relecture : `tasks/WP09-vendeurs-sessions/review-cycle-2.md`. Décisions du porteur du 26/10 (complément d'ADR-126) :
+- **Constat 1, bloquant (à corriger)** : le test « empreinte ≠ HMAC du corps en clair » doit couvrir aussi la création
+  de vendeur (`POST /v1/merchants/:id/vendors`, corps `{display_name, pin}`) ; retirer `pinFields` de cette route doit
+  faire échouer un test. Ajouter un vrai témoin : l'empreinte stockée est **égale** au HMAC du corps dérivé
+  (`hasher.idempotencyBody(...)`), sur les trois routes.
+- **Constat 2 (option b retenue)** : à l'ouverture de session, prendre le verrou d'essai du terminal **avant** le
+  calcul du dérivé argon2 (garde ou intercepteur dédié, ordonné avant `IdempotencyInterceptor`, qui tient le verrou
+  jusqu'à la fin de la requête, succès, refus ou erreur). Un essai concurrent reçoit `429 RATE_LIMITED` sans aucun
+  argon2 : le prouver par un test (espion sur le hacheur : zéro appel pour le second essai). Garder les preuves du
+  cycle 2 (verrou libre après succès, refus, 500 et 422 ; un seul essai compté). Retouche hors carte de
+  `apps/api/src/idempotency/` et `apps/api/src/db/session-lock.ts` autorisée si nécessaire ; aucun autre comportement de
+  l'idempotence ne change (rejouer la batterie d'idempotence).
+- **Constat 3 (option c retenue)** : nouveau secret `VENDOR_PIN_IDEMPOTENCY_SECRET` pour le dérivé, mêmes règles que
+  `VENDOR_PIN_SECRET` dans `apps/api/src/config/config.ts` (32 octets au moins, hexadécimal ou base64, exigé en
+  production, secret de test refusé, distinct de tous les autres secrets via `assertDistinctHmacKeys`). Tests dans
+  `config.spec.ts` (démarrage refusé sans lui en production, refusé s'il égale un autre secret) et un test que le
+  dérivé change avec ce secret et ne change pas avec `VENDOR_PIN_SECRET`. Mettre à jour les environnements de test
+  (`apps/api/test/support/`, `.env.example` s'il existe). Retouche hors carte de `config.ts` autorisée.
+- **Constat 5, mineur (simple)** : un test qui fixe « un `429` hors `nonFinal` est enregistré » (mutation M8).
+- Reports toujours ouverts du cycle 1, sans changement : alignement de `contracts/vendors.md` ; ordre d'appel de
+  `VendorSessionGuard` pour WP11 à WP13 ; propriétaire des fonctions de purge sous RLS forcée.

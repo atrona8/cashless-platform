@@ -27,5 +27,6 @@ npm run reset-db -w @cashless/ledger-sql
 
 ## Production
 
-`VENDOR_PIN_SECRET` obligatoire (32 octets au moins, distinct des autres secrets) ; le côté festivalier du QR attend
+`VENDOR_PIN_SECRET` et `VENDOR_PIN_IDEMPOTENCY_SECRET` (ADR-126) obligatoires (32 octets au moins, distincts des
+autres secrets) ; le côté festivalier du QR attend
 l'identité réelle du festivalier (mission 10).

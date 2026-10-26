@@ -101,7 +101,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout. Révocation d'une identification à deux
   (contrat ; §6.3 dit « un administrateur », contradiction signalée).
 - Plan de la mission 5b (porteur, 22/10/2026) : pile du document 08 (Node 22, `argon2` 0.44.0, la 0.45 n'ayant pas de
-  binaire macOS Intel) ; empreinte du PIN avec un secret hors base (`VENDOR_PIN_SECRET`, exigé en production) ; une
+  binaire macOS Intel) ; empreinte du PIN avec un secret hors base (`VENDOR_PIN_SECRET`, exigé en production) ; PIN
+  jamais en clair dans l'empreinte d'idempotence, remplacé par un dérivé argon2 sous un secret distinct
+  (`VENDOR_PIN_IDEMPOTENCY_SECRET`, ADR-126, porteur 26/10/2026) ; une
   session de vendeur par terminal, désignée par son identifiant dans chaque vente ; côté festivalier du QR servi
   derrière le port d'identité du festivalier (utilisable en production avec la mission 10) ; **identification au
   guichet reportée à la mission 10** (comptes festivaliers au numéro vérifié). Renforcements : annulation unique

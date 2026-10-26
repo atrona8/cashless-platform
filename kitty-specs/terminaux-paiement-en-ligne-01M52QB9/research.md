@@ -146,6 +146,9 @@ porteur (`decisions/`), `docs/08-pile-logicielle.md`.
   test refusé ; distinct des autres secrets (`assertDistinctHmacKeys`). Rotation : invalide toutes les empreintes ; le
   commerçant redonne un PIN à chaque vendeur (consigné dans un ADR).
 - **Rationale**: décision du porteur du 22/10/2026.
+- **Complément (26/10/2026, ADR-126)** : le dérivé du PIN dans l'empreinte d'idempotence a son propre secret,
+  `VENDOR_PIN_IDEMPOTENCY_SECRET` (mêmes règles) ; la rotation de `VENDOR_PIN_SECRET` ne touche donc pas les
+  empreintes d'idempotence.
 
 ## R-11 — Passe contradictoire (22/10/2026)
 
