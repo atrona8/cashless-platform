@@ -158,16 +158,32 @@ sequenceDiagram
     end
 ```
 
+## Flux : Annulation d'une vente, au terminal et au back-office (mission « Encaissement en ligne » ; ADR-122, ADR-123, ADR-129)
+
+Au terminal, les contrôles se font dans l'ordre terminal, vendeur, puis fenêtre (heure de la base) : l'autre vendeur
+reçoit `422 REVERSAL_NOT_ALLOWED` sans connaître l'âge de la vente. Hors fenêtre, un `SUPERVISOR` donne un jeton sur place,
+lié à la vente et à usage unique.
+
+![Annulation au terminal](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/diagrams/sequence-annulation.png)
+
+Au back-office, `reversePayment` ne touche pas au grand livre : il crée une demande `SALE_REVERSAL` (`202`) qu'une seconde
+personne distincte approuve, ce qui exécute l'annulation.
+
+![Annulation au back-office](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/diagrams/sequence-annulation-backoffice.png)
+
+Sources et autres flux de la mission (session de vendeur, paiement par bracelet, QR commerçant, QR client) :
+[`sequence.md`](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/sequence.md).
+
 ## Index des flux couverts
 
 | Flux | Domaines traversés | Mission(s) source |
 |---|---|---|
-| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) ; `terminaux-paiement-en-ligne-01M52QB9` (📋 planifiée : vente attribuée au vendeur, lignes, annulation, QR — flux locaux dans [`sequence.md`](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/sequence.md)) |
+| Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) ; `terminaux-paiement-en-ligne-01M52QB9` (🔎 relue, 14 lots approuvés le 26/10/2026 ; accept/merge à venir) : vente attribuée au vendeur, lignes, annulation à deux voies, QR commerçant et client — flux remonté dans la section « Annulation d'une vente » ci-dessus, six flux locaux dans [`sequence.md`](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/sequence.md)) |
 | Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (✅ mergée le 21/10/2026, dans `main` par la PR #4 : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
 | Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | à définir |
-| Double validation au back-office | Back-office, API, base | `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
+| Double validation au back-office | Back-office, API, base | `terminaux-paiement-en-ligne-01M52QB9` (annulation d'une vente `SALE_REVERSAL`, ADR-129 : demande `202` puis approbation par une seconde personne) ; `identite-roles-double-validation-01M4DNDN` (✅ mergée le 09/10/2026 (10/10 WP, acceptée) : mécanisme générique livré et prouvé par une action de démonstration ; actions branchées par les missions suivantes) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : huit actions de configuration, dont deux de niveau plateforme) ; `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : trois actions de clé `TAG_KEY_CREATE`, `TAG_DEK_ROTATE`, `TAG_KEY_RETIRE`, exécutées par un travail de clé, et sortie de liste noire `REINSTATE_MEDIA`) |
 | Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision

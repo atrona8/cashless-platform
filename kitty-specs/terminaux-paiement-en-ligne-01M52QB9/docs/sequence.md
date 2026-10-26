@@ -1,7 +1,7 @@
 # Séquences — mission terminaux-paiement-en-ligne-01M52QB9
 
-> État : **planifiée** (plan finalisé le 22/10/2026). Diagrammes tirés du plan et des contrats
-> (`contracts/vendors.md`, `payments.md`, `qr-payments.md`) ; à refaire d'après le code livré.
+> État : **relue, 14 lots approuvés (26/10/2026) ; accept/merge à venir**. Diagrammes refaits le 26/10/2026 d'après le
+> code livré (lane `n` : `payments.service.ts`, `reversal.service.ts`, `vendor-sessions.service.ts`, `payment-requests/`).
 
 ## Flux internes propres à cette mission
 
@@ -17,11 +17,17 @@ Sources : [`sequence-session-vendeur.excalidraw`](diagrams/sequence-session-vend
 
 Sources : [`sequence-paiement-bracelet.excalidraw`](diagrams/sequence-paiement-bracelet.excalidraw), [`sequence-paiement-bracelet.svg`](diagrams/sequence-paiement-bracelet.svg).
 
-### Annulation d'une vente
+### Annulation d'une vente, au terminal
 
-![Annulation d'une vente](diagrams/sequence-annulation.png)
+![Annulation au terminal](diagrams/sequence-annulation.png)
 
 Sources : [`sequence-annulation.excalidraw`](diagrams/sequence-annulation.excalidraw), [`sequence-annulation.svg`](diagrams/sequence-annulation.svg).
+
+### Annulation d'une vente, au back-office
+
+![Annulation au back-office](diagrams/sequence-annulation-backoffice.png)
+
+Sources : [`sequence-annulation-backoffice.excalidraw`](diagrams/sequence-annulation-backoffice.excalidraw), [`sequence-annulation-backoffice.svg`](diagrams/sequence-annulation-backoffice.svg).
 
 ### Paiement par QR commerçant
 
@@ -29,17 +35,20 @@ Sources : [`sequence-annulation.excalidraw`](diagrams/sequence-annulation.excali
 
 Sources : [`sequence-qr-commercant.excalidraw`](diagrams/sequence-qr-commercant.excalidraw), [`sequence-qr-commercant.svg`](diagrams/sequence-qr-commercant.svg).
 
-Le QR client suit le même schéma à l'envers : l'app crée le jeton, le terminal le présente dans `POST /payments`, et
-la base verrouille, puis le moteur écrit, puis la base confirme (contracts/qr-payments.md).
+### Paiement par QR client
+
+![Paiement par QR client](diagrams/sequence-qr-client.png)
+
+Sources : [`sequence-qr-client.excalidraw`](diagrams/sequence-qr-client.excalidraw), [`sequence-qr-client.svg`](diagrams/sequence-qr-client.svg).
 
 Régénération : `python3.14 diagrams/generate.py diagrams ~/.claude/skills/illustre/references/render_excalidraw.py`
 (police sans-serif imposée, rendus relus).
 
 ## Lien avec la synthèse globale
-Contribue à : `docs/05-sequence-diagrams.md` — le paiement en ligne par bracelet y existe déjà (mission 4, lecture
-seule) ; il est complété par la vente attribuée au vendeur et l'annulation (flux transverse remonté après les
-relectures).
+Contribue à : `docs/05-sequence-diagrams.md` — le flux « Paiement en ligne par bracelet » y existe (mission 4, lecture
+seule) ; il est complété par une section « Encaissement en ligne » (vente attribuée au vendeur, annulation, QR) remontée
+le 26/10/2026.
 
-## Nécessaire pour cette mission ? Oui — quatre flux nouveaux entre terminal, API, moteur, base et app.
-## Complet ? Oui pour le plan — à refaire d'après le code livré.
-## Validé par : Agent, par délégation du porteur (22/10/2026)
+## Nécessaire pour cette mission ? Oui — six flux nouveaux entre terminal, back-office, API, moteur, base et app.
+## Complet ? Oui — refaits d'après le code livré le 26/10/2026 (à confirmer par le porteur).
+## Validé par : en attente du porteur (proposition de l'Agent, 26/10/2026)

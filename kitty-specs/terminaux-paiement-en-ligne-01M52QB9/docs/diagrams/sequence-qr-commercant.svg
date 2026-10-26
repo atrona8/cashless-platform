@@ -9,48 +9,52 @@
 <polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="191.0,294.4 693.6666666666666,294.4" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,294.4 674.3598503050785,304.94736184929246 674.3598503050785,283.8526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="303.3333333333333" y="257.4" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,375.5111111111111 1727.0,375.5111111111111" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,375.5111111111111 1707.6931836384117,386.0584729604036 1707.6931836384117,364.96374926181863" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1062.7333333333333" y="338.5111111111111" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="695.6666666666666,456.6222222222222 193.0,456.6222222222222" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,456.6222222222222 212.3068163615882,446.0748603729297 212.3068163615882,467.1695840715147" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="329.3333333333333" y="419.6222222222222" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1212.3333333333333,537.7333333333333 709.6666666666666,537.7333333333333" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="709.6666666666666,537.7333333333333 728.9734830282548,527.1859714840409 728.9734830282548,548.2806951826258" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="809.6" y="500.73333333333335" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,618.8444444444444 1727.0,618.8444444444444" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,618.8444444444444 1707.6931836384117,629.3918062937369 1707.6931836384117,608.297082595152" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1083.5333333333333" y="581.8444444444444" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,699.9555555555555 1727.0,699.9555555555555" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,699.9555555555555 1707.6931836384117,710.502917404848 1707.6931836384117,689.4081937062631" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1088.7333333333331" y="662.9555555555555" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,781.0666666666667 1210.3333333333333,781.0666666666667" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1210.3333333333333,781.0666666666667 1191.026516971745,791.6140285159591 1191.026516971745,770.5193048173743" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="929.2" y="744.0666666666667" width="61.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="191.0,862.1777777777778 693.6666666666666,862.1777777777778" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,862.1777777777778 674.3598503050785,872.7251396270702 674.3598503050785,851.6304159284854" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="350.1333333333333" y="825.1777777777778" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="695.6666666666666,943.288888888889 193.0,943.288888888889" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,943.288888888889 212.3068163615882,932.7415270395966 212.3068163615882,953.8362507381814" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="386.5333333333333" y="906.288888888889" width="113.60000000000001" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,288.56 693.6666666666666,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,288.56 674.3598503050785,299.1073618492925 674.3598503050785,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="303.3333333333333" y="251.56" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,361.56 1727.0,361.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,361.56 1707.6931836384117,372.1073618492925 1707.6931836384117,351.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1062.7333333333333" y="324.56" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,434.55999999999995 193.0,434.55999999999995" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,434.55999999999995 212.3068163615882,424.01263815070746 212.3068163615882,445.10736184929243" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="313.7333333333333" y="397.55999999999995" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,507.56 709.6666666666666,507.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="709.6666666666666,507.56 728.9734830282548,497.0126381507075 728.9734830282548,518.1073618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="809.6" y="470.56" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,580.56 1727.0,580.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,580.56 1707.6931836384117,591.1073618492924 1707.6931836384117,570.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1083.5333333333333" y="543.56" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,653.56 1727.0,653.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,653.56 1707.6931836384117,664.1073618492924 1707.6931836384117,643.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1088.7333333333331" y="616.56" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,726.56 1210.3333333333333,726.56" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1210.3333333333333,726.56 1191.026516971745,737.1073618492924 1191.026516971745,716.0126381507075" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="929.2" y="689.56" width="61.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,799.56 693.6666666666666,799.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,799.56 674.3598503050785,810.1073618492924 674.3598503050785,789.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="282.5333333333333" y="762.56" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,872.5600000000001 193.0,872.5600000000001" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,872.5600000000001 212.3068163615882,862.0126381507076 212.3068163615882,883.1073618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="386.5333333333333" y="835.5600000000001" width="113.60000000000001" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,945.5600000000001 1210.3333333333333,945.5600000000001" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1210.3333333333333,945.5600000000001 1191.026516971745,956.1073618492925 1191.026516971745,935.0126381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="830.4" y="908.5600000000001" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Paiement par QR commerçant</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Le terminal affiche, le festivalier paie dans l’app</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">App festivalier</text>
 <text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
-<text x="443.3333333333333" y="275.67499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demande : montant, lignes</text>
-<text x="34.0" y="297.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="1218.3333333333335" y="356.7861111111111" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demande (empreinte du jeton)</text>
-<text x="34.0" y="378.56111111111113" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
-<text x="443.3333333333333" y="437.8972222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jeton une fois, 60 s</text>
-<text x="34.0" y="459.6722222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
-<text x="960.0" y="519.0083333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Payer : jeton, portefeuille</text>
-<text x="34.0" y="540.7833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
-<text x="1218.3333333333335" y="600.1194444444444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Verrouiller et contrôler</text>
-<text x="34.0" y="621.8944444444444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="1218.3333333333335" y="681.2305555555555" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vente puis confirmation</text>
-<text x="34.0" y="703.0055555555555" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
-<text x="960.0" y="762.3416666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Payé</text>
-<text x="34.0" y="784.1166666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="443.3333333333333" y="843.4527777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut (attente)</text>
-<text x="34.0" y="865.2277777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="443.3333333333333" y="924.563888888889" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Confirmée</text>
-<text x="34.0" y="946.338888888889" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
-<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Jeton inconnu, payé, annulé ou expiré : même refus. Aucun jeton en clair, même dans le registre d’idempotence. App : identité réelle en mission 10.</text>
+<text x="443.3333333333333" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demande : montant, lignes</text>
+<text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="1218.3333333333335" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demande (empreinte du jeton)</text>
+<text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="443.3333333333333" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">QR avec jeton, une fois</text>
+<text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="960.0" y="488.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Payer : jeton, portefeuille</text>
+<text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1218.3333333333335" y="561.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Verrouiller et contrôler</text>
+<text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="1218.3333333333335" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vente puis confirmation</text>
+<text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="960.0" y="707.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Payé</text>
+<text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="443.3333333333333" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut (attente 25 s au plus)</text>
+<text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="443.3333333333333" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Confirmée</text>
+<text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="960.0" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Tout refus : 409 unique</text>
+<text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Jeton inconnu, payé, annulé ou expiré : même refus. Lecture et annulation du festivalier : jeton en en-tête, 404 sans oracle. Identité réelle en mission 10.</text>
 </g>
 </svg>

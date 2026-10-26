@@ -23,6 +23,7 @@
 <polyline points="448,670.0 1000,857.5" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,857.5 978.3267111719205,861.27737360803 985.111321780506,841.303479976354" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <polyline points="448,870.0 1000,982.5" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,982.5 978.975776503726,988.9793538550324 983.1883752965631,968.3095357781787" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <polyline points="448,1070.0 1000,1107.5" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,1107.5 980.0226968106874,1116.714518830752 981.4524667867437,1095.668304783204" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,470.0 1000,1107.5" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,1107.5 979.388294369316,1099.8086027931183 995.3355355020897,1086.0001681181518" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Encaissement en ligne</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui prépare la caisse, qui encaisse, qui paie</text>
 <text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
@@ -40,6 +41,6 @@
 <text x="1225.0" y="862.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Annuler sa vente</text>
 <text x="1225.0" y="987.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Payer un QR</text>
 <text x="1225.0" y="1112.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Annuler hors fenêtre</text>
-<text x="60" y="1211.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">En bleu : session de vendeur et trois preuves du terminal. En orange : contre-passation, une seule fois. Catalogue au commerçant si l&#x27;organisateur le délègue.</text>
+<text x="60" y="1211.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">En bleu : session de vendeur et trois preuves du terminal. En orange : contre-passation, une seule fois. Hors fenêtre : jeton du superviseur au terminal, ou demande à deux personnes au back-office.</text>
 </g>
 </svg>

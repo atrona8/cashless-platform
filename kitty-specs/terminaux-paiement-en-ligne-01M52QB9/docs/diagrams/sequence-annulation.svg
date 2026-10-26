@@ -12,7 +12,7 @@
 <polyline points="191.0,288.56 1210.3333333333333,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,288.56 1191.026516971745,299.1073618492925 1191.026516971745,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="546.0666666666666" y="251.56" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1224.3333333333333,361.56 1727.0,361.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,361.56 1707.6931836384117,372.1073618492925 1707.6931836384117,351.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1315.8666666666666" y="324.56" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1331.4666666666665" y="324.56" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1224.3333333333333,434.55999999999995 1727.0,434.55999999999995" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,434.55999999999995 1707.6931836384117,445.10736184929243 1707.6931836384117,424.01263815070746" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="1331.4666666666665" y="397.55999999999995" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1224.3333333333333,507.56 1727.0,507.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,507.56 1707.6931836384117,518.1073618492925 1707.6931836384117,497.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
@@ -20,16 +20,16 @@
 <polyline points="1212.3333333333333,580.56 193.0,580.56" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,580.56 212.3068163615882,570.0126381507075 212.3068163615882,591.1073618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="592.8666666666667" y="543.56" width="217.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1212.3333333333333,653.56 193.0,653.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,653.56 212.3068163615882,643.0126381507075 212.3068163615882,664.1073618492924" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
-<rect x="598.0666666666666" y="616.56" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="695.6666666666666,726.56 193.0,726.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="193.0,726.56 212.3068163615882,716.0126381507075 212.3068163615882,737.1073618492924" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="355.3333333333333" y="689.56" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="191.0,799.56 1210.3333333333333,799.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,799.56 1191.026516971745,810.1073618492924 1191.026516971745,789.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="613.6666666666666" y="762.56" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1224.3333333333333,872.5600000000001 1727.0,872.5600000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,872.5600000000001 1707.6931836384117,883.1073618492925 1707.6931836384117,862.0126381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1310.6666666666665" y="835.5600000000001" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="592.8666666666667" y="616.56" width="217.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,726.56 193.0,726.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,726.56 212.3068163615882,716.0126381507075 212.3068163615882,737.1073618492924" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="598.0666666666666" y="689.56" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,799.56 193.0,799.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="193.0,799.56 212.3068163615882,789.0126381507075 212.3068163615882,810.1073618492924" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="355.3333333333333" y="762.56" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,872.5600000000001 1210.3333333333333,872.5600000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,872.5600000000001 1191.026516971745,883.1073618492925 1191.026516971745,862.0126381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="540.8666666666666" y="835.5600000000001" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1212.3333333333333,945.5600000000001 193.0,945.5600000000001" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,945.5600000000001 212.3068163615882,935.0126381507076 212.3068163615882,956.1073618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="592.8666666666667" y="908.5600000000001" width="217.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Annulation d’une vente</text>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Annulation au terminal</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Le vendeur de la vente dans la fenêtre ; sinon un superviseur</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Superviseur</text>
@@ -37,7 +37,7 @@
 <text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
 <text x="701.6666666666666" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Annuler (session du vendeur)</text>
 <text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="1476.6666666666665" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Même vendeur, même terminal ?</text>
+<text x="1476.6666666666665" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal, vendeur, vente ?</text>
 <text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
 <text x="1476.6666666666665" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Fenêtre (heure de la base)</text>
 <text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
@@ -45,16 +45,16 @@
 <text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
 <text x="701.6666666666666" y="561.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">201 : vente annulée</text>
 <text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="701.6666666666666" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Hors fenêtre : 403</text>
+<text x="701.6666666666666" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Autre vendeur : 422</text>
 <text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
-<text x="443.3333333333333" y="707.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jeton sur place</text>
+<text x="701.6666666666666" y="707.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Hors fenêtre : 409</text>
 <text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="701.6666666666666" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Annuler + jeton</text>
+<text x="443.3333333333333" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jeton sur place</text>
 <text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="1476.6666666666665" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Contre-passation (superviseur)</text>
+<text x="701.6666666666666" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Annuler + jeton d’approbation</text>
 <text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
 <text x="701.6666666666666" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">201 : vente annulée</text>
 <text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
-<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Seconde annulation : 409 (index unique en base). Au back-office : demande à deux personnes.</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Ordre des contrôles : terminal, vendeur, puis fenêtre. Seconde annulation : 409 ALREADY_REVERSED (index unique en base).</text>
 </g>
 </svg>

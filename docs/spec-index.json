@@ -559,7 +559,7 @@
   {
     "mission": "terminaux-paiement-en-ligne-01M52QB9",
     "titre_cas_usage": "Encaissement en ligne",
-    "statut": "planifiée",
+    "statut": "relue, 14 lots approuvés ; accept/merge à venir",
     "user_stories": [
       {
         "titre": "Le commerçant gère ses vendeurs",
@@ -606,7 +606,7 @@
       "Identification",
       "Ligne d'audit"
     ],
-    "resultat_mesurable": "un parcours complet (créer un vendeur et le catalogue, ouvrir une session, payer par bracelet en un aller-retour et en deux temps, payer par QR commerçant et par QR client, annuler) se déroule par l'API sans intervention directe en base.",
+    "resultat_mesurable": "un parcours complet (créer un vendeur et le catalogue, ouvrir une session, payer par bracelet en un aller-retour et en deux temps, payer par QR commerçant et par QR client, annuler) se déroule par l'API sans intervention directe en base. Prouvé de bout en bout (douze étapes, une seule écriture directe après amorçage) ; latence mesurée p95 ≈ 68,7 ms, p99 ≈ 84,3 ms.",
     "hypotheses": [
       "Un vendeur appartient à un commerçant et peut ouvrir une session sur tout terminal affecté à un point de vente de ce commerçant ; un terminal porte une seule session de vendeur à la fois.",
       "Les routes des vendeurs, des sessions de vendeur et du catalogue sont ajoutées au contrat avec les conventions existantes ; leur forme exacte est arrêtée au plan.",
@@ -614,7 +614,9 @@
       "La vérification du PIN (argon2id) est assez coûteuse pour ralentir des essais en masse et assez rapide pour une ouverture de session au comptoir ; ses paramètres sont arrêtés au plan.",
       "Le paiement par l'app d'un QR commerçant est appelé avec l'authentification du festivalier (compte au numéro vérifié) ; la confirmation par PIN ou biométrie dans l'app relève de la mission 10.",
       "Les frais et commissions d'une vente sont calculés par les règles `REALTIME` existantes ; aucune nouvelle règle de frais.",
-      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1, avec les codes du contrat."
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1, avec les codes du contrat.",
+      "Réalisé : le terminal ne liste que les vendeurs actifs et non bloqués ; un PIN mal formé est refusé en 422 ; un renvoi de la clé d'ouverture de session donne 409.",
+      "Réalisé : au back-office, `reversePayment` d'un `SUPERVISOR` ou `ORGANIZER_ADMIN` crée une demande `SALE_REVERSAL` (202), exécutée par l'approbation d'une seconde personne (ADR-122, ADR-129)."
     ],
     "contraintes": [
       "Les fonctions de la base font les règles",
@@ -627,7 +629,9 @@
       "Pas d'identification au guichet",
       "Écart de sécurité soumis au porteur",
       "Dette de sécurité nommée",
-      "Révocation d'une identification à deux"
+      "Révocation d'une identification à deux",
+      "Limites acceptées et consignées : OP-N76 (PIN vérifié dans l'API), OP-N77 (secrets de tous les processus), OP-N78 (purge des essais de PIN), OP-N79 (clé de session), OP-N80 (pool du verrou d'essai)",
+      "Secret distinct pour l'empreinte d'idempotence d'un PIN (ADR-126)"
     ],
     "cas_limites": [
       "Deux paiements envoyés en même temps avec la même lecture",
@@ -643,7 +647,10 @@
       "Autorité de débit à la passerelle ou en cours de bascule",
       "Téléphone personnel",
       "Plafond de solde d'un portefeuille non identifié",
-      "Identification d'un client dont la pièce expire"
+      "Identification d'un client dont la pièce expire",
+      "Annulation demandée deux fois au back-office par la même personne",
+      "Essais de PIN simultanés sur un même terminal (429)",
+      "Jeton de demande QR absent, faux ou d'un autre commerçant (404 ou 409 unique, sans oracle)"
     ],
     "fonctionnel": [
       "Vendeurs d'un commerçant",
@@ -672,7 +679,10 @@
       "Enrôlement et état de l'événement (OP-N74)",
       "Consultation d'un paiement",
       "Audit",
-      "Contrat et types"
+      "Contrat et types",
+      "Annulation au back-office par demande à deux personnes",
+      "Lecture et annulation d'une demande QR par le festivalier (jeton en en-tête)",
+      "Liste des vendeurs du terminal"
     ],
     "non_fonctionnel": [
       "Latence du paiement",
@@ -684,7 +694,8 @@
       "Isolation",
       "Aucun jeton QR en clair",
       "Pas de faux en production",
-      "Tests existants verts"
+      "Tests existants verts",
+      "Latence mesurée : p95 ≈ 68,7 ms et p99 ≈ 84,3 ms (seuils 200 et 500 ms)"
     ],
     "source": "kitty-specs/terminaux-paiement-en-ligne-01M52QB9/spec.md"
   }

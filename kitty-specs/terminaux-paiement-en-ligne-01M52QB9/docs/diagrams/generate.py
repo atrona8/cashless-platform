@@ -74,25 +74,33 @@ files.append(usecase('usecase-encaissement','Encaissement en ligne','Qui prépar
  [('Gérer les vendeurs','neutral'),('Gérer le catalogue','neutral'),('Ouvrir sa session (PIN)','primary'),('Encaisser par bracelet','primary'),('Encaisser par QR','primary'),('Annuler sa vente','accent'),('Payer un QR','neutral'),('Annuler hors fenêtre','accent')],
  [('Admin commerçant','Gérer les vendeurs'),('Admin commerçant','Gérer le catalogue'),('Admin organisateur','Gérer le catalogue'),
   ('Vendeur (terminal)','Ouvrir sa session (PIN)'),('Vendeur (terminal)','Encaisser par bracelet'),('Vendeur (terminal)','Encaisser par QR'),('Vendeur (terminal)','Annuler sa vente'),
-  ('Festivalier (app)','Payer un QR'),('Superviseur','Annuler hors fenêtre')],
- note="En bleu : session de vendeur et trois preuves du terminal. En orange : contre-passation, une seule fois. Catalogue au commerçant si l'organisateur le délègue.",H=1000))
+  ('Festivalier (app)','Payer un QR'),('Superviseur','Annuler hors fenêtre'),('Admin organisateur','Annuler hors fenêtre')],
+ note="En bleu : session de vendeur et trois preuves du terminal. En orange : contre-passation, une seule fois. Hors fenêtre : jeton du superviseur au terminal, ou demande à deux personnes au back-office.",H=1000))
 P=lambda k,l,s='neutral':(k,l,s)
 files.append(sequence('sequence-session-vendeur','Session de vendeur','L’essai est compté avant la vérification ; 5 échecs bloquent jusqu’au commerçant',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('b','Base centrale')],
- [('t','a','Vendeur et PIN (3 preuves)'),('a','b','Compter l’essai (validé)'),('b','a','Empreinte du PIN','ret'),('a','a','Vérifier (argon2id + secret)'),('a','b','Ouvrir la session (revérifiée)'),('a','t','Session ouverte, 12 h','ret'),('a','t','PIN faux : 401 neutre','bad'),('b','b','5e échec : vendeur bloqué','bad')],
- note="Même réponse pour PIN faux, vendeur inconnu, bloqué ou d’un autre commerçant. Limite consignée : la base croit l’API sur la vérification (OP-N76)."))
+ [('t','a','Vendeur et PIN (3 preuves)'),('a','a','Un essai à la fois (429 sinon)'),('a','b','Compter l’essai (validé)'),('b','a','Empreinte du PIN','ret'),('a','a','Vérifier (argon2id + secret)'),('a','b','Ouvrir la session (revérifiée)'),('a','t','Session ouverte, 12 h','ret'),('a','t','PIN faux : 401 neutre','bad'),('b','b','5e essai : vendeur bloqué','bad')],
+ note="Même 401 pour PIN faux, vendeur inconnu, bloqué ou d’un autre commerçant ; PIN mal formé : 422. Limite consignée : la base croit l’API (OP-N76)."))
 files.append(sequence('sequence-paiement-bracelet','Paiement par bracelet','Un aller-retour, une transaction : tout ou rien',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('e','Moteur d’écritures','accent'),P('b','Base centrale')],
- [('t','a','Lecture, lignes, session'),('a','b','Numéro du terminal'),('a','b','Terminal et session relus'),('a','b','Lecture enregistrée'),('a','b','Portefeuille payable'),('a','e','Vente PURCHASE'),('e','b','Écriture'),('a','b','Lignes et vendeur'),('a','b','Passage consommé'),('a','t','201 : vente, solde','ret'),('a','t','Refus : rien écrit','bad')],
- note="Prix : version courante ou dernière servie au terminal. Refus : passage non enregistré, la même lecture peut resservir ; numéro enregistré à part."))
-files.append(sequence('sequence-annulation','Annulation d’une vente','Le vendeur de la vente dans la fenêtre ; sinon un superviseur',
+ [('t','a','Lecture, lignes, session, époque'),('a','b','Terminal verrouillé, heure de la base'),('a','b','Session et vendeur relus'),('a','b','Lecture, portefeuille payable'),('a','e','Vente PURCHASE'),('e','b','Écriture'),('a','b','Lignes, vendeur, passage consommé'),('a','b','Numéro du terminal (accepté)'),('a','t','201 : vente, solde','ret'),('a','t','Refus : rien écrit, passage libre','bad')],
+ note="Prix : version courante ou dernière servie au terminal. Époque absente : 422 ; périmée : 409. Refus : numéro rangé à part, la même lecture peut resservir."))
+files.append(sequence('sequence-annulation','Annulation au terminal','Le vendeur de la vente dans la fenêtre ; sinon un superviseur',
  [P('t','Terminal','data'),P('s','Superviseur','data'),P('a','API publique','primary'),P('b','Base centrale')],
- [('t','a','Annuler (session du vendeur)'),('a','b','Même vendeur, même terminal ?'),('a','b','Fenêtre (heure de la base)'),('a','b','Contre-passation, une fois'),('a','t','201 : vente annulée','ret'),('a','t','Hors fenêtre : 403','bad'),('s','t','Jeton sur place'),('t','a','Annuler + jeton'),('a','b','Contre-passation (superviseur)'),('a','t','201 : vente annulée','ret')],
- note="Seconde annulation : 409 (index unique en base). Au back-office : demande à deux personnes."))
+ [('t','a','Annuler (session du vendeur)'),('a','b','Terminal, vendeur, vente ?'),('a','b','Fenêtre (heure de la base)'),('a','b','Contre-passation, une fois'),('a','t','201 : vente annulée','ret'),('a','t','Autre vendeur : 422','bad'),('a','t','Hors fenêtre : 409','bad'),('s','t','Jeton sur place'),('t','a','Annuler + jeton d’approbation'),('a','t','201 : vente annulée','ret')],
+ note="Ordre des contrôles : terminal, vendeur, puis fenêtre. Seconde annulation : 409 ALREADY_REVERSED (index unique en base)."))
+files.append(sequence('sequence-annulation-backoffice','Annulation au back-office','Deux personnes distinctes ; rien au grand livre avant l’approbation',
+ [P('p','Superviseur ou admin','data'),P('a','API publique','primary'),P('q','Seconde personne','data'),P('b','Base centrale')],
+ [('p','a','Annuler la vente + motif'),('a','b','Demande SALE_REVERSAL'),('a','p','202 : demande créée','ret'),('q','a','Approuver la demande'),('a','b','Contre-passation (2 personnes)'),('a','q','Vente annulée','ret'),('q','a','Même personne : refusé','bad')],
+ note="Rôle contrôlé sur l’événement de la vente (SUPERVISOR ou ORGANIZER_ADMIN, ADR-122 et ADR-129) ; auteur et valideur vérifiés par la base."))
 files.append(sequence('sequence-qr-commercant','Paiement par QR commerçant','Le terminal affiche, le festivalier paie dans l’app',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('f','App festivalier','data'),P('b','Base centrale')],
- [('t','a','Demande : montant, lignes'),('a','b','Demande (empreinte du jeton)'),('a','t','Jeton une fois, 60 s','ret'),('f','a','Payer : jeton, portefeuille'),('a','b','Verrouiller et contrôler'),('a','b','Vente puis confirmation'),('a','f','Payé','ret'),('t','a','Statut (attente)'),('a','t','Confirmée','ret')],
- note="Jeton inconnu, payé, annulé ou expiré : même refus. Aucun jeton en clair, même dans le registre d’idempotence. App : identité réelle en mission 10."))
+ [('t','a','Demande : montant, lignes'),('a','b','Demande (empreinte du jeton)'),('a','t','QR avec jeton, une fois','ret'),('f','a','Payer : jeton, portefeuille'),('a','b','Verrouiller et contrôler'),('a','b','Vente puis confirmation'),('a','f','Payé','ret'),('t','a','Statut (attente 25 s au plus)'),('a','t','Confirmée','ret'),('a','f','Tout refus : 409 unique','bad')],
+ note="Jeton inconnu, payé, annulé ou expiré : même refus. Lecture et annulation du festivalier : jeton en en-tête, 404 sans oracle. Identité réelle en mission 10."))
+files.append(sequence('sequence-qr-client','Paiement par QR client','L’app affiche, le terminal scanne et encaisse',
+ [P('f','App festivalier','data'),P('a','API publique','primary'),P('t','Terminal','data'),P('b','Base centrale')],
+ [('f','a','Créer un jeton de QR'),('a','b','Jeton (empreinte seule)'),('a','f','QR à usage unique, 60 s','ret'),('t','a','Paiement + jeton du QR'),('a','b','Verrouiller jeton et portefeuille'),('a','b','Vente puis confirmation'),('a','t','201 : vente, solde','ret'),('a','t','Tout refus : 422 unique','bad')],
+ note="Même transaction et mêmes contrôles que le bracelet. Jeton inconnu, expiré, utilisé ou d’un autre événement : même 422 QR_TOKEN_INVALID."))
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
 for f in files: print(r.render(f))
