@@ -335,3 +335,23 @@ réponse, un journal ou `api_idempotency`.
   posé avant `@Idempotent`, identifiant tiré du terminal authentifié par les gardes, jamais du corps.
 - Un PIN dans un corps idempotent passe par `pinFields` (ADR-126) ; un test qui compare l'empreinte stockée au HMAC du
   corps dérivé.
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP11 cycle 1 : rejet, cycle 2)
+
+Relecture : `tasks/WP11-paiement-bracelet/review-cycle-1.md`. Les deux majeurs sont introduits par le lot : à corriger.
+- **Constat 1 (majeur)** : dans `PaymentsService.refuse`, un échec de `DeviceSeqRegistry.reject` (`CL002`, `CL021`…)
+  empêche `settleRefusal` : une lecture falsifiée n'est plus consignée (`SIGNATURE_MISMATCH`). Corriger : l'effet
+  durable du refus (anomalie, consignation) a lieu dans tous les cas, puis l'erreur du registre est relancée. Test :
+  numéro déjà rangé + signature fausse → refus **et** une anomalie `SIGNATURE_MISMATCH`.
+- **Constat 2 (majeur)** : retirer `VendorSessionGuard.assert` laisse tout vert (`record_sale_attribution` masque la
+  suppression). Ajouter : un test de fermeture de session concurrente (la session est fermée pendant que la vente
+  attend un verrou : refus `409 VENDOR_SESSION_INVALID`, rien d'écrit), déterministe ; un test d'ordre des verrous
+  terminal → session (la garde après la prise du terminal). Les deux doivent tuer la mutation « garde retirée » et la
+  mutation « garde avant la prise du terminal ». Corriger le compte rendu, qui citait deux tests à tort.
+- **Mineurs, à traiter (tests simples)** : terminal suspendu entre la garde et la prise du verrou → refus
+  (`assert_device_active`, mutation M30) ; branches « rejeu côté moteur » et « rejeu côté registre » → `409
+  IDEMPOTENCY_KEY_REUSED`, rien de lié (M10, M11) ; cas `createPayment` de `media-isolation.spec.ts` : affecter le
+  terminal de B à un point de vente de B pour que le refus vienne bien de l'isolation (M31) ; concurrence « même clé,
+  même corps » (1 × 201, les autres `409 IDEMPOTENCY_KEY_IN_PROGRESS`, une vente, un débit) et « même clé, corps
+  différents » (`IDEMPOTENCY_KEY_REUSED`).
+- Vérifie toi-même que chaque nouveau test tue la mutation qu'il vise (M1, M10, M11, M12, M30, M31), puis annule-la.

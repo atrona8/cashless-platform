@@ -235,3 +235,9 @@ en production (test) ; aucune écriture directe dans `payment_request` (droits r
   posé avant `@Idempotent`, identifiant tiré du terminal authentifié par les gardes, jamais du corps.
 - Un PIN dans un corps idempotent passe par `pinFields` (ADR-126) ; un test qui compare l'empreinte stockée au HMAC du
   corps dérivé.
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP11 cycle 1)
+- Un refus du registre des numéros (`DeviceSeqRegistry.reject`) ne doit jamais empêcher l'effet durable d'un refus
+  (anomalie, consignation) : même correction que WP11 cycle 2, avec test.
+- Garde de session de vendeur : test de fermeture de session concurrente et d'ordre terminal → session, qui tuent les
+  mutations « garde retirée » et « garde avant la prise du terminal ».

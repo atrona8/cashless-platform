@@ -254,3 +254,5 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
   (écoute de `process.on('warning')` pendant une vente).
 - ADR-128 : l'extension `authority_epoch` de `STALE_AUTHORITY_EPOCH` est au contrat ; le compte d'opérations de
   `media-isolation.spec.ts` inclut `createPayment` et `getPayment` (`x-process: public`).
+- Relecture WP11 cycle 1 : test d'ordre des verrous terminal → session → QR → bracelet → portefeuille en charge ;
+  sonde de la mission 7 (numéro posé hors idempotence puis paiement falsifié : anomalie consignée).
