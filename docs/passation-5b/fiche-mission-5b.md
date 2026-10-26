@@ -32,6 +32,9 @@ README.md ni docs/SPECIFICATION.md sauf besoin précis (une section citée).
 ## Base de données — IMPORTANT
 - La base de test partagée `cashless_test` (Docker, 127.0.0.1:5433, utilisateur `postgres` sans mot de passe) est
   réservée à l'orchestrateur : **ne lance ni `reset-db`, ni `test:pgtap`, ni Jest dessus.**
+  Attention : les tests Jest (`apps/api/test/support/db.ts`, `src/config/config.ts`) visent `cashless_test` en
+  dur ; `PGDATABASE` ne suffit pas. Pour Jest sur ta base, pose toutes les `DATABASE_URL_*` (OWNER, APP, PLATFORM,
+  TAGKEYS, PERSO, TAGCHECK, KEYADMIN…) vers `cashless_wpXX`, sinon ne lance pas Jest.
 - Pour valider du SQL, utilise **ta propre base** sur le même serveur Docker (pgTAP n'existe que là), nommée
   `cashless_wpXX` (XX = numéro de ton lot), jamais `cashless_test`. Depuis la lane :
   `export PATH=<SCRATCHPAD>/bin:/Library/PostgreSQL/18/bin:$PATH PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpXX`

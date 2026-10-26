@@ -14,7 +14,7 @@ test, générateur du document Word.
 | WP04 | Paiement, annulation, approbation sur place (0033) | Approuvé (cycle 1, `f46a5d2b`) | lane-d |
 | WP05 | Demandes de paiement QR (0034) | Approuvé (cycle 2, `2ec3dee3`) | lane-e |
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
-| WP07 | Droits de la base | **En cours** (implémenteur lancé le 23/10 ; lanes b à f fusionnées à la main dans lane-g) | lane-g |
+| WP07 | Droits de la base | **En relecture** (cycle 1 ; implémentation reprise le 26/10, `2d665284`) | lane-g |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
 | WP09, WP10 | Vendeurs ; catalogue (API) | Prévus (attendent WP07) | — |
 | WP11 → WP12, WP13 → WP14 | Paiement, annulation, QR, preuves | Prévus | — |
@@ -54,6 +54,8 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 - `colima start` puis `docker start cashless-platform-pg17` si la base ne répond pas (`pg_isready -h 127.0.0.1 -p 5433`).
 - `pg_prove` : à refaire à chaque session (CPAN `TAP-Parser-SourceHandler-pgTAP-3.37`, petit script `bin/pg_prove`
   qui fait `exec perl -I<dossier>/lib <dossier>/bin/pg_prove "$@"`), voir `scripts/env.sh`.
+  Variante sans téléchargement (26/10) : copier `scripts/pg_prove-docker` en `<SCRATCHPAD>/bin/pg_prove` ; il copie
+  le dossier courant dans le conteneur et y lance son `pg_prove`.
 - Résultats de référence au 23/10 : pgTAP 36 fichiers / 2521 tests (lane-d) ; Jest 107 suites, 1833 réussis,
   6 ignorés (WP08 + WP06).
 
