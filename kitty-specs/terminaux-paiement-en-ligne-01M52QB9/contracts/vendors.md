@@ -28,14 +28,19 @@ ligne d'audit (sans PIN ni empreinte). `Idempotency-Key` sur chaque écriture (p
 
 ## Liste des vendeurs pour le terminal (A22)
 
-`GET /vendor-sessions/vendors` (terminal, trois preuves) : `vendor_id` et `display_name` des vendeurs `ACTIVE` du
-commerçant du point de vente du terminal, rien d'autre. Sert l'écran de choix du vendeur.
+`GET /vendor-sessions/vendors` (terminal, trois preuves) : `vendor_id` et `display_name` des vendeurs `ACTIVE` et non
+bloqués du commerçant du point de vente du terminal, rien d'autre (choix du prompt T040, plus strict, retenu à la
+relecture WP09 cycle 1 ; l'ouverture reste uniforme, NFR-004). Sert l'écran de choix du vendeur.
 
 ## Ouverture de session : « compter d'abord » (A6)
 
 `POST /vendor-sessions` `{vendor_id, pin}` — terminal, trois preuves, modes `CATALOG_POS` et `KEYPAD_TPE` ; `@Idempotent`
-avec `transient: true` (aucune réponse enregistrée ; un renvoi refait l'essai, qui est compté). Le terminal envoie au
-plus un essai à la fois : un second essai simultané du même terminal reçoit `429`.
+avec `transient: true`, `Idempotency-Key` UUID, le PIN n'entrant dans l'empreinte de la requête que sous un dérivé
+argon2 (secret distinct `VENDOR_PIN_IDEMPOTENCY_SECRET`, ADR-126). Renvoi de la même clé : après un succès,
+`409 CONFLICT_STATE` ; après un échec, le `401` est rejoué ; l'essai n'est jamais recompté. Même clé avec un autre PIN :
+`409 IDEMPOTENCY_KEY_REUSED`, jamais un rejeu. Le terminal envoie au plus un essai à la fois : un verrou de requête
+(`@RequestLock`, pris avant l'idempotence et le dérivé) fait recevoir `429` à un second essai simultané du même
+terminal. PIN mal formé : `422 VALIDATION_FAILED`, contrôlé avant toute écriture, sans écho.
 
 1. **Transaction A (validée)** : `begin_vendor_pin_check(vendor, device)` (SECURITY DEFINER, verrous dans l'ordre
    global : terminal, puis vendeur `FOR UPDATE`). Si le vendeur est `ACTIVE`, non bloqué et du commerçant du point de
