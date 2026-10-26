@@ -16,7 +16,7 @@ test, générateur du document Word.
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
 | WP07 | Droits de la base | Approuvé (cycle 1, `2d665284`, 26/10) | lane-g |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
-| WP09, WP10 | Vendeurs ; catalogue (API) | WP10 approuvé (cycle 1, `d7ae89bd`) ; WP09 **en cours** (26/10 ; lanes g et h fusionnées à la main dans i et j, conflits kitty-specs résolus sur feat) | lane-i, lane-j |
+| WP09, WP10 | Vendeurs ; catalogue (API) | WP10 approuvé (cycle 1, `d7ae89bd`) ; WP09 **cycle 2** (rejet cycle 1 : verrou non prouvé ; ADR-126) (26/10 ; lanes g et h fusionnées à la main dans i et j, conflits kitty-specs résolus sur feat) | lane-i, lane-j |
 | WP11 → WP12, WP13 → WP14 | Paiement, annulation, QR, preuves | Prévus | — |
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.

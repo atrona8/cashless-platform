@@ -171,6 +171,9 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne-01M52QB9
 - [ ] spec-kitty merge --mission terminaux-paiement-en-ligne-01M52QB9
 
+> **Décision du porteur du 26/10/2026 (ADR-126, relecture WP09)** : un PIN de vendeur n'entre dans l'empreinte
+> d'idempotence (`request_hash`) que sous un dérivé argon2 ; corrigé au cycle 2 de WP09, aucune dette héritée.
+
 ## Mission 6 — Recharges, caisses et PSP
 
 > **Hérité de la mission 4 (bracelets-nfc)** : créer le compte de caisse `A-CAISSE-<n° de série>` à l'ouverture d'une

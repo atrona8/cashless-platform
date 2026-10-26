@@ -121,6 +121,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)
+- Un PIN de vendeur n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 (ADR-126, 26/10/2026, mission 5b).
 - Authentification par type d'appelant ; jeton d'approbation pour la seconde personne au guichet. (§10.3)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
 

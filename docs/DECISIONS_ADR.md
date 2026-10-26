@@ -1779,3 +1779,20 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conditions de bornage.** `apps/api/test/unit/config.spec.ts` (liste des secrets obligatoires en production, secrets
   distincts deux à deux, démarrage refusé sans eux) ; aucun nouveau secret ne s'ajoute à `loadConfig` sans entrée ici.
 - **Références.** `apps/api/src/config/config.ts` ; OP-N77.
+
+## ADR-126 — Idempotence : un PIN n'entre dans l'empreinte de la requête que sous un dérivé argon2
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur après la relecture de WP09 de la mission 5b, question 2).
+  Renforcement : aucun point ouvert.
+- **Contexte.** L'empreinte `api_idempotency.request_hash` (HMAC-SHA256 du corps, clé `IDEMPOTENCY_HMAC_KEY`) est
+  gardée 30 jours. Les corps qui portent un PIN de vendeur (ouverture de session au terminal, création et changement
+  de PIN au back-office) y entraient en clair : avec la base et la clé HMAC volées, un PIN à 6 chiffres se retrouve en
+  10^6 calculs HMAC, contre 10^6 calculs argon2 pour `vendor.pin_hash`. Retirer le PIN de l'empreinte ne convient pas :
+  la même clé avec un autre PIN rejouerait la réponse d'un succès.
+- **Décision.** Avant le calcul de l'empreinte, le PIN est remplacé par un dérivé argon2 déterministe (même socle et
+  mêmes paramètres que WP08, sel tiré de la clé d'idempotence et de la portée) : le rejeu reste lié au PIN, la force
+  brute hors ligne redevient aussi coûteuse que sur `pin_hash`.
+- **Conditions de bornage.** Test qui échoue si un corps portant un PIN produit une empreinte calculable sans argon2
+  (empreinte différente du HMAC du corps en clair) ; test qu'une même clé avec un autre PIN est refusée (`409`), jamais
+  rejouée.
+- **Références.** WP09 cycle 2 (`apps/api/src/vendors/`, `apps/api/src/idempotency/`) ; relecture WP09 cycle 1.

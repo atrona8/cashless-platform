@@ -287,3 +287,17 @@ Le relecteur distinct vérifie, refus par refus :
 - Relecture WP02 cycle 1, mineur 2 : deux ouvertures de session simultanées sur un même terminal pour deux vendeurs
   différents rendent `23505` (unicité) en base. L'API doit le traduire en réponse prévue par le contrat (429 / refus
   propre), jamais en 500, avec un test.
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP09 cycle 1 : rejet, cycle 2)
+- Bloquant 1 (à corriger) : aucun test ne prouve le verrou « un essai de PIN à la fois par terminal » (mutations M3a,
+  verrou relâché aussitôt pris, et M3b, verrou jamais relâché, laissent tout vert). Exiger un `429` pour deux essais
+  concurrents du même terminal (concurrence réelle, pas de chance) ; prouver le verrou libre après un succès, un refus
+  de PIN et une erreur (essai suivant accepté).
+- ADR-126 (décision du porteur) : dans l'empreinte d'idempotence, tout PIN (ouverture de session, création de vendeur,
+  changement de PIN) est remplacé par un dérivé argon2 déterministe (socle WP08, sel tiré de la clé et de la portée).
+  Tests : empreinte ≠ HMAC du corps en clair ; même clé avec un autre PIN → `409`, jamais de rejeu. Retouche hors carte
+  autorisée de `apps/api/src/idempotency/` si l'empreinte s'y calcule ; aucun autre comportement de l'idempotence ne
+  change (rejouer la batterie).
+- Mineurs du relecteur à traiter si simples : `429` enregistré puis rejoué sous la même clé ; clé d'idempotence non
+  contrôlée comme UUID. Sinon, les décrire.
+
