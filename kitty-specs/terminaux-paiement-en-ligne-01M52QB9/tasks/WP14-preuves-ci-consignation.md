@@ -268,3 +268,11 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
 - `x-process: public` sur `reversePayment` (convention de WP11 et WP13, retiré au WP12 seulement pour le compte du
   balayage) : le remettre, ajouter son cas à `media-isolation.spec.ts` et additionner les comptes (41 + 5 + 1 = 47).
 - Fichier de cas `payments.qr.cases.ts` (WP13) exécuté après `payments.cases.ts` (ouverture de session).
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP13 cycle 1 : approuvé)
+- Mineur 1 : les 5 cas des demandes de paiement QR dans `media-isolation.spec.ts` amorcent la demande de A avec un
+  jeton inconnu ; le refus se produirait sans isolation. Amorcer avec un jeton **connu et valide** de A et l'envoyer
+  depuis un festivalier (et un terminal) de B : `404` en GET et en annulation, `409` en paiement, A inchangée.
+  Mutation à tuer : filtre de prestataire retiré du service.
+- Mineur 2 : la garde `written.replayed` de `pay` (`payment-request.service.ts`) survit à la mutation `if (false)` ;
+  ajouter le test du rejeu de la même clé d'idempotence sur `payPaymentRequest` (une seule vente, réponse rejouée).
