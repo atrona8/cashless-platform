@@ -1,20 +1,22 @@
 ---
 work_package_id: WP12
-title: "Annulation"
+title: Annulation
 dependencies: [WP11]
 requirement_refs: [FR-016, FR-017, NFR-005, C-001, C-003, C-009]
 planning_base_branch: feat/terminaux-paiement-en-ligne
 merge_target_branch: feat/terminaux-paiement-en-ligne
 branch_strategy: Planning artifacts for this mission were generated on feat/terminaux-paiement-en-ligne. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/terminaux-paiement-en-ligne unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-terminaux-paiement-en-ligne-01M52QB9
+base_commit: fa32049a0f86f2aa343f418641decb2846b3bd86
+created_at: '2026-10-26T14:19:24.378912+00:00'
 subtasks: [T055, T056, T057, T058, T059, T060]
-phase: "Phase 3 - Routes"
+phase: Phase 3 - Routes
+agent: claude
 history:
 - timestamp: '2026-10-22T14:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks-packages
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: apps/api/
 create_intent:
 - apps/api/src/reversals/reversals.module.ts
@@ -36,6 +38,7 @@ owned_files:
 - apps/api/test/unit/reversals/**
 - apps/api/test/unit/approval/action-registry.spec.ts
 - apps/api/test/integration/end-to-end/device-auth-cases/reversals.cases.ts
+role: implementer
 tags: []
 tracker_refs: []
 ---
