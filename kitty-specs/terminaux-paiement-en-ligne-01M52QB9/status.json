@@ -2,9 +2,9 @@
   "event_count": 123,
   "last_event_id": "01M5WJ5YDM7RGRS9KF88QVJ6YT",
   "materialized_at": "2026-10-26T16:54:57.716229+00:00",
-  "mission_number": "1",
+  "mission_number": "",
   "mission_slug": "terminaux-paiement-en-ligne-01M52QB9",
-  "mission_type": "software-dev",
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,442 +20,202 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ4V1C00P9CYWB8XTVCKS3",
       "last_transition_at": "2026-10-26T16:54:21.484406+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation finie (60b24a43) ; check contrats, lint, typecheck verts ; Jest API rejoué par l'orchestrateur : 101 suites, 1705 tests verts. --force (accord du porteur 23/10) : seuls status.*, baseline-tests.json diffèrent de feat après réalignement",
-        "Verdict APPROUVÉ du relecteur distinct (cycle 1, 3 mineurs reportés à WP12/WP13), enregistré par l'orchestrateur. --force (accord du porteur 23/10) : seuls status.*, baseline-tests.json diffèrent de feat"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP01-contrat-api-types/review-cycle-1.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP01-contrat-api-types/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 10029,
-      "shell_pid_created_at": "1792750577.548609",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done"
-      }
+      "shell_pid": 18352,
+      "shell_pid_created_at": "1792682030.113067"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5WJ4XRXPMBPARKSSJ60RFVP",
       "last_transition_at": "2026-10-26T16:54:24.285274+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation finie (b5641a30) ; pgTAP rejoué par l'orchestrateur : 34 fichiers, 2239 tests verts ; Jest API 1704/1705, seul claim-code-order.spec.ts (délai, instabilité connue) vert rejoué seul. --force (accord du porteur 23/10) : seuls status.*, baseline-tests.json diffèrent de feat après réalignement",
-        "Cycle 2 (f08f1394) : purge des essais de PIN au changement de PIN / désactivation / blocage ; pgTAP rejoué par l'orchestrateur : 34 fichiers, 2249 verts. --force (accord du porteur 23/10) : seuls artefacts du runtime diffèrent de feat",
-        "Verdict APPROUVÉ du relecteur distinct (cycle 2), enregistré par l'orchestrateur ; absence de purge dans set_device_status jugée sans effet (essai lié au terminal, ACTIVE exigé). --force (accord du porteur 23/10) : seuls artefacts du runtime"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP02-base-vendeurs-sessions/review-cycle-2.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP02-base-vendeurs-sessions/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 15598,
-      "shell_pid_created_at": "1792751254.144922",
-      "subtasks": {
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done"
-      }
+      "shell_pid": 12574,
+      "shell_pid_created_at": "1792750898.487476"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5WJ50EJFBX3QM6A2M5H6M5P",
       "last_transition_at": "2026-10-26T16:54:27.026322+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation finie (3e475563) ; pgTAP rejoué par l'orchestrateur sur cashless_test : 34 fichiers, 2234 tests verts. --force (accord du porteur 23/10) : seuls status.json, status.events.jsonl, baseline-tests.json diffèrent de feat après réalignement",
-        "Cycle 2 (b8eabcf4) : clé (device_id, pos_id, version), quantité 1.0, lignes à 100 car. ; pgTAP rejoué par l'orchestrateur : 34 fichiers, 2250 verts. --force (accord du porteur 23/10) : seuls artefacts du runtime",
-        "Verdict APPROUVÉ du relecteur distinct (cycle 2 ; un mineur : index device_catalog_served_last_idx redondant), enregistré par l'orchestrateur. --force (accord du porteur 23/10) : seuls artefacts du runtime"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP03-base-catalogue/review-cycle-2.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP03-base-catalogue/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 18368,
-      "shell_pid_created_at": "1792751530.566398",
-      "subtasks": {
-        "T011": "done",
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
-      }
+      "shell_pid": 12952,
+      "shell_pid_created_at": "1792750928.363716"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ55WE644X8CHVXG992VEZ",
       "last_transition_at": "2026-10-26T16:54:32.590932+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Rejoué par l'orchestrateur sur cashless_test : pgTAP complet 36 fichiers / 2521 tests PASS ; Jest complet 101 suites, 1705 réussis, 6 ignorés, 0 échec. --force : garde kitty-specs ne liste que des artefacts du runtime après réalignement b3077c3c.",
-        "Verdict du relecteur distinct (cycle 1) : APPROUVÉ, 3 mineurs + 2 informatifs (rapport WP04-review-cycle-1). Enregistré par l'orchestrateur au nom du relecteur : garde kitty-specs de la lane d, seuls artefacts runtime. Reports : WP07 (REVOKE INSERT/UPDATE sale_attribution, vendor_id dans la clé composite), WP12 (used_at non renseigné), tests manquants (session expirée, valideur non SUPERVISOR) vers WP07."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP04-base-paiement-annulation/review-cycle-1.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP04-base-paiement-annulation/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 32184,
-      "shell_pid_created_at": "1792754024.392866",
-      "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done"
-      }
+      "shell_pid": 23573,
+      "shell_pid_created_at": "1792752243.140467"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5WJ5B93X7E655AH0STKFBRJ",
       "last_transition_at": "2026-10-26T16:54:38.115731+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Rejoué par l'orchestrateur sur cashless_test : pgTAP complet 37 fichiers / 2652 PASS ; Jest complet 101 suites, 1705 réussis, 6 ignorés, 0 échec. --force : garde kitty-specs, seuls artefacts runtime après réalignement.",
-        "Cycle 2 (2ec3dee3) rejoué par l'orchestrateur sur cashless_test : pgTAP 37 fichiers / 2668 PASS ; Jest 101 suites, 1705 réussis, 6 ignorés, 0 échec. --force : garde kitty-specs, seuls artefacts runtime après réalignement.",
-        "Verdict du relecteur distinct (cycle 2) : APPROUVÉ, 5 constats du cycle 1 traités, 14/14 mutants tués, 0034 non affaiblie (STABLE→VOLATILE seulement) ; 2 mineurs (libellé du témoin 117, deux lignes > 100 car.). Enregistré par l'orchestrateur au nom du relecteur : garde kitty-specs de la lane e, seuls artefacts runtime."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP05-base-demandes-qr/review-cycle-2.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP05-base-demandes-qr/review-cycle-2.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 42778,
-      "shell_pid_created_at": "1792756242.708894",
-      "subtasks": {
-        "T021": "done",
-        "T022": "done",
-        "T023": "done",
-        "T024": "done"
-      }
+      "shell_pid": 40698,
+      "shell_pid_created_at": "1792755722.737797"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ537B5J2XYYMW69JC7CTZ",
       "last_transition_at": "2026-10-26T16:54:29.867914+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémentation (a7525775) ; pgTAP rejoué par l'orchestrateur : 34 fichiers, 2193 verts ; Jest API 1704/1705, seul claim-code-order.spec.ts (délai, instabilité connue) vert seul. Ligne ATTEMPT_RESULTS transférée à WP08. --force (accord du porteur 23/10) : seuls artefacts du runtime",
-        "Verdict APPROUVÉ du relecteur distinct (cycle 1, 3 mineurs : refus rapide possible dans check_device_enrollment_code, CL031/ATTEMPT_RESULTS par WP08, lignes > 100), enregistré par l'orchestrateur. --force (accord du porteur 23/10) : seuls artefacts du runtime"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP06-base-op-n74/review-cycle-1.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP06-base-op-n74/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 20833,
-      "shell_pid_created_at": "1792751811.268973",
-      "subtasks": {
-        "T025": "done",
-        "T026": "done",
-        "T027": "done"
-      }
+      "shell_pid": 13346,
+      "shell_pid_created_at": "1792750956.354593"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ5E463E3H6EAXZZ8NB8X2",
       "last_transition_at": "2026-10-26T16:54:41.030264+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Garde kitty-specs : seuls des artefacts du runtime diffèrent (status.*, baseline-tests.json) ; --force autorisé par le porteur. Implémentation 2d665284 ; pgTAP 39/2931 et Jest 101/1705 rejoués en série par l'orchestrateur le 26/10",
-        "Relecture cycle 1 (relecteur distinct) : APPROUVÉ, aucun constat bloquant ; 7 mutants de post-roles.sql attrapés. Verdict enregistré par l'orchestrateur au nom du relecteur ; --force : garde kitty-specs, artefacts du runtime seulement"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "role": "reviewer",
       "shell_pid": 44137,
-      "shell_pid_created_at": "1792756456.528206",
-      "subtasks": {
-        "T028": "done",
-        "T029": "done",
-        "T030": "done",
-        "T031": "done"
-      }
+      "shell_pid_created_at": "1792756456.528206"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "lane": "done",
       "last_event_id": "01M5WJ58JZHFR5AN3Q8ABKPTFN",
       "last_transition_at": "2026-10-26T16:54:35.359872+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Jest complet rejoué par l'orchestrateur sur lane-h + lane-f (0035) : 1833 réussis, 6 ignorés, 0 échec. @epic-web/invariant acceptée par le porteur (R-01, 20bddde4). --force : garde kitty-specs ne liste que des artefacts du runtime (status.json, baseline-tests.json, review-cycle-1.md) après réalignement 2c5114e0.",
-        "x",
-        "Verdict du relecteur distinct (cycle 1) : APPROUVÉ, 4 mineurs (rapport WP08-review-cycle-1). Enregistré par l'orchestrateur au nom du relecteur : garde kitty-specs de la lane h, seuls artefacts runtime. Suites : ADR pour la clé relâchée sur DEBIT_AUTHORITY_EDGE (écart §10.2 sans écriture) ; VENDOR_PIN_SECRET exigé par tous les processus soumis au porteur ; borne haute de <seq> vers WP11 ; test du verrou vers WP14."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP08-socle-applicatif/review-cycle-1.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP08-socle-applicatif/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 33158,
-      "shell_pid_created_at": "1792754204.013524",
-      "subtasks": {
-        "T032": "done",
-        "T033": "done",
-        "T034": "done",
-        "T035": "done",
-        "T036": "done",
-        "T037": "done",
-        "T038": "done"
-      }
+      "shell_pid": 18584,
+      "shell_pid_created_at": "1792751570.758881"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 6,
       "lane": "done",
       "last_event_id": "01M5WJ5GTDP2CYRG06KSXA6A9K",
       "last_transition_at": "2026-10-26T16:54:43.789300+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Garde kitty-specs : artefacts du runtime et prompts alignés sur feat ; --force autorisé par le porteur. Implémentation 10d9d59f ; Jest 111 suites / 1901 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10)",
-        "Relecture cycle 1 : REJETÉ (bloquant 1 : verrou d'essai de PIN non prouvé par les tests). Cycle 2 décidé par le porteur le 26/10, avec la décision ADR-126 (PIN remplacé par un dérivé argon2 dans request_hash). Verdict enregistré par l'orchestrateur",
-        "Cycle 2 (8ddd0863) ; Jest 111 suites / 1909 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; --force : garde kitty-specs, artefacts du runtime et prompts de feat",
-        "Relecture cycle 2 : REJETÉ (bloquant : ADR-126 non prouvée sur createVendor). Cycle 3 décidé par le porteur le 26/10 : test manquant, verrou du terminal avant le dérivé argon2, secret distinct pour le dérivé. Verdict enregistré par l'orchestrateur",
-        "Cycle 3 (69dc4908) ; Jest 111 suites / 1916 PASS / 6 ignorés rejoué en série par l'orchestrateur sur cashless_test. --force : seuls des artefacts du runtime (status.*, baseline-tests.json) diffèrent de feat, autorisation du porteur (missions 5a/5b)",
-        "Relecture cycle 3 : APPROUVÉ (69dc4908) par un relecteur distinct ; 15 suites / 286 PASS, 10 mutations toutes détectées ; aucun écart de sécurité ouvert. Verdict enregistré par l'orchestrateur (garde kitty-specs : seuls des artefacts du runtime diffèrent, autorisation du porteur)"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP09-vendeurs-sessions/review-cycle-3.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP09-vendeurs-sessions/review-cycle-3.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 30865,
-      "shell_pid_created_at": "1793017094.140849",
-      "subtasks": {
-        "T039": "done",
-        "T040": "done",
-        "T041": "done",
-        "T042": "done",
-        "T043": "done"
-      }
+      "shell_pid": 24924,
+      "shell_pid_created_at": "1793014650.460928"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ5KJCNESEQBNB6Y5CKZFN",
       "last_transition_at": "2026-10-26T16:54:46.604753+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Garde kitty-specs : artefacts du runtime seulement ; --force autorisé par le porteur. Implémentation d7ae89bd ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10)",
-        "Relecture cycle 1 (relecteur distinct) : APPROUVÉ, aucun constat bloquant ; 7 mutations attrapées. Verdict enregistré par l'orchestrateur ; --force : garde kitty-specs, artefacts du runtime seulement"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "role": "reviewer",
       "shell_pid": 8538,
-      "shell_pid_created_at": "1793009172.812661",
-      "subtasks": {
-        "T044": "done",
-        "T045": "done",
-        "T046": "done",
-        "T047": "done"
-      }
+      "shell_pid_created_at": "1793009172.812661"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M5WJ5P94WDZ8CKJDJK3A2CZ0",
       "last_transition_at": "2026-10-26T16:54:49.380912+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Cycle 1 (71770dce + retouches 7d46eaf2) ; Jest 122 suites / 2039 PASS / 6 ignorés rejoué en série par l'orchestrateur sur cashless_test. --force : seuls des artefacts du runtime diffèrent de feat après alignement, autorisation du porteur (missions 5a/5b)",
-        "Cycle 2 (2a6d13b7) ; Jest 123 suites / 2047 PASS / 6 ignorés rejoué en série par l'orchestrateur sur cashless_test. --force : seuls des artefacts du runtime diffèrent de feat, autorisation du porteur (missions 5a/5b)",
-        "Relecture cycle 2 : APPROUVÉ (2a6d13b7) par un relecteur distinct ; 12 suites / 124 PASS, 9 mutations ciblées tuées ; aucun écart de sécurité ouvert ; 2 mineurs en report. Verdict enregistré par l'orchestrateur (garde kitty-specs : seuls des artefacts du runtime diffèrent, autorisation du porteur)"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP11-paiement-bracelet/review-cycle-2.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP11-paiement-bracelet/review-cycle-2.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 49992,
-      "shell_pid_created_at": "1793023619.7541",
-      "subtasks": {
-        "T048": "done",
-        "T049": "done",
-        "T050": "done",
-        "T051": "done",
-        "T052": "done",
-        "T053": "done",
-        "T054": "done"
-      }
+      "shell_pid": 46079,
+      "shell_pid_created_at": "1793022544.109857"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ5S1PB5YQWV2XSY8QK72F",
       "last_transition_at": "2026-10-26T16:54:52.214442+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Orchestrateur : batterie en série sur cashless_test (lane-l d87ec992) : pgTAP 39 fichiers/2931 OK ; Jest 125/127, seuls claim-code-order et personalization en délai (instabilités connues, vertes seules). --force : garde kitty-specs, seuls artefacts du runtime (status.*, baseline-tests.json), autorisation du porteur.",
-        "Relecture cycle 1 : approuvé (relecteur distinct, sonnet ; verdict docs/passation-5b/rapports/WP12-review-cycle-1.md). Mineur M1 (chemin personne déduit de l'absence de terminal) repris par le report WP14 'when-device'. Enregistré par l'orchestrateur (--force : garde kitty-specs, artefacts du runtime seulement)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "role": "reviewer",
       "shell_pid": 52107,
-      "shell_pid_created_at": "1793024341.642166",
-      "subtasks": {
-        "T055": "done",
-        "T056": "done",
-        "T057": "done",
-        "T058": "done",
-        "T059": "done",
-        "T060": "done"
-      }
+      "shell_pid_created_at": "1793024341.642166"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ5VR68MTH06JG1NFQF9K0",
       "last_transition_at": "2026-10-26T16:54:54.983067+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Orchestrateur : batterie en série sur cashless_test (lane-m ee6d78ce) : Jest 127/127 suites (2085 verts, 6 ignorés) ; pgTAP 39 fichiers/2931 OK. --force : garde kitty-specs, seuls artefacts du runtime (status.*, baseline-tests.json), autorisation du porteur.",
-        "Relecture cycle 1 : approuvé (relecteur distinct, sonnet ; verdict docs/passation-5b/rapports/WP13-review-cycle-1.md). Mineurs 1 (cas media-isolation amorcés avec un jeton inconnu) et 2 (garde written.replayed de pay non couverte) reportés à WP14. Enregistré par l'orchestrateur (--force : garde kitty-specs, artefacts du runtime seulement)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "role": "reviewer",
       "shell_pid": 53085,
-      "shell_pid_created_at": "1793024426.20281",
-      "subtasks": {
-        "T061": "done",
-        "T062": "done",
-        "T063": "done",
-        "T064": "done",
-        "T065": "done"
-      }
+      "shell_pid_created_at": "1793024426.20281"
     },
     "WP14": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M5WJ5YDM7RGRS9KF88QVJ6YT",
       "last_transition_at": "2026-10-26T16:54:57.716229+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Orchestrateur : batterie en série sur cashless_test (lane-n 0ddc4b7e) : pgTAP 39/2931 OK ; Jest 133/135 suites, seuls claim-code-order et personalization en délai (verts seuls, 62/62) ; latence p95 68,7 ms. ADR-130/OP-N80 acceptés par le porteur. --force : garde kitty-specs, seuls status.* du runtime, autorisation du porteur.",
-        "Relecture cycle 1 : approuvé (relecteur distinct, sonnet ; verdict docs/passation-5b/rapports/WP14-review-cycle-1.md). 4 mineurs de qualité de test consignés pour la revue post-fusion. Enregistré par l'orchestrateur (--force : garde kitty-specs, artefacts du runtime seulement)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP14-preuves-ci-consignation/review-cycle-1.md",
         "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP14-preuves-ci-consignation/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 79947,
-      "shell_pid_created_at": "1793030972.917166",
-      "subtasks": {
-        "T066": "done",
-        "T067": "done",
-        "T068": "done",
-        "T069": "done",
-        "T070": "done",
-        "T071": "done",
-        "T072": "done"
-      }
+      "shell_pid": 69678,
+      "shell_pid_created_at": "1793028661.393679"
     }
   }
 }
