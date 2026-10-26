@@ -283,3 +283,8 @@ verrous ; aucune règle d'annulation réécrite en API à la place de la base (C
   pas une lecture ; échec de la consignation sans erreur du registre (propagé, rien d'écrit à moitié).
 - Tests de concurrence et de verrous sur le modèle de `payments-locks.spec.ts` (attente par `pg_stat_activity`,
   `commitWhileWaiting` / `waitBlocked`), jamais de sommeil arbitraire.
+
+## Reports de l'orchestrateur (26/10/2026, décision du porteur, ADR-129)
+- L'arbitrage « `reversePayment` par une personne : `403 APPROVAL_REQUIRED` » est **retiré**. Le contrat est suivi :
+  la route crée la demande `SALE_REVERSAL` (source `BACKOFFICE`, rôles de ADR-122, portée de l'événement de la vente)
+  et répond `202`, sans écriture au grand livre ; l'annulation s'exécute à l'approbation par une seconde personne.

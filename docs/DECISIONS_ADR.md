@@ -1846,3 +1846,18 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   hors du code) ; réponses contrôlées contre `openapi.yaml` (`contractViolations`).
 - **Références.** WP11 (`apps/api/src/payments/`), compte rendu `docs/passation-5b/rapports/WP11-implementation.md`.
 
+
+## ADR-129 — Annulation au back-office (mission 5b, WP12) : `reversePayment` d'une personne crée la demande `SALE_REVERSAL`
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur sur la contradiction signalée par l'implémenteur de
+  WP12). Sans affaiblissement de sécurité (deux personnes distinctes restent exigées) ; aucun point ouvert.
+- **Contexte.** L'arbitrage de l'orchestrateur du 22/10 (prompt WP12) voulait `403 APPROVAL_REQUIRED` pour un appelant
+  personne sur `reversePayment`, le back-office passant par une route générique `createApprovalRequest` qui n'existe
+  pas. Le contrat (`openapi.yaml`, prioritaire selon SPECIFICATION §0.3) annonce `202` avec création de la demande.
+- **Décision.** Le contrat est suivi : un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente (ADR-122)
+  appelle `reversePayment` ; l'API crée la demande `SALE_REVERSAL` (source `BACKOFFICE`) et répond `202`, sans écriture
+  au grand livre ; une seconde personne distincte l'approuve (`approveApprovalRequest`), ce qui exécute l'annulation.
+  L'arbitrage du 22/10 (403) est retiré.
+- **Conditions de bornage.** Tests de WP12 : aucun autre rôle, portée de l'événement de la vente, demandeur ≠
+  approbateur, aucune ligne de grand livre avant l'approbation, réponse `202` conforme au contrat.
+- **Références.** `apps/api/src/reversals/`, compte rendu `docs/passation-5b/rapports/WP12-implementation.md`.
