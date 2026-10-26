@@ -27,6 +27,7 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "terminaux-paiement-en-ligne-01M52QB9",
+  "status_phase": "1",
   "target_branch": "feat/terminaux-paiement-en-ligne",
   "topology": "coord",
   "vcs": "git",
