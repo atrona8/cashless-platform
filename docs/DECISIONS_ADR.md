@@ -1811,3 +1811,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
     en `429` ne calcule aucun argon2 ; un test prouve que le dérivé ne dépend pas de `VENDOR_PIN_SECRET`.
 - **Références.** WP09 cycles 2 et 3 (`apps/api/src/vendors/`, `apps/api/src/idempotency/`,
   `apps/api/src/vendor-pin/`, `apps/api/src/config/config.ts`) ; relectures WP09 cycles 1 et 2.
+
+## ADR-127 — Mission 5b : purge des essais de PIN et clé de session de vendeur reportées
+
+- **Statut** : Acceptée, 26 octobre 2026 (décisions du porteur sur deux questions de la relecture de WP07 de la
+  mission 5b). Points ouverts : OP-N78, OP-N79.
+- **Contexte.** La relecture des droits de la base (WP07) a relevé deux suites possibles : `vendor_pin_check` n'a pas
+  de purge ; `vendor_id` pourrait entrer dans la clé composite de `vendor_session` pour qu'une vente ne puisse être
+  attribuée qu'au vendeur de sa session.
+- **Décision.** Purge : point ouvert, levée à la mission 13 (recette V1). Clé composite : durcissement reporté (point
+  ouvert, levée proposée à la mission 11 avec OP-N76) ; la migration 0033 n'est pas retouchée dans la mission 5b.
+- **Conditions de bornage.** OP-N79 : `tests_payment_rights.sql` (aucun `INSERT`/`UPDATE` de `cashless_app` sur
+  `sale_attribution`), seule barrière d'ici la levée. OP-N78 : aucune donnée secrète dans `vendor_pin_check`.
+- **Références.** `packages/ledger-sql/migrations/0031_vendors.sql`, `0033_payments.sql` ; relecture WP07
+  (`docs/passation-5b/rapports/WP07-review-cycle-1.md`).

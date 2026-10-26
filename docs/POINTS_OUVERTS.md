@@ -56,6 +56,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
 | OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET` depuis le 26/10) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
+| OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
+| OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -747,6 +749,34 @@ Constaté par la relecture de WP08 de la mission 5b (constat 2) ; défaut antér
   processus.
 - **Test qui échoue si la limite s'élargit** : `apps/api/test/unit/config.spec.ts` (liste fermée des secrets
   obligatoires en production).
+
+### OP-N78 — Registre des essais de PIN sans purge (26 octobre 2026)
+
+Constaté par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la production : non ; levée : mission 13
+(recette V1), décision du porteur du 26/10/2026.**
+
+- **Constat.** `vendor_pin_check` (migration `0031_vendors.sql`) garde chaque essai de PIN ; aucune fonction ni aucun
+  travailleur ne retire les lignes hors de leur fenêtre (contrairement aux nonces et aux essais d'enrôlement,
+  OP-N75).
+- **Risque.** Croissance sans limite de la table (volume, durée des sauvegardes, coût des requêtes de comptage des
+  essais) ; aucune donnée secrète n'y est stockée (pas de PIN), donc pas de risque de confidentialité.
+- **Condition de levée.** Fonction de purge bornée à la fenêtre de comptage des essais (aucun essai encore compté ne
+  disparaît), exécutée par un rôle dédié (même décision qu'OP-N75) ; test pgTAP qui le prouve.
+
+### OP-N79 — Session de vendeur : `vendor_id` hors de la clé composite (26 octobre 2026)
+
+Proposé par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la production : non ; durcissement reporté par le
+porteur le 26/10/2026 ; levée proposée : mission 11, avec OP-N76.**
+
+- **Constat.** La référence de `sale_attribution` vers `vendor_session` ne porte pas `vendor_id` : le schéma n'impose
+  pas que le vendeur d'une vente soit celui de la session désignée. Seule la fonction d'écriture le garantit.
+- **Risque.** Une écriture directe dans `sale_attribution` pourrait attribuer une vente à un autre vendeur que celui
+  de la session. Ce chemin est fermé depuis WP07 (`REVOKE INSERT, UPDATE ON sale_attribution FROM cashless_app`) ;
+  il reste une seule barrière au lieu de deux.
+- **Condition de levée.** Clé composite `(vendor_session_id, vendor_id)` référencée par `sale_attribution` (retouche de
+  `0033_payments.sql` ou nouvelle migration), avec test pgTAP d'une attribution incohérente refusée.
+- **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_payment_rights.sql` (WP07 :
+  `cashless_app` n'a ni `INSERT` ni `UPDATE` sur `sale_attribution`).
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

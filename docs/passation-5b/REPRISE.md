@@ -59,11 +59,12 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 - Résultats de référence au 23/10 : pgTAP 36 fichiers / 2521 tests (lane-d) ; Jest 107 suites, 1833 réussis,
   6 ignorés (WP08 + WP06).
 
-## Questions ouvertes au porteur (26/10/2026, relecture WP07)
+## Décisions du porteur (26/10/2026)
 
-- `vendor_pin_check` n'a aucune fonction de purge : ouvrir un point dans `POINTS_OUVERTS.md` ? Quelle mission ?
-- Durcissement « `vendor_id` dans la clé composite de `vendor_session` » non fait (retouche de 0033 hors carte ;
-  le retrait d'INSERT/UPDATE sur `sale_attribution` ferme déjà le chemin). Reporter ou abandonner ?
+- Relecture WP09 cycle 2 : cycle 3, secret distinct `VENDOR_PIN_IDEMPOTENCY_SECRET`, verrou avant le dérivé (ADR-126).
+- Relecture WP07 : purge de `vendor_pin_check` → OP-N78 (mission 13) ; `vendor_id` dans la clé de session → OP-N79
+  (reporté, mission 11 proposée) ; ADR-127.
+- Tous les sous-agents sur sonnet.
 
 ## Décisions du porteur prises pendant cette session (23/10/2026)
 

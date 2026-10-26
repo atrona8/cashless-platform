@@ -276,7 +276,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
   ADR-94) ; lots de bracelets créés et modifiés par des fonctions seulement, sans `INSERT`/`UPDATE` direct de l'API
-  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ;
+  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ; `vendor_id` dans la
+  clé composite de session référencée par les ventes (OP-N79, ADR-127, durcissement reporté le 26/10/2026) ;
 - mission 12 : signature d'originalité NXP vérifiée aussi par le serveur à la personnalisation, avec la clé publique
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
 - mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
@@ -285,7 +286,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   équivalente) pour prouver la clé de signature dans la Secure Enclave ; d'ici là iOS reste borné au QR (OP-N64,
   ADR-106, décision du porteur du 19/10/2026) ; le port d'attestation iOS renvoie le `keyId` App Attest, stocké par le
   serveur, et l'app passe `iosClientDataHash` tel quel à `attestKey` ;
-- mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
+- mission 13 : purge du registre des essais de PIN des vendeurs (OP-N78, ADR-127, décision du porteur du
+  26/10/2026) ; preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
   aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45) ; grâce de 60 s
   au rafraîchissement d'un jeton d'appareil réexaminée selon les pertes réseau mesurées (OP-N65, ADR-108, mission 5a) ;

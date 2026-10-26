@@ -331,6 +331,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > de base qui seul exécute ces deux fonctions (ou preuve infalsifiable par l'API) ; test : `cashless_app` n'exécute
 > plus ces fonctions, une session sans vérification du processus dédié est refusée.
 >
+> **Hérité de la mission 5b, OP-N79 (ADR-127 ; durcissement reporté par le porteur le 26/10/2026)** : faire entrer
+> `vendor_id` dans la clé composite référencée par `sale_attribution` (`(vendor_session_id, vendor_id)`), pour que le
+> schéma refuse une vente attribuée à un autre vendeur que celui de sa session ; test pgTAP d'une attribution
+> incohérente refusée, puis lever le point.
+>
 > **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
 > toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,
 > quantité, index de clé) et `UPDATE (status)` de `media` sans motif. La création passe aujourd'hui par un `INSERT`
@@ -408,6 +413,10 @@ vendeurs et le catalogue : la mission les ajoute.
 > `VENDOR_PIN_IDEMPOTENCY_SECRET` (ADR-126, 26/10/2026) sont exigés
 > aussi par les processus des clés et de personnalisation, qui ne s'en servent pas. Faire lire à chaque processus ses
 > seuls secrets, le prouver par un test par processus, puis lever le point (borne : `config.spec.ts`).
+>
+> **Hérité de la mission 5b, OP-N78 (ADR-127 ; décision du porteur du 26/10/2026)** : `vendor_pin_check` n'a pas de
+> purge. Ajouter une fonction de purge bornée à la fenêtre de comptage des essais, exécutée par un rôle dédié (comme
+> OP-N75), avec un test pgTAP, puis lever le point.
 >
 > **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
 > par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que

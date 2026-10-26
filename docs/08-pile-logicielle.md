@@ -22,7 +22,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 | Base de données | pg (pilote) | 8.23.1 | en place | aucun ORM : fonctions SQL appelées par `TenantTx` (SPEC §2.2) |
 | Base de données | pgTAP | — | en place | tests de la base (CI et base locale) |
 | Authentification | jose | 6.2.12 | en place | vérification des jetons OIDC (mission 2) ; le document proposait 5 |
-| Authentification | argon2 | 0.44.0 | cible (vendeurs, S2 ; mission 5b) | empreinte argon2id du code PIN des vendeurs, avec un secret hors base (`VENDOR_PIN_SECRET`). 0.44.0 et non 0.45 (décision du porteur du 22/10/2026) : la 0.45 ne livre plus de binaire macOS Intel (`darwin-x64`), inutilisable sur le poste du porteur avec `ignore-scripts=true` ; aucun correctif de sécurité en 0.45 (journal des versions) |
+| Authentification | argon2 | 0.44.0 | cible (vendeurs, S2 ; mission 5b) | empreinte argon2id du code PIN des vendeurs, avec un secret hors base (`VENDOR_PIN_SECRET`) ; dérivé du PIN dans l'empreinte d'idempotence sous un secret distinct (`VENDOR_PIN_IDEMPOTENCY_SECRET`, ADR-126). 0.44.0 et non 0.45 (décision du porteur du 22/10/2026) : la 0.45 ne livre plus de binaire macOS Intel (`darwin-x64`), inutilisable sur le poste du porteur avec `ignore-scripts=true` ; aucun correctif de sécurité en 0.45 (journal des versions) |
 | Limitation de débit | @nestjs/throttler | 6 | cible | compteurs en mémoire ; stockage partagé à décider avec le déploiement multi-instance |
 | Validation | zod | 3.25 | cible (facultatif) | les routes livrées valident explicitement ; à adopter route par route si utile |
 | HTTP sortant | axios | 1 | cible (PSP, mission 6) | |
