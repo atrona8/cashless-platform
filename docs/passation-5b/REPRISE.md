@@ -1,6 +1,6 @@
 # Reprise de la mission 5b — `terminaux-paiement-en-ligne-01M52QB9`
 
-État au 23/10/2026, en fin de session. Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
+État au 26/10/2026 (mise à jour en cours de session). Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
 chaque nouvelle session) : fiche de contexte des agents, comptes rendus d'implémentation et de relecture, scripts de
 test, générateur du document Word.
 
@@ -16,7 +16,7 @@ test, générateur du document Word.
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
 | WP07 | Droits de la base | Approuvé (cycle 1, `2d665284`, 26/10) | lane-g |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
-| WP09, WP10 | Vendeurs ; catalogue (API) | Prévus (attendent WP07) | — |
+| WP09, WP10 | Vendeurs ; catalogue (API) | **En cours** (26/10 ; lanes g et h fusionnées à la main dans i et j, conflits kitty-specs résolus sur feat) | lane-i, lane-j |
 | WP11 → WP12, WP13 → WP14 | Paiement, annulation, QR, preuves | Prévus | — |
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.
@@ -58,6 +58,12 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
   le dossier courant dans le conteneur et y lance son `pg_prove`.
 - Résultats de référence au 23/10 : pgTAP 36 fichiers / 2521 tests (lane-d) ; Jest 107 suites, 1833 réussis,
   6 ignorés (WP08 + WP06).
+
+## Questions ouvertes au porteur (26/10/2026, relecture WP07)
+
+- `vendor_pin_check` n'a aucune fonction de purge : ouvrir un point dans `POINTS_OUVERTS.md` ? Quelle mission ?
+- Durcissement « `vendor_id` dans la clé composite de `vendor_session` » non fait (retouche de 0033 hors carte ;
+  le retrait d'INSERT/UPDATE sur `sale_attribution` ferme déjà le chemin). Reporter ou abandonner ?
 
 ## Décisions du porteur prises pendant cette session (23/10/2026)
 
