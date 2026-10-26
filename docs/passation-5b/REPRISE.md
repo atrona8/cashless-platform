@@ -23,6 +23,27 @@ test, générateur du document Word.
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.
 
+## Point d'arrêt du 26/10/2026 (fin de session, à la demande du porteur)
+
+- Les 14 lots sont approuvés. L'addendum documentaire post-relecture est fait (`5f624ce2`, réponses confirmées par le
+  porteur `68d2c003`). La matrice d'acceptation est remplie (`b429661a` sur feat, recopiée sur la branche de
+  coordination `0caa8351`, car `accept` lit cette branche). Décisions du porteur : FR-021 à FR-023 retirés de la
+  matrice (reportés à la mission 10) ; NFR-010 en pass sur preuve locale, à confirmer par la CI de la PR avant main.
+- **Mission acceptée** : `4922ef83` (puis `7bca781d`, `a9d004fb`).
+- **Fusion NON faite** : `spec-kitty merge --mission terminaux-paiement-en-ligne-01M52QB9 --keep-branch
+  --keep-worktree` s'arrête sur « Lane lane-j must incorporate mission changes before merging. Run: cd
+  .worktrees/*-lane-j && git merge kitty/mission-terminaux-paiement-en-ligne-01M52QB9 ». feat est resté propre.
+  Reprendre : faire ce merge dans lane-j (puis les lanes suivantes si le même message revient), relancer le merge,
+  puis rejouer pgTAP + Jest sur feat, et enfin :
+  - mettre à jour `docs/Mission-05b-Encaissement-en-ligne.docx` (générateur `scripts/gen_5b_doc.py`, état final) ;
+  - lancer `spec-kitty-docs-maintain` (statut « mergée » dans 01, 06, spec-index, docs-state) ;
+  - faire la revue post-fusion (`spec-kitty-mission-review`), qui doit lister les écarts de sécurité ouverts et les
+    mineurs de WP14 (ligne WP14 ci-dessus) ;
+  - lancer Prettier sur les lignes de plus de 100 caractères ;
+  - aligner `contracts/vendors.md` (422, 409 au renvoi, liste sans vendeurs bloqués) ;
+  - retirer les worktrees temporaires `tmp-combo-5b-wp08` et `tmp-combo-5a` ;
+  - pousser et ouvrir la PR (CI = preuve de NFR-010), avec l'accord du porteur.
+
 ## Prochaines actions, dans l'ordre
 
 1. **WP05** : approuvé au cycle 2 (le 23/10).
