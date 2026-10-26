@@ -256,3 +256,6 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
   `media-isolation.spec.ts` inclut `createPayment` et `getPayment` (`x-process: public`).
 - Relecture WP11 cycle 1 : test d'ordre des verrous terminal → session → QR → bracelet → portefeuille en charge ;
   sonde de la mission 7 (numéro posé hors idempotence puis paiement falsifié : anomalie consignée).
+- Relecture WP11 cycle 2 : si WP12/WP13 ne l'ont pas fait, tester dans `payments.service.ts` le chemin « erreur du
+  registre sur un refus qui n'est pas une lecture » et l'échec de `settleRefusal` sans erreur du registre ; resserrer
+  le cas `createPayment` de `media-isolation.spec.ts` à `refused: [404]`.

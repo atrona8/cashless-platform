@@ -17,7 +17,7 @@ test, générateur du document Word.
 | WP07 | Droits de la base | Approuvé (cycle 1, `2d665284`, 26/10) | lane-g |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
 | WP09, WP10 | Vendeurs ; catalogue (API) | WP10 approuvé (cycle 1, `d7ae89bd`) ; WP09 **approuvé** (cycle 3, `69dc4908`) (26/10 ; lanes g et h fusionnées à la main dans i et j, conflits kitty-specs résolus sur feat) | lane-i, lane-j |
-| WP11 | Paiement par bracelet | En relecture, cycle 1 (`71770dce` + `7d46eaf2` ; ADR-128) (26/10 ; lane-k = fusion de i et j, conflit `audit.service.ts` réglé à la main, `node_modules` copié de lane-i) | lane-k |
+| WP11 | Paiement par bracelet | Approuvé (cycle 2, `2a6d13b7` ; ADR-128) (26/10 ; lane-k = fusion de i et j, conflit `audit.service.ts` réglé à la main, `node_modules` copié de lane-i) | lane-k |
 | WP12, WP13 → WP14 | Annulation, QR, preuves | Prévus | — |
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.

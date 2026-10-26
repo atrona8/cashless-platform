@@ -59,7 +59,7 @@
       "description": "FR-006 — Attribution par le serveur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -89,7 +89,7 @@
       "description": "FR-009 — Paiement par bracelet en un aller-retour",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -99,7 +99,7 @@
       "description": "FR-010 — Paiement en deux temps",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -109,7 +109,7 @@
       "description": "FR-011 — Lignes de vente",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -119,7 +119,7 @@
       "description": "FR-012 — Prix vérifiés",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur).",
+      "notes": "Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur). Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -129,7 +129,7 @@
       "description": "FR-013 — Montant saisi",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -139,7 +139,7 @@
       "description": "FR-014 — Refus d'un paiement",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -149,7 +149,7 @@
       "description": "FR-015 — Moyens selon le terminal",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur).",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -189,7 +189,7 @@
       "description": "FR-019 — QR client",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
+      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -199,7 +199,7 @@
       "description": "FR-020 — Jetons QR",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
+      "notes": "Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -249,7 +249,7 @@
       "description": "FR-025 — Consultation d'un paiement",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -279,7 +279,7 @@
       "description": "NFR-001 — Latence du paiement",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "",
+      "notes": "Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -319,7 +319,7 @@
       "description": "NFR-005 — Un passage, une vente",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -329,7 +329,7 @@
       "description": "NFR-006 — Tout ou rien",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -339,7 +339,7 @@
       "description": "NFR-007 — Isolation",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur). Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur). Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct. Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -349,7 +349,7 @@
       "description": "NFR-008 — Aucun jeton QR en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur).",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). Partie API (paiement en ligne) prouvée par WP11 approuvé (cycle 2, lane-k 2a6d13b7) : payments.spec.ts, payments-refusals, payments-concurrency, payments-locks, get-payment, heartbeat-etag, unit/payments ; matrice des preuves (POST /payments ok 201), media-isolation ; Jest 123 suites / 2047 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; mutations ciblées tuées (garde de session, ordre des verrous, rejeux, refus consigné, époque, DEBIT_AUTHORITY_*, QR indistinguable, périmètre de getPayment).",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null

@@ -273,3 +273,10 @@ verrous ; aucune règle d'annulation réécrite en API à la place de la base (C
   (anomalie, consignation) : même correction que WP11 cycle 2, avec test.
 - Garde de session de vendeur : test de fermeture de session concurrente et d'ordre terminal → session, qui tuent les
   mutations « garde retirée » et « garde avant la prise du terminal ».
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP11 cycle 2 : approuvé)
+- Modèle de `PaymentsService.refuse` (WP11, `2a6d13b7`) : effet durable du refus d'abord, erreur du registre gardée
+  puis relancée. Tester aussi les deux chemins restés sans preuve en WP11 : erreur du registre sur un refus qui n'est
+  pas une lecture ; échec de la consignation sans erreur du registre (propagé, rien d'écrit à moitié).
+- Tests de concurrence et de verrous sur le modèle de `payments-locks.spec.ts` (attente par `pg_stat_activity`,
+  `commitWhileWaiting` / `waitBlocked`), jamais de sommeil arbitraire.
