@@ -19,7 +19,7 @@ test, générateur du document Word.
 | WP09, WP10 | Vendeurs ; catalogue (API) | WP10 approuvé (cycle 1, `d7ae89bd`) ; WP09 **approuvé** (cycle 3, `69dc4908`) (26/10 ; lanes g et h fusionnées à la main dans i et j, conflits kitty-specs résolus sur feat) | lane-i, lane-j |
 | WP11 | Paiement par bracelet | Approuvé (cycle 2, `2a6d13b7` ; ADR-128) (26/10 ; lane-k = fusion de i et j, conflit `audit.service.ts` réglé à la main, `node_modules` copié de lane-i) | lane-k |
 | WP12, WP13 | Annulation ; paiement QR | Approuvés (cycle 1, 26/10). WP12 : lane-l `d87ec992`, ADR-129. WP13 : lane-m `ee6d78ce`, 2 mineurs de test reportés à WP14 | lane-l, lane-m |
-| WP14 | Preuves, CI, consignation | En cours (26/10). lane-n = fusion manuelle de l et m (`524352a8` : `app.module` deux modules, intercepteur `'when-device'` de WP13, `reversePayment` en `'when-device'`), docs de consignation alignés sur feat (`d81b5156`), `node_modules` copié de lane-m | lane-n |
+| WP14 | Preuves, CI, consignation | Approuvé (cycle 1, 26/10 ; lane-n `0ddc4b7e` = fusion manuelle de l et m + lot ; ADR-130/OP-N80 acceptés par le porteur). Mineurs pour la revue post-fusion : canari dans `payment-secrets`, note périmée de `media-isolation` et refus admis larges (422) dans `payment-isolation`, test de `written.replayed` (mutant équivalent, garde conservée), lignes > 100 car. | lane-n |
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.
 
