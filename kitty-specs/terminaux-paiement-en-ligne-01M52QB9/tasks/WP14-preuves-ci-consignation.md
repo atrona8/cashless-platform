@@ -245,3 +245,12 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
   session-lock, config, env.sh) : à reformater au passage de la fusion (décision du 14/10).
 - Toujours ouverts : alignement de `contracts/vendors.md` (`422`, `409` au renvoi, liste sans les vendeurs bloqués,
   renvoi qui refait l'essai seulement pour le `429`) ; propriétaire des fonctions de purge sous RLS forcée.
+
+## Reports de l'orchestrateur (26/10/2026, implémentation WP11)
+- Décision du porteur : corriger dans ce lot le défaut antérieur de `apps/api/src/configuration/sql-config-resolver.ts`
+  (l.86 et l.215) : `resolve` lance des requêtes en parallèle sur le même client `pg` de la transaction
+  (`DeprecationWarning: Calling client.query() when the client is already executing a query`, retiré dans pg@9 ;
+  chaque vente le déclenche). Rendre les requêtes séquentielles ; test qui échoue si l'avertissement revient
+  (écoute de `process.on('warning')` pendant une vente).
+- ADR-128 : l'extension `authority_epoch` de `STALE_AUTHORITY_EPOCH` est au contrat ; le compte d'opérations de
+  `media-isolation.spec.ts` inclut `createPayment` et `getPayment` (`x-process: public`).

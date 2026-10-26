@@ -1825,3 +1825,24 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `sale_attribution`), seule barrière d'ici la levée. OP-N78 : aucune donnée secrète dans `vendor_pin_check`.
 - **Références.** `packages/ledger-sql/migrations/0031_vendors.sql`, `0033_payments.sql` ; relecture WP07
   (`docs/passation-5b/rapports/WP07-review-cycle-1.md`).
+
+## ADR-128 — Paiement en ligne (mission 5b, WP11) : solde rendu, époque dans le refus, corps non rangé, empreinte du contenu
+
+- **Statut** : Acceptée, 26 octobre 2026 (décisions du porteur sur les points soumis par l'implémenteur de WP11).
+  Sans affaiblissement de sécurité ; aucun point ouvert.
+- **Décisions.**
+  - **Solde rendu au terminal pour un paiement par QR client** : le contrat est gardé (`wallet_id`, `balance_after`
+    dans la réponse ; `available_balance` dans `INSUFFICIENT_FUNDS`). Le festivalier présente lui-même son QR et
+    paie en présence du commerçant, comme avec un bracelet.
+  - **`409 STALE_AUTHORITY_EPOCH`** : l'extension `authority_epoch` (époque courante, entier) est ajoutée au contrat
+    (`openapi.yaml`, types régénérés), au lieu d'un champ hors contrat.
+  - **Corps de paiement qui n'est pas un objet JSON** : `400`, rien au registre des numéros du terminal (aucun
+    contenu calculable) ; le numéro reste un trou, vu par le contrôle des trous de la mission 7.
+  - **`content_sha256` du registre des numéros** : SHA-256 de la forme canonique RFC 8785 de `{seq (nombre),
+    type: "PURCHASE", occurred_at (chaîne reçue), amount, currency, tap (objet reçu), lines (tableau reçu)}`, champs
+    absents omis ; jamais `tap_id`, `customer_qr_token`, `vendor_session_id` ni un champ d'état. Limite : un `seq`
+    au-delà de 2^53 n'est pas exact en nombre JSON. Forme à reprendre telle quelle par la mission 7 (lots hors ligne).
+- **Conditions de bornage.** Vecteurs fixes de `apps/api/test/unit/payments/device-seq-registry.spec.ts` (calculés
+  hors du code) ; réponses contrôlées contre `openapi.yaml` (`contractViolations`).
+- **Références.** WP11 (`apps/api/src/payments/`), compte rendu `docs/passation-5b/rapports/WP11-implementation.md`.
+

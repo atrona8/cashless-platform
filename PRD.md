@@ -254,7 +254,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   l'API (OP-N63, ADR-105, bloque la production) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
-- mission 7 : snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
+- mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
+  corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul
   déclencheur, aux droits du propriétaire (OP-N58) ; deux faiblesses du kit relevées pendant la mission 4, qui
   bloquent toutes deux la production (décision du porteur du 15/10/2026) ; adaptateur AWS KMS réel du service de clés
