@@ -259,3 +259,12 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
 - Relecture WP11 cycle 2 : si WP12/WP13 ne l'ont pas fait, tester dans `payments.service.ts` le chemin « erreur du
   registre sur un refus qui n'est pas une lecture » et l'échec de `settleRefusal` sans erreur du registre ; resserrer
   le cas `createPayment` de `media-isolation.spec.ts` à `refused: [404]`.
+
+## Reports de l'orchestrateur (26/10/2026, fusion de WP12 et WP13)
+- `idempotency.interceptor.ts` : WP12 (lane-l) et WP13 (lane-m) l'ont modifié chacun pour les routes « terminal ou
+  personne ». Retenir l'option explicite de WP13, `deviceSeq: 'when-device'` (la plus stricte) : `deviceSeq: true`
+  reste exclusivement terminal (paiement par bracelet), `reversePayment` passe à `'when-device'` ; retirer la branche
+  générale de WP12. Test : une route `deviceSeq: true` appelée sans terminal est refusée par sa garde.
+- `x-process: public` sur `reversePayment` (convention de WP11 et WP13, retiré au WP12 seulement pour le compte du
+  balayage) : le remettre, ajouter son cas à `media-isolation.spec.ts` et additionner les comptes (41 + 5 + 1 = 47).
+- Fichier de cas `payments.qr.cases.ts` (WP13) exécuté après `payments.cases.ts` (ouverture de session).
