@@ -18,6 +18,7 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { parse } from 'yaml';
 import { ClaimHasher } from '../../../src/kms/claim-hash';
+import { newMerchantToken, nonceHash } from '../../../src/payment-requests/qr-token';
 import { createKeyProcess, createTestApp, type KeyProcessApp } from '../../support/app';
 import { withOwner } from '../../support/db';
 import { createTestCustomer } from '../../support/fake-customer';
@@ -39,6 +40,7 @@ import {
   type MediaWorld,
   type SeededMedia,
 } from '../../support/media-fixtures';
+import { seedPos, seedVendor } from '../vendors/vendor-fixtures';
 
 const CONTRACT = join(__dirname, '../../../../../packages/contracts/openapi.yaml');
 const PROCESSES = ['public', 'personalization', 'tag-keys'] as const;
@@ -91,6 +93,8 @@ interface Case {
   refused?: number[];
   /** Vérification propre à l'opération, à la place du contrôle des statuts de refus. */
   check?: (res: request.Response, caller: string) => string | null;
+  /** En-têtes propres à l'opération (ex. `X-Authority-Epoch` d'un paiement), ajoutés à ceux de l'appelant. */
+  headers?: () => Record<string, string>;
   /** Pourquoi l'opération s'écarte du refus 403/404 attendu. */
   note?: string;
 }
@@ -114,10 +118,14 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
   let codeA: string; // code imprimé de mActive
   let codeFree: string; // code du lot A encore libre
   let jobA: string; // travail des clés de A, en échec
+  let saleA: string; // vente (PURCHASE) du terminal de A, cible de getPayment
+  let tokenA: string; // jeton connu et valide de la demande de A
+  let requestA: string; // demande de paiement QR du terminal de A, cible des routes de WP13
   // Prestataire B : ses personnes, son événement, son terminal, une lecture de son propre
   // bracelet.
   let eventB: string;
   let deviceB: TestDevice;
+  let sessionB: string; // session de vendeur ouverte du terminal de B
   let operatorAdminB: TestPerson;
   let organizerAdminB: TestPerson;
   let supervisorB: TestPerson;
@@ -206,6 +214,80 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     lookupBalanceByClaimCode: {
       who: 'public',
       note: 'Route publique, sans identité ni prestataire : traitée dans son propre test.',
+    },
+    // ----- public : paiements (mission 5b, lot WP11) -----
+    createPayment: {
+      who: 'device',
+      // Clé `<serial>:<seq>` du terminal de B (la route la contrôle avant toute écriture).
+      headers: () => ({
+        'X-Authority-Epoch': '0',
+        'Idempotency-Key': `${deviceB.serial}:${String(next()).padStart(4, '0')}`,
+      }),
+      // Bracelet de A présenté par le terminal de B (affecté à un point de vente de B) : bracelet
+      // inconnu de B ; jamais un 2xx, rien n'est écrit.
+      body: () => ({
+        amount: 1000,
+        currency: 'XOF',
+        occurred_at: new Date().toISOString(),
+        vendor_session_id: sessionB,
+        tap: tapBody(mActive, next()),
+        lines: [{ product_id: randomUUID(), quantity: 1, unit_price: 1000 }],
+      }),
+      refused: [404],
+      note: 'Terminal de B (point de vente et session de B) présentant un bracelet de A : 404, bracelet inconnu de B.',
+    },
+    getPayment: {
+      who: 'staff',
+      note:
+        'La vente d’un terminal de A, lue par le personnel de B : 404 neutre. (Cette suite sert ' +
+        'l’identité du terminal par les en-têtes de test : le chemin « terminal » de la garde ' +
+        'exclusive est prouvé dans payments/get-payment.spec.ts.)',
+    },
+    // ----- public : demandes de paiement QR (mission 5b, lot WP13) -----
+    createPaymentRequest: {
+      who: 'device',
+      // Clé `<serial>:<seq>` du terminal de B (contrôlée avant toute écriture).
+      headers: () => ({
+        'Idempotency-Key': `${deviceB.serial}:${String(next()).padStart(4, '0')}`,
+      }),
+      // Terminal de B (point de vente de B) présentant une session de vendeur qui n'est pas la sienne
+      // (celle d'un terminal de A, ou inconnue) : jamais une demande créée.
+      body: () => ({ amount: 1000, currency: 'XOF', vendor_session_id: randomUUID() }),
+      refused: [409],
+      note: 'Session de vendeur d’un autre terminal : 409 VENDOR_SESSION_INVALID, aucune demande écrite.',
+    },
+    reversePayment: {
+      who: 'staff',
+      body: () => ({ reason: 'INPUT_ERROR' }),
+      note:
+        'La vente d’un terminal de A, annulée par le personnel de B (chemin personne) : 403 ou 404 neutre, ' +
+        'aucune demande SALE_REVERSAL créée. (Le chemin terminal est prouvé dans reversals/.)',
+    },
+    getPaymentRequest: {
+      who: 'customer',
+      // Jeton CONNU et valide de A, présenté depuis B : le refus vient de l'isolation, pas du jeton.
+      headers: () => ({ 'X-Payment-Request-Token': tokenA }),
+      note:
+        'Demande d’un terminal de A, lue par un festivalier de B sans le jeton : 404 neutre. (Cette suite ' +
+        'sert l’identité du terminal par les en-têtes de test : le chemin « terminal » de la garde ' +
+        'exclusive est prouvé par la matrice des preuves et payment-requests/merchant-qr.spec.ts.)',
+    },
+    payPaymentRequest: {
+      who: 'customer',
+      // Jeton CONNU et valide de A, portefeuille de A : la demande de A n'existe pas pour B, comme une demande inconnue.
+      body: () => ({ token: tokenA, wallet_id: walletActive }),
+      refused: [409],
+      note: 'Demande d’un autre prestataire : 409 PAYMENT_REQUEST_NOT_PENDING, le même refus qu’une demande inconnue (FR-020).',
+    },
+    cancelPaymentRequest: {
+      who: 'customer',
+      headers: () => ({ 'X-Payment-Request-Token': tokenA }),
+      note: 'Demande d’un terminal de A, annulée avec son jeton valide par un festivalier de B : 404 neutre.',
+    },
+    createCustomerQrToken: {
+      who: 'customer',
+      body: () => ({ wallet_id: walletActive }),
+      note: 'Portefeuille d’un autre prestataire : 404, le même refus qu’un portefeuille inconnu.',
     },
     // ----- public : back-office des clés -----
     listTagKeys: { who: 'staff' },
@@ -334,7 +416,32 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
         await db.query<{ ledger: string }>('SELECT open_event_ledger($1) AS ledger', [eventB])
       ).rows[0]!.ledger;
       await goLive(db, w.ops.b, eventB, operatorAdminB.userId);
-      deviceB = await createTestDevice(db, { operatorId: w.ops.b, eventId: eventB });
+      // Terminal de B affecté à un point de vente de B : le refus d'un bracelet de A vient de l'isolation.
+      const posB = await seedPos(db, {
+        operatorId: w.ops.b,
+        eventId: eventB,
+        name: 'Comptoir de B',
+      });
+      deviceB = await createTestDevice(db, {
+        operatorId: w.ops.b,
+        eventId: eventB,
+        posId: posB.posId,
+      });
+      // Vendeur de B et session ouverte sur le terminal de B (amorçage) : la vente n'est pas refusée pour la session.
+      const vendorB = await seedVendor(db, {
+        operatorId: w.ops.b,
+        merchantId: posB.merchantId,
+        actorId: operatorAdminB.userId,
+        displayName: 'Vendeur de B',
+        pinHash: '$argon2id$v=19$m=19456,t=2,p=1$c2VsZWN0$aXNvbGF0aW9uLWJ1dC1ub3QtYS1yZWFsLWhhc2g',
+      });
+      sessionB = (
+        await db.query<{ id: string }>(
+          `INSERT INTO vendor_session (operator_id, vendor_id, device_id, opened_at, expires_at)
+           SELECT $1, $2, $3, now(), now() + interval '12 hours' RETURNING id`,
+          [w.ops.b, vendorB, deviceB.deviceId],
+        )
+      ).rows[0]!.id;
       await openCashDesk(db, {
         operatorId: w.ops.b,
         ledgerId: ledgerB,
@@ -380,6 +487,30 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
       'key-admin': keyProcesses[3]!.app,
     };
 
+    // Vente de A (ligne d'écriture seule, sans lignes comptables : cible de getPayment).
+    saleA = randomUUID();
+    await withOwner((db) =>
+      db.query(
+        `INSERT INTO journal_transaction (id, operator_id, ledger_id, type, idempotency_key,
+                                          request_hash, occurred_at, source, device_id)
+         VALUES ($1, $2, $3, 'PURCHASE', $4, 'empreinte de test', now(), 'ONLINE', $5)`,
+        [saleA, w.ops.a, w.ids.ledgerA, `isolation:${saleA}`, deviceA.deviceId],
+      ),
+    );
+
+    // Demande de paiement QR de A (ligne seule, jeton inconnu de tous : cible de getPaymentRequest, payPaymentRequest
+    // et cancelPaymentRequest).
+    requestA = randomUUID();
+    tokenA = newMerchantToken();
+    await withOwner((db) =>
+      db.query(
+        `INSERT INTO payment_request (id, operator_id, event_id, direction, device_id, amount, currency,
+                                      nonce_hash, expires_at, status)
+         VALUES ($1, $2, $3, 'MERCHANT_QR', $4, 1000, 'XOF', $5, now() + interval '1 hour', 'PENDING')`,
+        [requestA, w.ops.a, w.ids.eventA, deviceA.deviceId, nonceHash(tokenA)],
+      ),
+    );
+
     // Codes imprimés du lot A : celui de mActive (associé), et un code encore libre.
     codeA = generateClaimCode(randomBytes);
     codeFree = generateClaimCode(randomBytes);
@@ -419,7 +550,9 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
       .replace('{media_id}', route.operationId === 'associateClaimCode' ? mPerso.id : mActive.id)
       .replace('{batch_id}', batchA)
       .replace('{key_index}', String(MEDIA_KEY_INDEX))
-      .replace('{job_id}', jobA)}`;
+      .replace('{job_id}', jobA)
+      .replace('{transaction_id}', saleA)
+      .replace('{payment_request_id}', requestA)}`;
 
   const send = (
     app: INestApplication,
@@ -428,9 +561,10 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     headers: Record<string, string>,
   ) => {
     const req = request(app.getHttpServer())[route.method](path).set(headers);
-    if (route.method === 'get') return req;
+    if (route.method === 'get') return req.set(cases[route.operationId]?.headers?.() ?? {});
     const body = cases[route.operationId]?.body?.() ?? {};
     req.set('Idempotency-Key', randomUUID());
+    req.set(cases[route.operationId]?.headers?.() ?? {});
     return typeof body === 'string'
       ? req.set('Content-Type', 'text/csv').send(body)
       : req.send(body);
@@ -507,6 +641,9 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     w.ids.organizerA,
     w.ids.eventA,
     w.ids.ledgerA,
+    saleA,
+    requestA,
+    tokenA,
   ];
   const leaks = (text: string) => secrets().filter((secret) => text.includes(secret));
 
@@ -530,6 +667,8 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
            (SELECT count(*)::int FROM media_claim WHERE operator_id = $1) AS media_claims,
            (SELECT count(*)::int FROM claim_attempt WHERE operator_id = $1) AS claim_attempts,
            (SELECT count(*)::int FROM media_tap WHERE operator_id = $1) AS taps,
+           (SELECT string_agg(id || ':' || status, '|' ORDER BY id)
+              FROM payment_request WHERE operator_id = $1) AS payment_requests,
            (SELECT string_agg(id || ':' || status || ':' || attempts, '|' ORDER BY id)
               FROM tag_key_job WHERE operator_id = $1) AS jobs,
            (SELECT string_agg(key_index || ':' || status, '|' ORDER BY key_index)
@@ -544,9 +683,9 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
       return rows[0] as Record<string, unknown>;
     });
 
-  it('le contrat déclare les 39 opérations, chacune a un cas, aucun cas n’est orphelin', () => {
-    expect(routes).toHaveLength(39);
-    expect(new Set(routes.map((route) => route.operationId)).size).toBe(39);
+  it('le contrat déclare les 47 opérations, chacune a un cas, aucun cas n’est orphelin', () => {
+    expect(routes).toHaveLength(47);
+    expect(new Set(routes.map((route) => route.operationId)).size).toBe(47);
     for (const route of routes) expect(PROCESSES).toContain(route.process);
     expect(
       routes.filter((route) => !(route.operationId in cases)).map((route) => route.operationId),
@@ -556,7 +695,8 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     ).toEqual([]);
     // Chaque paramètre de chemin a une valeur dans `url` : aucun `{…}` ne reste dans un
     // appel.
-    const known = /\{(operator_id|media_id|batch_id|key_index|job_id)\}/g;
+    const known =
+      /\{(operator_id|media_id|batch_id|key_index|job_id|transaction_id|payment_request_id)\}/g;
     expect(
       routes.filter((route) => route.path.replace(known, '').includes('{')).map((r) => r.path),
     ).toEqual([]);
@@ -687,7 +827,7 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
   it('chez lui, B ne vise aucun objet de A ; ses listes n’en montrent aucun', async () => {
     const before = await snapshot();
     const problems: string[] = [];
-    const objectParam = /\{(media_id|batch_id|job_id)\}/;
+    const objectParam = /\{(media_id|batch_id|job_id|transaction_id)\}/;
     const staffRoutes = routes.filter((route) => cases[route.operationId]!.who === 'staff');
     const targeted = staffRoutes.filter((route) => objectParam.test(route.path));
     expect(targeted.length).toBeGreaterThanOrEqual(15);
@@ -713,7 +853,8 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
     // Listes de B : aucun objet de A.
     const lists = staffRoutes.filter(
       (route) =>
-        route.method === 'get' && !/\{(media_id|batch_id|job_id|key_index)\}/.test(route.path),
+        route.method === 'get' &&
+        !/\{(media_id|batch_id|job_id|key_index|transaction_id)\}/.test(route.path),
     );
     expect(lists.length).toBeGreaterThanOrEqual(5);
     for (const route of lists) {

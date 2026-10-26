@@ -174,6 +174,15 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Décision du porteur du 26/10/2026 (ADR-126, relecture WP09)** : un PIN de vendeur n'entre dans l'empreinte
 > d'idempotence (`request_hash`) que sous un dérivé argon2 ; corrigé au cycle 2 de WP09, aucune dette héritée.
 
+> **Livré par la mission 5b (état au 26/10/2026, lot WP14 de preuves et de consignation)** : vendeurs et sessions
+> (PIN argon2id, 5 échecs bloquent sur tous les terminaux), catalogue versionné et lignes de vente, paiement par
+> bracelet (un aller-retour, `tap_id`) et par QR client, QR commerçant et QR client côté festivalier, annulation
+> (vendeur dans la fenêtre, `SUPERVISOR` sur place, demande à deux au back-office), enrôlement refusé sur un
+> événement clos (**OP-N74 levé**, migration 0035). Preuves de bout en bout : `payment-journey`, `payment-isolation`,
+> `payment-secrets`, `payment-latency` (p95 ≤ 200 ms, p99 ≤ 500 ms, étape CI propre) et `payment-concurrency`
+> (`apps/api/test/integration/end-to-end/`). Dettes ouvertes héritées : OP-N76 (mission 11), OP-N77 et OP-N78 et
+> OP-N80 (mission 13), OP-N79 (mission 11), OP-N43 complété (mission 10).
+
 ## Mission 6 — Recharges, caisses et PSP
 
 > **Hérité de la mission 4 (bracelets-nfc)** : créer le compte de caisse `A-CAISSE-<n° de série>` à l'ouverture d'une
@@ -248,6 +257,10 @@ vendeurs et le catalogue : la mission les ajoute.
 > `{seq, type, occurred_at, amount, currency, tap, lines}`, champs absents omis ; vecteurs de
 > `device-seq-registry.spec.ts`) ; traiter un `seq` au-delà de 2^53 ; un corps en ligne qui n'était pas un objet JSON
 > a laissé un trou de numéro sans ligne au registre (refus `400`), à lever par la procédure des trous.
+>
+> **Sonde héritée de la mission 5b (relecture WP11 cycle 2, 26/10/2026)** : écrire une sonde qui pose un numéro hors
+> idempotence puis présente un paiement falsifié (consigné comme anomalie), avant d'alimenter le registre par les
+> lots hors ligne ; non écrite par la mission 5b (aucune dette de sécurité : le chemin en ligne refuse déjà `CL002`).
 
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
@@ -423,6 +436,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la mission 5b, OP-N78 (ADR-127 ; décision du porteur du 26/10/2026)** : `vendor_pin_check` n'a pas de
 > purge. Ajouter une fonction de purge bornée à la fenêtre de comptage des essais, exécutée par un rôle dédié (comme
 > OP-N75), avec un test pgTAP, puis lever le point.
+>
+> **Hérité de la mission 5b, OP-N80 (consigné par WP14, 26/10/2026 ; proposée par l'agent)** : le verrou d'essai de PIN
+> (`SessionLock`) tient une connexion de son pool dédié pendant toute l'ouverture de session. Mesurer en charge
+> (tous les terminaux d'un événement qui ouvrent ensemble), ajuster la taille du pool ou rendre `429` à la saturation
+> (aujourd'hui `500` après 10 s d'attente), avec un test, puis lever le point. Consigne d'exploitation : exiger
+> `VENDOR_PIN_SECRET` et `VENDOR_PIN_IDEMPOTENCY_SECRET` dans les manifestes de déploiement (aucun manifeste dans le
+> dépôt à ce jour) ; la rotation du second invalide seulement les empreintes d'idempotence des routes à PIN.
 >
 > **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
 > par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que

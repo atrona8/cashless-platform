@@ -21,6 +21,7 @@ Problem _$ProblemFromJson(Map<String, dynamic> json) => Problem(
   violations: (json['violations'] as List<dynamic>?)
       ?.map((e) => Violations.fromJson(e as Map<String, dynamic>))
       .toList(),
+  authorityEpoch: (json['authority_epoch'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$ProblemToJson(Problem instance) => <String, dynamic>{
@@ -34,6 +35,7 @@ Map<String, dynamic> _$ProblemToJson(Problem instance) => <String, dynamic>{
   'retryable': instance.retryable,
   'errors': instance.errors,
   'violations': instance.violations,
+  'authority_epoch': instance.authorityEpoch,
 };
 
 const _$ProblemCodeEnumMap = {
@@ -129,4 +131,8 @@ const _$ProblemCodeEnumMap = {
   ProblemCode.cardDailyLimit: 'CARD_DAILY_LIMIT',
   ProblemCode.deviceSignatureInvalid: 'DEVICE_SIGNATURE_INVALID',
   ProblemCode.deviceSerialInUse: 'DEVICE_SERIAL_IN_USE',
+  ProblemCode.enrollmentEventClosed: 'ENROLLMENT_EVENT_CLOSED',
+  ProblemCode.vendorSessionInvalid: 'VENDOR_SESSION_INVALID',
+  ProblemCode.vendorPinInvalid: 'VENDOR_PIN_INVALID',
+  ProblemCode.saleLinesInvalid: 'SALE_LINES_INVALID',
 };

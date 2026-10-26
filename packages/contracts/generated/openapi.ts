@@ -34,6 +34,9 @@ export type paths = {
          *     `app_mode = PAIRED_TPE` (V2, ADR-43) est refusé en V1 : `422 DEVICE_MODE_NOT_ALLOWED`. Durée hors bornes :
          *     `422 VALIDATION_FAILED`. Événement ou point de vente d'un autre prestataire, ou hors du périmètre de la
          *     personne : `404`.
+         *     État de l'événement (OP-N74, FR-024) : événement `CLOSED` ou point de vente supprimé, ou, dès `CLOSING`,
+         *     mode `CATALOG_POS` ou `KEYPAD_TPE` (le mode `TOPUP_DESK` reste permis jusqu'à `CLOSED`) :
+         *     `422 ENROLLMENT_EVENT_CLOSED` (`CL031`), rien n'est écrit.
          */
         post: operations["createDeviceEnrollmentCode"];
         delete?: never;
@@ -80,7 +83,10 @@ export type paths = {
          *     comparable), expiré (`422 ENROLLMENT_CODE_EXPIRED`), attestation ou CSR non conforme
          *     (`422 ATTESTATION_FAILED`, y compris Android antérieur à 12), mode d'application `PAIRED_TPE` (V2, ADR-43),
          *     `TOPUP_DESK` sur iOS, ou téléphone personnel hors `KEYPAD_TPE` (`422 DEVICE_MODE_NOT_ALLOWED`) ;
-         *     `serial` d'un terminal non révoqué du même prestataire (`409 DEVICE_SERIAL_IN_USE`).
+         *     `serial` d'un terminal non révoqué du même prestataire (`409 DEVICE_SERIAL_IN_USE`) ; événement du code
+         *     `CLOSED` ou point de vente supprimé, ou, dès `CLOSING`, mode `CATALOG_POS` ou `KEYPAD_TPE` (OP-N74,
+         *     FR-024 ; `TOPUP_DESK` permis jusqu'à `CLOSED`) : `422 ENROLLMENT_EVENT_CLOSED` (`CL031`), rien n'est écrit
+         *     et le code n'est pas consommé.
          *     Limites : 10 essais par code et par heure, 30 essais par adresse et par heure ; au-delà `429 RATE_LIMITED`
          *     avec `Retry-After`. Chaque essai, réussi ou non, compte.
          */
@@ -719,6 +725,22 @@ export type paths = {
          *     hors ligne avec la MÊME clé).
          *     Résultats de lecture qui refusent l'écriture : `422 MEDIA_SIGNATURE_MISMATCH`, `422 MEDIA_SIGNATURE_MISSING`
          *     (relire le bracelet), et les autres codes `MEDIA_*` ; passage inutilisable : `409 TAP_UNUSABLE`.
+         *     Session de vendeur (mission 5b) : `vendor_session_id` est requis ; la session doit être ouverte sur ce
+         *     terminal, non expirée, et son vendeur `ACTIVE` et non bloqué, sinon `409 VENDOR_SESSION_INVALID`
+         *     (`CL032`). La vente est attribuée par le serveur au vendeur de la session (jamais d'après un champ du
+         *     corps) ; `PaymentResult.vendor`, `lines` et `channel` le rendent.
+         *     Lignes : obligatoires depuis une caisse `CATALOG_POS` (chaque ligne porte `product_id`), interdites depuis un
+         *     `KEYPAD_TPE` (`422 VALIDATION_FAILED`) ; terminal `TOPUP_DESK` : `422 DEVICE_MODE_NOT_ALLOWED`. Article
+         *     inconnu, inactif, d'un autre point de vente, prix ou taux ni courant ni servi au terminal, somme différente
+         *     du montant : `422 SALE_LINES_INVALID` (`CL034`) ; le terminal se resynchronise.
+         *     `tap_id` : lecture de CE terminal, non consommée, dans `tap_replay_window_seconds` (heure de la base) ;
+         *     bracelet bloqué : `422 MEDIA_BLOCKED` ; portefeuille bloqué : `422 WALLET_BLOCKED`.
+         *     QR client (`customer_qr_token`) inconnu, expiré, déjà utilisé, annulé ou d'un autre événement :
+         *     `422 QR_TOKEN_INVALID` (réponse unique, sans dire lequel des cas ; code existant du contrat).
+         *     `Idempotency-Key` : `<serial>:<seq>`, `<serial>` égal au `serial` du terminal authentifié (sinon
+         *     `422 VALIDATION_FAILED`, rien n'est écrit) ; chaque réponse finale (2xx ou 4xx) est enregistrée dans le
+         *     registre des numéros du terminal, sauf `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE` (même clé
+         *     rejouable).
          */
         post: operations["createPayment"];
         delete?: never;
@@ -734,7 +756,14 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Consulter un paiement */
+        /**
+         * Consulter un paiement
+         * @description Garde exclusive : si le certificat client (mTLS) ou l'en-tête `Signature` est présent, la requête est
+         *     traitée comme celle d'un terminal et les trois preuves sont exigées, sans repli sur le jeton d'une personne
+         *     (preuve absente ou fausse : `401`). Sinon, chemin personne seul.
+         *     Terminal : ses propres ventes. Personne : `ORGANIZER_ADMIN` ou `SUPERVISOR` de l'événement de la vente,
+         *     `MERCHANT_ADMIN` du commerçant, `OPERATOR_ADMIN` du prestataire. Autre périmètre : `404` neutre.
+         */
         get: operations["getPayment"];
         put?: never;
         post?: never;
@@ -756,13 +785,202 @@ export type paths = {
         /**
          * Annuler un paiement (REVERSAL)
          * @description Contre-passation TOTALE de la transaction (`reverses_id`), lignes opposées, type `REVERSAL`.
-         *     Autorisée depuis le terminal d'origine dans la fenêtre `reversal_window_minutes` (défaut 15 min) ; au-delà, rôle
-         *     `SUPERVISOR`. Une transaction ne peut être annulée qu'une fois (`409 ALREADY_REVERSED`).
+         *     Une transaction ne peut être annulée qu'une fois (`409 ALREADY_REVERSED`, `CL035`).
          *     Le remboursement partiel n'existe pas : annuler puis rejouer le bon montant.
-         *     Idempotency-Key = `serial:seq` (nouveau numéro, ex. `TPE-BAR-01:0004`).
+         *     Garde exclusive : si le certificat client (mTLS) ou l'en-tête `Signature` est présent, le chemin terminal
+         *     complet est exigé (trois preuves), sans repli sur le jeton d'une personne ; sinon, chemin personne seul.
+         *     Sur tous les chemins : vente `PURCHASE` du même prestataire, non annulée ; l'heure est celle de la base.
+         *     - Terminal, vendeur de la vente : Idempotency-Key = `<serial>:<seq>` (nouveau numéro, ex.
+         *       `TPE-BAR-01:0004`, `<serial>` = celui du terminal authentifié, sinon `422 VALIDATION_FAILED`) ;
+         *       `vendor_session_id` requis (session ouverte de ce terminal, sinon `409 VENDOR_SESSION_INVALID`) ; même
+         *       terminal et même vendeur que la vente, dans la fenêtre `reversal_window_minutes` (défaut 15 min) comptée
+         *       depuis l'heure d'enregistrement de la vente par la base. Autre vendeur, autre terminal ou vente non
+         *       annulable : `422 REVERSAL_NOT_ALLOWED` ; fenêtre dépassée : `409 REVERSAL_WINDOW_EXPIRED` (codes et
+         *       statuts existants du contrat).
+         *     - Terminal, avec un `SUPERVISOR` de l'événement de la vente : jeton d'approbation sur place dans l'en-tête
+         *       `X-Approval-Token` (paramètre `ApprovalToken`, `act` = `reversePayment`), lié à la requête exacte, à usage
+         *       unique ; il lève les contrôles de vendeur et de fenêtre, pas ceux de terminal du même événement. Jeton
+         *       refusé : `403 APPROVAL_INVALID`. Le champ `supervisor_pin_proof` du corps est refusé
+         *       (`422 VALIDATION_FAILED`) : la preuve passe par l'en-tête seulement.
+         *     - Back-office (personne, `humanBearer`) : opération à deux personnes, action `SALE_REVERSAL`, source
+         *       `BACKOFFICE` ; un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente la demande (`202`, demande
+         *       d'approbation créée), une seconde personne distincte l'approuve (`approveApprovalRequest`). Idempotency-Key
+         *       libre (UUID).
+         *     L'annulation est attribuée par le serveur : au vendeur de la session (terminal) ou à la personne auteur.
          */
         post: operations["reversePayment"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/merchants/{merchant_id}/vendors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les vendeurs d'un commerçant (back-office)
+         * @description Vendeurs du commerçant. Rôles : `MERCHANT_ADMIN` du commerçant ; `OPERATOR_ADMIN` du prestataire.
+         *     Commerçant hors du périmètre de la personne ou d'un autre prestataire : `404` neutre.
+         *     Aucun PIN, aucune empreinte de PIN ni aucun compteur d'échecs n'est renvoyé (`locked` seulement).
+         *     Pagination par curseur.
+         */
+        get: operations["listVendors"];
+        put?: never;
+        /**
+         * Créer un vendeur (nom et PIN)
+         * @description Crée un vendeur `ACTIVE` du commerçant avec son PIN (exactement 6 chiffres). Le serveur ne garde que
+         *     l'empreinte argon2id du PIN, calculée par l'API ; le PIN n'est jamais renvoyé, journalisé ni audité. PIN
+         *     mal formé : `422 VALIDATION_FAILED`, sans écho de la valeur. Une ligne d'audit (sans PIN ni
+         *     empreinte). Rôles : `MERCHANT_ADMIN` du commerçant ; `OPERATOR_ADMIN` du prestataire. Autre périmètre :
+         *     `404` neutre.
+         */
+        post: operations["createVendor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendors/{vendor_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un vendeur (back-office)
+         * @description Rôles : comme `listVendors`. Autre périmètre : `404` neutre. Ni PIN, ni empreinte, ni compteur d'échecs.
+         */
+        get: operations["getVendor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendors/{vendor_id}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Donner un nouveau PIN à un vendeur (débloque)
+         * @description Remplace l'empreinte du PIN (exactement 6 chiffres), remet le compteur d'échecs à 0, lève le blocage et
+         *     ferme les sessions ouvertes du vendeur (`PIN_CHANGED`). Seul moyen de débloquer un vendeur bloqué après
+         *     5 PIN faux. PIN mal formé : `422 VALIDATION_FAILED`, sans écho de la valeur. Une ligne d'audit
+         *     (sans PIN ni empreinte). Rôles : comme `createVendor`. Autre périmètre : `404`.
+         */
+        post: operations["setVendorPin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendors/{vendor_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Désactiver ou réactiver un vendeur
+         * @description `ACTIVE` ⇄ `DISABLED`. La désactivation ferme les sessions ouvertes du vendeur (`VENDOR_DISABLED`) ; un
+         *     vendeur désactivé n'ouvre aucune session. La réactivation ne lève pas un blocage (seul un nouveau PIN le
+         *     lève). Une ligne d'audit. Rôles : comme `createVendor`. Autre périmètre : `404`.
+         */
+        post: operations["setVendorStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendor-sessions/vendors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vendeurs proposés à l'écran de connexion du terminal
+         * @description `vendor_id` et `display_name` des vendeurs `ACTIVE` du commerçant du point de vente du terminal, rien
+         *     d'autre (ni statut de blocage, ni compteur, ni empreinte). Sert l'écran de choix du vendeur.
+         */
+        get: operations["listTerminalVendors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendor-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ouvrir une session de vendeur sur le terminal (PIN)
+         * @description Le vendeur choisi saisit son PIN sur le terminal ; le serveur le vérifie (argon2id) et ouvre une session
+         *     liée à ce terminal, de 12 h au plus, qui remplace la session ouverte du terminal (`REPLACED`). Modes :
+         *     `CATALOG_POS` et `KEYPAD_TPE` (autre mode : `422 DEVICE_MODE_NOT_ALLOWED`).
+         *     Chaque essai est compté avant la vérification ; au 5e échec compté, le vendeur est bloqué sur tous les
+         *     terminaux jusqu'à un nouveau PIN (`setVendorPin`).
+         *     Refus : `401 VENDOR_PIN_INVALID`, même statut et même corps pour un PIN faux, un vendeur inconnu, bloqué,
+         *     désactivé ou d'un autre commerçant, y compris un bon PIN après le blocage (NFR-004). Un second essai du
+         *     même terminal pendant qu'un essai est en cours : `429 RATE_LIMITED`.
+         *     Le PIN n'est jamais renvoyé, journalisé, audité ni gardé au-delà de la requête ; PIN mal formé :
+         *     `422 VALIDATION_FAILED`, sans écho de la valeur.
+         *     `Idempotency-Key` : UUID (portée `device:<device_id>:`), pas `<serial>:<seq>` (aucun numéro de séquence
+         *     enregistré). Réponse non conservée : un renvoi de la même clé reçoit `409 CONFLICT_STATE` et n'est pas un
+         *     nouvel essai ; le terminal envoie un nouvel essai avec une nouvelle clé.
+         */
+        post: operations["openVendorSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vendor-sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Fermer la session de vendeur du terminal (déconnexion)
+         * @description Ferme la session de vendeur ouverte sur ce terminal (`LOGOUT`) ; sans session ouverte, rien n'est écrit et
+         *     la réponse est la même. `Idempotency-Key` : UUID (portée `device:<device_id>:`), pas `<serial>:<seq>` ;
+         *     réponse non conservée : un renvoi de la même clé reçoit `409 CONFLICT_STATE`.
+         */
+        delete: operations["closeVendorSession"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1295,7 +1513,15 @@ export type paths = {
          * @description Le terminal (souvent iOS, sans NFC) crée une `payment_request` `MERCHANT_QR` et affiche `qr_payload`.
          *     Le jeton (128 bits, aléatoire) n'est stocké que haché (`nonce_hash = sha256(token)`) ; durée de vie
          *     60 s par défaut. Toujours en ligne : jamais de QR hors ligne. Idempotency-Key = `serial:seq` ; la
-         *     vente résultante reprend cette clé.
+         *     vente résultante reprend cette clé. `<serial>` doit être celui du terminal authentifié (sinon
+         *     `422 VALIDATION_FAILED`, rien n'est écrit) ; chaque réponse finale est enregistrée dans le registre des
+         *     numéros du terminal.
+         *     Réponse non conservée : le jeton n'est rendu qu'une fois et n'est gardé nulle part (ni base, ni journaux, ni
+         *     registre d'idempotence) ; un renvoi de la même clé reçoit `409` et le terminal crée une nouvelle demande.
+         *     Session de vendeur : `vendor_session_id` est requis (session ouverte de ce terminal, non expirée, vendeur
+         *     `ACTIVE` et non bloqué, sinon `409 VENDOR_SESSION_INVALID`) ; la vente qui suivra est attribuée au vendeur
+         *     de cette session. Lignes contrôlées comme une vente (`CATALOG_POS` : obligatoires, avec `product_id` ;
+         *     `KEYPAD_TPE` : interdites), sans écriture de vente : `422 SALE_LINES_INVALID`.
          */
         post: operations["createPaymentRequest"];
         delete?: never;
@@ -1316,6 +1542,11 @@ export type paths = {
          * @description Le terminal l'interroge (ou long-polling `wait`) jusqu'à `CONFIRMED` / `EXPIRED` / `CANCELLED`.
          *     L'app client l'appelle après scan pour afficher montant et commerçant avant confirmation
          *     (ne renvoie jamais le jeton).
+         *     Garde exclusive : si le certificat client (mTLS) ou l'en-tête `Signature` est présent, le chemin terminal
+         *     complet est exigé (trois preuves), sans repli sur le jeton d'une personne ; seul le terminal d'origine de la
+         *     demande la lit. Sinon (festivalier, `humanBearer`), le jeton lu dans le QR est exigé dans l'en-tête
+         *     `X-Payment-Request-Token` (paramètre `PaymentRequestToken`), jamais dans la chaîne de requête ni dans le
+         *     chemin ; jeton absent ou faux, ou demande inconnue : `404` (réponse identique).
          */
         get: operations["getPaymentRequest"];
         put?: never;
@@ -1341,6 +1572,10 @@ export type paths = {
          *     Vérifications : `sha256(token) = nonce_hash`, statut `PENDING`, non expiré, portefeuille du client,
          *     devise de l'événement. Écrit `PURCHASE` (source `ONLINE`, clé = celle de la création de la demande)
          *     et passe la demande `CONFIRMED` dans la même transaction SQL.
+         *     Mission 5b : la vente est attribuée au vendeur de la session de la demande (`channel` `MERCHANT_QR`) ; le
+         *     terminal de la demande doit être `ACTIVE` et sa session de vendeur encore ouverte et non expirée. Demande
+         *     inconnue, payée, annulée ou expirée, ou mauvais jeton : `409 PAYMENT_REQUEST_NOT_PENDING` (`CL037`),
+         *     réponse unique, sans dire lequel des cas (FR-020).
          */
         post: operations["payPaymentRequest"];
         delete?: never;
@@ -1361,7 +1596,13 @@ export type paths = {
         /**
          * Annuler une demande en attente
          * @description Passe la demande `PENDING` en `CANCELLED`. Une demande qui n'est plus `PENDING` est refusée
-         *     (`409 PAYMENT_REQUEST_NOT_PENDING`).
+         *     (`409 PAYMENT_REQUEST_NOT_PENDING`, `CL037`, sans dire si elle est payée, annulée ou expirée).
+         *     Garde exclusive : si le certificat client (mTLS) ou l'en-tête `Signature` est présent, le chemin terminal
+         *     complet est exigé (trois preuves), sans repli ; seul le terminal d'origine annule, Idempotency-Key =
+         *     `<serial>:<seq>` (`<serial>` = celui du terminal authentifié, sinon `422 VALIDATION_FAILED`). Sinon
+         *     (festivalier, `humanBearer`), le jeton de la demande est exigé dans l'en-tête `X-Payment-Request-Token`
+         *     (paramètre `PaymentRequestToken`), jamais dans la chaîne de requête ni dans le chemin ; jeton absent ou
+         *     faux, ou demande inconnue : `404` (réponse identique).
          */
         post: operations["cancelPaymentRequest"];
         delete?: never;
@@ -1617,6 +1858,9 @@ export type paths = {
          *     (12 caractères base32, 60 bits) affiché en QR, durée de vie 60 s, usage unique.
          *     Le terminal le présente dans `POST /payments` (`customer_qr_token`). Toujours en ligne, des deux côtés :
          *     l'app NE DOIT PAS précharger de jetons (ADR-64) ; sans réseau, le festivalier paie avec son bracelet.
+         *     Réponse non conservée : le jeton n'est rendu qu'une fois et n'est gardé nulle part (seule son empreinte
+         *     SHA-256 l'est) ; un renvoi de la même clé reçoit `409` et l'app crée un nouveau jeton. L'événement de la
+         *     demande est celui du grand livre du portefeuille.
          */
         post: operations["createCustomerQrToken"];
         delete?: never;
@@ -2908,6 +3152,163 @@ export type paths = {
         patch: operations["renamePointOfSale"];
         trace?: never;
     };
+    "/points-of-sale/{pos_id}/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter le catalogue courant d'un point de vente
+         * @description Catégories et articles (actifs ou non) du point de vente, numéro de la version courante (0 sans catalogue)
+         *     et délégation au commerçant. Rôles : `ORGANIZER_ADMIN` de l'organisateur de l'événement du point de vente,
+         *     `OPERATOR_ADMIN` du prestataire, `MERCHANT_ADMIN` du commerçant du point de vente. Autre périmètre : `404`.
+         */
+        get: operations["getCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/points-of-sale/{pos_id}/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Créer une catégorie du catalogue
+         * @description Gestionnaires du catalogue : `ORGANIZER_ADMIN` de l'organisateur de l'événement du point de vente,
+         *     `OPERATOR_ADMIN` du prestataire, et le `MERCHANT_ADMIN` du commerçant du point de vente seulement si
+         *     l'organisateur lui a délégué la gestion (`setCatalogPolicy`, `merchant_manages = true` ; sinon
+         *     `403 FORBIDDEN`). Autre périmètre : `404`. Chaque écriture crée, dans la même transaction, la version
+         *     suivante du catalogue du point de vente (copie des articles actifs), rendue dans `catalog_version` ; une
+         *     ligne d'audit. Pas de suppression : désactivation (`active = false`). Événement `CLOSED` :
+         *     `409 CONFLICT_STATE`, rien n'est écrit.
+         */
+        post: operations["createCatalogCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/catalog-categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Renommer, ordonner, désactiver ou réactiver une catégorie
+         * @description Gestionnaires et règles : comme `createCatalogCategory` (version suivante créée, une ligne d'audit,
+         *     événement `CLOSED` : `409 CONFLICT_STATE`). Au moins un champ.
+         */
+        patch: operations["updateCatalogCategory"];
+        trace?: never;
+    };
+    "/catalog-categories/{category_id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Créer un article dans une catégorie
+         * @description Prix TTC fixe (`unit_price` > 0, unités mineures de la devise de l'événement), taux de taxe en points de
+         *     base (0 à 10 000), libellés français et anglais. Gestionnaires et règles : comme `createCatalogCategory`
+         *     (version suivante créée, une ligne d'audit, événement `CLOSED` : `409 CONFLICT_STATE`).
+         */
+        post: operations["createCatalogItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/catalog-items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifier un article (prix, taux, libellés, catégorie, actif)
+         * @description Gestionnaires et règles : comme `createCatalogItem` (version suivante créée, une ligne d'audit, événement
+         *     `CLOSED` : `409 CONFLICT_STATE`). La nouvelle catégorie doit être du même point de vente (sinon `404`).
+         *     Au moins un champ. Les ventes déjà écrites gardent le prix et le taux de leur version.
+         */
+        patch: operations["updateCatalogItem"];
+        trace?: never;
+    };
+    "/points-of-sale/{pos_id}/catalog/versions/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une version du catalogue
+         * @description Version immuable : articles actifs au moment de la version, avec prix, taux et libellés. Rôles : comme
+         *     `getCatalog`. Version inconnue ou autre périmètre : `404`.
+         */
+        get: operations["getCatalogVersion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/points-of-sale/{pos_id}/catalog-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Déléguer (ou reprendre) la gestion du catalogue au commerçant
+         * @description `merchant_manages = true` autorise le `MERCHANT_ADMIN` du commerçant du point de vente à gérer son
+         *     catalogue ; `false` la lui retire. Rôles : `ORGANIZER_ADMIN` de l'organisateur de l'événement du point de
+         *     vente, `OPERATOR_ADMIN` du prestataire, seulement (`MERCHANT_ADMIN` : `403 FORBIDDEN`). Autre périmètre :
+         *     `404`. Ne crée pas de version du catalogue ; une ligne d'audit.
+         */
+        put: operations["setCatalogPolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/operators/{operator_id}/fee-rules": {
         parameters: {
             query?: never;
@@ -3602,6 +4003,13 @@ export type components = {
                 /** @description Origine de la borne — profil de législation (`SN v1`), niveau et version de configuration, ou `catalog`. */
                 source: string;
             }[];
+            /**
+             * Format: int64
+             * @description `409 STALE_AUTHORITY_EPOCH` : époque d'autorité de débit COURANTE du grand livre de l'événement du
+             *     terminal (`ledger.authority_epoch`). Le terminal la reprend, relit sa configuration et rejoue avec une
+             *     nouvelle clé `<serial>:<seq>`. Absent des autres problèmes.
+             */
+            authority_epoch?: number;
         } & {
             [key: string]: unknown;
         };
@@ -3645,12 +4053,12 @@ export type components = {
          *     - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
          *     - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
          *     - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
-         *     - `WALLET_BLOCKED` (422) : portefeuille bloqué ou clos.
+         *     - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos.
          *     - `WALLET_LIMIT_EXCEEDED` (422, `CL008`) : plafond de solde dépassé.
          *     - `MONTHLY_TOPUP_LIMIT_EXCEEDED` (422, `CL009`) : plafond mensuel de recharge dépassé.
          *     - `MEDIA_UNKNOWN` (404) : UID ou bracelet inconnu (chemin en ligne ; dans un lot :
          *       `MEDIA_NOT_IN_SNAPSHOT`).
-         *     - `MEDIA_BLOCKED` (422) : bracelet `SUSPENDED` ou `BLACKLISTED`.
+         *     - `MEDIA_BLOCKED` (422, `CL038`) : bracelet `SUSPENDED` ou `BLACKLISTED`.
          *     - `MEDIA_NOT_ACTIVATED` (422) : bracelet `PERSONALIZED` ou `ISSUED`, pas encore rattaché.
          *     - `MEDIA_RETIRED` (422) : bracelet `RETIRED` ou `DESTROYED`.
          *     - `MEDIA_REPLACED` (422) : bracelet remplacé par un autre.
@@ -3689,9 +4097,10 @@ export type components = {
          *     - `STALE_AUTHORITY_EPOCH` (409, `CL015`) : époque d'autorité périmée ; l'émetteur cesse de débiter.
          *     - `HANDOVER_INVALID_STATE` (409, `CL013`) : action de bascule impossible dans l'état du handover.
          *     - `EDGE_NOT_CAUGHT_UP` (409, `CL014`) : passerelle en retard (filigrane non atteint, `edge_seq` manquants).
-         *     - `REVERSAL_NOT_ALLOWED` (422) : transaction non annulable (type, auteur ou terminal différent).
+         *     - `REVERSAL_NOT_ALLOWED` (422, `CL036`) : transaction non annulable (type, vendeur ou terminal différent).
          *     - `REVERSAL_WINDOW_EXPIRED` (409) : délai d'annulation dépassé.
-         *     - `ALREADY_REVERSED` (409) : transaction déjà annulée.
+         *     - `ALREADY_REVERSED` (409, `CL035`) : transaction déjà annulée (contrainte
+         *       `journal_transaction_reverses_once`).
          *     - `OFFLINE_NOT_ALLOWED` (403) : hors ligne désactivé pour ce terminal (seul nom de ce refus).
          *     - `SNAPSHOT_VERSION_UNKNOWN` (409) : version de snapshot inconnue pour ce grand livre ; demander un FULL.
          *     - `BATCH_IN_PROGRESS` (409, `CL010`) : un lot est déjà en cours pour ce terminal ; attendre son résultat.
@@ -3704,7 +4113,8 @@ export type components = {
          *     - `SEQ_OUT_OF_RANGE` (409, `CL021`) : numéro ou lot au-delà de `contiguous_acked_seq + 10 000`
          *       (`max_seq_jump`) ; refusé sans anomalie.
          *     - `PAYMENT_REQUEST_EXPIRED` (409) : demande de paiement QR expirée.
-         *     - `PAYMENT_REQUEST_NOT_PENDING` (409) : demande de paiement QR déjà payée, annulée ou expirée.
+         *     - `PAYMENT_REQUEST_NOT_PENDING` (409, `CL037`) : demande de paiement QR déjà payée, annulée ou expirée, ou
+         *       jeton inconnu ; réponse unique, sans dire lequel des cas.
          *     - `QR_TOKEN_INVALID` (422) : jeton de QR client inconnu, expiré ou déjà utilisé.
          *     - `PAYMENT_INTENT_INVALID_STATE` (409, V2) : intention dans un état qui ne permet pas l'action.
          *     - `PAYMENT_INTENT_EXPIRED` (409, V2) : intention expirée.
@@ -3724,9 +4134,19 @@ export type components = {
          *       remboursement qui n'est pas `REQUESTED` à l'approbation).
          *     - `EVENT_TRANSITION_INVALID` (409, `CL018`) : passage de statut d'événement non prévu (ADR-51).
          *     - `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).
+         *     - `ENROLLMENT_EVENT_CLOSED` (422, `CL031`) : création d'un code d'enrôlement ou enrôlement refusé pour un
+         *       événement `CLOSED` ou un point de vente supprimé, ou, dès `CLOSING`, pour les modes `CATALOG_POS` et
+         *       `KEYPAD_TPE` (OP-N74) ; rien n'est écrit.
+         *     - `VENDOR_SESSION_INVALID` (409, `CL032`) : session de vendeur absente, close, expirée, d'un autre terminal
+         *       ou autre que celle désignée, ou vendeur désactivé ou bloqué ; ouvrir une nouvelle session.
+         *     - `VENDOR_PIN_INVALID` (401, `CL033`) : ouverture de session refusée ; réponse unique (même statut, même
+         *       corps) pour un PIN faux, un vendeur inconnu, bloqué, désactivé ou d'un autre commerçant (NFR-004).
+         *     - `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre
+         *       point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se
+         *       resynchroniser.
          * @enum {string}
          */
-        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE";
+        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE" | "ENROLLMENT_EVENT_CLOSED" | "VENDOR_SESSION_INVALID" | "VENDOR_PIN_INVALID" | "SALE_LINES_INVALID";
         PageMeta: {
             next_cursor: string | null;
             has_more: boolean;
@@ -4114,7 +4534,14 @@ export type components = {
                 name?: string;
                 merchant_name?: string;
             } | null;
-            /** @description Présent pour CATALOG_POS ; absent (null) pour KEYPAD_TPE / TOPUP_DESK. */
+            /**
+             * @description Présent pour CATALOG_POS ; absent (null) pour KEYPAD_TPE / TOPUP_DESK. `version` = dernière version du
+             *     catalogue du point de vente du terminal, servie et mémorisée pour ce terminal (le contrôle des prix d'une
+             *     vente admet la version courante et la dernière version servie) ; `items` = articles actifs de cette
+             *     version, `name` et `category` dans la langue de `Accept-Language`. Terminal sans point de vente ou point
+             *     de vente sans catalogue : `version` 0, `items: []`. Une nouvelle version change l'`ETag` de la
+             *     configuration.
+             */
             catalog?: {
                 version?: number;
                 items?: components["schemas"]["CatalogItem"][];
@@ -4391,9 +4818,19 @@ export type components = {
              */
             cash_to_hand_back?: number;
         };
+        /**
+         * @description Ligne d'une vente envoyée par le terminal. Depuis une caisse `CATALOG_POS`, `product_id` est requis (article
+         *     du catalogue servi) ; prix et taux sont contrôlés contre la version courante ou la dernière version servie à
+         *     ce terminal (`422 SALE_LINES_INVALID`). Libellé, prix et taux enregistrés sont ceux du catalogue, jamais
+         *     ceux du corps. `label` est réservé aux relevés : il n'est pas lu pour une vente au catalogue.
+         */
         SaleLine: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description Article du catalogue (`CatalogItem.product_id`) ; requis depuis une caisse `CATALOG_POS`.
+             */
             product_id?: string;
+            /** @description Réservé aux relevés ; ignoré pour une vente au catalogue. */
             label?: string;
             quantity: number;
             unit_price: components["schemas"]["Amount"];
@@ -4402,11 +4839,20 @@ export type components = {
          * @description Exactement un moyen parmi `tap_id`, `tap`, `customer_qr_token`, `payment_intent_id`. Si `lines`
          *     est présent, `amount` DOIT être égal à Σ quantity × unit_price.
          *     `payment_intent_id` est V2 (ADR-43) : en V1, le serveur le refuse (`422 DEVICE_MODE_NOT_ALLOWED`).
+         *     `vendor_session_id` est requis depuis un terminal (session de vendeur ouverte, `openVendorSession`).
+         *     `lines` : obligatoire depuis une caisse `CATALOG_POS`, interdit depuis un `KEYPAD_TPE`.
          */
         PaymentRequestBody: {
             amount: components["schemas"]["Amount"];
             currency: components["schemas"]["Currency"];
             occurred_at: components["schemas"]["Timestamp"];
+            /**
+             * Format: uuid
+             * @description Session de vendeur ouverte sur ce terminal. Requise depuis un terminal : absente, close, expirée,
+             *     d'un autre terminal ou autre que la session ouverte, ou vendeur désactivé ou bloqué →
+             *     `409 VENDOR_SESSION_INVALID`. Le vendeur de la vente est celui de la session, jamais un champ du corps.
+             */
+            vendor_session_id?: string;
             /** Format: int64 */
             tap_id?: number;
             tap?: components["schemas"]["TapInput"];
@@ -4434,14 +4880,216 @@ export type components = {
             wallet_id?: string;
             balance_after: components["schemas"]["Balance"];
             receipt_number?: string;
+            vendor?: components["schemas"]["SaleVendor"];
+            /** @description Lignes enregistrées de la vente (copiées du catalogue) ; absent sans lignes. */
+            lines?: components["schemas"]["SaleLineResult"][];
+            /**
+             * @description Canal de la vente (bracelet, QR commerçant, QR client) ; absent hors vente.
+             * @enum {string}
+             */
+            channel?: "NFC" | "MERCHANT_QR" | "CUSTOMER_QR";
         };
+        /**
+         * @description Vendeur auquel le serveur a attribué la vente ou l'annulation (d'après la session de vendeur). Ni PIN, ni
+         *     empreinte, ni compteur d'échecs. Absent pour une opération sans vendeur (recharge, remboursement).
+         */
+        SaleVendor: {
+            /** Format: uuid */
+            vendor_id: string;
+            display_name: string;
+        };
+        /**
+         * @description Ligne enregistrée d'une vente : libellé (dans la langue de `Accept-Language`), prix et taux copiés de la
+         *     version du catalogue retenue ; `line_total` = `quantity` × `unit_price`.
+         */
+        SaleLineResult: {
+            /** Format: uuid */
+            product_id: string;
+            label: string;
+            quantity: number;
+            unit_price: components["schemas"]["Amount"];
+            vat_rate_bps: number;
+            line_total: components["schemas"]["Amount"];
+            catalog_version: number;
+        };
+        /**
+         * @description `vendor_session_id` est requis depuis un terminal (annulation par le vendeur de la vente ou avec un
+         *     `SUPERVISOR`) ; il est sans objet au back-office (`humanBearer`), d'où son absence de `required`.
+         */
         ReversalRequest: {
             /** @enum {string} */
             reason: "INPUT_ERROR" | "CUSTOMER_CANCELLED" | "PRODUCT_UNAVAILABLE" | "DUPLICATE" | "OTHER";
             comment?: string;
             occurred_at: components["schemas"]["Timestamp"];
-            /** @description Preuve de validation superviseur au-delà de la fenêtre (jeton court signé). */
+            /**
+             * Format: uuid
+             * @description Session de vendeur ouverte sur ce terminal ; requise depuis un terminal (sinon
+             *     `409 VENDOR_SESSION_INVALID`).
+             */
+            vendor_session_id?: string;
+            /**
+             * @description Refusé : présent → `422 VALIDATION_FAILED`, rien n'est écrit. La preuve du `SUPERVISOR` passe par
+             *     l'en-tête `X-Approval-Token` seulement (paramètre `ApprovalToken`) : dans le corps, elle rendrait
+             *     l'empreinte de la requête (`act_hash`) circulaire.
+             */
             supervisor_pin_proof?: string;
+        };
+        /** @enum {string} */
+        VendorStatus: "ACTIVE" | "DISABLED";
+        /**
+         * @description Vendeur d'un commerçant (lecture de la vue `vendor_public`). Ne contient jamais le PIN, son empreinte ni le
+         *     compteur d'échecs : `locked` dit seulement si le vendeur est bloqué (5 PIN faux, levé par un nouveau PIN).
+         */
+        Vendor: {
+            /** Format: uuid */
+            vendor_id: string;
+            /** Format: uuid */
+            merchant_id: string;
+            display_name: string;
+            status: components["schemas"]["VendorStatus"];
+            locked: boolean;
+        };
+        VendorPage: {
+            data: components["schemas"]["Vendor"][];
+            next_cursor?: string | null;
+            has_more: boolean;
+        };
+        VendorCreate: {
+            display_name: string;
+            /**
+             * @description PIN du vendeur : exactement 6 chiffres. Jamais renvoyé, journalisé ni audité ; le serveur n'en garde
+             *     que l'empreinte argon2id. Mal formé : `422 VALIDATION_FAILED`, sans écho de la valeur.
+             */
+            pin: string;
+        };
+        VendorPinChange: {
+            /**
+             * @description PIN du vendeur : exactement 6 chiffres. Jamais renvoyé, journalisé ni audité ; le serveur n'en garde
+             *     que l'empreinte argon2id. Mal formé : `422 VALIDATION_FAILED`, sans écho de la valeur.
+             */
+            pin: string;
+        };
+        VendorStatusChange: {
+            status: components["schemas"]["VendorStatus"];
+        };
+        VendorSessionOpen: {
+            /** Format: uuid */
+            vendor_id: string;
+            /**
+             * @description PIN du vendeur : exactement 6 chiffres. Jamais renvoyé, journalisé ni audité ; le serveur n'en garde
+             *     que l'empreinte argon2id. Mal formé : `422 VALIDATION_FAILED`, sans écho de la valeur.
+             */
+            pin: string;
+        };
+        /** @description Session de vendeur ouverte sur ce terminal (identifiant non secret, 12 h au plus). */
+        VendorSession: {
+            /** Format: uuid */
+            vendor_session_id: string;
+            /** Format: uuid */
+            vendor_id: string;
+            vendor_display_name: string;
+            expires_at: components["schemas"]["Timestamp"];
+        };
+        /** @description Vendeur proposé à l'écran de connexion du terminal ; rien d'autre que l'identifiant et le nom. */
+        TerminalVendor: {
+            /** Format: uuid */
+            vendor_id: string;
+            display_name: string;
+        };
+        TerminalVendorList: {
+            data: components["schemas"]["TerminalVendor"][];
+        };
+        CatalogLabel: string;
+        CatalogCategory: {
+            /** Format: uuid */
+            category_id: string;
+            label_fr: components["schemas"]["CatalogLabel"];
+            label_en: components["schemas"]["CatalogLabel"];
+            /** @description Ordre d'affichage (croissant). */
+            position: number;
+            active: boolean;
+        };
+        CatalogCategoryCreate: {
+            label_fr: components["schemas"]["CatalogLabel"];
+            label_en: components["schemas"]["CatalogLabel"];
+            /** @description Ordre d'affichage ; à défaut, après la dernière catégorie. */
+            position?: number;
+        };
+        CatalogCategoryUpdate: {
+            label_fr?: components["schemas"]["CatalogLabel"];
+            label_en?: components["schemas"]["CatalogLabel"];
+            position?: number;
+            active?: boolean;
+        };
+        /** @description Article du catalogue courant (back-office). */
+        CatalogItemAdmin: {
+            /** Format: uuid */
+            item_id: string;
+            /** Format: uuid */
+            category_id: string;
+            label_fr: components["schemas"]["CatalogLabel"];
+            label_en: components["schemas"]["CatalogLabel"];
+            unit_price: components["schemas"]["Amount"];
+            vat_rate_bps: number;
+            active: boolean;
+        };
+        CatalogItemCreate: {
+            label_fr: components["schemas"]["CatalogLabel"];
+            label_en: components["schemas"]["CatalogLabel"];
+            unit_price: components["schemas"]["Amount"];
+            vat_rate_bps: number;
+        };
+        CatalogItemUpdate: {
+            /** Format: uuid */
+            category_id?: string;
+            label_fr?: components["schemas"]["CatalogLabel"];
+            label_en?: components["schemas"]["CatalogLabel"];
+            unit_price?: components["schemas"]["Amount"];
+            vat_rate_bps?: number;
+            active?: boolean;
+        };
+        /** @description Catégorie écrite et numéro de la version du catalogue créée par l'écriture. */
+        CatalogCategoryResult: {
+            category: components["schemas"]["CatalogCategory"];
+            catalog_version: number;
+        };
+        /** @description Article écrit et numéro de la version du catalogue créée par l'écriture. */
+        CatalogItemResult: {
+            item: components["schemas"]["CatalogItemAdmin"];
+            catalog_version: number;
+        };
+        /** @description Catalogue courant d'un point de vente ; `version` 0 tant qu'aucune écriture n'a eu lieu. */
+        Catalog: {
+            /** Format: uuid */
+            pos_id: string;
+            version: number;
+            merchant_manages: boolean;
+            categories: components["schemas"]["CatalogCategory"][];
+            items: components["schemas"]["CatalogItemAdmin"][];
+        };
+        /** @description Article d'une version immuable du catalogue (copie à la création de la version). */
+        CatalogVersionItem: {
+            /** Format: uuid */
+            item_id: string;
+            /** Format: uuid */
+            category_id: string;
+            label_fr: string;
+            label_en: string;
+            unit_price: components["schemas"]["Amount"];
+            vat_rate_bps: number;
+        };
+        CatalogVersion: {
+            /** Format: uuid */
+            pos_id: string;
+            version: number;
+            created_at: components["schemas"]["Timestamp"];
+            items: components["schemas"]["CatalogVersionItem"][];
+        };
+        /** @description Délégation de la gestion du catalogue d'un point de vente au commerçant (réglée par l'organisateur). */
+        CatalogPolicy: {
+            /** Format: uuid */
+            readonly pos_id?: string;
+            merchant_manages: boolean;
         };
         CashTopupRequest: {
             amount: components["schemas"]["Amount"];
@@ -5211,9 +5859,11 @@ export type components = {
          *     `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
          *     Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →
          *     `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
+         *     Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée
+         *     par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).
          * @enum {string}
          */
-        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE" | "TAG_KEY_CREATE" | "TAG_DEK_ROTATE" | "TAG_KEY_RETIRE";
+        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE" | "TAG_KEY_CREATE" | "TAG_DEK_ROTATE" | "TAG_KEY_RETIRE" | "SALE_REVERSAL";
         /**
          * @description `PENDING` → `APPROVED` | `REJECTED` | `EXPIRED` ; `APPROVED` → `EXECUTED` | `FAILED` (garde de la base).
          *     `APPROVED` est un état de passage : `approveApprovalRequest` exécute l'action dans la foulée.
@@ -6564,7 +7214,7 @@ export type components = {
         /**
          * @description Authentification absente ou invalide (`UNAUTHENTICATED`, `DEVICE_SIGNATURE_INVALID`,
          *     `REFRESH_TOKEN_INVALID`, `WEBHOOK_SIGNATURE_INVALID`). Pour un terminal, la réponse ne dit pas quelle
-         *     preuve a échoué.
+         *     preuve a échoué. Ouverture d'une session de vendeur refusée : `VENDOR_PIN_INVALID` (réponse unique).
          */
         Unauthorized: {
             headers: {
@@ -6632,7 +7282,8 @@ export type components = {
          * @description Conflit d'état ou d'idempotence (`IDEMPOTENCY_KEY_REUSED`, `DEBIT_AUTHORITY_EDGE`,
          *     `DEBIT_AUTHORITY_MOVING`, `HANDOVER_INVALID_STATE`, `CHAIN_BROKEN`, `ALREADY_REVERSED`,
          *     `MEDIA_STATE_INVALID`, `SEQ_OUT_OF_RANGE`, `TAP_UNUSABLE`, `APPROVAL_INVALID` pour une demande
-         *     d'approbation expirée ou déjà décidée, `LATE_CLAIM_INVALID` pour une réclamation tardive hors bornes…).
+         *     d'approbation expirée ou déjà décidée, `LATE_CLAIM_INVALID` pour une réclamation tardive hors bornes,
+         *     `VENDOR_SESSION_INVALID`, `PAYMENT_REQUEST_NOT_PENDING`…).
          *     `DEBIT_AUTHORITY_EDGE` et `DEBIT_AUTHORITY_MOVING` ne sont pas des refus définitifs : rejouer la même
          *     requête, avec la même clé, vers l'autorité indiquée ou suivante (sync_protocol.md §5.1, §9).
          */
@@ -6764,6 +7415,15 @@ export type components = {
         /**
          * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
          *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+         *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+         *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+         *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+         *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+         *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+         *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+         *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+         *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+         *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
          */
         IdempotencyKey: string;
         /**
@@ -6815,6 +7475,25 @@ export type components = {
         LedgerId: string;
         PaymentIntentId: string;
         PaymentRequestId: string;
+        /**
+         * @description Jeton de la demande de paiement lu dans le QR commerçant. Obligatoire quand l'appelant est un festivalier
+         *     (`getPaymentRequest`, `cancelPaymentRequest`) ; ignoré pour un terminal (le terminal d'origine est
+         *     reconnu par ses preuves). Transmis en en-tête seulement, jamais dans la chaîne de requête ni dans le
+         *     chemin (il finirait dans les journaux d'accès) ; masqué dans le journal des requêtes, jamais audité ni
+         *     gardé (seule l'empreinte SHA-256 de la demande l'est). Absent ou faux : `404`, réponse identique à une
+         *     demande inconnue.
+         */
+        PaymentRequestToken: string;
+        /** @description Vendeur d'un commerçant ; hors du périmètre de la personne ou d'un autre prestataire → `404`. */
+        VendorId: string;
+        /** @description Commerçant du prestataire de la personne ; hors de son périmètre ou inconnu → `404`. */
+        VendorMerchantId: string;
+        /** @description Catégorie du catalogue d'un point de vente ; hors du périmètre de la personne → `404`. */
+        CatalogCategoryId: string;
+        /** @description Article du catalogue d'un point de vente ; hors du périmètre de la personne → `404`. */
+        CatalogItemId: string;
+        /** @description Numéro de version du catalogue du point de vente (croissant à partir de 1). */
+        CatalogVersionNumber: number;
         RefundRequestId: string;
         CashSessionId: string;
         KycVerificationId: string;
@@ -6926,6 +7605,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -7669,6 +8357,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -7720,6 +8417,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -7771,6 +8477,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -7822,6 +8537,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -7865,6 +8589,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -8048,6 +8781,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8223,6 +8965,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8304,6 +9055,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8385,6 +9145,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8486,6 +9255,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8558,6 +9336,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8661,6 +9448,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8766,6 +9562,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -8899,8 +9704,30 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Jeton d'approbation sur place (guichet, ADR-74, SPECIFICATION §3.2). La seconde personne saisit son code
+                 *     personnel sur le même terminal ; le serveur d'identité (OIDC, authentification renforcée) délivre un JWT
+                 *     signé, valable 5 min, à usage unique (`jti` mémorisé jusqu'à l'expiration), lié à l'action :
+                 *     `sub` = valideur, `act` = operationId, `act_hash` = SHA-256 (hex) de la requête canonique
+                 *     (méthode, chemin, corps en JSON canonique JCS, RFC 8785 ; le jeton n'en fait pas partie).
+                 *     Le serveur vérifie signature, expiration, `jti` non réutilisé, `act` et `act_hash`, `sub` ≠ appelant et
+                 *     rôle du valideur ; le valideur transmis à la base est le `sub`. Obligatoire seulement quand l'opération
+                 *     l'exige (au-delà de `event.cash_refund_single_max`) : absent → `403 APPROVAL_REQUIRED` ; refusé
+                 *     (invalide, expiré, déjà utilisé, autre action, même personne) → `403 APPROVAL_INVALID`. Envoyé sans
+                 *     nécessité, il est vérifié puis consommé de la même façon.
+                 */
+                "X-Approval-Token"?: components["parameters"]["ApprovalToken"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
@@ -8929,7 +9756,8 @@ export interface operations {
                  * @example {
                  *       "reason": "INPUT_ERROR",
                  *       "comment": "Erreur de saisie, 6000 au lieu de 3000",
-                 *       "occurred_at": "2026-12-12T19:03:00Z"
+                 *       "occurred_at": "2026-12-12T19:03:00Z",
+                 *       "vendor_session_id": "2f3a4b5c-6d7e-4f80-9a1b-2c3d4e5f6a7b"
                  *     }
                  */
                 "application/json": components["schemas"]["ReversalRequest"];
@@ -8968,11 +9796,519 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResult"];
                 };
             };
+            202: components["responses"]["ApprovalRequestAccepted"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+        };
+    };
+    listVendors: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Statut du vendeur. */
+                status?: components["schemas"]["VendorStatus"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Commerçant du prestataire de la personne ; hors de son périmètre ou inconnu → `404`. */
+                merchant_id: components["parameters"]["VendorMerchantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de vendeurs. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createVendor: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Commerçant du prestataire de la personne ; hors de son périmètre ou inconnu → `404`. */
+                merchant_id: components["parameters"]["VendorMerchantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "display_name": "Awa (bar)",
+                 *       "pin": "482913"
+                 *     }
+                 */
+                "application/json": components["schemas"]["VendorCreate"];
+            };
+        };
+        responses: {
+            /** @description Vendeur créé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    /** @description `/v1/vendors/{vendor_id}` */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "vendor_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
+                     *       "merchant_id": "0d1e2f3a-4b5c-4d6e-8f7a-8b9c0d1e2f3a",
+                     *       "display_name": "Awa (bar)",
+                     *       "status": "ACTIVE",
+                     *       "locked": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Vendor"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getVendor: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Vendeur d'un commerçant ; hors du périmètre de la personne ou d'un autre prestataire → `404`. */
+                vendor_id: components["parameters"]["VendorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vendeur. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Vendor"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setVendorPin: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Vendeur d'un commerçant ; hors du périmètre de la personne ou d'un autre prestataire → `404`. */
+                vendor_id: components["parameters"]["VendorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorPinChange"];
+            };
+        };
+        responses: {
+            /** @description PIN changé, vendeur débloqué. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Vendor"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    setVendorStatus: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Vendeur d'un commerçant ; hors du périmètre de la personne ou d'un autre prestataire → `404`. */
+                vendor_id: components["parameters"]["VendorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "status": "DISABLED"
+                 *     }
+                 */
+                "application/json": components["schemas"]["VendorStatusChange"];
+            };
+        };
+        responses: {
+            /** @description Statut changé. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Vendor"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listTerminalVendors: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vendeurs du commerçant du point de vente du terminal. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "vendor_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
+                     *           "display_name": "Awa (bar)"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TerminalVendorList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    openVendorSession: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "vendor_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
+                 *       "pin": "482913"
+                 *     }
+                 */
+                "application/json": components["schemas"]["VendorSessionOpen"];
+            };
+        };
+        responses: {
+            /** @description Session ouverte (réponse jamais rejouée). */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "vendor_session_id": "2f3a4b5c-6d7e-4f80-9a1b-2c3d4e5f6a7b",
+                     *       "vendor_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
+                     *       "vendor_display_name": "Awa (bar)",
+                     *       "expires_at": "2026-12-12T07:10:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorSession"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            /**
+             * @description Preuves du terminal absentes ou fausses (`UNAUTHENTICATED`, `DEVICE_SIGNATURE_INVALID`), ou ouverture
+             *     refusée (`VENDOR_PIN_INVALID`) : réponse unique, quel que soit le motif du refus du PIN.
+             */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/VENDOR_PIN_INVALID",
+                     *       "title": "Code PIN refusé",
+                     *       "status": 401,
+                     *       "code": "VENDOR_PIN_INVALID",
+                     *       "detail": "Le code PIN est refusé.",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b",
+                     *       "retryable": false
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    closeVendorSession: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session fermée (ou aucune session ouverte). */
+            204: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
         };
     };
     createCashTopup: {
@@ -8988,6 +10324,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -9078,6 +10423,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9211,6 +10565,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9285,6 +10648,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9341,6 +10713,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9382,6 +10763,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9435,6 +10825,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -9727,6 +11126,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -9965,6 +11373,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -10085,6 +11502,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -10136,6 +11562,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -10278,6 +11713,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -10373,6 +11817,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -10412,12 +11865,19 @@ export interface operations {
                  * @example {
                  *       "amount": 4000,
                  *       "currency": "XOF",
+                 *       "vendor_session_id": "2f3a4b5c-6d7e-4f80-9a1b-2c3d4e5f6a7b",
                  *       "ttl_seconds": 60
                  *     }
                  */
                 "application/json": {
                     amount: components["schemas"]["Amount"];
                     currency: components["schemas"]["Currency"];
+                    /**
+                     * Format: uuid
+                     * @description Session de vendeur ouverte sur ce terminal (`openVendorSession`). Requise : absente, close,
+                     *     expirée ou autre que la session ouverte du terminal → `409 VENDOR_SESSION_INVALID`.
+                     */
+                    vendor_session_id?: string;
                     /** @default 60 */
                     ttl_seconds?: number;
                     lines?: components["schemas"]["SaleLine"][];
@@ -10425,11 +11885,10 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Demande créée. */
+            /** @description Demande créée (jeton rendu une seule fois ; réponse jamais rejouée). */
             201: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
-                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10451,7 +11910,9 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     getPaymentRequest: {
@@ -10460,6 +11921,15 @@ export interface operations {
                 wait?: number;
             };
             header?: {
+                /**
+                 * @description Jeton de la demande de paiement lu dans le QR commerçant. Obligatoire quand l'appelant est un festivalier
+                 *     (`getPaymentRequest`, `cancelPaymentRequest`) ; ignoré pour un terminal (le terminal d'origine est
+                 *     reconnu par ses preuves). Transmis en en-tête seulement, jamais dans la chaîne de requête ni dans le
+                 *     chemin (il finirait dans les journaux d'accès) ; masqué dans le journal des requêtes, jamais audité ni
+                 *     gardé (seule l'empreinte SHA-256 de la demande l'est). Absent ou faux : `404`, réponse identique à une
+                 *     demande inconnue.
+                 */
+                "X-Payment-Request-Token"?: components["parameters"]["PaymentRequestToken"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
@@ -10518,6 +11988,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -10542,6 +12021,7 @@ export interface operations {
                  *     }
                  */
                 "application/json": {
+                    /** @description Jeton lu dans le QR ; jamais renvoyé, journalisé ni audité (seule l'empreinte est gardée). */
                     token: string;
                     /** Format: uuid */
                     wallet_id: string;
@@ -10561,7 +12041,6 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
         };
@@ -10573,8 +12052,26 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Jeton de la demande de paiement lu dans le QR commerçant. Obligatoire quand l'appelant est un festivalier
+                 *     (`getPaymentRequest`, `cancelPaymentRequest`) ; ignoré pour un terminal (le terminal d'origine est
+                 *     reconnu par ses preuves). Transmis en en-tête seulement, jamais dans la chaîne de requête ni dans le
+                 *     chemin (il finirait dans les journaux d'accès) ; masqué dans le journal des requêtes, jamais audité ni
+                 *     gardé (seule l'empreinte SHA-256 de la demande l'est). Absent ou faux : `404`, réponse identique à une
+                 *     demande inconnue.
+                 */
+                "X-Payment-Request-Token"?: components["parameters"]["PaymentRequestToken"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
@@ -10613,6 +12110,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     requestCustomerOtp: {
@@ -11046,6 +12544,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11123,6 +12630,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /**
@@ -11203,6 +12719,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11243,6 +12768,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11343,6 +12877,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11498,6 +13041,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11543,6 +13095,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11620,6 +13181,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11672,6 +13242,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11800,6 +13379,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11875,6 +13463,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -11969,6 +13566,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12227,6 +13833,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12312,6 +13927,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12397,6 +14021,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12440,6 +14073,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12491,6 +14133,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12613,6 +14264,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12695,6 +14355,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12786,6 +14455,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12867,6 +14545,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -12957,6 +14644,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13007,6 +14703,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13099,6 +14804,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13189,6 +14903,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13282,6 +15005,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13375,6 +15107,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13461,6 +15202,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13555,6 +15305,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13652,6 +15411,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13704,6 +15472,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13799,6 +15576,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13885,6 +15671,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -13981,6 +15776,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14067,6 +15871,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14201,6 +16014,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14297,6 +16119,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14387,6 +16218,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14483,6 +16323,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14572,6 +16421,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14611,6 +16469,394 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getCatalog: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Catalogue courant. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Catalog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createCatalogCategory: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "label_fr": "Boissons",
+                 *       "label_en": "Drinks",
+                 *       "position": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["CatalogCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Catégorie créée ; version suivante du catalogue créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogCategoryResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    updateCatalogCategory: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Catégorie du catalogue d'un point de vente ; hors du périmètre de la personne → `404`. */
+                category_id: components["parameters"]["CatalogCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "position": 2
+                 *     }
+                 */
+                "application/json": components["schemas"]["CatalogCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Catégorie modifiée ; version suivante du catalogue créée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogCategoryResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    createCatalogItem: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Catégorie du catalogue d'un point de vente ; hors du périmètre de la personne → `404`. */
+                category_id: components["parameters"]["CatalogCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "label_fr": "Bissap 33 cl",
+                 *       "label_en": "Bissap 33 cl",
+                 *       "unit_price": 1000,
+                 *       "vat_rate_bps": 1800
+                 *     }
+                 */
+                "application/json": components["schemas"]["CatalogItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Article créé ; version suivante du catalogue créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    updateCatalogItem: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Article du catalogue d'un point de vente ; hors du périmètre de la personne → `404`. */
+                item_id: components["parameters"]["CatalogItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "unit_price": 1200
+                 *     }
+                 */
+                "application/json": components["schemas"]["CatalogItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Article modifié ; version suivante du catalogue créée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getCatalogVersion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+                /** @description Numéro de version du catalogue du point de vente (croissant à partir de 1). */
+                version: components["parameters"]["CatalogVersionNumber"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version du catalogue. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setCatalogPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Point de vente. */
+                pos_id: components["parameters"]["PosId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "merchant_manages": true
+                 *     }
+                 */
+                "application/json": components["schemas"]["CatalogPolicy"];
+            };
+        };
+        responses: {
+            /** @description Délégation enregistrée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogPolicy"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
         };
     };
@@ -14668,6 +16914,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14719,6 +16974,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14815,6 +17079,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14890,6 +17163,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -14924,6 +17206,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15001,6 +17292,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15136,6 +17436,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15221,6 +17530,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15270,6 +17588,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15354,6 +17681,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15400,6 +17736,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15451,6 +17796,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15494,6 +17848,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15620,6 +17983,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15668,6 +18040,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15706,6 +18087,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15754,6 +18144,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15797,6 +18196,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
@@ -15845,6 +18253,15 @@ export interface operations {
                 /**
                  * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
                  *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */

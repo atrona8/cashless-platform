@@ -24,6 +24,7 @@ class Problem {
     this.retryable,
     this.errors,
     this.violations,
+    this.authorityEpoch,
   });
 
   factory Problem.fromJson(Map<String, Object?> json) =>
@@ -47,6 +48,13 @@ class Problem {
   /// cite la même règle, traduit selon `Accept-Language`.
   ///
   final List<Violations>? violations;
+
+  /// `409 STALE_AUTHORITY_EPOCH` : époque d'autorité de débit COURANTE du grand livre de l'événement du.
+  /// terminal (`ledger.authority_epoch`). Le terminal la reprend, relit sa configuration et rejoue avec une.
+  /// nouvelle clé `<serial>:<seq>`. Absent des autres problèmes.
+  ///
+  @JsonKey(name: 'authority_epoch')
+  final int? authorityEpoch;
 
   Map<String, Object?> toJson() => _$ProblemToJson(this);
 }

@@ -39,6 +39,19 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL028: { code: 'DEVICE_SERIAL_IN_USE', status: 409 },
   CL029: { code: 'CONFLICT_STATE', status: 409 },
   CL030: { code: 'DEVICE_SUSPENDED', status: 403 },
+  // Mission 5b (lot WP08, T037 ; data-model « Codes d'erreur nouveaux » ; ADR-123 pour CL036, CL040).
+  CL031: { code: 'ENROLLMENT_EVENT_CLOSED', status: 422 },
+  CL032: { code: 'VENDOR_SESSION_INVALID', status: 409 },
+  CL033: { code: 'VENDOR_PIN_INVALID', status: 401 },
+  CL034: { code: 'SALE_LINES_INVALID', status: 422 },
+  CL035: { code: 'ALREADY_REVERSED', status: 409 },
+  // 422 du contrat (le data-model disait 403) : décision du porteur, ADR-123.
+  CL036: { code: 'REVERSAL_NOT_ALLOWED', status: 422 },
+  // `422 QR_TOKEN_INVALID` du QR client : traduit par la route (WP13), jamais ici (ADR-123).
+  CL037: { code: 'PAYMENT_REQUEST_NOT_PENDING', status: 409 },
+  CL038: { code: 'MEDIA_BLOCKED', status: 422 },
+  CL039: { code: 'WALLET_BLOCKED', status: 422 },
+  CL040: { code: 'REVERSAL_WINDOW_EXPIRED', status: 409 },
   P0002: { code: 'NOT_FOUND', status: 404 },
   // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
   // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus
@@ -63,6 +76,14 @@ export const DOUBLE_VALIDATION_CONSTRAINTS: Readonly<Record<string, string>> = {
   approval_request_check: 'CHECK (((decided_by IS NULL) OR (decided_by <> requested_by)))',
 };
 
+/**
+ * Violations d'unicité traduites, par nom de contrainte (A19) : liste fermée ; tout autre `23505`
+ * reste `500` (une unicité inattendue est un défaut, pas un refus métier).
+ */
+export const UNIQUE_CONSTRAINTS: Readonly<Record<string, MappedProblem>> = {
+  journal_transaction_reverses_once: { code: 'ALREADY_REVERSED', status: 409 },
+};
+
 const INTERNAL: MappedProblem = { code: 'INTERNAL_ERROR', status: 500 };
 
 /** Une erreur `pg` porte un SQLSTATE de 5 caractères dans `code` (et parfois `constraint`). */
@@ -81,5 +102,11 @@ export function mapSqlState(sqlstate: string, constraint?: string): MappedProble
       ? { code: 'FORBIDDEN', status: 403 }
       : { code: 'VALIDATION_FAILED', status: 422 };
   }
+  if (sqlstate === '23505')
+    return (
+      (constraint !== undefined && Object.hasOwn(UNIQUE_CONSTRAINTS, constraint)
+        ? UNIQUE_CONSTRAINTS[constraint]
+        : undefined) ?? INTERNAL
+    );
   return SQLSTATE_MAP[sqlstate] ?? INTERNAL;
 }

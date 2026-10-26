@@ -200,6 +200,38 @@ describe('idempotence applicative (S21)', () => {
     expect(await noteCount(ops.a, 'insolvable')).toBe(0);
   });
 
+  it('un 429 hors nonFinal est un refus définitif : enregistré puis rejoué ; avec nonFinal : relâché', async () => {
+    const send = (path: string, key: string, body: object = {}) =>
+      request(app.getHttpServer())
+        .post(`/v1/__test/${path}`)
+        .set(TEST_OPERATOR_HEADER, ops.a)
+        .set('Idempotency-Key', key)
+        .send(body);
+    // Route sans nonFinal (writes:false puis route d'écriture) : le 429 est enregistré et rejoué tel quel.
+    for (const [path, body] of [
+      ['limited-final', {}],
+      ['notes', { note: 'trop-vite' }],
+    ] as const) {
+      const key = randomUUID();
+      const first = await send(path, key, body);
+      expect([first.status, first.headers['retry-after']]).toEqual([429, '1']);
+      expect((await keyRow(ops.a, key))?.status).toBe('COMPLETED');
+      const replay = await send(path, key, body);
+      expect([
+        replay.status,
+        replay.headers['idempotency-replayed'],
+        replay.headers['retry-after'],
+      ]).toEqual([429, 'true', '1']);
+      expect(JSON.parse(replay.text)).toEqual(JSON.parse(first.text));
+    }
+    // Route avec nonFinal : la clé est relâchée, le renvoi est un nouvel essai (pas un rejeu).
+    const key = randomUUID();
+    expect((await send('limited', key)).status).toBe(429);
+    expect((await keyRow(ops.a, key))?.status).toBe('IN_PROGRESS');
+    const again = await send('limited', key);
+    expect([again.status, again.headers['idempotency-replayed']]).toEqual([429, undefined]);
+  });
+
   it('même clé chez un autre prestataire : clés indépendantes', async () => {
     const key = randomUUID();
     const a = await post(ops.a, key, { note: 'partagée' });

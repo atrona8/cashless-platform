@@ -2,7 +2,7 @@
 // Régénérer : npm run generate -w @cashless/contracts
 import type { components } from './openapi';
 
-/** Valeurs de l'énumération ProblemCode, dans l'ordre du contrat (91 codes). */
+/** Valeurs de l'énumération ProblemCode, dans l'ordre du contrat (95 codes). */
 export const PROBLEM_CODES = [
   'VALIDATION_FAILED',
   'UNAUTHENTICATED',
@@ -95,4 +95,8 @@ export const PROBLEM_CODES = [
   'CARD_DAILY_LIMIT',
   'DEVICE_SIGNATURE_INVALID',
   'DEVICE_SERIAL_IN_USE',
+  'ENROLLMENT_EVENT_CLOSED',
+  'VENDOR_SESSION_INVALID',
+  'VENDOR_PIN_INVALID',
+  'SALE_LINES_INVALID',
 ] as const satisfies readonly components['schemas']['ProblemCode'][];

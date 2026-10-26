@@ -11,6 +11,7 @@ ReversalRequest _$ReversalRequestFromJson(Map<String, dynamic> json) =>
       reason: $enumDecode(_$ReversalRequestReasonEnumMap, json['reason']),
       occurredAt: DateTime.parse(json['occurred_at'] as String),
       comment: json['comment'] as String?,
+      vendorSessionId: json['vendor_session_id'] as String?,
       supervisorPinProof: json['supervisor_pin_proof'] as String?,
     );
 
@@ -19,6 +20,7 @@ Map<String, dynamic> _$ReversalRequestToJson(ReversalRequest instance) =>
       'reason': instance.reason,
       'comment': instance.comment,
       'occurred_at': instance.occurredAt.toIso8601String(),
+      'vendor_session_id': instance.vendorSessionId,
       'supervisor_pin_proof': instance.supervisorPinProof,
     };
 

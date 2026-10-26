@@ -7,7 +7,10 @@ import 'package:json_annotation/json_annotation.dart';
 import 'amount.dart';
 import 'balance.dart';
 import 'currency.dart';
+import 'payment_result_channel.dart';
 import 'payment_result_status.dart';
+import 'sale_line_result.dart';
+import 'sale_vendor.dart';
 import 'timestamp.dart';
 import 'transaction_type.dart';
 
@@ -29,6 +32,9 @@ class PaymentResult {
     this.mediaId,
     this.walletId,
     this.receiptNumber,
+    this.vendor,
+    this.lines,
+    this.channel,
   });
 
   factory PaymentResult.fromJson(Map<String, Object?> json) =>
@@ -56,6 +62,13 @@ class PaymentResult {
   final Balance balanceAfter;
   @JsonKey(name: 'receipt_number')
   final String? receiptNumber;
+  final SaleVendor? vendor;
+
+  /// Lignes enregistrées de la vente (copiées du catalogue) ; absent sans lignes.
+  final List<SaleLineResult>? lines;
+
+  /// Canal de la vente (bracelet, QR commerçant, QR client) ; absent hors vente.
+  final PaymentResultChannel? channel;
 
   Map<String, Object?> toJson() => _$PaymentResultToJson(this);
 }

@@ -5,7 +5,7 @@
 // que hors production ET sur demande explicite (`DEVICE_IDENTITY_FAKE=1`, tests en clair de la
 // mission 4) ; en production, la variable posée fait refuser le démarrage, comme tout faux
 // (NFR-001, NFR-010).
-import { Global, Injectable, Module } from '@nestjs/common';
+import { Global, Injectable, Module, type Provider, type Type } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config';
 import { TenantTx } from '../db/tenant-tx';
 import { DeviceTokenService } from '../device-tokens/device-token.service';
@@ -15,6 +15,7 @@ import { DeviceGuard } from './device.guard';
 import {
   DEVICE_DIRECTORY,
   DEVICE_IDENTITY,
+  type DeviceAppMode,
   type DeviceDirectory,
   type DeviceIdentityPort,
   type DeviceRecord,
@@ -42,6 +43,42 @@ export interface DeviceRow {
 export const DEVICE_QUERY = `SELECT id, operator_id, event_id, pos_id, status, agreement_public_key,
         public_key, cert_sha256, os, nfc_enabled
    FROM device WHERE id = $1 AND operator_id = $2`;
+
+/**
+ * Terminal ET ce que lisent les routes de la mission 5b (`serial`, `app_mode`, `personal_phone`,
+ * commerçant et participation du point de vente), en une requête : API publique seule
+ * (`cashless_app` lit `device`, `point_of_sale`, `merchant_participation`). Jamais exécutée par le
+ * processus des clés (`DeviceIdentityModule`, requête étroite `DEVICE_QUERY`), dont le rôle
+ * `cashless_tagkeys` n'a pas ces droits (et ne doit pas les recevoir). Jointures gauches sous le
+ * même prestataire : un terminal sans point de vente garde `null`.
+ */
+export const DEVICE_DETAILS_QUERY = `SELECT d.id, d.operator_id, d.event_id, d.pos_id, d.status,
+        d.agreement_public_key, d.public_key, d.cert_sha256, d.os, d.nfc_enabled,
+        d.serial, d.app_mode, d.personal_phone, pos.participation_id, mp.merchant_id
+   FROM device d
+   LEFT JOIN point_of_sale pos ON pos.id = d.pos_id AND pos.operator_id = d.operator_id
+   LEFT JOIN merchant_participation mp
+          ON mp.id = pos.participation_id AND mp.operator_id = d.operator_id
+  WHERE d.id = $1 AND d.operator_id = $2`;
+
+export interface DeviceDetailsRow extends DeviceRow {
+  serial: string;
+  app_mode: DeviceAppMode;
+  personal_phone: boolean;
+  participation_id: string | null;
+  merchant_id: string | null;
+}
+
+export function deviceDetailsFromRow(row: DeviceDetailsRow): DeviceRecord {
+  return {
+    ...deviceFromRow(row),
+    serial: row.serial,
+    appMode: row.app_mode,
+    personalPhone: row.personal_phone,
+    merchantId: row.merchant_id,
+    participationId: row.participation_id,
+  };
+}
 
 export function deviceFromRow(row: DeviceRow): DeviceRecord {
   return {
@@ -90,6 +127,28 @@ export class TenantDeviceDirectory implements DeviceDirectory {
   }
 }
 
+/**
+ * Lecture du terminal de l'API publique (mission 5b, T034) : `find` (la garde) lit aussi le
+ * contexte enrichi. `findForAuthentication` (les preuves) reste la requête étroite.
+ */
+@Injectable()
+export class PublicDeviceDirectory extends TenantDeviceDirectory {
+  constructor(private readonly publicTx: TenantTx) {
+    super(publicTx);
+  }
+
+  override find(operatorId: string, deviceId: string): Promise<DeviceRecord | null> {
+    if (!UUID.test(operatorId) || !UUID.test(deviceId)) return Promise.resolve(null);
+    return this.publicTx.run(operatorId, async (client) => {
+      const { rows } = await client.query<DeviceDetailsRow>(DEVICE_DETAILS_QUERY, [
+        deviceId,
+        operatorId,
+      ]);
+      return rows[0] ? deviceDetailsFromRow(rows[0]) : null;
+    });
+  }
+}
+
 /** Variable qui demande le faux, hors production seulement. */
 export const DEVICE_IDENTITY_FAKE_VARIABLE = 'DEVICE_IDENTITY_FAKE';
 
@@ -112,12 +171,11 @@ export function createDeviceIdentity(
   return new RealDeviceIdentity({ ...deps, authorities: config.deviceRequestAuthorities });
 }
 
-@Global()
-@Module({
-  imports: [DeviceTokensModule],
-  providers: [
+/** Fournisseurs communs ; `directory` : lecture du terminal sous le rôle du processus. */
+function deviceIdentityProviders(directory: Type<DeviceDirectory>): Provider[] {
+  return [
     NonceStore,
-    { provide: DEVICE_DIRECTORY, useClass: TenantDeviceDirectory },
+    { provide: DEVICE_DIRECTORY, useClass: directory },
     {
       provide: DEVICE_IDENTITY,
       inject: [APP_CONFIG, DeviceTokenService, DEVICE_DIRECTORY, NonceStore],
@@ -129,7 +187,25 @@ export function createDeviceIdentity(
       ) => createDeviceIdentity(config, { tokens, directory, nonces }),
     },
     DeviceGuard,
-  ],
-  exports: [DEVICE_IDENTITY, DEVICE_DIRECTORY, DeviceGuard],
+  ];
+}
+
+const EXPORTS = [DEVICE_IDENTITY, DEVICE_DIRECTORY, DeviceGuard];
+
+/** Processus des clés de bracelet : requête étroite `DEVICE_QUERY` seulement. */
+@Global()
+@Module({
+  imports: [DeviceTokensModule],
+  providers: deviceIdentityProviders(TenantDeviceDirectory),
+  exports: EXPORTS,
 })
 export class DeviceIdentityModule {}
+
+/** API publique : la garde lit aussi le contexte enrichi (`DEVICE_DETAILS_QUERY`, mission 5b). */
+@Global()
+@Module({
+  imports: [DeviceTokensModule],
+  providers: deviceIdentityProviders(PublicDeviceDirectory),
+  exports: EXPORTS,
+})
+export class PublicDeviceIdentityModule {}

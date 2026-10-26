@@ -11,6 +11,7 @@ PaymentRequestBody _$PaymentRequestBodyFromJson(Map<String, dynamic> json) =>
       amount: (json['amount'] as num).toInt(),
       currency: json['currency'] as String,
       occurredAt: DateTime.parse(json['occurred_at'] as String),
+      vendorSessionId: json['vendor_session_id'] as String?,
       tapId: (json['tap_id'] as num?)?.toInt(),
       tap: json['tap'] == null
           ? null
@@ -27,6 +28,7 @@ Map<String, dynamic> _$PaymentRequestBodyToJson(PaymentRequestBody instance) =>
       'amount': instance.amount,
       'currency': instance.currency,
       'occurred_at': instance.occurredAt.toIso8601String(),
+      'vendor_session_id': instance.vendorSessionId,
       'tap_id': instance.tapId,
       'tap': instance.tap,
       'customer_qr_token': instance.customerQrToken,

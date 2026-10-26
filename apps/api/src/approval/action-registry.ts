@@ -25,8 +25,11 @@ export interface ApprovalExecutionResult {
 
 export interface ApprovalActionDefinition<P = unknown> {
   action: ApprovalAction;
-  /** Rôle exigé de l'auteur comme du valideur, sur la portée de l'action (ou une portée englobante). */
-  requiredRole: StaffRole;
+  /**
+   * Rôle exigé de l'auteur comme du valideur, sur la portée de l'action (ou une portée englobante). Une liste
+   * admet l'un quelconque de ses rôles (jamais un autre) : `SALE_REVERSAL` (SUPERVISOR ou ORGANIZER_ADMIN).
+   */
+  requiredRole: StaffRole | readonly StaffRole[];
   /**
    * Action de niveau plateforme (contrat platform-access, règle 5) : demande sans prestataire, créée, décidée et
    * exécutée dans la transaction de la plateforme. Sa portée est `PLATFORM` et son rôle `PLATFORM_ADMIN`.
@@ -40,6 +43,13 @@ export interface ApprovalActionDefinition<P = unknown> {
    * une erreur SQL traduisible fait passer la demande FAILED ; toute autre erreur annule tout.
    */
   execute(client: TxClient, ctx: ApprovalExecutionContext<P>): Promise<ApprovalExecutionResult>;
+}
+
+/** Rôles admis par une action, sous forme de liste. */
+export function requiredRoles(definition: ApprovalActionDefinition): readonly StaffRole[] {
+  return Array.isArray(definition.requiredRole)
+    ? (definition.requiredRole as readonly StaffRole[])
+    : [definition.requiredRole as StaffRole];
 }
 
 @Injectable()

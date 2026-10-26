@@ -3,10 +3,12 @@
 // il doit être le sien (404, identique à un objet inexistant). Personne de plateforme hors de ces routes : 403.
 // Route de l'app festivalier (`@CustomerAuth()`, sans personne du personnel) : le prestataire du compte festivalier,
 // prouvé par sa garde (mission bracelets-nfc, WP17). Un chemin `/operators/:operator_id/…` n'y est jamais admis.
+// Route de terminal seul (`@DeviceAuth()`, mission 5b) : le prestataire du terminal, même règle de chemin.
 import { Injectable } from '@nestjs/common';
 import type { Request } from 'express';
 import { ProblemException } from '../errors/problem';
 import type { CustomerRequest } from '../customer-identity/customer-identity.port';
+import type { DeviceRequest } from '../device-identity/device-identity.port';
 import type { TenantContext, TenantContextProvider } from '../tenancy/tenant-context';
 import { hasRole, requestPrincipal, type PrincipalRequest } from './principal';
 
@@ -20,7 +22,16 @@ export class IdentityTenantContext implements TenantContextProvider {
       OPERATOR_PARAM
     ];
     const customer = (req as CustomerRequest).customer;
-    if (customer && !(req as PrincipalRequest).principal) {
+    const staff = (req as PrincipalRequest).principal;
+    // Route de terminal seul (mission 5b, R-03) : `req.device` n'est posé que par `DeviceGuard`
+    // (aucun en-tête ni corps n'en décide) ; sans personne ni festivalier, le prestataire est celui
+    // du terminal. Guichet (personne ET terminal) : chemin de la personne, inchangé.
+    const device = (req as DeviceRequest).device;
+    if (device && !staff && !customer) {
+      if (pathOperator !== undefined) throw new ProblemException('NOT_FOUND');
+      return { operatorId: device.operatorId };
+    }
+    if (customer && !staff) {
       if (pathOperator !== undefined) throw new ProblemException('NOT_FOUND');
       return { operatorId: customer.operatorId };
     }

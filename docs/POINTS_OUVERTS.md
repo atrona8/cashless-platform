@@ -52,12 +52,13 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
 | OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 7 (hors ligne), avec OP-N41 : décision du porteur du 21/10/2026 |
-| OP-N74 | Enrôlement accepté sur un code lié à un événement clos (`CLOSED`) ou à un point de vente supprimé depuis l'émission : la base ne relit pas leur état (cas limite de la spécification de la mission 5a non livré ; ADR-120) | Non | Non (le terminal enrôlé n'encaisse rien avant la mission 5b) | Mission 5b (paiement en ligne) : décision du porteur du 21/10/2026 |
+| OP-N74 | Enrôlement sur un code lié à un événement clos ou à un point de vente supprimé — **levé** le 26/10/2026 par la mission 5b (migration `0035_enrollment_event_state.sql` : `create_device_enrollment_code` et `enroll_device` refusent `CLOSED` pour tout mode et, dès `CLOSING`, `CATALOG_POS`/`KEYPAD_TPE`, et un point de vente absent de l'événement du code ; `tests_enrollment_event_state.sql`, ADR-120) | Non | Non | — |
 | OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
 | OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET` depuis le 26/10) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
 | OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
 | OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
+| OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -705,7 +706,19 @@ décision du porteur du 21/10/2026 ; ADR-119.**
 ### OP-N74 — Enrôlement sur un événement clos ou un point de vente supprimé (21 octobre 2026)
 
 Relevé par la revue post-fusion de la mission 5a (DRIFT-1). **Écart à la spécification, consigné ; bloque la production :
-non ; levé par la mission 5b ; décision du porteur du 21/10/2026 ; ADR-120.**
+non ; décision du porteur du 21/10/2026 ; ADR-120. LEVÉ le 26/10/2026 par la mission 5b (WP06, vérifié par WP14).**
+
+- **Levée.** Migration `0035_enrollment_event_state.sql` (décision du porteur `DM-01M5HKDXSTFR5JS88GZ4B2EA5J`) :
+  `create_device_enrollment_code` relit l'événement sous `FOR SHARE` et refuse (`CL031`) `CLOSED` pour tout mode et,
+  dès `CLOSING`, les modes `CATALOG_POS` et `KEYPAD_TPE` (`TOPUP_DESK` permis jusqu'avant `CLOSED`) ; `enroll_device`
+  refuse de même d'après l'événement du code et contrôle que le point de vente existe, appartient au prestataire et à
+  l'événement du code (« supprimé » = absent, aucune suppression n'existe en base). Aucun terminal, code, jeton ni
+  historique écrit sur un refus ; l'essai `EVENT_CLOSED` et l'audit sont écrits hors de la transaction annulée (ADR-117).
+  Preuves : `packages/ledger-sql/tests/tests_enrollment_event_state.sql` (matrice états × modes : « émission : aucun
+  code écrit pour les 16 refus », « émission : les 12 codes permis sont écrits », « enrôlement : aucun code refusé
+  consommé, aucun terminal créé », « point de vente rattaché à un autre événement que celui du code : CL031 »,
+  verrou `FOR SHARE` prouvé par `pgrowlocks`).
+- **Historique du constat (21/10/2026).** Ce qui suit décrit l'écart tel qu'il était avant la levée.
 
 - **Constat.** La spécification de la mission 5a (cas limites) exige le refus d'un enrôlement dont le code vise un
   événement clos ou annulé, ou un point de vente supprimé entre l'émission et l'enrôlement.
@@ -778,11 +791,26 @@ porteur le 26/10/2026 ; levée proposée : mission 11, avec OP-N76.**
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_payment_rights.sql` (WP07 :
   `cashless_app` n'a ni `INSERT` ni `UPDATE` sur `sale_attribution`).
 
+### OP-N80 — Pool du verrou d'essai de PIN : dimensionnement non mesuré (26 octobre 2026)
+
+Report de la relecture WP09 cycle 3 (mission 5b), traité par WP14 : **consigné, non mesuré en charge** ; report à la
+mission 13 accepté par le porteur le 26/10/2026 (ADR-130). **Bloque la production : non** (disponibilité, aucun droit élargi).
+
+- **Constat.** `SessionLock` tient une connexion de son pool dédié pendant toute la requête d'ouverture de session
+  (vérification argon2 comprise, ~60 ms). Si plus de `poolSize` ouvertures arrivent ensemble, `pool.connect` attend
+  10 s puis la requête échoue en `500` (pas de `429`).
+- **Risque.** Un pic d'ouvertures de session (ouverture de l'événement : tous les terminaux ensemble) dégrade
+  l'ouverture ; aucune écriture partielle (rien n'est consommé avant le verrou).
+- **Condition de levée.** Mesure en charge à la recette V1 (mission 13), puis taille du pool ajustée ou refus `429`
+  immédiat à la saturation ; test qui échoue si la saturation rend un `500`.
+- **Test.** Aucun à ce jour : le comportement n'a pas été mesuré par la mission 5b (preuve de la concurrence des
+  essais : `vendor-sessions.spec.ts`, « essais simultanés depuis 5 terminaux »).
+
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;
-ADR-121. **Bloque la production : non ; levée avec OP-N56 (mission 11).** Code non encore écrit : la limite naît avec
-la migration `0031_vendors.sql` de la mission 5b.
+ADR-121. **Bloque la production : non ; levée avec OP-N56 (mission 11).** Code livré par la mission 5b (WP07, migration
+`0031_vendors.sql`) ; borne vérifiée par WP14.
 
 - **Constat.** argon2id se calcule dans l'API : `begin_vendor_pin_check` rend l'empreinte du PIN à `cashless_app`, et
   `open_vendor_session` ouvre la session sur la foi de la transaction de l'API (la base ne refait pas la vérification).

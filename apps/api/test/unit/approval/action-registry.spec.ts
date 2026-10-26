@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import {
   ApprovalActionRegistry,
   registerApprovalActions,
+  requiredRoles,
   type ApprovalActionDefinition,
 } from '../../../src/approval/action-registry';
 
@@ -22,6 +23,21 @@ describe('ApprovalActionRegistry', () => {
     expect(registry.get('PAYOUT')).toBeUndefined();
     expect(registry.get('INCONNUE')).toBeUndefined();
     expect(registry.all().map((d) => d.action)).toEqual(['WAIVE_SEQ_GAP']);
+  });
+
+  it('rôle exigé : un rôle ou une liste fermée (SALE_REVERSAL) ; requiredRoles rend toujours la liste', () => {
+    const one = definition('PAYOUT');
+    const many: ApprovalActionDefinition = {
+      ...definition('SALE_REVERSAL'),
+      requiredRole: ['SUPERVISOR', 'ORGANIZER_ADMIN'],
+    };
+    expect(requiredRoles(one)).toEqual(['OPERATOR_ADMIN']);
+    expect(requiredRoles(many)).toEqual(['SUPERVISOR', 'ORGANIZER_ADMIN']);
+    // Une action de plateforme n'admet que PLATFORM_ADMIN, jamais une liste.
+    const registry = new ApprovalActionRegistry();
+    expect(() =>
+      registry.register({ ...many, action: 'PSP_CONFIGURATION', platform: true }),
+    ).toThrow(/PLATFORM_ADMIN exigé/);
   });
 
   it('doublon : erreur', () => {

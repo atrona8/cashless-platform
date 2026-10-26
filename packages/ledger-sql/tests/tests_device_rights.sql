@@ -59,9 +59,8 @@ SELECT ok(NOT has_any_column_privilege('cashless_app', 'device', 'INSERT'),
 SELECT is((SELECT array_agg(attname::text ORDER BY attname) FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'UPDATE')),
-  ARRAY['app_mode', 'event_id', 'last_seen_at', 'last_snapshot_version', 'next_seq_floor',
-        'nfc_enabled', 'personal_phone', 'pos_id', 'station_name'],
-  'cashless_app : colonnes de device modifiables, liste exacte');
+  ARRAY['last_seen_at', 'last_snapshot_version', 'next_seq_floor', 'station_name'],
+  'cashless_app : colonnes de device modifiables, liste exacte (A12 : sans affectation ni mode)');
 SELECT ok(has_column_privilege('cashless_app', 'device', c, 'SELECT'),
   'cashless_app : lecture de device.' || c || ' (garde des requêtes de terminal)')
   FROM unnest(ARRAY['public_key', 'cert_sha256', 'agreement_public_key', 'status']) c;
@@ -126,6 +125,9 @@ SELECT lives_ok($$SELECT id, event_id, pos_id, app_mode, personal_phone, created
 RESET ROLE;
 
 -- 2. Réécriture directe de chaque colonne protégée : refusée --------------------------------------
+-- A12 (mission 5b, lot WP07 ; part d'OP-N69 levée, la mission 7 garde le reste) : app_mode,
+-- nfc_enabled, event_id, pos_id et personal_phone sont désormais dans la liste refusée
+-- (réaffectation directe d'un terminal retirée, FR-015, FR-024).
 SET LOCAL ROLE cashless_app;
 SELECT pg_temp.a();
 SELECT throws_ok(format('UPDATE device SET %I = %I WHERE id = %L', attname, attname,
@@ -133,9 +135,13 @@ SELECT throws_ok(format('UPDATE device SET %I = %I WHERE id = %L', attname, attn
   '42501', NULL, 'cashless_app : UPDATE direct de device.' || attname || ' refusé')
   FROM pg_attribute
  WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
-   AND attname NOT IN ('app_mode', 'event_id', 'last_seen_at', 'last_snapshot_version',
-                       'next_seq_floor', 'nfc_enabled', 'personal_phone', 'pos_id', 'station_name')
+   AND attname NOT IN ('last_seen_at', 'last_snapshot_version', 'next_seq_floor', 'station_name')
  ORDER BY attnum;
+SELECT is((SELECT count(*)::int FROM pg_attribute
+            WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
+              AND attname IN ('app_mode', 'nfc_enabled', 'event_id', 'pos_id', 'personal_phone')
+              AND NOT has_column_privilege('cashless_app', 'device', attname, 'UPDATE')), 5,
+  'A12 : app_mode, nfc_enabled, event_id, pos_id, personal_phone dans la liste refusée');
 SELECT lives_ok(format('UPDATE device SET station_name = %L WHERE id = %L', 'Bar',
                        pg_temp.id('07e001')),
   'témoin : réglage d''exploitation (station_name) modifiable');

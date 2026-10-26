@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
+import { RequestLockInterceptor } from './request-lock';
 import {
   IDEMPOTENCY_SETTINGS,
   IdempotencyRepository,
@@ -12,6 +13,8 @@ import {
   providers: [
     { provide: IDEMPOTENCY_SETTINGS, useFactory: () => loadIdempotencySettings() },
     IdempotencyRepository,
+    // Ordre : le verrou de requête AVANT l'idempotence (request-lock.ts).
+    { provide: APP_INTERCEPTOR, useClass: RequestLockInterceptor },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
   ],
 })

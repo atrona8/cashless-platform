@@ -15,6 +15,8 @@ part 'payment_request_body.g.dart';
 /// Exactement un moyen parmi `tap_id`, `tap`, `customer_qr_token`, `payment_intent_id`. Si `lines`.
 /// est présent, `amount` DOIT être égal à Σ quantity × unit_price.
 /// `payment_intent_id` est V2 (ADR-43) : en V1, le serveur le refuse (`422 DEVICE_MODE_NOT_ALLOWED`).
+/// `vendor_session_id` est requis depuis un terminal (session de vendeur ouverte, `openVendorSession`).
+/// `lines` : obligatoire depuis une caisse `CATALOG_POS`, interdit depuis un `KEYPAD_TPE`.
 ///
 @JsonSerializable()
 class PaymentRequestBody {
@@ -22,6 +24,7 @@ class PaymentRequestBody {
     required this.amount,
     required this.currency,
     required this.occurredAt,
+    this.vendorSessionId,
     this.tapId,
     this.tap,
     this.customerQrToken,
@@ -36,6 +39,13 @@ class PaymentRequestBody {
   final Currency currency;
   @JsonKey(name: 'occurred_at')
   final Timestamp occurredAt;
+
+  /// Session de vendeur ouverte sur ce terminal. Requise depuis un terminal : absente, close, expirée,.
+  /// d'un autre terminal ou autre que la session ouverte, ou vendeur désactivé ou bloqué →.
+  /// `409 VENDOR_SESSION_INVALID`. Le vendeur de la vente est celui de la session, jamais un champ du corps.
+  ///
+  @JsonKey(name: 'vendor_session_id')
+  final String? vendorSessionId;
   @JsonKey(name: 'tap_id')
   final int? tapId;
   final TapInput? tap;

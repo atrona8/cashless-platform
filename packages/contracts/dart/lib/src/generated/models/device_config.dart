@@ -52,7 +52,13 @@ class DeviceConfig {
   final Event event;
   final Pos? pos;
 
-  /// Présent pour CATALOG_POS ; absent (null) pour KEYPAD_TPE / TOPUP_DESK.
+  /// Présent pour CATALOG_POS ; absent (null) pour KEYPAD_TPE / TOPUP_DESK. `version` = dernière version du.
+  /// catalogue du point de vente du terminal, servie et mémorisée pour ce terminal (le contrôle des prix d'une.
+  /// vente admet la version courante et la dernière version servie) ; `items` = articles actifs de cette.
+  /// version, `name` et `category` dans la langue de `Accept-Language`. Terminal sans point de vente ou point.
+  /// de vente sans catalogue : `version` 0, `items: []`. Une nouvelle version change l'`ETag` de la.
+  /// configuration.
+  ///
   final Catalog? catalog;
   @JsonKey(name: 'offline_policy')
   final OfflinePolicy offlinePolicy;

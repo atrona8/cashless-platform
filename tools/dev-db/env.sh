@@ -54,6 +54,10 @@ export DATABASE_URL_KEYADMIN="${DATABASE_URL_KEYADMIN:-postgres://cashless_keyad
 # Secrets HMAC (research R-13), 32 octets au moins, distincts de CLAIM_CODE_HMAC_KEY et entre eux.
 export IDEMPOTENCY_HMAC_KEY="${IDEMPOTENCY_HMAC_KEY:-$(printf '%s' 'cashless-idempotency-hmac-key-de-test-uniquement-00' | od -An -tx1 | tr -d ' \n')}"
 export ENROLLMENT_CODE_HMAC_KEY="${ENROLLMENT_CODE_HMAC_KEY:-$(printf '%s' 'cashless-enrollment-code-hmac-key-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
+# Secret argon2 des PIN des vendeurs (mission 5b, research R-10), distinct des secrets HMAC.
+export VENDOR_PIN_SECRET="${VENDOR_PIN_SECRET:-$(printf '%s' 'cashless-vendor-pin-secret-argon2-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
+# Secret argon2 du dérivé du PIN dans l'empreinte d'idempotence (ADR-126), distinct des autres secrets.
+export VENDOR_PIN_IDEMPOTENCY_SECRET="${VENDOR_PIN_IDEMPOTENCY_SECRET:-$(printf '%s' 'cashless-vendor-pin-idempotency-secret-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
 # Jetons d'appareil (R-07) et certificat client (R-09).
 export DEVICE_TOKEN_ISSUER="${DEVICE_TOKEN_ISSUER:-https://api.cashless.test}"
 export DEVICE_TOKEN_TTL_SECONDS="${DEVICE_TOKEN_TTL_SECONDS:-900}"

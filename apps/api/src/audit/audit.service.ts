@@ -78,7 +78,22 @@ export type AuditAction =
   // Mission identite-enrolement-terminaux, lot WP16 : transitions de statut d'un terminal
   | 'DEVICE_SUSPENDED'
   | 'DEVICE_REACTIVATED'
-  | 'DEVICE_REVOKED';
+  | 'DEVICE_REVOKED'
+  // Mission 5b (lot WP09) : vendeurs et sessions de vendeur
+  | 'VENDOR_CREATED'
+  | 'VENDOR_PIN_CHANGED'
+  | 'VENDOR_DISABLED'
+  | 'VENDOR_REACTIVATED'
+  | 'VENDOR_PIN_FAILED'
+  | 'VENDOR_LOCKED'
+  | 'VENDOR_SESSION_OPENED'
+  | 'VENDOR_SESSION_CLOSED'
+  // Mission terminaux-paiement-en-ligne, lot WP10 : catalogue d'un point de vente
+  | 'CATALOG_CATEGORY_CREATED'
+  | 'CATALOG_CATEGORY_UPDATED'
+  | 'CATALOG_ITEM_CREATED'
+  | 'CATALOG_ITEM_UPDATED'
+  | 'CATALOG_POLICY_SET';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

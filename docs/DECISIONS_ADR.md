@@ -129,7 +129,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-117 | Enrôlement : audit de tous les refus, limites sans oracle, atomiques (OP-N72) | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
-| ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, levé par la mission 5b | Acceptée (décision du porteur du 21/10/2026) |
+| ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, **levé le 26/10/2026 par la mission 5b** (migration 0035) | Acceptée (décision du porteur du 21/10/2026), levée |
 | ADR-121 | PIN des vendeurs vérifié dans l'API, session ouverte par la base sur la transaction de l'API (OP-N76) : limite acceptée, levée avec OP-N56 | Acceptée (décision du porteur du 22/10/2026) |
 
 ---
@@ -1687,7 +1687,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 
 ## ADR-120 — Enrôlement sur un événement clos : écart consigné jusqu'à la mission 5b
 
-- **Statut** : Acceptée, 21 octobre 2026 (décision du porteur après la revue post-fusion de la mission 5a, DRIFT-1,
+- **Statut** : **Levée le 26 octobre 2026 par la mission 5b** (migration `0035_enrollment_event_state.sql`, lot WP06 ;
+  `tests_enrollment_event_state.sql` ; vérifiée par le lot WP14). Acceptée, 21 octobre 2026 (décision du porteur après la revue post-fusion de la mission 5a, DRIFT-1,
   OP-N74). Dette nommée (règle 3 de `CLAUDE.md`).
 - **Contexte.** La spécification de la mission 5a exige le refus d'un enrôlement dont le code vise un événement clos ou
   annulé, ou un point de vente supprimé depuis l'émission. Les fonctions de la migration 0022 ne lisent pas ces états ;
@@ -1861,3 +1862,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conditions de bornage.** Tests de WP12 : aucun autre rôle, portée de l'événement de la vente, demandeur ≠
   approbateur, aucune ligne de grand livre avant l'approbation, réponse `202` conforme au contrat.
 - **Références.** `apps/api/src/reversals/`, compte rendu `docs/passation-5b/rapports/WP12-implementation.md`.
+
+## ADR-130 — Ouverture de session de vendeur : dimensionnement du pool du verrou d'essai non mesuré (OP-N80)
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur sur la proposition du lot WP14 de la mission 5b, report de
+  la relecture WP09 cycle 3). Dette nommée (règle 3 de `CLAUDE.md`) ; sans affaiblissement de sécurité (disponibilité).
+- **Contexte.** `SessionLock` tient une connexion de son pool dédié pendant toute l'ouverture de session, vérification
+  argon2 comprise. Au-delà de `poolSize` ouvertures simultanées, `pool.connect` attend 10 s puis la requête échoue en `500`.
+- **Décision.** Pas de changement de code dans la mission 5b : le comportement n'a pas été mesuré en charge. **Mission qui
+  le lève : mission 13** (recette V1).
+- **Condition de levée.** Mesure en charge (tous les terminaux d'un événement ouvrent ensemble), puis taille du pool
+  ajustée ou refus `429` immédiat à la saturation, avec un test qui échoue si la saturation rend un `500`.
+- **Conséquences.** Aucun droit élargi ; aucune écriture partielle (rien n'est consommé avant le verrou). Report dans
+  `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`.
+- **Références.** OP-N80 ; `apps/api/src/vendor-pin/` (`SessionLock`) ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/`.

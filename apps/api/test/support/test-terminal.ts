@@ -194,6 +194,8 @@ export class TestTerminal {
   refreshToken = '';
   /** Jeton d'appareil courant (`issueToken`). */
   token = '';
+  /** Prochain numéro de `seqKey` (mission 5b) ; à relever si la base impose un plancher. */
+  nextSeq = 1;
 
   constructor(
     readonly os: TerminalOs = 'ANDROID',
@@ -426,6 +428,16 @@ export class TestTerminal {
       blob,
       aad: deviceAad(this.deviceId, uid),
     });
+  }
+
+  /**
+   * Clé `<serial>:<seq>` d'une route de terminal (mission 5b, contracts/payments.md) : numéro
+   * croissant par terminal, 4 chiffres au moins.
+   */
+  seqKey(): string {
+    const seq = this.nextSeq;
+    this.nextSeq += 1;
+    return `${this.serial}:${String(seq).padStart(4, '0')}`;
   }
 
   /** Requête signée prête à partir (`send`) : rejouable telle quelle. */

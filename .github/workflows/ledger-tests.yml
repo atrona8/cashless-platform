@@ -1,7 +1,7 @@
 # .github/workflows/ledger-tests.yml — vérifie à chaque push / PR tout ce que livrent les missions, sous PostgreSQL 17 :
 # générateurs, calculs de référence, bibliothèque de format des bracelets (TypeScript et Dart), types du contrat
 # (TypeScript et Dart), lint, types, migrations, suites pgTAP, puis tests Jest (unitaires, intégration, rejeu du
-# scénario) et mesures de temps isolées. Détail et répétition locale : .github/CI.md.
+# scénario) et mesures de temps isolées (dont la latence du paiement, NFR-001). Détail et répétition locale : .github/CI.md.
 # Mission identite-enrolement-terminaux (lot WP18, T085) : historique git complet (test
 # `git diff` de SC-007), installation sans aucun script vérifiée, réglages de test des
 # terminaux (clés HMAC, jetons, attestation), types du contrat régénérés sans écart, nouvelles
@@ -170,3 +170,9 @@ jobs:
           npm test -w @cashless/api -- --runInBand
           end-to-end/device-latency devices/config.spec devices/heartbeat.spec
           devices/enrollment.spec
+
+      # NFR-001 (mission terminaux-paiement-en-ligne, WP14) : 200 paiements par bracelet en un aller-retour, en
+      # série, serveur seul ; p95 ≤ 200 ms et p99 ≤ 500 ms. Après la passe parallèle (SKIP_LATENCY=1), SEULE :
+      # aucune autre suite ne tourne pendant la mesure.
+      - name: Latence du paiement, NFR-001 (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- --runInBand end-to-end/payment-latency

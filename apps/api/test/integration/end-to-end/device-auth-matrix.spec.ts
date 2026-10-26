@@ -20,10 +20,17 @@
 // Écritures directes en base : amorçage seulement (jeu d'essai, bracelet personnalisé puis activé
 // par les fonctions du schéma), terminaux enrôlés par les fonctions de la base (test-terminal.ts).
 // Lectures bornées aux terminaux de la suite : aucune hypothèse sur les autres suites.
+//
+// Registre (mission 5b, lot WP08, T038) : les 13 cas ci-dessous sont les cas de base ; chaque lot de
+// routes de terminal ajoute les siens dans `device-auth-cases/<nom>.cases.ts` (lu par
+// `device-auth-cases/registry.ts`, sans index). Routes gardées : `DeviceGuard` et la garde exclusive
+// `DeviceOrCallerGuard` (« terminal ou personne / festivalier », A13). Méthodes GET, POST, PUT,
+// PATCH, DELETE ; variantes « avec corps » pour POST, PUT, PATCH.
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { FakeDeviceCa } from '../../../src/device-ca/fake-device-ca';
 import { DEVICE_IDENTITY } from '../../../src/device-identity/device-identity.port';
+import { DeviceOrCallerGuard } from '../../../src/device-identity/device-or-caller.guard';
 import { DeviceGuard } from '../../../src/device-identity/device.guard';
 import { RealDeviceIdentity } from '../../../src/device-identity/real-device-identity';
 import { DeviceTokenService } from '../../../src/device-tokens/device-token.service';
@@ -56,6 +63,14 @@ import {
   type ProofOptions,
   type TerminalResponse,
 } from '../../support/test-terminal';
+import {
+  BODY_METHODS,
+  loadCases,
+  WRITE_METHODS,
+  type CaseContext,
+  type RouteCase,
+  type RouteMethod,
+} from './device-auth-cases/registry';
 
 jest.setTimeout(180_000);
 
@@ -64,23 +79,27 @@ const THREE_PROOFS = ['deviceMtls', 'deviceToken', 'deviceSignature'];
 const ALLOW_SUSPENDED = new Set(['GET /device/config', 'POST /device/heartbeat']);
 const REFRESH_ROUTE = 'POST /device-tokens/refresh';
 
-interface RouteCase {
-  /** Processus qui sert la route. */
-  server: 'api' | 'keys';
-  /** Route de guichet : jeton de la personne dans `X-Staff-Authorization` (`staffBearer`). */
-  counter?: boolean;
-  path: () => string;
-  body?: () => unknown;
-  /** Statut attendu avec les trois preuves, quand la route sert l'objet du jeu d'essai. */
-  ok?: number;
-}
+/** Contrôleurs des cas de base (mission 4 et 5a). */
+const BASE_CONTROLLERS = [
+  'DeviceConfigController',
+  'HeartbeatController',
+  'TapsController',
+  'AuthKeysController',
+  'MediaReadController',
+  'ActivationController',
+  'DepositController',
+  'ReleaseController',
+  'ReplaceController',
+  'CashDueController',
+  'ClaimsController',
+];
 
 interface Variant {
   name: string;
   /** Statut et code attendus ; code `null` : statut seul (cause non garantie par le contrat). */
   expected: [number, string | null];
-  /** Routes d'écriture seulement. */
-  postOnly?: boolean;
+  /** Routes à corps (POST, PUT, PATCH) seulement. */
+  bodyOnly?: boolean;
   build(route: string): PreparedRequest;
 }
 
@@ -110,7 +129,7 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
   /** Bracelet inconnu : la route de guichet le cherche, la garde a déjà servi la requête. */
   const unknownMedia = () => `/media/${randomUUID()}`;
 
-  const CASES: Record<string, RouteCase> = {
+  const BASE_CASES: Record<string, RouteCase> = {
     'GET /device/config': { server: 'api', path: () => '/device/config', ok: 200 },
     'POST /device/heartbeat': {
       server: 'api',
@@ -168,12 +187,34 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       path: () => '/media/claims/confirmations',
     },
   };
+  /** Contexte des cas du registre : lu à l'appel, après le `beforeAll`. */
+  const ctx: CaseContext = {
+    get w() {
+      return w;
+    },
+    get terminal() {
+      return terminal;
+    },
+    get media() {
+      return media;
+    },
+    get api() {
+      return api;
+    },
+    get keys() {
+      return keys;
+    },
+    next,
+    seqKey: (t) => t.seqKey(),
+  };
+  const registry = loadCases(BASE_CASES, ctx);
+  const CASES = registry.cases;
   const ROUTES = Object.keys(CASES);
 
   /** API publique, pour le rafraîchissement (certificat client seul). */
   const publicServer = () => ({ baseUrl: api.baseUrl, serverCaPem: api.tls.serverCaPem });
   const serverOf = (route: string): HttpsTestApp => (CASES[route]!.server === 'api' ? api : keys);
-  const methodOf = (route: string) => route.split(' ')[0] as 'GET' | 'POST';
+  const methodOf = (route: string) => route.split(' ')[0] as RouteMethod;
 
   /** Requête de `who` sur la route ; route de guichet : jeton du caissier (sauf `staff: null`). */
   const prepare = (
@@ -191,10 +232,12 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       {
         method,
         path: c.path(),
-        body: c.body?.() ?? (method === 'POST' ? {} : undefined),
-        idempotencyKey: method === 'POST' ? randomUUID() : undefined,
+        body: c.body?.() ?? (BODY_METHODS.has(method) ? {} : undefined),
+        idempotencyKey: WRITE_METHODS.has(method)
+          ? (c.idempotencyKey?.(ctx, who) ?? randomUUID())
+          : undefined,
       },
-      { ...proofs, headers: { ...headers, ...proofs.headers } },
+      { ...proofs, headers: { ...c.headers?.(ctx, who), ...headers, ...proofs.headers } },
     );
   };
   const sendTo = (route: string, prepared: PreparedRequest): Promise<TerminalResponse> =>
@@ -258,6 +301,8 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       certPem: api.tls.deviceCaCertPem,
       keyPem: api.tls.deviceCaKeyPem,
     });
+    // Amorçage propre à certains cas du registre (ex. session de vendeur).
+    for (const route of ROUTES) await CASES[route]!.prepare?.(ctx);
   }, 120_000);
 
   afterAll(async () => {
@@ -273,12 +318,20 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       op.security.some((schemes) => THREE_PROOFS.every((s) => schemes.includes(s))),
     );
     const guarded = new Map<string, { server: 'api' | 'keys'; controller: string }>();
+    const exclusive = new Set<string>();
     for (const [server, app] of [
       ['api', api.app],
       ['keys', keys.app],
-    ] as const)
+    ] as const) {
       for (const [route, controller] of guardedRoutes(app, DeviceGuard))
         guarded.set(route, { server, controller });
+      for (const [route, controller] of guardedRoutes(app, DeviceOrCallerGuard)) {
+        guarded.set(route, { server, controller });
+        exclusive.add(route);
+      }
+    }
+    // Garde exclusive (A13) : exactement les cas marqués `exclusive`.
+    expect([...exclusive].sort()).toEqual(ROUTES.filter((r) => CASES[r]!.exclusive).sort());
     // Non vide : la lecture des métadonnées marche (sinon les contrôles suivants seraient vides).
     expect(guarded.size).toBeGreaterThanOrEqual(ROUTES.length);
     // Chaque route gardée est au contrat avec les trois preuves.
@@ -296,20 +349,9 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     ]);
     // Contrôleurs de terminal : ceux de la mission 4 (src/media) et la configuration et le
     // battement de cœur (mission 5a) ; chacun a au moins une route gardée, donc un cas.
+    // Lots de la mission 5b : leurs contrôleurs viennent des fichiers du registre.
     expect(new Set([...guarded.values()].map((g) => g.controller))).toEqual(
-      new Set([
-        'DeviceConfigController',
-        'HeartbeatController',
-        'TapsController',
-        'AuthKeysController',
-        'MediaReadController',
-        'ActivationController',
-        'DepositController',
-        'ReleaseController',
-        'ReplaceController',
-        'CashDueController',
-        'ClaimsController',
-      ]),
+      new Set([...BASE_CONTROLLERS, ...registry.controllers]),
     );
   });
 
@@ -322,15 +364,15 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     for (const op of pending)
       for (const server of [api, keys]) {
         const path = op.path.replace(/\{[^}]+\}/g, () => randomUUID());
-        const method = op.method as 'GET' | 'POST';
+        const method = op.method as RouteMethod;
         const res = await terminal.request(
           server.baseUrl,
           server.tls.serverCaPem,
           {
             method,
             path,
-            body: method === 'POST' ? {} : undefined,
-            idempotencyKey: method === 'POST' ? randomUUID() : undefined,
+            body: BODY_METHODS.has(method) ? {} : undefined,
+            idempotencyKey: WRITE_METHODS.has(method) ? randomUUID() : undefined,
           },
           { headers: { 'x-staff-authorization': `Bearer ${w.cashierA.token}` } },
         );
@@ -438,7 +480,7 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       {
         name: 'corps changé après la signature',
         expected: SIG,
-        postOnly: true,
+        bodyOnly: true,
         build: (r) => prepare(r, terminal, { sentBody: '{"x":1}' }),
       },
       {
@@ -466,7 +508,7 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     const othersBefore = await noncesOf(other.deviceId);
     for (const route of ROUTES)
       for (const variant of variants()) {
-        if (variant.postOnly && methodOf(route) !== 'POST') continue;
+        if (variant.bodyOnly && !BODY_METHODS.has(methodOf(route))) continue;
         const res = await sendTo(route, variant.build(route));
         const [status, code] = variant.expected;
         if (res.status !== status || (code !== null && res.body.code !== code))

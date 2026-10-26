@@ -112,6 +112,13 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   numéros des terminaux, PIN « compté d'abord », annulation par un `SUPERVISOR` au terminal (jeton sur place) ou au
   back-office (demande à deux). Limite acceptée : OP-N76 / ADR-121 (la base croit l'API pour la vérification du PIN),
   levée avec OP-N56 en mission 11.
+- Livraison de la mission 5b (état au 26/10/2026, lot WP14) : parcours complet prouvé par l'API
+  (`payment-journey.spec.ts` : vendeurs, catalogue, enrôlement d'une caisse, paiement en un aller-retour et en deux
+  temps, QR commerçant et client, annulation par le vendeur puis par un `SUPERVISOR`, blocage d'un vendeur sur tous les
+  terminaux et déblocage, changement de prix) ; isolation des routes (lues du contrat) et des tables, secrets absents
+  de toute table, de tout journal et de toute réponse, latence du paiement p95 ≤ 200 ms et p99 ≤ 500 ms, 20 envois
+  simultanés → une vente. OP-N74 levé (migration 0035). Dettes héritées : OP-N76 et OP-N79 (mission 11), OP-N77, OP-N78
+  et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 

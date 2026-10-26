@@ -33,7 +33,21 @@ export interface DeviceContext {
   os?: 'ANDROID' | 'IOS';
   /** Faux pour un terminal iOS (contrainte de `device`) ou dont le NFC est coupé. */
   nfcEnabled?: boolean;
+  // Mission 5b (lot WP08, T034) : lus par l'API publique seule (`DEVICE_DETAILS_QUERY`), jamais
+  // par le processus des clés, dont le rôle de base ne lit pas ces colonnes (post-roles.sql, §2a).
+  /** Numéro de série enregistré : `<serial>` de la clé `<serial>:<seq>` (contracts/payments.md). */
+  serial?: string;
+  /** Mode d'application du terminal (contrôlé par chaque route : `assertDeviceMode`). */
+  appMode?: DeviceAppMode;
+  /** Téléphone personnel d'un commerçant (mode `KEYPAD_TPE` seulement, contrainte de la base). */
+  personalPhone?: boolean;
+  /** Commerçant du point de vente du terminal (`merchant_participation.merchant_id`), sinon `null`. */
+  merchantId?: string | null;
+  /** Participation du point de vente (`point_of_sale.participation_id`), sinon `null`. */
+  participationId?: string | null;
 }
+
+export type DeviceAppMode = 'CATALOG_POS' | 'KEYPAD_TPE' | 'TOPUP_DESK';
 
 export type DeviceStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
 
@@ -66,6 +80,17 @@ export const DEVICE_IDENTITY = Symbol('DEVICE_IDENTITY');
 export const DEVICE_DIRECTORY = Symbol('DEVICE_DIRECTORY');
 
 export type DeviceRequest = Request & { device?: DeviceContext };
+
+/**
+ * Mode d'application exigé par une route (mission 5b) : sinon `422 DEVICE_MODE_NOT_ALLOWED`. Un
+ * contexte sans mode lu (processus des clés, contexte construit à la main) est refusé.
+ */
+export function assertDeviceMode(device: DeviceContext, allowed: readonly DeviceAppMode[]): void {
+  if (device.appMode === undefined || !allowed.includes(device.appMode))
+    throw new ProblemException('DEVICE_MODE_NOT_ALLOWED', {
+      detail: 'Cette opération n’est pas permise dans le mode de ce terminal.',
+    });
+}
 
 /** Terminal posé par `DeviceGuard` ; absent → 401 (route mal déclarée ou garde contournée). */
 export function requestDevice(req: Request): DeviceContext {
