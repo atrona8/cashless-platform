@@ -21,7 +21,7 @@ servies. Types TypeScript et Dart régénérés (`npm run generate`), jamais éc
 | `updateCatalogCategory` | PATCH /catalog-categories/{category_id} | idem |
 | `createCatalogItem` | POST /catalog-categories/{category_id}/items | idem |
 | `updateCatalogItem` | PATCH /catalog-items/{item_id} | idem |
-| `getCatalogVersion` | GET /points-of-sale/{pos_id}/catalog/versions/{version} | idem |
+| `getCatalogVersion` | GET /points-of-sale/{pos_id}/catalog/versions/{version} | comme `getCatalog` (`openapi.yaml` fait foi ; relecture WP10) |
 | `setCatalogPolicy` | PUT /points-of-sale/{pos_id}/catalog-policy | `ORGANIZER_ADMIN`, `OPERATOR_ADMIN` |
 
 Schémas : `Vendor` (sans PIN ni empreinte ; `locked` booléen), `VendorCreate` (`display_name`, `pin` en

@@ -321,3 +321,9 @@ réponse, un journal ou `api_idempotency`.
 - Constat 3 : `<seq>` de la clé `<serial>:<seq>` n'a pas de borne haute (`device-key.ts:24`, motif `[0-9]{4,}`) ;
   au-delà de 2^63−1, `record_device_seq` lève `22003` → `500` au lieu de `422 VALIDATION_FAILED`. Borner
   `seq ≤ 9223372036854775807` dans `parseDeviceKey` (retouche hors carte justifiée) ; test aux deux bornes.
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP10 cycle 1)
+- `apps/api/src/devices/heartbeat/heartbeat.controller.ts:37` appelle `build` sans langue : un terminal non
+  francophone voit un ETag différent à chaque battement et relit sa configuration. Retouche hors carte autorisée :
+  passer `pickLanguage(...)` (comme `device-config.controller.ts`) et un test qui prouve l'ETag stable d'un battement à
+  l'autre avec `Accept-Language: en`. Le battement ne doit toujours rien écrire dans `device_catalog_served`.
