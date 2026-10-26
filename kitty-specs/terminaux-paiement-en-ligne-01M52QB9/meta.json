@@ -1,6 +1,8 @@
 {
+  "accept_commit": "4922ef8308fdb2b93bd22c74bc8cb28bf0c5c08a",
   "acceptance_history": [
     {
+      "accept_commit": "4922ef8308fdb2b93bd22c74bc8cb28bf0c5c08a",
       "acceptance_mode": "pr",
       "accepted_at": "2026-10-26T16:46:51.725806+00:00",
       "accepted_by": "orchestrateur (Claude), pour le porteur",
