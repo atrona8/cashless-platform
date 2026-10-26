@@ -234,3 +234,14 @@ tests ; OP-N76/ADR-121 cohérents ; chaque écart des comptes rendus consigné ;
   `@epic-web/invariant@1.0.0`, acceptée par le porteur le 23/10, R-01).
 - Consignation à vérifier : ADR-124 (clé relâchée sur `DEBIT_AUTHORITY_*`, SPECIFICATION §10.2 mise à jour), ADR-125 /
   OP-N77 (secrets exigés par tous les processus, mission 13).
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP09 cycle 3 : approuvé)
+- Dimensionnement du pool de `SessionLock` : le verrou d'essai de PIN tient une connexion du pool dédié pendant toute la
+  requête (argon2 compris) ; au-delà de `poolSize` terminaux simultanés, `pool.connect` attend 10 s puis rend `500`.
+  Mesurer en charge, ajuster la taille ou rendre `429` au lieu d'attendre ; test ou consignation.
+- `VENDOR_PIN_IDEMPOTENCY_SECRET` (ADR-126) : l'exiger dans les manifestes de déploiement et la documentation
+  d'exploitation ; rotation = invalidation des empreintes d'idempotence des routes à PIN seulement.
+- Lignes de commentaires de plus de 100 caractères laissées par WP09 (hasher, request-lock, pin-attempt-lock,
+  session-lock, config, env.sh) : à reformater au passage de la fusion (décision du 14/10).
+- Toujours ouverts : alignement de `contracts/vendors.md` (`422`, `409` au renvoi, liste sans les vendeurs bloqués,
+  renvoi qui refait l'essai seulement pour le `429`) ; propriétaire des fonctions de purge sous RLS forcée.

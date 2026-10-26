@@ -227,3 +227,11 @@ en production (test) ; aucune écriture directe dans `payment_request` (droits r
 - `lock_payment_request_for_pay` écrit `wallet_id` dans la demande encore en attente : verrouillage, écriture par le
   moteur et `confirm_payment_request` doivent tenir dans **une seule transaction** de l'API ; un test le prouve (aucune
   demande laissée avec un `wallet_id` posé après un refus ou une erreur).
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP09 cycle 3 : approuvé)
+- Garde de session de vendeur : vérifier l'ordre d'appel de `VendorSessionGuard` (dans la transaction de l'écriture,
+  après le terminal ; refus `409`), constat ouvert depuis la relecture WP09 cycle 1.
+- Toute route qui aurait besoin d'un verrou de requête : `@RequestLock` (`apps/api/src/idempotency/request-lock.ts`)
+  posé avant `@Idempotent`, identifiant tiré du terminal authentifié par les gardes, jamais du corps.
+- Un PIN dans un corps idempotent passe par `pinFields` (ADR-126) ; un test qui compare l'empreinte stockée au HMAC du
+  corps dérivé.

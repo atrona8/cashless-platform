@@ -327,3 +327,11 @@ réponse, un journal ou `api_idempotency`.
   francophone voit un ETag différent à chaque battement et relit sa configuration. Retouche hors carte autorisée :
   passer `pickLanguage(...)` (comme `device-config.controller.ts`) et un test qui prouve l'ETag stable d'un battement à
   l'autre avec `Accept-Language: en`. Le battement ne doit toujours rien écrire dans `device_catalog_served`.
+
+## Reports de l'orchestrateur (26/10/2026, relecture WP09 cycle 3 : approuvé)
+- Garde de session de vendeur : vérifier l'ordre d'appel de `VendorSessionGuard` (dans la transaction de l'écriture,
+  après le terminal ; refus `409`), constat ouvert depuis la relecture WP09 cycle 1.
+- Toute route qui aurait besoin d'un verrou de requête : `@RequestLock` (`apps/api/src/idempotency/request-lock.ts`)
+  posé avant `@Idempotent`, identifiant tiré du terminal authentifié par les gardes, jamais du corps.
+- Un PIN dans un corps idempotent passe par `pinFields` (ADR-126) ; un test qui compare l'empreinte stockée au HMAC du
+  corps dérivé.

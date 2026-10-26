@@ -9,7 +9,7 @@
       "description": "FR-001 — Vendeurs d'un commerçant",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -19,7 +19,7 @@
       "description": "FR-002 — Code PIN du vendeur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -29,7 +29,7 @@
       "description": "FR-003 — Session de vendeur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -39,7 +39,7 @@
       "description": "FR-004 — Blocage après échecs",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -49,7 +49,7 @@
       "description": "FR-005 — Fin d'une session",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -59,7 +59,7 @@
       "description": "FR-006 — Attribution par le serveur",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP04 approuvé (cycle 1, lane-d f46a5d2b) : tests_payments.sql 105 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2521 PASS, Jest 1705 PASS ; 11 mutants, 9 tués (2 survivants reportés à WP07). Reste la partie API/service avant pass. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -259,7 +259,7 @@
       "description": "FR-026 — Audit",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur).",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur). Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -289,7 +289,7 @@
       "description": "NFR-002 — Aucun PIN en clair",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). (argon2id, VENDOR_PIN_SECRET hors base, redactSecrets étendu) Reste la partie API/service avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur).",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). (argon2id, VENDOR_PIN_SECRET hors base, redactSecrets étendu) Reste la partie API/service avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -299,7 +299,7 @@
       "description": "NFR-003 — Blocage du PIN",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass.",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -309,7 +309,7 @@
       "description": "NFR-004 — Pas d'énumération des vendeurs",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass.",
+      "notes": "Socle prouvé par WP08 approuvé (cycle 1, lane-h 38faf72a) : Jest complet sur lane-h + lane-f, 1833 PASS / 6 ignorés ; unitaires du lot 271/271 (relecteur). Reste la partie API/service avant pass. Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
@@ -339,7 +339,7 @@
       "description": "NFR-007 — Isolation",
       "proof_type": "automated_test",
       "evidence": "",
-      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. Reste la partie API (WP09) avant pass. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur).",
+      "notes": "Partie base prouvée par WP02 approuvé (cycle 2, lane-b f08f1394) : tests_vendors.sql 166 PASS, batterie 2249 PASS. | Partie base prouvée par WP05 approuvé (cycle 2, lane-e 2ec3dee3) : tests_payment_requests.sql 147 PASS ; rejoué par l'orchestrateur sur cashless_test : pgTAP 2668 PASS, Jest 1705 PASS ; 14/14 mutants tués (relecteur). Reste la partie API (WP13) avant pass. | Droits de la base prouvés par WP07 approuvé (cycle 1, lane-g 2d665284) : tests_payment_rights.sql 138 PASS, tests_execute_grants.sql et tests_device_rights.sql verts ; batterie 39 fichiers / 2931 PASS et Jest 101 suites / 1705 PASS rejoués en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutants de post-roles.sql attrapés (relecteur). | Partie API prouvée par WP10 approuvé (cycle 1, lane-j d7ae89bd) : catalog.spec.ts, catalog-config.spec.ts, catalog.dto.spec.ts ; Jest 110 suites / 1877 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 7 mutations du contrôle d'accès attrapées (relecteur). Partie API prouvée par WP09 approuvé (cycle 3, lane-i 69dc4908) : vendors.spec.ts, vendor-sessions.spec.ts, vendor-pin.hasher.spec.ts, idempotency (unitaire et intégration), config.spec.ts ; Jest 111 suites / 1916 PASS rejoué en série par l'orchestrateur sur cashless_test (26/10) ; 10 mutations attrapées (relecteur), dont verrou d'essai, PIN hors empreinte sur les trois routes (ADR-126) et secret distinct.",
       "pass_fail": null,
       "verified_at": null,
       "verified_by": null
