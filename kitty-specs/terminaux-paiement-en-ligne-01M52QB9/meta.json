@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-26T16:46:51.725806+00:00",
+      "accepted_by": "orchestrateur (Claude), pour le porteur",
+      "accepted_from_commit": "b429661a3f51982b619862d4368d4109f6ce9328"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-26T16:46:51.725806+00:00",
+  "accepted_by": "orchestrateur (Claude), pour le porteur",
+  "accepted_from_commit": "b429661a3f51982b619862d4368d4109f6ce9328",
   "coordination_branch": "kitty/mission-terminaux-paiement-en-ligne-01M52QB9",
   "created_at": "2026-10-16T16:05:00.900982+00:00",
   "flattened": false,
