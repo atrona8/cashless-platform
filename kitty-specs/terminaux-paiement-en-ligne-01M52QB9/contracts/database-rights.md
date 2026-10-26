@@ -25,10 +25,11 @@ entier), comme pour `code_hash` (correctif post-fusion de la 5a). Chaque retrait
   `close_vendor_session`, `assert_vendor_session`.
 - Catalogue : fonctions d'écriture du catalogue, `record_device_catalog_served`.
 - Paiement : `record_device_seq` (existante, schéma de référence ; accordée pour la première fois),
-  `assert_tap_payable`, `assert_wallet_payable`, `record_sale_lines`, `record_sale_attribution`, `assert_reversible`,
+  `assert_tap_payable`, `assert_wallet_payable`, `check_sale_lines` (STABLE, arbitrage du 22/10), `record_sale_lines`, `record_sale_attribution`, `assert_reversible`,
   `consume_tap` (remplacée, A18).
 - QR : `create_merchant_payment_request`, `lock_payment_request_for_pay`, `lock_customer_qr_token`,
-  `confirm_payment_request`, `cancel_payment_request`, `create_customer_qr_token`.
+  `confirm_payment_request`, `cancel_payment_request`, `create_customer_qr_token`,
+  `payment_request_for_token(uuid, bytea)` (identifiant et empreinte du jeton ; relecture WP05 cycle 1).
 - Terminaux : `set_device_status` (remplacée, A7 ; déjà accordée).
 
 Signatures arrêtées à l'implémentation ; chaque fonction `SECURITY DEFINER` en `search_path = public, pg_temp`,

@@ -14,7 +14,7 @@ test, générateur du document Word.
 | WP04 | Paiement, annulation, approbation sur place (0033) | Approuvé (cycle 1, `f46a5d2b`) | lane-d |
 | WP05 | Demandes de paiement QR (0034) | Approuvé (cycle 2, `2ec3dee3`) | lane-e |
 | WP06 | OP-N74 : enrôlement et état de l'événement (0035) | Approuvé | lane-f |
-| WP07 | Droits de la base | **En relecture** (cycle 1 ; implémentation reprise le 26/10, `2d665284`) | lane-g |
+| WP07 | Droits de la base | Approuvé (cycle 1, `2d665284`, 26/10) | lane-g |
 | WP08 | Socle applicatif | Approuvé (cycle 1, `38faf72a`) | lane-h |
 | WP09, WP10 | Vendeurs ; catalogue (API) | Prévus (attendent WP07) | — |
 | WP11 → WP12, WP13 → WP14 | Paiement, annulation, QR, preuves | Prévus | — |
