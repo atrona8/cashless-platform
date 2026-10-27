@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1342" viewBox="0 0 2066 1342">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1212" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1212" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1212" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1212" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="621.6666666666666" y="260.72" width="160" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="191.0,366.72 693.6666666666666,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,366.72 674.3598503050785,377.2673618492925 674.3598503050785,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="391.7333333333333" y="329.72" width="103.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="536.6666666666666" y="412.71999999999997" width="330" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="551.6666666666666" y="488.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="616.6666666666666" y="564.72" width="170" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="707.6666666666666,670.72 1210.3333333333333,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,670.72 1191.026516971745,681.2673618492925 1191.026516971745,660.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="736.8" y="633.72" width="446.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,746.72 1727.0,746.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,746.72 1707.6931836384117,757.2673618492925 1707.6931836384117,736.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1373.0666666666666" y="709.72" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,898.72 1727.0,898.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,898.72 1707.6931836384117,909.2673618492925 1707.6931836384117,888.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1305.4666666666665" y="861.72" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1565.0" y="944.72" width="340" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<rect x="64" y="790.72" width="1856.0" height="217.27999999999997" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1224.3333333333333,1084.92 1727.0,1084.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1084.92 1707.6931836384117,1095.4673618492925 1707.6931836384117,1074.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1352.2666666666664" y="1047.92" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,1160.92 709.6666666666666,1160.92" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,1160.92 728.9734830282548,1150.3726381507076 728.9734830282548,1171.4673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="835.6" y="1123.92" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Vente hors ligne puis synchronisation (§9.3 à §9.6)</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Flux de docs/05-sequence-diagrams.md, redessiné avec /illustre le 27/10/2026 (contenu identique à l’ancien Mermaid)</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Vendeur</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Terminal</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="701.6666666666666" y="292.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Réseau coupé</text>
+<text x="443.3333333333333" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Encaisse</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="701.6666666666666" y="444.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Contrôle snapshot et plafonds</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="701.6666666666666" y="520.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Journal local (fsync)</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="701.6666666666666" y="596.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Réseau revenu</text>
+<text x="960.0" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">POST /offline-batches (lot signé, chaîné)</text>
+<text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1476.6666666666665" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">open_offline_batch</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="74" y="814.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">loop Chaque opération, dans l’ordre des seq</text>
+<text x="1476.6666666666665" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">post_transaction (OFFLINE_SYNC)</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1735.0" y="976.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Part non couverte en S-ATTENTE</text>
+<text x="1476.6666666666665" y="1066.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">complete_offline_batch</text>
+<text x="34.0" y="1087.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="960.0" y="1142.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Résultat par opération</text>
+<text x="34.0" y="1163.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+</g>
+</svg>
