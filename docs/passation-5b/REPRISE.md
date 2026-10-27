@@ -46,7 +46,11 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 - **Reste à faire** :
   - retirer `.worktrees/tmp-combo-5a` et `.worktrees/tmp-combo-5b-wp08` (refusé à l'agent par le contrôle de
     permissions : à faire par le porteur, `git worktree remove --force …`) ;
-  - pousser feat et ouvrir la PR vers main, **avec l'accord du porteur** (CI = preuve de NFR-010) ;
+  - ~~pousser feat et ouvrir la PR~~ : fait le 27/10 avec l'accord du porteur, **PR #6**. CI verte (runs
+    40484677544 et 40484741738) : Jest 2188 réussis / 7 ignorés ; latence en série verte (configuration p95 18,6 ms,
+    battement 17,4 ms, paiement par bracelet p95 28,7 ms / p99 32,3 ms). **NFR-010 confirmé par la CI.** Marge
+    faible : `devices/config.spec.ts` dure 5,2 s pour un délai Jest de 5 s par test, à surveiller. Fusion dans main
+    à la décision du porteur ;
   - relecture humaine des fichiers listés en fin de ce document et dans le rapport de revue.
 
 ## Point d'arrêt du 26/10/2026 (fin de session, à la demande du porteur)
