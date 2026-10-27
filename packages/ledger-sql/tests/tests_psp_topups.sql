@@ -692,7 +692,7 @@ UPDATE psp_event SET received_at = clock_timestamp() - interval '399 days' WHERE
 ALTER TABLE psp_event ENABLE TRIGGER psp_event_guard;
 SELECT is(pg_temp.code('SELECT purge_psp_event_bodies(364)'), 'CL001', 'purge : plancher de 365 jours');
 SELECT pg_temp.nosession();
-SELECT cmp_ok(purge_psp_event_bodies(), '>=', 1::bigint, 'purge : au moins le corps de 401 jours est vidé');
+SELECT is(purge_psp_event_bodies(), 1::bigint, 'purge : exactement le corps de 401 jours est vidé');
 SELECT pg_temp.sa();
 SELECT is((SELECT (body IS NULL)::text || ':' || (body_purged_at IS NOT NULL)::text FROM psp_event
             WHERE provider_event_id = 'EV-OLD'), 'true:true', 'purge : corps vidé, date de purge posée');
@@ -794,12 +794,64 @@ SELECT is(pg_temp.code(format($$SELECT fail_psp_topup(%L, 'BOGUS', false)$$, pg_
 SELECT is(pg_temp.code(format($$SELECT fail_psp_topup(%L, 'PSP_FAILED', true, 'LATE_CHARGEBACK')$$, pg_temp.t('57'))),
   'CL001', 'genre d''anomalie inconnu : CL001');
 
+-- Revue cycle 1 -------------------------------------------------------------------------------------
+SELECT ok(pg_temp.err($$INSERT INTO psp_event (operator_id, psp_configuration_id, provider_event_id, kind,
+    normalized, body, body_purged_at) SELECT operator_id, psp_configuration_id, 'EV-PURGE', 'UNKNOWN', '{}',
+    '\x01', now() FROM psp_event LIMIT 1$$) LIKE '23514%psp_event_purge_shape%',
+  'CHECK : un corps présent n''est jamais marqué purgé');
+-- Frais cohérents avec brut - net (revue 4).
+SELECT pg_temp.mkt('70', 'wp5', 'WAVE', 10000, 'REF-70');
+SELECT is(pg_temp.code(format($$SELECT complete_psp_topup(%L, %L, 100)$$, pg_temp.t('70'),
+  pg_temp.mktx('70', 10000, 0))), 'CL001', 'frais déclaré 100 pour une transaction qui crédite le brut : CL001');
+SELECT is(pg_temp.code(format($$SELECT complete_psp_topup(%L, %L, 0)$$, pg_temp.t('70'),
+  pg_temp.mktx('70', 10000, 0, 'wave:' || (SELECT psp_configuration_id FROM psp_topup
+     WHERE psp_topup_id = pg_temp.t('70')) || ':REF-70B'))), 'CL001', 'autre clé : refusée');
+-- Anomalie résolue à la main puis succès tardif (revue 1) : depuis FAILED, EXPIRED, CANCELLED.
+CREATE TEMP TABLE human AS SELECT topup_tx_id AS id FROM psp_topup WHERE psp_topup_id = pg_temp.t('30');
+SELECT pg_temp.mkt('71', 'wp6', 'WAVE', 10000, 'REF-71');
+SELECT fail_psp_topup(pg_temp.t('71'), 'PSP_FAILED', true);
+SELECT pg_temp.mkt('72', 'wp6', 'WAVE', 10000, 'REF-72');
+SELECT pg_temp.age('72', interval '1 hour', interval '1 minute');
+SELECT expire_psp_topups(ARRAY[pg_temp.t('72')]);
+SELECT fail_psp_topup(pg_temp.t('72'), 'PSP_FAILED', true);
+SELECT pg_temp.mkt('73', 'wp6', 'WAVE', 10000, 'REF-73');
+SELECT cancel_psp_topup(pg_temp.t('73'));
+SELECT fail_psp_topup(pg_temp.t('73'), 'PSP_FAILED', true);
+UPDATE anomaly SET status = 'RESOLVED', resolution_tx_id = (SELECT id FROM human)
+ WHERE id IN (SELECT anomaly_id FROM psp_topup WHERE psp_topup_id IN (pg_temp.t('71'), pg_temp.t('72'), pg_temp.t('73')));
+SELECT is(pg_temp.code(format($$SELECT pg_temp.pay('71')$$)), 'CL029', 'anomalie résolue à la main : succès tardif sur FAILED refusé');
+SELECT is(pg_temp.code(format($$SELECT pg_temp.pay('72')$$)), 'CL029', 'anomalie résolue à la main : succès tardif sur EXPIRED refusé');
+SELECT is(pg_temp.code(format($$SELECT pg_temp.pay('73')$$)), 'CL029', 'anomalie résolue à la main : succès tardif sur CANCELLED refusé');
+SELECT is((SELECT string_agg(status || ':' || (topup_tx_id IS NULL), ' ' ORDER BY psp_topup_id) FROM psp_topup
+            WHERE psp_topup_id IN (pg_temp.t('71'), pg_temp.t('72'), pg_temp.t('73'))),
+  'FAILED:true EXPIRED:true CANCELLED:true', 'aucun second crédit : les recharges gardent leur état');
+SELECT is((SELECT count(*)::int FROM anomaly WHERE resolution_tx_id = (SELECT id FROM human)
+            AND id IN (SELECT anomaly_id FROM psp_topup WHERE psp_topup_id IN (pg_temp.t('71'),
+                pg_temp.t('72'), pg_temp.t('73')))), 3, 'la résolution humaine n''est pas écrasée');
+SELECT lives_ok(format($$SELECT complete_psp_topup(%L, %L, 0)$$, pg_temp.t('34'),
+  (SELECT topup_tx_id FROM psp_topup WHERE psp_topup_id = pg_temp.t('34'))),
+  'rejeu de la même complétion déjà faite (anomalie fermée par le crédit) : toujours un rejeu');
+-- Déblocage : demande approuvée entre la contestation et le blocage (revue 2).
+SELECT pg_temp.mkt('74', 'wp7', 'CARD', 4000, 'REF-74');
+SELECT pg_temp.paycard('74', 'fpU');
+CREATE TEMP TABLE cbu AS SELECT psp_chargeback_id AS id FROM record_chargeback(pg_temp.t('74'), 'DSP-U', 1000);
+SELECT pg_temp.wreq('38aa61', pg_temp.wl('wp7'), '38f101', '38f102');
+SELECT block_wallet_after_chargeback(pg_temp.wl('wp7'), (SELECT id FROM cbu));
+SELECT is(pg_temp.code(format($$SELECT unblock_wallet(%L, %L)$$, pg_temp.wl('wp7'), pg_temp.id('38aa61'))), 'CL029',
+  'déblocage : demande approuvée avant le blocage : CL029');
+SELECT pg_temp.wreq('38aa62', pg_temp.wl('wp7'), '38f101', '38f102');
+SELECT lives_ok(format($$SELECT unblock_wallet(%L, %L)$$, pg_temp.wl('wp7'), pg_temp.id('38aa62')),
+  'déblocage : demande approuvée après le blocage');
+
 -- 6. Compteur de refus (A22) ----------------------------------------------------------------------
 SELECT pg_temp.nosession();
 CREATE TEMP TABLE rj AS
   SELECT record_webhook_rejection(pg_temp.k('wave1'), 'SIGNATURE_INVALID') AS a,
          record_webhook_rejection(pg_temp.k('wave1'), 'SIGNATURE_INVALID') AS b;
-SELECT ok((SELECT (a, b) IN ((1, 2), (1, 1)) FROM rj), 'compteur : 1 puis 2 dans la même minute');
+SELECT ok((SELECT a = 1 AND b = (SELECT count FROM psp_webhook_rejection
+              WHERE psp_configuration_id = pg_temp.k('wave1') AND reason = 'SIGNATURE_INVALID'
+              ORDER BY minute DESC LIMIT 1) FROM rj),
+  'compteur : 1 puis la valeur exacte de la minute courante (2 dans la même minute)');
 SELECT is((SELECT sum(count)::int FROM psp_webhook_rejection WHERE psp_configuration_id = pg_temp.k('wave1')
             AND reason = 'SIGNATURE_INVALID'), 2, 'compteur : deux refus comptés');
 SELECT is((SELECT operator_id FROM psp_webhook_rejection WHERE psp_configuration_id = pg_temp.k('wave1') LIMIT 1),
@@ -824,8 +876,9 @@ SELECT is(pg_temp.code($$SELECT record_webhook_rejection(NULL, 'NOPE')$$), 'CL00
 SELECT lives_ok($$SELECT record_webhook_rejection(NULL, 'BODY_MALFORMED')$$, 'configuration nulle acceptée');
 SELECT lives_ok($$SELECT count(record_webhook_rejection(gen_random_uuid(), 'BODY_TOO_LARGE'))
                     FROM generate_series(1, 1000)$$, '1 000 refus de configurations inconnues');
-SELECT cmp_ok((SELECT count(*) FROM psp_webhook_rejection WHERE reason = 'BODY_TOO_LARGE'), '<=', 2::bigint,
-  'borne : 1 000 appels, au plus une ligne par minute');
+SELECT is((SELECT count(*) FROM psp_webhook_rejection WHERE reason = 'BODY_TOO_LARGE'),
+  (SELECT count(DISTINCT minute) FROM psp_webhook_rejection WHERE reason = 'BODY_TOO_LARGE'),
+  'borne : 1 000 appels, exactement une ligne par minute');
 SELECT is((SELECT sum(count)::int FROM psp_webhook_rejection WHERE reason = 'BODY_TOO_LARGE'), 1000,
   'borne : le compteur porte les 1 000');
 INSERT INTO psp_webhook_rejection VALUES ('00000000-0000-0000-0000-000000000000', NULL, NULL, 'SIGNATURE_MALFORMED', now() - interval '31 days', 1);

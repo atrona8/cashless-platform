@@ -226,8 +226,7 @@ CREATE TABLE psp_event (
     AND (status = 'PROCESSED') = (processed_at IS NOT NULL)),
   CONSTRAINT psp_event_normalized
     CHECK (jsonb_typeof(normalized) = 'object' AND pg_column_size(normalized) <= 8192),
-  CONSTRAINT psp_event_purge_shape CHECK (body IS NOT NULL OR body_purged_at IS NOT NULL
-                                          OR body IS NULL),
+  CONSTRAINT psp_event_purge_shape CHECK (body IS NULL OR body_purged_at IS NULL),
   CONSTRAINT psp_event_unique UNIQUE (psp_configuration_id, provider_event_id)
 );
 CREATE INDEX psp_event_status_idx ON psp_event (status, received_at);
@@ -291,12 +290,14 @@ CREATE TABLE psp_chargeback (
   amount               bigint NOT NULL,
   chargeback_tx_id     uuid REFERENCES journal_transaction(id),
   wallet_blocked       boolean NOT NULL DEFAULT false,
+  blocked_at           timestamptz,
   late                 boolean NOT NULL DEFAULT false,
   anomaly_id           uuid REFERENCES anomaly(id),
   unblocked_by_request uuid,
   created_at           timestamptz NOT NULL DEFAULT clock_timestamp(),
   CONSTRAINT psp_chargeback_amount CHECK (amount > 0),
   CONSTRAINT psp_chargeback_dispute_id CHECK (length(provider_dispute_id) BETWEEN 1 AND 200),
+  CONSTRAINT psp_chargeback_blocked_at CHECK (wallet_blocked = (blocked_at IS NOT NULL)),
   CONSTRAINT psp_chargeback_late_anomaly CHECK (NOT late OR anomaly_id IS NOT NULL),
   CONSTRAINT psp_chargeback_unique UNIQUE (psp_configuration_id, provider_dispute_id)
 );
@@ -761,6 +762,7 @@ DECLARE
   v_foreign int;
   v_cap bigint;
   v_today bigint;
+  v_closed int;
 BEGIN
   IF p_psp_topup IS NULL THEN RAISE EXCEPTION 'Objet introuvable' USING ERRCODE = 'no_data_found'; END IF;
   SELECT * INTO t FROM psp_topup y WHERE y.psp_topup_id = p_psp_topup AND y.operator_id = v_operator
@@ -810,9 +812,9 @@ BEGIN
     INTO v_psp_sum, v_wallet_lines, v_wallet_net, v_foreign
     FROM posting p JOIN account a ON a.id = p.account_id
    WHERE p.transaction_id = p_tx;
-  IF v_psp_sum <> t.amount OR v_wallet_lines < 1 OR v_wallet_net < 1 OR v_wallet_net > t.amount
+  IF v_psp_sum <> t.amount OR v_wallet_lines < 1 OR v_wallet_net <> t.amount - p_fee_amount
      OR v_foreign > 0 THEN
-    RAISE EXCEPTION 'Recharge PSP : les lignes de la transaction ne créditent pas ce portefeuille du montant brut'
+    RAISE EXCEPTION 'Recharge PSP : les lignes de la transaction ne créditent pas ce portefeuille du brut moins les frais'
       USING ERRCODE = 'CL001';
   END IF;
   -- Carte : 3-D Secure, empreinte, plafond du jour UTC sous verrou consultatif par carte.
@@ -835,8 +837,20 @@ BEGIN
     END IF;
   END IF;
   -- Anomalie liée : fermée avec la transaction de crédit comme résolution (succès tardif).
+  -- Une anomalie déjà fermée à la main (ANOMALY_RESOLUTION) a été réglée par une personne : un
+  -- succès tardif ne crédite pas une seconde fois et n'écrase pas sa résolution (CL029).
   IF t.anomaly_id IS NOT NULL THEN
-    UPDATE anomaly SET status = 'RESOLVED', resolution_tx_id = p_tx WHERE id = t.anomaly_id;
+    PERFORM 1 FROM anomaly a WHERE a.id = t.anomaly_id AND a.status = 'OPEN' FOR UPDATE;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Recharge PSP : anomalie déjà résolue, décision humaine requise'
+        USING ERRCODE = 'CL029';
+    END IF;
+    UPDATE anomaly SET status = 'RESOLVED', resolution_tx_id = p_tx
+     WHERE id = t.anomaly_id AND status = 'OPEN';
+    GET DIAGNOSTICS v_closed = ROW_COUNT;
+    IF v_closed <> 1 THEN
+      RAISE EXCEPTION 'Recharge PSP : anomalie non fermée' USING ERRCODE = 'CL029';
+    END IF;
   END IF;
   BEGIN
     UPDATE psp_topup SET status = 'SUCCEEDED', fee_amount = p_fee_amount, topup_tx_id = p_tx,
@@ -1047,7 +1061,7 @@ CREATE TRIGGER psp_chargeback_cap BEFORE INSERT ON psp_chargeback
 CREATE FUNCTION psp_chargeback_guard() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
 DECLARE
-  v_cols text[] := ARRAY['chargeback_tx_id','wallet_blocked','unblocked_by_request'];
+  v_cols text[] := ARRAY['chargeback_tx_id','wallet_blocked','blocked_at','unblocked_by_request'];
 BEGIN
   IF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION 'Contestation : suppression interdite' USING ERRCODE = 'CL001';
@@ -1202,7 +1216,8 @@ BEGIN
   IF w.status = 'ACTIVE' THEN
     UPDATE wallet SET status = 'BLOCKED' WHERE id = p_wallet;
   END IF;
-  UPDATE psp_chargeback SET wallet_blocked = true WHERE psp_chargeback_id = cb.psp_chargeback_id;
+  UPDATE psp_chargeback SET wallet_blocked = true, blocked_at = coalesce(blocked_at, clock_timestamp())
+   WHERE psp_chargeback_id = cb.psp_chargeback_id;
 END $$;
 REVOKE ALL ON FUNCTION block_wallet_after_chargeback(uuid, uuid) FROM PUBLIC;
 
@@ -1244,14 +1259,14 @@ BEGIN
     RAISE EXCEPTION 'Déblocage : auteur et valideur, deux ORGANIZER_ADMIN actifs de l''organisateur'
       USING ERRCODE = 'CL023';
   END IF;
-  SELECT max(c.created_at) INTO v_latest FROM psp_chargeback c
+  SELECT max(c.blocked_at) INTO v_latest FROM psp_chargeback c
     JOIN psp_topup t ON t.psp_topup_id = c.psp_topup_id
    WHERE t.wallet_id = p_wallet AND c.wallet_blocked AND c.unblocked_by_request IS NULL;
   IF w.status <> 'BLOCKED' OR v_latest IS NULL THEN
     RAISE EXCEPTION 'Déblocage : portefeuille non bloqué par une contestation' USING ERRCODE = 'CL029';
   END IF;
   IF r.decided_at <= v_latest THEN
-    RAISE EXCEPTION 'Déblocage : demande antérieure à la dernière contestation' USING ERRCODE = 'CL029';
+    RAISE EXCEPTION 'Déblocage : demande antérieure au dernier blocage' USING ERRCODE = 'CL029';
   END IF;
   UPDATE wallet SET status = 'ACTIVE' WHERE id = p_wallet;
   UPDATE psp_chargeback c SET unblocked_by_request = p_request
