@@ -241,7 +241,7 @@ Après fermeture des sessions, les espèces en transit sont déposées en banque
 | NFR-004 | Aucun faux en production | Le démarrage en configuration de production est refusé pour 100 % des faux (chaque faux PSP, faux coffre, identité festivalier), prouvé par test. | Security | High | Open |
 | NFR-005 | Cloisonnement | 0 lecture ou écriture d'une configuration, d'une recharge, d'une session ou d'une notification d'un autre prestataire ou organisateur, sur toutes les nouvelles opérations. | Security | High | Open |
 | NFR-006 | Réponse aux notifications | Accusé de réception d'une notification authentifiée en 500 ms au plus pour 95 % des notifications, mesuré côté serveur (les PSP réessaient sur délai dépassé). | Performance | Medium | Open |
-| NFR-007 | Contrôle de caisse | 100 % des sessions fermées ont une écriture `CASH_CLOSE` égale au théorique, et 100 % des écarts non nuls une anomalie `CASH_DIFF`. | Reliability | High | Open |
+| NFR-007 | Contrôle de caisse | 100 % des sessions fermées, hors celles à théorique et compté nuls, ont une écriture `CASH_CLOSE` égale au théorique, et 100 % des écarts non nuls une anomalie `CASH_DIFF`. | Reliability | High | Open |
 | NFR-008 | Tout ou rien | 0 écriture partielle sur 100 % des refus (recharge, fermeture, contestation, dépôt) : aucune écriture du grand livre ni changement d'état sans l'autre. | Reliability | High | Open |
 | NFR-009 | Latence de la recharge espèces | Recharge espèces acceptée en 200 ms au plus pour 95 % des recharges, mesuré côté serveur. | Performance | Medium | Open |
 | NFR-010 | Non-régression | 100 % des tests existants (pgTAP, Jest) restent verts. | Reliability | High | Open |

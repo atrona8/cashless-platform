@@ -136,7 +136,10 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
 
 ### 2.8 Argent réel : PSP, caisses, rapprochements, versements (§11)
-- Adaptateurs Wave, Orange Money, PayDunya, Stripe ; configurations PSP par organisateur, choix par événement. (§11.1)
+- Configurations PSP par organisateur, choix par événement ; interface commune d'adaptateur et faux par fournisseur
+  (mission 6). Adaptateurs Wave, Orange Money, PayDunya, Stripe et coffre AWS des secrets : mission « Adaptateurs
+  PSP réels », dès les accès de test obtenus (décision du porteur du 27/10/2026, OP-N81, ADR-131) ; d'ici là, aucune
+  recharge en ligne en production. Remboursement au payeur d'un paiement non crédité : hors plateforme (OP-N82). (§11.1)
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
@@ -238,6 +241,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
    5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
+   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026, décision du porteur ; dès les accès de test, action 11)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
 9. Remboursements, versements et clôture

@@ -204,6 +204,21 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission recharges-caisses-psp-01M5YEBA
 - [ ] spec-kitty merge --mission recharges-caisses-psp-01M5YEBA
 
+## Mission 6b — Adaptateurs PSP réels et coffre des secrets
+
+> **Ajoutée le 27/10/2026** (décision du porteur au cadrage de la mission 6 : OP-N81, ADR-131). À lancer dès que les
+> accès de test sont obtenus (action 11 de `docs/POINTS_OUVERTS.md`). Lève aussi OP-N82 (remboursement au payeur).
+
+- [ ] /spec-kitty.specify Adaptateurs PSP réels derrière le port `PspAdapter` de la mission 6 (SPECIFICATION §11.1, §10.3, §13.2, ADR-70, ADR-72, ADR-131) : Wave (API Wave Business), Orange Money, PayDunya et Stripe (initier, vérifier une notification avec le mécanisme propre au PSP, interroger un statut, lire un relevé, rembourser un paiement non crédité, attestation 3-D Secure et empreinte de carte pour la carte). Coffre des secrets AWS Secrets Manager derrière le port `PspSecretStore`, secrets rattachés au détenteur des fonds, rotation à deux secrets. Retrait des faux des processus de production. Remboursement au payeur des paiements non crédités (OP-N82), anomalie clôturée dans la même transaction.
+- [ ] /spec-kitty.plan Chaque adaptateur essayé contre le bac à sable du PSP avec des vecteurs de signature réels ; dépendances (`axios`, `@aws-sdk/client-secrets-manager`) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; région AWS (OP-N11) ; activation d'une configuration impossible en production pour un adaptateur non essayé.
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty merge --mission [slug réel]
+
+---
+
 ## Mission 7 — Hors ligne (snapshots et lots)
 
 > **Hérité de la mission 4 (bracelets-nfc)** : deux faiblesses du kit, antérieures à la mission 4, consignées sans
