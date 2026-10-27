@@ -65,6 +65,14 @@ worktrees gardés après la fusion.
    migrate-rights) : batterie de l'orchestrateur sur lane-f (cashless_test remise à zéro) : 2197 verts,
    2 échecs (`personalization` délai de 5 s sous charge, `idempotency` 429) ; les deux suites seules,
    deux fois après reset : 57/57. Instabilités de charge, pas un défaut de WP02/WP06.
+   WP04 (`eea02fd2`, 0038, 284 tests pgTAP) en relecture. Reports :
+   - WP07 : mapper `CL043` et `CL044` dans `sqlstate-map.ts`.
+   - WP11 : `CL039` sort en 422, le contrat veut 409 → contrôler le statut avant d'appeler la base.
+   - WP13 : clé d'écriture des contestations `psp:<config>:<provider_dispute_id>`.
+   - WP05 : fonctions internes de 0038 à fermer aussi (`psp_session_operator`, `psp_key_prefix`,
+     `psp_topup_net_credited`, `psp_complete_core`, `psp_topup_replay_row`, déclencheurs).
+   - Configuration SUSPENDED : notifications refusées (research l.248, A15), le commentaire de 0037
+     sur `psp_webhook_context` est trompeur (« reçoit encore ») : à reformuler à la relecture humaine.
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
