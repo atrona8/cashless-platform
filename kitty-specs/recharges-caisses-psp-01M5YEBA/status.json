@@ -1,7 +1,7 @@
 {
-  "event_count": 46,
-  "last_event_id": "01M5YZJW1MF9E9QKQNHVDQQ10T",
-  "materialized_at": "2026-10-27T15:27:41.482061+00:00",
+  "event_count": 48,
+  "last_event_id": "01M5YZRZ9D75MM8512F5VQHPYF",
+  "materialized_at": "2026-10-27T15:31:01.549460+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "software-dev",
@@ -12,8 +12,8 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
-    "in_review": 0,
+    "in_progress": 0,
+    "in_review": 1,
     "planned": 9
   },
   "work_packages": {
@@ -118,16 +118,17 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 2,
-      "lane": "in_progress",
-      "last_event_id": "01M5YZJW1MF9E9QKQNHVDQQ10T",
-      "last_transition_at": "2026-10-27T15:27:41.482061+00:00",
+      "force_count": 3,
+      "lane": "in_review",
+      "last_event_id": "01M5YZRZ9D75MM8512F5VQHPYF",
+      "last_transition_at": "2026-10-27T15:31:01.549460+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Implémentation eea02fd2 (migration 0038, 284 tests pgTAP verts sur cashless_wp04, 5 mutations détectées). Contradiction signalée à arbitrer avant WP12 : record_psp_event refusé si configuration non ACTIVE (prompt) contre commentaire de 0037. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+        "Implémentation eea02fd2 (migration 0038, 284 tests pgTAP verts sur cashless_wp04, 5 mutations détectées). Contradiction signalée à arbitrer avant WP12 : record_psp_event refusé si configuration non ACTIVE (prompt) contre commentaire de 0037. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Cycle 2 (7158248e) : double crédit après résolution manuelle fermé (CL029, fermeture WHERE status='OPEN'), déblocage comparé à blocked_at, assertions resserrées, frais = brut - net. 295 tests pgTAP verts sur cashless_wp04. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -137,16 +138,16 @@
         "reviewer": "user",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 49192,
+      "shell_pid_created_at": "1793115057.799688",
       "subtasks": {
-        "T017": "planned",
-        "T018": "planned",
-        "T019": "planned",
-        "T020": "planned",
-        "T021": "planned",
-        "T022": "planned"
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done"
       }
     },
     "WP05": {
