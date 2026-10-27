@@ -6,6 +6,9 @@ import { createDeviceIdentity } from '../../src/device-identity/device-identity.
 import { FakeDeviceIdentity } from '../../src/device-identity/fake-device-identity';
 import { RealDeviceIdentity } from '../../src/device-identity/real-device-identity';
 import { FakeKms } from '../../src/kms/fake-kms';
+import { PspAdapterRegistry } from '../../src/psp/psp-adapter-registry';
+import { FakePspAdapter } from '../../src/psp/fake/fake-psp-adapter';
+import { FakePspSecretStore } from '../../src/psp/fake/fake-psp-secret-store';
 import { createKms, KMS_PROVIDER } from '../../src/kms/kms.module';
 import {
   assertNoFakeInProduction,
@@ -61,6 +64,8 @@ describe('aucun faux en production', () => {
     ['le service de clés', new FakeKms()],
     ['l’identité du terminal', new FakeDeviceIdentity()],
     ['l’identité du festivalier', new FakeCustomerIdentity()],
+    ['les adaptateurs PSP', new PspAdapterRegistry([new FakePspAdapter('WAVE')], true)],
+    ['le coffre des secrets PSP', new FakePspSecretStore()],
   ])('garde de démarrage : %s en production fait échouer le démarrage', (name, fake) => {
     expect(() => assertNoFakeInProduction(true, { [name]: fake })).toThrow(new RegExp(name));
     expect(() => assertNoFakeInProduction(false, { [name]: fake })).not.toThrow();
