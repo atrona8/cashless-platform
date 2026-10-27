@@ -1,0 +1,55 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-27T10:39:34.035638Z",
+      "decision_id": "01M5YF39MKBNF9VHJ7JM49B0SE",
+      "final_answer": "Reporter les 4 adaptateurs r\u00e9els : interface commune + faux par fournisseur refus\u00e9 au d\u00e9marrage en production ; adaptateurs r\u00e9els dans une mission d\u00e9di\u00e9e d\u00e8s les acc\u00e8s de test obtenus (action 11). Dette nomm\u00e9e : OP + ADR + test + reports PROMPTS/PRD. D\u00e9cision du porteur du 27/10/2026.",
+      "input_key": "psp_real_adapters",
+      "mission_id": "01M5YEBA0MXD3B78FN6Q3RNPZ0",
+      "mission_slug": "recharges-caisses-psp-01M5YEBA",
+      "opened_by": "cli",
+      "options": [
+        "Reporter les 4 adaptateurs r\u00e9els (faux seul, refus\u00e9 en production)",
+        "Coder les 4 sur documentation, activation bloqu\u00e9e en production tant que non v\u00e9rifi\u00e9s",
+        "Coder seulement ceux dont les acc\u00e8s de test existent d\u00e9j\u00e0",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Adaptateurs PSP r\u00e9els (Wave, Orange Money, PayDunya, Stripe) : les coder dans cette mission sans acc\u00e8s de test (action 11), ou livrer l'interface + faux refus\u00e9 en production et reporter les adaptateurs r\u00e9els \u00e0 une mission d\u00e9di\u00e9e une fois les acc\u00e8s obtenus ?",
+      "rationale": null,
+      "resolved_at": "2026-10-27T10:48:27.364743Z",
+      "resolved_by": null,
+      "slot_key": "specify.psp.real-adapters",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-27T10:39:37.790311Z",
+      "decision_id": "01M5YF3D9YZZPHP1FGEWH3E4ME",
+      "final_answer": "Reporter avec les adaptateurs PSP r\u00e9els : port + faux coffre refus\u00e9 en production ; adaptateur AWS Secrets Manager livr\u00e9 avec eux. D\u00e9cision du porteur du 27/10/2026.",
+      "input_key": "psp_secrets_store",
+      "mission_id": "01M5YEBA0MXD3B78FN6Q3RNPZ0",
+      "mission_slug": "recharges-caisses-psp-01M5YEBA",
+      "opened_by": "cli",
+      "options": [
+        "Reporter avec les adaptateurs PSP r\u00e9els (faux coffre refus\u00e9 en production)",
+        "\u00c9crire l adaptateur AWS maintenant",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Coffre des secrets PSP (AWS Secrets Manager, rattach\u00e9 au d\u00e9tenteur des fonds) : \u00e9crire l'adaptateur AWS dans cette mission (nouvelle d\u00e9pendance @aws-sdk/client-secrets-manager \u00e0 v\u00e9rifier et \u00e9pingler, r\u00e9gion provisoire OP-N11) ou livrer le port + faux coffre refus\u00e9 en production et reporter l'adaptateur r\u00e9el ?",
+      "rationale": null,
+      "resolved_at": "2026-10-27T10:48:31.164845Z",
+      "resolved_by": null,
+      "slot_key": "specify.psp.secrets-store",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M5YEBA0MXD3B78FN6Q3RNPZ0",
+  "version": 1
+}
