@@ -58,6 +58,11 @@ worktrees gardés après la fusion.
    - WP07 : `secret_ref` dont le nom commence par un point refusé par le coffre (ajout au prompt).
    - WP05 : `REVOKE EXECUTE` explicite sur les fonctions internes (précision au prompt) ; ses droits
      directs (INSERT d'une configuration ACTIVE, lecture de `secret_ref`) sont bloquants à sa revue.
+   WP06 **approuvé** (124 tests moteur, 2 mutations détectées). Reports dans le prompt de WP09 : `source`
+   fixée par le serveur, portefeuille déduit du bracelet, rôle de l'acteur, rattachement prouvé.
+   WP08 et WP11 : ajouter leurs opérations de terminal à `device-auth-matrix.spec.ts` (à vérifier à leur revue).
+   Échecs du Jest complet vus par le relecteur de WP06 (claim-code-order, personalization, platform,
+   migrate-rights) : à confirmer sur la batterie de l'orchestrateur.
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
