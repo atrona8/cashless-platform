@@ -49,7 +49,16 @@ worktrees gardés après la fusion.
    - Relecture humaine de 0036 : `posting_cash_desk_guard` laisse passer si la recherche dans `cash_desk` ne
      voit rien ; sûr tant que le propriétaire des fonctions contourne la RLS (superutilisateur), échec
      ouvert sinon. `attach_cash_tx` n'impose pas une transaction postérieure à l'ouverture.
-   - `data-model.md` l.116 omet l'action d'approbation `LATE_CHARGEBACK` exigée par `research.md` l.162-163.
+   - `LATE_CHARGEBACK` : déjà en base (0009/0011/0033) ; `data-model.md` l.116 est exact (relecture WP01 c2).
+   WP01, WP03 **approuvés**. WP04 : lane-d réparée à la main (fusion de lane-c, conflit de prompt seul),
+   implémentation relancée. WP06 (`ee906623`) en relecture. Points :
+   - `open_cash_due_anomaly` (0036) ne vérifie que le grand livre du bracelet, pas qu'il est celui du
+     portefeuille crédité (conforme au prompt de WP02, plus faible que ce que supposait WP06) :
+     renforcement possible, à garantir au moins côté API (WP09 : portefeuille déduit du bracelet).
+   - WP07 : `secret_ref` dont le nom commence par un point refusé par le coffre (ajout au prompt).
+   - WP05 : `REVOKE EXECUTE` explicite sur les fonctions internes (précision au prompt) ; ses droits
+     directs (INSERT d'une configuration ACTIVE, lecture de `secret_ref`) sont bloquants à sa revue.
+   - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
