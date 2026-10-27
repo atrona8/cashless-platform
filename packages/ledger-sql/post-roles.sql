@@ -475,7 +475,44 @@ GRANT EXECUTE ON FUNCTION
   -- assert_tenant sur le prestataire du terminal. La route relit d'abord le statut du terminal
   -- (verrou, révoqué refusé) dans la même transaction. Migration 0029 (ADR-118) : la fonction
   -- refuse elle-même un terminal révoqué et une config_version d'un autre prestataire.
-  record_config_served(uuid, uuid)
+  record_config_served(uuid, uuid),
+  -- Encaissement en ligne (mission 5b, terminaux-paiement-en-ligne, lot WP07 ;
+  -- contracts/database-rights.md). Toutes SECURITY DEFINER, search_path = public, pg_temp,
+  -- REVOKE ALL … FROM PUBLIC dans leur migration : aucune n'exige l'EXECUTE d'une autre fonction
+  -- sous ce rôle. Fonctions internes jamais accordées (appelées seulement par les fonctions
+  -- SECURITY DEFINER ci-dessous) : vendor_admin_allowed (0031), catalog_admin_allowed,
+  -- catalog_lock_pos, catalog_bump_version, catalog_label (0032) ; tests_execute_grants.sql §2.
+  --   Vendeurs (0031). OP-N76, ADR-121 (limite acceptée, dette nommée) : begin_vendor_pin_check
+  --   et open_vendor_session ne sont exécutées que par ce rôle (borne de tests_payment_rights.sql).
+  create_vendor(uuid, text, text, uuid), set_vendor_pin(uuid, text, uuid),
+  set_vendor_status(uuid, text, uuid), begin_vendor_pin_check(uuid, uuid),
+  open_vendor_session(uuid, uuid), close_vendor_session(uuid), assert_vendor_session(uuid, uuid),
+  --   Catalogue (0032) : écritures (chacune crée la version suivante), version servie, contrôle
+  --   des lignes d'une vente (check_sale_lines, STABLE : arbitrage du 22/10/2026) et écriture des
+  --   lignes. Aucune lecture de version par fonction (l'API lit les tables, sous la RLS).
+  create_catalog_category(uuid, text, text, integer, uuid),
+  update_catalog_category(uuid, text, text, integer, boolean, uuid),
+  create_catalog_item(uuid, text, text, bigint, integer, uuid),
+  update_catalog_item(uuid, uuid, text, text, bigint, integer, boolean, uuid),
+  set_catalog_policy(uuid, boolean, uuid), record_device_catalog_served(uuid),
+  check_sale_lines(uuid, jsonb, bigint), record_sale_lines(uuid, uuid, jsonb),
+  --   Paiement et annulation (0033 ; consume_tap(bigint, uuid) plus haut, signature inchangée).
+  --   record_device_seq : schéma de référence, accordée pour la première fois (numérotation des
+  --   écritures d'un terminal en ligne).
+  record_device_seq(uuid, bigint, bytea, text, text, uuid, text, uuid),
+  assert_tap_payable(bigint, uuid), assert_wallet_payable(uuid),
+  record_sale_attribution(uuid, uuid, text, uuid),
+  assert_reversible(uuid, text, uuid, uuid, text, uuid),
+  --   Demandes de paiement QR (0034). payment_request_for_token prend l'identifiant ET
+  --   l'empreinte du jeton (relecture WP05, cycle 1 : plus strict que l'arbitrage du 22/10).
+  create_merchant_payment_request(uuid, uuid, bigint, character, integer, bytea, text, jsonb,
+                                  integer),
+  create_customer_qr_token(uuid, uuid, bytea), lock_payment_request_for_pay(uuid, bytea, uuid, uuid),
+  lock_customer_qr_token(bytea, uuid), confirm_payment_request(uuid, uuid, bytea),
+  cancel_payment_request(uuid, uuid, bytea), payment_request_for_token(uuid, bytea)
+  --   Terminaux : set_device_status, create_device_enrollment_code, enroll_device et
+  --   purge_device_enrollment_attempts sont remplacées par 0031 et 0035 à signature égale (déjà
+  --   accordées plus haut ; aucune ancienne signature ne subsiste).
 TO cashless_app;
 
 -- 4b. Terminaux (OP-N63, ADR-105) : identité, clés, certificat, statut et prestataire ne s'écrivent
@@ -485,12 +522,18 @@ TO cashless_app;
 -- publique ou son certificat, ou remettait à neuf un code d'enrôlement ou un jeton de
 -- rafraîchissement. La lecture reste permise (sous la RLS) : la garde lit public_key et cert_sha256
 -- pour vérifier la signature ; token_hash est un SHA-256 d'un jeton aléatoire ; code_hash (HMAC à
--- clé hors base) n'est plus lisible (SEC-2, ci-dessous). Colonnes encore modifiables :
--- affectation et réglages d'exploitation, numérotation (next_seq_floor) et suivi (last_seen_at,
--- last_snapshot_version) ; la suite de référence et le schéma bornent les autres.
+-- clé hors base) n'est plus lisible (SEC-2, ci-dessous). Colonnes encore modifiables : nom du
+-- poste, numérotation (next_seq_floor) et suivi (last_seen_at, last_snapshot_version) ; la suite
+-- de référence et le schéma bornent les autres.
+-- A12 (mission 5b, lot WP07 ; part d'OP-N69 levée, renforcement) : affectation et mode
+-- (event_id, pos_id, app_mode, nfc_enabled, personal_phone) ne sont plus modifiables en direct.
+-- Aucun usage dans apps/api/src ; avec ce droit, une session de l'API réaffectait un terminal à
+-- un autre point de vente ou événement sans set_device_status ni enrôlement (contournement
+-- d'OP-N74 et de FR-015 ; la version du catalogue servie à ce terminal devenait celle d'un autre
+-- point de vente). Le reste d'OP-N69 (numérotation, suivi) reste à la mission 7.
 REVOKE INSERT, UPDATE ON device FROM cashless_app;
-GRANT UPDATE (app_mode, nfc_enabled, event_id, pos_id, station_name, last_snapshot_version,
-              last_seen_at, next_seq_floor, personal_phone) ON device TO cashless_app;
+GRANT UPDATE (station_name, last_snapshot_version, last_seen_at, next_seq_floor) ON device
+  TO cashless_app;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device_enrollment_code, device_refresh_token,
   device_status_history, device_request_nonce, device_enrollment_attempt FROM cashless_app;
 -- Empreinte des codes d'enrôlement (SEC-2 de la revue post-fusion de la mission 5a, renforcement
@@ -538,3 +581,68 @@ BEGIN
     EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM %I', current_database(), r);
   END LOOP;
 END $$;
+
+-- -----------------------------------------------------------------------------------------------
+-- 6. Encaissement en ligne, mission 5b (terminaux-paiement-en-ligne, lot WP07 ;
+-- contracts/database-rights.md ; research R-06, R-07, R-11 A20).
+-- -----------------------------------------------------------------------------------------------
+-- roles.sql vient de rendre SELECT, INSERT et UPDATE sur toutes les tables et vues : une table de
+-- la mission reste ouverte en écriture tant que cette section ne la ferme pas. Toutes s'écrivent
+-- par les fonctions SECURITY DEFINER de 0031 à 0034 (section 4a). DELETE et TRUNCATE sont déjà
+-- retirés partout par roles.sql. Lecture : sous la RLS forcée de chaque table. Un retrait de
+-- colonne se fait par REVOKE SELECT sur la table puis GRANT SELECT des colonnes permises (A20 : un
+-- REVOKE SELECT (colonne) ne retire rien sur une table accordée en entier) ; liste calculée
+-- « toutes sauf » comme pour media et device_enrollment_code, pour qu'une colonne ajoutée plus tard
+-- ne soit ni oubliée ni exposée sans que les listes exactes de tests_payment_rights.sql échouent.
+
+-- 6a. Vendeurs (0031). L'empreinte du PIN (Argon2id) et le compteur de blocage ne se lisent que
+-- par les fonctions (begin_vendor_pin_check rend l'empreinte à l'API pour la vérification) ; le
+-- statut « bloqué » se lit par la vue vendor_public. Sessions et essais de PIN : ouverts et fermés
+-- par la base seule (une ligne plantée ouvrait une session sans PIN).
+REVOKE SELECT, INSERT, UPDATE ON vendor FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.vendor'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname NOT IN ('pin_hash', 'failed_attempts', 'locked_at');
+  EXECUTE format('GRANT SELECT (%s) ON vendor TO cashless_app', cols);
+END $$;
+-- Vue vendor_public : une vue simple est modifiable et s'exécute avec les droits de son
+-- propriétaire ; avec l'INSERT et l'UPDATE que roles.sql lui rend, une session de l'API
+-- réécrivait vendor (statut, nom, prestataire) à travers elle. Lecture gardée (seule lecture du
+-- statut « bloqué »). Seule vue créée par la mission (pg_views après 0035).
+REVOKE INSERT, UPDATE ON vendor_public FROM cashless_app;
+REVOKE INSERT, UPDATE ON vendor_session, vendor_pin_check FROM cashless_app;
+
+-- 6b. Catalogue (0032) : versions créées par la base (une écriture directe changeait un prix sans
+-- nouvelle version, ou plantait une version « servie » qui rendait un ancien prix acceptable).
+REVOKE INSERT, UPDATE ON catalog_category, catalog_item, catalog_version, catalog_version_item,
+  point_of_sale_catalog_policy, device_catalog_served FROM cashless_app;
+
+-- 6c. Ventes (0033) : lignes et attribution en ajout seul, par record_sale_lines et
+-- record_sale_attribution. Relecture WP04, constat 1 : un INSERT direct dans sale_attribution
+-- attribuait une vente à un autre vendeur que celui de la session (vendor_id n'est pas dans la
+-- clé de la session), qui pouvait ensuite l'annuler en mode VENDOR (assert_reversible relit
+-- sale_attribution.vendor_id). record_sale_attribution lit vendeur et terminal dans la session.
+REVOKE INSERT, UPDATE ON sale_line, sale_attribution FROM cashless_app;
+--   approval_token_use : INSERT gardé (l'API y consomme les jetons d'approbation, colonnes
+--   d'appelant terminal de 0033 comprises) ; UPDATE, DELETE, TRUNCATE retirés en tête de fichier.
+
+-- 6d. Demandes de paiement QR (0034 ; R-06, renforcement) : usage unique et expiration garantis
+-- par la base ; l'empreinte du jeton (nonce_hash) n'est ni lisible ni cherchable par l'API (une
+-- empreinte lue, ou une recherche WHERE nonce_hash = …, servait d'oracle sur un jeton capturé).
+REVOKE SELECT, INSERT, UPDATE ON payment_request FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.payment_request'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'nonce_hash';
+  EXECUTE format('GRANT SELECT (%s) ON payment_request TO cashless_app', cols);
+END $$;
+REVOKE INSERT, UPDATE ON payment_request_detail FROM cashless_app;
+
+-- 6e. Identification au guichet (R-07, C-008 ; renforcement) : aucun usage dans l'API ;
+-- FR-021 à FR-023 reportées à la mission 10, qui accordera ses fonctions. Lecture gardée.
+REVOKE INSERT, UPDATE ON kyc_verification FROM cashless_app;

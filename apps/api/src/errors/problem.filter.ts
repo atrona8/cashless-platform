@@ -15,6 +15,7 @@ import { APP_CONFIG, type AppConfig } from '../config/config';
 import { messageFor, pickLanguage } from '../http/language';
 import { requestIdOf } from '../http/request-id.middleware';
 import { ProblemException } from './problem';
+import { redactSecrets } from './redact';
 import { isSqlError, mapSqlState } from './sqlstate-map';
 
 export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
@@ -88,7 +89,8 @@ export function logProblem(error: unknown, problem: ResolvedProblem, req: Reques
       requestId: requestIdOf(req),
       code: problem.code,
       sqlstate: isSqlError(error) ? error.code : undefined,
-      message: error instanceof Error ? error.message : String(error),
+      // Mission 5b (T037) : aucun PIN, empreinte ni jeton dans le journal (redact.ts).
+      message: redactSecrets(error instanceof Error ? error.message : String(error)),
     })}\n`,
   );
 }

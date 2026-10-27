@@ -90,6 +90,35 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   Au plan (19/10/2026) : mTLS vérifié dans les processus ; terminaux Android 12 au moins ; `serial` unique par
   prestataire (ADR-109) ; grâce de 60 s au rafraîchissement d'un jeton (OP-N65) ; limite iOS consignée (OP-N64).
   À l'analyse (19/10/2026) : tout terminal est enrôlé pour un événement (code d'enrôlement lié à un événement).
+- Cadrage de la mission 5b (porteur, 22/10/2026) : périmètre complet (vendeurs, catalogue, paiement par bracelet en un
+  aller-retour ou en deux temps, annulation, QR commerçant et client, identification au guichet, OP-N74). Le PIN d'un
+  vendeur (6 chiffres) est vérifié par le serveur, qui ouvre une session de vendeur liée au terminal (12 h au plus) et
+  attribue lui-même chaque vente ; aucune empreinte de PIN ne quitte le serveur ; 5 échecs, comptés par vendeur sur
+  tous les terminaux, bloquent le vendeur jusqu'au déblocage par le commerçant. Le PIN hors ligne est tranché par la
+  mission 7. Seul le vendeur de la vente l'annule depuis le terminal d'origine dans la fenêtre, sinon un
+  `SUPERVISOR`. Le prix d'une ligne de vente doit être celui du catalogue de la configuration servie au terminal ou le
+  prix actuel. OP-N74 : enrôlement refusé dès `CLOSING` pour `CATALOG_POS` et `KEYPAD_TPE`, permis en `TOPUP_DESK`
+  jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout. Révocation d'une identification à deux
+  (contrat ; §6.3 dit « un administrateur », contradiction signalée).
+- Plan de la mission 5b (porteur, 22/10/2026) : pile du document 08 (Node 22, `argon2` 0.44.0, la 0.45 n'ayant pas de
+  binaire macOS Intel) ; empreinte du PIN avec un secret hors base (`VENDOR_PIN_SECRET`, exigé en production) ; PIN
+  jamais en clair dans l'empreinte d'idempotence, remplacé par un dérivé argon2 sous un secret distinct
+  (`VENDOR_PIN_IDEMPOTENCY_SECRET`, ADR-126, porteur 26/10/2026) ; une
+  session de vendeur par terminal, désignée par son identifiant dans chaque vente ; côté festivalier du QR servi
+  derrière le port d'identité du festivalier (utilisable en production avec la mission 10) ; **identification au
+  guichet reportée à la mission 10** (comptes festivaliers au numéro vérifié). Renforcements : annulation unique
+  garantie par la base, demandes QR écrites par fonctions de la base, écritures directes de `kyc_verification` et
+  réaffectation directe d'un terminal retirées à l'API. Passe contradictoire (27 constats, tous traités) : registre des
+  numéros des terminaux, PIN « compté d'abord », annulation par un `SUPERVISOR` au terminal (jeton sur place) ou au
+  back-office (demande à deux). Limite acceptée : OP-N76 / ADR-121 (la base croit l'API pour la vérification du PIN),
+  levée avec OP-N56 en mission 11.
+- Livraison de la mission 5b (état au 26/10/2026, lot WP14) : parcours complet prouvé par l'API
+  (`payment-journey.spec.ts` : vendeurs, catalogue, enrôlement d'une caisse, paiement en un aller-retour et en deux
+  temps, QR commerçant et client, annulation par le vendeur puis par un `SUPERVISOR`, blocage d'un vendeur sur tous les
+  terminaux et déblocage, changement de prix) ; isolation des routes (lues du contrat) et des tables, secrets absents
+  de toute table, de tout journal et de toute réponse, latence du paiement p95 ≤ 200 ms et p99 ≤ 500 ms, 20 envois
+  simultanés → une vente. OP-N74 levé (migration 0035). Dettes héritées : OP-N76 et OP-N79 (mission 11), OP-N77, OP-N78
+  et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 
@@ -101,6 +130,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)
+- Un PIN de vendeur n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 (ADR-126, 26/10/2026, mission 5b).
 - Authentification par type d'appelant ; jeton d'approbation pour la seconde personne au guichet. (§10.3)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
 
@@ -231,7 +261,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   l'API (OP-N63, ADR-105, bloque la production) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
-- mission 7 : snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
+- mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
+  corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul
   déclencheur, aux droits du propriétaire (OP-N58) ; deux faiblesses du kit relevées pendant la mission 4, qui
   bloquent toutes deux la production (décision du porteur du 15/10/2026) ; adaptateur AWS KMS réel du service de clés
@@ -253,7 +284,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
   ADR-94) ; lots de bracelets créés et modifiés par des fonctions seulement, sans `INSERT`/`UPDATE` direct de l'API
-  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ;
+  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ; `vendor_id` dans la
+  clé composite de session référencée par les ventes (OP-N79, ADR-127, durcissement reporté le 26/10/2026) ;
 - mission 12 : signature d'originalité NXP vérifiée aussi par le serveur à la personnalisation, avec la clé publique
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
 - mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
@@ -262,13 +294,15 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   équivalente) pour prouver la clé de signature dans la Secure Enclave ; d'ici là iOS reste borné au QR (OP-N64,
   ADR-106, décision du porteur du 19/10/2026) ; le port d'attestation iOS renvoie le `keyId` App Attest, stocké par le
   serveur, et l'app passe `iosClientDataHash` tel quel à `attestKey` ;
-- mission 13 : preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
+- mission 13 : purge du registre des essais de PIN des vendeurs (OP-N78, ADR-127, décision du porteur du
+  26/10/2026) ; preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;
   aiguillage des routes vers leur processus décrit et vérifié sur l'environnement de recette (OP-N45) ; grâce de 60 s
   au rafraîchissement d'un jeton d'appareil réexaminée selon les pertes réseau mesurées (OP-N65, ADR-108, mission 5a) ;
   identité de l'app Android lue dans la liste logicielle de Key Attestation, réexaminée sur les appareils cibles
   (OP-N67, ADR-110, mission 5a) ; limite de débit en amont sur l'enrôlement des terminaux, sans compte (OP-N72,
-  ADR-117, mission 5a, confirmé par le porteur le 21/10/2026) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
+  ADR-117, mission 5a, confirmé par le porteur le 21/10/2026) ; secrets de l'API lus par processus, chacun ne recevant que les siens (OP-N77, ADR-125,
+  mission 5b, décision du porteur du 23/10/2026) ; essai d'`@peculiar/asn1-android` 2.10.0 et d'App Attest réel sur
   les appareils cibles ; à la mise en production, purge des lignes `api_idempotency` antérieures à T + 720 h (OP-N54,
   OP-N71) et réglage de `DEVICE_REQUEST_AUTHORITIES` (ADR-113).
 

@@ -7,7 +7,17 @@
 //     tant que la politique, l'époque, le plancher et les réglages ne changent pas ;
 //   - `debit_authority` : relue sur le grand livre de l'événement (CENTRAL d'époque 0 tant que la
 //     mission 8 n'existe pas) ; `snapshot_keys` = [] (aucune clé de snapshot : hors ligne
-//     impossible, refus par défaut) ; catalogue vide pour CATALOG_POS, `null` sinon (mission 5b) ;
+//     impossible, refus par défaut) ;
+//   - `catalog` (mission 5b, lot WP10 ; FR-008, A2) : pour CATALOG_POS, dernière version du
+//     catalogue du point de vente, servie `{version, items}` dans la langue demandée
+//     (`ServedCatalog`) ; quand la configuration est remise au terminal (`GET /device/config`),
+//     cette
+//     version est inscrite dans `device_catalog_served` par `record_device_catalog_served` APRÈS le
+//     verrou du terminal et `record_config_served` (le battement de cœur la lit sans l'inscrire) ;
+//     sans point de vente ou
+//     sans version : `{version: 0, items: []}`, rien écrit ; `null` pour les autres modes.
+//     `config_id` n'en dépend pas (R-04 : déduplication de `record_config_served` inchangée) ;
+//     l'ETag, si : une nouvelle version change l'ETag, donc le battement de cœur suivant ;
 //   - `server_time` : heure de la base, celle qui juge la fraîcheur des signatures (nonces).
 // ETag : SHA-256 du contenu canonique (JCS, RFC 8785) hors `server_time`. Il change avec
 // `config_id` et avec toute autre partie servie (statut, nom de l'événement, plage acquittée…),
@@ -18,10 +28,12 @@ import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { components } from '@cashless/contracts';
 import canonicalize from 'canonicalize';
+import { ServedCatalog } from '../../catalog/served-catalog';
 import { APP_CONFIG, type AppConfig } from '../../config/config';
 import type { TxClient } from '../../db/tenant-tx';
 import type { DeviceContext } from '../../device-identity/device-identity.port';
 import { ProblemException } from '../../errors/problem';
+import type { Language } from '../../http/language';
 
 export type DeviceConfigBody = components['schemas']['DeviceConfig'];
 export type DebitAuthorityBody = components['schemas']['DebitAuthority'];
@@ -101,13 +113,23 @@ export function etagMatches(header: string | undefined, etag: string): boolean {
 export class DeviceConfigService {
   constructor(
     @Inject(APP_CONFIG) private readonly config: Pick<AppConfig, 'clockToleranceSeconds'>,
+    private readonly catalogs: ServedCatalog,
   ) {}
 
   /**
    * Construit la configuration dans la transaction de l'appelant (prestataire du terminal posé).
    * Terminal révoqué → `403 DEVICE_REVOKED` ; suspendu : servi (R-14, `allowSuspended`).
+   * `language` : langue des libellés du catalogue (défaut `fr`). `deliver` : vrai seulement quand
+   * la configuration est remise au terminal (`GET /device/config`) — la version du catalogue est
+   * alors inscrite dans `device_catalog_served` ; faux (battement de cœur, qui ne rend que
+   * l'ETag) : même contenu, rien inscrit.
    */
-  async build(client: TxClient, device: DeviceContext): Promise<ServedConfig> {
+  async build(
+    client: TxClient,
+    device: DeviceContext,
+    language: Language = 'fr',
+    deliver = false,
+  ): Promise<ServedConfig> {
     // Statut relu et verrou pris AVANT record_config_served (R-14). NO KEY UPDATE : sérialise deux
     // lectures du même terminal et attend une révocation en cours (set_device_status : FOR UPDATE).
     const { rows: devices } = await client.query<DeviceRow>(
@@ -136,6 +158,17 @@ export class DeviceConfigService {
       [device.deviceId],
     );
     const s = served[0]!;
+
+    // Catalogue servi : après le verrou du terminal et record_config_served (ordre de la 5a).
+    const catalog =
+      d.app_mode === 'CATALOG_POS'
+        ? await this.catalogs.serve(
+            client,
+            { operatorId: device.operatorId, deviceId: device.deviceId, posId: d.pos_id },
+            language,
+            deliver,
+          )
+        : null;
 
     const { rows: events } = await client.query<EventRow>(
       `SELECT e.name, e.currency, x.exponent::int AS minor_units, e.timezone,
@@ -195,8 +228,7 @@ export class DeviceConfigService {
         activation_modes: e.activation_modes,
       },
       pos,
-      // Catalogue : mission 5b. Présent et vide pour un terminal à catalogue, absent sinon.
-      catalog: d.app_mode === 'CATALOG_POS' ? { items: [] } : null,
+      catalog,
       offline_policy: {
         offline_enabled: s.offline_enabled,
         max_per_sale: Number(s.max_per_sale),

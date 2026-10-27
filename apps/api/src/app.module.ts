@@ -8,7 +8,7 @@ import { ConfigResolverModule } from './configuration/config-resolver.module';
 import { ConfigurationCoreModule } from './configuration/configuration-core.module';
 import { CustomerIdentityModule } from './customer-identity/customer-identity.module';
 import { DbModule } from './db/db.module';
-import { DeviceIdentityModule } from './device-identity/device-identity.module';
+import { PublicDeviceIdentityModule } from './device-identity/device-identity.module';
 import { DevicesModule } from './devices/devices.module';
 import { ProblemFilter } from './errors/problem.filter';
 import { EventsModule } from './events/events.module';
@@ -16,7 +16,12 @@ import { HealthModule } from './health/health.controller';
 import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdentityModule } from './identity/identity.module';
 import { MediaPublicModule } from './media/media-public.module';
+import { PaymentRequestsModule } from './payment-requests/payment-requests.module';
+import { PaymentsModule } from './payments/payments.module';
+import { ReversalsModule } from './reversals/reversals.module';
 import { UsersModule } from './identity/users/users.module';
+import { VendorPinModule } from './vendor-pin/vendor-pin.module';
+import { VendorsModule } from './vendors/vendors.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 import { PlatformModule } from './organization/platform/platform.module';
 import { TenantModule } from './organization/tenant/tenant.module';
@@ -40,11 +45,17 @@ import { WorkerRegistry } from './processes/worker';
     ConfigResolverModule,
     // Mission bracelets-nfc : identités du terminal et du festivalier (ports), puis les routes des bracelets servies
     // par l'API publique. Aucun port du service de clés n'est chargé ici (voir processes/public.module.ts).
-    DeviceIdentityModule,
+    PublicDeviceIdentityModule,
     CustomerIdentityModule,
     MediaPublicModule,
     // Mission identite-enrolement-terminaux : routes des terminaux (enrôlement, jetons, configuration, back-office).
     DevicesModule,
+    // Mission 5b : PIN des vendeurs (argon2 éprouvé au démarrage, sinon démarrage refusé).
+    VendorPinModule,
+    VendorsModule,
+    PaymentsModule,
+    ReversalsModule,
+    PaymentRequestsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

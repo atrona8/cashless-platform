@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1178" viewBox="0 0 2006 1178">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,288.56 693.6666666666666,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,288.56 674.3598503050785,299.1073618492925 674.3598503050785,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="266.9333333333333" y="251.56" width="352.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,361.56 1727.0,361.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,361.56 1707.6931836384117,372.1073618492925 1707.6931836384117,351.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1015.9333333333333" y="324.56" width="404.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,434.55999999999995 1727.0,434.55999999999995" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,434.55999999999995 1707.6931836384117,445.10736184929243 1707.6931836384117,424.01263815070746" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1083.5333333333333" y="397.55999999999995" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,507.56 1727.0,507.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,507.56 1707.6931836384117,518.1073618492925 1707.6931836384117,497.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1057.5333333333333" y="470.56" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,580.56 1210.3333333333333,580.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,580.56 1191.026516971745,591.1073618492924 1191.026516971745,570.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="877.2" y="543.56" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,653.56 1727.0,653.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,653.56 1707.6931836384117,664.1073618492924 1707.6931836384117,643.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1425.0666666666666" y="616.56" width="103.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,726.56 1727.0,726.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,726.56 1707.6931836384117,737.1073618492924 1707.6931836384117,716.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1036.7333333333333" y="689.56" width="363.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,799.56 1727.0,799.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,799.56 1707.6931836384117,810.1073618492924 1707.6931836384117,789.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1062.7333333333333" y="762.56" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,872.5600000000001 193.0,872.5600000000001" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,872.5600000000001 212.3068163615882,862.0126381507076 212.3068163615882,883.1073618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="339.7333333333333" y="835.5600000000001" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,945.5600000000001 193.0,945.5600000000001" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,945.5600000000001 212.3068163615882,935.0126381507076 212.3068163615882,956.1073618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="261.73333333333335" y="908.5600000000001" width="363.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Paiement par bracelet</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Un aller-retour, une transaction : tout ou rien</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Moteur d’écritures</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="443.3333333333333" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lecture, lignes, session, époque</text>
+<text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="1218.3333333333335" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal verrouillé, heure de la base</text>
+<text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1218.3333333333335" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Session et vendeur relus</text>
+<text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1218.3333333333335" y="488.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lecture, portefeuille payable</text>
+<text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="960.0" y="561.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vente PURCHASE</text>
+<text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="1476.6666666666665" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Écriture</text>
+<text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1218.3333333333335" y="707.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lignes, vendeur, passage consommé</text>
+<text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="1218.3333333333335" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Numéro du terminal (accepté)</text>
+<text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="443.3333333333333" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">201 : vente, solde</text>
+<text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="443.3333333333333" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Refus : rien écrit, passage libre</text>
+<text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prix : version courante ou dernière servie au terminal. Époque absente : 422 ; périmée : 409. Refus : numéro rangé à part, la même lecture peut resservir.</text>
+</g>
+</svg>

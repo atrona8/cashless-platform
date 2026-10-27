@@ -1,4 +1,19 @@
 {
+  "accept_commit": "4922ef8308fdb2b93bd22c74bc8cb28bf0c5c08a",
+  "acceptance_history": [
+    {
+      "accept_commit": "4922ef8308fdb2b93bd22c74bc8cb28bf0c5c08a",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-26T16:46:51.725806+00:00",
+      "accepted_by": "orchestrateur (Claude), pour le porteur",
+      "accepted_from_commit": "b429661a3f51982b619862d4368d4109f6ce9328"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-26T16:46:51.725806+00:00",
+  "accepted_by": "orchestrateur (Claude), pour le porteur",
+  "accepted_from_commit": "b429661a3f51982b619862d4368d4109f6ce9328",
+  "baseline_merge_commit": "a1acdc5311763bdbeda5901eb5c7b196f5cb5e86",
   "coordination_branch": "kitty/mission-terminaux-paiement-en-ligne-01M52QB9",
   "created_at": "2026-10-16T16:05:00.900982+00:00",
   "flattened": false,
@@ -13,6 +28,9 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "terminaux-paiement-en-ligne-01M52QB9",
+  "status_phase": "1",
   "target_branch": "feat/terminaux-paiement-en-ligne",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-22T15:13:59.657614+00:00"
 }

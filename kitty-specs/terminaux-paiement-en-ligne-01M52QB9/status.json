@@ -1,0 +1,221 @@
+{
+  "event_count": 123,
+  "last_event_id": "01M5WJ5YDM7RGRS9KF88QVJ6YT",
+  "materialized_at": "2026-10-26T16:54:57.716229+00:00",
+  "mission_number": "",
+  "mission_slug": "terminaux-paiement-en-ligne-01M52QB9",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 14,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ4V1C00P9CYWB8XTVCKS3",
+      "last_transition_at": "2026-10-26T16:54:21.484406+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP01-contrat-api-types/review-cycle-1.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP01-contrat-api-types/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 18352,
+      "shell_pid_created_at": "1792682030.113067"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5WJ4XRXPMBPARKSSJ60RFVP",
+      "last_transition_at": "2026-10-26T16:54:24.285274+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP02-base-vendeurs-sessions/review-cycle-2.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP02-base-vendeurs-sessions/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12574,
+      "shell_pid_created_at": "1792750898.487476"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5WJ50EJFBX3QM6A2M5H6M5P",
+      "last_transition_at": "2026-10-26T16:54:27.026322+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP03-base-catalogue/review-cycle-2.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP03-base-catalogue/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12952,
+      "shell_pid_created_at": "1792750928.363716"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ55WE644X8CHVXG992VEZ",
+      "last_transition_at": "2026-10-26T16:54:32.590932+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP04-base-paiement-annulation/review-cycle-1.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP04-base-paiement-annulation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 23573,
+      "shell_pid_created_at": "1792752243.140467"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5WJ5B93X7E655AH0STKFBRJ",
+      "last_transition_at": "2026-10-26T16:54:38.115731+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP05-base-demandes-qr/review-cycle-2.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP05-base-demandes-qr/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 40698,
+      "shell_pid_created_at": "1792755722.737797"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ537B5J2XYYMW69JC7CTZ",
+      "last_transition_at": "2026-10-26T16:54:29.867914+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP06-base-op-n74/review-cycle-1.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP06-base-op-n74/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 13346,
+      "shell_pid_created_at": "1792750956.354593"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ5E463E3H6EAXZZ8NB8X2",
+      "last_transition_at": "2026-10-26T16:54:41.030264+00:00",
+      "shell_pid": 44137,
+      "shell_pid_created_at": "1792756456.528206"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "lane": "done",
+      "last_event_id": "01M5WJ58JZHFR5AN3Q8ABKPTFN",
+      "last_transition_at": "2026-10-26T16:54:35.359872+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP08-socle-applicatif/review-cycle-1.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP08-socle-applicatif/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 18584,
+      "shell_pid_created_at": "1792751570.758881"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 6,
+      "lane": "done",
+      "last_event_id": "01M5WJ5GTDP2CYRG06KSXA6A9K",
+      "last_transition_at": "2026-10-26T16:54:43.789300+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP09-vendeurs-sessions/review-cycle-3.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP09-vendeurs-sessions/review-cycle-3.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 24924,
+      "shell_pid_created_at": "1793014650.460928"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ5KJCNESEQBNB6Y5CKZFN",
+      "last_transition_at": "2026-10-26T16:54:46.604753+00:00",
+      "shell_pid": 8538,
+      "shell_pid_created_at": "1793009172.812661"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M5WJ5P94WDZ8CKJDJK3A2CZ0",
+      "last_transition_at": "2026-10-26T16:54:49.380912+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP11-paiement-bracelet/review-cycle-2.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP11-paiement-bracelet/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 46079,
+      "shell_pid_created_at": "1793022544.109857"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ5S1PB5YQWV2XSY8QK72F",
+      "last_transition_at": "2026-10-26T16:54:52.214442+00:00",
+      "shell_pid": 52107,
+      "shell_pid_created_at": "1793024341.642166"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ5VR68MTH06JG1NFQF9K0",
+      "last_transition_at": "2026-10-26T16:54:54.983067+00:00",
+      "shell_pid": 53085,
+      "shell_pid_created_at": "1793024426.20281"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M5WJ5YDM7RGRS9KF88QVJ6YT",
+      "last_transition_at": "2026-10-26T16:54:57.716229+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP14-preuves-ci-consignation/review-cycle-1.md",
+        "reference": "review-cycle://terminaux-paiement-en-ligne-01M52QB9/WP14-preuves-ci-consignation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 69678,
+      "shell_pid_created_at": "1793028661.393679"
+    }
+  }
+}

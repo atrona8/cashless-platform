@@ -211,6 +211,7 @@ describe('loadConfig', () => {
     });
     expect(config.idempotencyHmacKey.equals(Buffer.alloc(32, 0x01))).toBe(true);
     expect(config.enrollmentCodeHmacKey.equals(Buffer.alloc(32, 0x02))).toBe(true);
+    expect(config.vendorPinSecret.equals(Buffer.alloc(32, 0x04))).toBe(true);
   });
 
   it('hors production : valeurs de test, aucun certificat (écoute en clair permise)', () => {
@@ -231,6 +232,7 @@ describe('loadConfig', () => {
     });
     expect(config.idempotencyHmacKey.length).toBeGreaterThanOrEqual(32);
     expect(config.enrollmentCodeHmacKey.length).toBeGreaterThanOrEqual(32);
+    expect(config.vendorPinSecret.length).toBeGreaterThanOrEqual(32);
   });
 
   it('production : la clé de l’autorité DE TEST des terminaux fait refuser le démarrage', () => {
@@ -295,19 +297,25 @@ describe('loadConfig', () => {
     expect(() => loadConfig(withoutTtl)).toThrow(/DEVICE_TOKEN_TTL_SECONDS manquant/);
   });
 
-  it.each(['IDEMPOTENCY_HMAC_KEY', 'ENROLLMENT_CODE_HMAC_KEY'])(
-    '%s : 32 octets au moins, hexadécimal ou base64',
-    (name) => {
-      for (const env of [PRODUCTION, LOCAL]) {
-        expect(() => loadConfig({ ...env, [name]: 'abcd' })).toThrow(/32 octets/);
-        expect(() => loadConfig({ ...env, [name]: '0f'.repeat(31) })).toThrow(/32 octets/);
-      }
-      const config = loadConfig({ ...PRODUCTION, [name]: Buffer.alloc(48, 9).toString('base64') });
-      const key =
-        name === 'IDEMPOTENCY_HMAC_KEY' ? config.idempotencyHmacKey : config.enrollmentCodeHmacKey;
-      expect(key.equals(Buffer.alloc(48, 9))).toBe(true);
-    },
-  );
+  it.each([
+    'IDEMPOTENCY_HMAC_KEY',
+    'ENROLLMENT_CODE_HMAC_KEY',
+    'VENDOR_PIN_SECRET',
+    'VENDOR_PIN_IDEMPOTENCY_SECRET',
+  ])('%s : 32 octets au moins, hexadécimal ou base64', (name) => {
+    for (const env of [PRODUCTION, LOCAL]) {
+      expect(() => loadConfig({ ...env, [name]: 'abcd' })).toThrow(/32 octets/);
+      expect(() => loadConfig({ ...env, [name]: '0f'.repeat(31) })).toThrow(/32 octets/);
+    }
+    const config = loadConfig({ ...PRODUCTION, [name]: Buffer.alloc(48, 9).toString('base64') });
+    const key = {
+      IDEMPOTENCY_HMAC_KEY: config.idempotencyHmacKey,
+      ENROLLMENT_CODE_HMAC_KEY: config.enrollmentCodeHmacKey,
+      VENDOR_PIN_SECRET: config.vendorPinSecret,
+      VENDOR_PIN_IDEMPOTENCY_SECRET: config.vendorPinIdempotencySecret,
+    }[name]!;
+    expect(key.equals(Buffer.alloc(48, 9))).toBe(true);
+  });
 
   it('les trois secrets HMAC sont distincts deux à deux', () => {
     expect(() =>
@@ -331,12 +339,78 @@ describe('loadConfig', () => {
     expect(local.idempotencyHmacKey.equals(local.claimCodeHmacKey)).toBe(false);
   });
 
+  // ----- Mission 5b (lot WP08, T033 ; NFR-009, research R-10) -----
+
+  it('NFR-009 : production, VENDOR_PIN_SECRET égal à un autre secret → démarrage refusé', () => {
+    for (const other of [
+      'CLAIM_CODE_HMAC_KEY',
+      'IDEMPOTENCY_HMAC_KEY',
+      'ENROLLMENT_CODE_HMAC_KEY',
+    ]) {
+      const value = (PRODUCTION as Record<string, string>)[other]!;
+      expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_SECRET: value })).toThrow(
+        new RegExp(`${other} et VENDOR_PIN_SECRET : secrets distincts`),
+      );
+    }
+    const local = loadConfig(LOCAL);
+    for (const key of [
+      local.claimCodeHmacKey,
+      local.idempotencyHmacKey,
+      local.enrollmentCodeHmacKey,
+    ])
+      expect(local.vendorPinSecret.equals(key)).toBe(false);
+  });
+
+  it('NFR-009 : production sans VENDOR_PIN_SECRET → démarrage refusé ; hors production → secret de test', () => {
+    const { VENDOR_PIN_SECRET: _omitted, ...without } = PRODUCTION;
+    expect(() => loadConfig(without)).toThrow(/VENDOR_PIN_SECRET manquant/);
+    expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_SECRET: '' })).toThrow(
+      /VENDOR_PIN_SECRET manquant/,
+    );
+    const local = loadConfig(LOCAL);
+    expect(local.vendorPinSecret.toString('utf8')).toMatch(/de-test-uniquement/);
+  });
+
+  it('ADR-126 : VENDOR_PIN_IDEMPOTENCY_SECRET distinct de tous les autres secrets, refusé sinon', () => {
+    for (const other of [
+      'CLAIM_CODE_HMAC_KEY',
+      'IDEMPOTENCY_HMAC_KEY',
+      'ENROLLMENT_CODE_HMAC_KEY',
+      'VENDOR_PIN_SECRET',
+    ]) {
+      const value = (PRODUCTION as Record<string, string>)[other]!;
+      expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_IDEMPOTENCY_SECRET: value })).toThrow(
+        new RegExp(`${other} et VENDOR_PIN_IDEMPOTENCY_SECRET : secrets distincts`),
+      );
+    }
+    const local = loadConfig(LOCAL);
+    for (const key of [
+      local.claimCodeHmacKey,
+      local.idempotencyHmacKey,
+      local.enrollmentCodeHmacKey,
+      local.vendorPinSecret,
+    ])
+      expect(local.vendorPinIdempotencySecret.equals(key)).toBe(false);
+  });
+
+  it('ADR-126 : production sans VENDOR_PIN_IDEMPOTENCY_SECRET → démarrage refusé ; hors production → secret de test', () => {
+    const { VENDOR_PIN_IDEMPOTENCY_SECRET: _omitted, ...without } = PRODUCTION;
+    expect(() => loadConfig(without)).toThrow(/VENDOR_PIN_IDEMPOTENCY_SECRET manquant/);
+    expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_IDEMPOTENCY_SECRET: '' })).toThrow(
+      /VENDOR_PIN_IDEMPOTENCY_SECRET manquant/,
+    );
+    const local = loadConfig(LOCAL);
+    expect(local.vendorPinIdempotencySecret.toString('utf8')).toMatch(/de-test-uniquement/);
+  });
+
   it('production : les secrets de test sont refusés même posés explicitement', () => {
     const local = loadConfig(LOCAL);
     for (const [name, key] of [
       ['CLAIM_CODE_HMAC_KEY', local.claimCodeHmacKey],
       ['IDEMPOTENCY_HMAC_KEY', local.idempotencyHmacKey],
       ['ENROLLMENT_CODE_HMAC_KEY', local.enrollmentCodeHmacKey],
+      ['VENDOR_PIN_SECRET', local.vendorPinSecret],
+      ['VENDOR_PIN_IDEMPOTENCY_SECRET', local.vendorPinIdempotencySecret],
     ] as const) {
       expect(() => loadConfig({ ...PRODUCTION, [name]: key.toString('hex') })).toThrow(
         new RegExp(`${name} : secret de test refusé en production`),

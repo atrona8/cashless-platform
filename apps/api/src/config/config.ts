@@ -84,6 +84,17 @@ export interface AppConfig {
   /** Secret de l'empreinte des codes d'enrôlement (`ENROLLMENT_CODE_HMAC_KEY`, 32 octets au moins, R-13). */
   enrollmentCodeHmacKey: Buffer;
   /**
+   * Secret argon2 de l'empreinte des PIN des vendeurs (`VENDOR_PIN_SECRET`, 32 octets au moins,
+   * research R-10) : hors de la base, jamais journalisé. Une rotation invalide toutes les empreintes.
+   */
+  vendorPinSecret: Buffer;
+  /**
+   * Secret argon2 du dérivé du PIN dans l'empreinte d'idempotence (`VENDOR_PIN_IDEMPOTENCY_SECRET`, 32 octets
+   * au moins, ADR-126) : distinct de `VENDOR_PIN_SECRET`, pour qu'un registre d'idempotence volé ne serve pas
+   * à attaquer `vendor.pin_hash` (et inversement). Hors de la base, jamais journalisé.
+   */
+  vendorPinIdempotencySecret: Buffer;
+  /**
    * Tolérance d'horloge par défaut des terminaux (`CLOCK_TOLERANCE_SECONDS`, 0 à 300 ; 120 en test, défaut du
    * contrat) : la valeur de la configuration de l'événement, lue à l'exécution, prime.
    */
@@ -178,12 +189,23 @@ const TEST_ENROLLMENT_CODE_HMAC_KEY = Buffer.from(
   'cashless-enrollment-code-hmac-key-de-test-uniquement',
   'utf8',
 );
+const TEST_VENDOR_PIN_SECRET = Buffer.from(
+  'cashless-vendor-pin-secret-argon2-de-test-uniquement',
+  'utf8',
+);
+
+const TEST_VENDOR_PIN_IDEMPOTENCY_SECRET = Buffer.from(
+  'cashless-vendor-pin-idempotency-secret-de-test-uniquement',
+  'utf8',
+);
 
 /** Les secrets de test : refusés en production même posés explicitement (ex. `env.sh` sourcé par erreur). */
 const TEST_HMAC_KEYS = [
   TEST_CLAIM_CODE_HMAC_KEY,
   TEST_IDEMPOTENCY_HMAC_KEY,
   TEST_ENROLLMENT_CODE_HMAC_KEY,
+  TEST_VENDOR_PIN_SECRET,
+  TEST_VENDOR_PIN_IDEMPOTENCY_SECRET,
 ];
 
 /**
@@ -523,7 +545,7 @@ function iosAppAttestEnvironment(
   return value as IosAppAttestEnvironment;
 }
 
-/** Les trois secrets HMAC sont distincts deux à deux : un secret partagé lierait des empreintes sans rapport. */
+/** Les secrets du serveur (HMAC et argon2) sont distincts deux à deux : un secret partagé lierait des empreintes sans rapport. */
 function assertDistinctHmacKeys(keys: Record<string, Buffer>): void {
   const entries = Object.entries(keys);
   for (let i = 0; i < entries.length; i += 1)
@@ -553,6 +575,8 @@ type DeviceSettings = Pick<
   | 'iosAppAttestEnvironment'
   | 'idempotencyHmacKey'
   | 'enrollmentCodeHmacKey'
+  | 'vendorPinSecret'
+  | 'vendorPinIdempotencySecret'
   | 'clockToleranceSeconds'
   | 'deviceRequestAuthorities'
 >;
@@ -576,10 +600,28 @@ function deviceSettings(
     production,
     TEST_ENROLLMENT_CODE_HMAC_KEY,
   );
+  // Mission 5b (research R-10) : secret argon2 des PIN des vendeurs, même règle que les secrets HMAC.
+  const vendorPinSecret = hmacKey(
+    env,
+    'VENDOR_PIN_SECRET',
+    'de l’empreinte des PIN des vendeurs',
+    production,
+    TEST_VENDOR_PIN_SECRET,
+  );
+  // ADR-126 : second secret argon2, pour le dérivé du PIN de l'empreinte d'idempotence.
+  const vendorPinIdempotencySecret = hmacKey(
+    env,
+    'VENDOR_PIN_IDEMPOTENCY_SECRET',
+    'du dérivé du PIN dans l’empreinte d’idempotence',
+    production,
+    TEST_VENDOR_PIN_IDEMPOTENCY_SECRET,
+  );
   assertDistinctHmacKeys({
     CLAIM_CODE_HMAC_KEY: claimKey,
     IDEMPOTENCY_HMAC_KEY: idempotencyHmacKey,
     ENROLLMENT_CODE_HMAC_KEY: enrollmentCodeHmacKey,
+    VENDOR_PIN_SECRET: vendorPinSecret,
+    VENDOR_PIN_IDEMPOTENCY_SECRET: vendorPinIdempotencySecret,
   });
   const deviceTokenIssuer = required(
     env,
@@ -612,6 +654,8 @@ function deviceSettings(
     ...attestationSettings(env, production),
     idempotencyHmacKey,
     enrollmentCodeHmacKey,
+    vendorPinSecret,
+    vendorPinIdempotencySecret,
     clockToleranceSeconds: boundedInt(
       env,
       'CLOCK_TOLERANCE_SECONDS',

@@ -1,11 +1,14 @@
 // Table SQLSTATE → ProblemCode (contracts/problem-mapping.md), statuts comparés au contrat (FR-022).
 import { PROBLEM_CODES, PROBLEM_STATUSES, type ProblemCode } from '@cashless/contracts';
 import { ProblemException } from '../../../src/errors/problem';
+import { logProblem } from '../../../src/errors/problem.filter';
+import { REDACTED, redactSecrets } from '../../../src/errors/redact';
 import {
   DOUBLE_VALIDATION_CONSTRAINTS,
   isSqlError,
   mapSqlState,
   SQLSTATE_MAP,
+  UNIQUE_CONSTRAINTS,
 } from '../../../src/errors/sqlstate-map';
 import { MESSAGES, pickLanguage } from '../../../src/http/language';
 import { UnauthenticatedTenantContext } from '../../../src/tenancy/tenant-context';
@@ -43,6 +46,17 @@ const TABLE: [string, ProblemCode, number][] = [
   ['CL028', 'DEVICE_SERIAL_IN_USE', 409],
   ['CL029', 'CONFLICT_STATE', 409],
   ['CL030', 'DEVICE_SUSPENDED', 403],
+  // Mission 5b (data-model « Codes d'erreur nouveaux » ; ADR-123 pour CL036 et CL040), lot WP08.
+  ['CL031', 'ENROLLMENT_EVENT_CLOSED', 422],
+  ['CL032', 'VENDOR_SESSION_INVALID', 409],
+  ['CL033', 'VENDOR_PIN_INVALID', 401],
+  ['CL034', 'SALE_LINES_INVALID', 422],
+  ['CL035', 'ALREADY_REVERSED', 409],
+  ['CL036', 'REVERSAL_NOT_ALLOWED', 422],
+  ['CL037', 'PAYMENT_REQUEST_NOT_PENDING', 409],
+  ['CL038', 'MEDIA_BLOCKED', 422],
+  ['CL039', 'WALLET_BLOCKED', 422],
+  ['CL040', 'REVERSAL_WINDOW_EXPIRED', 409],
   ['P0002', 'NOT_FOUND', 404],
   ['42501', 'DEVICE_REVOKED', 403],
   ['P0001', 'INTERNAL_ERROR', 500],
@@ -76,6 +90,29 @@ describe('SQLSTATE → ProblemCode', () => {
   it('SQLSTATE inconnu → INTERNAL_ERROR 500', () => {
     expect(mapSqlState('XX000')).toEqual({ code: 'INTERNAL_ERROR', status: 500 });
     expect(mapSqlState('23505')).toEqual({ code: 'INTERNAL_ERROR', status: 500 });
+  });
+
+  it('A19 : 23505 traduit seulement pour la contrainte nommée journal_transaction_reverses_once', () => {
+    expect(mapSqlState('23505', 'journal_transaction_reverses_once')).toEqual({
+      code: 'ALREADY_REVERSED',
+      status: 409,
+    });
+    // Liste fermée : toute autre unicité est un défaut (500), jamais un refus métier.
+    expect(Object.keys(UNIQUE_CONSTRAINTS)).toEqual(['journal_transaction_reverses_once']);
+    for (const other of [
+      undefined,
+      'journal_transaction_pkey',
+      'journal_transaction_reverses_once_x',
+      'toString',
+      '__proto__',
+      'constructor',
+    ])
+      expect(mapSqlState('23505', other)).toEqual({ code: 'INTERNAL_ERROR', status: 500 });
+    // Le nom de contrainte n'agit que sur 23505.
+    expect(mapSqlState('23503', 'journal_transaction_reverses_once')).toEqual({
+      code: 'INTERNAL_ERROR',
+      status: 500,
+    });
   });
 
   it('reconnaît une erreur pg à son SQLSTATE de 5 caractères', () => {
@@ -124,5 +161,71 @@ describe('messages', () => {
     ['es', 'fr'],
   ])('Accept-Language %p → %s', (header, expected) => {
     expect(pickLanguage(header)).toBe(expected);
+  });
+});
+
+describe('redactSecrets (T037 ; NFR-002, NFR-008)', () => {
+  const PHC =
+    '$argon2id$v=19$m=19456,t=2,p=1$c2VsZGV0ZXN0c2VsZGU$4n8b1o7m2l+Wq0rXbYc/9d1eKfGhIjKlMnOpQrStUvW';
+
+  it('empreinte argon2 masquée, où qu’elle soit dans le message', () => {
+    const out = redactSecrets(`ligne en échec : pin_hash = ${PHC} (fin)`);
+    expect(out).not.toContain('$argon2id$');
+    expect(out).not.toContain('4n8b1o7m2l');
+    expect(out).toContain(REDACTED);
+    expect(out).toContain('(fin)');
+    expect(redactSecrets('$argon2i$v=19$m=1,t=1,p=1$abc$def')).toBe(REDACTED);
+  });
+
+  it.each([
+    ['JSON', '{"pin":"246813","name":"Awa"}', '246813'],
+    ['JSON nombre', '{"pin":246813}', '246813'],
+    ['JSON token', '{"token":"tok-secret-1"}', 'tok-secret-1'],
+    ['JSON customer_qr_token', '{"customer_qr_token":"qr-secret-2"}', 'qr-secret-2'],
+    ['JSON qr_payload', '{"qr_payload":"payload-secret-3"}', 'payload-secret-3'],
+    ['formulaire', 'pin=246813&name=Awa', '246813'],
+    ['texte', 'pin: 246813 refusé', '246813'],
+    ['en-tête', 'X-Approval-Token: appr-secret-4', 'appr-secret-4'],
+    ['nom préfixé (renforcement)', '{"refresh_token":"rt-secret-5"}', 'rt-secret-5'],
+  ])('%s : valeur masquée', (_name, input, secret) => {
+    const out = redactSecrets(input);
+    expect(out).not.toContain(secret);
+    expect(out).toContain(REDACTED);
+  });
+
+  it('le reste du message est gardé ; un mot qui contient « pin » sans être le champ ne l’est pas', () => {
+    expect(redactSecrets('{"pin":"246813","name":"Awa"}')).toContain('"name":"Awa"');
+    expect(redactSecrets('spinner=3 shipping: 4')).toBe('spinner=3 shipping: 4');
+    expect(redactSecrets('Code CL033 : PIN invalide')).toBe('Code CL033 : PIN invalide');
+  });
+});
+
+describe('logProblem : message masqué (T037)', () => {
+  it('aucune empreinte ni PIN dans le journal d’une erreur 5xx ou SQL', () => {
+    const lines: string[] = [];
+    const spy = jest.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+      lines.push(String(chunk));
+      return true;
+    });
+    try {
+      const req = { header: () => undefined, method: 'POST', path: '/x' } as never;
+      logProblem(
+        new Error('échec {"pin":"246813"} $argon2id$v=19$m=19456,t=2,p=1$c2Vs$aGFzaA'),
+        { code: 'INTERNAL_ERROR', status: 500 },
+        req,
+      );
+      logProblem(
+        { code: 'CL033', message: 'pin=135792' },
+        { code: 'VENDOR_PIN_INVALID', status: 401 },
+        req,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+    const out = lines.join('');
+    expect(lines).toHaveLength(2);
+    for (const secret of ['246813', '135792', '$argon2id$', 'aGFzaA'])
+      expect(out).not.toContain(secret);
+    expect(out).toContain(REDACTED);
   });
 });

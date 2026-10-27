@@ -59,7 +59,8 @@ SELECT is((SELECT count(*)::int FROM pg_proc p
 -- 2. Chaque rôle n'exécute que sa liste ----------------------------------------------------------
 -- API publique : appels réels de apps/api/src, fonctions appelées par ses fonctions et
 -- déclencheurs SECURITY INVOKER, fonctions des terminaux (0022, 0023) des lots WP12 à WP16,
--- record_config_served (configuration servie, lot WP17).
+-- record_config_served (configuration servie, lot WP17) ; encaissement en ligne (mission 5b,
+-- lot WP07 : vendeurs, catalogue, paiement, demandes QR ; contracts/database-rights.md).
 SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'activate_media(uuid,uuid,text,uuid)', 'assert_device_active(uuid)',
   'associate_claim_code(bytea,uuid)', 'blacklist_media(uuid,text,uuid)',
@@ -98,7 +99,28 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'rotate_device_refresh_token(bytea,bytea,bytea,timestamptz)',
   'set_device_status(uuid,text,text,uuid)', 'set_event_status(uuid,event_status,uuid)',
   'set_media_batch_status(uuid,text,text,uuid)', 'suspend_media(uuid,text,uuid)',
-  'take_deposit(uuid,uuid)', 'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)'
+  'take_deposit(uuid,uuid)', 'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
+  -- Mission 5b, lot WP07 : vendeurs (0031)
+  'assert_vendor_session(uuid,uuid)', 'begin_vendor_pin_check(uuid,uuid)',
+  'close_vendor_session(uuid)', 'create_vendor(uuid,text,text,uuid)',
+  'open_vendor_session(uuid,uuid)', 'set_vendor_pin(uuid,text,uuid)',
+  'set_vendor_status(uuid,text,uuid)',
+  -- catalogue (0032)
+  'check_sale_lines(uuid,jsonb,bigint)', 'create_catalog_category(uuid,text,text,integer,uuid)',
+  'create_catalog_item(uuid,text,text,bigint,integer,uuid)', 'record_device_catalog_served(uuid)',
+  'record_sale_lines(uuid,uuid,jsonb)', 'set_catalog_policy(uuid,boolean,uuid)',
+  'update_catalog_category(uuid,text,text,integer,boolean,uuid)',
+  'update_catalog_item(uuid,uuid,text,text,bigint,integer,boolean,uuid)',
+  -- paiement et annulation (0033 ; record_device_seq du schéma de référence)
+  'assert_reversible(uuid,text,uuid,uuid,text,uuid)', 'assert_tap_payable(bigint,uuid)',
+  'assert_wallet_payable(uuid)', 'record_device_seq(uuid,bigint,bytea,text,text,uuid,text,uuid)',
+  'record_sale_attribution(uuid,uuid,text,uuid)',
+  -- demandes de paiement QR (0034)
+  'cancel_payment_request(uuid,uuid,bytea)', 'confirm_payment_request(uuid,uuid,bytea)',
+  'create_customer_qr_token(uuid,uuid,bytea)',
+  'create_merchant_payment_request(uuid,uuid,bigint,character,integer,bytea,text,jsonb,integer)',
+  'lock_customer_qr_token(bytea,uuid)', 'lock_payment_request_for_pay(uuid,bytea,uuid,uuid)',
+  'payment_request_for_token(uuid,bytea)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -106,7 +128,13 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
   FROM unnest(ARRAY['device_admin_allowed(uuid,uuid,uuid)', 'retire_dedicated_key(uuid,integer)',
                     'retire_dedicated_key_for_job(uuid)', 'register_personalized_media(uuid,uuid,'
                       || 'bytea,bytea,bytea,boolean,bytea,uuid,uuid)',
-                    'set_debit_authority(uuid,text,uuid)', 'seal_audit(uuid,interval)']) f;
+                    'set_debit_authority(uuid,text,uuid)', 'seal_audit(uuid,interval)',
+                    -- internes de la mission 5b (lot WP07) : appelées seulement par les
+                    -- fonctions SECURITY DEFINER de 0031 et 0032
+                    'vendor_admin_allowed(uuid,uuid,uuid)',
+                    'catalog_admin_allowed(uuid,uuid,uuid)',
+                    'catalog_lock_pos(uuid,uuid,uuid,boolean)',
+                    'catalog_bump_version(uuid,uuid,uuid)', 'catalog_label(text,text)']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),

@@ -11,10 +11,11 @@ PaymentRequestsRequestBody _$PaymentRequestsRequestBodyFromJson(
 ) => PaymentRequestsRequestBody(
   amount: (json['amount'] as num).toInt(),
   currency: json['currency'] as String,
+  ttlSeconds: (json['ttl_seconds'] as num?)?.toInt() ?? 60,
+  vendorSessionId: json['vendor_session_id'] as String?,
   lines: (json['lines'] as List<dynamic>?)
       ?.map((e) => SaleLine.fromJson(e as Map<String, dynamic>))
       .toList(),
-  ttlSeconds: (json['ttl_seconds'] as num?)?.toInt() ?? 60,
 );
 
 Map<String, dynamic> _$PaymentRequestsRequestBodyToJson(
@@ -22,6 +23,7 @@ Map<String, dynamic> _$PaymentRequestsRequestBodyToJson(
 ) => <String, dynamic>{
   'amount': instance.amount,
   'currency': instance.currency,
+  'vendor_session_id': instance.vendorSessionId,
   'ttl_seconds': instance.ttlSeconds,
   'lines': instance.lines,
 };

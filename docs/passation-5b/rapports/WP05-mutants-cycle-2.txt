@@ -1,0 +1,22 @@
+lock_payment_request_for_pay | retrait de "OR v.status <> 'ACTIVE'" -> tué; échecs: 1
+    not ok 67 - verrouillage : vendeur désactivé, session ouverte (CL037)
+lock_payment_request_for_pay | retrait de 'OR v.locked_at IS NOT NULL' -> tué; échecs: 1
+    not ok 69 - verrouillage : vendeur bloqué (PIN), ACTIVE, session ouverte (CL037)
+lock_payment_request_for_pay | retrait de 'OR s.expires_at <= clock_timestamp()' -> tué; échecs: 1
+    not ok 66 - verrouillage : session expirée, non close (CL037)
+lock_payment_request_for_pay | retrait de 'OR l.currency <> r.currency' -> tué; échecs: 1
+    not ok 74 - verrouillage : portefeuille d'une autre devise (EUR) refusé (CL037)
+lock_customer_qr_token | retrait de "OR r.direction <> 'CUSTOMER_QR'" -> tué; échecs: 1
+    not ok 106 - QR client : demande commerçant PENDING avec portefeuille posé refusée (CL037)
+confirm_payment_request | retrait de 'OR s.expires_at <= clock_timestamp()' -> tué; échecs: 1
+    not ok 98 - confirmation : session de la demande expirée, non close, refusée
+confirm_payment_request | retrait de 'OR s.device_id <> r.device_id' -> tué; échecs: 1
+    not ok 100 - confirmation : session de la demande sur un autre terminal refusée
+confirm_payment_request | retrait de 'AND x.event_id = r.event_id;' -> tué; échecs: 2
+    not ok 116 - QR client : terminal de la vente hors de l'événement de la demande refusé
+    not ok 117 - témoin : même vente sur un terminal de l'événement, confirmée
+payment_request_for_token | retrait de 'LANGUAGE plpgsql VOLATILE' -> tué; échecs: 1
+    not ok 3 - sept fonctions VOLATILE (clock_timestamp() n'est pas STABLE)
+confirm_payment_request | retrait de 'PERFORM 1 FROM device' -> neutre survit; échecs: 0
+base restaurée ; tous tués
+Result: PASS

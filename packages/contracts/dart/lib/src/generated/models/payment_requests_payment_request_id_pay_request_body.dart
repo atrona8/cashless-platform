@@ -17,6 +17,7 @@ class PaymentRequestsPaymentRequestIdPayRequestBody {
     Map<String, Object?> json,
   ) => _$PaymentRequestsPaymentRequestIdPayRequestBodyFromJson(json);
 
+  /// Jeton lu dans le QR ; jamais renvoyé, journalisé ni audité (seule l'empreinte est gardée).
   final String token;
   @JsonKey(name: 'wallet_id')
   final String walletId;

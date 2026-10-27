@@ -608,6 +608,45 @@ describe('enrôlement des terminaux (T068 à T070)', () => {
     expect(unknownAttempt).toMatchObject({ result: 'CODE_INVALID', operator_id: null });
   });
 
+  it('ADR-117, OP-N74 : événement clos après l’émission → 422 ENROLLMENT_EVENT_CLOSED, compté et audité, rien créé', async () => {
+    // Mission 5b (WP08, report de WP06) : exige la migration 0035 (lot WP06).
+    const eventC = randomUUID();
+    await withOwner((db) =>
+      db.query(
+        `INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone,
+                            jurisdiction_id, funds_holder, status)
+         SELECT $1, operator_id, organizer_id, 'Événement clos', currency, timezone,
+                jurisdiction_id, funds_holder, status
+           FROM event WHERE id = $2`,
+        [eventC, w.ids.eventA],
+      ),
+    );
+    const code = await newCode({}, w.operatorAdminA, eventC);
+    // Clôture après l'émission : amorçage seulement, garde des transitions écartée pour cette
+    // seule transaction (le parcours de clôture n'est pas l'objet du test).
+    await withOwner(async (db) => {
+      await db.query('BEGIN');
+      await db.query("SET LOCAL session_replication_role = 'replica'");
+      await db.query("UPDATE event SET status = 'CLOSED' WHERE id = $1", [eventC]);
+      await db.query('COMMIT');
+    });
+    const terminal = new TestTerminal();
+    const res = await enroll(terminal, code);
+    expect([res.status, res.body.code]).toEqual([422, 'ENROLLMENT_EVENT_CLOSED']);
+    // Aucun terminal créé, code non consommé.
+    expect(
+      await ownerRows('SELECT 1 FROM device WHERE serial = $1', [terminal.serial]),
+    ).toHaveLength(0);
+    expect((await codeRow(code)).used_at).toBeNull();
+    // Compté (un essai EVENT_CLOSED) et audité, sans le code ni son empreinte.
+    const attempts = await attemptsFrom(address);
+    expect(attempts.map((a) => [a.result, a.operator_id])).toEqual([['EVENT_CLOSED', w.ops.a]]);
+    const audits = await refusalAudits(address);
+    expect(audits.map((a) => [a.operator_id, a.after.result])).toEqual([[w.ops.a, 'EVENT_CLOSED']]);
+    expect(audits[0]!.text).not.toContain(code.replace(/-/g, ''));
+    expect(audits[0]!.text).not.toContain(hashOf(code).toString('hex'));
+  });
+
   it('ADR-117 : 11e essai d’un code inconnu → 429, même corps que pour un code existant', async () => {
     const unknown = unknownCode();
     const existing = await newCode();

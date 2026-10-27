@@ -32,6 +32,9 @@ export interface BackofficeBody {
   createdBy: string;
 }
 
+const rateLimited = (): ProblemException =>
+  new ProblemException('RATE_LIMITED', { headers: { 'Retry-After': '1' } });
+
 @Controller('__test')
 export class TestRouteController {
   constructor(private readonly tx: TenantTx) {}
@@ -56,8 +59,23 @@ export class TestRouteController {
         throw new Error('panne simulée après écriture');
       }
       if (body.note === 'insolvable') throw new ProblemException('INSUFFICIENT_FUNDS');
+      if (body.note === 'trop-vite') throw rateLimited();
       return { id: rows[0]!.id, note: body.note };
     });
+  }
+
+  /** Même refus `429`, mais déclaré non définitif par la route (`nonFinal`) : clé relâchée, rien enregistré. */
+  @Post('limited')
+  @Idempotent({ scope: 'app:', writes: false, nonFinal: ['RATE_LIMITED'] })
+  limitedNonFinal(): never {
+    throw rateLimited();
+  }
+
+  /** Sans `nonFinal` : le `429` est un refus 4xx comme un autre (enregistré, rejoué). */
+  @Post('limited-final')
+  @Idempotent({ scope: 'app:', writes: false })
+  limitedFinal(): never {
+    throw rateLimited();
   }
 
   @Get('notes/:id')

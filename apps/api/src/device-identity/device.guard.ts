@@ -6,6 +6,9 @@
 // Options (mission 5a, lot WP12) : `allowSuspended` (configuration, battement de cœur, lots hors
 // ligne) ; `nfcOnly` : route réservée à un terminal Android au NFC actif (borne iOS d'OP-N64,
 // ADR-106).
+// Mission 5b (lot WP08) : recopie aussi le contexte enrichi (`serial`, mode, téléphone personnel,
+// commerçant et participation) quand la lecture du processus le fournit ; le mode n'est PAS
+// contrôlé ici (chaque route appelle `assertDeviceMode`).
 import {
   applyDecorators,
   Inject,
@@ -74,6 +77,12 @@ export class DeviceGuard implements CanActivate {
       agreementPublicKey: device.agreementPublicKey,
       os: device.os,
       nfcEnabled: device.nfcEnabled,
+      // Contexte enrichi (mission 5b, T034) : posé par la lecture de l'API publique seulement.
+      ...(device.serial !== undefined ? { serial: device.serial } : {}),
+      ...(device.appMode !== undefined ? { appMode: device.appMode } : {}),
+      ...(device.personalPhone !== undefined ? { personalPhone: device.personalPhone } : {}),
+      ...(device.merchantId !== undefined ? { merchantId: device.merchantId } : {}),
+      ...(device.participationId !== undefined ? { participationId: device.participationId } : {}),
     };
     return true;
   }

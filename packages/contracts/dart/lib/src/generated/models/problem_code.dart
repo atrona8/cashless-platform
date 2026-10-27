@@ -43,12 +43,12 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
 /// - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
 /// - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
-/// - `WALLET_BLOCKED` (422) : portefeuille bloqué ou clos.
+/// - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos.
 /// - `WALLET_LIMIT_EXCEEDED` (422, `CL008`) : plafond de solde dépassé.
 /// - `MONTHLY_TOPUP_LIMIT_EXCEEDED` (422, `CL009`) : plafond mensuel de recharge dépassé.
 /// - `MEDIA_UNKNOWN` (404) : UID ou bracelet inconnu (chemin en ligne ; dans un lot :.
 ///   `MEDIA_NOT_IN_SNAPSHOT`).
-/// - `MEDIA_BLOCKED` (422) : bracelet `SUSPENDED` ou `BLACKLISTED`.
+/// - `MEDIA_BLOCKED` (422, `CL038`) : bracelet `SUSPENDED` ou `BLACKLISTED`.
 /// - `MEDIA_NOT_ACTIVATED` (422) : bracelet `PERSONALIZED` ou `ISSUED`, pas encore rattaché.
 /// - `MEDIA_RETIRED` (422) : bracelet `RETIRED` ou `DESTROYED`.
 /// - `MEDIA_REPLACED` (422) : bracelet remplacé par un autre.
@@ -87,9 +87,10 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `STALE_AUTHORITY_EPOCH` (409, `CL015`) : époque d'autorité périmée ; l'émetteur cesse de débiter.
 /// - `HANDOVER_INVALID_STATE` (409, `CL013`) : action de bascule impossible dans l'état du handover.
 /// - `EDGE_NOT_CAUGHT_UP` (409, `CL014`) : passerelle en retard (filigrane non atteint, `edge_seq` manquants).
-/// - `REVERSAL_NOT_ALLOWED` (422) : transaction non annulable (type, auteur ou terminal différent).
+/// - `REVERSAL_NOT_ALLOWED` (422, `CL036`) : transaction non annulable (type, vendeur ou terminal différent).
 /// - `REVERSAL_WINDOW_EXPIRED` (409) : délai d'annulation dépassé.
-/// - `ALREADY_REVERSED` (409) : transaction déjà annulée.
+/// - `ALREADY_REVERSED` (409, `CL035`) : transaction déjà annulée (contrainte.
+///   `journal_transaction_reverses_once`).
 /// - `OFFLINE_NOT_ALLOWED` (403) : hors ligne désactivé pour ce terminal (seul nom de ce refus).
 /// - `SNAPSHOT_VERSION_UNKNOWN` (409) : version de snapshot inconnue pour ce grand livre ; demander un FULL.
 /// - `BATCH_IN_PROGRESS` (409, `CL010`) : un lot est déjà en cours pour ce terminal ; attendre son résultat.
@@ -102,7 +103,8 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `SEQ_OUT_OF_RANGE` (409, `CL021`) : numéro ou lot au-delà de `contiguous_acked_seq + 10 000`.
 ///   (`max_seq_jump`) ; refusé sans anomalie.
 /// - `PAYMENT_REQUEST_EXPIRED` (409) : demande de paiement QR expirée.
-/// - `PAYMENT_REQUEST_NOT_PENDING` (409) : demande de paiement QR déjà payée, annulée ou expirée.
+/// - `PAYMENT_REQUEST_NOT_PENDING` (409, `CL037`) : demande de paiement QR déjà payée, annulée ou expirée, ou.
+///   jeton inconnu ; réponse unique, sans dire lequel des cas.
 /// - `QR_TOKEN_INVALID` (422) : jeton de QR client inconnu, expiré ou déjà utilisé.
 /// - `PAYMENT_INTENT_INVALID_STATE` (409, V2) : intention dans un état qui ne permet pas l'action.
 /// - `PAYMENT_INTENT_EXPIRED` (409, V2) : intention expirée.
@@ -122,6 +124,16 @@ import 'package:json_annotation/json_annotation.dart';
 ///   remboursement qui n'est pas `REQUESTED` à l'approbation).
 /// - `EVENT_TRANSITION_INVALID` (409, `CL018`) : passage de statut d'événement non prévu (ADR-51).
 /// - `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).
+/// - `ENROLLMENT_EVENT_CLOSED` (422, `CL031`) : création d'un code d'enrôlement ou enrôlement refusé pour un.
+///   événement `CLOSED` ou un point de vente supprimé, ou, dès `CLOSING`, pour les modes `CATALOG_POS` et.
+///   `KEYPAD_TPE` (OP-N74) ; rien n'est écrit.
+/// - `VENDOR_SESSION_INVALID` (409, `CL032`) : session de vendeur absente, close, expirée, d'un autre terminal.
+///   ou autre que celle désignée, ou vendeur désactivé ou bloqué ; ouvrir une nouvelle session.
+/// - `VENDOR_PIN_INVALID` (401, `CL033`) : ouverture de session refusée ; réponse unique (même statut, même.
+///   corps) pour un PIN faux, un vendeur inconnu, bloqué, désactivé ou d'un autre commerçant (NFR-004).
+/// - `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre.
+///   point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se.
+///   resynchroniser.
 ///
 @JsonEnum()
 enum ProblemCode {
@@ -306,7 +318,15 @@ enum ProblemCode {
   @JsonValue('DEVICE_SIGNATURE_INVALID')
   deviceSignatureInvalid('DEVICE_SIGNATURE_INVALID'),
   @JsonValue('DEVICE_SERIAL_IN_USE')
-  deviceSerialInUse('DEVICE_SERIAL_IN_USE');
+  deviceSerialInUse('DEVICE_SERIAL_IN_USE'),
+  @JsonValue('ENROLLMENT_EVENT_CLOSED')
+  enrollmentEventClosed('ENROLLMENT_EVENT_CLOSED'),
+  @JsonValue('VENDOR_SESSION_INVALID')
+  vendorSessionInvalid('VENDOR_SESSION_INVALID'),
+  @JsonValue('VENDOR_PIN_INVALID')
+  vendorPinInvalid('VENDOR_PIN_INVALID'),
+  @JsonValue('SALE_LINES_INVALID')
+  saleLinesInvalid('SALE_LINES_INVALID');
 
   const ProblemCode(this.json);
 

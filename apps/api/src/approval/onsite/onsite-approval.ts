@@ -89,92 +89,147 @@ export class OnsiteApprovalGuard implements CanActivate {
   }
 
   /** Toute anomalie → 403 APPROVAL_INVALID ; la raison exacte n'est écrite que dans le journal serveur. */
-  private async verify(
+  private verify(
     req: Request,
     caller: Principal,
     options: OnsiteApprovalOptions,
   ): Promise<OnsiteApproval> {
     const token = req.header(APPROVAL_TOKEN_HEADER);
     if (!token) throw new ProblemException('APPROVAL_REQUIRED', { status: 403 });
-    const reject = (reason: string): never => {
-      this.logger.warn(`jeton d'approbation refusé (${options.operationId}) : ${reason}`);
-      throw invalid();
-    };
-
-    let verified: VerifiedApprovalToken;
-    try {
-      verified = await this.verifier.verifyApproval(token);
-    } catch (error) {
-      if (error instanceof IdentityError && error.kind === 'UNAVAILABLE')
-        throw new ProblemException('SERVICE_UNAVAILABLE');
-      return reject('signature, émetteur, audience ou durée');
-    }
-    if (verified.act !== options.operationId) return reject(`act ${verified.act}`);
-    if (!sameHash(verified.actHash, requestActHash(req)))
-      return reject('act_hash différent de la requête');
-
-    const person = await this.tx.identify(verified.issuer, verified.subject);
-    if (!person || person.status !== 'ACTIVE') return reject('valideur inconnu ou désactivé');
-    if (person.user_id === caller.userId) return reject('valideur = appelant');
-    const { operatorId } = this.tenant.current(req);
-    if (person.operator_id !== operatorId) return reject("valideur d'un autre prestataire");
-
-    const approver: Principal = {
-      userId: person.user_id,
-      operatorId: person.operator_id,
-      issuer: verified.issuer,
-      subject: verified.subject,
-      assignments: person.assignments.map((a) => ({
-        role: a.role as Role,
-        scopeType: a.scope_type as ScopeType,
-        scopeId: a.scope_id,
-      })),
-    };
-    const target = options.scope?.(req) ?? { type: 'OPERATOR', id: operatorId };
-    const chain = await this.tx.run(operatorId, (client) => resolveChain(client, target));
-    if (!exercisedRole(approver, [options.role], chain))
-      return reject(`valideur sans le rôle ${options.role}`);
-
-    return {
-      approverId: person.user_id,
-      jti: verified.jti,
-      operationId: verified.act,
-      expiresAt: verified.expiresAt,
-    };
+    return verifyOnsiteApproval(
+      { verifier: this.verifier, tx: this.tx, logger: this.logger },
+      {
+        token,
+        operationId: options.operationId,
+        role: options.role,
+        actHash: requestActHash(req),
+        callerUserId: caller.userId,
+        operatorId: () => this.tenant.current(req).operatorId,
+        scope: (operatorId) => options.scope?.(req) ?? { type: 'OPERATOR', id: operatorId },
+      },
+    );
   }
+}
+
+export interface ApprovalVerifierDeps {
+  verifier: IdentityVerifier;
+  tx: TenantTx;
+  logger: Logger;
+}
+
+export interface ApprovalVerification {
+  token: string;
+  /** operationId du contrat, attendu dans le claim `act`. */
+  operationId: string;
+  role: StaffRole;
+  /** Empreinte de la requête exacte (`requestActHash`), comparée au claim `act_hash`. */
+  actHash: string;
+  /** Appelant personne : le valideur ne peut pas être lui. Absent : appelant terminal (aucune personne). */
+  callerUserId?: string;
+  /** Prestataire de l'appelant (celui de la requête ou du terminal) : le valideur doit en être. */
+  operatorId: () => string;
+  /** Portée sur laquelle le valideur doit exercer le rôle (lue après les contrôles de la personne). */
+  scope: (operatorId: string) => ScopeRef | Promise<ScopeRef>;
+}
+
+/**
+ * Vérification COMMUNE du jeton d'approbation, pour la garde d'un appelant personne et pour celle d'un appelant
+ * terminal (`device-onsite-approval.ts`) : signature, émetteur, audience, durée ; `act` ; `act_hash` ; valideur
+ * connu, `ACTIVE`, distinct de l'appelant personne, du même prestataire ; rôle exercé sur la portée. Toute
+ * anomalie → 403 APPROVAL_INVALID (raison au journal seulement) ; identité indisponible → 503.
+ */
+export async function verifyOnsiteApproval(
+  deps: ApprovalVerifierDeps,
+  input: ApprovalVerification,
+): Promise<OnsiteApproval> {
+  const reject = (reason: string): never => {
+    deps.logger.warn(`jeton d'approbation refusé (${input.operationId}) : ${reason}`);
+    throw invalid();
+  };
+
+  let verified: VerifiedApprovalToken;
+  try {
+    verified = await deps.verifier.verifyApproval(input.token);
+  } catch (error) {
+    if (error instanceof IdentityError && error.kind === 'UNAVAILABLE')
+      throw new ProblemException('SERVICE_UNAVAILABLE');
+    return reject('signature, émetteur, audience ou durée');
+  }
+  if (verified.act !== input.operationId) return reject(`act ${verified.act}`);
+  if (!sameHash(verified.actHash, input.actHash)) return reject('act_hash différent de la requête');
+
+  const person = await deps.tx.identify(verified.issuer, verified.subject);
+  if (!person || person.status !== 'ACTIVE') return reject('valideur inconnu ou désactivé');
+  if (input.callerUserId !== undefined && person.user_id === input.callerUserId)
+    return reject('valideur = appelant');
+  const operatorId = input.operatorId();
+  if (person.operator_id !== operatorId) return reject("valideur d'un autre prestataire");
+
+  const approver: Principal = {
+    userId: person.user_id,
+    operatorId: person.operator_id,
+    issuer: verified.issuer,
+    subject: verified.subject,
+    assignments: person.assignments.map((a) => ({
+      role: a.role as Role,
+      scopeType: a.scope_type as ScopeType,
+      scopeId: a.scope_id,
+    })),
+  };
+  const target = await input.scope(operatorId);
+  const chain = await deps.tx.run(operatorId, (client) => resolveChain(client, target));
+  if (!exercisedRole(approver, [input.role], chain))
+    return reject(`valideur sans le rôle ${input.role}`);
+
+  return {
+    approverId: person.user_id,
+    jti: verified.jti,
+    operationId: verified.act,
+    expiresAt: verified.expiresAt,
+  };
 }
 
 /** Route qui exige une seconde personne sur place (`X-Approval-Token`). */
 export const RequiresOnsiteApproval = (options: OnsiteApprovalOptions): MethodDecorator =>
   applyDecorators(SetMetadata(ONSITE, options), UseGuards(OnsiteApprovalGuard));
 
+/** Appelant enregistré avec la consommation : une personne, ou un terminal et sa session de vendeur. */
+export type ApprovalCaller =
+  | { userId: string }
+  | { deviceId: string; vendorSessionId: string; targetId: string };
+
 /**
- * Consomme le jeton vérifié par la garde, dans la transaction métier (`IdempotentTx.run`) ; rend le valideur à
- * transmettre à la base (jamais lu dans le corps). Jeton déjà consommé → 403 APPROVAL_INVALID, travail annulé.
+ * Consommation COMMUNE (`approval_token_use`, usage unique) dans la transaction métier : `ON CONFLICT (jti) DO NOTHING`,
+ * 0 ligne → 403 APPROVAL_INVALID (travail annulé), `23514` (échéance passée) → 403 APPROVAL_INVALID ; audit
+ * `APPROVAL_TOKEN_USED`. `used_at` garde sa valeur par défaut (`clock_timestamp()`).
  */
-export async function consumeOnsiteApproval(
+export async function recordApprovalUse(
   client: TxClient,
   req: Request,
   audit: AuditService,
+  approval: OnsiteApproval,
+  caller: ApprovalCaller,
 ): Promise<string> {
-  const approval = (req as OnsiteRequest).onsiteApproval;
-  if (!approval) throw new Error('consumeOnsiteApproval : route sans @RequiresOnsiteApproval');
-  const caller = requestPrincipal(req);
   const { rows } = await client.query<{ id: string }>(
     "SELECT current_setting('app.operator_id') AS id",
   );
   const operatorId = rows[0]!.id;
+  const byDevice = 'deviceId' in caller;
   let consumed: number;
   try {
     const inserted = await client.query(
-      `INSERT INTO approval_token_use (jti, operator_id, operation_id, approver_id, caller_id, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (jti) DO NOTHING`,
+      `INSERT INTO approval_token_use (jti, operator_id, operation_id, approver_id, caller_id,
+                                      caller_device_id, caller_vendor_session_id, target_id, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (jti) DO NOTHING`,
       [
         approval.jti,
         operatorId,
         approval.operationId,
         approval.approverId,
-        caller.userId,
+        byDevice ? null : caller.userId,
+        byDevice ? caller.deviceId : null,
+        byDevice ? caller.vendorSessionId : null,
+        byDevice ? caller.targetId : null,
         approval.expiresAt,
       ],
     );
@@ -195,4 +250,20 @@ export async function consumeOnsiteApproval(
     after: { operation_id: approval.operationId, approver_id: approval.approverId },
   });
   return approval.approverId;
+}
+
+/**
+ * Consomme le jeton vérifié par la garde, dans la transaction métier (`IdempotentTx.run`) ; rend le valideur à
+ * transmettre à la base (jamais lu dans le corps). Jeton déjà consommé → 403 APPROVAL_INVALID, travail annulé.
+ */
+export async function consumeOnsiteApproval(
+  client: TxClient,
+  req: Request,
+  audit: AuditService,
+): Promise<string> {
+  const approval = (req as OnsiteRequest).onsiteApproval;
+  if (!approval) throw new Error('consumeOnsiteApproval : route sans @RequiresOnsiteApproval');
+  return recordApprovalUse(client, req, audit, approval, {
+    userId: requestPrincipal(req).userId,
+  });
 }

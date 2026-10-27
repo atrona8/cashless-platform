@@ -1,0 +1,319 @@
+{
+  "version": 1,
+  "mission_slug": "terminaux-paiement-en-ligne-01M52QB9",
+  "mission_id": "01M52QB9R4QT2EBDG1H74DGHRT",
+  "mission_branch": "kitty/mission-terminaux-paiement-en-ligne-01M52QB9",
+  "target_branch": "feat/terminaux-paiement-en-ligne",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "apps/api/src/http/messages.en.json",
+        "apps/api/src/http/messages.fr.json",
+        "packages/contracts/dart/**",
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml",
+        "packages/contracts/src/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0031_vendors.sql",
+        "packages/ledger-sql/tests/tests_vendors.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0032_catalog.sql",
+        "packages/ledger-sql/tests/tests_catalog.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0035_enrollment_event_state.sql",
+        "packages/ledger-sql/tests/tests_enrollment_event_state.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0033_payments.sql",
+        "packages/ledger-sql/tests/tests_payments.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/package.json",
+        "apps/api/src/config/config.ts",
+        "apps/api/src/device-identity/**",
+        "apps/api/src/errors/**",
+        "apps/api/src/idempotency/**",
+        "apps/api/src/identity/identity-tenant-context.ts",
+        "apps/api/src/kms/production-guard.ts",
+        "apps/api/src/vendor-pin/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/registry.ts",
+        "apps/api/test/integration/end-to-end/device-auth-matrix.spec.ts",
+        "apps/api/test/support/test-terminal.ts",
+        "apps/api/test/unit/config.spec.ts",
+        "apps/api/test/unit/device-route/**",
+        "apps/api/test/unit/errors/**",
+        "apps/api/test/unit/production-guard.spec.ts",
+        "apps/api/test/unit/vendor-pin/**",
+        "package-lock.json",
+        "tools/dev-db/env.sh",
+        "tools/dev-db/env.test.example"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0034_payment_requests.sql",
+        "packages/ledger-sql/tests/tests_payment_requests.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/gen_tests.py",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/tests/tests_device_rights.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql",
+        "packages/ledger-sql/tests/tests_payment_rights.sql",
+        "packages/ledger-sql/tests_grand_livre_cashless.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/vendors/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/vendors.cases.ts",
+        "apps/api/test/integration/vendors/**",
+        "apps/api/test/unit/vendors/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-h"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/catalog/**",
+        "apps/api/src/devices/config/**",
+        "apps/api/test/integration/catalog/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/catalog.cases.ts",
+        "apps/api/test/unit/catalog/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-h"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/payments/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/payments.cases.ts",
+        "apps/api/test/integration/payments/**",
+        "apps/api/test/unit/payments/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-i",
+        "lane-j"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/action-registry.ts",
+        "apps/api/src/approval/onsite/**",
+        "apps/api/src/reversals/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/reversals.cases.ts",
+        "apps/api/test/integration/reversals/**",
+        "apps/api/test/unit/approval/action-registry.spec.ts",
+        "apps/api/test/unit/reversals/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-k"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "apps/api/src/customer-identity/**",
+        "apps/api/src/payment-requests/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/payment-requests.cases.ts",
+        "apps/api/test/integration/payment-requests/**",
+        "apps/api/test/support/fake-customer.ts",
+        "apps/api/test/unit/payment-requests/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-k"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-n",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        ".github/CI.md",
+        ".github/workflows/ledger-tests.yml",
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "apps/api/test/integration/end-to-end/payment-concurrency.spec.ts",
+        "apps/api/test/integration/end-to-end/payment-isolation.spec.ts",
+        "apps/api/test/integration/end-to-end/payment-journey.spec.ts",
+        "apps/api/test/integration/end-to-end/payment-latency.spec.ts",
+        "apps/api/test/integration/end-to-end/payment-secrets.spec.ts",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-i",
+        "lane-j",
+        "lane-k",
+        "lane-l",
+        "lane-m"
+      ],
+      "parallel_group": 7
+    }
+  ],
+  "computed_at": "2026-10-22T15:09:31.349486+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "e2dc6887f17bf9b0dac079e95e5ddcc8d41642de"
+}

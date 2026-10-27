@@ -195,7 +195,7 @@ describe('configuration servie aux terminaux (T079, T080, T082)', () => {
     });
     // Parties des missions suivantes : forme minimale, rien d'inventé (R-10).
     expect(body.snapshot_keys).toEqual([]);
-    expect(body.catalog).toEqual({ items: [] });
+    expect(body.catalog).toEqual({ version: 0, items: [] }); // point de vente sans catalogue (WP10)
     expect(body.debit_authority).toEqual({
       ledger_id: w.ids.ledgerA,
       authority: 'CENTRAL',

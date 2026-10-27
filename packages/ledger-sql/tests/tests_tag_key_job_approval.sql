@@ -328,13 +328,14 @@ SELECT is((SELECT status FROM approval_request WHERE id = pg_temp.id('209020')),
 -- Borne inversée : identité, clés, certificat, statut et prestataire ne s'écrivent plus que par
 -- les fonctions de 0022 et 0023 (enroll_device, set_device_status) ; aucune insertion directe.
 -- Le test échoue si un droit s'élargit (tests_device_rights.sql prouve les refus par écriture).
+-- Mission 5b, lot WP07 (A12, part d'OP-N69 levée) : affectation et mode (app_mode, event_id,
+-- nfc_enabled, personal_phone, pos_id) retirés à leur tour.
 SELECT is((SELECT array_agg(attname::text ORDER BY attname)
              FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'UPDATE')),
-  ARRAY['app_mode', 'event_id', 'last_seen_at', 'last_snapshot_version', 'next_seq_floor',
-        'nfc_enabled', 'personal_phone', 'pos_id', 'station_name'],
-  'cashless_app : UPDATE sur device colonne par colonne, liste exacte (OP-N63)');
+  ARRAY['last_seen_at', 'last_snapshot_version', 'next_seq_floor', 'station_name'],
+  'cashless_app : UPDATE sur device colonne par colonne, liste exacte (OP-N63 ; A12)');
 SELECT is((SELECT count(*)::int FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'INSERT')), 0,

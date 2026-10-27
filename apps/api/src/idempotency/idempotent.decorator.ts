@@ -1,6 +1,7 @@
 // Marquage d'une route d'écriture idempotente et transaction métier mise à disposition du contrôleur.
 import { createParamDecorator, SetMetadata, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
+import type { ProblemCode } from '@cashless/contracts';
 import type { TxClient } from '../db/tenant-tx';
 
 export const IDEMPOTENT = Symbol('IDEMPOTENT');
@@ -27,6 +28,30 @@ export interface IdempotentOptions {
    * non rejouable » : un nouvel envoi de la même clé reçoit `409`, jamais la réponse d'origine.
    */
   transient?: boolean;
+  /**
+   * Route de terminal à clé `<serial>:<seq>` (mission 5b, A14) : `<serial>` doit être celui du
+   * terminal authentifié, contrôlé avant la réservation (sinon `422 VALIDATION_FAILED`, rien
+   * d'écrit) ; `req.deviceSeq` est posé pour le contrôleur (`requestDeviceSeq`, device-key.ts).
+   * `'when-device'` (route partagée « terminal ou festivalier », garde exclusive A13) : le contrôle n'a lieu que
+   * si la garde a prouvé un terminal ; le chemin du festivalier garde une clé libre. Le chemin terminal reste
+   * entièrement contrôlé : c'est la garde, jamais la requête, qui décide du chemin.
+   */
+  deviceSeq?: true | 'when-device';
+  /**
+   * Champs du corps qui portent un PIN de vendeur (ADR-126) : avant l'empreinte de la requête, chacun est
+   * remplacé par un dérivé argon2id déterministe (sel tiré de la portée et de la clé). La même clé avec un autre
+   * PIN reçoit `IDEMPOTENCY_KEY_REUSED`, jamais un rejeu ; le PIN n'entre jamais en clair dans le HMAC du registre.
+   */
+  pinFields?: readonly string[];
+  /** `Idempotency-Key` au format UUID, contrôlé avant la réservation (sinon `422 VALIDATION_FAILED`, rien d'écrit). */
+  keyUuid?: true | 'without-device';
+  // `'without-device'` : le contrôle ne vaut que pour une requête sans terminal prouvé par la garde (chemin
+  // personne d'une route partagée) ; le chemin terminal garde sa clé `<serial>:<seq>` (`deviceSeq`).
+  /**
+   * Refus de cette route qui ne sont pas définitifs (en plus de `NON_FINAL_CODES`) : la clé est relâchée et rien
+   * n'est enregistré, comme sur un 5xx (ex. `429` d'un essai de PIN simultané : la même clé peut être rejouée).
+   */
+  nonFinal?: readonly ProblemCode[];
 }
 
 /** Route d'écriture : `Idempotency-Key` obligatoire, réponse enregistrée et rejouée (SPECIFICATION §10.2). */

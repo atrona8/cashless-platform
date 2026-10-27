@@ -79,16 +79,15 @@ export class SqlConfigResolver implements ConfigResolver {
     if (!client) throw new Error('SqlConfigResolver : client de la transaction requis');
     const at = query.occurredAt;
     const event = await this.event(client, query);
-    const [platformId, contract, jurisdiction, rules, pitchFees, configVersionId, cascade] =
-      await Promise.all([
-        this.platformParty(client, query.ledgerId),
-        this.contract(client, event),
-        this.jurisdiction(client, event.jurisdiction_id),
-        this.rules(client, event, at),
-        this.pitchFees(client, event.id),
-        this.configVersion(client, event.id, at),
-        this.cascade.resolveForEvent(client, event.id, at),
-      ]);
+    // Requêtes l'une après l'autre : le client `pg` de la transaction n'en exécute qu'une à la fois (lancées
+    // ensemble, elles déclenchent `DeprecationWarning`, retiré dans pg@9).
+    const platformId = await this.platformParty(client, query.ledgerId);
+    const contract = await this.contract(client, event);
+    const jurisdiction = await this.jurisdiction(client, event.jurisdiction_id);
+    const rules = await this.rules(client, event, at);
+    const pitchFees = await this.pitchFees(client, event.id);
+    const configVersionId = await this.configVersion(client, event.id, at);
+    const cascade = await this.cascade.resolveForEvent(client, event.id, at);
 
     const of = (scope: string, beneficiary: string, basis: string) =>
       rules.filter(

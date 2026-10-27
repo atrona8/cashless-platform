@@ -57,6 +57,8 @@ const ATTEMPT_RESULTS: Partial<Record<ProblemCode, string>> = {
   DEVICE_MODE_NOT_ALLOWED: 'MODE_NOT_ALLOWED',
   ATTESTATION_FAILED: 'ATTESTATION_FAILED',
   DEVICE_SERIAL_IN_USE: 'SERIAL_IN_USE',
+  // Mission 5b (ADR-117 ; migration 0035) : refus CL031, compté et audité comme les autres.
+  ENROLLMENT_EVENT_CLOSED: 'EVENT_CLOSED',
 };
 
 export interface EnrollmentResponse {

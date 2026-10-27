@@ -1,0 +1,691 @@
+[
+  {
+    "mission": "fondations-grand-livre-01M4AY8M",
+    "titre_cas_usage": "Fondations du grand livre et de l'API",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Base vérifiée partout",
+        "detail": "En tant que développeur ou agent de mission, je veux lancer les 400 + 64 assertions pgTAP sur mon poste (sans admin ni Docker) et les voir tourner en CI à chaque commit, afin que toute évolution du schéma soit vérifiée."
+      },
+      {
+        "titre": "Calculs identiques à la référence",
+        "detail": "En tant qu'équipe, je veux un constructeur pour chacun des 26 types de transaction et les 19 cas normatifs en tests, afin qu'aucun frais, taxe ou partage ne s'écarte d'une unité du moteur de référence."
+      },
+      {
+        "titre": "Festival rejoué au centime",
+        "detail": "En tant qu'équipe, je veux rejouer les 48 transactions du scénario de référence par les constructeurs jusqu'à CLOSED/LOCKED, avec des soldes exacts après T23 et en fin de clôture, et aucun effet au second rejeu."
+      },
+      {
+        "titre": "Garanties transverses héritées",
+        "detail": "En tant que mission suivante, je veux que chaque route hérite de l'isolation par prestataire, des erreurs problem+json, de l'idempotence, de X-Request-Id et d'Accept-Language."
+      },
+      {
+        "titre": "Types issus du contrat",
+        "detail": "En tant que développeur, je veux des types TypeScript générés depuis openapi.yaml et un contrôle CI qui échoue s'ils sont périmés."
+      }
+    ],
+    "entites_cles": [
+      "Grand livre",
+      "Compte",
+      "Transaction et lignes",
+      "Clé d'idempotence (S21)",
+      "Commande d'écriture",
+      "Prestataire",
+      "Fixture du scénario"
+    ],
+    "resultat_mesurable": "505/505 assertions pgTAP (400 référence + 64 scénario + 41 S21), 19/19 cas normatifs, 48 transactions du scénario identiques ligne à ligne, 0 unité d'écart aux deux points de contrôle, CLOSED/LOCKED, 0 transaction et 0 ligne au second rejeu ; 505 tests Jest ; CI répétée en local en 152 s",
+    "hypotheses": [
+      "Fixture du scénario posée par un rôle de préparation distinct de cashless_app (configuration réelle en mission 3)",
+      "Prestataire fourni par un contexte remplaçable tant que l'authentification réelle (mission 2) n'existe pas",
+      "Bracelets et lots des cautions posés dans la fixture (gestion réelle en mission 4)",
+      "Latence p95 serveur seul mesurée par les missions qui publient les routes métier",
+      "Entrées d'idempotence valables 24 h par défaut, paramétrable"
+    ],
+    "contraintes": [
+      "Seule post_transaction écrit journal_transaction, posting et account_balance",
+      "Aucun fichier .sql généré modifié à la main",
+      "Fonctions internes §13.1 jamais rendues au rôle applicatif",
+      "Aucun flottant pour l'argent",
+      "Windows 10, Node 22, PostgreSQL 17 sans pgTAP, sans Docker ni droits admin",
+      "Aucune route ajoutée à openapi.yaml ; rien de V2"
+    ],
+    "cas_limites": [
+      "Moitié négative −100,5 arrondie à −101",
+      "Taxe à 0 % : aucune ligne de taxe",
+      "Plusieurs frais au même bénéficiaire et au même taux : taxe extraite une fois",
+      "Vente hors ligne au-delà du solde : part non couverte en S-ATTENTE",
+      "Grand livre en clôture ou verrouillé : EVENT_CLOSING / LEDGER_LOCKED",
+      "SQLSTATE inconnu : INTERNAL_ERROR sans texte SQL",
+      "Requête interrompue : clé IN_PROGRESS reprise après expiration du bail",
+      "Connexion du pool réutilisée par un autre prestataire : aucun contexte ne fuit"
+    ],
+    "fonctionnel": [
+      "Monorepo npm workspaces et migrations depuis le schéma de référence",
+      "Outillage pgTAP local et CI PostgreSQL 17",
+      "Connexion cashless_app avec set_config transactionnel",
+      "Erreurs problem+json traduites par SQLSTATE",
+      "Magasin d'idempotence applicatif S21",
+      "X-Request-Id, Accept-Language, route de santé",
+      "26 constructeurs, 19 cas normatifs, matrice statut → types acceptés",
+      "Rejeu du scénario de référence et second rejeu sans effet",
+      "Types TypeScript générés depuis openapi.yaml"
+    ],
+    "non_fonctionnel": [
+      "0 unité d'écart comptable",
+      "0 fuite de texte SQL ; 0 objet d'un autre prestataire visible",
+      "Boucle locale pgTAP < 5 min ; CI < 15 min",
+      "Durées du rôle applicatif (60 s / 30 s / 10 s) vérifiées"
+    ],
+    "source": "kitty-specs/fondations-grand-livre-01M4AY8M/spec.md"
+  },
+  {
+    "mission": "identite-roles-double-validation-01M4DNDN",
+    "titre_cas_usage": "Identité, rôles et double validation",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Agir dans son seul prestataire",
+        "detail": "En tant que personne du personnel connectée par le serveur d'identité, je veux que l'API me reconnaisse, déduise mon prestataire et mes rôles de la plateforme et ne m'expose que les données de mon prestataire."
+      },
+      {
+        "titre": "Gérer personnes et rôles, tout tracé",
+        "detail": "En tant qu'administrateur, je veux créer et désactiver des personnes et leur attribuer ou retirer un rôle sur une portée, chaque action étant inscrite au journal d'audit."
+      },
+      {
+        "titre": "Action à deux au back-office",
+        "detail": "En tant qu'auteur, je veux qu'une action sensible crée une demande figée (202) qu'une seconde personne au bon rôle approuve (exécution unique) ou refuse avec une note."
+      },
+      {
+        "titre": "Validation sur place au guichet",
+        "detail": "En tant que caissier, je veux qu'une seconde personne présente valide une opération sensible par un jeton d'approbation à usage unique lié à cette requête."
+      },
+      {
+        "titre": "Réponse enregistrée avec le travail",
+        "detail": "En tant qu'équipe, je veux qu'une route d'écriture idempotente qui écrit hors de la transaction idempotente soit détectée par un test (RISK-2)."
+      }
+    ],
+    "entites_cles": [
+      "Personne (app_user)",
+      "Attribution de rôle",
+      "Journal d'audit chaîné",
+      "Scellement d'audit",
+      "Demande d'approbation",
+      "Jeton d'approbation",
+      "Utilisation de jeton d'approbation (approval_token_use)"
+    ],
+    "resultat_mesurable": "100 % des requêtes sans identité valide refusées ; 0 accès inter-prestataires ; 0 action à deux exécutée par une seule personne ; 100 % des actions d'administration et étapes d'action à deux journalisées ; 100 % des altérations simulées du journal détectées",
+    "hypotheses": [
+      "Produit de serveur d'identité choisi plus tard (OIDC standard)",
+      "Personnes créées par un administrateur à partir de leur identifiant OIDC",
+      "Festivaliers et vendeurs hors mission",
+      "Actions métier à deux branchées par les missions suivantes"
+    ],
+    "contraintes": [
+      "Valideur jamais pris dans la requête (ADR-74)",
+      "Contraintes valideur ≠ auteur de la base intactes",
+      "Aucun mot de passe dans l'API",
+      "Migrations avec RLS forcée et pgTAP",
+      "Aucune fonction interne rendue au rôle applicatif"
+    ],
+    "cas_limites": [
+      "Personne désactivée avec un jeton encore valide",
+      "Retrait du dernier PLATFORM_ADMIN refusé par la base (aucune route n'atteint un PLATFORM_ADMIN dans cette mission)",
+      "Auto-attribution refusée",
+      "Approbation d'une demande expirée : EXPIRED validé puis 409",
+      "Même jeton d'approbation en double requête simultanée : un seul succès",
+      "Clés publiques du serveur d'identité injoignables : 503"
+    ],
+    "fonctionnel": [
+      "Authentification OIDC",
+      "Rôles par portée",
+      "Gestion des personnes et des rôles",
+      "Amorçage du premier administrateur, puis création par POST /platform-admins",
+      "Journal d'audit chaîné et scellé",
+      "Demandes d'approbation et exécution unique",
+      "Jeton d'approbation sur place",
+      "Garde de la transaction idempotente"
+    ],
+    "non_fonctionnel": [
+      "Isolation entre prestataires",
+      "Vérification d'un jeton ≤ 5 ms au p95",
+      "Détection de 100 % des altérations simulées du journal",
+      "Non-régression de la mission 1"
+    ],
+    "source": "kitty-specs/identite-roles-double-validation-01M4DNDN/spec.md"
+  },
+  {
+    "mission": "configuration-parties-evenements-01M4GCJ9",
+    "titre_cas_usage": "Configuration, parties et événements",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Ouvrir un prestataire",
+        "detail": "En tant qu'administrateur de la plateforme, je crée un profil de législation (valeurs provisoires signalées), un prestataire et son contrat PLATFORM_OPERATOR ; un changement de plafond réglementaire passe à deux."
+      },
+      {
+        "titre": "Ouvrir un organisateur",
+        "detail": "En tant qu'administrateur de prestataire, je crée un organisateur, son contrat OPERATOR_ORGANIZER, ma configuration (plafonds maximaux) et mes règles de frais ; une nouvelle version de contrat passe à deux."
+      },
+      {
+        "titre": "Créer et régler un événement",
+        "detail": "En tant qu'administrateur d'organisateur, je crée un événement (détenteur des fonds obligatoire) dont le grand livre et les comptes sont créés aussitôt ; un réglage hors bornes est refusé avec la règle citée."
+      },
+      {
+        "titre": "Accueillir des commerçants",
+        "detail": "En tant qu'administrateur d'organisateur, j'inscris un commerçant (INTERNAL/EXTERNAL, droit de place et son mode, commission), son compte commerçant est créé, puis ses points de vente."
+      },
+      {
+        "titre": "Faire avancer l'événement",
+        "detail": "En tant qu'administrateur, je lis les conditions du passage de statut et leur état ; LIVE passe à deux ; les autres passages par set_event_status, refus nommant la condition."
+      },
+      {
+        "titre": "Modifier pendant LIVE",
+        "detail": "En tant qu'organisateur ou prestataire, je modifie un réglage ou une règle de frais d'un événement LIVE par une demande à deux ; la nouvelle version ne vaut que pour la suite."
+      }
+    ],
+    "entites_cles": [
+      "Partie",
+      "Profil de législation",
+      "Contrat",
+      "Version de configuration",
+      "Règle de frais",
+      "Événement",
+      "Participation",
+      "Point de vente",
+      "Grand livre"
+    ],
+    "resultat_mesurable": "Hiérarchie complète construite par l'API avec une seule approbation pour LIVE ; 100 % des réglages hors bornes refusés avec la règle citée ; 0 fuite entre deux prestataires ; scénario de référence rejoué sur une configuration construite par l'API ; 0 passage de statut hors route dédiée — constaté le 12/10/2026 : 13/13 WP approuvés, 48 opérations servies, 947 assertions pgTAP et 873 tests Jest verts, 48 transactions du scénario rejouées à l'identique",
+    "hypotheses": [
+      "Contrat applicable = contrat OPERATOR_ORGANIZER désigné à la création de l'événement",
+      "Émetteur porté par le grand livre",
+      "Maximums du prestataire = réglages de sa configuration",
+      "Commission = règle de frais PARTICIPATION ; droit de place porté par la participation",
+      "Conditions de clôture dépendant de missions futures listées comme externes",
+      "Rôle de base plateforme créé par post-roles.sql",
+      "Frais du PSP = règle de frais EVENT à bénéficiaire PSP:<canal> (ADR-82)"
+    ],
+    "contraintes": [
+      "Statut seulement par set_event_status",
+      "Rien ne se modifie, tout se versionne",
+      "Détenteur des fonds obligatoire, hors cascade",
+      "Migrations + RLS + pgTAP par contrainte",
+      "Prestataire déduit de l'identité",
+      "Valeurs de §17.2 jamais présentées comme validées",
+      "Pas d'écran, de PSP, de catalogue, de hors ligne, de wallet_scope ORGANIZER",
+      "Contrat d'API d'abord, types générés",
+      "Un réglage n'est modifiable que par le rôle que le catalogue désigne (ADR-81)"
+    ],
+    "cas_limites": [
+      "Devise inconnue",
+      "ends_at avant starts_at",
+      "refund_deadline absente : fin + 30 jours provisoire",
+      "Nouvelle version du profil pendant LIVE",
+      "THIRD_PARTY sans tiers désigné",
+      "Commerçant d'un autre prestataire",
+      "Versions concurrentes : 409",
+      "Approbation LIVE après changement de configuration : FAILED",
+      "Rejeu d'une création : même réponse",
+      "Participation sur un événement CLOSED"
+    ],
+    "fonctionnel": [
+      "Rôle de base distinct pour la plateforme",
+      "Profils de législation versionnés",
+      "Valeurs provisoires signalées",
+      "Prestataires, organisateurs, commerçants",
+      "Contrats versionnés",
+      "Règles de frais des quatre flux",
+      "Événements et réglages par qui de droit",
+      "Grand livre et comptes à la création",
+      "Participations et points de vente",
+      "Cascade versionnée et configuration résolue",
+      "Bornes de la législation à l'enregistrement",
+      "Version de configuration pour les écritures",
+      "Conditions de passage visibles et passage par set_event_status",
+      "Double validation des actions de configuration",
+      "Audit",
+      "Contrat d'API et types générés"
+    ],
+    "non_fonctionnel": [
+      "Isolation à deux prestataires sur chaque route",
+      "Rôle plateforme cloisonné",
+      "p95 ≤ 200 ms (création d'événement ≤ 500 ms)",
+      "Atomicité : 0 grand livre ou participation orphelin",
+      "Messages de refus FR/EN citant la règle",
+      "Suites existantes vertes"
+    ],
+    "source": "kitty-specs/configuration-parties-evenements-01M4GCJ9/spec.md"
+  },
+  {
+    "mission": "bracelets-nfc-01M4TD3W",
+    "titre_cas_usage": "Bracelets NFC (format, clés, lots, cycle de vie)",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "Deux bibliothèques, un seul format",
+        "detail": "Un développeur du serveur ou d'une app encode et décode un bracelet avec la bibliothèque de son langage, et obtient exactement les octets du kit."
+      },
+      {
+        "titre": "L'organisateur commande et suit un lot",
+        "detail": "Un administrateur d'organisateur crée un lot de bracelets, reçoit le fichier de commande avec les codes à imprimer, puis fait avancer le lot jusqu'à sa mise en service et consulte son inventaire."
+      },
+      {
+        "titre": "Le poste de personnalisation enregistre un bracelet",
+        "detail": "Le poste de personnalisation, qui vient d'écrire une puce, enregistre le bracelet auprès du serveur ; le serveur calcule son mot de passe par le KMS, le stocke chiffré et associe le code imprimé."
+      },
+      {
+        "titre": "Le terminal lit un bracelet",
+        "detail": "Un terminal authentifié demande le mot de passe d'un bracelet, puis enregistre sa lecture ; le serveur dit si le bracelet peut servir."
+      },
+      {
+        "titre": "Le guichet active un bracelet et encaisse la caution",
+        "detail": "Un agent de guichet active un bracelet pour un festivalier : le bracelet est rattaché à un portefeuille, préchargé si le lot le prévoit, et la caution est prise."
+      },
+      {
+        "titre": "Le guichet de retour : caution, restitution, remplacement",
+        "detail": "Un agent rend la caution, rend les espèces dues, enregistre la restitution, remet en stock un bracelet rendu d'un lot réattribuable ; ou remplace un bracelet abîmé ou perdu par un neuf. Livré sans enchaînement des étapes par le serveur (ADR-91, à trancher) ; espèces refusées (409) tant qu'aucune caisse n'est ouverte (ADR-89)."
+      },
+      {
+        "titre": "Le festivalier rattache son bracelet avec le code imprimé",
+        "detail": "Un festivalier connecté saisit ou scanne le code imprimé sur son bracelet pour le rattacher à son compte (un bracelet jamais activé est activé depuis l'app si l'événement l'autorise) ; un bracelet approvisionné exige une confirmation au guichet, bracelet en main ; sans compte, il consulte seulement son solde (devise, solde, statut, 10 derniers mouvements)."
+      },
+      {
+        "titre": "Les clés vivent et se retirent sous contrôle",
+        "detail": "Un administrateur de prestataire demande la création d'un index de clé, la rotation de la clé de données ou le retrait d'une clé dédiée, validés par une seconde personne et exécutés par le processus qui a le droit ; un contrôle quotidien recalcule un échantillon de mots de passe stockés et signale un écart par le journal d'audit."
+      },
+      {
+        "titre": "Sortir un bracelet de la liste noire, à deux",
+        "detail": "Après enquête, un superviseur demande la sortie de liste noire d'un bracelet ; une seconde personne valide."
+      },
+      {
+        "titre": "Clore un lot",
+        "detail": "En fin d'événement, l'administrateur clôt un lot : les bracelets en circulation partent en fin de vie et les cautions non rendues sont acquises."
+      }
+    ],
+    "entites_cles": [
+      "Bracelet",
+      "Lot",
+      "Clé de bracelet",
+      "Clé de données",
+      "Lecture",
+      "Rattachement",
+      "Code de rattachement",
+      "Demande en attente",
+      "Essai de code",
+      "Anomalie",
+      "Travail de clé",
+      "Compte rendu du contrôle"
+    ],
+    "resultat_mesurable": "Deux bibliothèques conformes à 100 % des vecteurs du kit ; parcours complet d'un bracelet par l'API sans intervention en base ; 100 % des lectures copiées mises en liste noire ; aucun secret en clair au repos ni dans les journaux ; 0 fuite entre deux prestataires ; aucune action de clé ni sortie de liste noire avec une seule personne ; aucun écart de sécurité non consigné — mesuré à la répétition de CI du 14/10/2026 : vecteurs du kit reproduits en TypeScript et en Dart ; mot de passe p95 15 ms, lecture p95 23 ms, activation p95 49 ms sur 100 000 bracelets ; écart de 0,2 ms entre code inconnu et code utilisé (seuil 20 ms) ; 1 267 assertions pgTAP et 1 223 tests Jest verts",
+    "hypotheses": [
+      "Le poste de personnalisation est tenu par une personne du prestataire qui porte le rôle dédié `PERSONALIZER` (décision du porteur au plan)",
+      "Le serveur calcule le mot de passe à l'enregistrement et le rend au poste chiffré pour une clé à usage unique du poste, jamais en clair (décision du porteur au plan)",
+      "La validité de la signature d'originalité est vérifiée par le poste (clé publique NXP) et déclarée au serveur",
+      "Les routes de terminal et de festivalier déjà décrites au contrat sont servies, avec trois corrections : consultation anonyme réduite (décision n° 11), remplacement qui exige terminal et personne, restitution sans enchaînement (ADR-91)",
+      "Le contrôle quotidien est livré comme une opération déclenchable et testable",
+      "L'alerte d'un blocage d'essais ou d'un écart au contrôle quotidien passe par le journal d'audit et le code de sortie, sans nouvelle sorte d'anomalie (ADR-92)",
+      "Le fichier de commande est remis une seule fois à l'administrateur",
+      "La création d'un compte festivalier est hors mission : le faux festivalier fournit un identifiant de compte",
+      "Les plafonds réglementaires du portefeuille (§6.3) ne sont pas exercés ici au-delà de ce que font déjà les fonctions de la base",
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1"
+    ],
+    "contraintes": [
+      "Les fonctions de la base font les règles",
+      "Fichiers générés du kit intouchables",
+      "Vecteurs du kit comme vérité",
+      "Pas d'adaptateur AWS",
+      "Identités réelles hors mission",
+      "Pas de lecture NFC ni d'outil de poste",
+      "Pas de paiement ni de recharge",
+      "Contrat d'abord",
+      "Aucun écran",
+      "Bracelets pour le cashless seulement",
+      "Écart de sécurité soumis au porteur",
+      "Dette de sécurité nommée",
+      "Aucun compte de caisse avant la mission des caisses (ADR-89)"
+    ],
+    "cas_limites": [
+      "Deux postes enregistrent en même temps le même UID",
+      "Enregistrement d'un bracelet au-delà de la quantité du lot",
+      "Mot de passe demandé pour un index dont la clé est retirée",
+      "Lecture embarquée dans une opération qui échoue",
+      "Lecture d'un bracelet dont le lot est suspendu (stock volé)",
+      "Activation rejouée avec la même clé d'idempotence",
+      "Activation d'un bracelet d'un lot non réservé sans préciser l'événement",
+      "Caution due puis crédit payé reçu",
+      "Remplacement dont l'ancien bracelet a une caution due",
+      "Demande en attente expirée",
+      "Quatrième demande en attente sur un même bracelet",
+      "Code de rattachement saisi avec un caractère hors alphabet (`0`, `1`, `I`, `O`)",
+      "Fichier de correspondance dont un UID est inconnu du lot",
+      "Rotation de la clé de données interrompue",
+      "KMS indisponible pendant une personnalisation ou une demande de mot de passe",
+      "Retrait d'une clé dédiée dont la désactivation dans le KMS échoue",
+      "Sortie de liste noire d'un bracelet remplacé entre-temps",
+      "Fichier de commande des codes perdu en route (OP-N48)",
+      "Lecture qui a confirmé un rattachement réutilisée par une écriture dans la fenêtre (OP-N50)",
+      "Clé du service de clés désactivée pendant le contrôle quotidien"
+    ],
+    "fonctionnel": [
+      "Format B 1.0",
+      "Message de dérivation",
+      "Chiffrement du mot de passe",
+      "Code de rattachement",
+      "Deux implémentations conformes",
+      "Service de gestion des clés substituable",
+      "Clés de bracelet",
+      "Rotation de la clé de données",
+      "Retrait d'une clé dédiée",
+      "Contrôle quotidien",
+      "Lots",
+      "Cycle de vie d'un lot",
+      "Clôture d'un lot et rattrapages",
+      "Inventaire d'un lot",
+      "Codes générés à la commande",
+      "Enregistrement d'un bracelet personnalisé",
+      "Association du code à la puce",
+      "Mot de passe d'un bracelet pour un terminal",
+      "Lecture d'un bracelet",
+      "Effets de sécurité durables",
+      "Activation",
+      "Caution",
+      "Prise d'une caution due",
+      "Consultation d'un bracelet",
+      "Restitution et réattribution",
+      "Remise en stock d'un bracelet réattribuable (route ajoutée)",
+      "Espèces dues",
+      "Remplacement",
+      "Perte et bracelet retrouvé",
+      "Liste noire et sortie à deux",
+      "Rattachement par code",
+      "Activation depuis l'app",
+      "Limites d'essais",
+      "Confirmation au guichet",
+      "Consultation anonyme du solde",
+      "Identité du terminal et du festivalier substituable",
+      "Audit et historique",
+      "Contrat d'API et types générés"
+    ],
+    "non_fonctionnel": [
+      "Conformité aux vecteurs",
+      "Aucun secret en clair au repos",
+      "Durée de vie d'un secret en mémoire",
+      "Isolation entre prestataires",
+      "Séparation des droits sur les clés",
+      "Latence",
+      "Pas d'énumération",
+      "Traitements par tranches",
+      "Aucun faux en production",
+      "Tests existants verts"
+    ],
+    "source": "kitty-specs/bracelets-nfc-01M4TD3W/spec.md"
+  },
+  {
+    "mission": "identite-enrolement-terminaux-01M52R6H",
+    "titre_cas_usage": "Identité et enrôlement des terminaux",
+    "statut": "mergée",
+    "user_stories": [
+      {
+        "titre": "L'administrateur émet un code d'enrôlement",
+        "detail": "Un `OPERATOR_ADMIN` ou un `ORGANIZER_ADMIN` crée, depuis le back-office, un code d'enrôlement à usage unique, lié obligatoirement à un événement (FR-001 ; la story de `spec.md` dit encore « éventuellement »), éventuellement à un point de vente et à un mode d'application, en indiquant obligatoirement s'il s'agit d'un téléphone personnel, et l'affiche en QR ; le code n'est rendu qu'une fois."
+      },
+      {
+        "titre": "Un terminal s'enrôle",
+        "detail": "À la première ouverture, l'app scanne le code, puis crée sa clé de signature et sa clé d'accord dans le matériel sécurisé (l'attestation Android lie chaque clé au code), et s'enregistre avec ses clés publiques, son attestation et une demande de certificat. Elle reçoit son certificat client, son jeton d'appareil, son jeton de rafraîchissement et le premier numéro de séquence à utiliser."
+      },
+      {
+        "titre": "Le serveur reconnaît chaque requête du terminal",
+        "detail": "Toute route appelée par un terminal (configuration, battement de cœur, lecture d'un bracelet, mot de passe d'un bracelet, et toutes celles des missions suivantes) n'est servie que si la requête porte un certificat client valide, un jeton d'appareil valide lié à la clé du terminal, et une signature valide du contenu de la requête par cette clé. Le faux d'identité de la mission 4 n'est plus branché hors des tests."
+      },
+      {
+        "titre": "Le terminal renouvelle son jeton",
+        "detail": "Le terminal échange son jeton de rafraîchissement, sur une connexion à certificat client et avec une preuve signée de possession de sa clé, contre un nouveau jeton d'appareil et un nouveau jeton de rafraîchissement ; une seule représentation dans les 60 s est tolérée (OP-N65), toute autre réutilisation révoque la famille."
+      },
+      {
+        "titre": "L'administrateur suspend, réactive ou révoque un terminal",
+        "detail": "Un `OPERATOR_ADMIN` (portée prestataire pour voir tout le prestataire) ou un `ORGANIZER_ADMIN` liste les terminaux de son périmètre, en consulte un, le suspend, le réactive, ou le révoque définitivement (perte, vol, appareil compromis) ; le terminal révoqué reçoit `403 DEVICE_REVOKED` à sa requête suivante."
+      },
+      {
+        "titre": "Le terminal reçoit sa configuration et envoie son battement de cœur",
+        "detail": "Le terminal lit sa configuration (affectation, mode, réglages de fonctionnement de l'événement, politique hors ligne effective, numéro de séquence plancher, heure serveur) et envoie régulièrement un battement de cœur qui met à jour sa dernière présence."
+      },
+      {
+        "titre": "Les dettes de sécurité de la base sont levées",
+        "detail": "Le responsable de la sécurité obtient la fermeture, chacune avec son test, des dettes héritées de la mission 4 : OP-N59, OP-N44, OP-N50, OP-N54, OP-N62 et OP-N63 ; OP-N42, OP-N70 et OP-N71 sont levées en plus."
+      }
+    ],
+    "entites_cles": [
+      "Terminal",
+      "Code d'enrôlement",
+      "Jeton de rafraîchissement",
+      "Certificat client",
+      "Nonce de requête",
+      "Historique des statuts du terminal",
+      "Essai d'enrôlement",
+      "Ligne d'audit"
+    ],
+    "resultat_mesurable": "Parcours complet d'un terminal (code, enrôlement Android 12+ et iPhone, configuration, présence, lecture, rafraîchissement, suspension, révocation, ré-enrôlement) par l'API sans intervention en base ; 100 % des tentatives d'usurpation refusées (preuve manquante, fausse, d'un autre terminal ou rejouée) ; révocation effective dès la requête suivante ; OP-N42, OP-N59 et OP-N63 closes avec leur test ; aucun code ni jeton en clair ; 0 fuite entre deux prestataires. Mesuré le 21/10/2026 : pgTAP 2072, Jest 1704 sans échec ; surcoût des trois preuves p95 17,3 ms (seuil 20), enrôlement p95 61 ms, configuration 44 ms, battement 46 ms.",
+    "hypotheses": [
+      "A1 — Les routes back-office des terminaux (liste, consultation, suspension, réactivation, révocation) sont ajoutées au contrat avec les conventions existantes (confirmé par le porteur le 19/10/2026).",
+      "A2 — Suspension, réactivation et révocation sont faites par une seule personne habilitée (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN` du périmètre) : la révocation protège, et la réactivation ne rend que les droits d'un terminal déjà enrôlé et attesté (confirmé par le porteur le 19/10/2026).",
+      "A6 — Android 12 au moins (clé d'accord matérielle et attestée), décision du porteur au plan du 19/10/2026 ; le `serial` est unique par prestataire (ADR-109) ; voir `research.md` R-05, R-11.",
+      "A3 — L'attestation est vérifiée à l'enrôlement seulement ; un contrôle d'intégrité périodique n'est pas dans cette mission (confirmé par le porteur le 19/10/2026).",
+      "A4 — La clé de l'autorité des terminaux est derrière un port, avec un faux pour les tests seulement ; en production, le démarrage est refusé tant que l'adaptateur réel manque, comme pour le KMS (OP-N11) (confirmé par le porteur le 19/10/2026). Livré : mTLS vérifié dans les processus ; autorité et signataire des jetons en faux seulement, dette OP-N73 levée en mission 7 (ADR-119).",
+      "A5 — Le terminal de test (clés, attestations et certificats de test) sert aux tests et est refusé en production (confirmé par le porteur le 19/10/2026).",
+      "Les parties de `DeviceConfig` qui dépendent de missions ultérieures (catalogue, clés publiques du snapshot, autorité de débit et époque) sont servies sous la forme minimale que le schéma du contrat permet ; leur contenu réel arrive avec ces missions.",
+      "Le format de la signature d'une requête (en-têtes, contenu signé, horodatage, nonce) et la fenêtre de rejeu sont arrêtés au plan et décrits au contrat.",
+      "Les durées de vie (code : 24 h par défaut ; jeton d'appareil : 15 min ; jeton de rafraîchissement ; certificat client) et leurs bornes sont arrêtées au plan, dans les valeurs du contrat quand il en donne.",
+      "Les racines de confiance des attestations (Google pour Android, Apple pour App Attest) et l'identité attendue de l'app (empreinte du certificat de signature, identifiant d'app) sont des réglages de déploiement.",
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1 ; les erreurs `DEVICE_*`, `ENROLLMENT_*` et `ATTESTATION_FAILED` du contrat sont utilisées."
+    ],
+    "contraintes": [
+      "Les fonctions de la base font les règles",
+      "Fichiers générés du kit intouchables",
+      "Trois preuves exigées",
+      "Pas d'adaptateur AWS (autorité et signataire en faux, OP-N73)",
+      "Pas d'encaissement",
+      "Pas de hors ligne ni d'application",
+      "Pas de MDM",
+      "Contrat d'abord",
+      "Aucun écran",
+      "Pas d'`INSERT` sur `tag_key_job`",
+      "Écart de sécurité soumis au porteur",
+      "Dette de sécurité nommée"
+    ],
+    "cas_limites": [
+      "Code d'enrôlement présenté deux fois en même temps",
+      "Code qui fuit (QR photographié)",
+      "Enrôlement refusé pour attestation",
+      "Code lié à un événement clos ou annulé, ou à un point de vente supprimé entre l'émission et l'enrôlement",
+      "Code lié à un mode non permis pour l'appareil (`TOPUP_DESK` ou NFC sur iOS ; recharge, caution ou hors ligne sur téléphone personnel)",
+      "Clé publique de signature ou d'accord mal formée (pas un point P-256 valide)",
+      "Demande de certificat (CSR) non signée par la clé de signature annoncée",
+      "Requête signée rejouée dans la fenêtre de validité",
+      "Horloge du terminal décalée",
+      "Révocation pendant qu'une requête du terminal est en cours",
+      "Terminal suspendu",
+      "Réutilisation d'un jeton de rafraîchissement par un voleur après que le vrai terminal l'a déjà utilisé",
+      "Certificat client valide mais jeton d'un autre terminal du même prestataire",
+      "Rafale d'enrôlements simultanés avec un code fuité (limites atomiques, une seule trace au-delà)",
+      "Terminal révoqué qui présente des preuves valides (`403 DEVICE_REVOKED`, rien écrit)",
+      "Même clé d'idempotence sur un autre terminal ou par une autre personne (`409`)",
+      "Requête signée pour une autre autorité (passerelle, autre déploiement)"
+    ],
+    "fonctionnel": [
+      "Code d'enrôlement",
+      "Refus du mode `PAIRED_TPE`",
+      "Enrôlement",
+      "Consommation atomique du code",
+      "Attestation Android",
+      "Attestation iOS",
+      "Unicité du `serial` et ré-enrôlement",
+      "Clé d'accord écrite à l'enrôlement seulement",
+      "Certificat client des terminaux",
+      "Jeton d'appareil lié",
+      "Rafraîchissement à rotation",
+      "Trois preuves sur chaque requête",
+      "Identité réelle derrière le port existant",
+      "Statut lu à chaque requête",
+      "Suspension et réactivation",
+      "Révocation",
+      "Liste et consultation des terminaux",
+      "Configuration servie",
+      "Battement de cœur",
+      "Fonctions privilégiées protégées (OP-N59)",
+      "Droits d'exécution rôle par rôle (OP-N44)",
+      "Lecture de rattachement non réutilisable (OP-N50)",
+      "Empreinte de requête à clé (OP-N54)",
+      "Retrait de clé et demandes périmées (OP-N62)",
+      "Audit",
+      "Contrat d'API et types générés",
+      "Idempotence liée au chemin concret et à l'appelant (ADR-116)",
+      "Audit de tous les refus d'enrôlement (ADR-117)"
+    ],
+    "non_fonctionnel": [
+      "Aucun faux en production",
+      "Aucune preuve seule ne suffit",
+      "Effet immédiat de la révocation",
+      "Pas de rejeu",
+      "Aucun secret en clair au repos",
+      "Pas d'énumération des codes",
+      "Isolation entre prestataires",
+      "Concurrence",
+      "Latence",
+      "Dettes levées prouvées",
+      "Tests existants verts"
+    ],
+    "source": "kitty-specs/identite-enrolement-terminaux-01M52R6H/spec.md"
+  },
+  {
+    "mission": "terminaux-paiement-en-ligne-01M52QB9",
+    "titre_cas_usage": "Encaissement en ligne",
+    "statut": "planifiée",
+    "user_stories": [
+      {
+        "titre": "Le commerçant gère ses vendeurs",
+        "detail": "Un `MERCHANT_ADMIN` crée les vendeurs de son commerce, leur donne un code PIN, les désactive et débloque un vendeur bloqué en lui donnant un nouveau PIN."
+      },
+      {
+        "titre": "Le vendeur ouvre sa session sur le terminal",
+        "detail": "Le vendeur saisit son PIN sur un terminal de son commerce. Le terminal l'envoie une fois au serveur, qui le vérifie et ouvre une session de vendeur liée à ce terminal."
+      },
+      {
+        "titre": "Le vendeur encaisse un paiement par bracelet en un seul aller-retour",
+        "detail": "Le vendeur compose une vente au catalogue (`CATALOG_POS`) ou saisit un montant (`KEYPAD_TPE`). Le festivalier présente son bracelet ; le terminal envoie la lecture et la vente dans une seule requête. Le serveur enregistre le passage, écrit la vente et consomme le passage ensemble : tout ou rien."
+      },
+      {
+        "titre": "Le vendeur encaisse en deux temps",
+        "detail": "Le terminal lit d'abord le bracelet (`POST /taps`), affiche le solde, puis paie avec le `tap_id` reçu."
+      },
+      {
+        "titre": "Le vendeur annule une vente",
+        "detail": "Le vendeur qui a fait une vente l'annule depuis le terminal d'origine, dans la fenêtre d'annulation de l'événement (15 min par défaut). Au-delà, ou pour un autre vendeur, un `SUPERVISOR` annule."
+      },
+      {
+        "titre": "Le festivalier paie par QR",
+        "detail": "Avec un QR commerçant, le terminal affiche un QR (montant, jeton à usage unique, 60 s) que le festivalier scanne et paie dans l'app. Avec un QR client, l'app affiche un QR à usage unique (60 s) que le terminal scanne et présente au paiement."
+      },
+      {
+        "titre": "L'agent du guichet identifie un festivalier — reportée à la mission 10",
+        "detail": "**Reportée à la mission 10** (décision du porteur au plan, 22/10/2026, `DM-01M5HQE0V4PC23YBJKEZTEQVET`) (reportée à la mission 10)."
+      },
+      {
+        "titre": "Un terminal n'est plus enrôlé sur un événement clos",
+        "detail": "Hérité de la mission 5a (OP-N74, ADR-120) : la création d'un code d'enrôlement et l'enrôlement relisent l'état de l'événement et du point de vente."
+      }
+    ],
+    "entites_cles": [
+      "Vendeur",
+      "Session de vendeur",
+      "Catégorie de catalogue",
+      "Article",
+      "Ligne de vente",
+      "Vente",
+      "Annulation",
+      "Demande de paiement",
+      "Identification",
+      "Ligne d'audit"
+    ],
+    "resultat_mesurable": "un parcours complet (créer un vendeur et le catalogue, ouvrir une session, payer par bracelet en un aller-retour et en deux temps, payer par QR commerçant et par QR client, annuler) se déroule par l'API sans intervention directe en base.",
+    "hypotheses": [
+      "Un vendeur appartient à un commerçant et peut ouvrir une session sur tout terminal affecté à un point de vente de ce commerçant ; un terminal porte une seule session de vendeur à la fois.",
+      "Les routes des vendeurs, des sessions de vendeur et du catalogue sont ajoutées au contrat avec les conventions existantes ; leur forme exacte est arrêtée au plan.",
+      "Le prix accepté pour une ligne est celui du catalogue dans la configuration servie au terminal (`config_id`) ou le prix actuel ; le moyen de retrouver le catalogue d'une configuration servie est arrêté au plan.",
+      "La vérification du PIN (argon2id) est assez coûteuse pour ralentir des essais en masse et assez rapide pour une ouverture de session au comptoir ; ses paramètres sont arrêtés au plan.",
+      "Le paiement par l'app d'un QR commerçant est appelé avec l'authentification du festivalier (compte au numéro vérifié) ; la confirmation par PIN ou biométrie dans l'app relève de la mission 10.",
+      "Les frais et commissions d'une vente sont calculés par les règles `REALTIME` existantes ; aucune nouvelle règle de frais.",
+      "Les codes `CL` de la base sont traduits en erreurs normalisées par le mécanisme de la mission 1, avec les codes du contrat."
+    ],
+    "contraintes": [
+      "Les fonctions de la base font les règles",
+      "Fichiers générés du kit intouchables",
+      "Trois preuves sur les routes de terminal",
+      "Contrat d'abord",
+      "Pas de hors ligne",
+      "Pas d'application ni d'écran",
+      "Pas d'intention de paiement",
+      "Pas d'identification au guichet",
+      "Écart de sécurité soumis au porteur",
+      "Dette de sécurité nommée",
+      "Révocation d'une identification à deux"
+    ],
+    "cas_limites": [
+      "Deux paiements envoyés en même temps avec la même lecture",
+      "Deux annulations simultanées de la même vente",
+      "Le même jeton QR payé deux fois en même temps",
+      "Changement de prix d'un article pendant qu'un terminal a encore l'ancienne configuration",
+      "Article désactivé, d'un autre point de vente ou inconnu dans les lignes",
+      "Somme des lignes différente du montant",
+      "Session de vendeur expirée au milieu d'une vente",
+      "PIN essayé sur plusieurs terminaux pour contourner le blocage",
+      "Terminal suspendu avec une session de vendeur ouverte",
+      "Grand livre en clôture (`CLOSING`)",
+      "Autorité de débit à la passerelle ou en cours de bascule",
+      "Téléphone personnel",
+      "Plafond de solde d'un portefeuille non identifié",
+      "Identification d'un client dont la pièce expire"
+    ],
+    "fonctionnel": [
+      "Vendeurs d'un commerçant",
+      "Code PIN du vendeur",
+      "Session de vendeur",
+      "Blocage après échecs",
+      "Fin d'une session",
+      "Attribution par le serveur",
+      "Catalogue d'un point de vente",
+      "Catalogue servi au terminal",
+      "Paiement par bracelet en un aller-retour",
+      "Paiement en deux temps",
+      "Lignes de vente",
+      "Prix vérifiés",
+      "Montant saisi",
+      "Refus d'un paiement",
+      "Moyens selon le terminal",
+      "Annulation",
+      "Annulation par un responsable",
+      "QR commerçant",
+      "QR client",
+      "Jetons QR",
+      "Identification au guichet (reportée à la mission 10)",
+      "Révocation d'une identification à deux (reportée à la mission 10)",
+      "Niveau d'identification appliqué (reportée à la mission 10)",
+      "Enrôlement et état de l'événement (OP-N74)",
+      "Consultation d'un paiement",
+      "Audit",
+      "Contrat et types"
+    ],
+    "non_fonctionnel": [
+      "Latence du paiement",
+      "Aucun PIN en clair",
+      "Blocage du PIN",
+      "Pas d'énumération des vendeurs",
+      "Un passage, une vente",
+      "Tout ou rien",
+      "Isolation",
+      "Aucun jeton QR en clair",
+      "Pas de faux en production",
+      "Tests existants verts"
+    ],
+    "source": "kitty-specs/terminaux-paiement-en-ligne-01M52QB9/spec.md"
+  }
+]

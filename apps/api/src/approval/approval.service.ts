@@ -15,7 +15,11 @@ import { isSqlError } from '../errors/sqlstate-map';
 import { CommittedProblem } from '../idempotency/committed-problem';
 import type { Principal, Role } from '../identity/principal';
 import { exercisedRole, resolveChain } from '../identity/scope-resolver';
-import { ApprovalActionRegistry, type ApprovalActionDefinition } from './action-registry';
+import {
+  ApprovalActionRegistry,
+  requiredRoles,
+  type ApprovalActionDefinition,
+} from './action-registry';
 import {
   approvalRequestDto,
   type ApprovalRequestDto,
@@ -317,7 +321,7 @@ export class ApprovalService {
     targetId: string | null,
   ): Promise<Role | undefined> {
     const chain = await resolveChain(client, definition.scopeOf(payload, targetId));
-    return exercisedRole(principal, [definition.requiredRole], chain);
+    return exercisedRole(principal, requiredRoles(definition), chain);
   }
 
   private async canSee(

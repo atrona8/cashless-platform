@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2031" height="1178" viewBox="0 0 2031 1178">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="960.0,236 960.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,294.4 952.0,294.4" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,294.4 932.6931836384118,304.94736184929246 932.6931836384118,283.8526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="427.29999999999995" y="257.4" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="810.0" y="345.5111111111111" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="966.0,456.6222222222222 1727.0,456.6222222222222" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,456.6222222222222 1707.6931836384117,467.1695840715147 1707.6931836384117,446.0748603729297" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1212.7" y="419.6222222222222" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,537.7333333333333 968.0,537.7333333333333" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="968.0,537.7333333333333 987.3068163615882,527.1859714840409 987.3068163615882,548.2806951826258" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="1254.3" y="500.73333333333335" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="810.0" y="588.8444444444444" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="966.0,699.9555555555555 1727.0,699.9555555555555" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,699.9555555555555 1707.6931836384117,710.502917404848 1707.6931836384117,689.4081937062631" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1181.5" y="662.9555555555555" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="954.0,781.0666666666667 193.0,781.0666666666667" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,781.0666666666667 212.3068163615882,770.5193048173743 212.3068163615882,791.6140285159591" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="453.3" y="744.0666666666667" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="954.0,862.1777777777778 193.0,862.1777777777778" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,862.1777777777778 212.3068163615882,851.6304159284854 212.3068163615882,872.7251396270702" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="453.3" y="825.1777777777778" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1585.0" y="913.288888888889" width="300" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Session de vendeur</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">L’essai est compté avant la vérification ; 5 échecs bloquent jusqu’au commerçant</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="572.5" y="275.67499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vendeur et PIN (3 preuves)</text>
+<text x="34.0" y="297.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="960.0" y="377.7861111111111" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Un essai à la fois (429 sinon)</text>
+<text x="34.0" y="378.56111111111113" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1347.5" y="437.8972222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Compter l’essai (validé)</text>
+<text x="34.0" y="459.6722222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1347.5" y="519.0083333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Empreinte du PIN</text>
+<text x="34.0" y="540.7833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="960.0" y="621.1194444444444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vérifier (argon2id + secret)</text>
+<text x="34.0" y="621.8944444444444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="1347.5" y="681.2305555555555" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Ouvrir la session (revérifiée)</text>
+<text x="34.0" y="703.0055555555555" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="572.5" y="762.3416666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Session ouverte, 12 h</text>
+<text x="34.0" y="784.1166666666667" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="572.5" y="843.4527777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">PIN faux : 401 neutre</text>
+<text x="34.0" y="865.2277777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="1735.0" y="945.563888888889" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">5e essai : vendeur bloqué</text>
+<text x="34.0" y="946.338888888889" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Même 401 pour PIN faux, vendeur inconnu, bloqué ou d’un autre commerçant ; PIN mal formé : 422. Limite consignée : la base croit l’API (OP-N76).</text>
+</g>
+</svg>

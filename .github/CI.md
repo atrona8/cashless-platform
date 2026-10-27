@@ -69,6 +69,36 @@ Sous Windows (Git Bash), ne pas `source tools/dev-db/env.sh` dans le shell qui l
 la variable `PERL5LIB` traverse `cmd.exe`, revient sous la forme `C:/…`, et Perl la coupe sur `:` (`pg_prove` ne
 trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
 
+## Mission terminaux-paiement-en-ligne (lot WP14, 2026-10-26)
+
+Étape ajoutée au workflow, **après** la passe parallèle (`SKIP_LATENCY=1 npm test`) et les autres mesures, aucune
+étape existante retirée ni rendue facultative :
+
+| Étape | Commande | Ce qu'elle garantit |
+|---|---|---|
+| Latence du paiement, NFR-001 | `npm test -w @cashless/api -- --runInBand end-to-end/payment-latency` | 200 paiements par bracelet en un aller-retour, **en série**, serveur seul (temps mesuré autour de `PaymentsService.create`) : p95 ≤ 200 ms, p99 ≤ 500 ms ; suite seule, sans nouvel essai ; valeurs mesurées écrites sur la sortie |
+
+Les autres preuves de la mission (`payment-journey`, `payment-isolation`, `payment-secrets`, `payment-concurrency`,
+dans `apps/api/test/integration/end-to-end/`) tournent dans la passe parallèle générale (aucune mesure de temps).
+Déjà prises par les étapes existantes, sans modification : les nouvelles suites pgTAP (`tests_vendors.sql`,
+`tests_catalog.sql`, `tests_payments.sql`, `tests_payment_requests.sql`, `tests_payment_rights.sql`,
+`tests_enrollment_event_state.sql`) par `test:pgtap` (qui lit `tests/*.sql`), et les suites générées par
+`check:generated`. Variables de la mission : `VENDOR_PIN_SECRET` et `VENDOR_PIN_IDEMPOTENCY_SECRET` (32 octets au
+moins, distinctes, ADR-125 et ADR-126) ont des valeurs de test dans `config.ts` hors production et dans
+`tools/dev-db/env.sh` ; **en production, les deux sont exigées par tous les processus** (OP-N77) et à poser dans les
+manifestes de déploiement (aucun manifeste dans le dépôt à ce jour) ; la rotation de la seconde n'invalide que les
+empreintes d'idempotence des routes à PIN.
+
+Répétition locale (macOS, PostgreSQL 17 en Docker, base propre `cashless_wp14`, branche de la lane WP14, lanes WP01 à
+WP13 fusionnées) :
+
+| Passe | Résultat |
+|---|---|
+| Lint, types | 0 erreur |
+| pgTAP (`test:pgtap`) | 39 fichiers, **2931 assertions**, PASS |
+| Jest après `reset-db` (`SKIP_LATENCY=1 npm test`) | API : 136 suites, **2195 tests** (2186 verts, 7 ignorés dont la latence ; `claim-code-order.spec.ts` et `migrate-lock.spec.ts` instables connus du poste, verts seuls : 20/20) ; `contracts` et `tag-format` : 39 tests verts |
+| Latence du paiement (suite seule) | p50 61,5 ms, p95 67,4 ms, p99 79,1 ms (1re passe) ; p95 81,1 ms, p99 96,6 ms (passe finale) |
+
 ## Répétition locale du 2026-10-14 (mission bracelets-nfc, WP20)
 
 macOS (Intel), PostgreSQL 17 en Docker (colima, `127.0.0.1:5433`) avec pgTAP, `pg_prove` 3.37 (CPAN), Node 24.17,

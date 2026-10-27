@@ -1078,6 +1078,7 @@ Réglages de fonctionnement des terminaux (ADR-61) : colonnes de `event`, borné
 - En-tête `Idempotency-Key` **obligatoire** sur toute opération qui écrit (`IDEMPOTENCY_KEY_REQUIRED` sinon).
 - Terminaux : clé `<serial>:<seq>` (§9.5), écrite telle quelle dans `journal_transaction.idempotency_key`. Exception : la clé `Idempotency-Key` d'un lot (`POST /offline-batches`, `POST /edge/sync-batches`) est son `batch_id` ; chaque opération du lot garde sa propre clé. Webhooks PSP : `<psp>:<identifiant du paiement>` (par exemple `wave:WV-88121`). Autres clients : clé libre (UUID recommandé), que le serveur préfixe (`app:`, `pos:<client_id>:`, `bo:`).
 - Même clé et même contenu : réponse d'origine, en-tête `Idempotency-Replayed: true`. Même clé et contenu différent : `IDEMPOTENCY_KEY_REUSED`. Requête encore en cours : `IDEMPOTENCY_KEY_IN_PROGRESS`.
+- Une réponse d'erreur 4xx est enregistrée et rejouée à l'identique, sauf les refus transitoires de la liste fermée `DEBIT_AUTHORITY_EDGE` et `DEBIT_AUTHORITY_MOVING` : rien n'est écrit, la clé est relâchée et un nouvel essai avec la même clé s'exécute (ADR-124). Une erreur 5xx relâche aussi la clé.
 - Les opérations qui n'écrivent pas au grand livre utilisent un magasin d'idempotence applicatif (§14.2).
 
 ### 10.3 Authentification

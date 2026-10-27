@@ -74,6 +74,7 @@ const _$ApprovalActionEnumMap = {
   ApprovalAction.tagKeyCreate: 'TAG_KEY_CREATE',
   ApprovalAction.tagDekRotate: 'TAG_DEK_ROTATE',
   ApprovalAction.tagKeyRetire: 'TAG_KEY_RETIRE',
+  ApprovalAction.saleReversal: 'SALE_REVERSAL',
 };
 
 const _$ApprovalRequestStatusEnumMap = {
@@ -178,4 +179,8 @@ const _$ProblemCodeEnumMap = {
   ProblemCode.cardDailyLimit: 'CARD_DAILY_LIMIT',
   ProblemCode.deviceSignatureInvalid: 'DEVICE_SIGNATURE_INVALID',
   ProblemCode.deviceSerialInUse: 'DEVICE_SERIAL_IN_USE',
+  ProblemCode.enrollmentEventClosed: 'ENROLLMENT_EVENT_CLOSED',
+  ProblemCode.vendorSessionInvalid: 'VENDOR_SESSION_INVALID',
+  ProblemCode.vendorPinInvalid: 'VENDOR_PIN_INVALID',
+  ProblemCode.saleLinesInvalid: 'SALE_LINES_INVALID',
 };

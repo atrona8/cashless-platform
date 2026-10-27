@@ -3,7 +3,8 @@
 // avant son COMMIT (transaction 2), rejoue les réponses enregistrées, enregistre les erreurs 4xx et relâche la clé
 // sur une erreur 5xx. Deux extensions (mission identite-roles, WP07) : `CommittedProblem` levé dans la transaction
 // métier valide le travail fait et enregistre le problème comme réponse ; une route `writes` (défaut) qui rend sa
-// valeur sans `IdempotentTx.run` échoue en 500 (RISK-2).
+// valeur sans `IdempotentTx.run` échoue en 500 (RISK-2). Mission 5b (WP08) : clé `<serial>:<seq>`
+// d'une route de terminal (`deviceSeq`) et refus non définitifs relâchés (device-key.ts).
 import {
   Inject,
   Injectable,
@@ -24,7 +25,10 @@ import {
   resolveProblem,
 } from '../errors/problem.filter';
 import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
+import { VendorPinHasher } from '../vendor-pin/vendor-pin.hasher';
+import { requestDevice, type DeviceRequest } from '../device-identity/device-identity.port';
 import { CommittedProblem } from './committed-problem';
+import { NON_FINAL_CODES, parseDeviceKey, type DeviceSeqRequest } from './device-key';
 import {
   IdempotencyRepository,
   LeaseLostError,
@@ -41,6 +45,7 @@ export const REPLAYED_HEADER = 'Idempotency-Replayed';
 export const ROUTE_WITHOUT_TX = 'IDEMPOTENT_ROUTE_WITHOUT_TX';
 /** Marqueur rendu par la transaction métier quand un `CommittedProblem` y a été enregistré. */
 const COMMITTED = Symbol('COMMITTED');
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** En-têtes rejoués (liste blanche du data-model). */
 const REPLAYED_HEADERS = ['Location', 'Content-Type'] as const;
 
@@ -72,6 +77,21 @@ export class IdempotencyInterceptor implements NestInterceptor {
         detail: 'Idempotency-Key : 255 caractères au plus.',
       });
     }
+    const uuidKey =
+      options.keyUuid === true ||
+      (options.keyUuid === 'without-device' && (req as DeviceRequest).device === undefined);
+    if (uuidKey && !UUID_PATTERN.test(key)) {
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Idempotency-Key : UUID attendu.',
+      });
+    }
+    // Route de terminal à clé `<serial>:<seq>` : contrôlée avant toute écriture (A14).
+    if (
+      options.deviceSeq === true ||
+      (options.deviceSeq === 'when-device' && (req as DeviceRequest).device !== undefined)
+    )
+      (req as DeviceSeqRequest).deviceSeq = parseDeviceKey(key, requestDevice(req));
     // Niveau de la clé : décidé par l'option de la route ; le prestataire n'est pas résolu au niveau plateforme.
     const platform =
       options.platform === true || (options.platform === 'principal' && isPlatformPerson(req));
@@ -84,7 +104,9 @@ export class IdempotencyInterceptor implements NestInterceptor {
       req.method,
       concretePath(req),
       requestCaller(req),
-      req.body,
+      options.pinFields?.length
+        ? await this.pinHasher().idempotencyBody(req.body, options.pinFields, scope, key)
+        : req.body,
       this.config.idempotencyHmacKey,
     );
     const outcome = await this.repository.reserve(operatorId, scope, key, hash);
@@ -154,7 +176,9 @@ export class IdempotencyInterceptor implements NestInterceptor {
         // Ce qui part est exactement ce qui est enregistré (et sera rejoué), sauf pour une route `transient`.
         return send(res, live ?? recorded);
       }),
-      catchError((error: unknown) => from(this.onError(error, req, res, reservation, recorded))),
+      catchError((error: unknown) =>
+        from(this.onError(error, req, res, reservation, recorded, options)),
+      ),
     );
   }
 
@@ -164,6 +188,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
     res: Response,
     reservation: Reservation,
     recorded: StoredResponse | undefined,
+    options: IdempotentOptions,
   ): Promise<unknown> {
     // Problème validé avec le travail métier : déjà journalisé et enregistré, il part tel quel.
     if (error instanceof CommittedProblem && recorded) return send(res, recorded);
@@ -174,7 +199,13 @@ export class IdempotencyInterceptor implements NestInterceptor {
       return send(res, recorded);
     }
     if (error instanceof LeaseLostError) throw error;
-    if (problem.status >= 500) {
+    // 5xx, ou refus non définitif du contrat (`DEBIT_AUTHORITY_MOVING`, `DEBIT_AUTHORITY_EDGE`,
+    // liste fermée, A14) : la clé est relâchée, rien n'est enregistré ; le client rejoue la clé.
+    if (
+      problem.status >= 500 ||
+      NON_FINAL_CODES.has(problem.code) ||
+      options.nonFinal?.includes(problem.code)
+    ) {
       await this.repository.release(reservation).catch((releaseError: unknown) => {
         logProblem(releaseError, { code: 'INTERNAL_ERROR', status: 500 }, req);
       });
@@ -211,6 +242,11 @@ export class IdempotencyInterceptor implements NestInterceptor {
       body: problemBody(problem, req, this.config),
       headers: { ...problem.headers, 'Content-Type': PROBLEM_CONTENT_TYPE },
     };
+  }
+
+  private pinHasher(): VendorPinHasher {
+    // Fourni par VendorPinModule (ADR-126) : résolu sans dépendance de module, comme le contexte du prestataire.
+    return this.moduleRef.get(VendorPinHasher, { strict: false });
   }
 
   private tenant(): TenantContextProvider {

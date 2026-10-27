@@ -15,8 +15,9 @@ class PaymentRequestsRequestBody {
   const PaymentRequestsRequestBody({
     required this.amount,
     required this.currency,
-    this.lines,
     this.ttlSeconds = 60,
+    this.vendorSessionId,
+    this.lines,
   });
 
   factory PaymentRequestsRequestBody.fromJson(Map<String, Object?> json) =>
@@ -24,6 +25,12 @@ class PaymentRequestsRequestBody {
 
   final Amount amount;
   final Currency currency;
+
+  /// Session de vendeur ouverte sur ce terminal (`openVendorSession`). Requise : absente, close,.
+  /// expirée ou autre que la session ouverte du terminal → `409 VENDOR_SESSION_INVALID`.
+  ///
+  @JsonKey(name: 'vendor_session_id')
+  final String? vendorSessionId;
   @JsonKey(name: 'ttl_seconds')
   final int ttlSeconds;
   final List<SaleLine>? lines;

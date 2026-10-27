@@ -47,13 +47,18 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N66 | Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (> 5 s avec ~100 000 bracelets) ; antérieur à la mission 5a | Non | À évaluer | Porteur du projet (point ouvert du 19/10/2026, hors mission 5a) |
 | OP-N67 | Attestation Android : `attestationApplicationId` lu dans la liste logicielle de Key Attestation (seul champ ; écart accepté au plan, ADR-110) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
-| OP-N69 | `cashless_app` modifie directement neuf colonnes de `device`, dont le plancher de numérotation (`next_seq_floor`), la dernière présence et l'affectation (`event_id`, `pos_id`) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
+| OP-N69 | `cashless_app` modifie directement quatre colonnes de `device` (neuf jusqu'au 26/10/2026) : le plancher de numérotation (`next_seq_floor`), la dernière présence, le nom de station et la version de snapshot ; affectation et mode retirés par la mission 5b (WP07) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
 | OP-N70 | Suites de la mission 4 sous le faux d'identité du terminal — **levé** le 21/10/2026 par WP18 de la mission 5a (chaque route de terminal en HTTPS réel, test de couverture : `device-auth-matrix.spec.ts`) | Non | Non | — |
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
 | OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 7 (hors ligne), avec OP-N41 : décision du porteur du 21/10/2026 |
-| OP-N74 | Enrôlement accepté sur un code lié à un événement clos (`CLOSED`) ou à un point de vente supprimé depuis l'émission : la base ne relit pas leur état (cas limite de la spécification de la mission 5a non livré ; ADR-120) | Non | Non (le terminal enrôlé n'encaisse rien avant la mission 5b) | Mission 5b (paiement en ligne) : décision du porteur du 21/10/2026 |
+| OP-N74 | Enrôlement sur un code lié à un événement clos ou à un point de vente supprimé — **levé** le 26/10/2026 par la mission 5b (migration `0035_enrollment_event_state.sql` : `create_device_enrollment_code` et `enroll_device` refusent `CLOSED` pour tout mode et, dès `CLOSING`, `CATALOG_POS`/`KEYPAD_TPE`, et un point de vente absent de l'événement du code ; `tests_enrollment_event_state.sql`, ADR-120) | Non | Non | — |
+| OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
+| OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET` depuis le 26/10) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
+| OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
+| OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
+| OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -122,7 +127,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 |---|---|---|---|---|---|
 | OP-N41 | Le service de clés est un faux (`apps/api/src/kms/fake-kms.ts`) : ses clés se dérivent d'une graine écrite dans le code | Tous les mots de passe de bracelets calculables par quiconque lit le code | Le faux refuse de se construire en production et la garde de démarrage refuse un processus qui le porte (`production-guard.spec.ts`) | **Mission 7** (hors ligne) : adaptateur AWS KMS, une fois la région et les comptes arrêtés (OP-N11) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Les ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort` ont une implémentation AWS, avec un rôle IAM par processus (§3.2) |
 | OP-N42 | L'identité du terminal est un faux qui croit des en-têtes ; aucune requête de terminal n'est signée | Quiconque se dit terminal obtient le mot de passe d'un bracelet et enregistre des lectures ; rejeu et falsification d'une lecture | Même garde de production ; le terminal annoncé est toujours relu en base (statut, prestataire) | Mission 5 (terminaux) | `DeviceIdentityPort` vérifie le jeton d'appareil, le mTLS et la signature de chaque requête ; le faux n'est plus câblé hors des tests |
-| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests |
+| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests |
 | OP-N44 | Les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin` héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence (même limite que `cashless_platform`, ADR-80) | Un processus des clés compromis peut appeler ces fonctions pour un prestataire dont il pose l'identifiant — ni plus ni moins que le rôle de l'API publique | Aucun droit direct sur les tables du grand livre (`tests_media_roles.sql`) ; chaque fonction commence par `assert_tenant` | **Mission 5**, avec OP-N59 : modification du générateur de la suite de référence du kit (`gen_tests.py`) (confirmé par le porteur le 15/10/2026 ; ADR-101) | La suite de référence n'exige plus `EXECUTE` pour `PUBLIC` ; les droits d'exécution sont accordés rôle par rôle |
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
@@ -600,6 +605,12 @@ WP07 ; consigné, levé par la mission 7 ; décision du porteur du 20/10/2026 ; 
 - **Constat.** Après WP07, `cashless_app` n'insère plus dans `device` et ne touche plus au statut ni aux clés, mais
   garde `UPDATE` sur neuf colonnes : `app_mode`, `nfc_enabled`, `event_id`, `pos_id`, `station_name`,
   `last_snapshot_version`, `last_seen_at`, `next_seq_floor`, `personal_phone` (`post-roles.sql`, section 5).
+- **Réduit le 26/10/2026 (mission 5b, WP07 ; constaté à la revue post-fusion du 27/10/2026).** `post-roles.sql`
+  (section 6) ne laisse plus à `cashless_app` que `UPDATE (station_name, last_snapshot_version, last_seen_at,
+  next_seq_floor)`. `event_id`, `pos_id`, `app_mode`, `nfc_enabled` et `personal_phone` ne sont plus modifiables
+  directement : le déplacement d'un terminal et le contournement de la règle du téléphone personnel décrits
+  ci-dessous sont fermés (renforcement). Preuve : `tests_device_rights.sql` §1. Restent ouverts : le plancher de
+  numérotation et la dernière présence (condition de levée inchangée, mission 7).
 - **Risque.** Une session de l'API compromise peut déplacer un terminal vers un autre événement ou point de vente
   (`event_id`, `pos_id`), abaisser ou relever le plancher de ses numéros de séquence (`next_seq_floor` : rejeu ou refus
   de lots hors ligne), ou falsifier sa dernière présence. Elle peut aussi réécrire `personal_phone` et `app_mode`, et
@@ -701,7 +712,19 @@ décision du porteur du 21/10/2026 ; ADR-119.**
 ### OP-N74 — Enrôlement sur un événement clos ou un point de vente supprimé (21 octobre 2026)
 
 Relevé par la revue post-fusion de la mission 5a (DRIFT-1). **Écart à la spécification, consigné ; bloque la production :
-non ; levé par la mission 5b ; décision du porteur du 21/10/2026 ; ADR-120.**
+non ; décision du porteur du 21/10/2026 ; ADR-120. LEVÉ le 26/10/2026 par la mission 5b (WP06, vérifié par WP14).**
+
+- **Levée.** Migration `0035_enrollment_event_state.sql` (décision du porteur `DM-01M5HKDXSTFR5JS88GZ4B2EA5J`) :
+  `create_device_enrollment_code` relit l'événement sous `FOR SHARE` et refuse (`CL031`) `CLOSED` pour tout mode et,
+  dès `CLOSING`, les modes `CATALOG_POS` et `KEYPAD_TPE` (`TOPUP_DESK` permis jusqu'avant `CLOSED`) ; `enroll_device`
+  refuse de même d'après l'événement du code et contrôle que le point de vente existe, appartient au prestataire et à
+  l'événement du code (« supprimé » = absent, aucune suppression n'existe en base). Aucun terminal, code, jeton ni
+  historique écrit sur un refus ; l'essai `EVENT_CLOSED` et l'audit sont écrits hors de la transaction annulée (ADR-117).
+  Preuves : `packages/ledger-sql/tests/tests_enrollment_event_state.sql` (matrice états × modes : « émission : aucun
+  code écrit pour les 16 refus », « émission : les 12 codes permis sont écrits », « enrôlement : aucun code refusé
+  consommé, aucun terminal créé », « point de vente rattaché à un autre événement que celui du code : CL031 »,
+  verrou `FOR SHARE` prouvé par `pgrowlocks`).
+- **Historique du constat (21/10/2026).** Ce qui suit décrit l'écart tel qu'il était avant la levée.
 
 - **Constat.** La spécification de la mission 5a (cas limites) exige le refus d'un enrôlement dont le code vise un
   événement clos ou annulé, ou un point de vente supprimé entre l'émission et l'enrôlement.
@@ -731,6 +754,81 @@ la mission 5a (SEC-1). **Bloque la production : non ; levée par la mission 7 ; 
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_purge_window.sql` (aucune purge
   ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h) et les listes figées de
   `tests_execute_grants.sql`.
+
+### OP-N77 — Secrets de l'API exigés par tous les processus (23 octobre 2026)
+
+Constaté par la relecture de WP08 de la mission 5b (constat 2) ; défaut antérieur à la mission. ADR-125.
+**Bloque la production : non ; levée : mission 13 (recette V1).**
+
+- **Constat.** `loadConfig` est commun à tous les processus ; en production, les trois secrets HMAC de l'API sont
+  obligatoires dans l'environnement des processus des clés, d'administration des clés et de personnalisation.
+- **Risque.** Un processus compromis qui n'a pas besoin de ces secrets les obtient quand même (empreintes des PIN,
+  codes d'enrôlement, registre d'idempotence) : surface d'exposition plus large que nécessaire.
+- **Condition de levée.** Chaque processus n'exige et ne reçoit que ses propres secrets ; test qui le prouve par
+  processus.
+- **Test qui échoue si la limite s'élargit** : `apps/api/test/unit/config.spec.ts` (liste fermée des secrets
+  obligatoires en production).
+
+### OP-N78 — Registre des essais de PIN sans purge (26 octobre 2026)
+
+Constaté par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la production : non ; levée : mission 13
+(recette V1), décision du porteur du 26/10/2026.**
+
+- **Constat.** `vendor_pin_check` (migration `0031_vendors.sql`) garde chaque essai de PIN ; aucune fonction ni aucun
+  travailleur ne retire les lignes hors de leur fenêtre (contrairement aux nonces et aux essais d'enrôlement,
+  OP-N75).
+- **Risque.** Croissance sans limite de la table (volume, durée des sauvegardes, coût des requêtes de comptage des
+  essais) ; aucune donnée secrète n'y est stockée (pas de PIN), donc pas de risque de confidentialité.
+- **Condition de levée.** Fonction de purge bornée à la fenêtre de comptage des essais (aucun essai encore compté ne
+  disparaît), exécutée par un rôle dédié (même décision qu'OP-N75) ; test pgTAP qui le prouve.
+
+### OP-N79 — Session de vendeur : `vendor_id` hors de la clé composite (26 octobre 2026)
+
+Proposé par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la production : non ; durcissement reporté par le
+porteur le 26/10/2026 ; levée proposée : mission 11, avec OP-N76.**
+
+- **Constat.** La référence de `sale_attribution` vers `vendor_session` ne porte pas `vendor_id` : le schéma n'impose
+  pas que le vendeur d'une vente soit celui de la session désignée. Seule la fonction d'écriture le garantit.
+- **Risque.** Une écriture directe dans `sale_attribution` pourrait attribuer une vente à un autre vendeur que celui
+  de la session. Ce chemin est fermé depuis WP07 (`REVOKE INSERT, UPDATE ON sale_attribution FROM cashless_app`) ;
+  il reste une seule barrière au lieu de deux.
+- **Condition de levée.** Clé composite `(vendor_session_id, vendor_id)` référencée par `sale_attribution` (retouche de
+  `0033_payments.sql` ou nouvelle migration), avec test pgTAP d'une attribution incohérente refusée.
+- **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_payment_rights.sql` (WP07 :
+  `cashless_app` n'a ni `INSERT` ni `UPDATE` sur `sale_attribution`).
+
+### OP-N80 — Pool du verrou d'essai de PIN : dimensionnement non mesuré (26 octobre 2026)
+
+Report de la relecture WP09 cycle 3 (mission 5b), traité par WP14 : **consigné, non mesuré en charge** ; report à la
+mission 13 accepté par le porteur le 26/10/2026 (ADR-130). **Bloque la production : non** (disponibilité, aucun droit élargi).
+
+- **Constat.** `SessionLock` tient une connexion de son pool dédié pendant toute la requête d'ouverture de session
+  (vérification argon2 comprise, ~60 ms). Si plus de `poolSize` ouvertures arrivent ensemble, `pool.connect` attend
+  10 s puis la requête échoue en `500` (pas de `429`).
+- **Risque.** Un pic d'ouvertures de session (ouverture de l'événement : tous les terminaux ensemble) dégrade
+  l'ouverture ; aucune écriture partielle (rien n'est consommé avant le verrou).
+- **Condition de levée.** Mesure en charge à la recette V1 (mission 13), puis taille du pool ajustée ou refus `429`
+  immédiat à la saturation ; test qui échoue si la saturation rend un `500`.
+- **Test.** Aucun à ce jour : le comportement n'a pas été mesuré par la mission 5b (preuve de la concurrence des
+  essais : `vendor-sessions.spec.ts`, « essais simultanés depuis 5 terminaux »).
+
+### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
+
+Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;
+ADR-121. **Bloque la production : non ; levée avec OP-N56 (mission 11).** Code livré par la mission 5b (WP07, migration
+`0031_vendors.sql`) ; borne vérifiée par WP14.
+
+- **Constat.** argon2id se calcule dans l'API : `begin_vendor_pin_check` rend l'empreinte du PIN à `cashless_app`, et
+  `open_vendor_session` ouvre la session sur la foi de la transaction de l'API (la base ne refait pas la vérification).
+- **Risque.** Une connexion `cashless_app` compromise lit les empreintes (inutiles sans `VENDOR_PIN_SECRET`, gardé hors
+  base) et ouvre une session pour n'importe quel vendeur sans PIN (en consommant un essai, audité). Même classe
+  qu'OP-N56 : une telle connexion peut déjà écrire des ventes au nom d'un terminal du prestataire.
+- **Condition de levée.** Vérification du PIN par un processus séparé, seul détenteur de `VENDOR_PIN_SECRET` et d'un
+  rôle de base propre, qui seul exécute ces deux fonctions (sur le modèle des processus de clés de la mission 4) ; ou
+  preuve que l'API ne peut fabriquer, comme prévu pour OP-N56.
+- **Test qui échoue si la limite s'élargit** : liste figée de `tests_execute_grants.sql` (aucun autre rôle que
+  `cashless_app` n'exécute `begin_vendor_pin_check` ni `open_vendor_session`) ; `tests_vendors.sql` (aucune session sans
+  essai compté, non expiré, non utilisé) ; audit de chaque ouverture (`VENDOR_SESSION_OPENED`).
 
 ### OP-N66 — Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (19 octobre 2026)
 

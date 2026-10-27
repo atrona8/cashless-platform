@@ -6,24 +6,30 @@ part of 'payment_result.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PaymentResult _$PaymentResultFromJson(Map<String, dynamic> json) =>
-    PaymentResult(
-      transactionId: json['transaction_id'] as String,
-      idempotencyKey: json['idempotency_key'] as String,
-      type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
-      status: $enumDecode(_$PaymentResultStatusEnumMap, json['status']),
-      amount: (json['amount'] as num).toInt(),
-      currency: json['currency'] as String,
-      occurredAt: DateTime.parse(json['occurred_at'] as String),
-      recordedAt: DateTime.parse(json['recorded_at'] as String),
-      balanceAfter: Balance.fromJson(
-        json['balance_after'] as Map<String, dynamic>,
-      ),
-      reversesId: json['reverses_id'] as String?,
-      mediaId: json['media_id'] as String?,
-      walletId: json['wallet_id'] as String?,
-      receiptNumber: json['receipt_number'] as String?,
-    );
+PaymentResult _$PaymentResultFromJson(
+  Map<String, dynamic> json,
+) => PaymentResult(
+  transactionId: json['transaction_id'] as String,
+  idempotencyKey: json['idempotency_key'] as String,
+  type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
+  status: $enumDecode(_$PaymentResultStatusEnumMap, json['status']),
+  amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String,
+  occurredAt: DateTime.parse(json['occurred_at'] as String),
+  recordedAt: DateTime.parse(json['recorded_at'] as String),
+  balanceAfter: Balance.fromJson(json['balance_after'] as Map<String, dynamic>),
+  reversesId: json['reverses_id'] as String?,
+  mediaId: json['media_id'] as String?,
+  walletId: json['wallet_id'] as String?,
+  receiptNumber: json['receipt_number'] as String?,
+  vendor: json['vendor'] == null
+      ? null
+      : SaleVendor.fromJson(json['vendor'] as Map<String, dynamic>),
+  lines: (json['lines'] as List<dynamic>?)
+      ?.map((e) => SaleLineResult.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  channel: $enumDecodeNullable(_$PaymentResultChannelEnumMap, json['channel']),
+);
 
 Map<String, dynamic> _$PaymentResultToJson(PaymentResult instance) =>
     <String, dynamic>{
@@ -40,6 +46,9 @@ Map<String, dynamic> _$PaymentResultToJson(PaymentResult instance) =>
       'wallet_id': instance.walletId,
       'balance_after': instance.balanceAfter,
       'receipt_number': instance.receiptNumber,
+      'vendor': instance.vendor,
+      'lines': instance.lines,
+      'channel': instance.channel,
     };
 
 const _$TransactionTypeEnumMap = {
@@ -73,4 +82,10 @@ const _$TransactionTypeEnumMap = {
 
 const _$PaymentResultStatusEnumMap = {
   PaymentResultStatus.succeeded: 'SUCCEEDED',
+};
+
+const _$PaymentResultChannelEnumMap = {
+  PaymentResultChannel.nfc: 'NFC',
+  PaymentResultChannel.merchantQr: 'MERCHANT_QR',
+  PaymentResultChannel.customerQr: 'CUSTOMER_QR',
 };

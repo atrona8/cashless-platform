@@ -4,7 +4,7 @@
 > `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
 > 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3).
 > Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
-> terminaux » (review terminée, pas encore fusionnée), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
+> terminaux » (mergée, dans `main` par la PR #4 le 22/10/2026), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
 > Conventions : chaque table porte `operator_id` (cloisonnement par prestataire, RLS) — non répété sur chaque classe.
@@ -380,9 +380,109 @@ classDiagram
   Device "1" --> "*" DeviceRequestNonce
 ```
 
+## 4 ter. Encaissement en ligne : vendeurs, catalogue, ventes attribuées (mission « Encaissement en ligne »)
+
+Un vendeur appartient à un commerçant ; son PIN n'existe qu'en empreinte argon2id. Chaque essai est compté dans un
+registre éphémère (30 s) avant la vérification ; une session de vendeur (12 h) est liée à un terminal, une seule ouverte
+par terminal. Le catalogue d'un point de vente est modifié en place puis figé en versions immuables ; le terminal reçoit
+une version et la base garde laquelle (`device_catalog_served`). Chaque vente a ses lignes (copie du libellé et du prix
+de la version) et une attribution (vendeur, session, terminal, moyen) écrite par la base. Une demande de paiement QR
+garde dans une table de détail sa session de vendeur, ses lignes et sa clé d'idempotence ; le jeton lui-même n'est
+jamais gardé (empreinte seule dans `payment_request`).
+
+```mermaid
+classDiagram
+  direction LR
+  class Vendor {
+    text display_name
+    text pin_hash
+    text status
+    int failed_attempts
+    timestamptz locked_at
+  }
+  class VendorPinCheck {
+    timestamptz expires_at
+    timestamptz used_at
+  }
+  class VendorSession {
+    timestamptz opened_at
+    timestamptz expires_at
+    text closed_reason
+  }
+  class PointOfSaleCatalogPolicy {
+    boolean merchant_manages
+  }
+  class CatalogCategory {
+    text label_fr
+    text label_en
+    int position
+    boolean active
+  }
+  class CatalogItem {
+    text label_fr
+    text label_en
+    bigint unit_price
+    int vat_rate_bps
+    boolean active
+  }
+  class CatalogVersion {
+    int version
+  }
+  class CatalogVersionItem {
+    bigint unit_price
+    int vat_rate_bps
+  }
+  class DeviceCatalogServed {
+    int version
+    timestamptz served_at
+  }
+  class SaleLine {
+    int line_no
+    int quantity
+    bigint unit_price
+    bigint line_total
+  }
+  class SaleAttribution {
+    text channel
+  }
+  class PaymentRequestDetail {
+    text idempotency_key
+    jsonb lines
+    int catalog_version
+  }
+  class Merchant
+  class Device
+  class PointOfSale
+  class Transaction
+  class PaymentRequest
+  class AppUser
+
+  Vendor "*" --> "1" Merchant : appartient à
+  Vendor "*" --> "1" AppUser : créé par
+  VendorPinCheck "*" --> "1" Vendor
+  VendorPinCheck "*" --> "1" Device
+  VendorSession "*" --> "1" Vendor
+  VendorSession "*" --> "1" Device
+  PointOfSaleCatalogPolicy "1" --> "1" PointOfSale
+  CatalogCategory "*" --> "1" PointOfSale
+  CatalogItem "*" --> "1" CatalogCategory
+  CatalogVersion "*" --> "1" PointOfSale
+  CatalogVersion "1" --> "*" CatalogVersionItem : fige
+  CatalogVersionItem "*" --> "1" CatalogItem
+  DeviceCatalogServed "*" --> "1" Device
+  DeviceCatalogServed "*" --> "1" CatalogVersion
+  SaleLine "*" --> "1" Transaction
+  SaleLine "*" --> "1" CatalogVersionItem : prix de la version
+  SaleAttribution "0..1" --> "1" Transaction
+  SaleAttribution "*" --> "0..1" VendorSession
+  SaleAttribution "*" --> "0..1" AppUser : valideur d'une annulation
+  PaymentRequestDetail "0..1" --> "1" PaymentRequest
+  PaymentRequestDetail "*" --> "1" VendorSession
+```
+
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux »),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne »),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -447,6 +547,23 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `handover_transition` | Passages permis d'une bascule d'autorité. | réf. |
 | `edge_sync_registry` | Registre des décisions prises par la passerelle, reçues dans l'ordre par le central qui recalcule et compare la chaîne. | réf. |
 
+### Encaissement en ligne (mission 5b)
+
+| Table | Rôle | Origine |
+|---|---|---|
+| `vendor` | Vendeur d'un commerçant : nom, empreinte argon2id du PIN (jamais le PIN), statut, échecs consécutifs (blocage au 5e), auteur ; écrit par fonctions seulement. | 0031 |
+| `vendor_pin_check` | Essai de PIN compté avant la vérification (vie de 30 s, usage unique) : preuve qu'une session ne s'ouvre qu'après un essai compté ; purgée à 24 h par la purge des essais. | 0031 |
+| `vendor_session` | Session d'un vendeur sur un terminal : 12 h, une seule ouverte par terminal, motif de fermeture (déconnexion, remplacement, blocage, suspension, révocation, nouveau PIN). | 0031 (+0033) |
+| `point_of_sale_catalog_policy` | Qui gère le catalogue d'un point de vente : l'organisateur ou, par délégation, le commerçant. | 0032 |
+| `catalog_category` | Catégorie du catalogue d'un point de vente : libellés FR/EN, rang, active ; jamais supprimée. | 0032 |
+| `catalog_item` | Article : libellés FR/EN, prix TTC fixe, taux de TVA en points de base, active ; rattaché à une catégorie du même point de vente (clé composite). | 0032 |
+| `catalog_version` | Version immuable du catalogue d'un point de vente, créée à chaque modification. | 0032 |
+| `catalog_version_item` | Contenu figé d'une version : libellés, catégorie, prix et taux de chaque article. | 0032 |
+| `device_catalog_served` | Version du catalogue servie à un terminal pour un point de vente (clé terminal, point de vente, version) : bornes du prix accepté. | 0032 |
+| `sale_line` | Ligne d'une vente : article, version du catalogue, libellés, quantité, prix, total ; liée à la version nommée. | 0032 |
+| `sale_attribution` | Vendeur, session, terminal et moyen (NFC, QR commerçant, QR client) d'une vente ou d'une annulation ; écrite par la base d'après la session, sans écriture directe de l'API. | 0033 |
+| `payment_request_detail` | Détail d'une demande de paiement QR : session de vendeur, lignes, version du catalogue, clé d'idempotence unique par prestataire. | 0034 |
+
 ### Bracelets
 
 | Table | Rôle | Origine |
@@ -482,5 +599,5 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaines : mission 5b encaissement, mission 6 caisses et PSP). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : mission 6 caisses et PSP). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.

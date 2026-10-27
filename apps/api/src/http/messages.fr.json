@@ -273,7 +273,7 @@
   },
   "PAYMENT_REQUEST_NOT_PENDING": {
     "title": "Demande de paiement close",
-    "detail": "La demande de paiement est déjà payée, annulée ou expirée."
+    "detail": "La demande de paiement n'est plus payable."
   },
   "QR_TOKEN_INVALID": {
     "title": "QR invalide",
@@ -362,5 +362,21 @@
   "DEVICE_SERIAL_IN_USE": {
     "title": "Numéro de série déjà utilisé",
     "detail": "Ce numéro de série est déjà porté par un terminal actif ou suspendu ; révoquez-le avant de ré-enrôler l'appareil."
+  },
+  "ENROLLMENT_EVENT_CLOSED": {
+    "title": "Enrôlement fermé pour cet événement",
+    "detail": "L'état de l'événement ou du point de vente ne permet plus d'enrôler un terminal dans ce mode."
+  },
+  "VENDOR_SESSION_INVALID": {
+    "title": "Session de vendeur invalide",
+    "detail": "Aucune session de vendeur valide n'est ouverte sur ce terminal ; ouvrez une nouvelle session."
+  },
+  "VENDOR_PIN_INVALID": {
+    "title": "Code PIN refusé",
+    "detail": "Le code PIN est refusé."
+  },
+  "SALE_LINES_INVALID": {
+    "title": "Lignes de vente refusées",
+    "detail": "Les lignes de la vente ne correspondent pas au catalogue du point de vente ; resynchronisez le terminal."
   }
 }

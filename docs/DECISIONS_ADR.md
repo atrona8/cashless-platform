@@ -129,7 +129,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-117 | Enrôlement : audit de tous les refus, limites sans oracle, atomiques (OP-N72) | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-118 | Configuration servie durcie en base (migration 0029), deux contradictions tranchées | Acceptée (décisions du porteur du 21/10/2026) |
 | ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
-| ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, levé par la mission 5b | Acceptée (décision du porteur du 21/10/2026) |
+| ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, **levé le 26/10/2026 par la mission 5b** (migration 0035) | Acceptée (décision du porteur du 21/10/2026), levée |
+| ADR-121 | PIN des vendeurs vérifié dans l'API, session ouverte par la base sur la transaction de l'API (OP-N76) : limite acceptée, levée avec OP-N56 | Acceptée (décision du porteur du 22/10/2026) |
 
 ---
 
@@ -1686,7 +1687,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 
 ## ADR-120 — Enrôlement sur un événement clos : écart consigné jusqu'à la mission 5b
 
-- **Statut** : Acceptée, 21 octobre 2026 (décision du porteur après la revue post-fusion de la mission 5a, DRIFT-1,
+- **Statut** : **Levée le 26 octobre 2026 par la mission 5b** (migration `0035_enrollment_event_state.sql`, lot WP06 ;
+  `tests_enrollment_event_state.sql` ; vérifiée par le lot WP14). Acceptée, 21 octobre 2026 (décision du porteur après la revue post-fusion de la mission 5a, DRIFT-1,
   OP-N74). Dette nommée (règle 3 de `CLAUDE.md`).
 - **Contexte.** La spécification de la mission 5a exige le refus d'un enrôlement dont le code vise un événement clos ou
   annulé, ou un point de vente supprimé depuis l'émission. Les fonctions de la migration 0022 ne lisent pas ces états ;
@@ -1699,3 +1701,183 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Aucun test ne fige ce manque (contrôle absent). Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md`
   (mission 5b).
 - **Références.** OP-N74 ; spécification de la mission 5a (cas limites) ; `packages/ledger-sql/migrations/0022_device_enrollment.sql`.
+
+## ADR-121 — PIN des vendeurs : vérification dans l'API, limite acceptée jusqu'à la mission 11
+
+- **Statut** : Acceptée, 22 octobre 2026 (décision du porteur au plan de la mission 5b,
+  `DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15). Dette nommée (règle 3 de `CLAUDE.md`).
+- **Contexte.** S2 impose argon2id ; PostgreSQL ne le calcule pas. Le PIN est vérifié dans l'API (décision du porteur
+  du 22/10/2026 : serveur, jamais le terminal), avec un secret hors base (`VENDOR_PIN_SECRET`).
+- **Décision.** « Compter d'abord » : la base compte l'essai et rend l'empreinte (`begin_vendor_pin_check`), l'API
+  vérifie, la base ouvre la session (`open_vendor_session`) en revérifiant l'éligibilité. La base croit l'API sur le
+  résultat de la vérification. **Bloque la production : non** (même classe qu'OP-N56 : une connexion de l'API
+  compromise écrit déjà des ventes). **Mission qui la lève : mission 11**, avec OP-N56.
+- **Condition de levée.** Processus séparé, seul détenteur du secret et d'un rôle de base qui seul exécute ces deux
+  fonctions ; ou preuve infalsifiable par l'API.
+- **Conséquences.** Tests de borne : liste figée des droits, aucune session sans essai compté, audit de chaque
+  ouverture. Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 11).
+- **Précision (revue post-fusion, 27/10/2026).** « Compter d'abord » compte l'essai avant de connaître son
+  résultat : au 5e essai, le vendeur est bloqué même si ce 5e PIN est juste (4 PIN faux puis le bon bloquent). C'est
+  plus strict que la lettre de FR-004 (« bloqué après 5 PIN faux ») ; renforcement voulu, qui ne laisse aucune
+  fenêtre entre la vérification et le comptage. Coût : disponibilité (déblocage par le commerçant). Preuves :
+  `0031_vendors.sql` (`begin_vendor_pin_check`), `tests_vendors.sql`, `contracts/vendors.md`.
+- **Références.** OP-N76, OP-N56 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/contracts/vendors.md`.
+
+## ADR-122 — Annulation au back-office : `SALE_REVERSAL` demandable par un `SUPERVISOR` ou un `ORGANIZER_ADMIN`
+
+- **Statut** : Acceptée, 22 octobre 2026 (décision du porteur aux tâches de la mission 5b, constat I6 de
+  `analysis-report.md`). Écart à la spécification qui élargit un droit, accepté (règle 3 de `CLAUDE.md`).
+- **Contexte.** FR-017 réserve l'annulation hors fenêtre, ou d'une vente d'un autre vendeur, au `SUPERVISOR` de
+  l'événement. Le contrat (`openapi.yaml`, action `SALE_REVERSAL`) permet aussi à un `ORGANIZER_ADMIN` de la demander.
+  Le contrat prime (SPECIFICATION §0.3), mais il donne un droit plus large que la spécification.
+- **Décision.** On suit le contrat : la demande peut venir d'un `SUPERVISOR` ou d'un `ORGANIZER_ADMIN` de l'événement
+  de la vente ; elle n'est exécutée qu'à l'approbation d'une seconde personne distincte (source `BACKOFFICE`).
+  L'annulation au terminal par jeton sur place reste réservée au `SUPERVISOR`. **Bloque la production : non.**
+- **Condition de bornage.** Test (WP12) qui échoue si un autre rôle peut demander `SALE_REVERSAL`, si la portée sort
+  de l'événement de la vente, ou si une seule personne suffit.
+- **Conséquences.** `requiredRole` du registre des actions devient une liste (retouche d'une ligne dans
+  `approval.service.ts`). FR-017 est à compléter dans `spec.md` à la clôture de la mission.
+- **Références.** FR-017 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP12-annulation.md`.
+
+## ADR-123 — Codes de refus de l'annulation et du QR client : le contrat existant est gardé
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur pendant la mission 5b, contradictions §0.3 signalées par
+  WP01). Sans effet de sécurité : le refus a lieu dans tous les cas.
+- **Contexte.** Le contrat avait déjà `REVERSAL_NOT_ALLOWED` en 422, `REVERSAL_WINDOW_EXPIRED` en 409 et
+  `QR_TOKEN_INVALID` en 422 pour le QR client. Le plan de la 5b (data-model, `contracts/payments.md`,
+  `contracts/qr-payments.md`) disait `CL036` → 403 pour tout refus d'annulation, fenêtre comprise, et
+  `409 PAYMENT_REQUEST_NOT_PENDING` pour un QR client refusé.
+- **Décision.** Annulation : `CL036` → `422 REVERSAL_NOT_ALLOWED` (autre vendeur, autre terminal, vente non
+  `PURCHASE`…) ; nouveau `CL040` → `409 REVERSAL_WINDOW_EXPIRED`, levé **seulement après** les contrôles du terminal et
+  du vendeur, pour qu'un autre vendeur n'apprenne pas l'âge d'une vente. QR client présenté par `POST /payments` :
+  tout refus de `lock_customer_qr_token` (`CL037` en base) est traduit en `422 QR_TOKEN_INVALID`, réponse unique pour
+  inconnu, expiré, déjà utilisé, autre événement ou portefeuille non actif. Les demandes de QR commerçant gardent
+  `409 PAYMENT_REQUEST_NOT_PENDING`.
+- **Conditions de bornage.** Tests de WP04 (ordre : autre vendeur hors fenêtre → `CL036`, jamais `CL040`), WP12
+  (statuts HTTP) et WP13 (réponse unique `422` du QR client, aucun corps différent selon la cause).
+- **Références.** `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP04-…`, `WP08-…`, `WP12-…`, `WP13-…`.
+
+## ADR-124 — Idempotence : un refus non définitif (`DEBIT_AUTHORITY_*`) relâche la clé, sur toutes les routes
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur après la relecture de WP08 de la mission 5b, constat 1).
+  Sans effet de sécurité : rien n'est écrit lors de ces refus.
+- **Contexte.** La passe contradictoire du plan de la 5b (A14, `research.md`) a décidé de ne plus enregistrer les 409
+  non définitifs. WP08 l'applique dans l'intercepteur commun : la décision vaut donc aussi pour les routes existantes
+  (activation, caution, libération, confirmation au guichet), où SPECIFICATION §10.2 prévoyait jusque-là d'enregistrer
+  le refus et de le rejouer à l'identique.
+- **Décision.** `DEBIT_AUTHORITY_EDGE` et `DEBIT_AUTHORITY_MOVING` sont des refus transitoires : la clé est relâchée,
+  rien n'est enregistré, et un nouvel essai avec la même clé s'exécute (il peut réussir quand l'autorité est revenue au
+  central). Liste fermée. Tout autre refus 4xx reste enregistré et rejoué. SPECIFICATION §10.2 est mise à jour.
+- **Conditions de bornage.** `apps/api/test/unit/device-route/device-key.spec.ts` (la liste `NON_FINAL_CODES` est
+  exactement ces deux codes ; un ajout fait échouer le test). Ces refus sont levés dans la transaction métier, annulée.
+- **Références.** `apps/api/src/idempotency/idempotency.interceptor.ts`, `device-key.ts` ;
+  `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/tasks/WP08-…/review-cycle-1.md`.
+
+## ADR-125 — Secrets de l'API exigés par tous les processus : exposition acceptée jusqu'à la mission 13
+
+- **Statut** : Acceptée, 23 octobre 2026 (décision du porteur après la relecture de WP08 de la mission 5b, constat 2 ;
+  défaut antérieur à la mission). Affaiblissement résiduel consigné : OP-N77.
+- **Contexte.** `loadConfig` est commun à tous les processus (`bootstrap.ts`). En production, `IDEMPOTENCY_HMAC_KEY`,
+  `ENROLLMENT_CODE_HMAC_KEY` et, depuis WP08, `VENDOR_PIN_SECRET` sont obligatoires aussi dans l'environnement des
+  processus des clés, d'administration des clés et de personnalisation, qui ne s'en servent pas.
+- **Décision.** On garde ce schéma dans la mission 5b ; lecture des secrets par processus (chacun n'exige et ne reçoit
+  que les siens) dans la mission 13 (recette V1), proposée par l'agent.
+- **Conditions de bornage.** `apps/api/test/unit/config.spec.ts` (liste des secrets obligatoires en production, secrets
+  distincts deux à deux, démarrage refusé sans eux) ; aucun nouveau secret ne s'ajoute à `loadConfig` sans entrée ici.
+- **Secrets ajoutés depuis.** `VENDOR_PIN_IDEMPOTENCY_SECRET` (26/10/2026, ADR-126, WP09 cycle 3) : même schéma,
+  même levée à la mission 13.
+- **Références.** `apps/api/src/config/config.ts` ; OP-N77.
+
+## ADR-126 — Idempotence : un PIN n'entre dans l'empreinte de la requête que sous un dérivé argon2
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur après la relecture de WP09 de la mission 5b, question 2).
+  Renforcement : aucun point ouvert.
+- **Contexte.** L'empreinte `api_idempotency.request_hash` (HMAC-SHA256 du corps, clé `IDEMPOTENCY_HMAC_KEY`) est
+  gardée 30 jours. Les corps qui portent un PIN de vendeur (ouverture de session au terminal, création et changement
+  de PIN au back-office) y entraient en clair : avec la base et la clé HMAC volées, un PIN à 6 chiffres se retrouve en
+  10^6 calculs HMAC, contre 10^6 calculs argon2 pour `vendor.pin_hash`. Retirer le PIN de l'empreinte ne convient pas :
+  la même clé avec un autre PIN rejouerait la réponse d'un succès.
+- **Décision.** Avant le calcul de l'empreinte, le PIN est remplacé par un dérivé argon2 déterministe (même socle et
+  mêmes paramètres que WP08, sel tiré de la clé d'idempotence et de la portée) : le rejeu reste lié au PIN, la force
+  brute hors ligne redevient aussi coûteuse que sur `pin_hash`.
+- **Conditions de bornage.** Test qui échoue si un corps portant un PIN produit une empreinte calculable sans argon2
+  (empreinte différente du HMAC du corps en clair) ; test qu'une même clé avec un autre PIN est refusée (`409`), jamais
+  rejouée.
+- **Complément du 26/10/2026** (décision du porteur après la relecture de WP09 cycle 2, constats 1 à 3 ; renforcements) :
+  - **Secret distinct.** Le dérivé se calcule sous un secret propre, `VENDOR_PIN_IDEMPOTENCY_SECRET` (mêmes règles
+    que `VENDOR_PIN_SECRET` : 32 octets au moins, exigé en production, secret de test refusé, distinct de tous les
+    autres secrets), et non sous `VENDOR_PIN_SECRET`. Sa rotation invalide seulement les empreintes d'idempotence en
+    vol (une requête rejouée avec la même clé reçoit `409 IDEMPOTENCY_KEY_REUSED`) ; celle de `VENDOR_PIN_SECRET`
+    n'y touche plus. Ajouté à la liste d'ADR-125 (OP-N77).
+  - **Verrou avant le dérivé.** À l'ouverture de session, le verrou « un essai de PIN à la fois par terminal » est
+    pris avant tout calcul argon2 (dérivé compris) et tenu jusqu'à la fin de la requête : un essai concurrent reçoit
+    `429` sans payer d'argon2.
+  - **Bornage ajouté.** Le test « empreinte ≠ HMAC du corps en clair » couvre les trois routes (création de vendeur
+    comprise) et compare l'empreinte stockée au HMAC du corps dérivé (égalité) ; un test prouve qu'un essai refusé
+    en `429` ne calcule aucun argon2 ; un test prouve que le dérivé ne dépend pas de `VENDOR_PIN_SECRET`.
+- **Références.** WP09 cycles 2 et 3 (`apps/api/src/vendors/`, `apps/api/src/idempotency/`,
+  `apps/api/src/vendor-pin/`, `apps/api/src/config/config.ts`) ; relectures WP09 cycles 1 et 2.
+
+## ADR-127 — Mission 5b : purge des essais de PIN et clé de session de vendeur reportées
+
+- **Statut** : Acceptée, 26 octobre 2026 (décisions du porteur sur deux questions de la relecture de WP07 de la
+  mission 5b). Points ouverts : OP-N78, OP-N79.
+- **Contexte.** La relecture des droits de la base (WP07) a relevé deux suites possibles : `vendor_pin_check` n'a pas
+  de purge ; `vendor_id` pourrait entrer dans la clé composite de `vendor_session` pour qu'une vente ne puisse être
+  attribuée qu'au vendeur de sa session.
+- **Décision.** Purge : point ouvert, levée à la mission 13 (recette V1). Clé composite : durcissement reporté (point
+  ouvert, levée proposée à la mission 11 avec OP-N76) ; la migration 0033 n'est pas retouchée dans la mission 5b.
+- **Conditions de bornage.** OP-N79 : `tests_payment_rights.sql` (aucun `INSERT`/`UPDATE` de `cashless_app` sur
+  `sale_attribution`), seule barrière d'ici la levée. OP-N78 : aucune donnée secrète dans `vendor_pin_check`.
+- **Références.** `packages/ledger-sql/migrations/0031_vendors.sql`, `0033_payments.sql` ; relecture WP07
+  (`docs/passation-5b/rapports/WP07-review-cycle-1.md`).
+
+## ADR-128 — Paiement en ligne (mission 5b, WP11) : solde rendu, époque dans le refus, corps non rangé, empreinte du contenu
+
+- **Statut** : Acceptée, 26 octobre 2026 (décisions du porteur sur les points soumis par l'implémenteur de WP11).
+  Sans affaiblissement de sécurité ; aucun point ouvert.
+- **Décisions.**
+  - **Solde rendu au terminal pour un paiement par QR client** : le contrat est gardé (`wallet_id`, `balance_after`
+    dans la réponse ; `available_balance` dans `INSUFFICIENT_FUNDS`). Le festivalier présente lui-même son QR et
+    paie en présence du commerçant, comme avec un bracelet.
+  - **`409 STALE_AUTHORITY_EPOCH`** : l'extension `authority_epoch` (époque courante, entier) est ajoutée au contrat
+    (`openapi.yaml`, types régénérés), au lieu d'un champ hors contrat.
+  - **Corps de paiement qui n'est pas un objet JSON** : `400`, rien au registre des numéros du terminal (aucun
+    contenu calculable) ; le numéro reste un trou, vu par le contrôle des trous de la mission 7.
+  - **`content_sha256` du registre des numéros** : SHA-256 de la forme canonique RFC 8785 de `{seq (nombre),
+    type: "PURCHASE", occurred_at (chaîne reçue), amount, currency, tap (objet reçu), lines (tableau reçu)}`, champs
+    absents omis ; jamais `tap_id`, `customer_qr_token`, `vendor_session_id` ni un champ d'état. Limite : un `seq`
+    au-delà de 2^53 n'est pas exact en nombre JSON. Forme à reprendre telle quelle par la mission 7 (lots hors ligne).
+- **Conditions de bornage.** Vecteurs fixes de `apps/api/test/unit/payments/device-seq-registry.spec.ts` (calculés
+  hors du code) ; réponses contrôlées contre `openapi.yaml` (`contractViolations`).
+- **Références.** WP11 (`apps/api/src/payments/`), compte rendu `docs/passation-5b/rapports/WP11-implementation.md`.
+
+
+## ADR-129 — Annulation au back-office (mission 5b, WP12) : `reversePayment` d'une personne crée la demande `SALE_REVERSAL`
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur sur la contradiction signalée par l'implémenteur de
+  WP12). Sans affaiblissement de sécurité (deux personnes distinctes restent exigées) ; aucun point ouvert.
+- **Contexte.** L'arbitrage de l'orchestrateur du 22/10 (prompt WP12) voulait `403 APPROVAL_REQUIRED` pour un appelant
+  personne sur `reversePayment`, le back-office passant par une route générique `createApprovalRequest` qui n'existe
+  pas. Le contrat (`openapi.yaml`, prioritaire selon SPECIFICATION §0.3) annonce `202` avec création de la demande.
+- **Décision.** Le contrat est suivi : un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente (ADR-122)
+  appelle `reversePayment` ; l'API crée la demande `SALE_REVERSAL` (source `BACKOFFICE`) et répond `202`, sans écriture
+  au grand livre ; une seconde personne distincte l'approuve (`approveApprovalRequest`), ce qui exécute l'annulation.
+  L'arbitrage du 22/10 (403) est retiré.
+- **Conditions de bornage.** Tests de WP12 : aucun autre rôle, portée de l'événement de la vente, demandeur ≠
+  approbateur, aucune ligne de grand livre avant l'approbation, réponse `202` conforme au contrat.
+- **Références.** `apps/api/src/reversals/`, compte rendu `docs/passation-5b/rapports/WP12-implementation.md`.
+
+## ADR-130 — Ouverture de session de vendeur : dimensionnement du pool du verrou d'essai non mesuré (OP-N80)
+
+- **Statut** : Acceptée, 26 octobre 2026 (décision du porteur sur la proposition du lot WP14 de la mission 5b, report de
+  la relecture WP09 cycle 3). Dette nommée (règle 3 de `CLAUDE.md`) ; sans affaiblissement de sécurité (disponibilité).
+- **Contexte.** `SessionLock` tient une connexion de son pool dédié pendant toute l'ouverture de session, vérification
+  argon2 comprise. Au-delà de `poolSize` ouvertures simultanées, `pool.connect` attend 10 s puis la requête échoue en `500`.
+- **Décision.** Pas de changement de code dans la mission 5b : le comportement n'a pas été mesuré en charge. **Mission qui
+  le lève : mission 13** (recette V1).
+- **Condition de levée.** Mesure en charge (tous les terminaux d'un événement ouvrent ensemble), puis taille du pool
+  ajustée ou refus `429` immédiat à la saturation, avec un test qui échoue si la saturation rend un `500`.
+- **Conséquences.** Aucun droit élargi ; aucune écriture partielle (rien n'est consommé avant le verrou). Report dans
+  `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`.
+- **Références.** OP-N80 ; `apps/api/src/vendor-pin/` (`SessionLock`) ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/`.

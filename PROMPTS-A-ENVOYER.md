@@ -157,13 +157,31 @@ vendeurs et le catalogue : la mission les ajoute.
 > `enroll_device` un événement `CLOSED` (et les états de clôture jugés bloquants) et un point de vente supprimé ; test
 > pgTAP par refus, aucune ligne écrite ; puis lever OP-N74.
 
-- [ ] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
+> **Cadrage du 22/10/2026** (7 décisions du porteur, `decisions/`) : branche remise sur `main` après la fusion de 5a
+> (PR #4) et du correctif SC-007 (PR #5). PIN vérifié par le serveur, session de vendeur liée au terminal, attribution
+> par le serveur ; PIN de 6 chiffres, blocage dur après 5 échecs ; annulation par le seul vendeur de la vente dans la
+> fenêtre ; prix des lignes contre la configuration servie ; OP-N74 : dès `CLOSING` sauf `TOPUP_DESK`. Le PIN hors
+> ligne revient à la mission 7.
+
+- [x] /spec-kitty.specify Encaissement en ligne (SPECIFICATION §8.1 à §8.3, §6.3, §7.6, §9.8, §14.2 S2, S18, S24). Vendeurs avec code PIN (argon2id), vente attribuée au vendeur. Paiement en un seul aller-retour (`POST /payments` : `register_tap`, `post_transaction`, `consume_tap` dans la même transaction SQL), parcours en deux temps avec `tap_id`, refus `WALLET_BLOCKED`, annulation dans la fenêtre du terminal, numérotation `<serial>:<seq>`. Catalogue par point de vente (catégories, articles TTC, taux par article, libellés FR/EN) et `sale_line` copiée dans la transaction de la vente. Paiement par QR commerçant et QR client (60 s, nonce haché, toujours en ligne). Identification au guichet (`kyc_verification`, révocation à deux).
 - [ ] /spec-kitty.plan Latence serveur seul p95 ≤ 200 ms, p99 ≤ 500 ms ; un seul aller-retour pour le paiement. Téléphone personnel : en ligne seulement. iOS : QR uniquement.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission terminaux-paiement-en-ligne-01M52QB9
 - [ ] /spec-kitty.review --mission terminaux-paiement-en-ligne-01M52QB9
 - [ ] /spec-kitty.accept --mission terminaux-paiement-en-ligne-01M52QB9
 - [ ] spec-kitty merge --mission terminaux-paiement-en-ligne-01M52QB9
+
+> **Décision du porteur du 26/10/2026 (ADR-126, relecture WP09)** : un PIN de vendeur n'entre dans l'empreinte
+> d'idempotence (`request_hash`) que sous un dérivé argon2 ; corrigé au cycle 2 de WP09, aucune dette héritée.
+
+> **Livré par la mission 5b (état au 26/10/2026, lot WP14 de preuves et de consignation)** : vendeurs et sessions
+> (PIN argon2id, 5 échecs bloquent sur tous les terminaux), catalogue versionné et lignes de vente, paiement par
+> bracelet (un aller-retour, `tap_id`) et par QR client, QR commerçant et QR client côté festivalier, annulation
+> (vendeur dans la fenêtre, `SUPERVISOR` sur place, demande à deux au back-office), enrôlement refusé sur un
+> événement clos (**OP-N74 levé**, migration 0035). Preuves de bout en bout : `payment-journey`, `payment-isolation`,
+> `payment-secrets`, `payment-latency` (p95 ≤ 200 ms, p99 ≤ 500 ms, étape CI propre) et `payment-concurrency`
+> (`apps/api/test/integration/end-to-end/`). Dettes ouvertes héritées : OP-N76 (mission 11), OP-N77 et OP-N78 et
+> OP-N80 (mission 13), OP-N79 (mission 11), OP-N43 complété (mission 10).
 
 ## Mission 6 — Recharges, caisses et PSP
 
@@ -215,7 +233,14 @@ vendeurs et le catalogue : la mission les ajoute.
 > fonctions de la base (plancher qui ne descend jamais, affectation dans le périmètre, présence à l'heure de la base) et
 > retirer les `UPDATE` directs ; mettre à jour la liste exacte de `tests_device_rights.sql` §1 ; test : écriture
 > directe refusée depuis `cashless_app`. Inclure `personal_phone` et `app_mode` (contournement de la règle du
-> téléphone personnel, revue post-fusion de la 5a).
+> téléphone personnel, revue post-fusion de la 5a). La mission 5b retire déjà l'`UPDATE` direct de `event_id` et
+> `pos_id` (aucun usage dans l'API ; contournement d'OP-N74) : l'affectation par fonction de la base reste à faire si
+> une réaffectation sans ré-enrôlement est voulue.
+>
+> **Hérité de la mission 5b (décision du porteur du 22/10/2026)** : le PIN des vendeurs est vérifié par le serveur
+> (session de vendeur liée au terminal, empreinte argon2id avec secret hors base, jamais servie au terminal). Le hors
+> ligne doit trancher comment un vendeur se connecte sans réseau sans envoyer d'empreinte de PIN au terminal (ou en
+> nommer la dette).
 
 > **Hérité de la mission 5a, OP-N75 (ADR-114 ; décision du porteur du 21/10/2026)** : les purges des nonces et des
 > essais d'enrôlement sont exécutées par `cashless_app`. Créer un rôle et une connexion de maintenance dédiés, retirer
@@ -226,6 +251,16 @@ vendeurs et le catalogue : la mission les ajoute.
 > faux (`fake-device-ca.ts`, `fake-token-signer.ts`). Avec l'adaptateur KMS d'OP-N41, écrire leurs adaptateurs réels
 > (clés hors du code et de l'environnement, SPEC §13.2) et lever la garde de production pour ces deux ports seulement
 > (`device-latency.spec.ts`, `production-guard.spec.ts`).
+>
+> **Hérité de la mission 5b (ADR-128 ; décision du porteur du 26/10/2026)** : le registre des numéros des terminaux
+> est alimenté en ligne depuis la mission 5b. Reprendre telle quelle la forme de `content_sha256` (RFC 8785 de
+> `{seq, type, occurred_at, amount, currency, tap, lines}`, champs absents omis ; vecteurs de
+> `device-seq-registry.spec.ts`) ; traiter un `seq` au-delà de 2^53 ; un corps en ligne qui n'était pas un objet JSON
+> a laissé un trou de numéro sans ligne au registre (refus `400`), à lever par la procédure des trous.
+>
+> **Sonde héritée de la mission 5b (relecture WP11 cycle 2, 26/10/2026)** : écrire une sonde qui pose un numéro hors
+> idempotence puis présente un paiement falsifié (consigné comme anomalie), avant d'alimenter le registre par les
+> lots hors ligne ; non écrite par la mission 5b (aucune dette de sécurité : le chemin en ligne refuse déjà `CL002`).
 
 - [ ] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
@@ -278,6 +313,17 @@ vendeurs et le catalogue : la mission les ajoute.
 > pendant une période bornée (double empreinte avec version du secret), extinction des anciennes
 > empreintes, retrait de l'ancien secret ; test : un code émis sous l'ancien secret se rattache
 > pendant la période et plus après, aucun code conservé en clair.
+>
+> **Hérité de la mission 5b (décisions du porteur au plan, 22/10/2026)** : (1) **identification au guichet**
+> (SPECIFICATION §6.3, S24, `createKycVerification`, `revokeKycVerification`), reportée de la 5b : la base n'avait ni
+> numéro vérifié du festivalier ni lien agent-festivalier. L'écrire par une fonction de la base qui exige un compte au
+> numéro vérifié et refuse un agent titulaire du portefeuille (lien personne ↔ compte festivalier à créer) ; révocation
+> par la demande d'approbation `KYC_REVOCATION` à deux personnes (contrat ; §6.3 dit « un administrateur » :
+> contradiction à garder signalée) ; le registre des actions n'accepte qu'un rôle par action, le contrat en demande
+> deux (`OPERATOR_ADMIN` ou `ORGANIZER_ADMIN`). La 5b a retiré à `cashless_app` les écritures directes dans
+> `kyc_verification`. (2) **côté festivalier du QR** (`payPaymentRequest`, `createCustomerQrToken`) servi par la 5b
+> derrière le port d'identité du festivalier : il devient utilisable en production quand l'identité réelle remplace le
+> faux (OP-N43 complété).
 
 - [ ] /spec-kitty.specify App festivalier Flutter, Android et iOS (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques. Côté app : connexion, solde et historique, recharge en ligne, paiement par QR commerçant (confirmation par PIN ou biométrie) et QR client à usage unique (60 s, jamais préchargé), rattachement par QR ou code imprimé (demande en attente avec code de confirmation si le bracelet contient de l'argent), déclaration de perte (suspension immédiate, proposition de payer par QR), demande de remboursement, consultation anonyme du solde par code (`POST /public/balance-lookups`, lecture seule). L'app ne lit jamais la puce. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan Flutter, types Dart générés depuis `openapi.yaml`. Pas de connexion Google ou Apple. Pas de portail web. Fournisseurs OTP réels à choisir sur devis (action 10 de POINTS_OUVERTS) : adaptateurs derrière le port seulement.
@@ -297,6 +343,17 @@ vendeurs et le catalogue : la mission les ajoute.
 > demande → refusée. Ne pas rouvrir les droits de `cashless_app` sur les historiques, les règles de passage,
 > `media_assignment` et `device_config_served`, et garder `log_media_status` / `log_batch_status` en SECURITY DEFINER
 > (migration 0018).
+>
+> **Hérité de la mission 5b, OP-N76 (ADR-121 ; décision du porteur du 22/10/2026)** : le PIN des vendeurs est vérifié
+> dans l'API ; la base rend l'empreinte (`begin_vendor_pin_check`) et ouvre la session sur la transaction de l'API
+> (`open_vendor_session`). À lever avec OP-N56 : processus séparé, seul détenteur de `VENDOR_PIN_SECRET` et d'un rôle
+> de base qui seul exécute ces deux fonctions (ou preuve infalsifiable par l'API) ; test : `cashless_app` n'exécute
+> plus ces fonctions, une session sans vérification du processus dédié est refusée.
+>
+> **Hérité de la mission 5b, OP-N79 (ADR-127 ; durcissement reporté par le porteur le 26/10/2026)** : faire entrer
+> `vendor_id` dans la clé composite référencée par `sale_attribution` (`(vendor_session_id, vendor_id)`), pour que le
+> schéma refuse une vente attribuée à un autre vendeur que celui de sa session ; test pgTAP d'une attribution
+> incohérente refusée, puis lever le point.
 >
 > **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
 > toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,
@@ -369,6 +426,23 @@ vendeurs et le catalogue : la mission les ajoute.
 > la chaîne d'audit de la plateforme, et un attaquant aux nombreuses adresses n'est borné que par /64. Poser une
 > limite de débit au répartiteur (ou à la passerelle) sur cette route, la vérifier sur l'environnement de recette,
 > puis lever la limite (bornes : `tests_enrollment_limits.sql` §3 et §5).
+>
+> **Hérité de la mission 5b, OP-N77 (ADR-125 ; décision du porteur du 23/10/2026)** : `loadConfig` est commun à tous
+> les processus ; en production, `IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET` et
+> `VENDOR_PIN_IDEMPOTENCY_SECRET` (ADR-126, 26/10/2026) sont exigés
+> aussi par les processus des clés et de personnalisation, qui ne s'en servent pas. Faire lire à chaque processus ses
+> seuls secrets, le prouver par un test par processus, puis lever le point (borne : `config.spec.ts`).
+>
+> **Hérité de la mission 5b, OP-N78 (ADR-127 ; décision du porteur du 26/10/2026)** : `vendor_pin_check` n'a pas de
+> purge. Ajouter une fonction de purge bornée à la fenêtre de comptage des essais, exécutée par un rôle dédié (comme
+> OP-N75), avec un test pgTAP, puis lever le point.
+>
+> **Hérité de la mission 5b, OP-N80 (consigné par WP14, 26/10/2026 ; proposée par l'agent)** : le verrou d'essai de PIN
+> (`SessionLock`) tient une connexion de son pool dédié pendant toute l'ouverture de session. Mesurer en charge
+> (tous les terminaux d'un événement qui ouvrent ensemble), ajuster la taille du pool ou rendre `429` à la saturation
+> (aujourd'hui `500` après 10 s d'attente), avec un test, puis lever le point. Consigne d'exploitation : exiger
+> `VENDOR_PIN_SECRET` et `VENDOR_PIN_IDEMPOTENCY_SECRET` dans les manifestes de déploiement (aucun manifeste dans le
+> dépôt à ce jour) ; la rotation du second invalide seulement les empreintes d'idempotence des routes à PIN.
 >
 > **Mise en production, consigne de la mission 5a (OP-N54, OP-N71 ; décision du porteur du 21/10/2026)** : purger
 > par le propriétaire de la base les lignes `api_idempotency` antérieures au déploiement, à T + 720 h, et vérifier que

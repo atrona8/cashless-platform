@@ -273,7 +273,7 @@
   },
   "PAYMENT_REQUEST_NOT_PENDING": {
     "title": "Payment request not pending",
-    "detail": "The payment request is already paid, cancelled or expired."
+    "detail": "The payment request can no longer be paid."
   },
   "QR_TOKEN_INVALID": {
     "title": "Invalid QR token",
@@ -362,5 +362,21 @@
   "DEVICE_SERIAL_IN_USE": {
     "title": "Serial number already in use",
     "detail": "This serial number is already used by an active or suspended device; revoke it before re-enrolling the device."
+  },
+  "ENROLLMENT_EVENT_CLOSED": {
+    "title": "Enrollment closed for this event",
+    "detail": "The state of the event or point of sale no longer allows enrolling a device in this mode."
+  },
+  "VENDOR_SESSION_INVALID": {
+    "title": "Invalid vendor session",
+    "detail": "No valid vendor session is open on this device; open a new session."
+  },
+  "VENDOR_PIN_INVALID": {
+    "title": "PIN refused",
+    "detail": "The PIN is refused."
+  },
+  "SALE_LINES_INVALID": {
+    "title": "Sale lines refused",
+    "detail": "The sale lines do not match the point of sale catalogue; resynchronise the device."
   }
 }

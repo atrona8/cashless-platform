@@ -19,6 +19,8 @@ import 'package:json_annotation/json_annotation.dart';
 /// `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
 /// Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →.
 /// `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
+/// Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée.
+/// par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).
 ///
 @JsonEnum()
 enum ApprovalAction {
@@ -69,7 +71,9 @@ enum ApprovalAction {
   @JsonValue('TAG_DEK_ROTATE')
   tagDekRotate('TAG_DEK_ROTATE'),
   @JsonValue('TAG_KEY_RETIRE')
-  tagKeyRetire('TAG_KEY_RETIRE');
+  tagKeyRetire('TAG_KEY_RETIRE'),
+  @JsonValue('SALE_REVERSAL')
+  saleReversal('SALE_REVERSAL');
 
   const ApprovalAction(this.json);
 
