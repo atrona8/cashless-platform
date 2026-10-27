@@ -35,6 +35,10 @@ worktrees gardés après la fusion.
 
 ## Prochaines actions
 
+0. (27/10, en cours) Analyse enregistrée (prête). Implémentation lancée : WP01 (lane-a), WP02 (lane-b), WP03 (lane-c) ;
+   fiche des agents : `docs/passation-6/fiche-implementation.md` ; bases `cashless_wpXX`, `cashless_test` à
+   l'orchestrateur ; `--force` sur le garde kitty-specs non encore autorisé pour cette mission.
+
 1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
 3. (Fait) `/spec-kitty.tasks` ; matrice d'acceptation à tenir au fil des lots matrice d'acceptation tenue au fil des lots (mémoire « Suivre le modèle Spec Kitty »).
