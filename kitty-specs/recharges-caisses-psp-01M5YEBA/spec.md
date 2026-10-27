@@ -219,8 +219,8 @@ Après fermeture des sessions, les espèces en transit sont déposées en banque
 | FR-018 | Recharge refusée après paiement | En tant que plateforme, je veux qu'un paiement réussi chez le PSP mais non créditable (plafond réglementaire, 3-D Secure absent, plafond carte du jour, grand livre qui n'accepte plus de `TOPUP`) ne crédite rien, passe la recharge à `FAILED` et ouvre une anomalie portant le montant à rendre au payeur. | High | Open |
 | FR-019 | Interrogation planifiée et expiration | En tant que plateforme, je veux une tâche planifiée qui interroge le PSP pour les recharges `PENDING`, écrit un succès découvert avec la même clé qu'une notification, et passe à `EXPIRED` au-delà de l'échéance ; tout échec de la tâche alerte l'exploitation. | High | Open |
 | FR-020 | Interface commune d'adaptateur | En tant que plateforme, je veux une interface commune (initier, vérifier une notification, interroger un statut, lire un relevé) avec un faux PSP par fournisseur, refusé au démarrage en production. | High | Open |
-| FR-021 | Adaptateurs PSP réels | En tant que prestataire, je veux les adaptateurs Wave, Orange Money, PayDunya et Stripe derrière l'interface commune. [NEEDS CLARIFICATION: livrés dans cette mission ou reportés tant que les accès de test (action 11) manquent] <!-- decision_id: 01M5YF39MKBNF9VHJ7JM49B0SE --> | High | Open |
-| FR-022 | Coffre des secrets PSP | En tant que prestataire, je veux que les secrets PSP et de notification soient lus dans un coffre rattaché au détenteur des fonds, jamais en base, en variable d'environnement ni dans un journal, derrière un port avec un faux refusé en production. [NEEDS CLARIFICATION: adaptateur AWS Secrets Manager livré dans cette mission ou reporté] <!-- decision_id: 01M5YF3D9YZZPHP1FGEWH3E4ME --> | High | Open |
+| FR-021 | Adaptateurs PSP réels | Reportés (décision du porteur du 27/10/2026) : les adaptateurs Wave, Orange Money, PayDunya et Stripe viennent dans une mission dédiée dès les accès de test obtenus (action 11). Cette mission livre l'interface commune et un faux par fournisseur, refusé au démarrage en production ; dette nommée (point ouvert, ADR, test de borne, reports). | High | Deferred (mission des adaptateurs PSP réels) |
+| FR-022 | Coffre des secrets PSP | En tant que prestataire, je veux que les secrets PSP et de notification soient lus dans un coffre rattaché au détenteur des fonds, jamais en base, en variable d'environnement ni dans un journal, derrière un port avec un faux refusé en production. L'adaptateur AWS Secrets Manager est reporté avec les adaptateurs PSP réels (décision du porteur du 27/10/2026). | High | Open |
 | FR-023 | Frais PSP par configuration | En tant que prestataire, je veux que les taux de chaque PSP soient des règles de frais rattachées à la configuration, appliquées à la recharge selon sa configuration. | Medium | Open |
 | FR-024 | 3-D Secure obligatoire | En tant que plateforme, je veux ne créditer une recharge carte que sur attestation explicite d'un 3-D Secure réussi fournie par l'adaptateur. | High | Open |
 | FR-025 | Plafond par carte et par jour | En tant que plateforme, je veux refuser le crédit d'une carte au-delà de `card_topup_daily_max_per_card` sur le jour (empreinte de carte fournie par le PSP). | High | Open |
@@ -282,7 +282,7 @@ Après fermeture des sessions, les espèces en transit sont déposées en banque
 - **SC-005** : chaque session fermée a son écriture de fermeture et, si l'écart est non nul, son anomalie ; le théorique n'est jamais montré à l'agent avant la fermeture.
 - **SC-006** : aucun secret PSP ou de notification n'apparaît dans la base, les journaux ou les réponses (balayage avec canari).
 - **SC-007** : aucune fuite entre prestataires ou organisateurs sur les nouvelles opérations (balayage d'isolation).
-- **SC-008** : le démarrage en configuration de production est refusé pour chaque faux de la mission.
+- **SC-008** : le démarrage en configuration de production est refusé pour chaque faux de la mission (faux PSP par fournisseur, faux coffre, identité festivalier) ; les recharges en ligne ne sont donc pas servies en production avant la mission des adaptateurs réels.
 
 ## Assumptions
 
@@ -313,6 +313,6 @@ Après fermeture des sessions, les espèces en transit sont déposées en banque
 
 | Décision | Statut |
 |---|---|
-| Adaptateurs PSP réels (DM `01M5YF39MKBNF9VHJ7JM49B0SE`) | Différée, à soumettre au porteur avant le plan (règle 1 de CLAUDE.md) |
-| Coffre des secrets PSP (DM `01M5YF3D9YZZPHP1FGEWH3E4ME`) | Différée, à soumettre au porteur avant le plan |
+| Adaptateurs PSP réels (DM `01M5YF39MKBNF9VHJ7JM49B0SE`) | Résolue le 27/10/2026 par le porteur : reportés à une mission dédiée (accès de test) ; faux refusé en production |
+| Coffre des secrets PSP (DM `01M5YF3D9YZZPHP1FGEWH3E4ME`) | Résolue le 27/10/2026 par le porteur : adaptateur AWS reporté avec les adaptateurs PSP ; port + faux refusé en production |
 | Autres choix ci-dessus (Assumptions, Contradictions) | Propositions de l'agent, toutes égales ou plus strictes que les sources ; à confirmer par le porteur |

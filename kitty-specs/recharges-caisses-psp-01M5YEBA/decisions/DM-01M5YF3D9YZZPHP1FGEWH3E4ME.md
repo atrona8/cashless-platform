@@ -4,9 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.psp.secrets-store`
 - **Input key:** `psp_secrets_store`
-- **Status:** `deferred`
+- **Status:** `resolved`
 - **Created:** `2026-10-27T10:39:37.790311+00:00`
-- **Resolved:** `2026-10-27T10:39:51.281570+00:00`
+- **Resolved:** `2026-10-27T10:48:31.164845+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,13 +22,13 @@ Coffre des secrets PSP (AWS Secrets Manager, rattaché au détenteur des fonds) 
 
 ## Final answer
 
-_(none)_
+Reporter avec les adaptateurs PSP réels : port + faux coffre refusé en production ; adaptateur AWS Secrets Manager livré avec eux. Décision du porteur du 27/10/2026.
 
 ## Rationale
 
-Lié à la décision des adaptateurs réels ; règle 1 de CLAUDE.md (faux gardé) et pile non arrêtée (document 08) : à soumettre au porteur avant le plan.
+_(none)_
 
 ## Change log
 
 - `2026-10-27T10:39:37.790311+00:00` — opened
-- `2026-10-27T10:39:51.281570+00:00` — deferred
+- `2026-10-27T10:48:31.164845+00:00` — resolved (final_answer="Reporter avec les adaptateurs PSP réels : port + faux coffre refusé en production ; adaptateur AWS Secrets Manager livré avec eux. Décision du porteur du 27/10/2026.")

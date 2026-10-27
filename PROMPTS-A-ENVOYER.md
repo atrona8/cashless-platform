@@ -191,8 +191,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > `DepositService.takeDueDeposit` après chaque crédit payé, dans une transaction distincte.
 
 > **Spécifiée le 27/10/2026** (slug réel `recharges-caisses-psp-01M5YEBA`, branche `feat/recharges-caisses-psp`).
-> Deux décisions du porteur à prendre avant le plan (règle 1 de CLAUDE.md) : adaptateurs PSP réels livrés ou
-> reportés tant que les accès de test manquent (action 11) ; adaptateur AWS Secrets Manager livré ou reporté.
+> Décisions du porteur du 27/10/2026 (règle 1 de CLAUDE.md) : adaptateurs PSP réels **reportés** à une mission
+> dédiée dès les accès de test obtenus (action 11), faux par fournisseur refusé en production ; adaptateur AWS
+> Secrets Manager reporté avec eux (port + faux coffre refusé en production). Dette nommée au plan (OP + ADR).
 > Hors périmètre : caution payée par mobile money ou carte (restitution impossible sans remboursement PSP en V1).
 
 - [x] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).

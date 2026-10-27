@@ -4,9 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.psp.real-adapters`
 - **Input key:** `psp_real_adapters`
-- **Status:** `deferred`
+- **Status:** `resolved`
 - **Created:** `2026-10-27T10:39:34.035638+00:00`
-- **Resolved:** `2026-10-27T10:39:47.076513+00:00`
+- **Resolved:** `2026-10-27T10:48:27.364743+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -23,13 +23,13 @@ Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) : les coder dans c
 
 ## Final answer
 
-_(none)_
+Reporter les 4 adaptateurs réels : interface commune + faux par fournisseur refusé au démarrage en production ; adaptateurs réels dans une mission dédiée dès les accès de test obtenus (action 11). Dette nommée : OP + ADR + test + reports PROMPTS/PRD. Décision du porteur du 27/10/2026.
 
 ## Rationale
 
-Porteur absent (consigne : ne pas l'attendre) ; garder un faux plus longtemps que prévu relève de la règle 1 de CLAUDE.md : à soumettre avant tout codage, au plus tard au plan.
+_(none)_
 
 ## Change log
 
 - `2026-10-27T10:39:34.035638+00:00` — opened
-- `2026-10-27T10:39:47.076513+00:00` — deferred
+- `2026-10-27T10:48:27.364743+00:00` — resolved (final_answer="Reporter les 4 adaptateurs réels : interface commune + faux par fournisseur refusé au démarrage en production ; adaptateurs réels dans une mission dédiée dès les accès de test obtenus (action 11). Dette nommée : OP + ADR + test + reports PROMPTS/PRD. Décision du porteur du 27/10/2026.")
