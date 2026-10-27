@@ -71,7 +71,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
   des terminaux venant en mission 5a et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
   l'adaptateur AWS réel venant quand la région et les comptes seront arrêtés (OP-N11) ; la caution payée à part se
-  règle en espèces tant que la mission 6 (PSP) n'est pas livrée. Les routes back-office des lots, des clés, de la
+  règle en espèces ; la mission 6 ne l'ouvre pas au mobile money ni à la carte (sa restitution exigerait un
+  remboursement PSP, absent en V1 ; décision de spécification du 27/10/2026, à confirmer par le porteur). Les routes back-office des lots, des clés, de la
   personnalisation et de la liste noire sont à ajouter au contrat.
 
 ### 2.5 Terminaux et encaissement (§8)

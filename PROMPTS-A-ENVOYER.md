@@ -190,13 +190,18 @@ vendeurs et le catalogue : la mission les ajoute.
 > (décision n° 10, ADR-89, OP-N49) ; servir `cash_session_id` dans `refundCashDue` et `releaseMedia` ; appeler
 > `DepositService.takeDueDeposit` après chaque crédit payé, dans une transaction distincte.
 
-- [ ] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).
+> **Spécifiée le 27/10/2026** (slug réel `recharges-caisses-psp-01M5YEBA`, branche `feat/recharges-caisses-psp`).
+> Deux décisions du porteur à prendre avant le plan (règle 1 de CLAUDE.md) : adaptateurs PSP réels livrés ou
+> reportés tant que les accès de test manquent (action 11) ; adaptateur AWS Secrets Manager livré ou reporté.
+> Hors périmètre : caution payée par mobile money ou carte (restitution impossible sans remboursement PSP en V1).
+
+- [x] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).
 - [ ] /spec-kitty.plan Secrets PSP dans AWS Secrets Manager, rattachés au détenteur des fonds, jamais partagés. Webhook inconnu ou invalide conservé et signalé, jamais ignoré. Clé d'idempotence des webhooks `<psp>:<id>`. Les taux PSP sont des `fee_rule` par configuration. Adaptateurs réels codés derrière l'interface, activés seulement après vérification des accès de test (action 11 de POINTS_OUVERTS).
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission recharges-caisses-psp
-- [ ] /spec-kitty.review --mission recharges-caisses-psp
-- [ ] /spec-kitty.accept --mission recharges-caisses-psp
-- [ ] spec-kitty merge --mission recharges-caisses-psp
+- [ ] spec-kitty next --agent claude --mission recharges-caisses-psp-01M5YEBA
+- [ ] /spec-kitty.review --mission recharges-caisses-psp-01M5YEBA
+- [ ] /spec-kitty.accept --mission recharges-caisses-psp-01M5YEBA
+- [ ] spec-kitty merge --mission recharges-caisses-psp-01M5YEBA
 
 ## Mission 7 — Hors ligne (snapshots et lots)
 
