@@ -1,0 +1,49 @@
+# Reprise de la mission 6 — `recharges-caisses-psp-01M5YEBA`
+
+État au 27/10/2026. Branche `feat/recharges-caisses-psp` (partie de `main` à `2adf0dca`, après les PR #6 et #7 de la
+5b) ; coordination `kitty/mission-recharges-caisses-psp-01M5YEBA` ; PR vers `main` prévue (`pr_bound`), branches et
+worktrees gardés après la fusion.
+
+## Où en est la mission
+
+| Étape | État | Commits |
+|---|---|---|
+| Spécification | Faite (discovery réduite à la demande du porteur, « ne m'attends pas ») ; 31 FR, 10 NFR, 10 C | `ab31d7e`, `6729bb4`, `c1bf43a` |
+| Décisions du porteur | Adaptateurs PSP réels et coffre AWS **reportés** (mission 6b) ; OP-N81, ADR-131 | `c1bf43a` |
+| Plan | Fait : plan, research (R-20 fait foi), data-model, contrats, quickstart | `52bdf27`, `c3519af` |
+| Passe contradictoire du plan | 34 constats (4 bloquants) : 31 corrigés, 3 reportés avec raison | `c3519af` |
+| Addendum documentaire post-plan | En cours (agent) | — |
+| Tâches (`/spec-kitty.tasks`) | À faire | — |
+
+## Ce qui est consigné
+
+- OP-N81 (PSP et coffre en faux, bloque les recharges en ligne en production), OP-N82 (remboursement au payeur d'un
+  paiement non crédité hors plateforme) ; ADR-131 (report), ADR-132 (contrôle des caisses renforcé), ADR-133 (frais
+  par configuration, anomalie `PSP_TOPUP_NOT_CREDITED`, actions `WALLET_UNBLOCK` et `CASH_DEPOSIT`, `A-PSP-*`
+  négatif).
+- Mission 6b « Adaptateurs PSP réels et coffre des secrets » ajoutée à `PROMPTS-A-ENVOYER.md` et `PRD.md`.
+- Reports nommés à d'autres missions : session d'une recharge espèces hors ligne (mission 7, A17) ; rapprochement qui
+  exclut les anomalies de paiements non crédités et contrôle « aucune session ouverte » avant `RECONCILING`
+  (mission 9, A16, A32) : reportés dans PROMPTS (missions 7 et 9) et PRD le 27/10/2026.
+
+## Prochaines actions
+
+1. Fin de l'addendum post-plan : soumettre au porteur les réponses de nécessité/complétude, écrire la ligne du journal
+   de `docs/06-docs-status.md`, commiter.
+2. (Fait) reports A16, A17, A32.
+3. `/spec-kitty.tasks` ; matrice d'acceptation tenue au fil des lots (mémoire « Suivre le modèle Spec Kitty »).
+4. Créer `docs/Mission-06-Recharges-caisses-PSP.docx` (gabarit de la 5b : `docs/passation-5b/scripts/gen_5b_doc.py`).
+5. Implémentation : un implémenteur et un relecteur distincts par lot (sous-agents sur Sonnet ;
+   `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` réglé dans `.claude/settings.local.json`), tests en série par l'orchestrateur.
+
+## Fichiers à faire relire par une personne (prévus)
+
+Migrations `0036` à `0038` (garde de caisse, `account_purpose_guard`, droits), `post-roles.sql`, réception et
+vérification des notifications (`apps/api/src/webhooks/`), ports PSP et coffre (`apps/api/src/psp/`), contestations
+et blocage de portefeuille.
+
+## Rapports
+
+`contexte-m6.md` (sources normatives extraites, 24 questions ouvertes) ; `rapports/plan-adversarial.md`.
+Environnement de test : voir `docs/passation-5b/REPRISE.md` (« Environnement de test ») ; `pg_prove` par
+`docs/passation-5b/scripts/pg_prove-docker`.

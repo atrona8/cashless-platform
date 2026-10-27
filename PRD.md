@@ -266,6 +266,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   l'API (OP-N63, ADR-105, bloque la production) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
+- héritages de la mission 6 (27/10/2026) : mission 7, session d'une recharge espèces hors ligne (la base refuse toute
+  écriture de caisse hors session) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
+  et passage à `RECONCILING` refusé tant qu'une session de caisse est ouverte ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

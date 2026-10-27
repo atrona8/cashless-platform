@@ -221,6 +221,11 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 7 — Hors ligne (snapshots et lots)
 
+> **Hérité de la mission 6 (27/10/2026)** : la base refuse toute écriture sur une caisse inscrite (`cash_desk`) sans
+> session de caisse ouverte (garde sur `posting`, ADR-132). Définir la session d'une recharge espèces hors ligne
+> (`TOPUP_CASH` en `OFFLINE_SYNC`/`EDGE_SYNC`) : session couvrant `occurred_at`, ou session de rattrapage, sans
+> ouvrir d'exemption silencieuse à la garde (constat A17 de la passe contradictoire du plan de la mission 6).
+
 > **Hérité de la mission 4 (bracelets-nfc)** : deux faiblesses du kit, antérieures à la mission 4, consignées sans
 > changement de comportement (relecture du lot 20, ADR-94). **OP-N57** : `cashless_app` choisit la version d'un
 > snapshot et `check_offline_snapshot` n'exige qu'une version croissante ; une version très grande plantée bloque les
@@ -302,6 +307,11 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission passerelle-locale
 
 ## Mission 9 — Remboursements, versements et clôture
+
+> **Hérité de la mission 6 (27/10/2026)** : (1) un paiement réussi chez le PSP mais non crédité n'a aucune écriture
+> (OP-N82) : le contrôle « grand livre = relevé » et le rapprochement doivent exclure les anomalies
+> `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes, ou les représenter (constat A16) ; (2) refuser le passage
+> à `RECONCILING` tant qu'une session de caisse est ouverte (constat A32).
 
 > **Hérité de la mission 4 (bracelets-nfc)** : enchaînement du guichet de retour (`releaseMedia` avec `settle_balance`,
 > `refund_deposit_by`) — **servi par cette mission**, décision du porteur du 15/10/2026 (OP-N51, ADR-91 acceptée) ; le
