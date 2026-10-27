@@ -2,35 +2,18 @@
 
 > Statut de complétude : voir `06-docs-status.md`. Un diagramme par flux critique
 > qui traverse plusieurs composants (les flux internes à un seul composant vivent
-> dans le détail local de la mission concernée). Flux écrits avant la mission « Bracelets NFC » : Mermaid ; flux
-> ajoutés depuis : `/illustre` (préférence du porteur du 13/10/2026), sources dans [`diagrams/`](diagrams/).
+> dans le détail local de la mission concernée). Tous les flux sont désormais en `/illustre` (préférence du porteur du 13/10/2026 ;
+> les six flux des missions 1 à 3, d'abord en Mermaid, ont été redessinés et uniformisés le 27/10/2026, décision du
+> porteur), sources dans [`diagrams/`](diagrams/).
 > Dernière mise à jour : 21/10/2026 (flux « Enrôlement et requête signée d'un terminal », mission « Identité et
 > enrôlement des terminaux », mergée le 21/10/2026).
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
 
-```mermaid
-sequenceDiagram
-    actor Vendeur
-    participant Terminal
-    participant Bracelet
-    participant API
-    participant DB as Base centrale
+![Paiement en ligne par bracelet](diagrams/sequence-paiement-en-ligne.png)
 
-    Vendeur->>Terminal: Saisit le montant
-    Terminal->>Bracelet: UID, page 4, READ_SIG
-    Terminal->>Terminal: PWD et PACK (snapshot ou auth-keys)
-    Note over Terminal,API: auth-keys : processus des clés, distinct de l'API publique
-    Terminal->>Bracelet: PWD_AUTH, lecture, INCR_CNT
-    Terminal->>API: POST /payments (lecture, seq, signé)
-    API->>DB: register_tap
-    API->>DB: post_transaction (PURCHASE)
-    API->>DB: consume_tap
-    DB-->>API: Transaction validée
-    API-->>Terminal: 201 Payé
-    Terminal-->>Vendeur: Succès affiché
-```
+Sources : [`sequence-paiement-en-ligne.excalidraw`](diagrams/sequence-paiement-en-ligne.excalidraw), [`sequence-paiement-en-ligne.svg`](diagrams/sequence-paiement-en-ligne.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Enrôlement et requête signée d'un terminal (§8.1, §8.2, §10.3 ; `sync_protocol.md` §3.1)
 
@@ -46,117 +29,33 @@ signataire des jetons : faux seulement, refusés en production (OP-N73).
 
 ## Flux : Vente hors ligne puis synchronisation (§9.3 à §9.6)
 
-```mermaid
-sequenceDiagram
-    actor Vendeur
-    participant Terminal
-    participant API
-    participant DB as Base centrale
+![Vente hors ligne puis synchronisation](diagrams/sequence-vente-hors-ligne.png)
 
-    Note over Terminal: Réseau coupé
-    Vendeur->>Terminal: Encaisse
-    Terminal->>Terminal: Contrôle snapshot et plafonds
-    Terminal->>Terminal: Journal local (fsync)
-    Note over Terminal: Réseau revenu
-    Terminal->>API: POST /offline-batches (lot signé, chaîné)
-    API->>DB: open_offline_batch
-    loop Chaque opération, dans l'ordre des seq
-        API->>DB: post_transaction (OFFLINE_SYNC)
-        Note over DB: Part non couverte en S-ATTENTE
-    end
-    API->>DB: complete_offline_batch
-    API-->>Terminal: Résultat par opération
-```
+Sources : [`sequence-vente-hors-ligne.excalidraw`](diagrams/sequence-vente-hors-ligne.excalidraw), [`sequence-vente-hors-ligne.svg`](diagrams/sequence-vente-hors-ligne.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Bascule vers la passerelle et retour (§9.7)
 
-```mermaid
-sequenceDiagram
-    participant Passerelle
-    participant API
-    participant DB as Base centrale
-    participant Terminal
+![Bascule vers la passerelle et retour](diagrams/sequence-bascule-passerelle.png)
 
-    Passerelle->>API: Demande d'autorité
-    API->>DB: grant_edge_authority (époque +1)
-    API-->>Passerelle: Autorité accordée
-    Passerelle->>API: ack du handover
-    Note over Passerelle,Terminal: Coupure internet
-    Terminal->>Passerelle: Paiements (LAN)
-    Note over Passerelle,API: Internet revenu
-    Passerelle->>API: POST /edge/handovers/{id}/release
-    Passerelle->>API: POST /edge/sync-batches (EDGE_SYNC)
-    API->>DB: record_edge_seq, post_transaction
-    API->>DB: complete_edge_release (époque +1)
-    API-->>Passerelle: Autorité rendue au central
-```
+Sources : [`sequence-bascule-passerelle.excalidraw`](diagrams/sequence-bascule-passerelle.excalidraw), [`sequence-bascule-passerelle.svg`](diagrams/sequence-bascule-passerelle.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Recharge mobile money (§8.5, §11.1)
 
-```mermaid
-sequenceDiagram
-    actor Festivalier
-    participant App as App festivalier
-    participant API
-    participant PSP
-    participant DB as Base centrale
+![Recharge mobile money](diagrams/sequence-recharge-mobile-money.png)
 
-    Festivalier->>App: Recharge 20 000 XOF
-    App->>API: POST /topups/psp
-    API->>PSP: Initie le paiement
-    PSP-->>App: Validation par le client
-    PSP->>API: Webhook signé
-    API->>API: Vérifie la signature, stocke brut
-    API->>DB: post_transaction (TOPUP, frais PSP)
-    API->>DB: take_deposit si caution due
-    API-->>PSP: 200
-    App->>API: GET /topups/psp/{id}
-    API-->>App: Recharge réussie
-```
+Sources : [`sequence-recharge-mobile-money.excalidraw`](diagrams/sequence-recharge-mobile-money.excalidraw), [`sequence-recharge-mobile-money.svg`](diagrams/sequence-recharge-mobile-money.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Double validation au back-office (§3.2)
 
-```mermaid
-sequenceDiagram
-    actor Auteur
-    actor Valideur
-    participant BO as Back-office
-    participant API
-    participant DB as Base centrale
+![Double validation au back-office](diagrams/sequence-double-validation.png)
 
-    Auteur->>BO: Lance une action à deux
-    BO->>API: Appel de l'opération
-    API->>DB: Crée approval_request (24 h)
-    API-->>BO: 202 demande PENDING
-    Valideur->>BO: Ouvre la demande
-    BO->>API: POST /approval-requests/{id}/approve
-    API->>DB: decide_approval_request (valideur ≠ auteur)
-    API->>DB: Exécute l'action une fois
-    API-->>BO: Demande EXECUTED
-```
+Sources : [`sequence-double-validation.excalidraw`](diagrams/sequence-double-validation.excalidraw), [`sequence-double-validation.svg`](diagrams/sequence-double-validation.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Clôture d'un événement (§12.1)
 
-```mermaid
-sequenceDiagram
-    actor Org as Organisateur
-    participant BO as Back-office
-    participant API
-    participant DB as Base centrale
+![Clôture d'un événement](diagrams/sequence-cloture-evenement.png)
 
-    Org->>BO: Passe à l'étape suivante
-    BO->>API: Vérifie caisses, PSP, terminaux
-    API->>DB: set_event_status
-    DB->>DB: Verrous, conditions calculées
-    alt Condition non remplie
-        DB-->>API: CL019 (condition nommée)
-        API-->>BO: Liste des conditions
-    else Conditions remplies
-        DB->>DB: Statut des grands livres
-        DB-->>API: Statut changé
-        API-->>BO: Nouveau statut
-    end
-```
+Sources : [`sequence-cloture-evenement.excalidraw`](diagrams/sequence-cloture-evenement.excalidraw), [`sequence-cloture-evenement.svg`](diagrams/sequence-cloture-evenement.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
 
 ## Flux : Annulation d'une vente, au terminal et au back-office (mission « Encaissement en ligne » ; ADR-122, ADR-123, ADR-129)
 
