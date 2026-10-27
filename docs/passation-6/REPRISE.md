@@ -62,7 +62,9 @@ worktrees gardés après la fusion.
    fixée par le serveur, portefeuille déduit du bracelet, rôle de l'acteur, rattachement prouvé.
    WP08 et WP11 : ajouter leurs opérations de terminal à `device-auth-matrix.spec.ts` (à vérifier à leur revue).
    Échecs du Jest complet vus par le relecteur de WP06 (claim-code-order, personalization, platform,
-   migrate-rights) : à confirmer sur la batterie de l'orchestrateur.
+   migrate-rights) : batterie de l'orchestrateur sur lane-f (cashless_test remise à zéro) : 2197 verts,
+   2 échecs (`personalization` délai de 5 s sous charge, `idempotency` 429) ; les deux suites seules,
+   deux fois après reset : 57/57. Instabilités de charge, pas un défaut de WP02/WP06.
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
