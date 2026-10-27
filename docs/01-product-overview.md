@@ -4,7 +4,7 @@
 > initialisation du 07/10/2026 (à partir de `PRD.md`, lui-même tiré de `SPECIFICATION.md` v1.2) ; 21/10/2026 :
 > domaine « Terminaux et encaissement », identité et enrôlement des terminaux (mergée le 21/10/2026).
 > 23/10/2026 : état du projet (5 missions fusionnées, mission 5b en implémentation).
-> 26/10/2026 : mission 5b relue (14 lots approuvés). 27/10/2026 : mission 5b acceptée et mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, PR vers `main` à venir ; revue post-fusion faite (publiable avec réserves).
+> 26/10/2026 : mission 5b relue (14 lots approuvés). 27/10/2026 : mission 5b acceptée et mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026 ; revue post-fusion faite (publiable avec réserves).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -26,12 +26,12 @@ en partie double, de l'argent encaissé et dû à chaque intervenant (§1.1).
 *(Frustrations déduites du contexte : la spécification décrit les exigences, pas les irritants actuels.)*
 
 ## Périmètre fonctionnel actuel
-Au 23/10/2026, cinq missions sont fusionnées dans `main` : 1 (grand livre), 2 (identité, rôles, double validation),
-3 (configuration, parties, événements), 4 (bracelets NFC) et 5a (identité et enrôlement des terminaux). La mission 5b
-(encaissement en ligne) est acceptée et mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, PR vers `main` à venir
-(contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par bracelet et par QR, annulation à deux
-voies, OP-N74 levé, preuves de bout en bout ; latence mesurée p95 ≈ 68 ms, p99 ≈ 84 ms) ; revue post-fusion faite le
-27/10/2026 (publiable avec réserves : mineurs de test et de consignation). Les missions 6 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
+Au 27/10/2026, six missions sont fusionnées dans `main` : 1 (grand livre), 2 (identité, rôles, double validation),
+3 (configuration, parties, événements), 4 (bracelets NFC), 5a (identité et enrôlement des terminaux) et 5b
+(encaissement en ligne, PR #6 : contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par
+bracelet et par QR, annulation à deux voies, OP-N74 levé, preuves de bout en bout ; latence du paiement par bracelet
+en CI p95 ≈ 29 ms, p99 ≈ 32 ms). Revue post-fusion de la 5b : publiable avec réserves (mineurs de test et de
+consignation). Les missions 6 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
@@ -84,10 +84,10 @@ voies, OP-N74 levé, preuves de bout en bout ; latence mesurée p95 ≈ 68 ms, p
   battement de cœur, back-office des terminaux (liste, fiche, suspension, réactivation, révocation par une personne) ;
   dettes de base de la mission 4 levées (OP-N44, N50, N54, N59, N62, N63) et OP-N42. Limites : autorité des terminaux
   et signataire des jetons en faux, refusés en production (OP-N73, mission 7) ; pas de limite en amont de l'enrôlement
-  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR) : ✅ mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, PR vers `main` à venir (mission 5b ; limites OP-N76 à N80 consignées ; identification au guichet reportée à la mission 10) ; app terminal
+  (OP-N72, mission 13). Encaissement (vendeurs, catalogue, paiement, QR) : ✅ mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026 (mission 5b ; limites OP-N76 à N80 consignées ; identification au guichet reportée à la mission 10) ; app terminal
   conditionnée à la validation NFC sur vrais bracelets
 - Mission(s) associée(s) : `identite-enrolement-terminaux-01M52R6H` (Identité et enrôlement des terminaux) ;
-  `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, PR vers `main` à venir)
+  `terminaux-paiement-en-ligne-01M52QB9` (encaissement en ligne, mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026)
 
 ### Hors ligne et passerelle locale
 - Description : snapshot signé, plafonds hors ligne, lots numérotés, conflits, passerelle locale qui prend

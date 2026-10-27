@@ -1,6 +1,6 @@
 # Reprise de la mission 5b — `terminaux-paiement-en-ligne-01M52QB9`
 
-État au 27/10/2026 : mission acceptée, mergée sur feat, revue post-fusion faite ; reste la PR. Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
+État au 27/10/2026 : mission terminée, dans main par la PR #6 (`d3a20201`, CI de main verte). Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
 chaque nouvelle session) : fiche de contexte des agents, comptes rendus d'implémentation et de relecture, scripts de
 test, générateur du document Word.
 
@@ -49,8 +49,8 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
   - ~~pousser feat et ouvrir la PR~~ : fait le 27/10 avec l'accord du porteur, **PR #6**. CI verte (runs
     40484677544 et 40484741738) : Jest 2188 réussis / 7 ignorés ; latence en série verte (configuration p95 18,6 ms,
     battement 17,4 ms, paiement par bracelet p95 28,7 ms / p99 32,3 ms). **NFR-010 confirmé par la CI.** Marge
-    faible : `devices/config.spec.ts` dure 5,2 s pour un délai Jest de 5 s par test, à surveiller. Fusion dans main
-    à la décision du porteur ;
+    faible : `devices/config.spec.ts` dure 5,2 s pour un délai Jest de 5 s par test, à surveiller. Fusionnée dans main
+    par le porteur le 27/10 (`d3a20201`), CI de main verte ;
   - relecture humaine des fichiers listés en fin de ce document et dans le rapport de revue.
 
 ## Point d'arrêt du 26/10/2026 (fin de session, à la demande du porteur)
