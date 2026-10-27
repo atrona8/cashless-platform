@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2031" height="1178" viewBox="0 0 2031 1178">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="701.6666666666666" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,288.56 1210.3333333333333,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,288.56 1191.026516971745,299.1073618492925 1191.026516971745,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="556.4666666666666" y="251.56" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,361.56 1727.0,361.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,361.56 1707.6931836384117,372.1073618492925 1707.6931836384117,351.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1326.2666666666664" y="324.56" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,434.55999999999995 193.0,434.55999999999995" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,434.55999999999995 212.3068163615882,424.01263815070746 212.3068163615882,445.10736184929243" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="551.2666666666667" y="397.55999999999995" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,507.56 1210.3333333333333,507.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,507.56 1191.026516971745,518.1073618492925 1191.026516971745,497.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="603.2666666666667" y="470.56" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,580.56 193.0,580.56" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,580.56 212.3068163615882,570.0126381507075 212.3068163615882,591.1073618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="587.6666666666666" y="543.56" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,653.56 1210.3333333333333,653.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,653.56 1191.026516971745,664.1073618492924 1191.026516971745,643.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="861.6" y="616.56" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,726.56 1727.0,726.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,726.56 1707.6931836384117,737.1073618492924 1707.6931836384117,716.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1315.8666666666666" y="689.56" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1585.0" y="769.56" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="1212.3333333333333,872.5600000000001 709.6666666666666,872.5600000000001" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,872.5600000000001 728.9734830282548,862.0126381507076 728.9734830282548,883.1073618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="877.2" y="835.5600000000001" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,945.5600000000001 709.6666666666666,945.5600000000001" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="709.6666666666666,945.5600000000001 728.9734830282548,935.0126381507076 728.9734830282548,956.1073618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="814.8" y="908.5600000000001" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Session de caisse et fermeture</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Ouverture au terminal, comptage à l’aveugle, fermeture par une autre personne</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal (caissier)</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Superviseur</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="701.6666666666666" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Ouvrir (3 preuves + agent)</text>
+<text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="1476.6666666666665" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Caisse du terminal, session</text>
+<text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="701.6666666666666" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Session ouverte, rien écrit</text>
+<text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="701.6666666666666" y="488.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Compter (montant)</text>
+<text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="701.6666666666666" y="561.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Reçu, sans théorique</text>
+<text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Fermer la session</text>
+<text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1476.6666666666665" y="707.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Verrou, théorique, CASH_CLOSE</text>
+<text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="1735.0" y="801.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Écart non nul : CASH_DIFF</text>
+<text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="960.0" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Session fermée</text>
+<text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="960.0" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Fermeur ayant compté : 403</text>
+<text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Sans comptage : 409. Seconde session sur la caisse ou le terminal : 409. Caisse remise à zéro ; écart au payeur du contrat (cash_diff_bearer).</text>
+</g>
+</svg>

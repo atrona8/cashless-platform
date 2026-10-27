@@ -1881,3 +1881,39 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Aucun droit élargi ; aucune écriture partielle (rien n'est consommé avant le verrou). Report dans
   `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`.
 - **Références.** OP-N80 ; `apps/api/src/vendor-pin/` (`SessionLock`) ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/`.
+
+## ADR-131 — Mission 6 : adaptateurs PSP réels et coffre des secrets reportés (OP-N81)
+
+- **Statut** : Acceptée, 27 octobre 2026 (décision du porteur à la spécification de la mission 6,
+  `recharges-caisses-psp-01M5YEBA`). Faux gardés plus longtemps que prévu (règles 1 et 3 de `CLAUDE.md`).
+- **Contexte.** ADR-70 prévoit quatre adaptateurs PSP derrière un même port et des secrets dans AWS Secrets Manager.
+  Aucun accès de test n'existe (action 11) ; écrire des adaptateurs non éprouvés expose la vérification de signature,
+  seule preuve d'un crédit.
+- **Décision.** La mission 6 livre les ports `PspAdapter` et `PspSecretStore`, un faux par fournisseur et un faux
+  coffre, tous refusés au démarrage en production. Adaptateurs réels et coffre AWS : mission dédiée, dès les accès de
+  test obtenus. **Bloque la production : oui pour les recharges en ligne** (non servies) ; espèces non concernées.
+- **Condition de levée.** OP-N81.
+- **Conséquences.** Test de borne : `production-guard.spec.ts`. Reports dans `PROMPTS-A-ENVOYER.md` (mission
+  « Adaptateurs PSP réels ») et `PRD.md`.
+- **Références.** OP-N81, ADR-70, ADR-125 ; `kitty-specs/recharges-caisses-psp-01M5YEBA/research.md` R-08, R-09, R-17.
+
+## ADR-132 — Mission 6 : contrôle des caisses renforcé
+
+- **Statut** : Acceptée, 27 octobre 2026 (plan de la mission 6). Renforcements faits puis consignés (règle 1).
+- **Décision.** (1) Une caisse par terminal `TOPUP_DESK` (`A-CAISSE-<série>`), créée par la base à la première session ;
+  le `cash_account_id` du contrat devient facultatif. (2) La base refuse toute écriture sur un compte `CASH_DESK`
+  sans session ouverte (déclencheur). (3) Comptage à l'aveugle ; fermeture par un `SUPERVISOR` autre que l'auteur du
+  dernier comptage. (4) Ouverture et comptage exigent l'identité du terminal et le jeton de la personne (le contrat
+  ne demandait que le jeton de la personne). (5) Recharge espèces en ligne refusée au-delà du plafond ; découpage
+  vers `L-ESP-A-RENDRE` réservé au hors ligne, avec son anomalie (correction d'un défaut du moteur).
+- **Références.** OP-N49 (levé), ADR-63, ADR-89, ADR-113 ; research R-01 à R-05.
+
+## ADR-133 — Frais PSP par configuration ; compléments de la liste des anomalies et des actions
+
+- **Statut** : Acceptée, 27 octobre 2026 (plan de la mission 6).
+- **Décision.** (1) Les taux PSP sont des `fee_rule` de portée `PSP_CONFIGURATION` (§11.1) ; la convention provisoire
+  d'ADR-82 §3 (`EVENT` + `PSP:<canal>`) est retirée. (2) Nouveau type d'anomalie `PSP_TOPUP_NOT_CREDITED` (paiement
+  réussi non crédité hors plafond : 3-D Secure, grand livre fermé, annulation confirmée). (3) Nouvelles actions
+  d'approbation `WALLET_UNBLOCK` (déblocage après contestation) et `CASH_DEPOSIT` (dépôt en banque), à deux.
+  (4) `A-PSP-*` négatif permis, conformément à ADR-77 (contradiction avec SPECIFICATION §5.2 signalée).
+- **Références.** ADR-77, ADR-82 ; research R-11, R-13 à R-15.
