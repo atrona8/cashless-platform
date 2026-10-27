@@ -8,9 +8,9 @@ import 'tap_input.dart';
 
 part 'cash_due_refund_request.g.dart';
 
-/// Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet). Tant que les.
-/// sessions de caisse ne sont pas livrées, `cash_session_id` est facultatif : le compte crédité est la caisse du.
-/// terminal (`409` si elle n'est pas ouverte).
+/// Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet).
+/// `cash_session_id` est facultatif : le compte crédité est la caisse du terminal, dont la session doit être.
+/// `OPEN` (`409 CONFLICT_STATE` sinon) ; fourni, il DOIT être cette session.
 ///
 @JsonSerializable()
 class CashDueRefundRequest {
@@ -23,7 +23,7 @@ class CashDueRefundRequest {
   final int? tapId;
   final TapInput? tap;
 
-  /// Session de caisse ouverte ; son compte `CASH_DESK` est crédité.
+  /// Session de caisse ouverte du terminal ; son compte de caisse est crédité.
   @JsonKey(name: 'cash_session_id')
   final String? cashSessionId;
 

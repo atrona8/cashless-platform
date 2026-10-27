@@ -27,7 +27,9 @@ class MediaReleaseRequest {
   final int? tapId;
   final TapInput? tap;
 
-  /// Session de caisse ouverte ; obligatoire si des espèces sont rendues.
+  /// Facultatif. Session de caisse ouverte du terminal, qui reçoit les espèces rendues ; fourni, il DOIT.
+  /// être celle-là (sinon `409 CONFLICT_STATE`).
+  ///
   @JsonKey(name: 'cash_session_id')
   final String? cashSessionId;
   @JsonKey(name: 'refund_deposit_by')
