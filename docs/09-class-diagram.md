@@ -480,6 +480,88 @@ classDiagram
   PaymentRequestDetail "*" --> "1" VendorSession
 ```
 
+## 4 quater. Caisses, recharges et PSP (mission « Recharges, caisses et PSP », 📋 planifiée, plan du 27/10/2026)
+
+> Tables prévues par `kitty-specs/recharges-caisses-psp-01M5YEBA/data-model.md` (migrations `0036` à `0038`) ; non encore
+> implémentées. À recaler sur le schéma réel à l'addendum post-relecture.
+
+Une caisse est le compte `A-CAISSE-<série>` d'un terminal `TOPUP_DESK`, inscrit dans `cash_desk` ; une garde sur
+`posting` refuse toute écriture de ce compte sans session `OPEN`. Une session reçoit des comptages (à l'aveugle) et ses
+transactions d'espèces ; sa fermeture écrit `CASH_CLOSE` et, si l'écart n'est pas nul, ouvre une anomalie `CASH_DIFF`.
+Une configuration PSP est propre à un organisateur, un moyen et un fournisseur, au nom du détenteur des fonds ; elle ne
+garde qu'une référence de secret. Un événement choisit une configuration par moyen. Une recharge PSP garde la
+configuration d'origine ; chaque notification authentifiée est conservée brute ; une contestation est rattachée à la
+recharge d'origine.
+
+```mermaid
+classDiagram
+  direction LR
+  class CashDesk {
+    text account_id
+  }
+  class CashSession {
+    text status
+    bigint counted_amount
+    bigint expected_amount
+    timestamptz opened_at
+    timestamptz closed_at
+  }
+  class CashSessionCount {
+    int count_no
+    bigint counted_amount
+  }
+  class PspConfiguration {
+    text method
+    text provider
+    text secret_ref
+    text status
+    boolean is_default
+    int version
+  }
+  class EventPspSelection {
+    text method
+  }
+  class PspTopup {
+    text method
+    bigint amount
+    bigint fee_amount
+    text status
+    text provider_payment_ref
+    timestamptz expires_at
+    text failure_reason
+  }
+  class PspEvent {
+    text provider_event_id
+    text status
+    text outcome
+    int attempts
+  }
+  class PspChargeback {
+    text provider_dispute_id
+    bigint amount
+    boolean wallet_blocked
+    boolean late
+  }
+  CashDesk "1" --> "1" Account : caisse
+  CashDesk "1" --> "1" Device
+  CashSession "*" --> "1" CashDesk
+  CashSession "*" --> "1" Device
+  CashSession "*" --> "0..1" Transaction : CASH_CLOSE
+  CashSession "*" --> "0..1" Anomaly : CASH_DIFF
+  CashSessionCount "*" --> "1" CashSession
+  CashSession "1" --> "*" Transaction : espèces rattachées
+  PspConfiguration "*" --> "1" Party : titulaire
+  EventPspSelection "*" --> "1" Event
+  EventPspSelection "*" --> "1" PspConfiguration
+  PspTopup "*" --> "1" Wallet
+  PspTopup "*" --> "1" PspConfiguration
+  PspTopup "0..1" --> "1" Transaction : TOPUP
+  PspEvent "*" --> "1" PspConfiguration
+  PspEvent "*" --> "0..1" PspTopup
+  PspChargeback "*" --> "1" PspTopup
+  PspChargeback "0..1" --> "1" Transaction : CHARGEBACK
+```
+
 ## 5. Description des tables
 
 Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne »),
@@ -564,6 +646,23 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `sale_attribution` | Vendeur, session, terminal et moyen (NFC, QR commerçant, QR client) d'une vente ou d'une annulation ; écrite par la base d'après la session, sans écriture directe de l'API. | 0033 |
 | `payment_request_detail` | Détail d'une demande de paiement QR : session de vendeur, lignes, version du catalogue, clé d'idempotence unique par prestataire. | 0034 |
 
+### Caisses, recharges et PSP (mission 6, plan)
+
+| Table | Rôle | Origine |
+|---|---|---|
+| `cash_desk` | Caisses inscrites (compte `A-CAISSE-<série>`, terminal, grand livre) : seules soumises à la garde de caisse ; remplie par `open_cash_session`. | 0036 (plan) |
+| `cash_session` | Session de caisse d'un terminal : `OPEN`, `CLOSING`, `CLOSED` ; compté et théorique figés à la fermeture ; écriture `CASH_CLOSE` et anomalie `CASH_DIFF` ; une seule session ouverte par caisse et par terminal. | 0036 (plan) |
+| `cash_session_count` | Comptage à l'aveugle (au plus 10 par session) : montant, auteur, date. | 0036 (plan) |
+| `cash_session_tx` | Transactions d'espèces rattachées à leur session. | 0036 (plan) |
+| `psp_configuration` | Configuration d'un fournisseur pour un organisateur et un moyen : titulaire = détenteur des fonds, `secret_ref` (jamais un secret), statut, défaut unique, version, activation à deux. | 0037 (plan) |
+| `event_psp_selection` | Configuration retenue par un événement et par moyen ; la base contrôle organisateur, statut et titulaire. | 0037 (plan) |
+| `psp_topup` | Recharge PSP : configuration figée, montant, frais, statut (`PENDING`, `SUCCEEDED`, `FAILED`, `EXPIRED`, `CANCELLED`), référence de paiement, échéance, carte (empreinte, 3-D Secure), transaction `TOPUP`. | 0038 (plan) |
+| `psp_event` | Notification authentifiée conservée brute (64 Kio au plus, purgée à 400 jours), état de traitement et issue. | 0038 (plan) |
+| `psp_webhook_rejection` | Compteur par minute des notifications refusées, sans corps. | 0038 (plan) |
+| `psp_chargeback` | Contestation d'une recharge carte : unique par configuration et identifiant, plafonnée au montant de la recharge, transaction `CHARGEBACK` (vide tant qu'une contestation tardive attend son approbation). | 0038 (plan) |
+
+Extensions prévues de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGURATION` ; `anomaly.kind` + `PSP_TOPUP_NOT_CREDITED` ; `approval_request.action` + `WALLET_UNBLOCK`, `CASH_DEPOSIT` ; comptes `A-PSP-WAVE`, `A-PSP-OM`, `A-PSP-CARTE`.
+
 ### Bracelets
 
 | Table | Rôle | Origine |
@@ -599,5 +698,5 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaine : mission 6 caisses et PSP). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : mission 6 caisses et PSP, section 4 quater ajoutée au plan le 27/10/2026, 10 tables prévues, migrations `0036` à `0038`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
