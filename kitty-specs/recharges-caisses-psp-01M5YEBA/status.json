@@ -128,7 +128,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Implémentation eea02fd2 (migration 0038, 284 tests pgTAP verts sur cashless_wp04, 5 mutations détectées). Contradiction signalée à arbitrer avant WP12 : record_psp_event refusé si configuration non ACTIVE (prompt) contre commentaire de 0037. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
-        "Cycle 2 (7158248e) : double crédit après résolution manuelle fermé (CL029, fermeture WHERE status='OPEN'), déblocage comparé à blocked_at, assertions resserrées, frais = brut - net. 295 tests pgTAP verts sur cashless_wp04. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+        "Cycle 2 (7158248e) : double crédit après résolution manuelle fermé (CL029, fermeture WHERE status='OPEN'), déblocage comparé à blocked_at, assertions resserrées, frais = brut - net. 295 tests pgTAP verts sur cashless_wp04. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct du cycle 2 (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. 4 corrections conformes (7158248e), aucune régression ; pgTAP sur cashless_wp04 : psp_topups 295, definer_trigger_writers 25, payments 109, definer_search_path 14, psp_configurations 165, execute_grants 30, grand_livre 400, scenario 64. Ouvert pour WP05/porteur : SELECT psp_event.body, fonctions neutres multi-prestataires. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
