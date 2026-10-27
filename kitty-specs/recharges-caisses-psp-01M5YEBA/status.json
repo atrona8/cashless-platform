@@ -1,43 +1,44 @@
 {
-  "event_count": 34,
-  "last_event_id": "01M5YXVNQPZW6RXV1H0DSB8XNF",
-  "materialized_at": "2026-10-27T14:57:32.916968+00:00",
+  "event_count": 40,
+  "last_event_id": "01M5YYC7WM5JQEY2Q9216ZMNXW",
+  "materialized_at": "2026-10-27T15:06:35.796109+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 1,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 1,
-    "in_review": 2,
-    "planned": 10
+    "in_review": 1,
+    "planned": 9
   },
   "work_packages": {
     "WP01": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 3,
-      "lane": "in_review",
-      "last_event_id": "01M5YXT6AW8TE4X4PQX6DDP2M1",
-      "last_transition_at": "2026-10-27T14:56:44.380306+00:00",
+      "force_count": 4,
+      "lane": "approved",
+      "last_event_id": "01M5YXY507S3FQWMNY912EK7K8",
+      "last_transition_at": "2026-10-27T14:58:54.087593+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent status.json, status.events.jsonl, acceptance-matrix.json, baseline-tests.json (artefacts du runtime).",
-        "Cycle 2 (0d87b69e) : charge PSP_CONFIGURATION alignée sur 0037 {psp_configuration_id, version, status, compliance_ref}, motif secret_ref aligné, types TS/Dart régénérés ; Jest contrat 371/371 sur cashless_wp01. Écart de nom psp_config_id (HTTP) / psp_configuration_id (charge) signalé. --force (accord du porteur 27/10/2026) : après réalignement, restent seulement status.*, acceptance-matrix.json, baseline-tests.json."
+        "Cycle 2 (0d87b69e) : charge PSP_CONFIGURATION alignée sur 0037 {psp_configuration_id, version, status, compliance_ref}, motif secret_ref aligné, types TS/Dart régénérés ; Jest contrat 371/371 sur cashless_wp01. Écart de nom psp_config_id (HTTP) / psp_configuration_id (charge) signalé. --force (accord du porteur 27/10/2026) : après réalignement, restent seulement status.*, acceptance-matrix.json, baseline-tests.json.",
+        "Verdict du relecteur distinct du cycle 2 (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. Constats du cycle 1 corrigés (charge PSP_CONFIGURATION = 0037, motif secret_ref). npm run check vert ; Jest contrat 371/371 (implémenteur). LATE_CHARGEBACK : déjà en base (0009/0011/0033), data-model exact. Report : WP08/WP09/WP11 ajoutent leurs cas terminal à device-auth-matrix. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP01-contrat-api-types/review-cycle-1.md",
-        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP01-contrat-api-types/review-cycle-1.md",
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP01-contrat-api-types/review-cycle-2.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP01-contrat-api-types/review-cycle-2.md",
         "reviewer": "user",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
       "role": "reviewer",
       "shell_pid": 35763,
@@ -83,19 +84,26 @@
       }
     },
     "WP03": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 1,
-      "lane": "in_review",
-      "last_event_id": "01M5YP8M6SW2RBMTPK24TGEHY3",
-      "last_transition_at": "2026-10-27T12:44:48.729172+00:00",
+      "force_count": 2,
+      "lane": "approved",
+      "last_event_id": "01M5YXXDF3GW31QNNZAMWXKQ3Z",
+      "last_transition_at": "2026-10-27T14:58:29.987684+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent les artefacts du runtime (status.*, acceptance-matrix.json, baseline-tests.json)."
+        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent les artefacts du runtime (status.*, acceptance-matrix.json, baseline-tests.json).",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. pgTAP 165/165 sur cashless_wp03, 8 mutations sur 10 détectées (2 couvertes par une autre vérification). Mineurs : M1 secret_ref accepte '.'/'..' (à refuser dans le port du coffre WP07), M2 droits directs de cashless_app à fermer par WP05 (bloquant pour sa revue), M3 account_purpose_guard x open_psp_accounts à prouver à la fusion, M4 rejeu sur base peuplée non testé. --force (accord du porteur 27/10/2026) : restent seulement status.*, acceptance-matrix.json, baseline-tests.json, review-feedback-1.md (artefacts du runtime)."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP03-base-configurations-psp/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP03-base-configurations-psp/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 32013,
       "shell_pid_created_at": "1793112749.405901",
@@ -109,11 +117,19 @@
       }
     },
     "WP04": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M5YN2G4MJW9HMYTK7VRM677V",
-      "last_transition_at": "2026-10-27T12:23:59.380254+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M5YY1V01R3D74G6G8CGBAJG9",
+      "last_transition_at": "2026-10-27T15:00:54.755038+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 39237,
+      "shell_pid_created_at": "1793113246.756159"
     },
     "WP05": {
       "actor": "finalize-tasks",
@@ -127,15 +143,24 @@
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M5YXVNQPZW6RXV1H0DSB8XNF",
-      "last_transition_at": "2026-10-27T14:57:32.916968+00:00",
+      "force_count": 1,
+      "lane": "in_review",
+      "last_event_id": "01M5YYC7WM5JQEY2Q9216ZMNXW",
+      "last_transition_at": "2026-10-27T15:06:35.796109+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation ee906623 : découpage hors ligne limité à OFFLINE_SYNC/EDGE_SYNC, anomalie CASH_TOPUP_OVER_LIMIT dans la même transaction, buildCashClose à théorique nul. Jest 1259 verts sur cashless_wp06. Test d'atomicité via bracelet non attribué (0036 ne vérifie que le grand livre, pas le portefeuille). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 36093,
-      "shell_pid_created_at": "1793113027.775392"
+      "role": "reviewer",
+      "shell_pid": 42167,
+      "shell_pid_created_at": "1793113591.918818",
+      "subtasks": {
+        "T027": "done",
+        "T028": "done",
+        "T029": "done",
+        "T030": "done"
+      }
     },
     "WP07": {
       "actor": "finalize-tasks",
