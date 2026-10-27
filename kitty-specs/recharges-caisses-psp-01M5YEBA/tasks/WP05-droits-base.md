@@ -166,7 +166,11 @@ la section 6.
    4, par exemple `begin_cash_close(uuid, uuid)` selon la migration.
 3. Fonctions internes jamais accordées (liste dans un commentaire) : celles que la migration marque
    comme helpers (par exemple un contrôle de rôle comme `device_admin_allowed` de la 5a) et les
-   fonctions de déclencheur.
+   fonctions de déclencheur. **Précision du 27/10 (relecture de WP02)** : `roles.sql` accorde
+   `EXECUTE` sur toutes les fonctions à `cashless_app` ; « jamais accordées » veut donc dire un
+   `REVOKE EXECUTE … FROM cashless_app` explicite, au moins sur `cash_actor_allowed`,
+   `cash_session_usable`, `cash_session_attach_own` et les fonctions de
+   déclencheur de 0036 à 0038, avec un test pgTAP qui échoue si l'une redevient exécutable.
 4. Tables : `REVOKE INSERT, UPDATE ON <les dix tables> FROM cashless_app;` (DELETE et TRUNCATE sont
    déjà retirés par `roles.sql`, redis-le dans un commentaire et ajoute-les au `REVOKE` pour ne pas
    dépendre de l'ordre).
