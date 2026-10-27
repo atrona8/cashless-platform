@@ -125,8 +125,9 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
             WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace),
   'account:account_hot_switch anomaly:anomaly_cash_due_guard app_user:app_user_guard audit_log:audit_log_chain '
   'config_version:config_version_assign contract:contract_version_assign event:event_jurisdiction_bounds '
-  'event:event_references_guard fee_rule:fee_rule_guard media:log_media_status media_batch:log_batch_status '
-  'merchant_participation:participation_guard point_of_sale:point_of_sale_guard role_assignment:role_assignment_guard',
+  'event:event_references_guard event_psp_selection:event_psp_selection_guard fee_rule:fee_rule_guard media:log_media_status media_batch:log_batch_status '
+  'merchant_participation:participation_guard point_of_sale:point_of_sale_guard '
+  'psp_configuration:psp_configuration_immutable role_assignment:role_assignment_guard',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
 -- Liste exacte des droits d'écriture des rôles de l'application sur les deux tables. Avant 0018 :
 --   cashless_app (UPDATE status de media, INSERT et UPDATE de media_batch) avait INSERT sur les deux historiques :
