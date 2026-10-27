@@ -149,7 +149,8 @@
       "last_transition_at": "2026-10-27T15:13:57.010410+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Implémentation ee906623 : découpage hors ligne limité à OFFLINE_SYNC/EDGE_SYNC, anomalie CASH_TOPUP_OVER_LIMIT dans la même transaction, buildCashClose à théorique nul. Jest 1259 verts sur cashless_wp06. Test d'atomicité via bracelet non attribué (0036 ne vérifie que le grand livre, pas le portefeuille). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+        "Implémentation ee906623 : découpage hors ligne limité à OFFLINE_SYNC/EDGE_SYNC, anomalie CASH_TOPUP_OVER_LIMIT dans la même transaction, buildCashClose à théorique nul. Jest 1259 verts sur cashless_wp06. Test d'atomicité via bracelet non attribué (0036 ne vérifie que le grand livre, pas le portefeuille). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. 124 tests moteur/builders verts sur cashless_wp06, tsc propre, 2 mutations détectées (4 et 5 échecs). Échecs du Jest complet dans des suites non touchées (claim-code-order, personalization, platform, migrate-rights) : à confirmer par la batterie de l'orchestrateur. Mineurs : EXECUTE open_cash_due_anomaly par WP05 ; contrôle bracelet = portefeuille de la commande (renforcement, WP09) ; source fixée côté serveur dans les futures routes TOPUP_CASH (WP09). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
