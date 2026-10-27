@@ -223,6 +223,9 @@
       "last_event_id": "01M5Z1J8YC4NHBKGZ5F7T7CHJ4",
       "last_transition_at": "2026-10-27T16:02:19.212672+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation 21acd126 : ports PSP et coffre, faux par fournisseur, registre, garde de production ; CL041-CL044 mappés ; 273 tests verts sur cashless_wp07 ; 5 mutations détectées. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 55545,
