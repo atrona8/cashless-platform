@@ -82,6 +82,11 @@ worktrees gardés après la fusion.
    identiques). Pour la revue post-fusion : INSERT direct de `cashless_app` sur `anomaly` (défaut antérieur,
    utilisé par payments.service.ts:187 et reversal.service.ts:212) ; `ALTER DEFAULT PRIVILEGES` non couvert
    par les tests (non exploitable). WP07 lancé sur lane-g préparée (fusion a + e, conflits kitty-specs seuls).
+   WP07 **approuvé** (`21acd126` + `a6afb6cb` : test de borne OP-N81 étendu à import()/require()/import nu,
+   mutation revérifiée par l'orchestrateur). Consigné : montant nul refusé partout (cohérent avec 0038) ;
+   processus public bloqué en production par le faux d'identité du festivalier (antérieur). À relire par
+   une personne : `apps/api/src/psp/hmac-signature.ts`, `secret.ts`. WP08 lancé (lane-h préparée : a, e,
+   f, g fusionnées, `tsc` propre) et WP10 lancé (lane-g) en parallèle.
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
