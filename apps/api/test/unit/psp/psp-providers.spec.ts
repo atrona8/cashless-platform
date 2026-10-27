@@ -152,17 +152,15 @@ describe('borne OP-N81 : les faux ne se répandent pas', () => {
     });
   }
 
-  it('seul psp/psp.providers.ts importe psp/fake/', () => {
+  it('seul psp/psp.providers.ts référence psp/fake/, quelle que soit la forme', () => {
     const src = join(__dirname, '../../../src');
-    const importers = sources(src)
-      .filter((file) => /from\s+['"][^'"]*\/fake\/[^'"]*['"]/.test(readFileSync(file, 'utf8')))
-      .filter((file) =>
-        /from\s+['"][^'"]*psp[^'"]*\/fake\/|from\s+['"]\.\/fake\//.test(readFileSync(file, 'utf8')),
-      )
-      .map((file) => file.slice(src.length + 1));
-    // Les fichiers de psp/fake/ s'importent entre eux ; hors d'eux, un seul.
-    expect(importers.filter((file) => !file.startsWith('psp/fake/'))).toEqual([
-      'psp/psp.providers.ts',
-    ]);
+    // Toute chaîne de chemin contenant « fake/ » : import, import dynamique, require, import sans liaison.
+    const reference = /['"`][^'"`\n]*\bfake\/[^'"`\n]*['"`]/;
+    const offenders = sources(src)
+      .map((file) => file.slice(src.length + 1))
+      .filter((file) => !file.startsWith('psp/fake/') && file !== 'psp/psp.providers.ts')
+      .filter((file) => reference.test(readFileSync(join(src, file), 'utf8')));
+    expect(offenders).toEqual([]);
+    expect(readFileSync(join(src, 'psp/psp.providers.ts'), 'utf8')).toMatch(reference);
   });
 });
