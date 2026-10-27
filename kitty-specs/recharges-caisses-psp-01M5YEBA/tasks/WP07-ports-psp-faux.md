@@ -120,7 +120,9 @@ Tous dans le sens le plus strict ou de pure répartition ; ils priment sur le te
   (secret factice aléatoire).
 - **`secret_ref` lié au titulaire** (A10) : forme `psp/<holder_party_id>/<nom>` ; `get` refuse un
   segment différent du titulaire passé (`HOLDER_MISMATCH`) ; le message n'inclut pas le titulaire
-  attendu.
+  attendu. **Ajout du 27/10 (relecture de WP03, M1)** : le motif de 0037 laisse passer un nom `.`,
+  `..` ou commençant par un point ; `get` refuse tout nom qui commence par `.` (même erreur de
+  forme), avec un test, pour qu'aucun coffre réel (6b) ne puisse résoudre un chemin hors du titulaire.
 - **Production** : `createPspAdapters({production:true})` ne construit **aucun** faux : registre
   vide, `available = false`, `isFake` absent ; `createPspSecretStore` rend
   `UnavailablePspSecretStore`. Appeler un fournisseur indisponible :

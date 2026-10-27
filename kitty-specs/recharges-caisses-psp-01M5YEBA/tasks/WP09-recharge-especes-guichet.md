@@ -118,6 +118,19 @@ de doute.
   index). Les routes de caution et d'espèces dues existantes gardent leurs cas ; ajoute ceux dont
   l'attente change (session obligatoire).
 - **Garde** : `TerminalOrPersonGuard` est créée par WP08 (pas ici).
+- **Ajouts du 27/10 (relectures de WP02 et WP06)** :
+  - `source` de la commande `TOPUP_CASH` fixée par le serveur (`ONLINE` sur ces routes), jamais lue
+    dans le corps ; test : un corps qui porte `source: OFFLINE_SYNC` ou `headroom` n'obtient aucun
+    découpage.
+  - Portefeuille et `mediaId` cohérents : le portefeuille crédité est déduit du bracelet (attribution
+    ouverte), jamais pris séparément ; test : bracelet d'un portefeuille et `wallet_id` d'un autre
+    du même grand livre → refus avant écriture (`open_cash_due_anomaly` ne contrôle que le grand
+    livre).
+  - Rôle de l'acteur sur l'événement de la session contrôlé côté API pour les variantes
+    `…_for_session`, `attach_cash_tx` et `refund_cash_due` (la base ne le fait pas).
+  - Rattachement à la session prouvé pour chaque recharge en espèces (le test 147 de 0036 est
+    descriptif).
+  - Ajoute `createCashTopup` à `device-auth-matrix.spec.ts` (relecture de WP01).
 
 ## Branch Strategy
 
