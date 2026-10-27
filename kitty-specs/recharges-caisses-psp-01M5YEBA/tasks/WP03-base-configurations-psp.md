@@ -6,20 +6,23 @@ requirement_refs: [FR-009, FR-010, FR-011, FR-023, C-004]
 planning_base_branch: feat/recharges-caisses-psp
 merge_target_branch: feat/recharges-caisses-psp
 branch_strategy: Planning artifacts for this mission were generated on feat/recharges-caisses-psp. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/recharges-caisses-psp unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-recharges-caisses-psp-01M5YEBA
+base_commit: 47b13897c79c7eaca0bd79bf3bf40461795ad3b7
+created_at: '2026-10-27T12:28:53.984262+00:00'
 subtasks: [T011, T012, T013, T014, T015, T016]
 phase: Phase 1 - Contrat et base de données
 agent: claude
-model: sonnet
-agent_profile: implementer-ivan
-role: implementer
 history:
 - timestamp: '2026-10-27T15:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
+agent_profile: implementer-ivan
 authoritative_surface: packages/ledger-sql/
-execution_mode: code_change
-owned_files: [packages/ledger-sql/migrations/0037_psp_configurations.sql, packages/ledger-sql/tests/tests_psp_configurations.sql]
 create_intent: [packages/ledger-sql/migrations/0037_psp_configurations.sql, packages/ledger-sql/tests/tests_psp_configurations.sql]
+execution_mode: code_change
+model: sonnet
+owned_files: [packages/ledger-sql/migrations/0037_psp_configurations.sql, packages/ledger-sql/tests/tests_psp_configurations.sql]
+role: implementer
 tags: []
 tracker_refs: []
 ---
