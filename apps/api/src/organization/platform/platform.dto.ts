@@ -371,6 +371,7 @@ export const FEE_SCOPES = [
   'OPERATOR_CONTRACT',
   'EVENT',
   'PARTICIPATION',
+  'PSP_CONFIGURATION',
 ] as const;
 const FEE_BASES = [
   'TOPUP_AMOUNT',

@@ -93,7 +93,11 @@ export type AuditAction =
   | 'CATALOG_CATEGORY_UPDATED'
   | 'CATALOG_ITEM_CREATED'
   | 'CATALOG_ITEM_UPDATED'
-  | 'CATALOG_POLICY_SET';
+  | 'CATALOG_POLICY_SET'
+  // Mission 6, lot WP10 : configurations PSP et choix par événement
+  | 'PSP_CONFIGURATION_CREATED'
+  | 'PSP_CONFIGURATION_STATUS_CHANGED'
+  | 'EVENT_PSP_SELECTION_CHANGED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {
