@@ -73,6 +73,11 @@ worktrees gardés après la fusion.
      `psp_topup_net_credited`, `psp_complete_core`, `psp_topup_replay_row`, déclencheurs).
    - Configuration SUSPENDED : notifications refusées (research l.248, A15), le commentaire de 0037
      sur `psp_webhook_context` est trompeur (« reçoit encore ») : à reformuler à la relecture humaine.
+   WP04 rejeté au cycle 1 (double crédit après résolution manuelle d'une anomalie : régression du lot),
+   **approuvé** au cycle 2 (`7158248e`, 295 tests). WP05 lancé sur lane-e, préparée à la main : fusion
+   de b, c, d ; conflit de code `tests_definer_trigger_writers.sql` résolu par union (`023d4e10`) ;
+   suites 0036-0038 vertes sur cashless_test après reset. À signaler au porteur : `psp_poll_candidates`
+   et `psp_events_to_retry` voient tous les prestataires (voulu par `database-rights.md`, travail de fond).
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
