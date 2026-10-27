@@ -129,7 +129,9 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
   'media:log_media_status media_batch:log_batch_status '
   'merchant_participation:participation_guard point_of_sale:point_of_sale_guard '
   'posting:posting_cash_desk_guard '
-  'psp_configuration:psp_configuration_immutable role_assignment:role_assignment_guard',
+  'psp_chargeback:psp_chargeback_cap psp_chargeback:psp_chargeback_guard '
+  'psp_configuration:psp_configuration_immutable psp_event:psp_event_guard '
+  'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
 -- Liste exacte des droits d'écriture des rôles de l'application sur les deux tables. Avant 0018 :
 --   cashless_app (UPDATE status de media, INSERT et UPDATE de media_batch) avait INSERT sur les deux historiques :
