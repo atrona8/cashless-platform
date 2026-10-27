@@ -59,6 +59,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
 | OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
 | OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
+| OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026 |
+| OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur), sinon mission 9 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -132,6 +134,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
 | OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | Une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après |
+| OP-N81 | Les PSP et le coffre des secrets sont des faux (un par fournisseur, `apps/api/src/psp/`) : un faux PSP produit des notifications signées avec des secrets de test | Crédits de portefeuille fabriqués par quiconque connaît le faux ; secrets de test au lieu de secrets par détenteur des fonds | Chaque faux porte `isFake` ; `assertProcessIsSafe` refuse le démarrage en production (processus public et `psp-poller`), test `production-guard.spec.ts` | Mission « Adaptateurs PSP réels » | Adaptateurs essayés contre le bac à sable de chaque PSP, coffre AWS réel, faux retirés de la production (ADR-131) |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -812,6 +815,38 @@ mission 13 accepté par le porteur le 26/10/2026 (ADR-130). **Bloque la producti
 - **Test.** Aucun à ce jour : le comportement n'a pas été mesuré par la mission 5b (preuve de la concurrence des
   essais : `vendor-sessions.spec.ts`, « essais simultanés depuis 5 terminaux »).
 
+
+### OP-N81 — Adaptateurs PSP réels et coffre des secrets reportés (27 octobre 2026)
+
+Décision du porteur au cadrage de la mission 6 (`recharges-caisses-psp-01M5YEBA`, DM `01M5YF39MKBNF9VHJ7JM49B0SE` et
+`01M5YF3D9YZZPHP1FGEWH3E4ME`) : faux gardés plus longtemps que prévu (règle 1 de `CLAUDE.md`) ; ADR-131.
+**Bloque la production : oui** pour les recharges en ligne.
+
+- **Constat.** Aucun accès de test PSP n'existe (action 11). La mission 6 livre le port `PspAdapter` (initier,
+  vérifier une notification, interroger un statut, lire un relevé), un faux par fournisseur et le port
+  `PspSecretStore` avec un faux coffre ; pas d'adaptateur Wave, Orange Money, PayDunya ni Stripe, ni d'adaptateur AWS
+  Secrets Manager.
+- **Risque.** Aucun en production tant que la garde tient : les faux refusent le démarrage ; les recharges en ligne
+  ne sont simplement pas servies. Risque résiduel : un adaptateur réel écrit plus tard sans vecteurs du PSP
+  (vérification de signature non éprouvée).
+- **Condition de levée.** Accès de test obtenus ; adaptateurs écrits et essayés contre le bac à sable de chaque PSP
+  (vecteurs de signature réels) ; adaptateur AWS Secrets Manager (dépendance vérifiée et épinglée, région OP-N11) ;
+  faux retirés des processus de production.
+- **Test.** `apps/api/test/unit/production-guard.spec.ts` : chaque faux PSP et le faux coffre refusés en production.
+
+### OP-N82 — Remboursement au payeur d'un paiement non crédité (27 octobre 2026)
+
+Plan de la mission 6 (R-11, R-17). **Bloque la production : non.**
+
+- **Constat.** Un paiement réussi chez le PSP mais non créditable (plafond réglementaire, 3-D Secure non attesté,
+  plafond de carte du jour, grand livre au-delà de `CLOSING`, annulation déjà confirmée) n'écrit rien au grand livre ;
+  une anomalie (`PSP_TOPUP_OVER_LIMIT` ou `PSP_TOPUP_NOT_CREDITED`) porte le montant à rendre. La plateforme n'a aucun
+  canal de remboursement PSP (« pas de remboursement par carte en V1 »).
+- **Risque.** Argent du payeur détenu sans écriture jusqu'au remboursement manuel ; suivi par l'anomalie et, au
+  rapprochement (mission 9), par l'écart entre relevé et grand livre.
+- **Condition de levée.** Remboursement par l'adaptateur (mission des adaptateurs réels), écriture et clôture de
+  l'anomalie dans la même transaction.
+- **Test.** Tests de la mission 6 : aucune écriture et une anomalie avec montant pour chaque cas non créditable.
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;
