@@ -28,7 +28,8 @@
       "last_transition_at": "2026-10-27T14:56:01.815091+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent status.json, status.events.jsonl, acceptance-matrix.json, baseline-tests.json (artefacts du runtime)."
+        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent status.json, status.events.jsonl, acceptance-matrix.json, baseline-tests.json (artefacts du runtime).",
+        "Cycle 2 (0d87b69e) : charge PSP_CONFIGURATION alignée sur 0037 {psp_configuration_id, version, status, compliance_ref}, motif secret_ref aligné, types TS/Dart régénérés ; Jest contrat 371/371 sur cashless_wp01. Écart de nom psp_config_id (HTTP) / psp_configuration_id (charge) signalé. --force (accord du porteur 27/10/2026) : après réalignement, restent seulement status.*, acceptance-matrix.json, baseline-tests.json."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
