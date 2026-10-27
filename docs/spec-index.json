@@ -559,7 +559,7 @@
   {
     "mission": "terminaux-paiement-en-ligne-01M52QB9",
     "titre_cas_usage": "Encaissement en ligne",
-    "statut": "relue, 14 lots approuvés ; accept/merge à venir",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "Le commerçant gère ses vendeurs",

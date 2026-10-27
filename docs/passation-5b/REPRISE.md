@@ -1,6 +1,6 @@
 # Reprise de la mission 5b — `terminaux-paiement-en-ligne-01M52QB9`
 
-État au 26/10/2026 (mise à jour en cours de session). Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
+État au 27/10/2026 : mission acceptée, mergée sur feat, revue post-fusion faite ; reste la PR. Ce dossier garde ce qui vivait dans le scratchpad de la session (effacé à
 chaque nouvelle session) : fiche de contexte des agents, comptes rendus d'implémentation et de relecture, scripts de
 test, générateur du document Word.
 
@@ -22,6 +22,32 @@ test, générateur du document Word.
 | WP14 | Preuves, CI, consignation | Approuvé (cycle 1, 26/10 ; lane-n `0ddc4b7e` = fusion manuelle de l et m + lot ; ADR-130/OP-N80 acceptés par le porteur). Mineurs pour la revue post-fusion : canari dans `payment-secrets`, note périmée de `media-isolation` et refus admis larges (422) dans `payment-isolation`, test de `written.replayed` (mutant équivalent, garde conservée), lignes > 100 car. | lane-n |
 
 Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-paiement-en-ligne-01M52QB9`.
+
+## Point d'arrêt du 27/10/2026
+
+- **Fusion faite** le 26/10 (squash `870bd3f4` sur feat ; `d3d2762e` transitions done ; `a953d4ec` rétrospective ;
+  `0d20837a` `contracts/vendors.md` aligné).
+- **Rejeu sur feat** : pgTAP 39 fichiers, 2931 tests verts. Jest (comme la CI) : passe `SKIP_LATENCY=1` verte sauf
+  `transverse/idempotency.spec.ts` (422 : configuration `PLATFORM` globale + horloge Docker) et `media/claims.spec.ts`
+  (collision de sous-chaîne dans une base grossie), toutes deux vertes seules (2 fois) ; `claim-code-order` vert seul ;
+  latence en série : `device-latency` vert, mais les mesures NFR-009 de `devices/config.spec.ts` et
+  `devices/heartbeat.spec.ts` dépassent le délai Jest de 5 s (200 appels à ~45 ms sous Docker macOS). Le test de
+  heartbeat est identique dans main, dont la CI est verte ; `config.spec` sert désormais le catalogue (WP10) :
+  **à surveiller dans la CI de la PR** (correctif possible : délai explicite sur ces deux tests).
+- **Revue post-fusion** (agent distinct) : `rapports/mission-review-5b.md`, publiable avec réserves, aucun bloquant,
+  aucun écart de sécurité non consigné. Constats documentaires traités : OP-N69 (réduit à quatre colonnes par WP07),
+  ADR-121 (essai compté avant vérification : 4 faux puis le bon bloquent), spec.md FR-004 et FR-017 (ADR-122).
+  Restent (mission 7 ou en passant) : canari de `payment-secrets`, note de `media-isolation` et refus admis larges de
+  `payment-isolation`, commentaire du test de `written.replayed` ; OP-N80 sans test de borne (accepté) ;
+  `acceptance-matrix.json` garde `overall_verdict: pending` et des notes périmées (artefact du runtime, non touché).
+- **Prettier** : `format:check` propre ; les lignes > 100 restantes sont des commentaires/chaînes (décision du 16/10).
+- **Docs** : `spec-kitty-docs-maintain` passé (statut « mergée » dans 01, 02, 04, 05, 06, 07, spec-index,
+  docs-state) ; `Mission-05b-Encaissement-en-ligne.docx` régénéré (état final).
+- **Reste à faire** :
+  - retirer `.worktrees/tmp-combo-5a` et `.worktrees/tmp-combo-5b-wp08` (refusé à l'agent par le contrôle de
+    permissions : à faire par le porteur, `git worktree remove --force …`) ;
+  - pousser feat et ouvrir la PR vers main, **avec l'accord du porteur** (CI = preuve de NFR-010) ;
+  - relecture humaine des fichiers listés en fin de ce document et dans le rapport de revue.
 
 ## Point d'arrêt du 26/10/2026 (fin de session, à la demande du porteur)
 

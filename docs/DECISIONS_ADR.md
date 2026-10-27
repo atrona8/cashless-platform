@@ -1716,6 +1716,11 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   fonctions ; ou preuve infalsifiable par l'API.
 - **Conséquences.** Tests de borne : liste figée des droits, aucune session sans essai compté, audit de chaque
   ouverture. Reports dans `PROMPTS-A-ENVOYER.md` et `PRD.md` (mission 11).
+- **Précision (revue post-fusion, 27/10/2026).** « Compter d'abord » compte l'essai avant de connaître son
+  résultat : au 5e essai, le vendeur est bloqué même si ce 5e PIN est juste (4 PIN faux puis le bon bloquent). C'est
+  plus strict que la lettre de FR-004 (« bloqué après 5 PIN faux ») ; renforcement voulu, qui ne laisse aucune
+  fenêtre entre la vérification et le comptage. Coût : disponibilité (déblocage par le commerçant). Preuves :
+  `0031_vendors.sql` (`begin_vendor_pin_check`), `tests_vendors.sql`, `contracts/vendors.md`.
 - **Références.** OP-N76, OP-N56 ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/contracts/vendors.md`.
 
 ## ADR-122 — Annulation au back-office : `SALE_REVERSAL` demandable par un `SUPERVISOR` ou un `ORGANIZER_ADMIN`

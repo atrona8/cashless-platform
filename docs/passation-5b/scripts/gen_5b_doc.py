@@ -113,7 +113,8 @@ table(['Élément', 'Valeur'], [
     ['Branche de travail', 'feat/terminaux-paiement-en-ligne (lanes kitty/mission-terminaux-paiement-en-ligne-01M52QB9-lane-*)'],
     ['Type de mission', 'software-dev'],
     ['Dépend de', 'Missions 1 (grand livre), 2 (identité, rôles), 3 (configuration), 4 (bracelets NFC), 5a (identité des terminaux)'],
-    ['État au 23 octobre 2026', 'Implémentation en cours : 6 lots sur 14 approuvés (WP01, WP02, WP03, WP04, WP06, WP08), WP05 en cours'],
+    ['État au 27 octobre 2026', 'Acceptée et mergée le 26/10/2026 sur feat/terminaux-paiement-en-ligne (squash 870bd3f4) ; '
+     'revue post-fusion faite (publiable avec réserves) ; PR vers main à venir'],
 ], widths_from=EX['cover_tbl'])
 add(copy.deepcopy(EX['spacer']))
 add(copy.deepcopy(EX['blank']))
@@ -133,10 +134,11 @@ para('para', 'Elle lève aussi OP-N74, hérité de la 5a : un code d’enrôleme
      'l’état de l’événement et du point de vente. L’identification au guichet, d’abord prévue ici, part à la '
      'mission 10 (décision du porteur au plan). Le hors ligne, l’application du festivalier, l’application du '
      'terminal et les écrans du back-office viennent dans d’autres missions.')
-para('para', 'État au 23 octobre 2026 : la couche base est presque terminée (vendeurs, catalogue, paiement et '
-     'annulation, OP-N74 approuvés ; demandes QR en cours), ainsi que le socle applicatif et le contrat d’API. '
-     'Restent les droits de la base, les routes de l’API (vendeurs, catalogue, paiement, annulation, QR) et les '
-     'preuves de bout en bout.')
+para('para', 'État au 27 octobre 2026 : les 14 lots sont approuvés, la mission est acceptée et mergée sur '
+     'feat/terminaux-paiement-en-ligne (26/10/2026). Rejeu sur la branche : pgTAP 39 fichiers, 2931 tests verts ; '
+     'Jest 139 suites vertes hors instabilités connues du poste. Latence mesurée du paiement par bracelet : '
+     'p95 ≈ 68 ms, p99 ≈ 84 ms. La revue post-fusion conclut « publiable avec réserves » (mineurs de test et de '
+     'consignation, aucun bloquant). Reste la PR vers main, dont la CI confirme NFR-010.')
 para('h2', 'Ce que la mission doit prouver')
 for s in [
     'Un parcours complet (vendeur, catalogue, session, paiement par bracelet en un et deux temps, QR commerçant et '
@@ -214,6 +216,12 @@ table(['Sujet', 'Décision', 'Date'], [
     ['Dépendance @epic-web/invariant', 'Acceptée (transitive de cross-env, sans script, signature vérifiée ; R-01)', '23/10/2026'],
     ['Idempotence (ADR-124)', 'Les refus DEBIT_AUTHORITY_* relâchent la clé sur toutes les routes ; SPECIFICATION §10.2 mise à jour', '23/10/2026'],
     ['Secrets par processus (ADR-125)', 'Exposition actuelle acceptée ; lecture par processus à la mission 13 (OP-N77)', '23/10/2026'],
+    ['Idempotence du PIN (ADR-126)', 'Le PIN n’entre dans l’empreinte que sous un dérivé argon2 ; secret distinct VENDOR_PIN_IDEMPOTENCY_SECRET', '26/10/2026'],
+    ['Reports de WP07 (ADR-127)', 'Purge de vendor_pin_check à la mission 13 (OP-N78) ; vendor_id hors de la clé de session (OP-N79)', '26/10/2026'],
+    ['Paiement en ligne (ADR-128)', 'Solde rendu, époque dans le refus, empreinte du contenu', '26/10/2026'],
+    ['Annulation au back-office (ADR-129)', 'reversePayment d’une personne crée une demande SALE_REVERSAL (202), exécutée par une seconde personne', '26/10/2026'],
+    ['Verrou d’essai de PIN (ADR-130)', 'Pool du verrou non dimensionné, accepté (OP-N80, mission 13)', '26/10/2026'],
+    ['Identification au guichet', 'FR-021 à FR-023 retirés de la matrice, reportés à la mission 10 ; NFR-010 sur preuve locale', '26/10/2026'],
 ])
 
 # --- 5. Exigences ------------------------------------------------------------------------------
@@ -317,6 +325,9 @@ table(['Point', 'Dette', 'Levée'], [
     ['OP-N76 (ADR-121)', 'PIN : l’API lit les empreintes et la base ouvre la session sur la foi de l’API', 'Mission 11, avec OP-N56'],
     ['OP-N77 (ADR-125)', 'Secrets de l’API exigés et reçus par tous les processus, y compris ceux qui ne s’en servent pas', 'Mission 13'],
     ['OP-N43 (complété)', 'Côté festivalier du QR derrière un port d’identité : faux en test, refusé en production', 'Mission 10'],
+    ['OP-N78 (ADR-127)', 'Registre des essais de PIN sans purge', 'Mission 13'],
+    ['OP-N79 (ADR-127)', 'vendor_id hors de la clé composite de vendor_session', 'Mission 11'],
+    ['OP-N80 (ADR-130)', 'Verrou d’essai de PIN : pool non dimensionné (500 au lieu de 429 au-delà), sans test de borne', 'Mission 13'],
 ])
 para('h2', '7.2 Contradictions de sources signalées')
 for s in [
@@ -337,8 +348,10 @@ table(['Lot', 'Report', 'Origine'], [
 para('h2', '7.4 Relecture')
 para('para', 'Chaque lot est relu par un agent distinct de celui qui l’a écrit, dans une session séparée. Les tests '
      'sont rejoués en série par l’agent principal sur la base partagée. Fichiers à faire relire par une personne '
-     '(règle 4) : 0031_vendors.sql, 0033_payments.sql (assert_reversible, clé de sale_attribution), '
-     'apps/api/src/vendor-pin/, config.ts, device-or-caller.guard.ts, idempotency.interceptor.ts.')
+     '(règle 4) : migrations 0031, 0033 (assert_reversible, clé de sale_attribution), 0034 (jetons QR) et 0035, '
+     'post-roles.sql (droits de cashless_app), apps/api/src/vendor-pin/, pin-attempt-lock.ts et session-lock.ts, '
+     'config.ts, device-or-caller.guard.ts, idempotency.interceptor.ts, qr-token.ts et qr-token-hash.ts, '
+     'sale-reversal-action.ts (liste complétée par la revue post-fusion du 27/10/2026).')
 
 # --- 8. Plan de travail ------------------------------------------------------------------------
 para('h1', '8. Plan de travail')
@@ -348,22 +361,21 @@ table(['Lot', 'Objet', 'Sous-tâches', 'Dépend de', 'État'], [
     ['WP02', 'Vendeurs, sessions et set_device_status (0031)', '5', '—', 'Approuvé (cycle 2)'],
     ['WP03', 'Catalogue versionné et lignes de vente (0032)', '5', '—', 'Approuvé (cycle 2)'],
     ['WP04', 'Paiement, annulation, approbation sur place (0033)', '5', 'WP02, WP03', 'Approuvé'],
-    ['WP05', 'Demandes de paiement QR (0034)', '4', 'WP04', 'En cours'],
+    ['WP05', 'Demandes de paiement QR (0034)', '4', 'WP04', 'Approuvé (cycle 2)'],
     ['WP06', 'OP-N74 : enrôlement et état de l’événement (0035)', '3', '—', 'Approuvé'],
-    ['WP07', 'Droits de la base', '4', 'WP02 à WP06', 'Prévu'],
+    ['WP07', 'Droits de la base', '4', 'WP02 à WP06', 'Approuvé'],
     ['WP08', 'Socle : argon2, secret, contexte, idempotence, garde, erreurs', '7', 'WP01', 'Approuvé'],
-    ['WP09', 'Vendeurs : back-office et sessions', '5', 'WP07, WP08', 'Prévu'],
-    ['WP10', 'Catalogue : back-office et configuration servie', '4', 'WP07, WP08', 'Prévu'],
-    ['WP11', 'Paiement par bracelet', '7', 'WP09, WP10', 'Prévu'],
-    ['WP12', 'Annulation', '6', 'WP11', 'Prévu'],
-    ['WP13', 'Paiement par QR', '5', 'WP11', 'Prévu'],
-    ['WP14', 'Preuves de bout en bout, CI, consignation', '7', 'WP09 à WP13', 'Prévu'],
+    ['WP09', 'Vendeurs : back-office et sessions', '5', 'WP07, WP08', 'Approuvé (cycle 3)'],
+    ['WP10', 'Catalogue : back-office et configuration servie', '4', 'WP07, WP08', 'Approuvé'],
+    ['WP11', 'Paiement par bracelet', '7', 'WP09, WP10', 'Approuvé (cycle 2)'],
+    ['WP12', 'Annulation', '6', 'WP11', 'Approuvé'],
+    ['WP13', 'Paiement par QR', '5', 'WP11', 'Approuvé'],
+    ['WP14', 'Preuves de bout en bout, CI, consignation', '7', 'WP09 à WP13', 'Approuvé'],
 ])
 para('h2', 'Ordre et parallélisme')
 for s in [
-    'Fait : WP01, WP02, WP03, WP04, WP06, WP08.',
-    'Maintenant : WP05 ; puis WP07, qui attend WP05.',
-    'Après WP07 : WP09 et WP10 en parallèle ; puis WP11 ; puis WP12 et WP13 en parallèle ; WP14 ferme la mission.',
+    'Fait : les 14 lots, dans l’ordre prévu (WP05 puis WP07 ; WP09 et WP10 en parallèle ; WP11 ; WP12 et WP13 en '
+    'parallèle ; WP14 ferme la mission).',
 ]:
     para('list', s)
 
@@ -373,13 +385,16 @@ table(['Étape', 'État', 'Remarque'], [
     ['Spécification', 'Faite', '22/10/2026, 7 décisions du porteur'],
     ['Plan', 'Fait', '22/10/2026, 9 décisions, passe contradictoire (27 constats traités), documentation à jour'],
     ['Lots et analyse', 'Faits', '14 lots, matrice d’acceptation (27 FR, 10 NFR, 8 SC) tenue au fil des lots'],
-    ['Implémentation et relecture', 'En cours', '6 lots approuvés sur 14 au 23/10/2026'],
-    ['Addendum documentaire post-relecture', 'À faire', 'spec-kitty-docs-maintain, avant accept'],
-    ['Accept, merge, revue post-fusion', 'À faire', 'Après WP14'],
+    ['Implémentation et relecture', 'Faites', '14 lots approuvés au 26/10/2026 (cycles 2 et 3 pour WP02, WP03, WP05, WP09, WP11)'],
+    ['Addendum documentaire post-relecture', 'Fait', '26/10/2026, réponses confirmées par le porteur'],
+    ['Accept et merge', 'Faits', '26/10/2026 (4922ef83, squash 870bd3f4 sur feat)'],
+    ['Revue post-fusion', 'Faite', '27/10/2026 : publiable avec réserves (docs/passation-5b/rapports/mission-review-5b.md)'],
+    ['PR vers main', 'À faire', 'Avec l’accord du porteur ; la CI confirme NFR-010'],
 ])
-para('para', 'Prochaines étapes : rejouer et faire relire WP05 ; lancer WP07 (droits de la base, avec les reports '
-     'de la relecture WP04) ; puis WP09 et WP10. La reprise d’une nouvelle session se fait depuis '
-     'docs/passation-5b/REPRISE.md.')
+para('para', 'Prochaines étapes : ouvrir la PR vers main (CI = preuve de NFR-010, surveiller les mesures de latence '
+     'de config.spec et heartbeat.spec) ; faire relire par une personne les fichiers listés en 7.4 ; traiter à la '
+     'mission 7 les mineurs de test de WP14 (canari de payment-secrets, notes et refus admis des tests '
+     'd’isolation, commentaire du test de written.replayed). Reprise : docs/passation-5b/REPRISE.md.')
 
 d.save(OUT)
 print('ok', OUT)
