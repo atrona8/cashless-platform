@@ -10,7 +10,11 @@ import 'timestamp.dart';
 
 part 'cash_session.g.dart';
 
-/// Session de caisse (objet de l'application ; table à créer, SPECIFICATION §14.2).
+/// Session de caisse d'un terminal `TOPUP_DESK` (`cash_session`). Seuls les états `OPEN` et `CLOSED` existent.
+/// dans le contrat. `expected_amount` et `difference` ne sont rendus qu'APRÈS la fermeture, et seulement à.
+/// un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement ; ils sont `null` sinon, y compris dans les.
+/// réponses d'`openCashSession`, de `countCashSession` et pour un `CASHIER`.
+///
 @JsonSerializable()
 class CashSession {
   const CashSession({
@@ -22,6 +26,9 @@ class CashSession {
     this.deviceId,
     this.lastCount,
     this.closedAt,
+    this.closedBy,
+    this.countedAmount,
+    this.expectedAmount,
     this.cashCloseTransactionId,
     this.difference,
     this.cashDiffAnomalyId,
@@ -45,10 +52,26 @@ class CashSession {
   final LastCount? lastCount;
   @JsonKey(name: 'closed_at')
   final DateTime? closedAt;
+
+  /// Personne qui a fermé la session ; null tant qu'elle est `OPEN`.
+  @JsonKey(name: 'closed_by')
+  final String? closedBy;
+
+  /// Montant compté retenu, figé à la fermeture ; null tant que la session est `OPEN`.
+  @JsonKey(name: 'counted_amount')
+  final int? countedAmount;
+
+  /// Théorique (solde de la caisse) à la fermeture. Rendu seulement après fermeture et seulement à un.
+  /// `SUPERVISOR` ou `ORGANIZER_ADMIN` de l'événement ; null sinon.
+  ///
+  @JsonKey(name: 'expected_amount')
+  final int? expectedAmount;
   @JsonKey(name: 'cash_close_transaction_id')
   final String? cashCloseTransactionId;
 
-  /// Compté − théorique à la fermeture (négatif = manque) ; renvoyé seulement après fermeture.
+  /// Compté − théorique à la fermeture (négatif = manque) ; renvoyé seulement après fermeture et seulement.
+  /// à un `SUPERVISOR` ou `ORGANIZER_ADMIN` de l'événement ; null sinon.
+  ///
   final int? difference;
   @JsonKey(name: 'cash_diff_anomaly_id')
   final String? cashDiffAnomalyId;
