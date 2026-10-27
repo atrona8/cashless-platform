@@ -37,7 +37,19 @@ worktrees gardés après la fusion.
 
 0. (27/10, en cours) Analyse enregistrée (prête). Implémentation lancée : WP01 (lane-a), WP02 (lane-b), WP03 (lane-c) ;
    fiche des agents : `docs/passation-6/fiche-implementation.md` ; bases `cashless_wpXX`, `cashless_test` à
-   l'orchestrateur ; `--force` sur le garde kitty-specs non encore autorisé pour cette mission.
+   l'orchestrateur ; `--force` sur le garde kitty-specs autorisé pour cette mission (artefacts du runtime seuls).
+   14:50 : WP01 rejeté au cycle 1 (charge `PSP_CONFIGURATION` contre 0037, motif `secret_ref`) → correction
+   cycle 2 relancée ; relectures WP02/WP03 abandonnées sans verdict (session effacée) → relancées.
+   WP02 **approuvé** (pgTAP 174/174, mutations des gardes détectées). WP01 cycle 2 (`0d87b69e`) en relecture.
+   WP06 lancé (lane-f). Points de la relecture de WP02 à reprendre :
+   - WP05 doit fermer `EXECUTE` sur `cash_actor_allowed`, `cash_session_usable`, `cash_session_attach_own` et
+     les écritures directes sur `cash_desk`/`cash_session` (aujourd'hui ouvertes par `roles.sql`).
+   - WP09 : contrôler côté API que l'acteur a un rôle sur l'événement (`…_for_session`, `attach_cash_tx`,
+     `refund_cash_due`) et prouver le rattachement des recharges (test 147 de 0036 seulement descriptif).
+   - Relecture humaine de 0036 : `posting_cash_desk_guard` laisse passer si la recherche dans `cash_desk` ne
+     voit rien ; sûr tant que le propriétaire des fonctions contourne la RLS (superutilisateur), échec
+     ouvert sinon. `attach_cash_tx` n'impose pas une transaction postérieure à l'ouverture.
+   - `data-model.md` l.116 omet l'action d'approbation `LATE_CHARGEBACK` exigée par `research.md` l.162-163.
 
 1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
