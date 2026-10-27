@@ -78,6 +78,10 @@ worktrees gardés après la fusion.
    de b, c, d ; conflit de code `tests_definer_trigger_writers.sql` résolu par union (`023d4e10`) ;
    suites 0036-0038 vertes sur cashless_test après reset. À signaler au porteur : `psp_poll_candidates`
    et `psp_events_to_retry` voient tous les prestataires (voulu par `database-rights.md`, travail de fond).
+   WP05 **approuvé** (`1ae2910e` ; 213 + 52 tests ; 57 fonctions classées ; post-roles rejouable à ACL
+   identiques). Pour la revue post-fusion : INSERT direct de `cashless_app` sur `anomaly` (défaut antérieur,
+   utilisé par payments.service.ts:187 et reversal.service.ts:212) ; `ALTER DEFAULT PRIVILEGES` non couvert
+   par les tests (non exploitable). WP07 lancé sur lane-g préparée (fusion a + e, conflits kitty-specs seuls).
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
 
 1. (Fait) addendum post-plan.
