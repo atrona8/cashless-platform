@@ -1346,8 +1346,11 @@ export type paths = {
          * Demander l'activation ou la suspension d'une configuration PSP (deux personnes)
          * @description Rôle `OPERATOR_ADMIN`. Corps `{status, compliance_ref}` : `ACTIVE` (depuis `DRAFT` ou `SUSPENDED`), avec
          *     `compliance_ref` OBLIGATOIRE (référence de conformité), ou `SUSPENDED` (depuis `ACTIVE`). Transition
-         *     impossible : `409 CONFLICT_STATE`. Action `PSP_CONFIGURATION`, charge `{psp_config_id, compliance_ref}` ou
-         *     `{psp_config_id, status: SUSPENDED}`.
+         *     impossible : `409 CONFLICT_STATE`. Action `PSP_CONFIGURATION`. L'API compose la charge à partir du chemin
+         *     et de la version lue en base (le corps HTTP reste `{status, compliance_ref}`) :
+         *     `{psp_configuration_id, version, status, compliance_ref}`, où `psp_configuration_id` est l'identifiant
+         *     du chemin (`psp_config_id`, en texte) et `version` la version de la configuration ; `compliance_ref`
+         *     est requis pour `ACTIVE` (`status` absent vaut `ACTIVE`), absent pour `SUSPENDED`.
          *     Opération à deux personnes du back-office (ADR-74) : l'appel crée une demande d'approbation (`PENDING`) et
          *     répond `202` ; rien n'est exécuté. Une autre personne (≠ auteur) l'approuve par `approveApprovalRequest`,
          *     qui exécute l'action une seule fois. Ni l'événement ni le prestataire ne viennent du corps : ils sont lus
@@ -6316,8 +6319,9 @@ export type components = {
          *     Recharges et caisses (deux personnes, auteur et valideur distincts) : `CASH_DEPOSIT` → `requestCashDeposit`
          *     (charge `{ledger_id, amount, bank_reference}`) ; `WALLET_UNBLOCK` → `requestWalletUnblock` (charge
          *     `{wallet_id}`) ; `LATE_CHARGEBACK` → `requestLateChargeback` ; `PSP_CONFIGURATION` →
-         *     `requestPspConfigurationChange` (charge `{psp_config_id, compliance_ref}` pour l'activation,
-         *     `{psp_config_id, status: SUSPENDED}` pour la suspension) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`
+         *     `requestPspConfigurationChange` (charge composée par l'API : `{psp_configuration_id, version, status: ACTIVE, compliance_ref}`
+         *     pour l'activation, `{psp_configuration_id, version, status: SUSPENDED}` pour la suspension ;
+         *     `psp_configuration_id` est le `psp_config_id` du chemin) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`
          *     (événement `LIVE`).
          *     Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée
          *     par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).

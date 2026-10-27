@@ -22,8 +22,9 @@ import 'package:json_annotation/json_annotation.dart';
 /// Recharges et caisses (deux personnes, auteur et valideur distincts) : `CASH_DEPOSIT` → `requestCashDeposit`.
 /// (charge `{ledger_id, amount, bank_reference}`) ; `WALLET_UNBLOCK` → `requestWalletUnblock` (charge.
 /// `{wallet_id}`) ; `LATE_CHARGEBACK` → `requestLateChargeback` ; `PSP_CONFIGURATION` →.
-/// `requestPspConfigurationChange` (charge `{psp_config_id, compliance_ref}` pour l'activation,.
-/// `{psp_config_id, status: SUSPENDED}` pour la suspension) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`.
+/// `requestPspConfigurationChange` (charge composée par l'API : `{psp_configuration_id, version, status: ACTIVE, compliance_ref}`.
+/// pour l'activation, `{psp_configuration_id, version, status: SUSPENDED}` pour la suspension ;.
+/// `psp_configuration_id` est le `psp_config_id` du chemin) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`.
 /// (événement `LIVE`).
 /// Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée.
 /// par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).
