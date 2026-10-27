@@ -6,14 +6,12 @@ import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum()
 enum Method {
-  @JsonValue('CASH')
-  cash('CASH'),
   @JsonValue('WAVE')
   wave('WAVE'),
   @JsonValue('ORANGE_MONEY')
   orangeMoney('ORANGE_MONEY'),
-  @JsonValue('BANK_TRANSFER')
-  bankTransfer('BANK_TRANSFER');
+  @JsonValue('CARD')
+  card('CARD');
 
   const Method(this.json);
 

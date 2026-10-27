@@ -1,13 +1,3 @@
----
-affected_files: []
-cycle_number: 1
-mission_slug: recharges-caisses-psp-01M5YEBA
-reproduction_command:
-reviewed_at: '2026-10-27T12:47:43Z'
-reviewer_agent: user
-wp_id: WP01
----
-
 # Review WP01 (relecteur) - verdict : changements demandés
 
 ## 1. [BLOQUANT, moyen] Charge utile `PSP_CONFIGURATION` non conforme à la migration 0037

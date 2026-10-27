@@ -17,6 +17,7 @@ CashDueRefundResult _$CashDueRefundResultFromJson(Map<String, dynamic> json) =>
           .map((e) => e as String)
           .toList(),
       approvedBy: json['approved_by'] as String?,
+      cashSessionId: json['cash_session_id'] as String?,
     );
 
 Map<String, dynamic> _$CashDueRefundResultToJson(
@@ -29,4 +30,5 @@ Map<String, dynamic> _$CashDueRefundResultToJson(
   'currency': instance.currency,
   'resolved_anomaly_ids': instance.resolvedAnomalyIds,
   'approved_by': instance.approvedBy,
+  'cash_session_id': instance.cashSessionId,
 };

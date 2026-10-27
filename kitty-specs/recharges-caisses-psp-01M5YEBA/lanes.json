@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "mission_slug": "recharges-caisses-psp-01M5YEBA",
+  "mission_id": "01M5YEBA0MXD3B78FN6Q3RNPZ0",
+  "mission_branch": "kitty/mission-recharges-caisses-psp-01M5YEBA",
+  "target_branch": "feat/recharges-caisses-psp",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "apps/api/src/http/messages.en.json",
+        "apps/api/src/http/messages.fr.json",
+        "packages/contracts/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0036_cash_sessions.sql",
+        "packages/ledger-sql/tests/tests_cash_sessions.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0037_psp_configurations.sql",
+        "packages/ledger-sql/tests/tests_psp_configurations.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0038_psp_topups.sql",
+        "packages/ledger-sql/tests/tests_psp_topups.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/ledger/builders/closing/cash.ts",
+        "apps/api/src/ledger/ledger-engine.service.ts",
+        "apps/api/test/integration/engine/topup-cash-split.spec.ts",
+        "apps/api/test/unit/builders/closing/closing-builders.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/tests/tests_cash_psp_rights.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07",
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/app.module.ts",
+        "apps/api/src/configuration/sql-config-resolver.ts",
+        "apps/api/src/errors/sqlstate-map.ts",
+        "apps/api/src/ledger/ports/config-resolver.ts",
+        "apps/api/src/processes/bootstrap.ts",
+        "apps/api/src/processes/public.module.ts",
+        "apps/api/src/psp-configurations/**",
+        "apps/api/src/psp/**",
+        "apps/api/test/integration/psp-configurations/**",
+        "apps/api/test/scenario/api-config-fixture.ts",
+        "apps/api/test/unit/production-guard.spec.ts",
+        "apps/api/test/unit/psp/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/cash-sessions/**",
+        "apps/api/test/integration/cash-sessions/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/cash-sessions.cases.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-e",
+        "lane-f",
+        "lane-g"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/media/lifecycle/**",
+        "apps/api/src/topups/cash/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/cash-topup.cases.ts",
+        "apps/api/test/integration/media/cash-due.spec.ts",
+        "apps/api/test/integration/media/deposit.spec.ts",
+        "apps/api/test/integration/media/release.spec.ts",
+        "apps/api/test/integration/topups/cash-*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/topups/psp/**",
+        "apps/api/test/integration/end-to-end/device-auth-cases/psp-topups.cases.ts",
+        "apps/api/test/integration/topups/psp-*.spec.ts",
+        "apps/api/test/integration/topups/psp-fixtures.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-i"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "apps/api/src/main.psp-poller.ts",
+        "apps/api/src/processes/psp-poller.module.ts",
+        "apps/api/src/topups/poller/**",
+        "apps/api/src/webhooks/**",
+        "apps/api/test/integration/topups/poller-*.spec.ts",
+        "apps/api/test/integration/webhooks/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 7
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "apps/api/src/chargebacks/**",
+        "apps/api/test/integration/chargebacks/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-k"
+      ],
+      "parallel_group": 8
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        ".github/workflows/**",
+        "apps/api/test/integration/end-to-end/cash-*.spec.ts",
+        "apps/api/test/integration/end-to-end/psp-*.spec.ts",
+        "apps/api/test/integration/end-to-end/topup-*.spec.ts",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-j",
+        "lane-k",
+        "lane-l"
+      ],
+      "parallel_group": 9
+    }
+  ],
+  "computed_at": "2026-10-27T12:24:26.364046+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "cb016705afadd527ed1420abba3ace41b9a92229",
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP07",
+        "wp_b": "WP10",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'apps/api/src/psp/**' vs 'apps/api/src/psp-configurations/**'; WP10 depends on WP07"
+      }
+    ],
+    "total_merges": 1,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "write_scope_overlap": 1
+    }
+  }
+}
