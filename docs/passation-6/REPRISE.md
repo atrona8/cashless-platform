@@ -12,10 +12,17 @@ worktrees gardés après la fusion.
 | Décisions du porteur | Adaptateurs PSP réels et coffre AWS **reportés** (mission 6b) ; OP-N81, ADR-131 | `c1bf43a` |
 | Plan | Fait : plan, research (R-20 fait foi), data-model, contrats, quickstart | `52bdf27`, `c3519af` |
 | Passe contradictoire du plan | 34 constats (4 bloquants) : 31 corrigés, 3 reportés avec raison | `c3519af` |
-| Addendum documentaire post-plan | En cours (agent) | — |
-| Tâches (`/spec-kitty.tasks`) | À faire | — |
+| Addendum documentaire post-plan | Fait (journal de `06-docs-status.md` écrit) | `202d027`, `cb01670` |
+| Tâches (`/spec-kitty.tasks`) | Faites : 14 lots (T001-T074), prompts mis en cohérence (signatures SQL, ports, routes), 13 lanes, matrice d'acceptation créée | `de274f5` |
 
 ## Ce qui est consigné
+
+- Décision du porteur du 27/10/2026 (tâches) : comptes `A-PSP-*` créés par une fonction dédiée `open_psp_accounts`
+  (`SECURITY DEFINER`, comptes PSP seulement) ; `open_event_ledger` inchangée. ADR à écrire par WP14 ; `0037` à faire
+  relire par une personne.
+- Arbitrages des tâches : `WALLET_BLOCKED` reste 422 (écart avec `contracts/psp.md` signalé) ; routes de demande
+  ajoutées pour `CASH_DEPOSIT`, `WALLET_UNBLOCK`, `LATE_CHARGEBACK` ; `account_purpose_guard` en `SECURITY INVOKER`
+  (renforcement).
 
 - OP-N81 (PSP et coffre en faux, bloque les recharges en ligne en production), OP-N82 (remboursement au payeur d'un
   paiement non crédité hors plateforme) ; ADR-131 (report), ADR-132 (contrôle des caisses renforcé), ADR-133 (frais
@@ -28,10 +35,9 @@ worktrees gardés après la fusion.
 
 ## Prochaines actions
 
-1. Fin de l'addendum post-plan : soumettre au porteur les réponses de nécessité/complétude, écrire la ligne du journal
-   de `docs/06-docs-status.md`, commiter.
+1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
-3. `/spec-kitty.tasks` ; matrice d'acceptation tenue au fil des lots (mémoire « Suivre le modèle Spec Kitty »).
+3. (Fait) `/spec-kitty.tasks` ; matrice d'acceptation à tenir au fil des lots matrice d'acceptation tenue au fil des lots (mémoire « Suivre le modèle Spec Kitty »).
 4. Créer `docs/Mission-06-Recharges-caisses-PSP.docx` (gabarit de la 5b : `docs/passation-5b/scripts/gen_5b_doc.py`).
 5. Implémentation : un implémenteur et un relecteur distincts par lot (sous-agents sur Sonnet ;
    `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` réglé dans `.claude/settings.local.json`), tests en série par l'orchestrateur.
