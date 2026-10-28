@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1266" viewBox="0 0 2066 1266">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 693.6666666666666,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,290.72 674.3598503050785,301.2673618492925 674.3598503050785,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="308.5333333333333" y="253.72000000000003" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,366.72 1210.3333333333333,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,366.72 1191.026516971745,377.2673618492925 1191.026516971745,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="788.8" y="329.72" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,442.71999999999997 1727.0,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,442.71999999999997 1707.6931836384117,453.26736184929246 1707.6931836384117,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1383.4666666666665" y="405.71999999999997" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1570.0" y="488.72" width="330" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1729.0,670.72 1226.3333333333333,670.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1226.3333333333333,670.72 1245.6401496949215,660.1726381507076 1245.6401496949215,681.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="1341.8666666666666" y="633.72" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,746.72 709.6666666666666,746.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,746.72 728.9734830282548,736.1726381507076 728.9734830282548,757.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="846.0" y="709.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="64,790.72 1920.0,790.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1585.0" y="868.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1729.0,974.72 1226.3333333333333,974.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1226.3333333333333,974.72 1245.6401496949215,964.1726381507076 1245.6401496949215,985.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="1399.0666666666666" y="937.72" width="155.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,1050.72 709.6666666666666,1050.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,1050.72 728.9734830282548,1040.1726381507076 728.9734830282548,1061.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="877.2" y="1013.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="562.72" width="1856.0" height="521.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Clôture d’un événement (§12.1)</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Flux de docs/05-sequence-diagrams.md, redessiné avec /illustre le 27/10/2026 (contenu identique à l’ancien Mermaid)</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Organisateur</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Back-office</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="443.3333333333333" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Passe à l’étape suivante</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="960.0" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vérifie caisses, PSP, terminaux</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1476.6666666666665" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">set_event_status</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1735.0" y="520.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Verrous, conditions calculées</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="74" y="586.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt Condition non remplie</text>
+<text x="1476.6666666666665" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">CL019 (condition nommée)</text>
+<text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Liste des conditions</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="74" y="814.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">else Conditions remplies</text>
+<text x="1735.0" y="900.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Statut des grands livres</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="1476.6666666666665" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut changé</text>
+<text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="960.0" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nouveau statut</text>
+<text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+</g>
+</svg>
