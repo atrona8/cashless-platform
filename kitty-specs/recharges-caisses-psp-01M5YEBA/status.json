@@ -257,7 +257,8 @@
       "last_transition_at": "2026-10-28T13:27:50.352234+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Reprise Windows : tests T042 écrits, fixtures réparées ; 68 tests WP08 + matrice verts sur cashless_wp08 ; mutations théorique et preuve de terminal détectées. Écarts (aucun n'affaiblit) : counted_at non retenu (heure de la base), note ≤200, bank_reference ≤200 (openapi prime sur le prompt : 100), CASH_DIFF par finish_cash_close. --force : garde kitty-specs sur artefacts du runtime seuls."
+        "Reprise Windows : tests T042 écrits, fixtures réparées ; 68 tests WP08 + matrice verts sur cashless_wp08 ; mutations théorique et preuve de terminal détectées. Écarts (aucun n'affaiblit) : counted_at non retenu (heure de la base), note ≤200, bank_reference ≤200 (openapi prime sur le prompt : 100), CASH_DIFF par finish_cash_close. --force : garde kitty-specs sur artefacts du runtime seuls.",
+        "Relecture Windows (agent distinct) : 56 tests WP08 + matrice 12/12 verts sur cashless_wp08r, tsc propre ; mutations ORGANIZER_ADMIN fermeur, vue AGENT théorique, filtre opened_by détectées ; fermeur≠compteur API seule non détecté (base CL041 tient). Mineurs : cash_diff_anomaly_id visible en vue AGENT (WP14/revue), test API seule fermeur≠compteur, counted_at ignoré à documenter. --force : garde kitty-specs sur artefacts du runtime seuls."
       ],
       "provider": "__resolved_provider_absent__",
       "role": "reviewer",
