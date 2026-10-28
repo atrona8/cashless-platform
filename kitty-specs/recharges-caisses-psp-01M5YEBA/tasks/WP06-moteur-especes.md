@@ -6,20 +6,23 @@ requirement_refs: [FR-005, FR-006]
 planning_base_branch: feat/recharges-caisses-psp
 merge_target_branch: feat/recharges-caisses-psp
 branch_strategy: Planning artifacts for this mission were generated on feat/recharges-caisses-psp. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/recharges-caisses-psp unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-recharges-caisses-psp-01M5YEBA
+base_commit: 87bcc1bacb73d14ecea6c48bf7a4edc6f6cb16db
+created_at: '2026-10-27T14:57:32.713571+00:00'
 subtasks: [T027, T028, T029, T030]
 phase: Phase 2 - Socle applicatif
 agent: claude
-model: sonnet
-agent_profile: implementer-ivan
-role: implementer
 history:
 - timestamp: '2026-10-27T15:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
+agent_profile: implementer-ivan
 authoritative_surface: apps/api/src/ledger/
-execution_mode: code_change
-owned_files: [apps/api/src/ledger/ledger-engine.service.ts, apps/api/src/ledger/builders/closing/cash.ts, apps/api/test/integration/engine/topup-cash-split.spec.ts, apps/api/test/unit/builders/closing/closing-builders.spec.ts]
 create_intent: [apps/api/test/integration/engine/topup-cash-split.spec.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [apps/api/src/ledger/ledger-engine.service.ts, apps/api/src/ledger/builders/closing/cash.ts, apps/api/test/integration/engine/topup-cash-split.spec.ts, apps/api/test/unit/builders/closing/closing-builders.spec.ts]
+role: implementer
 tags: []
 tracker_refs: []
 ---
