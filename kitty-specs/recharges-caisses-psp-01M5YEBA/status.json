@@ -349,7 +349,8 @@
       "last_transition_at": "2026-10-28T16:28:03.992888+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP11 : 10309af..25986f3 ; psp-process 23, card 11, deposit 5, concurrency 3, request 16, read-cancel 11, matrice 13 verts sur cashless_wp11 ; 14/15 mutations tuées (survivante doublée par la base). Écarts sans affaiblissement : verrou consultatif (pas de FOR UPDATE, droits inchangés), CL039 422 vs psp.md 409, succès après annulation crédité (R-20), INSERT anomaly direct (droit antérieur). --force : garde kitty-specs sur artefacts du runtime seuls."
+        "WP11 : 10309af..25986f3 ; psp-process 23, card 11, deposit 5, concurrency 3, request 16, read-cancel 11, matrice 13 verts sur cashless_wp11 ; 14/15 mutations tuées (survivante doublée par la base). Écarts sans affaiblissement : verrou consultatif (pas de FOR UPDATE, droits inchangés), CL039 422 vs psp.md 409, succès après annulation crédité (R-20), INSERT anomaly direct (droit antérieur). --force : garde kitty-specs sur artefacts du runtime seuls.",
+        "Relecture Windows (agent distinct) : APPROUVÉ avec notes ; 7 suites vertes sur cashless_wp11r ; 8 mutations nouvelles tuées (clé de verrou, devise, dédoublonnage, plafond, 3DS, portefeuille bloqué, caution). Mineurs : CL029 non classé (RETRY en boucle après anomalie résolue, motif carte erroné) → WP12 ; tests MISMATCH concurrent et process/cancel HTTP → WP14. --force : garde kitty-specs sur artefacts du runtime seuls."
       ],
       "provider": "__resolved_provider_absent__",
       "role": "reviewer",
