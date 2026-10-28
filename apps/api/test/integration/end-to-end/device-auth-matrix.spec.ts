@@ -35,6 +35,7 @@ import { DeviceOrCallerGuard } from '../../../src/device-identity/device-or-call
 import { DeviceGuard } from '../../../src/device-identity/device.guard';
 import { RealDeviceIdentity } from '../../../src/device-identity/real-device-identity';
 import { DeviceTokenService } from '../../../src/device-tokens/device-token.service';
+import { PspTopupCallerGuard } from '../../../src/topups/psp/psp-topup-caller.guard';
 import { TagKeysProcessModule } from '../../../src/processes/tag-keys.module';
 import { startHttpsApp, type HttpsTestApp } from '../../support/app';
 import { withOwner } from '../../support/db';
@@ -326,7 +327,7 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     ] as const) {
       for (const [route, controller] of guardedRoutes(app, DeviceGuard))
         guarded.set(route, { server, controller });
-      for (const guard of [DeviceOrCallerGuard, TerminalOrPersonGuard])
+      for (const guard of [DeviceOrCallerGuard, TerminalOrPersonGuard, PspTopupCallerGuard])
         for (const [route, controller] of guardedRoutes(app, guard)) {
           guarded.set(route, { server, controller });
           exclusive.add(route);
@@ -371,8 +372,19 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       'getCashSession',
       'openCashSession',
     ]);
-    const guards = [DeviceGuard, DeviceOrCallerGuard, TerminalOrPersonGuard];
+    const guards = [DeviceGuard, DeviceOrCallerGuard, TerminalOrPersonGuard, PspTopupCallerGuard];
     const guarded = new Set(guards.flatMap((g) => [...guardedRoutes(api.app, g).keys()]));
+    expect(operations.filter((op) => !guarded.has(op.key)).map((op) => op.key)).toEqual([]);
+    expect(operations.filter((op) => !(op.key in CASES)).map((op) => op.key)).toEqual([]);
+  });
+
+  // Mission 6, lot WP11 : chaque opération de recharge PSP du contrat est servie SOUS la garde composée de
+  // terminal, avec son cas dans le registre.
+  it('contrat → garde : les opérations de recharge PSP sont gardées et ont un cas', () => {
+    const names = ['initiatePspTopup', 'getPspTopup', 'cancelPspTopup'];
+    const operations = contractDeviceOperations().filter((op) => names.includes(op.operationId));
+    expect(operations.map((op) => op.operationId).sort()).toEqual([...names].sort());
+    const guarded = new Set(guardedRoutes(api.app, PspTopupCallerGuard).keys());
     expect(operations.filter((op) => !guarded.has(op.key)).map((op) => op.key)).toEqual([]);
     expect(operations.filter((op) => !(op.key in CASES)).map((op) => op.key)).toEqual([]);
   });

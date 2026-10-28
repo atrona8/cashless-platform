@@ -6,10 +6,11 @@ import { PSP_METHODS, type PspMethod } from '../../psp-configurations/psp-config
 import {
   amountField,
   intField,
-  invalid,
+  unprocessable,
   isUuid,
   objectBody,
 } from '../../organization/platform/platform.dto';
+import { ProblemException } from '../../errors/problem';
 import type { PspTopupRow } from './psp-topup-lookup';
 
 const FIELDS = new Set([
@@ -33,28 +34,28 @@ export interface PspTopupInput {
   returnUrl: string | null;
 }
 
-export function parsePspTopupRequest(raw: unknown): PspTopupInput {
+function parseBody(raw: unknown): PspTopupInput {
   const body = objectBody(raw);
   const unknown = Object.keys(body).filter((key) => !FIELDS.has(key));
-  if (unknown.length > 0) throw invalid(`${unknown.join(', ')} : champ inconnu.`);
+  if (unknown.length > 0) throw unprocessable(`${unknown.join(', ')} : champ inconnu.`);
   const walletId = body.wallet_id;
-  if (walletId !== undefined && !isUuid(walletId)) throw invalid('wallet_id : UUID attendu.');
+  if (walletId !== undefined && !isUuid(walletId)) throw unprocessable('wallet_id : UUID attendu.');
   const tapId = intField(body, 'tap_id', 0, Number.MAX_SAFE_INTEGER, 'optional');
   if ((walletId === undefined) === (tapId === undefined))
-    throw invalid('wallet_id ou tap_id : exactement un des deux attendu.');
+    throw unprocessable('wallet_id ou tap_id : exactement un des deux attendu.');
   const amount = amountField(body, 'amount', false);
-  if (amount === undefined || amount === null) throw invalid('Champ obligatoire : amount.');
-  if (BigInt(amount) <= 0n) throw invalid('amount : montant strictement positif attendu.');
+  if (amount === undefined || amount === null) throw unprocessable('Champ obligatoire : amount.');
+  if (BigInt(amount) <= 0n) throw unprocessable('amount : montant strictement positif attendu.');
   if (typeof body.currency !== 'string' || !/^[A-Z]{3}$/.test(body.currency))
-    throw invalid('currency : devise ISO 4217 attendue.');
+    throw unprocessable('currency : devise ISO 4217 attendue.');
   if (
     typeof body.provider !== 'string' ||
     !(PSP_METHODS as readonly string[]).includes(body.provider)
   )
-    throw invalid(`provider : valeurs permises ${PSP_METHODS.join(', ')}.`);
+    throw unprocessable(`provider : valeurs permises ${PSP_METHODS.join(', ')}.`);
   const msisdn = body.payer_msisdn;
   if (msisdn !== undefined && (typeof msisdn !== 'string' || !MSISDN.test(msisdn)))
-    throw invalid('payer_msisdn : numéro international attendu (+ et 7 à 15 chiffres).');
+    throw unprocessable('payer_msisdn : numéro international attendu (+ et 7 à 15 chiffres).');
   const returnUrl = body.return_url;
   if (returnUrl !== undefined) {
     let scheme: string | null = null;
@@ -68,7 +69,7 @@ export function parsePspTopupRequest(raw: unknown): PspTopupInput {
       returnUrl.length > 2000 ||
       (scheme !== 'https:' && scheme !== 'cashless:')
     )
-      throw invalid('return_url : URL en https: ou cashless: attendue.');
+      throw unprocessable('return_url : URL en https: ou cashless: attendue.');
   }
   return {
     walletId: (walletId as string | undefined) ?? null,
@@ -79,6 +80,21 @@ export function parsePspTopupRequest(raw: unknown): PspTopupInput {
     payerMsisdn: (msisdn as string | undefined) ?? null,
     returnUrl: (returnUrl as string | undefined) ?? null,
   };
+}
+
+/** Tout refus de forme est un 422 (les aides communes rendent 400 : repris ici en 422, même détail). */
+export function parsePspTopupRequest(raw: unknown): PspTopupInput {
+  try {
+    return parseBody(raw);
+  } catch (error) {
+    if (
+      error instanceof ProblemException &&
+      error.code === 'VALIDATION_FAILED' &&
+      error.status === 400
+    )
+      throw unprocessable(error.detail ?? 'Corps invalide.');
+    throw error;
+  }
 }
 
 export interface PspTopupView {
