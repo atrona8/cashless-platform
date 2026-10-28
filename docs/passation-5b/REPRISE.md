@@ -44,8 +44,7 @@ Vérifier l'état réel : `spec-kitty agent tasks status --mission terminaux-pai
 - **Docs** : `spec-kitty-docs-maintain` passé (statut « mergée » dans 01, 02, 04, 05, 06, 07, spec-index,
   docs-state) ; `Mission-05b-Encaissement-en-ligne.docx` régénéré (état final).
 - **Reste à faire** :
-  - retirer `.worktrees/tmp-combo-5a` et `.worktrees/tmp-combo-5b-wp08` (refusé à l'agent par le contrôle de
-    permissions : à faire par le porteur, `git worktree remove --force …`) ;
+  - ~~retirer les worktrees temporaires~~ : faits le 27/10 (accord du porteur).
   - ~~pousser feat et ouvrir la PR~~ : fait le 27/10 avec l'accord du porteur, **PR #6**. CI verte (runs
     40484677544 et 40484741738) : Jest 2188 réussis / 7 ignorés ; latence en série verte (configuration p95 18,6 ms,
     battement 17,4 ms, paiement par bracelet p95 28,7 ms / p99 32,3 ms). **NFR-010 confirmé par la CI.** Marge
