@@ -182,6 +182,7 @@ export class PspTopupPollerWorker implements ProcessWorker {
 
 function settledByPayment(outcome: PaymentOutcome, state: 'PAID' | 'CANCELLED'): boolean {
   return (
-    outcome.disposition === 'PROCESSED' && (state === 'CANCELLED' || outcome.outcome !== 'NO_EFFECT')
+    outcome.disposition === 'PROCESSED' &&
+    (state === 'CANCELLED' || outcome.outcome !== 'NO_EFFECT')
   );
 }

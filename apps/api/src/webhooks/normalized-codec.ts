@@ -55,8 +55,7 @@ export function decodeNormalized(value: unknown): NormalizedNotification | null 
     const raw = payment.card;
     if (!isObject(raw)) return null;
     const threeDs = raw.threeDs;
-    if (threeDs !== 'SUCCEEDED' && threeDs !== 'FAILED' && threeDs !== 'NOT_PERFORMED')
-      return null;
+    if (threeDs !== 'SUCCEEDED' && threeDs !== 'FAILED' && threeDs !== 'NOT_PERFORMED') return null;
     if (raw.fingerprint !== null && typeof raw.fingerprint !== 'string') return null;
     card = { fingerprint: raw.fingerprint, threeDs };
   }

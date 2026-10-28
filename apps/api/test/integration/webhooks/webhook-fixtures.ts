@@ -1,7 +1,7 @@
 // Jeu d'essai des notifications de PSP (mission 6, lot WP12, T064) : s'appuie sur le monde des recharges PSP de
 // WP11 (importé, jamais copié) et ajoute l'envoi HTTPS réel d'une notification signée par le faux signeur de WP07.
 import { randomUUID } from 'node:crypto';
-import type { INestApplicationContext } from '@nestjs/common';
+import { Logger, type INestApplicationContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { WorkerRegistry } from '../../../src/processes/worker';
 import { PspPollerProcessModule } from '../../../src/processes/psp-poller.module';
@@ -11,8 +11,14 @@ import { PspEventPurgeWorker } from '../../../src/topups/poller/psp-event-purge.
 import { PspEventRetryWorker } from '../../../src/topups/poller/psp-event-retry.worker';
 import { PspTopupPollerWorker } from '../../../src/topups/poller/psp-topup-poller.worker';
 import { APP_URL } from '../../support/db';
-import { fakeEvents, signFakeNotification, type FakeEvent } from '../../../src/psp/fake/fake-notification-signer';
-import type { PspProviderName } from '../../../src/psp/psp.types';
+import {
+  fakeEvents,
+  signFakeNotification,
+  type FakeEvent,
+} from '../../../src/psp/fake/fake-notification-signer';
+import type { NormalizedNotification, PspProviderName } from '../../../src/psp/psp.types';
+import { encodeNormalized } from '../../../src/webhooks/normalized-codec';
+import { withOwner } from '../../support/db';
 import { send, type TerminalResponse } from '../../support/test-terminal';
 import { ownerRows } from '../../support/media-fixtures';
 import type { PspTopupRow } from '../../../src/topups/psp/psp-topup-lookup';
@@ -84,7 +90,8 @@ export class WebhookWorld {
         : undefined);
     return fakeEvents[over.type ?? 'succeeded']({
       id: over.id ?? `evt-${randomUUID()}`,
-      merchantReference: over.merchantReference === undefined ? topup.topupId : over.merchantReference,
+      merchantReference:
+        over.merchantReference === undefined ? topup.topupId : over.merchantReference,
       paymentId: over.paymentId ?? `pay-${topup.topupId.slice(0, 8)}`,
       amount: over.amount ?? Number(topup.amount),
       currency: over.currency ?? topup.currency,
@@ -200,4 +207,127 @@ export async function startPoller(
     purge: app.get(PspEventPurgeWorker, { strict: false }),
     close: () => app.close(),
   };
+}
+
+// ----- Amorçage, journaux -----
+
+/** Recharge `PENDING` d'identifiant CHOISI (notification reçue avant la recharge : A2). */
+export async function topupWithId(
+  w: WebhookWorld,
+  topupId: string,
+  method: Method = 'WAVE',
+  amount = 10000,
+): Promise<PspTopupRow> {
+  const wallet = await w.p.wallet();
+  await w.p.tx.run(w.p.op, (client) =>
+    client.query('SELECT * FROM create_psp_topup($1,$2,$3,$4,$5,$6,$7,$8,$9)', [
+      topupId,
+      wallet.walletId,
+      method,
+      String(amount),
+      'CUSTOMER',
+      null,
+      null,
+      wallet.customer.customerId,
+      new Date(Date.now() + 3_600_000),
+    ]),
+  );
+  return (await w.p.read(topupId))!;
+}
+
+/**
+ * Événement inséré par le propriétaire (amorçage : âge, essais et état que la réception ne produit pas seule). La
+ * notification est celle que `normalized` porte ; le corps brut est absent ou fourni.
+ */
+export async function insertEvent(input: {
+  configId: string;
+  operatorId: string;
+  notification: NormalizedNotification;
+  status?: 'RECEIVED' | 'UNMATCHED' | 'RETRY';
+  attempts?: number;
+  ageHours?: number;
+  ageDays?: number;
+  body?: Buffer | null;
+}): Promise<string> {
+  const rows = await ownerRows<{ id: string }>(
+    `INSERT INTO psp_event (operator_id, psp_configuration_id, provider_event_id, received_at, body,
+                            kind, status, attempts, normalized)
+     VALUES ($1, $2, $3, clock_timestamp() - make_interval(hours => $4::int, days => $5::int), $6,
+             $7, $8, $9, $10::jsonb)
+     RETURNING psp_event_id AS id`,
+    [
+      input.operatorId,
+      input.configId,
+      input.notification.notificationId,
+      input.ageHours ?? 0,
+      input.ageDays ?? 0,
+      input.body ?? null,
+      input.notification.kind,
+      input.status ?? 'RECEIVED',
+      input.attempts ?? 0,
+      JSON.stringify(encodeNormalized(input.notification)),
+    ],
+  );
+  return rows[0]!.id;
+}
+
+export interface CapturedLogs {
+  lines: string[];
+  text(): string;
+  restore(): void;
+}
+
+/** Capte tout ce que les journaux (Logger de Nest, sortie standard, sortie d'erreur) écrivent. */
+export function captureLogs(): CapturedLogs {
+  const lines: string[] = [];
+  const spies = (['log', 'warn', 'error', 'debug', 'verbose'] as const).map((level) =>
+    jest.spyOn(Logger.prototype, level).mockImplementation((message: unknown) => {
+      lines.push(typeof message === 'string' ? message : JSON.stringify(message));
+    }),
+  );
+  const record = (chunk: unknown): boolean => {
+    lines.push(String(chunk));
+    return true;
+  };
+  spies.push(
+    jest.spyOn(process.stdout, 'write').mockImplementation(record as never) as never,
+    jest.spyOn(process.stderr, 'write').mockImplementation(record as never) as never,
+  );
+  return {
+    lines,
+    text: () => lines.join('\n'),
+    restore: () => spies.forEach((spy) => spy.mockRestore()),
+  };
+}
+
+/**
+ * Vieillit une recharge (amorçage par le propriétaire : `created_at` est une colonne d'identité, que le déclencheur
+ * de l'automate refuse de modifier ; seul `session_replication_role` le contourne, pour cette connexion).
+ */
+export function ageTopup(
+  topupId: string,
+  options: { minutes?: number; expired?: boolean } = {},
+): Promise<void> {
+  return withOwner(async (db) => {
+    await db.query('SET session_replication_role = replica');
+    await db.query(
+      `UPDATE psp_topup
+          SET created_at = clock_timestamp() - make_interval(mins => $2::int),
+              expires_at = CASE WHEN $3::boolean THEN clock_timestamp() - interval '1 minute'
+                                ELSE expires_at END
+        WHERE psp_topup_id = $1`,
+      [topupId, options.minutes ?? 5, options.expired ?? false],
+    );
+  });
+}
+
+/**
+ * La base de test est partagée entre les passages : ferme les événements laissés par d'autres suites, pour que les
+ * codes d'alerte et les reprises ne dépendent que de ce qu'une suite crée elle-même.
+ */
+export function closeBacklog(): Promise<unknown[]> {
+  return ownerRows(
+    `UPDATE psp_event SET status = 'PROCESSED', outcome = 'NO_EFFECT', processed_at = clock_timestamp()
+      WHERE status <> 'PROCESSED'`,
+  );
 }

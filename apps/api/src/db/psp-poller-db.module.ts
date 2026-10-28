@@ -2,12 +2,7 @@
 // applicatif `cashless_app` (les fonctions des notifications et de l'interrogation lui sont accordées nommément,
 // contrat des droits). Aucune chaîne de connexion de la plateforme, aucun `PlatformTx` dans ce processus. Un rôle
 // dédié serait une amélioration possible (hors carte, signalée au porteur).
-import {
-  Global,
-  Inject,
-  Module,
-  type OnApplicationShutdown,
-} from '@nestjs/common';
+import { Global, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { Pool, types } from 'pg';
 import { APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { PG_POOL } from './pool.token';
