@@ -95,6 +95,9 @@ export class CashSessionReadService {
     page: PageRequest,
   ): Promise<Page<CashSessionDto>> {
     if (!isUuid(eventId)) throw new ProblemException('NOT_FOUND');
+    // Événement absent ou d'un autre prestataire (RLS) : 404, avant tout calcul de droit.
+    const known = await client.query('SELECT 1 FROM event WHERE id = $1', [eventId]);
+    if (known.rows.length === 0) throw new ProblemException('NOT_FOUND');
     const chain = await eventChain(client, eventId);
     if (viewOf(principal, chain) !== 'MANAGER') throw new ProblemException('FORBIDDEN');
     const { rows } = await client.query<CashSessionRow>(

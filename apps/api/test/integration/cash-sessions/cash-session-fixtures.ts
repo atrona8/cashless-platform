@@ -78,6 +78,7 @@ export class CashWorld {
       await contract('ORGANIZER', w.ids.eventA);
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
       cw.a = { eventId: w.ids.eventA, ledgerId: w.ids.ledgerA, walletId: w.ids.walletA };
+      await cw.walletAccounts(db, cw.a);
       cw.b = await cw.insertEvent(db, 'OPERATOR', true);
       await contract('OPERATOR', cw.b.eventId);
       const person = (
@@ -144,7 +145,7 @@ export class CashWorld {
     await db.query(
       `INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, jurisdiction_id,
                           funds_holder)
-       SELECT $2, operator_id, organizer_id, 'Événement ' || $2::text, currency, timezone,
+       SELECT $2::uuid, operator_id, organizer_id, 'Événement ' || $2::text, currency, timezone,
               jurisdiction_id, funds_holder FROM event WHERE id = $1`,
       [w.ids.eventA, eventId],
     );
@@ -158,7 +159,35 @@ export class CashWorld {
       ledgerId,
     ]);
     if (live) await goLive(db, w.ops.a, eventId, w.operatorAdminA.userId);
-    return { eventId, ledgerId, walletId };
+    const created = { eventId, ledgerId, walletId };
+    await this.walletAccounts(db, created);
+    return created;
+  }
+
+  /** Comptes `L-WAL-<id>-P` et `-X` du portefeuille (un INSERT direct dans `wallet` ne les crée pas). */
+  private async walletAccounts(
+    db: Parameters<Parameters<typeof withOwner>[0]>[0],
+    ev: WorldEvent,
+  ): Promise<void> {
+    await db.query(
+      `INSERT INTO account (operator_id, ledger_id, code, family, purpose, wallet_id, normal_side,
+                            allow_negative, hot)
+       VALUES ($1, $2, 'L-WAL-' || $3::text || '-P', 'CLAIM', 'WALLET_PAID', $3::uuid, 'C', false, false),
+              ($1, $2, 'L-WAL-' || $3::text || '-X', 'CLAIM', 'WALLET_PROMO', $3::uuid, 'C', false, false)`,
+      [this.w.ops.a, ev.ledgerId, ev.walletId],
+    );
+  }
+
+  /** Nouvel événement du prestataire A, en service (grand livre et portefeuille compris). */
+  async newEvent(db: Parameters<Parameters<typeof withOwner>[0]>[0]): Promise<WorldEvent> {
+    const ev = await this.insertEvent(db, 'ORGANIZER', false);
+    // Même contrat que l'événement A (payeur d'écart ORGANIZER), puis mise en service.
+    await db.query(
+      'UPDATE event SET contract_id = (SELECT contract_id FROM event WHERE id = $1) WHERE id = $2',
+      [this.a.eventId, ev.eventId],
+    );
+    await goLive(db, this.w.ops.a, ev.eventId, this.w.operatorAdminA.userId);
+    return ev;
   }
 
   /** Événement du prestataire A, hors service (brouillon) : une caisse n'y peut pas être ouverte. */
@@ -250,14 +279,14 @@ export class CashWorld {
     });
   }
 
-  /** Théorique posé par une écriture réelle `TOPUP_CASH` du moteur (garde de caisse de la base comprise). */
-  async seedCash(
+  /** Écriture réelle `TOPUP_CASH` du moteur sous la session du terminal : l'erreur de la base est rendue telle quelle. */
+  topupCash(
     t: TestTerminal,
     amount: number,
     ev: WorldEvent = this.a,
     key: string = `seed:${randomUUID()}`,
-  ): Promise<string> {
-    const result = await this.tx.run(this.w.ops.a, (client) =>
+  ) {
+    return this.tx.run(this.w.ops.a, (client) =>
       this.engine.execute(client, {
         type: 'TOPUP_CASH',
         source: 'ONLINE',
@@ -270,7 +299,49 @@ export class CashWorld {
         payload: { walletId: ev.walletId, cashDesk: t.serial, amount: BigInt(amount) },
       }),
     );
+  }
+
+  /** Théorique posé par une écriture réelle `TOPUP_CASH` du moteur (garde de caisse de la base comprise). */
+  async seedCash(
+    t: TestTerminal,
+    amount: number,
+    ev: WorldEvent = this.a,
+    key: string = `seed:${randomUUID()}`,
+  ): Promise<string> {
+    const result = await this.topupCash(t, amount, ev, key).catch((error: unknown) => {
+      const detail = (error as { detail?: string }).detail ?? '';
+      throw new Error(`seedCash refusé : ${String(error)} ${detail}`);
+    });
     return result.transactionId!;
+  }
+
+  /** Fermeture par une personne seule (chemin back-office). */
+  closeBo(id: string, who: TestPerson, key?: string | null) {
+    return this.bo('POST', `/cash-sessions/${id}/close`, who, undefined, key);
+  }
+
+  /** Fermeture au terminal (trois preuves + personne dans `X-Staff-Authorization`). */
+  closeTerm(t: TestTerminal, id: string, who: TestPerson, key?: string) {
+    return this.term(t, 'POST', `/cash-sessions/${id}/close`, who, undefined, key);
+  }
+
+  /** Solde de la caisse d'un terminal (somme des lignes), en base. */
+  deskBalance(t: TestTerminal, ev: WorldEvent = this.a): Promise<number> {
+    return this.balance(ev.ledgerId, `A-CAISSE-${t.serial}`);
+  }
+
+  anomaliesOf(ledgerId: string) {
+    return ownerRows<{
+      id: string;
+      kind: string;
+      amount: string;
+      device_id: string | null;
+      transaction_id: string;
+    }>(
+      `SELECT id, kind, amount::text, device_id, transaction_id FROM anomaly
+        WHERE ledger_id = $1 AND kind = 'CASH_DIFF'`,
+      [ledgerId],
+    );
   }
 
   /** Session ouverte par `cashier`, `expected` espèces en caisse, comptée `counted` (si non nul) par `counter`. */
