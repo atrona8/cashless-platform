@@ -143,7 +143,7 @@ export class EventDispatcher {
   }
 
   /** Troisième transaction : l'erreur est journalisée sans donnée sensible, jamais relancée. */
-  private async markRetry(event: PspEventRef, error: unknown): Promise<void> {
+  async markRetry(event: PspEventRef, error: unknown): Promise<void> {
     logPspAlert(this.log, {
       event: 'psp.event.processing_failed',
       severity: 'ERROR',

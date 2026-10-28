@@ -1,6 +1,16 @@
 // Jeu d'essai des notifications de PSP (mission 6, lot WP12, T064) : s'appuie sur le monde des recharges PSP de
 // WP11 (importé, jamais copié) et ajoute l'envoi HTTPS réel d'une notification signée par le faux signeur de WP07.
 import { randomUUID } from 'node:crypto';
+import type { INestApplicationContext } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { WorkerRegistry } from '../../../src/processes/worker';
+import { PspPollerProcessModule } from '../../../src/processes/psp-poller.module';
+import type { PspAdapterRegistry } from '../../../src/psp/psp-adapter-registry';
+import { PSP_ADAPTERS, PSP_SECRET_STORE } from '../../../src/psp/psp.tokens';
+import { PspEventPurgeWorker } from '../../../src/topups/poller/psp-event-purge.worker';
+import { PspEventRetryWorker } from '../../../src/topups/poller/psp-event-retry.worker';
+import { PspTopupPollerWorker } from '../../../src/topups/poller/psp-topup-poller.worker';
+import { APP_URL } from '../../support/db';
 import { fakeEvents, signFakeNotification, type FakeEvent } from '../../../src/psp/fake/fake-notification-signer';
 import type { PspProviderName } from '../../../src/psp/psp.types';
 import { send, type TerminalResponse } from '../../support/test-terminal';
@@ -152,4 +162,42 @@ export class WebhookWorld {
   close(): Promise<void> {
     return this.p.close();
   }
+}
+
+// ----- Processus `psp-poller` (vrai module racine, vrai rôle de base, faux PSP et faux coffre du monde) -----
+
+export interface PollerProcess {
+  app: INestApplicationContext;
+  workers: WorkerRegistry;
+  poller: PspTopupPollerWorker;
+  retry: PspEventRetryWorker;
+  purge: PspEventPurgeWorker;
+  close(): Promise<void>;
+}
+
+/**
+ * Démarre `PspPollerProcessModule` comme `runWorkers` (contexte sans route). Les faux sont ceux du monde de test :
+ * l'état de paiement posé sur le faux adaptateur est celui que le travailleur interroge.
+ */
+export async function startPoller(
+  w: WebhookWorld,
+  options: { registry?: PspAdapterRegistry; store?: unknown } = {},
+): Promise<PollerProcess> {
+  process.env.DATABASE_URL_APP = APP_URL;
+  const builder = Test.createTestingModule({ imports: [PspPollerProcessModule] })
+    .overrideProvider(PSP_ADAPTERS)
+    .useValue(options.registry ?? w.p.registry)
+    .overrideProvider(PSP_SECRET_STORE)
+    .useValue(options.store ?? w.p.store);
+  const moduleRef = await builder.compile();
+  const app = moduleRef.createNestApplication({ logger: false });
+  await app.init();
+  return {
+    app,
+    workers: app.get(WorkerRegistry, { strict: false }),
+    poller: app.get(PspTopupPollerWorker, { strict: false }),
+    retry: app.get(PspEventRetryWorker, { strict: false }),
+    purge: app.get(PspEventPurgeWorker, { strict: false }),
+    close: () => app.close(),
+  };
 }

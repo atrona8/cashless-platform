@@ -211,6 +211,7 @@ describe('architecture', () => {
     expect(mains.map((file) => file.path).sort()).toEqual([
       'main.key-admin.ts',
       'main.personalization.ts',
+      'main.psp-poller.ts',
       'main.tag-check.ts',
       'main.tag-keys.ts',
       'main.ts',
