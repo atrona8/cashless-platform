@@ -111,9 +111,10 @@ describe('recharge par carte', () => {
       const first = await card(30000, f);
       await p.pay(first.t.row, { card: { fingerprint: f, threeDs: 'SUCCEEDED' } });
       // Jour UTC lu de la base (jamais de l'horloge de Node).
-      const [{ d }] = await ownerRows<{ d: string }>(
+      const [today0] = await ownerRows<{ d: string }>(
         "SELECT (clock_timestamp() AT TIME ZONE 'UTC')::date::text AS d",
       );
+      const d = today0!.d;
       const day = (offset: number, time: string) => {
         const base = new Date(`${d}T00:00:00Z`);
         base.setUTCDate(base.getUTCDate() + offset);

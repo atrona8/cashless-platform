@@ -475,3 +475,43 @@ festivalier avec un jeton de personne ; clé d'écriture identique pour deux con
 en double ; caution prise avant le COMMIT ; secret ou empreinte complète dans un journal ; test qui
 « prouve » l'unicité sans verrou réel (séquentiel) ; test qui s'appuie sur l'horloge de la base.
 Vérifier que chaque mutation listée est réellement tuée.
+
+## Compte rendu du lot (implémenteur, 28/10/2026)
+
+**Contrat de service (noms exacts, `apps/api/src/topups/psp/`)** : `PspTopupLookup.findForUpdate(client: TxClient,
+ref: { configurationId; merchantRef?; providerRef? }): Promise<PspTopupRow | null>` ;
+`PspPaymentProcessor.process(client, input: PaymentInput): Promise<PaymentOutcome>` ;
+`PspPaymentProcessor.settleUnpaid(client, input: UnpaidInput): Promise<PaymentOutcome>` ;
+`PspPaymentProcessor.afterCommit(operatorId: string, outcome: PaymentOutcome, audit: AuditContext): Promise<void>` ;
+types `PaymentInput`, `UnpaidInput`, `PaymentOutcome` dans `psp-payment-types.ts` (formes du prompt). Le module
+`PspTopupsModule` exporte `PspPaymentProcessor` et `PspTopupLookup`.
+
+**Lacune de droits (pas un affaiblissement)** : `cashless_app` n'a que `SELECT` sur `psp_topup` (post-roles.sql 7a),
+donc `SELECT ... FOR UPDATE` est refusé (42501). `findForUpdate` prend à la place un verrou consultatif de
+transaction sur l'identifiant de la recharge (`pg_advisory_xact_lock`), avant toute lecture de solde ; les fonctions
+de la base gardent leur propre `FOR UPDATE`. Aucun droit élargi. Toute suite qui lit/écrit une recharge hors de
+`PspTopupLookup` ne bénéficie pas de ce verrou (WP12, WP13 : passer par `findForUpdate`/`lock`).
+
+**Écarts et contradictions signalés** : (1) `CL039` : 422 `WALLET_BLOCKED` (prompt), `contracts/psp.md` écrit 409 ;
+mapping inchangé. (2) `provider` du corps = moyen (contrat) ; la base nomme `method` le moyen. (3) Motifs de la base
+(`FEES_EXCEED_AMOUNT`, `ACCOUNT_INACTIVE`, `PSP_FAILED`) ≠ liste du prompt (`FEE_EXCEEDS_AMOUNT`, `KEY_CONFLICT`) : la
+base fait foi ; `CL002` -> `PSP_FAILED`. `ACCOUNT_INACTIVE` n'est jamais produit (aucun code de problème distinct). (4)
+Contrat openapi : succès après annulation « non crédité » ; R-20 et `0038` créditent (R-20 prime, appliqué). (5)
+Plafond par carte : la base compte le jour UTC de SON horloge (`clock_timestamp()`), pas de `receivedAt` ; le contrôle
+applicatif compte le jour UTC de `receivedAt` ; le plus strict gagne (un `receivedAt` d'un autre jour que « aujourd'hui »
+est refusé si le compteur du jour de la base est plein). `complete_card_topup` refuse par `CL029`, traduit en
+`CARD_DAILY_LIMIT`. (6) Plafond estimé à la demande : un seul code `WALLET_LIMIT_EXCEEDED` (la marge ne dit pas quelle
+limite est en cause). (7) Anomalie `PSP_MISMATCH` : insertion directe dans `anomaly` (aucune fonction en 0038) ;
+dédoublonnage par paiement via `audit_log` (`psp_payment`, `<configuration>:<paiement>`). (8) Réponse `PspTopup` : champs
+ajoutés non contractuels `payment_instruction` (action INSTRUCTION) et `estimated_fee` (bearer CUSTOMER). (9)
+`notificationUrl` transmise à l'adaptateur : chemin relatif `/webhooks/<segment>/<configuration>` (aucune base d'URL
+publique en configuration). (10) Un succès avec une autre référence de paiement que celle de la recharge, ou une autre
+référence marchande, est `MISMATCH` (strict).
+
+**Retouches hors carte** : `app.module.ts` (import), `audit.service.ts` (4 actions), `device-auth-matrix.spec.ts`
+(garde `PspTopupCallerGuard` dans les 2 listes + test contrat -> garde PSP), `device-auth-cases/registry.ts`
+(`exclusive: 'psp'`). `sqlstate-map.ts` : rien à ajouter.
+
+**Fichiers à faire relire par une personne** : `psp-payment-processor.ts` (argent, ordre des contrôles, SAVEPOINT),
+`card-checks.ts` (3-D Secure, plafond), `psp-topup-caller.guard.ts` (authentification), `psp-topup-lookup.ts` (verrou),
+`psp-refusals.ts`.
