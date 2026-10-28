@@ -1,6 +1,7 @@
 // Monde de test des caisses au guichet (mission 6, lot WP09) : événement en service, trois terminaux `TOPUP_DESK`
 // (deux avec une session ouverte, un sans), lots de bracelets avec et sans caution, requêtes de guichet.
 // Partagé par `test/integration/topups/cash-*.spec.ts`.
+import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
