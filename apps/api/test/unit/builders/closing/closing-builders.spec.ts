@@ -282,6 +282,36 @@ describe('cas dédiés', () => {
     ]);
   });
 
+  it('CASH_CLOSE à théorique nul : surplus seul, aucune ligne de caisse', () => {
+    const lines = buildCashClose(command(24, { cashDesk: 'C1', counted: 500n, expected: 0n }), ctx);
+    expectBalanced(lines);
+    expect(coded(lines)).toEqual([
+      { account: 'A-TRANSIT', amount: 500n },
+      { account: 'L-ORG-PERTES', amount: -500n },
+    ]);
+  });
+
+  it('CASH_CLOSE à compté nul : manque total', () => {
+    const lines = buildCashClose(
+      command(24, { cashDesk: 'C1', counted: 0n, expected: 1_000n }),
+      ctx,
+    );
+    expectBalanced(lines);
+    expect(coded(lines)).toEqual([
+      { account: 'L-ORG-PERTES', amount: 1_000n },
+      { account: 'A-CAISSE-C1', amount: -1_000n },
+    ]);
+  });
+
+  it('CASH_CLOSE : compté et théorique nuls, ou montant négatif : refus', () => {
+    const close = (counted: bigint, expected: bigint) => () =>
+      buildCashClose(command(24, { cashDesk: 'C1', counted, expected }), ctx);
+    expect(close(0n, 0n)).toThrow(BuildError);
+    expect(close(0n, 0n)).toThrow(/sans écriture/);
+    expect(close(100n, -1n)).toThrow(BuildError);
+    expect(close(-1n, 100n)).toThrow(BuildError);
+  });
+
   it('OPERATOR_FEE en régularisation : sens inverse', () => {
     const lines = buildOperatorFee(
       command(31, { bases: { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n }, regularization: true }),

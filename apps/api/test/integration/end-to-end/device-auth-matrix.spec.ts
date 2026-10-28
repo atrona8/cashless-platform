@@ -28,6 +28,7 @@
 // PATCH, DELETE ; variantes « avec corps » pour POST, PUT, PATCH.
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
+import { TerminalOrPersonGuard } from '../../../src/cash-sessions/terminal-or-person.guard';
 import { FakeDeviceCa } from '../../../src/device-ca/fake-device-ca';
 import { DEVICE_IDENTITY } from '../../../src/device-identity/device-identity.port';
 import { DeviceOrCallerGuard } from '../../../src/device-identity/device-or-caller.guard';
@@ -325,10 +326,11 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     ] as const) {
       for (const [route, controller] of guardedRoutes(app, DeviceGuard))
         guarded.set(route, { server, controller });
-      for (const [route, controller] of guardedRoutes(app, DeviceOrCallerGuard)) {
-        guarded.set(route, { server, controller });
-        exclusive.add(route);
-      }
+      for (const guard of [DeviceOrCallerGuard, TerminalOrPersonGuard])
+        for (const [route, controller] of guardedRoutes(app, guard)) {
+          guarded.set(route, { server, controller });
+          exclusive.add(route);
+        }
     }
     // Garde exclusive (A13) : exactement les cas marqués `exclusive`.
     expect([...exclusive].sort()).toEqual(ROUTES.filter((r) => CASES[r]!.exclusive).sort());
@@ -353,6 +355,26 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     expect(new Set([...guarded.values()].map((g) => g.controller))).toEqual(
       new Set([...BASE_CONTROLLERS, ...registry.controllers]),
     );
+  });
+
+  // Mission 6, lot WP08 (relecture de WP01) : sens contrat → garde. Chaque opération de terminal des sessions
+  // de caisse nommée au contrat est servie SOUS une garde de terminal, avec son cas dans le registre.
+  it('contrat → garde : les opérations de session de caisse sont gardées et ont un cas', () => {
+    const operations = contractDeviceOperations().filter((op) =>
+      ['openCashSession', 'countCashSession', 'closeCashSession', 'getCashSession'].includes(
+        op.operationId,
+      ),
+    );
+    expect(operations.map((op) => op.operationId).sort()).toEqual([
+      'closeCashSession',
+      'countCashSession',
+      'getCashSession',
+      'openCashSession',
+    ]);
+    const guards = [DeviceGuard, DeviceOrCallerGuard, TerminalOrPersonGuard];
+    const guarded = new Set(guards.flatMap((g) => [...guardedRoutes(api.app, g).keys()]));
+    expect(operations.filter((op) => !guarded.has(op.key)).map((op) => op.key)).toEqual([]);
+    expect(operations.filter((op) => !(op.key in CASES)).map((op) => op.key)).toEqual([]);
   });
 
   it('routes du contrat non servies : 404 sur les deux processus, aucun nonce', async () => {

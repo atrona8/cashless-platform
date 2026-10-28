@@ -347,8 +347,8 @@ export async function goLive(
 }
 
 /**
- * Compte de caisse d'un terminal (`A-CAISSE-<n° de série>`), posé directement : cette mission n'en crée aucun
- * (décision du porteur n° 10), c'est la mission des caisses qui les ouvrira avec leurs sessions.
+ * Compte de caisse d'un terminal (`A-CAISSE-<n° de série>`), posé directement, hors `cash_desk` : pour les tests qui
+ * n'écrivent pas d'espèces. Toute écriture d'espèces passe par `openCashSession`, qui reprend ce compte.
  */
 export async function openCashDesk(
   db: Client,
@@ -360,6 +360,27 @@ export async function openCashDesk(
     [input.operatorId, input.ledgerId, code, input.organizerId],
   );
   return code;
+}
+
+/**
+ * Session de caisse OUVERTE d'un terminal `TOPUP_DESK` d'un événement en service (`open_cash_session`, mission des
+ * caisses) : crée au besoin le compte `A-CAISSE-<série>` et l'inscrit à la caisse. Aucune écriture au grand livre.
+ */
+export async function openCashSession(
+  db: Client,
+  input: { operatorId: string; deviceId: string; userId: string },
+): Promise<{ sessionId: string; accountId: string; code: string }> {
+  await db.query(`SELECT set_config('app.operator_id', $1, false)`, [input.operatorId]);
+  const { rows } = await db.query<{
+    cash_session_id: string;
+    cash_account_id: string;
+    account_code: string;
+  }>('SELECT cash_session_id, cash_account_id, account_code FROM open_cash_session($1, $2)', [
+    input.deviceId,
+    input.userId,
+  ]);
+  const row = rows[0]!;
+  return { sessionId: row.cash_session_id, accountId: row.cash_account_id, code: row.account_code };
 }
 
 /** Crédit payé sur un portefeuille (recharge confirmée), écrit directement au grand livre. */

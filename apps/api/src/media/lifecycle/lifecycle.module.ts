@@ -16,6 +16,6 @@ import { MediaReadService } from './media-read.service';
   imports: [TenantModule, ConfigResolverModule, TapsModule, BatchesModule],
   controllers: [ActivationController, DepositController, MediaReadController],
   providers: [CounterAccess, ActivationService, DepositService, MediaReadService],
-  exports: [CounterAccess, DepositService, MediaReadService],
+  exports: [CounterAccess, ActivationService, DepositService, MediaReadService],
 })
 export class LifecycleModule {}
