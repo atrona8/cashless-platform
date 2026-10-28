@@ -11,7 +11,7 @@ Carte mémoire MF0UL11 (20 pages de 4 octets, adresses 0x00–0x13) :
   0x10       CFG0 : MOD, RFUI, RFUI, AUTH0
   0x11       CFG1 : ACCESS, VCTID, RFUI, RFUI
   0x12       PWD (4 octets, lu comme 00 00 00 00)
-  0x13       PACK (2 octets) + 2 octets RFUI
+  0x13       PACK (2 octets) + 2 octets RFUI + 4 oct
 
 Format B (pages 4–10, 28 octets) :
   page 4     major (1), minor (1), key_index (2, big-endian)
