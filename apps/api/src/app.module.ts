@@ -25,6 +25,7 @@ import { ReversalsModule } from './reversals/reversals.module';
 import { UsersModule } from './identity/users/users.module';
 import { CashTopupModule } from './topups/cash/cash-topup.module';
 import { PspTopupsModule } from './topups/psp/psp-topups.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { VendorPinModule } from './vendor-pin/vendor-pin.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
@@ -67,6 +68,7 @@ import { WorkerRegistry } from './processes/worker';
     CashSessionsModule,
     CashTopupModule,
     PspTopupsModule,
+    WebhooksModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

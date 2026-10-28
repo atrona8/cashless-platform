@@ -307,10 +307,20 @@ export class PspPaymentProcessor {
       if (card !== null) await this.velocity(client, topup, card.velocity);
       return this.done(topup, 'CREDITED', true);
     } catch (error) {
-      const refusal = classifyRefusal(error, resolveProblem(error).code);
-      if (refusal === null) throw error;
+      const code = resolveProblem(error).code;
+      const refusal = classifyRefusal(error, code);
+      // CL029 (CONFLICT_STATE) : plafond de carte, mais aussi « anomalie déjà résolue » (psp_complete_core).
+      const conflict = error instanceof CardDailyLimit || code === 'CONFLICT_STATE';
+      if (refusal === null && !conflict) throw error;
       await client.query(`ROLLBACK TO SAVEPOINT ${SAVEPOINT}`);
       await client.query(`RELEASE SAVEPOINT ${SAVEPOINT}`);
+      // Anomalie fermée à la main : décision humaine déjà prise, aucun crédit, aucun nouveau refus, jamais de
+      // reprise en boucle (le PSP rejoue le succès). Contrôlé AVANT le classement du plafond de carte.
+      if (conflict && (await this.anomalyResolved(client, topup))) {
+        this.log.warn(`succès tardif ignoré, anomalie déjà résolue : topup_id=${topup.topupId}`);
+        return this.done(topup, 'NO_EFFECT');
+      }
+      if (refusal === null) throw error;
       return this.refuse(
         client,
         topup,
@@ -321,6 +331,16 @@ export class PspPaymentProcessor {
         card === null ? null : 'SUCCEEDED',
       );
     }
+  }
+
+  /** L'anomalie liée à la recharge existe et n'est plus ouverte (fermée par une personne). */
+  private async anomalyResolved(client: TxClient, topup: PspTopupRow): Promise<boolean> {
+    if (topup.anomalyId === null) return false;
+    const { rows } = await client.query<{ status: string }>(
+      'SELECT status FROM anomaly WHERE id = $1',
+      [topup.anomalyId],
+    );
+    return rows[0] !== undefined && rows[0].status !== 'OPEN';
   }
 
   // ------------------------------------------------------------------------------ refus, écarts, vélocité
