@@ -6,20 +6,23 @@ requirement_refs: [FR-004, FR-005, FR-007, FR-008, NFR-009]
 planning_base_branch: feat/recharges-caisses-psp
 merge_target_branch: feat/recharges-caisses-psp
 branch_strategy: Planning artifacts for this mission were generated on feat/recharges-caisses-psp. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/recharges-caisses-psp unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-recharges-caisses-psp-01M5YEBA
+base_commit: a17b59de48cccdec7f2c81c1df7193122004e207
+created_at: '2026-10-28T13:29:13.837193+00:00'
 subtasks: [T043, T044, T045, T046, T047, T048]
 phase: Phase 3 - Caisses et espèces
 agent: claude
-model: sonnet
-agent_profile: implementer-ivan
-role: implementer
 history:
 - timestamp: '2026-10-27T15:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
+agent_profile: implementer-ivan
 authoritative_surface: apps/api/
-execution_mode: code_change
-owned_files: [apps/api/src/topups/cash/**, apps/api/src/media/lifecycle/**, apps/api/test/integration/topups/cash-*.spec.ts, apps/api/test/integration/media/deposit.spec.ts, apps/api/test/integration/media/cash-due.spec.ts, apps/api/test/integration/media/release.spec.ts, apps/api/test/integration/end-to-end/device-auth-cases/cash-topup.cases.ts]
 create_intent: [apps/api/src/topups/cash/cash-topup.module.ts, apps/api/src/topups/cash/cash-topup.controller.ts, apps/api/src/topups/cash/cash-topup.service.ts, apps/api/src/topups/cash/cash-topup.dto.ts, apps/api/test/integration/topups/cash-topup.spec.ts, apps/api/test/integration/topups/cash-topup-refusals.spec.ts, apps/api/test/integration/topups/cash-desk-guard.spec.ts, apps/api/test/integration/end-to-end/device-auth-cases/cash-topup.cases.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [apps/api/src/topups/cash/**, apps/api/src/media/lifecycle/**, apps/api/test/integration/topups/cash-*.spec.ts, apps/api/test/integration/media/deposit.spec.ts, apps/api/test/integration/media/cash-due.spec.ts, apps/api/test/integration/media/release.spec.ts, apps/api/test/integration/end-to-end/device-auth-cases/cash-topup.cases.ts]
+role: implementer
 tags: []
 tracker_refs: []
 ---

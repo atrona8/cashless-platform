@@ -99,6 +99,21 @@ worktrees gardés après la fusion.
    - WP14 : masquer `cash_diff_anomaly_id` dans la vue AGENT (renforcement de l'aveugle) ; test d'API seule
      pour fermeur ≠ compteur (la base, CL041, est le contrôle de référence) ; documenter `counted_at` ignoré.
    WP09 lancé sur lane-i (prompt de la lane réécrit en double encodage par `implement`, réaligné).
+   WP09 **approuvé** (`8b3a340` ; code 8b54f84..21a0c20 ; 13 suites vertes, 9 mutations de l'implémenteur
+   tuées). Écarts acceptés : `content_sha256` sans `tap_id` (sync_protocol §3.3 ; mission 7 à aligner,
+   `TOPUP_CASH` chaîné) ; `moneyAccount` gardé dans `DelegatedPayload` (refusé avec `cashSessionId` ; code
+   mort à retirer, `test/scenario/commands.ts` en dépend) ; 400 au lieu de 422 ; un 409 « pas de session »
+   consomme le numéro du terminal. Reports :
+   - WP14 : test du portefeuille d'un autre grand livre (**mutation survivante** : contrôle présent, non
+     testé) ; test où le contrôle API de `CLOSING` est seul rempart (la base 0036 tient) ; `toEqual` dans
+     `release.spec`.
+   - WP11 : utiliser et tester `takeDueDepositForWallet`. WP12 : reprise de caution au rejeu (A33).
+   - Relecture humaine : `ledger/db/ledger-queries.ts`, cas `take_deposit`/`refund_deposit` du moteur,
+     `media/lifecycle/counter-access.ts`, `topups/cash/cash-topup.service.ts`.
+   **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
+   dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
+   l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
+   chemin `R` à adapter à la machine).
 
 1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
