@@ -1,7 +1,7 @@
 {
-  "event_count": 77,
-  "last_event_id": "01M61NE4GRHVMKHAG8FYSDTKH5",
-  "materialized_at": "2026-10-28T16:28:03.992888+00:00",
+  "event_count": 79,
+  "last_event_id": "01M61NGT6TESZQVKVG2QH3S3JE",
+  "materialized_at": "2026-10-28T16:29:31.733757+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -366,11 +366,14 @@
       }
     },
     "WP12": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M5YN33DCXY2Q0ESSJ6WA1CE6",
-      "last_transition_at": "2026-10-27T12:24:19.116720+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M61NGT6TESZQVKVG2QH3S3JE",
+      "last_transition_at": "2026-10-28T16:29:31.733757+00:00",
+      "shell_pid": 18712,
+      "shell_pid_created_at": "1793204914.6866264"
     },
     "WP13": {
       "actor": "finalize-tasks",
