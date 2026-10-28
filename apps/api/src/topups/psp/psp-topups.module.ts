@@ -2,6 +2,7 @@
 // AppModule (API publique seule). `PspPaymentProcessor`, `PspTopupLookup` sont exportés pour WP12 et WP13.
 import { Module } from '@nestjs/common';
 import { ConfigResolverModule } from '../../configuration/config-resolver.module';
+import { SqlConfigResolver } from '../../configuration/sql-config-resolver';
 import { LifecycleModule } from '../../media/lifecycle/lifecycle.module';
 import { TapsModule } from '../../media/taps/taps.module';
 import { TenantModule } from '../../organization/tenant/tenant.module';
@@ -21,6 +22,7 @@ import { PspTopupsService } from './psp-topups.service';
     PspTopupLookup,
     CardChecks,
     PspTopupCallerGuard,
+    SqlConfigResolver,
   ],
   exports: [PspPaymentProcessor, PspTopupLookup],
 })

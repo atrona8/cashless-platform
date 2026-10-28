@@ -21,7 +21,7 @@ import { assertDeviceMode, requestDevice } from '../../device-identity/device-id
 import { ProblemException } from '../../errors/problem';
 import { requestPrincipal } from '../../identity/principal';
 import { readTopupHeadroom } from '../../ledger/db/ledger-queries';
-import { CONFIG_RESOLVER, type ConfigResolver } from '../../ledger/ports/config-resolver';
+import { SqlConfigResolver } from '../../configuration/sql-config-resolver';
 import { fee } from '../../ledger/money';
 import { CounterAccess } from '../../media/lifecycle/counter-access';
 import { TapService } from '../../media/taps/tap.service';
@@ -120,7 +120,7 @@ export class PspTopupsService {
     private readonly audit: AuditService,
     @Inject(PSP_ADAPTERS) private readonly adapters: PspAdapterRegistry,
     @Inject(PSP_SECRET_STORE) private readonly secrets: PspSecretStore,
-    @Inject(CONFIG_RESOLVER) private readonly config: ConfigResolver,
+    private readonly config: SqlConfigResolver,
   ) {}
 
   // ------------------------------------------------------------------------------ T054 : la demande
