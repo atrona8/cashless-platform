@@ -224,7 +224,7 @@ export class ClaimsService {
     // Caution sur le solde : due (le portefeuille neuf est vide), prise après une recharge.
     await this.deposits.take(
       client,
-      { operatorId: customer.operatorId, cashDeskCode: null, audit: base, language },
+      { operatorId: customer.operatorId, cashSessionId: null, audit: base, language },
       mediaId,
       null,
       new Date(),

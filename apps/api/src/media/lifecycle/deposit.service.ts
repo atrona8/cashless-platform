@@ -3,9 +3,9 @@
 //   FROM_BALANCE : prélevée sur le solde payé ; s'il ne suffit pas, la caution reste DUE et se prendra après une recharge
 //                  (`takeDueDeposit`, toujours dans une transaction distincte de celle qui a crédité le portefeuille).
 //   SEPARATE     : payée à part, en espèces seulement dans cette mission (C-007), au compte de caisse du terminal.
-// Décision du porteur n° 10 (13/10/2026) : cette mission ne crée AUCUN compte de caisse. Tant que la mission des
-// caisses n'a pas ouvert celui du terminal, une caution en espèces est refusée : aucun argent liquide n'entre sans
-// session de caisse.
+// Mission des caisses (lot WP09) : la décision n° 10 (aucun compte de caisse) est levée. Une caution en espèces
+// passe par la SESSION de caisse ouverte du terminal (`take_deposit_for_session`, `refund_deposit_for_session`) :
+// aucune route ne transmet ni ne choisit un compte de caisse (A8) ; sans session, refus avant toute écriture.
 import { Injectable } from '@nestjs/common';
 import { AuditService, type AuditContext } from '../../audit/audit.service';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
@@ -17,8 +17,8 @@ import { counterRefusal, type DepositState, type Payment } from './lifecycle.dto
 
 export interface DepositContext {
   operatorId: string;
-  /** Code du compte de caisse du terminal, s'il y en a un. */
-  cashDeskCode: string | null;
+  /** Session de caisse ouverte du terminal (déjà contrôlée par `requireCashSession`), s'il y en a une. */
+  cashSessionId: string | null;
   deviceId?: string;
   audit: AuditContext;
   language: Language;
@@ -101,7 +101,7 @@ export class DepositService {
     if (Number(row.deposit_amount ?? 0n) === 0 || row.deposit_status === 'HELD')
       return { state: await this.state(client, mediaId), transactionId: null };
     if (!row.ledger_id || !row.currency) throw new ProblemException('MEDIA_NOT_ACTIVATED');
-    const moneyAccount = this.moneyAccount(context, row, payment);
+    const cashSessionId = this.cashSession(context, row, payment);
     if (row.deposit_mode === 'FROM_BALANCE' && row.debit_authority === 'EDGE')
       throw new ProblemException('DEBIT_AUTHORITY_EDGE');
     const result = await this.engine.execute(client, {
@@ -114,7 +114,7 @@ export class DepositService {
       currency: row.currency.trim(),
       mediaId,
       ...(context.deviceId ? { deviceId: context.deviceId } : {}),
-      payload: moneyAccount ? { moneyAccount } : {},
+      payload: cashSessionId ? { cashSessionId } : {},
     });
     const state = await this.state(client, mediaId);
     await this.audit.record(client, {
@@ -128,6 +128,7 @@ export class DepositService {
         amount: state.amount,
         mode: state.mode,
         transaction_id: result.transactionId,
+        cash_session_id: cashSessionId ?? null,
       },
     });
     return { state, transactionId: result.transactionId };
@@ -148,8 +149,8 @@ export class DepositService {
       throw conflict(`Aucune caution à rendre sur ce bracelet (${row.deposit_status}).`);
     if (!row.ledger_id || !row.currency) throw new ProblemException('MEDIA_NOT_ACTIVATED');
     const held = Number(row.deposit_held);
-    const moneyAccount =
-      row.deposit_status === 'HELD' ? this.moneyAccount(context, row, payment) : undefined;
+    const cashSessionId =
+      row.deposit_status === 'HELD' ? this.cashSession(context, row, payment) : undefined;
     const result = await this.engine.execute(client, {
       type: 'DEPOSIT_REFUNDED',
       idempotencyKey: `deposit-refund:${mediaId}:${row.assignments}`,
@@ -160,7 +161,7 @@ export class DepositService {
       currency: row.currency.trim(),
       mediaId,
       ...(context.deviceId ? { deviceId: context.deviceId } : {}),
-      payload: moneyAccount ? { moneyAccount } : {},
+      payload: cashSessionId ? { cashSessionId } : {},
     });
     const state = await this.state(client, mediaId);
     await this.audit.record(client, {
@@ -170,7 +171,12 @@ export class DepositService {
       objectType: 'media',
       objectId: mediaId,
       before: { status: row.deposit_status, amount: held },
-      after: { status: state.status, mode: state.mode, transaction_id: result.transactionId },
+      after: {
+        status: state.status,
+        mode: state.mode,
+        transaction_id: result.transactionId,
+        cash_session_id: cashSessionId ?? null,
+      },
     });
     return {
       state: state.status === 'REFUNDED' ? { ...state, amount: held } : state,
@@ -190,11 +196,14 @@ export class DepositService {
   ): Promise<DepositState> {
     return this.tx.run(operatorId, async (client) => {
       const row = await this.row(client, mediaId);
-      if (row.deposit_status !== 'DUE') return this.state(client, mediaId);
+      // Seule une caution prélevée sur le solde se prend ici ; une caution `SEPARATE` reste payée en
+      // espèces au guichet (R-06).
+      if (row.deposit_status !== 'DUE' || row.deposit_mode !== 'FROM_BALANCE')
+        return this.state(client, mediaId);
       return (
         await this.take(
           client,
-          { operatorId, cashDeskCode: null, audit, language },
+          { operatorId, cashSessionId: null, audit, language },
           mediaId,
           null,
           new Date(),
@@ -203,8 +212,11 @@ export class DepositService {
     });
   }
 
-  /** Compte d'argent d'une caution payée à part : la caisse du terminal, en espèces seulement. */
-  private moneyAccount(
+  /**
+   * Session à laquelle rattacher une caution payée à part : la session ouverte du terminal, en espèces seulement.
+   * Aucun compte de caisse ne passe ici (A8).
+   */
+  private cashSession(
     context: DepositContext,
     row: DepositRow,
     payment: Payment | null,
@@ -212,10 +224,31 @@ export class DepositService {
     if (row.deposit_mode !== 'SEPARATE') return undefined;
     if (!payment) throw counterRefusal('deposit.payment_required', context.language);
     if (payment.method !== 'CASH') throw counterRefusal('deposit.cash_only', context.language);
-    if (!context.cashDeskCode)
+    if (!context.cashSessionId)
       throw conflict(
         'Aucune caisse ouverte pour ce terminal : une caution en espèces ne peut être ni prise ni rendue ici.',
       );
-    return context.cashDeskCode;
+    return context.cashSessionId;
+  }
+
+  /**
+   * Caution due du bracelet actif d'un portefeuille (crédit par un autre canal : PSP). Aucun bracelet actif à
+   * caution due : `null`. Le moteur ne reprend pas une caution déjà détenue.
+   */
+  async takeDueDepositForWallet(
+    operatorId: string,
+    walletId: string,
+    audit: AuditContext,
+    language: Language = 'fr',
+  ): Promise<DepositState | null> {
+    const mediaId = await this.tx.run(operatorId, async (client) => {
+      const { rows } = await client.query<{ id: string }>(
+        `SELECT id FROM media WHERE wallet_id = $1 AND status = 'ACTIVE' AND deposit_status = 'DUE'
+          ORDER BY id LIMIT 1`,
+        [walletId],
+      );
+      return rows[0]?.id ?? null;
+    });
+    return mediaId === null ? null : this.takeDueDeposit(operatorId, mediaId, audit, language);
   }
 }

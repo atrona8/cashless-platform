@@ -55,8 +55,13 @@ export interface EngineResult {
 /** Charge utile des types délégués (caution, préchargement, espèces dues). */
 export interface DelegatedPayload {
   variant?: string;
-  /** Code du compte d'encaissement ou de remboursement d'une caution `SEPARATE` (ex. `A-CAISSE-C1`). */
+  /**
+   * Code d'un compte d'argent NON inscrit en caisse (ex. `A-BANQUE`). Les cautions en espèces passent par
+   * `cashSessionId` ; un compte de caisse est refusé par la base hors session (A8).
+   */
   moneyAccount?: string;
+  /** Session de caisse ouverte d'une caution en espèces (`…_for_session`) ; exclusif de `moneyAccount`. */
+  cashSessionId?: string;
   /** Code du compte de caisse d'un rendu d'espèces dues. */
   cashAccount?: string;
 }
@@ -249,9 +254,20 @@ export class LedgerEngineService {
       return (await this.accountResolver.resolve(client, command.ledgerId, [ref])).get(ref)!;
     };
 
+    if (payload.cashSessionId !== undefined && payload.moneyAccount !== undefined)
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'caution : session de caisse OU compte, pas les deux',
+      );
+    const session = payload.cashSessionId ?? null;
     switch (fn) {
       case 'take_deposit': {
-        const outcome = await takeDeposit(client, mediaId, await account(payload.moneyAccount));
+        const outcome = await takeDeposit(
+          client,
+          mediaId,
+          await account(payload.moneyAccount),
+          session,
+        );
         const transactionId =
           outcome === 'HELD'
             ? ((await findTransactionId(client, command.ledgerId, internalKey)) ?? null)
@@ -261,7 +277,7 @@ export class LedgerEngineService {
       case 'refund_deposit':
       case 'forfeit_deposit': {
         if (fn === 'refund_deposit')
-          await refundDeposit(client, mediaId, await account(payload.moneyAccount));
+          await refundDeposit(client, mediaId, await account(payload.moneyAccount), session);
         else await forfeitDeposit(client, mediaId);
         const transactionId =
           (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;
