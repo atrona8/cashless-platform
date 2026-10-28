@@ -256,6 +256,9 @@
       "last_event_id": "01M61AHGXKY5ST71Y0EXEHVDT4",
       "last_transition_at": "2026-10-28T13:17:40.659987+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Reprise Windows : tests T042 écrits, fixtures réparées ; 68 tests WP08 + matrice verts sur cashless_wp08 ; mutations théorique et preuve de terminal détectées. Écarts (aucun n'affaiblit) : counted_at non retenu (heure de la base), note ≤200, bank_reference ≤200 (openapi prime sur le prompt : 100), CASH_DIFF par finish_cash_close. --force : garde kitty-specs sur artefacts du runtime seuls."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 62215,
