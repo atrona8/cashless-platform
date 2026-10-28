@@ -101,6 +101,7 @@ const _$ProblemCodeEnumMap = {
   ProblemCode.snapshotVersionUnknown: 'SNAPSHOT_VERSION_UNKNOWN',
   ProblemCode.batchInProgress: 'BATCH_IN_PROGRESS',
   ProblemCode.batchTooLarge: 'BATCH_TOO_LARGE',
+  ProblemCode.payloadTooLarge: 'PAYLOAD_TOO_LARGE',
   ProblemCode.batchSignatureInvalid: 'BATCH_SIGNATURE_INVALID',
   ProblemCode.chainBroken: 'CHAIN_BROKEN',
   ProblemCode.seqOutOfOrder: 'SEQ_OUT_OF_ORDER',
