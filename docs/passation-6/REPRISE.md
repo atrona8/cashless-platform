@@ -110,6 +110,21 @@ worktrees gardés après la fusion.
    - WP11 : utiliser et tester `takeDueDepositForWallet`. WP12 : reprise de caution au rejeu (A33).
    - Relecture humaine : `ledger/db/ledger-queries.ts`, cas `take_deposit`/`refund_deposit` du moteur,
      `media/lifecycle/counter-access.ts`, `topups/cash/cash-topup.service.ts`.
+   WP11 **approuvé** (code `10309af`..`25986f3` sur lane-j ; lane-j créée à la main : conflit de prompt WP09
+   et union `app.module.ts`/`audit.service.ts` entre g et i ; 37 fichiers de `kitty-specs/` remis en LF pour
+   lever « stale_analysis_report »). Écarts acceptés : verrou consultatif `psp-topup:<id>` au lieu de FOR
+   UPDATE (droits inchangés) ; CL039 422 contre 409 de `contracts/psp.md` ; succès après annulation crédité
+   (R-20 contre openapi : **à confirmer par le porteur**) ; plafond carte sur le jour UTC de la base ;
+   `notificationUrl` relative (pas d'URL publique en configuration) ; `PSP_MISMATCH` par INSERT direct dans
+   `anomaly` (droit antérieur). Reports :
+   - WP12 : prendre `PspTopupLookup.lock`/`findForUpdate` avant `expire_psp_topups`, `mark_psp_topup_initiated`
+     et toute écriture sur `psp_topup` ; classer CL029 « anomalie déjà résolue » (pas de RETRY en boucle ;
+     motif carte erroné `CARD_DAILY_LIMIT`) ; `afterCommit` après le COMMIT ; reprise de caution au rejeu.
+   - WP13 : `findForUpdate` avant `record_chargeback` et `block_wallet_after_chargeback`.
+   - WP14 : tests de MISMATCH concurrent (mutation de clé survivante), `process` contre `cancel` en HTTP,
+     succès rejoué après anomalie résolue ; écart CL039 dans les contradictions.
+   - Relecture humaine : `topups/psp/psp-payment-processor.ts`, `card-checks.ts`, `psp-topup-caller.guard.ts`,
+     `psp-topup-lookup.ts`, `psp-refusals.ts`.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
