@@ -1,17 +1,17 @@
 {
-  "event_count": 76,
-  "last_event_id": "01M61MPM20N9J5ACN47C81JN1P",
-  "materialized_at": "2026-10-28T16:15:13.472623+00:00",
+  "event_count": 77,
+  "last_event_id": "01M61NE4GRHVMKHAG8FYSDTKH5",
+  "materialized_at": "2026-10-28T16:28:03.992888+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "",
   "summary": {
-    "approved": 10,
+    "approved": 11,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
     "planned": 3
@@ -339,20 +339,20 @@
       }
     },
     "WP11": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 1,
-      "lane": "for_review",
-      "last_event_id": "01M61MPM20N9J5ACN47C81JN1P",
-      "last_transition_at": "2026-10-28T16:15:13.472623+00:00",
+      "force_count": 2,
+      "lane": "approved",
+      "last_event_id": "01M61NE4GRHVMKHAG8FYSDTKH5",
+      "last_transition_at": "2026-10-28T16:28:03.992888+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "WP11 : 10309af..25986f3 ; psp-process 23, card 11, deposit 5, concurrency 3, request 16, read-cancel 11, matrice 13 verts sur cashless_wp11 ; 14/15 mutations tuées (survivante doublée par la base). Écarts sans affaiblissement : verrou consultatif (pas de FOR UPDATE, droits inchangés), CL039 422 vs psp.md 409, succès après annulation crédité (R-20), INSERT anomaly direct (droit antérieur). --force : garde kitty-specs sur artefacts du runtime seuls."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 1268,
       "shell_pid_created_at": "1793200044.4039457",
       "subtasks": {
