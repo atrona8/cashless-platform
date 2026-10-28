@@ -98,7 +98,8 @@ export type AuditAction =
   | 'CASH_SESSION_OPENED'
   | 'CASH_SESSION_COUNTED'
   | 'CASH_SESSION_CLOSED'
-  | 'CASH_DEPOSIT_REQUESTED';
+  | 'CASH_DEPOSIT_REQUESTED'
+  | 'CASH_TOPUP';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {
