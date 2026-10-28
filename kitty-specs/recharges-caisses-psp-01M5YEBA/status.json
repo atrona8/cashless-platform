@@ -283,6 +283,9 @@
       "last_event_id": "01M61E3KVYV1NZ8APE99KWQWP1",
       "last_transition_at": "2026-10-28T14:19:59.230522+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP09 : 7 commits (8b54f84..21a0c20) ; cash-topup 10, refusals 11, cash-desk-guard 4, deposit 10, cash-due 6, release 7, matrice 12 verts sur cashless_wp09 ; 9 mutations détectées. Écarts sans affaiblissement : content_sha256 sans tap_id (sync_protocol §3.3 prime), moneyAccount gardé dans DelegatedPayload (refusé avec cashSessionId), 400 au lieu de 422. --force : garde kitty-specs sur artefacts du runtime seuls."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 17200,
