@@ -103,7 +103,12 @@ export type AuditAction =
   | 'CASH_SESSION_COUNTED'
   | 'CASH_SESSION_CLOSED'
   | 'CASH_DEPOSIT_REQUESTED'
-  | 'CASH_TOPUP';
+  | 'CASH_TOPUP'
+  // Mission 6 (lot WP11) : recharges PSP
+  | 'PSP_TOPUP_REQUESTED'
+  | 'PSP_TOPUP_CANCELLED'
+  | 'PSP_TOPUP_CREDITED'
+  | 'PSP_TOPUP_NOT_CREDITED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {
