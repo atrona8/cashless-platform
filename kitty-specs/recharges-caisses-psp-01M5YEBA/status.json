@@ -4,7 +4,7 @@
   "materialized_at": "2026-10-28T14:31:58.750147+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 10,
     "blocked": 0,

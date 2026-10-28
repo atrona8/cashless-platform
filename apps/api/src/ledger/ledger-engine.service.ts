@@ -114,6 +114,7 @@ export class LedgerEngineService {
       eventId: context.eventId ?? undefined,
       occurredAt: command.occurredAt,
       participationId: participationOf(command),
+      pspConfigurationId: pspConfigurationOf(command),
       client,
     });
     const { command: enriched, balances } = await enrich(client, command);
@@ -342,6 +343,11 @@ function checkStatus(
     ...(purposes ? { debitPurposes: purposes } : {}),
   });
   if (!check.ok) throw new BuildError('VALIDATION_FAILED', check.reason);
+}
+
+function pspConfigurationOf(command: LedgerCommand): string | undefined {
+  const id = command.metadata?.psp_configuration_id;
+  return typeof id === 'string' ? id : undefined;
 }
 
 function participationOf(command: LedgerCommand): string | undefined {

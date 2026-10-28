@@ -57,6 +57,11 @@ const TABLE: [string, ProblemCode, number][] = [
   ['CL038', 'MEDIA_BLOCKED', 422],
   ['CL039', 'WALLET_BLOCKED', 422],
   ['CL040', 'REVERSAL_WINDOW_EXPIRED', 409],
+  // Mission 6 (WP07) : migrations 0036 à 0038.
+  ['CL041', 'FORBIDDEN', 403],
+  ['CL042', 'PSP_NOT_CONFIGURED', 409],
+  ['CL043', 'CONFLICT_STATE', 409],
+  ['CL044', 'CONFLICT_STATE', 409],
   ['P0002', 'NOT_FOUND', 404],
   ['42501', 'DEVICE_REVOKED', 403],
   ['P0001', 'INTERNAL_ERROR', 500],

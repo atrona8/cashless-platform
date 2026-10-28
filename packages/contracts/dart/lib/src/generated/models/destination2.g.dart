@@ -7,7 +7,7 @@ part of 'destination2.dart';
 // **************************************************************************
 
 Destination2 _$Destination2FromJson(Map<String, dynamic> json) => Destination2(
-  method: $enumDecode(_$Method2EnumMap, json['method']),
+  method: $enumDecode(_$Method3EnumMap, json['method']),
   msisdn: json['msisdn'] as String?,
   newNumberOtp: json['new_number_otp'] == null
       ? null
@@ -23,8 +23,8 @@ Map<String, dynamic> _$Destination2ToJson(Destination2 instance) =>
       'iban': instance.iban,
     };
 
-const _$Method2EnumMap = {
-  Method2.wave: 'WAVE',
-  Method2.orangeMoney: 'ORANGE_MONEY',
-  Method2.bankTransfer: 'BANK_TRANSFER',
+const _$Method3EnumMap = {
+  Method3.wave: 'WAVE',
+  Method3.orangeMoney: 'ORANGE_MONEY',
+  Method3.bankTransfer: 'BANK_TRANSFER',
 };

@@ -8,7 +8,7 @@ import 'package:json_annotation/json_annotation.dart';
 /// `WAIVE_SEQ_GAP` → `waiveSeqGap` ; `DEVICE_JOURNAL_IMPORT` → `importDeviceJournal` ; `KYC_REVOCATION` →.
 /// `revokeKycVerification` ; `WALLET_REFUND` → `approveRefundRequest` ; `LATE_CLAIM` → `postLateClaim` ;.
 /// `FORCE_CENTRAL_AUTHORITY` → `requestDebitAuthorityChange` (`force = true`). `ADJUSTMENT`,.
-/// `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT`, `PSP_CONFIGURATION`, `EVENT_PSP_SELECTION` : opérations.
+/// `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT` : opérations.
 /// du back-office à ajouter au contrat (SPECIFICATION §10.4), qui suivent le même flux.
 /// Configuration (deux personnes du même rôle) : `EVENT_GO_LIVE` → `transitionEventStatus` (vers `LIVE`) ;.
 /// `EVENT_SETTINGS_CHANGE` et `EVENT_OPERATOR_SETTINGS_CHANGE` → `updateEvent` (événement `LIVE`, réglages de.
@@ -19,6 +19,13 @@ import 'package:json_annotation/json_annotation.dart';
 /// `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
 /// Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →.
 /// `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
+/// Recharges et caisses (deux personnes, auteur et valideur distincts) : `CASH_DEPOSIT` → `requestCashDeposit`.
+/// (charge `{ledger_id, amount, bank_reference}`) ; `WALLET_UNBLOCK` → `requestWalletUnblock` (charge.
+/// `{wallet_id}`) ; `LATE_CHARGEBACK` → `requestLateChargeback` ; `PSP_CONFIGURATION` →.
+/// `requestPspConfigurationChange` (charge composée par l'API : `{psp_configuration_id, version, status: ACTIVE, compliance_ref}`.
+/// pour l'activation, `{psp_configuration_id, version, status: SUSPENDED}` pour la suspension ;.
+/// `psp_configuration_id` est le `psp_config_id` du chemin) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`.
+/// (événement `LIVE`).
 /// Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée.
 /// par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).
 ///
@@ -50,6 +57,10 @@ enum ApprovalAction {
   walletRefund('WALLET_REFUND'),
   @JsonValue('LATE_CHARGEBACK')
   lateChargeback('LATE_CHARGEBACK'),
+  @JsonValue('WALLET_UNBLOCK')
+  walletUnblock('WALLET_UNBLOCK'),
+  @JsonValue('CASH_DEPOSIT')
+  cashDeposit('CASH_DEPOSIT'),
   @JsonValue('EVENT_GO_LIVE')
   eventGoLive('EVENT_GO_LIVE'),
   @JsonValue('EVENT_SETTINGS_CHANGE')

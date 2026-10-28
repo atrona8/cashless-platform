@@ -14,5 +14,7 @@
   "retain_worktrees": true,
   "slug": "recharges-caisses-psp-01M5YEBA",
   "target_branch": "feat/recharges-caisses-psp",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-27T12:27:35.680945+00:00"
 }

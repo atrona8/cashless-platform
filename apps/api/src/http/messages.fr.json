@@ -247,6 +247,10 @@
     "title": "Lot trop volumineux",
     "detail": "Le lot est vide ou dépasse la taille permise."
   },
+  "PAYLOAD_TOO_LARGE": {
+    "title": "Notification trop volumineuse",
+    "detail": "La notification dépasse la taille permise et n'a pas été conservée."
+  },
   "BATCH_SIGNATURE_INVALID": {
     "title": "Signature du lot invalide",
     "detail": "La signature de l'en-tête du lot est invalide ; lot non traité."

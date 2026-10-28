@@ -19,6 +19,9 @@ CashSession _$CashSessionFromJson(Map<String, dynamic> json) => CashSession(
   closedAt: json['closed_at'] == null
       ? null
       : DateTime.parse(json['closed_at'] as String),
+  closedBy: json['closed_by'] as String?,
+  countedAmount: (json['counted_amount'] as num?)?.toInt(),
+  expectedAmount: (json['expected_amount'] as num?)?.toInt(),
   cashCloseTransactionId: json['cash_close_transaction_id'] as String?,
   difference: (json['difference'] as num?)?.toInt(),
   cashDiffAnomalyId: json['cash_diff_anomaly_id'] as String?,
@@ -34,6 +37,9 @@ Map<String, dynamic> _$CashSessionToJson(CashSession instance) =>
       'opened_at': instance.openedAt.toIso8601String(),
       'last_count': instance.lastCount,
       'closed_at': instance.closedAt?.toIso8601String(),
+      'closed_by': instance.closedBy,
+      'counted_amount': instance.countedAmount,
+      'expected_amount': instance.expectedAmount,
       'cash_close_transaction_id': instance.cashCloseTransactionId,
       'difference': instance.difference,
       'cash_diff_anomaly_id': instance.cashDiffAnomalyId,
