@@ -18,8 +18,13 @@ import { IdentityModule } from './identity/identity.module';
 import { MediaPublicModule } from './media/media-public.module';
 import { PaymentRequestsModule } from './payment-requests/payment-requests.module';
 import { PaymentsModule } from './payments/payments.module';
+import { CashSessionsModule } from './cash-sessions/cash-sessions.module';
+import { PspConfigurationsModule } from './psp-configurations/psp-configurations.module';
+import { PspModule } from './psp/psp.module';
 import { ReversalsModule } from './reversals/reversals.module';
 import { UsersModule } from './identity/users/users.module';
+import { CashTopupModule } from './topups/cash/cash-topup.module';
+import { PspTopupsModule } from './topups/psp/psp-topups.module';
 import { VendorPinModule } from './vendor-pin/vendor-pin.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
@@ -56,6 +61,12 @@ import { WorkerRegistry } from './processes/worker';
     PaymentsModule,
     ReversalsModule,
     PaymentRequestsModule,
+    // Mission 6 : ports PSP et coffre, faux hors production seulement.
+    PspModule,
+    PspConfigurationsModule,
+    CashSessionsModule,
+    CashTopupModule,
+    PspTopupsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

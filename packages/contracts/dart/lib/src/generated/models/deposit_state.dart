@@ -16,6 +16,7 @@ class DepositState {
     required this.amount,
     this.mode,
     this.transactionId,
+    this.cashSessionId,
   });
 
   factory DepositState.fromJson(Map<String, Object?> json) =>
@@ -26,6 +27,10 @@ class DepositState {
   final DepositStateMode? mode;
   @JsonKey(name: 'transaction_id')
   final String? transactionId;
+
+  /// Session de caisse qui a reçu l'écriture (espèces) ; null sinon.
+  @JsonKey(name: 'cash_session_id')
+  final String? cashSessionId;
 
   Map<String, Object?> toJson() => _$DepositStateToJson(this);
 }

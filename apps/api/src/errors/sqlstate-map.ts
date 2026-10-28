@@ -52,6 +52,15 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL038: { code: 'MEDIA_BLOCKED', status: 422 },
   CL039: { code: 'WALLET_BLOCKED', status: 422 },
   CL040: { code: 'REVERSAL_WINDOW_EXPIRED', status: 409 },
+  // Mission 6 (lot WP07) : 0036 (CL041, close_cash_session), 0037 (CL042), 0038 (CL043, CL044).
+  // CL041 : le fermeur a compté la session -> 403 FORBIDDEN (0036).
+  CL041: { code: 'FORBIDDEN', status: 403 },
+  // CL042 : aucune configuration PSP utilisable, jamais de repli sur le défaut (0037).
+  CL042: { code: 'PSP_NOT_CONFIGURED', status: 409 },
+  // CL043 : contestation au-delà du montant net restant crédité -> 409 (0038, en-tête « Erreurs »).
+  CL043: { code: 'CONFLICT_STATE', status: 409 },
+  // CL044 : contestation non permise (non SUCCEEDED, non carte, autre portefeuille...) -> 409 (0038).
+  CL044: { code: 'CONFLICT_STATE', status: 409 },
   P0002: { code: 'NOT_FOUND', status: 404 },
   // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
   // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus

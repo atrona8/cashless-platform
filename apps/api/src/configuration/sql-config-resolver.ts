@@ -11,9 +11,10 @@
 //   frais de remboursement        EVENT               *          → ORG_FFEST    PER_REFUND
 //   frais du prestataire          OPERATOR_CONTRACT   ORG_FPREST → OPE_FRAIS    TOPUP_AMOUNT, PER_MEDIA
 //   redevance de la plateforme    PLATFORM_CONTRACT   OPE_REDEV  → PLT_REDEV    FEE_AMOUNT
-//   frais d'un canal de paiement  EVENT               *          → PSP:<canal>  TOPUP_AMOUNT
-// La dernière ligne est une convention provisoire : les configurations des prestataires de paiement appartiennent à
-// la mission « Recharges, caisses et PSP », qui fixera leur représentation.
+//   frais d'un canal de paiement  PSP_CONFIGURATION   *          → (canal)     TOPUP_AMOUNT
+// Mission 6 (WP10) : la règle de frais PSP est celle de la CONFIGURATION figée par la recharge
+// (`query.pspConfigurationId`), rangée sous le canal de son moyen. La convention `EVENT` + `PSP:<canal>` (ADR-82 §3)
+// est retirée : aucune règle de ce type n'est plus lue.
 import { Injectable } from '@nestjs/common';
 import { ProblemException } from '../errors/problem';
 import type { FeeRule } from '../ledger/money';
@@ -27,6 +28,7 @@ import type {
   ResolvedConfig,
 } from '../ledger/types';
 import type { TxClient } from '../db/tenant-tx';
+import { FEE_CHANNEL, type PspMethod } from '../psp-configurations/psp-configurations.dto';
 import { CascadeService } from './cascade.service';
 
 interface EventRow {
@@ -50,7 +52,7 @@ interface RuleRow {
   max_amount: bigint | null;
 }
 
-const PSP_PREFIX = 'PSP:';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Ordre des règles du prestataire dans l'écriture OPERATOR_FEE (une ligne par règle, dans cet ordre). */
 const OPERATOR_BASES: readonly OperatorFeeBasis[] = ['TOPUP_AMOUNT', 'PER_MEDIA'];
 
@@ -103,16 +105,7 @@ export class SqlConfigResolver implements ConfigResolver {
     const commissions: Record<string, FeeRule> = {};
     for (const rule of of('PARTICIPATION', 'ORG_COM', 'SALE_AMOUNT'))
       commissions[rule.scope_id] = feeRule(rule);
-    const pspFees: Record<string, FeeRule> = {};
-    for (const rule of rules) {
-      if (
-        rule.scope_type === 'EVENT' &&
-        rule.basis === 'TOPUP_AMOUNT' &&
-        rule.beneficiary_purpose.startsWith(PSP_PREFIX)
-      ) {
-        pspFees[rule.beneficiary_purpose.slice(PSP_PREFIX.length)] = feeRule(rule);
-      }
-    }
+    const pspFees = await this.pspFees(client, event, at, query.pspConfigurationId);
     const operatorFees = OPERATOR_BASES.flatMap((basis) =>
       of('OPERATOR_CONTRACT', 'OPE_FRAIS', basis).map((rule) => ({ basis, rule: feeRule(rule) })),
     );
@@ -261,6 +254,37 @@ export class SqlConfigResolver implements ConfigResolver {
       [event.id, at, event.contract_id, event.operator_id],
     );
     return rows;
+  }
+
+  /**
+   * Frais de la recharge : règle `PSP_CONFIGURATION` / `TOPUP_AMOUNT` en vigueur à la date, version la plus haute,
+   * de la configuration figée par la recharge, rangée sous le canal de son moyen. Une configuration d'un autre
+   * organisateur que celui de l'événement ne donne aucune règle (frais nuls) ; sans règle : frais nuls (R-13).
+   */
+  private async pspFees(
+    client: Queryable,
+    event: EventRow,
+    at: Date,
+    configId: string | undefined,
+  ): Promise<Record<string, FeeRule>> {
+    if (configId === undefined) return {};
+    if (!UUID.test(configId))
+      throw new ProblemException('VALIDATION_FAILED', {
+        status: 422,
+        detail: 'Configuration : identifiant de configuration PSP invalide.',
+      });
+    const { rows } = await client.query<RuleRow & { method: PspMethod }>(
+      `SELECT f.id, f.scope_type, f.scope_id, f.payer_purpose, f.beneficiary_purpose, f.basis, f.rate_bps,
+              f.fixed_amount, f.min_amount, f.max_amount, c.method
+         FROM fee_rule f
+         JOIN psp_configuration c ON c.psp_configuration_id = f.scope_id AND c.organizer_id = $2
+        WHERE f.scope_type = 'PSP_CONFIGURATION' AND f.scope_id = $1 AND f.basis = 'TOPUP_AMOUNT'
+          AND f.valid_from <= $3 AND (f.valid_to IS NULL OR f.valid_to > $3)
+        ORDER BY f.version DESC LIMIT 1`,
+      [configId, event.organizer_id, at],
+    );
+    const row = rows[0];
+    return row ? { [FEE_CHANNEL[row.method]]: feeRule(row) } : {};
   }
 
   /** Droits de place dus, par participation (les participations sans droit de place n'y figurent pas). */

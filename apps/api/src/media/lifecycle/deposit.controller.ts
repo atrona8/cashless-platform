@@ -14,7 +14,13 @@ import {
 } from '../../idempotency/idempotent.decorator';
 import { requireUuid } from '../../organization/platform/platform.dto';
 import { TapService, type RegisteredTap } from '../taps/tap.service';
-import { CounterAccess, CounterAuth, counterScope, type CounterActor } from './counter-access';
+import {
+  CounterAccess,
+  CounterAuth,
+  counterScope,
+  requireCashSession,
+  type CounterActor,
+} from './counter-access';
 import { DepositService } from './deposit.service';
 import { counterRefusal, parseDeposit, type DepositInput } from './lifecycle.dto';
 
@@ -67,9 +73,11 @@ export class DepositController {
         const actor = await this.counter.authorize(client, req);
         await this.visible(client, actor, mediaId);
         const tap = await this.tap(client, actor, input, mediaId, language);
+        // Session indiquée : doit être la session ouverte du terminal (409 sinon), avant toute écriture.
+        if (input.cashSessionId !== null) requireCashSession(actor, language, input.cashSessionId);
         const context = {
           operatorId: actor.operatorId,
-          cashDeskCode: actor.cashDeskCode,
+          cashSessionId: actor.cashSession?.id ?? null,
           deviceId: actor.device.deviceId,
           audit: actor.audit,
           language,
@@ -80,7 +88,10 @@ export class DepositController {
           : await this.deposits.take(client, context, mediaId, input.payment, occurredAt);
         if (tap?.tapId && done.transactionId)
           await this.taps.consume(client, tap.tapId, done.transactionId);
-        return done.state;
+        const used = input.cashSessionId !== null || done.state.mode === 'SEPARATE';
+        return used && actor.cashSession
+          ? { ...done.state, cash_session_id: actor.cashSession.id }
+          : done.state;
       });
     } catch (error) {
       return this.taps.settleRefusal(error, requestDevice(req), input.tap);

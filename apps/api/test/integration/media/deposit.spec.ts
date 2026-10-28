@@ -1,6 +1,6 @@
 // Intégration : caution d'un bracelet (FR-022, FR-023 ; SPECIFICATION §7.9 ; contrat `takeDeposit`, `refundDeposit`).
-// Prélevée sur le solde payé (due si le solde ne suffit pas) ou payée à part en espèces, au compte de caisse du
-// terminal — que cette mission ne crée pas (décision du porteur n° 10) : sans caisse ouverte, refus.
+// Prélevée sur le solde payé (due si le solde ne suffit pas) ou payée à part en espèces, au compte de caisse de la
+// SESSION ouverte du terminal (mission des caisses, WP09) : sans session ouverte, refus avant toute écriture.
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -16,6 +16,7 @@ import {
   goLive,
   ledgerIsSound,
   openCashDesk,
+  openCashSession,
   ownerRows as rows,
   seedPersonalizedMedia,
   tapBody,
@@ -27,7 +28,10 @@ describe('caution d’un bracelet', () => {
   let w: MediaWorld;
   let app: INestApplication;
   let device: TestDevice; // terminal avec une caisse ouverte
+  let other: TestDevice; // second terminal, avec sa propre session
   let noDesk: TestDevice; // terminal sans caisse
+  let session: { sessionId: string; accountId: string; code: string };
+  let otherSession: { sessionId: string; accountId: string; code: string };
   let fromBalance: string;
   let separate: string;
   let cashDesk: string;
@@ -85,13 +89,32 @@ describe('caution d’un bracelet', () => {
     w = await createMediaWorld();
     await withOwner(async (db) => {
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
-      device = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
+      device = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
+      other = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
       noDesk = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
       cashDesk = await openCashDesk(db, {
         operatorId: w.ops.a,
         ledgerId: w.ids.ledgerA,
         organizerId: w.ids.organizerA,
         serial: device.serial,
+      });
+      session = await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: device.deviceId,
+        userId: w.cashierA.userId,
+      });
+      otherSession = await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: other.deviceId,
+        userId: w.cashierA.userId,
       });
       fromBalance = await createBatch(db, {
         operatorId: w.ops.a,
@@ -314,6 +337,13 @@ describe('caution d’un bracelet', () => {
       });
       expect(activated.body.wallet).toMatchObject({ spendable: 0, paid: 0 });
       expect(await balance(cashDesk)).toBe(before + 1000);
+      // La prise est rattachée à la session ouverte du terminal (FR-004).
+      expect(
+        await rows<{ n: number }>(
+          'SELECT count(*)::int AS n FROM cash_session_tx WHERE cash_session_id = $1 AND tx_id = $2',
+          [session.sessionId, activated.body.deposit.transaction_id],
+        ),
+      ).toEqual([{ n: 1 }]);
       expect(await balance('L-ORG-CAUTION')).toBeLessThanOrEqual(-1000);
       await sound();
 
@@ -337,9 +367,63 @@ describe('caution d’un bracelet', () => {
         amount: 1000,
         mode: 'SEPARATE',
         transaction_id: expect.any(String),
+        cash_session_id: session.sessionId,
       });
       expect(await balance(cashDesk)).toBe(before);
       expect(await state(m)).toEqual({ deposit_status: 'REFUNDED', held: 0 });
+      await sound();
+    });
+
+    it('cash_session_id : renvoyé quand il est la session ouverte ; une autre session, ou un terminal sans session : 409, rien d’écrit', async () => {
+      const m = await fresh(separate);
+      expect((await activate(m, { deposit_payment: { method: 'CASH' } })).status).toBe(201);
+      const refundBody = (extra: object) => ({
+        tap: tapBody(m, next()),
+        payment: { method: 'CASH' },
+        ...extra,
+      });
+      // Session d'un autre terminal du même événement : refus, la caution reste détenue.
+      const mismatch = await post(
+        desk(),
+        `/v1/media/${m.id}/deposit/refund`,
+        refundBody({ cash_session_id: otherSession.sessionId }),
+      );
+      expect(mismatch.status).toBe(409);
+      expect(mismatch.body.rule).toBe('cash.session_mismatch');
+      // Terminal sans session, même avec un identifiant : 409 et aucun compte créé.
+      const none = await post(
+        desk(noDesk),
+        `/v1/media/${m.id}/deposit/refund`,
+        refundBody({ cash_session_id: session.sessionId }),
+      );
+      expect(none.status).toBe(409);
+      expect(
+        (
+          await post(
+            desk(),
+            `/v1/media/${m.id}/deposit/refund`,
+            refundBody({ cash_session_id: 'x' }),
+          )
+        ).status,
+      ).toBe(400);
+      expect(await state(m)).toEqual({ deposit_status: 'HELD', held: 1000 });
+      const ok = await post(
+        desk(),
+        `/v1/media/${m.id}/deposit/refund`,
+        refundBody({ cash_session_id: session.sessionId }),
+      );
+      expect(ok.status).toBe(200);
+      expect(ok.body).toMatchObject({ status: 'REFUNDED', cash_session_id: session.sessionId });
+      // Prise rattachée à la session B depuis le terminal B : jamais à la session de A.
+      const m2 = await fresh(separate);
+      const taken = await activate(m2, { deposit_payment: { method: 'CASH' } }, desk(other));
+      expect(taken.status).toBe(201);
+      expect(
+        await rows<{ cash_session_id: string }>(
+          'SELECT cash_session_id FROM cash_session_tx WHERE tx_id = $1',
+          [taken.body.deposit.transaction_id],
+        ),
+      ).toEqual([{ cash_session_id: otherSession.sessionId }]);
       await sound();
     });
 

@@ -39,6 +39,7 @@ import {
   type BuildContext,
   type LedgerCommand,
   type Line,
+  type Source,
   type WalletBalances,
 } from './types';
 
@@ -54,14 +55,26 @@ export interface EngineResult {
 /** Charge utile des types délégués (caution, préchargement, espèces dues). */
 export interface DelegatedPayload {
   variant?: string;
-  /** Code du compte d'encaissement ou de remboursement d'une caution `SEPARATE` (ex. `A-CAISSE-C1`). */
+  /**
+   * Code d'un compte d'argent NON inscrit en caisse (ex. `A-BANQUE`). Les cautions en espèces passent par
+   * `cashSessionId` ; un compte de caisse est refusé par la base hors session (A8).
+   */
   moneyAccount?: string;
+  /** Session de caisse ouverte d'une caution en espèces (`…_for_session`) ; exclusif de `moneyAccount`. */
+  cashSessionId?: string;
   /** Code du compte de caisse d'un rendu d'espèces dues. */
   cashAccount?: string;
 }
 
 /** Clé de métadonnée portant l'empreinte de la commande (détection « même clé, autre contenu »). */
 export const COMMAND_FINGERPRINT_KEY = 'engine_command_sha256';
+
+/**
+ * Sources dont une recharge en espèces peut être découpée vers `L-ESP-A-RENDRE` (SPECIFICATION
+ * §5.3, §5.7, ADR-63 ; R-05) : le terminal hors ligne a déjà encaissé, on ne peut plus refuser.
+ * En ligne, la base refuse au-delà du plafond (CL008, CL009).
+ */
+const OFFLINE_SPLIT_SOURCES: readonly Source[] = ['OFFLINE_SYNC', 'EDGE_SYNC'];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -114,6 +127,7 @@ export class LedgerEngineService {
       eventId: context.eventId ?? undefined,
       occurredAt: command.occurredAt,
       participationId: participationOf(command),
+      pspConfigurationId: pspConfigurationOf(command),
       client,
     });
     const { command: enriched, balances } = await enrich(client, command);
@@ -130,6 +144,20 @@ export class LedgerEngineService {
     if (built.kind !== 'lines')
       throw new BuildError('VALIDATION_FAILED', `${command.type} : type délégué`);
     const lines = checkLines(built.lines);
+    // Découpage hors ligne : espèces dues au client, rendues via l'anomalie CASH_TOPUP_OVER_LIMIT.
+    const over =
+      command.type === 'TOPUP_CASH'
+        ? -lines
+            .filter(
+              (line) => 'purpose' in line.account && line.account.purpose === 'CUSTOMER_CASH_DUE',
+            )
+            .reduce((sum, line) => sum + line.amount, 0n)
+        : 0n;
+    if (over > 0n && (!command.mediaId || !UUID.test(command.mediaId)))
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'TOPUP_CASH : support (mediaId) requis pour un découpage hors ligne',
+      );
     if (deferPurposeCheck) checkStatus(context, command, debitPurposes(lines));
 
     const ids = await this.accountResolver.resolve(
@@ -163,6 +191,15 @@ export class LedgerEngineService {
         [COMMAND_FINGERPRINT_KEY]: fingerprint,
       }),
     });
+    // Même transaction que l'écriture : un échec annule tout (jamais de découpage sans anomalie).
+    if (over > 0n) {
+      await client.query('SELECT open_cash_due_anomaly($1::uuid, $2::uuid, $3::bigint, $4::uuid)', [
+        command.ledgerId,
+        command.mediaId,
+        over.toString(),
+        transactionId,
+      ]);
+    }
     return { transactionId, replayed: false };
   }
 
@@ -218,9 +255,20 @@ export class LedgerEngineService {
       return (await this.accountResolver.resolve(client, command.ledgerId, [ref])).get(ref)!;
     };
 
+    if (payload.cashSessionId !== undefined && payload.moneyAccount !== undefined)
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'caution : session de caisse OU compte, pas les deux',
+      );
+    const session = payload.cashSessionId ?? null;
     switch (fn) {
       case 'take_deposit': {
-        const outcome = await takeDeposit(client, mediaId, await account(payload.moneyAccount));
+        const outcome = await takeDeposit(
+          client,
+          mediaId,
+          await account(payload.moneyAccount),
+          session,
+        );
         const transactionId =
           outcome === 'HELD'
             ? ((await findTransactionId(client, command.ledgerId, internalKey)) ?? null)
@@ -230,7 +278,7 @@ export class LedgerEngineService {
       case 'refund_deposit':
       case 'forfeit_deposit': {
         if (fn === 'refund_deposit')
-          await refundDeposit(client, mediaId, await account(payload.moneyAccount));
+          await refundDeposit(client, mediaId, await account(payload.moneyAccount), session);
         else await forfeitDeposit(client, mediaId);
         const transactionId =
           (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;
@@ -344,6 +392,11 @@ function checkStatus(
   if (!check.ok) throw new BuildError('VALIDATION_FAILED', check.reason);
 }
 
+function pspConfigurationOf(command: LedgerCommand): string | undefined {
+  const id = command.metadata?.psp_configuration_id;
+  return typeof id === 'string' ? id : undefined;
+}
+
 function participationOf(command: LedgerCommand): string | undefined {
   const payload = command.payload as { participationId?: unknown } | null | undefined;
   return typeof payload?.participationId === 'string' ? payload.participationId : undefined;
@@ -444,6 +497,12 @@ async function enrich(
       return { command, balances: { promo: available(promo!), paid: available(paid!) } };
     }
     case 'TOPUP_CASH': {
+      if (!OFFLINE_SPLIT_SOURCES.includes(command.source)) {
+        // En ligne : la marge n'est pas lue et une marge fournie par l'appelant est retirée.
+        if (payload.headroom === undefined) return { command };
+        const { headroom: _ignored, ...rest } = payload;
+        return { command: { ...command, payload: rest } };
+      }
       if (!walletId || payload.headroom !== undefined) return { command };
       const headroom = await readTopupHeadroom(client, walletId, command.occurredAt);
       return { command: headroom === undefined ? command : withPayload({ headroom }) };

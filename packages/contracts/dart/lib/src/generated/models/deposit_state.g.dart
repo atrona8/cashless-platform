@@ -11,6 +11,7 @@ DepositState _$DepositStateFromJson(Map<String, dynamic> json) => DepositState(
   amount: (json['amount'] as num).toInt(),
   mode: $enumDecodeNullable(_$DepositStateModeEnumMap, json['mode']),
   transactionId: json['transaction_id'] as String?,
+  cashSessionId: json['cash_session_id'] as String?,
 );
 
 Map<String, dynamic> _$DepositStateToJson(DepositState instance) =>
@@ -19,6 +20,7 @@ Map<String, dynamic> _$DepositStateToJson(DepositState instance) =>
       'amount': instance.amount,
       'mode': instance.mode,
       'transaction_id': instance.transactionId,
+      'cash_session_id': instance.cashSessionId,
     };
 
 const _$DepositStatusEnumMap = {

@@ -80,7 +80,20 @@ describe('résolveur de configuration réel', () => {
       [fx.participations.FOOD]: 15000n,
       [fx.participations.TEE]: 10000n,
     });
-    expect(Object.keys(config.pspFees).sort()).toEqual(['CARTE', 'OM', 'WAVE']);
+    // WP10 : les frais PSP viennent de la configuration de la recharge, rangés sous le canal de son moyen.
+    expect(config.pspFees).toEqual({});
+    for (const [channel, id] of Object.entries(fx.pspConfigurations)) {
+      const one = await tx.run(fx.parties.OPE, (client) =>
+        resolver.resolve({
+          ledgerId: fx.ledgerId,
+          eventId: fx.eventId,
+          occurredAt: new Date('2026-12-11T18:00:00Z'),
+          pspConfigurationId: id,
+          client,
+        }),
+      );
+      expect(Object.keys(one.pspFees)).toEqual([channel]);
+    }
     expect(config.operatorFees.map((f) => f.basis)).toEqual(['TOPUP_AMOUNT', 'PER_MEDIA']);
   });
 
