@@ -88,6 +88,17 @@ worktrees gardés après la fusion.
    une personne : `apps/api/src/psp/hmac-signature.ts`, `secret.ts`. WP08 lancé (lane-h préparée : a, e,
    f, g fusionnées, `tsc` propre) et WP10 lancé (lane-g) en parallèle.
    - `cashless_test` a reçu des fixtures d'un Jest mal aiguillé (WP06) : `reset-db` avant la batterie.
+   28/10 : **reprise sur le poste Windows.** Branches `kitty/mission-…` et lanes poussées par le porteur ;
+   worktree de coordination recréé (`.worktrees/recharges-caisses-psp-01M5YEBA-coord`, sinon « no canonical
+   status ») ; cluster PG17 privé (`tools/dev-db/start.sh`, port 5433) ; Jest toujours `--runInBand
+   --forceExit`, un fichier par appel ; Avast interceptait le TLS local (exclusion de 127.0.0.1 faite par le
+   porteur). WP10 **approuvé** (`2ff8666` ; mineurs : nom `secret_ref` ≤ 100 contre 64 au prompt, JWT avec
+   point non détecté par `looksLikeSecret`, `ORG_FPSP` attendu changé dans `api-config-replay`, cohérent
+   ADR-133). WP08 terminé (`b8ebd96` : fixtures réparées, 5 suites ajoutées ; 56 tests + matrice 12/12) et
+   **approuvé** (`716f3ef`). Reports de la relecture de WP08 :
+   - WP14 : masquer `cash_diff_anomaly_id` dans la vue AGENT (renforcement de l'aveugle) ; test d'API seule
+     pour fermeur ≠ compteur (la base, CL041, est le contrôle de référence) ; documenter `counted_at` ignoré.
+   WP09 lancé sur lane-i (prompt de la lane réécrit en double encodage par `implement`, réaligné).
 
 1. (Fait) addendum post-plan.
 2. (Fait) reports A16, A17, A32.
