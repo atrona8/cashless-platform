@@ -46,6 +46,7 @@ import {
   goLive,
   ledgerIsSound,
   openCashDesk,
+  openCashSession,
   ownerRows as rows,
   personalizationBody,
   tapBody,
@@ -89,12 +90,22 @@ describe('parcours complet d’un bracelet : de la clé à la clôture du lot', 
         roles: [{ role: 'SUPERVISOR', scopeType: 'EVENT', scopeId: w.ids.eventA }],
       });
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
-      device = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
+      device = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
       await openCashDesk(db, {
         operatorId: w.ops.a,
         ledgerId: w.ids.ledgerA,
         organizerId: w.ids.organizerA,
         serial: device.serial,
+      });
+      // Toute espèce passe par la session ouverte du terminal (mission des caisses, WP09).
+      await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: device.deviceId,
+        userId: w.cashierA.userId,
       });
       alice = await createTestCustomer(db, w.ops.a);
       bob = await createTestCustomer(db, w.ops.a);
