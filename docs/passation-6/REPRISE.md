@@ -179,6 +179,17 @@ worktrees gardés après la fusion.
    fusion**. WP14 renvoyé en cycle 2 par l'orchestrateur (retour : interblocage, A8-DETTE, 0039 complet),
    implémentation du cycle 2 lancée sur lane-m. Reports non faits jugés non bloquants : voir
    `WP14-matrice-et-relecture.md` (lane-m).
+   WP14 cycle 2 (`0989a93e`, `05105026`) : 0040 (fermeture : terminal puis session puis solde, interblocage
+   levé, `cash-concurrency` ×6 vert), 0041 (OP-N84 levé : `take_deposit_from_balance`,
+   `refund_deposit_from_balance`, anciennes fonctions retirées à `cashless_app`), 0042 (`wallet.other_block`,
+   déclencheur `wallet_block_cause_guard`, OP-N83 complet). **Approuvé** par un relecteur distinct (5 mutations
+   tuées). Batterie lane-m : Jest **2637 verts, 0 échec** ; pgTAP **43 fichiers, 3826 verts**. **Les 14 lots
+   sont approuvés.** Mineurs : `cashless_app` peut poser `app.wallet_block_origin='CHARGEBACK'` et écrire
+   `wallet.status` (pas d'escalade, il peut déjà écrire ACTIVE) : ADR-134/OP-N83 à reformuler (la base ne peut
+   pas l'imposer) ; lignes > 100 dans `wallet-unblock-action.ts` (Prettier à la fusion). Relecture humaine en
+   plus : 0040, 0041, 0042, `post-roles.sql` §4, 7b-bis, 7c, 7d, `ledger-engine.service.ts`,
+   `ledger/db/ledger-queries.ts`. Suite : addendum documentaire post-review, matrice d'acceptation, `accept`,
+   `merge`, PR vers `main`.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
