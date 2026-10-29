@@ -152,6 +152,20 @@ worktrees gardés après la fusion.
    - **Décision du porteur (29/10)** : garde RISK-2 **reporté à WP14**, batterie rouge jusque-là. WP14 tranche
      l'exception de `initiate`/`cancel` (porteur à resolliciter, dette nommée si exception) et corrige aussi
      la fausse alerte de `CashSessionsController` et la liste de SC-007.
+   WP13 : implémenté (`196a4fa5`, lane-l), **approuvé** par un relecteur distinct (aucun bloquant ; 38 tests
+   du lot + 42 webhooks ; 6 mutations tuées). Écarts jugés renforce/neutre (blocage sur lignes écrites, refus
+   du moteur → PSP_MISMATCH ENGINE_REFUSED, CLOSED sans blocage). Rôles : LATE_CHARGEBACK = ORGANIZER_ADMIN
+   ou OPERATOR_ADMIN (**OPERATOR_ADMIN à confirmer par le porteur**), WALLET_UNBLOCK = ORGANIZER_ADMIN seul.
+   Reports à WP14 :
+   - `EventDispatcher.expireUnmatched` (WP12) ne traite que PAYMENT_SUCCEEDED : une contestation introuvable
+     reste UNMATCHED sans PSP_MISMATCH après 24 h (T068 l'attendait) ; corriger avec un test.
+   - **Sécurité, défaut de 0038 (WP04)** : portefeuille déjà BLOCKED pour une autre cause (perte, fraude) +
+     contestation à solde insuffisant → `block_wallet_after_chargeback` pose `wallet_blocked` sans distinguer
+     la cause ; `unblock_wallet` pourrait alors le débloquer par la voie contestation (toujours à deux
+     ORGANIZER_ADMIN). À soumettre au porteur ; POINTS_OUVERTS + test.
+   - Relecture humaine : `chargebacks/late-chargeback-action.ts`, `chargeback.service.ts` (`post`),
+     `wallet-unblock-action.ts`, avec `unblock_wallet`/`block_wallet_after_chargeback` de 0038.
+   Batterie lane-l (`cashless_test` après reset) : 2594 verts, seuls les 2 échecs hérités (WP14).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
