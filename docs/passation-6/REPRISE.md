@@ -171,6 +171,14 @@ worktrees gardés après la fusion.
    de déblocage de 0038 : **corriger dans WP14** (renforcement ; ne remettre ACTIVE que si le blocage vient de
    la contestation seule), test, relecture humaine. (3) LATE_CHARGEBACK : ORGANIZER_ADMIN ou OPERATOR_ADMIN
    **confirmé**.
+   WP14 cycle 1 (`ecb481e0`, `791ff0d5`, `6d5fb6ea`) : décisions A-E appliquées (RISK-2 tenu sans exception,
+   0039, SC-007, DISPUTE > 24 h) ; **approuvé** par un relecteur distinct ; batterie de lane-m : **2635 verts,
+   0 échec**. Restaient : interblocage fermeture/recharges espèces (500 `40P01`, `it.failing`), `[A8-DETTE]`
+   (OP-N84) non levé, 0039 partiel (contestation → perte → déblocage remet ACTIVE ; ADR-134 attribuait à tort
+   la limite au porteur). **Décisions du porteur (29/10)** : corriger l'interblocage et lever A8-DETTE **avant
+   fusion**. WP14 renvoyé en cycle 2 par l'orchestrateur (retour : interblocage, A8-DETTE, 0039 complet),
+   implémentation du cycle 2 lancée sur lane-m. Reports non faits jugés non bloquants : voir
+   `WP14-matrice-et-relecture.md` (lane-m).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
