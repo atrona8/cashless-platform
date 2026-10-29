@@ -125,6 +125,30 @@ worktrees gardés après la fusion.
      succès rejoué après anomalie résolue ; écart CL039 dans les contradictions.
    - Relecture humaine : `topups/psp/psp-payment-processor.ts`, `card-checks.ts`, `psp-topup-caller.guard.ts`,
      `psp-topup-lookup.ts`, `psp-refusals.ts`.
+   29/10 : **reprise sur macOS.** Doublons locaux de WP11 abandonnés (accord du porteur ; sauvegardes
+   `backup/coord-local-20261029`, `backup/lane-j-local-20261029`). WP12 repris (lane-k du poste Windows) :
+   `880b5c9e` (tsc, isolation des suites, test CL029) ; `--force` après `align-lane.sh k` ; **approuvé** par un
+   relecteur distinct (aucun bloquant ; 90 tests du lot ; 7 mutations tuées, 2 survivantes). Retouche de
+   `psp-payment-processor.ts` (WP11) : NO_EFFECT sur anomalie résolue, n'affaiblit rien. `mark_psp_topup_initiated`
+   prend `FOR UPDATE` en SQL (0038 l.492) : report de WP11 sans objet. Piège : Jest exige
+   `source tools/dev-db/env.sh` (sinon `cashless_test`), fiche corrigée. Reports :
+   - WP13 : brancher `PSP_DISPUTE_HANDLER` (DISPUTE reste RECEIVED sans gestionnaire).
+   - WP14 : reprise des cautions DUE si le processus meurt entre COMMIT et `afterCommit` (affaiblit A33,
+     fenêtre étroite) ; démarrage de `PspPollerProcessModule` en production avec un faux ; canari de secrets
+     dans les journaux ; NFR-006 ; 100 rejeux concurrents ; test qui tue `a || b` sur les deux secrets.
+   - Mineurs : `alarmCode` jamais remis à zéro en mode boucle ; une écriture en base par refus (amplification
+     sous déni de service, conforme au plan) ; 404 non chronométrés à l'identique.
+   - Relecture humaine : `webhooks/webhook-verifier.ts`, `webhooks.controller.ts`, `webhook-intake.service.ts`,
+     `psp/hmac-signature.ts`, `db/psp-poller-db.module.ts` (rôle `cashless_app`, pas de rôle dédié), delta de
+     `psp-payment-processor.ts`.
+   Batterie complète sur lane-k (`cashless_test` après reset) : 2556 verts, **2 échecs hérités de lots
+   approuvés** (jamais signalés) :
+   - `test/unit/idempotency-guard.spec.ts` (RISK-2) : `CashSessionsController` (WP08) injecte `TenantTx` pour
+     une lecture seule (fausse alerte, sortir la lecture) ; `PspTopupsController.initiate`/`.cancel` (WP11)
+     sans `@IdempotentTransaction()`, voulu par l'arbitrage (appel PSP hors transaction) : **exception au
+     garde soumise au porteur** (29/10).
+   - `end-to-end/media-port-swap.spec.ts` (SC-007 de la mission 4) : `cash-due`, `deposit`, `release`
+     modifiés par WP09 (rattachement de la session de caisse, prévu) : liste du test à mettre à jour.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,

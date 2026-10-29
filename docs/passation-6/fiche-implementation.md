@@ -34,7 +34,9 @@ sur `feat/recharges-caisses-psp`. Ne relis pas CLAUDE.md, README ni la SPECIFICA
 - pgTAP : `PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/c1df7274-09c6-4654-9040-fd736a5b47e2/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
   puis, dans `packages/ledger-sql/tests/`, `PGDATABASE=cashless_wpXX pg_prove -d cashless_wpXX <fichier>.sql`
   (ce `pg_prove` s'exécute dans le conteneur). Après un Jest, refaire `reset-db` avant pgTAP.
-- Jest ciblé depuis `apps/api` de la lane : `PGDATABASE=cashless_wpXX SKIP_LATENCY=1 npx jest <chemin>`. Ne lance
+- Jest ciblé depuis `apps/api` de la lane : `export PGDATABASE=cashless_wpXX; source ../../tools/dev-db/env.sh`
+  **puis** `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`. `PGDATABASE` seul ne suffit pas :
+  `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test` (vu le 29/10). Ne lance
   pas la batterie complète : l'orchestrateur la passe en série.
 - Horloge Docker en avance/recul de ~100 ms : aucun test ne compare l'horloge de Node à une date posée par la base.
 - Instabilités connues (pas un défaut du lot) : `tests_event_ledger.sql` 63-66, `claim-code-order.spec.ts`,
