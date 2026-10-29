@@ -625,5 +625,26 @@ SELECT ok(NOT has_function_privilege('cashless_app', 'cash_session_usable(uuid,u
       AND has_function_privilege('cashless_app', 'open_cash_session(uuid,uuid)', 'EXECUTE'),
   'rejeu : fonction interne toujours fermée, fonction publique toujours accordée');
 
+-- Bornes des dettes OP-N86 et OP-N87 (ADR-136, décision du porteur du 29/10/2026 ; levées par la mission 13).
+-- OP-N86 (1) : seul cashless_app exécute psp_poll_candidates(int) et psp_events_to_retry(int) ; échoue si un
+-- rôle cashless_* s'ajoute (la mission 13 retire ces deux droits : la liste attendue deviendra vide).
+SELECT is((SELECT array_agg(rolname::text ORDER BY rolname) FROM pg_roles
+            WHERE rolname ~ '^cashless_'
+              AND (has_function_privilege(oid, 'psp_poll_candidates(int)', 'EXECUTE')
+                   OR has_function_privilege(oid, 'psp_events_to_retry(int)', 'EXECUTE'))),
+  ARRAY['cashless_app'],
+  'OP-N86 / ADR-136 : liste exacte des rôles cashless_* qui exécutent psp_poll_candidates et psp_events_to_retry');
+-- OP-N86 (3) : seul cashless_app garde un INSERT sur anomaly (aucun test antérieur ne borne la liste des rôles :
+-- tests_psp_topups.sql n'éprouve que les contraintes) ; échoue si la liste s'élargit.
+SELECT is((SELECT array_agg(rolname::text ORDER BY rolname) FROM pg_roles
+            WHERE rolname ~ '^cashless_' AND has_table_privilege(oid, 'anomaly', 'INSERT')),
+  ARRAY['cashless_app'],
+  'OP-N86 / ADR-136 : liste exacte des rôles cashless_* qui ont INSERT sur anomaly');
+-- OP-N87 : posting_cash_desk_guard() lit cash_desk (RLS forcée) ; sa garde « aucune espèce sans session » ne
+-- vaut que si le propriétaire de la fonction contourne la RLS (superutilisateur ou BYPASSRLS).
+SELECT ok((SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
+            WHERE p.oid = 'posting_cash_desk_guard()'::regprocedure),
+  'OP-N87 / ADR-136 : le propriétaire de posting_cash_desk_guard() contourne la RLS (rolsuper ou rolbypassrls)');
+
 SELECT * FROM finish();
 ROLLBACK;

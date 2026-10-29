@@ -272,6 +272,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83, corrigée en cycle 2 par
   la migration 0042, ADR-134) ; anciennes signatures de caisse retirées à `cashless_app` (OP-N84, levé en cycle 2,
   ADR-135) ; reprise de la caution due après un arrêt entre COMMIT et `afterCommit` (OP-N85) ; mission 13, recette ;
+- dettes de sécurité de la revue post-fusion de la mission 6 (29/10/2026, ADR-136) : rôle dédié au `psp-poller` et retrait à
+  `cashless_app` de `psp_poll_candidates`, `psp_events_to_retry` et de l'INSERT sur `anomaly` (OP-N86) ; rôle propriétaire
+  de `posting_cash_desk_guard` contrôlé au déploiement ou garde qui refuse (OP-N87) ; mission 13 ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

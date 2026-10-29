@@ -444,6 +444,10 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
 > migration 0041, ADR-135) et OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).
+> **Dettes de sécurité consignées le 29/10/2026 (revue post-fusion, ADR-136)** : OP-N86 (rôle dédié au `psp-poller` ;
+> retrait à `cashless_app` de `psp_poll_candidates`, `psp_events_to_retry` et de l'INSERT sur `anomaly`, au profit d'une
+> fonction de la base) et OP-N87 (rôle propriétaire de `posting_cash_desk_guard` contrôlé au déploiement, ou garde qui
+> refuse si la recherche est impossible) ; tests de borne dans `tests_cash_psp_rights.sql`, à inverser.
 > L'interblocage fermeture / recharges espèces est corrigé (migration 0040, test `cash-concurrency.spec.ts`) :
 > à rejouer sous la charge de la recette.
 

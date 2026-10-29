@@ -127,3 +127,12 @@ L'agent qui a écrit le code ne vaut pas relecture indépendante.
 ## Retrospective Reminder
 
 `kitty-specs/recharges-caisses-psp-01M5YEBA/retrospective.yaml` existe (écrit à la fusion). Pour la suite : `spec-kitty retrospect summary` puis `spec-kitty agent retrospect synthesize --mission recharges-caisses-psp-01M5YEBA` (dry-run).
+
+## Suite donnée (29/10/2026)
+
+Décisions du porteur : constats 1 et 2 consignés comme dette, levée à la mission 13 : OP-N86 (droits de
+`cashless_app` : `psp_poll_candidates`, `psp_events_to_retry`, `psp-poller` sans rôle dédié, INSERT sur `anomaly`)
+et OP-N87 (`posting_cash_desk_guard` sûr seulement si son propriétaire contourne la RLS), ADR-136, trois tests de
+borne dans `tests_cash_psp_rights.sql` (219 à 221, chacun tué par sa mutation, relecteur distinct), reports dans
+`PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`. Le bloquant de consignation est levé : verdict **publiable avec
+réserves** (mineurs ci-dessus).

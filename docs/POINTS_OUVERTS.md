@@ -64,6 +64,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N83 | Cause d'un blocage de portefeuille : corrigée par la migration `0042` (WP14 cycle 2, décision du porteur du 29/10/2026) ; reste : un chemin qui écrit lui-même `ACTIVE` lève aussi la cause de contestation | Non | Non | Levé pour l'ordre des événements ; ADR-134 |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2) : `take_deposit`, `refund_deposit`, `refund_cash_due` ne sont plus accordées à `cashless_app` | Non | Non | Levé ; ADR-135 |
 | OP-N85 | Caution due non prise si le processus s'arrête entre le COMMIT du crédit et l'appel qui la prend (fenêtre étroite, reprise au rejeu d'une autre notification seulement) | Non | Non | Mission 13 (recette V1) ou lot de reprise ; ADR-135 |
+| OP-N86 | Droits de `cashless_app` plus larges que nécessaire : `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les recharges et notifications de tous les prestataires ; le `psp-poller` tourne sous `cashless_app` sans rôle dédié ; INSERT direct sur `anomaly` gardé (5 sites de la mission 6) | Non | Non (limite connue, bornée par tests) | Mission 13 (recette V1) : rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` au profit d'une fonction de la base ; décision du porteur du 29/10/2026 (ADR-136) |
+| OP-N87 | `posting_cash_desk_guard` (0036) lit `cash_desk` sous RLS forcée : la garde « aucune espèce sans session » ne vaut que si le propriétaire de la fonction contourne la RLS ; sinon elle laisse passer sans bruit | Non | Non (dépend du déploiement, borné par un test) | Mission 13 (déploiement) : rôle propriétaire contrôlé, ou garde qui refuse si la recherche est impossible ; décision du porteur du 29/10/2026 (ADR-136) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -141,6 +143,8 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N83 | CORRIGÉ en cycle 2 de WP14 (migration `0042`) : `wallet.other_block` tenu par le déclencheur `wallet_block_cause_guard` ; le déblocage « contestation » refuse (CL029) dès qu'une autre cause est active, quel que soit l'ordre | Un chemin de blocage qui écrirait `ACTIVE` lui-même lève aussi la contestation (comportement voulu : une personne habilitée de l'autre cause) | `unblock_wallet` refuse si `other_block` ; `block_wallet_after_chargeback` ne marque pas si `other_block` ; `tests_psp_topups.sql` (perte puis contestation, contestation puis perte, cause tierce puis deux contestations) ; `wallet-unblock.spec.ts` | Mission 13 (revue) | Un futur chemin de blocage (perte, fraude) à relire : il doit écrire `BLOCKED` sans annoncer l'origine « contestation » |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2, décision du porteur) : `take_deposit(uuid,uuid)`, `refund_deposit(uuid,uuid)`, `refund_cash_due(...)` retirées de `post-roles.sql` (section 4) ; le moteur passe par `take_deposit_for_session`, `refund_deposit_for_session`, `refund_cash_due_for_session` et, sans compte désigné (mode `FROM_BALANCE`), par `take_deposit_from_balance` / `refund_deposit_from_balance` (0041) | Aucun : droit plus étroit que celui retiré | `tests_cash_psp_rights.sql` (`[A8-DETTE levée]` : EXECUTE refusé), `tests_execute_grants.sql`, `engine.spec.ts` (compte désigné refusé) | Levé | Aucune ; fonctions à faire relire par une personne |
 | OP-N85 | Reprise de la caution due : faite à l'écriture d'un crédit suivant, jamais seule | Un bracelet crédité sans sa caution due prise tant qu'aucun autre crédit n'arrive | Le travailleur de reprise (WP12) rejoue l'événement ; la caution est idempotente | Mission 13 (recette V1) | Reprise des cautions `DUE` par le travailleur, avec un test qui tue le processus entre COMMIT et `afterCommit` |
+| OP-N86 | `psp_poll_candidates` et `psp_events_to_retry` (toutes les recharges et notifications, tous prestataires) exécutables par `cashless_app` ; `psp-poller` sous `cashless_app` ; INSERT direct sur `anomaly` | Le processus public, si compromis, lit les recharges et notifications de tous les prestataires et écrit des anomalies arbitraires | `tests_cash_psp_rights.sql` (liste exacte des rôles qui exécutent les deux fonctions ; liste exacte des rôles ayant INSERT sur `anomaly`) | Mission 13 | Rôle dédié au `psp-poller` ; les deux fonctions et l'INSERT sur `anomaly` retirés à `cashless_app`, remplacés par une fonction de la base ; tests de borne inversés |
+| OP-N87 | Garde « aucune espèce sans session » (`posting_cash_desk_guard`, 0036) : `IF NOT FOUND THEN RETURN NEW` si la lecture de `cash_desk` ne voit rien | Propriétaire de la fonction soumis à la RLS : la garde laisse passer une écriture en espèces sans session | `tests_cash_psp_rights.sql` (le propriétaire de la fonction est superutilisateur ou BYPASSRLS) | Mission 13 | Rôle propriétaire vérifié au déploiement, ou garde qui refuse quand la recherche est impossible ; fichier à faire relire par une personne |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -907,6 +911,43 @@ Relevé par la relecture de WP12 (affaiblit légèrement A33, fenêtre étroite)
   portefeuille), la caution reste `DUE`.
 - **Condition de levée.** Reprise des cautions `DUE` par le travailleur, test qui tue le processus entre COMMIT et
   `afterCommit`.
+
+### OP-N86 — Droits de `cashless_app` plus larges que nécessaire (29 octobre 2026)
+
+Constat 1 de la revue post-fusion de la mission 6 ; consigné sur décision du porteur du 29/10/2026 (ADR-136).
+**Bloque la production : non.**
+
+- **Constat.** (1) `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038, `post-roles.sql`) voient les
+  recharges et notifications de tous les prestataires ; `cashless_app`, donc le processus public, peut les appeler.
+  (2) Le `psp-poller` tourne sous `cashless_app` (`apps/api/src/db/psp-poller-db.module.ts`), sans rôle dédié.
+  (3) `cashless_app` garde un INSERT direct sur `anomaly` (droit antérieur à la mission), utilisé par 5 sites de la
+  mission 6 (`psp-payment-processor.ts`, `event-dispatcher.ts`, `chargeback.service.ts`).
+- **Raison.** Le retrait exige un rôle de base dédié et une fonction d'ouverture d'anomalie : hors du périmètre de la
+  mission 6, reporté à la recette.
+- **Risque.** Une connexion `cashless_app` compromise lit des données de tous les prestataires (identifiants de
+  recharge, notifications) et écrit des anomalies arbitraires.
+- **Mission qui lève.** Mission 13.
+- **Condition de levée.** Rôle dédié au `psp-poller` ; les deux fonctions et l'INSERT sur `anomaly` retirés à
+  `cashless_app` au profit d'une fonction de la base ; tests de borne inversés.
+- **Test qui échoue si la limite s'élargit.** `tests_cash_psp_rights.sql` : liste exacte des rôles `cashless_*` qui
+  exécutent les deux fonctions, liste exacte de ceux qui ont INSERT sur `anomaly`.
+
+### OP-N87 — Garde « aucune espèce sans session » : dépend du propriétaire de la fonction (29 octobre 2026)
+
+Constat 2 (majeur) de la revue post-fusion de la mission 6 ; consigné sur décision du porteur du 29/10/2026
+(ADR-136). **Bloque la production : non, sous réserve du rôle propriétaire.**
+
+- **Constat.** `posting_cash_desk_guard` (0036, `SECURITY DEFINER`) fait `PERFORM 1 FROM cash_desk ...` puis
+  `IF NOT FOUND THEN RETURN NEW`. La RLS de `cash_desk` est forcée : si le propriétaire de la fonction ne la contourne
+  pas (ni superutilisateur ni BYPASSRLS), la recherche ne trouve rien et la garde laisse passer sans bruit.
+- **Raison.** Sûr avec le propriétaire des migrations actuel ; changer la garde modifie une migration fusionnée.
+- **Risque.** Écriture en espèces sans session de caisse si le déploiement change de rôle propriétaire.
+- **Mission qui lève.** Mission 13 (déploiement).
+- **Condition de levée.** Rôle propriétaire vérifié au déploiement, ou garde qui refuse si la recherche est
+  impossible.
+- **Test qui échoue si la limite s'élargit.** `tests_cash_psp_rights.sql` : le propriétaire de
+  `posting_cash_desk_guard()` est `rolsuper` ou `rolbypassrls`.
+
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;

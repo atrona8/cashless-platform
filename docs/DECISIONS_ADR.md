@@ -1966,3 +1966,25 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `contracts/psp.md` écrit `409` ; non corrigé (le test prime sur le contrat).
 - **Références.** OP-N84, OP-N85, ADR-131 à ADR-134 ; `kitty-specs/recharges-caisses-psp-01M5YEBA/`.
 
+## ADR-136 — Mission 6 : droits de `cashless_app` et garde des espèces consignés comme dette (OP-N86, OP-N87)
+
+- **Statut** : Acceptée, 29 octobre 2026 (décision du porteur après la revue post-fusion de la mission 6).
+- **Contexte.** La revue a relevé (1) que `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les
+  recharges et notifications de tous les prestataires et sont exécutables par `cashless_app` (donc par le processus
+  public), que le `psp-poller` tourne sous `cashless_app` sans rôle dédié et que `cashless_app` garde un INSERT direct
+  sur `anomaly` (5 sites de la mission 6) ; (2) que `posting_cash_desk_guard` (0036) ne vaut que si le propriétaire de
+  la fonction contourne la RLS forcée de `cash_desk` (sinon `IF NOT FOUND THEN RETURN NEW` laisse passer sans bruit).
+- **Décision du porteur (29/10/2026).** Consigner les deux comme dette, sans changer le code applicatif ni les
+  migrations.
+- **Risque.** (1) Une connexion `cashless_app` compromise lit les données de tous les prestataires et écrit des
+  anomalies arbitraires. (2) Écriture en espèces sans session si le propriétaire de la fonction est soumis à la RLS.
+- **Mission de levée.** Mission 13.
+- **Condition de levée.** (1) Rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` à
+  `cashless_app` au profit d'une fonction de la base. (2) Rôle propriétaire vérifié au déploiement, ou garde qui refuse
+  si la recherche est impossible.
+- **Tests de borne** (`tests_cash_psp_rights.sql`, écrit à la main) : liste exacte des rôles `cashless_*` qui exécutent
+  les deux fonctions ; liste exacte de ceux qui ont INSERT sur `anomaly` ; le propriétaire de
+  `posting_cash_desk_guard()` est `rolsuper` ou `rolbypassrls`. Le rôle du module `psp-poller` n'a pas de test
+  propre (aucun test existant, non obligatoire) : le test de la liste EXECUTE borne l'exposition.
+- **Références.** OP-N86, OP-N87 ; constats 1 et 2 de `docs/passation-6/rapports/mission-review-6.md` ; ADR-131,
+  ADR-135. Fichiers à faire relire par une personne : `0036`, `0038`, `post-roles.sql`.
