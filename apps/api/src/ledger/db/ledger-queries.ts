@@ -228,10 +228,14 @@ export async function takeDeposit(
   client: Queryable,
   mediaId: string,
   moneyAccountId: string | null,
+  sessionId: string | null = null,
 ): Promise<string> {
+  // Caution en espèces : variante de la session (compte de caisse tiré de la session, A8).
   const { rows } = await client.query<{ outcome: string }>(
-    'SELECT take_deposit($1, $2) AS outcome',
-    [mediaId, moneyAccountId],
+    sessionId === null
+      ? 'SELECT take_deposit($1, $2) AS outcome'
+      : 'SELECT take_deposit_for_session($1, $2) AS outcome',
+    [mediaId, sessionId ?? moneyAccountId],
   );
   return rows[0]!.outcome;
 }
@@ -240,8 +244,14 @@ export async function refundDeposit(
   client: Queryable,
   mediaId: string,
   moneyAccountId: string | null,
+  sessionId: string | null = null,
 ): Promise<void> {
-  await client.query('SELECT refund_deposit($1, $2)', [mediaId, moneyAccountId]);
+  await client.query(
+    sessionId === null
+      ? 'SELECT refund_deposit($1, $2)'
+      : 'SELECT refund_deposit_for_session($1, $2)',
+    [mediaId, sessionId ?? moneyAccountId],
+  );
 }
 
 export async function forfeitDeposit(client: Queryable, mediaId: string): Promise<void> {

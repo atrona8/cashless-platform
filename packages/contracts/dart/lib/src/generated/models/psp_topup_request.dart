@@ -33,6 +33,10 @@ class PspTopupRequest {
   final int? tapId;
   final Amount amount;
   final Currency currency;
+
+  /// Moyen de paiement (valeur = méthode, `method` du modèle de données) ; le fournisseur est résolu par.
+  /// la configuration PSP. Le nom du champ est conservé pour ne pas rompre les applications.
+  ///
   final PspProvider provider;
   @JsonKey(name: 'payer_msisdn')
   final String? payerMsisdn;

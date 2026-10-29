@@ -13,6 +13,7 @@ import { NestFactory } from '@nestjs/core';
 import { API_PREFIX, APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { CUSTOMER_IDENTITY } from '../customer-identity/customer-identity.port';
 import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
+import { PSP_ADAPTERS, PSP_SECRET_STORE } from '../psp/psp.tokens';
 import { KMS_PROVIDER } from '../kms/kms.module';
 import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
 import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../security/port-tokens';
@@ -36,6 +37,8 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'l’autorité des terminaux': optional(app, DEVICE_CA),
     'le signataire des jetons d’appareil': optional(app, TOKEN_SIGNER),
     'le vérificateur d’attestation': optional(app, ATTESTATION_VERIFIER),
+    'les adaptateurs PSP': optional(app, PSP_ADAPTERS),
+    'le coffre des secrets PSP': optional(app, PSP_SECRET_STORE),
   });
   return config;
 }

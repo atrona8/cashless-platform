@@ -5,7 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'currency.dart';
-import 'status.dart';
+import 'status4.dart';
 import 'activation_modes.dart';
 
 part 'event.g.dart';
@@ -31,7 +31,7 @@ class Event {
   @JsonKey(name: 'minor_units')
   final int minorUnits;
   final String timezone;
-  final Status status;
+  final Status4 status;
   @JsonKey(name: 'activation_modes')
   final List<ActivationModes> activationModes;
 

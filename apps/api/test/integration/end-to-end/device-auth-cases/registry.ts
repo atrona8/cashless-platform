@@ -40,7 +40,7 @@ export interface RouteCase {
   /** Route de guichet : jeton de la personne dans `X-Staff-Authorization` (`staffBearer`). */
   counter?: boolean;
   /** Route « terminal ou personne / festivalier » (garde exclusive `DeviceOrCallerGuard`). */
-  exclusive?: 'person' | 'customer';
+  exclusive?: 'person' | 'customer' | 'psp';
   path: () => string;
   body?: () => unknown;
   /** Statut attendu avec les trois preuves, quand la route sert l'objet du jeu d'essai. */

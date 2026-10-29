@@ -19,8 +19,8 @@ import {
 } from '../../organization/platform/platform.dto';
 import { parseTap, type TapInput } from '../taps/taps.dto';
 import { TapService } from '../taps/tap.service';
-import { CounterAccess, CounterAuth, counterScope } from './counter-access';
-import { counterRefusal } from './lifecycle.dto';
+import { CounterAccess, CounterAuth, counterScope, requireCashSession } from './counter-access';
+import { counterRefusal, parseCashSessionId } from './lifecycle.dto';
 import { ReleaseService } from './release.service';
 
 const HEX32 = /^[0-9a-f]{64}$/;
@@ -51,9 +51,12 @@ export class ReleaseController {
     const tapId = intField(body, 'tap_id', 0, Number.MAX_SAFE_INTEGER, 'optional') ?? null;
     const tap: TapInput | null =
       body.tap === undefined || body.tap === null ? null : parseTap(body.tap);
+    const cashSessionId = parseCashSessionId(body);
     try {
       return await tx.run(async (client) => {
         const actor = await this.counter.authorize(client, req);
+        // Session indiquée : validée (session ouverte du terminal) et renvoyée ; la libération n'écrit aucune espèce.
+        if (cashSessionId !== null) requireCashSession(actor, language, cashSessionId);
         const presented = tap
           ? await this.taps.registerOrRefuse(client, actor.device, tap)
           : tapId !== null
@@ -61,7 +64,8 @@ export class ReleaseController {
             : null;
         if (presented && presented.mediaId !== id)
           throw counterRefusal('return.wrong_media', language);
-        return this.releases.release(client, actor, id, language);
+        const done = await this.releases.release(client, actor, id, language);
+        return cashSessionId === null ? done : { ...done, cash_session_id: cashSessionId };
       });
     } catch (error) {
       return this.taps.settleRefusal(error, requestDevice(req), tap);

@@ -1,41 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1174" viewBox="0 0 1960 1174">
-<rect width="100%" height="100%" fill="#FFFFFF"/>
-<g transform="translate(20,50)">
-<ellipse cx="275.0" cy="306.66666666666663" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="580.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="853.3333333333333" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<rect x="1010" y="186.57142857142856" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<rect x="1010" y="303.71428571428567" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<rect x="1010" y="420.85714285714283" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<rect x="1010" y="538.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="1010" y="655.1428571428571" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="1010" y="772.2857142857142" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<rect x="1010" y="889.4285714285714" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<polyline points="448,306.66666666666663 1000,228.57142857142856" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,228.57142857142856 982.3610449734416,241.7193282352932 979.4060558477386,220.83260021995733" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,306.66666666666663 1000,345.71428571428567" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,345.71428571428567 979.9970638760668,354.8730272447498 981.4855522328652,333.8308845227902" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,306.66666666666663 1000,462.85714285714283" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,462.85714285714283 978.5508758539133,467.7494913081182 984.2942194959518,447.45167438784085" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,306.66666666666663 1000,697.1428571428571" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,697.1428571428571 978.1469977264372,694.6039023122895 990.3292293031128,677.3823866492623" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,580.0 1000,228.57142857142856" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,228.57142857142856 989.3780734400617,247.8373226891506 978.0492576904591,230.04279258489674" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,580.0 1000,814.2857142857142" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,814.2857142857142 978.106880294223,816.4516573940432 986.348518659918,797.0335533421862" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,853.3333333333333 1000,931.4285714285714" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,931.4285714285714 979.4060558477386,939.1673997800427 982.3610449734416,918.2806717647068" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="1446,462.85714285714283 1510,462.85714285714283" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1510,462.85714285714283 1510,580.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1510,580.0 1450,580.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,580.0 1469.3068163615883,569.4526381507076 1469.3068163615883,590.5473618492924" fill="#64748B" stroke="#64748B" stroke-width="1"/>
-<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Caisse et recharge en espèces</text>
-<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui ouvre, qui compte, qui ferme, qui dépose</text>
-<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
-<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
-<text x="275.0" y="311.6166666666666" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier (terminal)</text>
-<text x="275.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Superviseur</text>
-<text x="275.0" y="858.2833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin back-office</text>
-<text x="1225.0" y="233.52142857142854" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Ouvrir une session</text>
-<text x="1225.0" y="350.66428571428565" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Compter sa caisse</text>
-<text x="1225.0" y="467.8071428571428" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Recharger en espèces</text>
-<text x="1225.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Prendre la caution due</text>
-<text x="1225.0" y="702.0928571428572" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Caution et espèces dues</text>
-<text x="1225.0" y="819.2357142857143" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Fermer la session</text>
-<text x="1225.0" y="936.3785714285715" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Déposer en banque</text>
-<text x="1645.0" y="145.05" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="middle">inclut</text>
-<text x="60" y="1031.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Aucune espèce sans session ouverte (garde en base). Compté à l&#x27;aveugle ; le fermeur n&#x27;a pas compté. Écart au payeur du contrat (CASH_DIFF). Dépôt : une personne saisit, une autre approuve.</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1174" viewBox="0 0 1960 1174">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(20,50)">
+<ellipse cx="275.0" cy="306.66666666666663" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="580.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="853.3333333333333" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="186.57142857142856" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="303.71428571428567" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="420.85714285714283" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="538.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="655.1428571428571" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="772.2857142857142" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="889.4285714285714" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="448,306.66666666666663 1000,228.57142857142856" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,228.57142857142856 982.3610449734416,241.7193282352932 979.4060558477386,220.83260021995733" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,306.66666666666663 1000,345.71428571428567" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,345.71428571428567 979.9970638760668,354.8730272447498 981.4855522328652,333.8308845227902" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,306.66666666666663 1000,462.85714285714283" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,462.85714285714283 978.5508758539133,467.7494913081182 984.2942194959518,447.45167438784085" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,306.66666666666663 1000,697.1428571428571" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,697.1428571428571 978.1469977264372,694.6039023122895 990.3292293031128,677.3823866492623" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,580.0 1000,228.57142857142856" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,228.57142857142856 989.3780734400617,247.8373226891506 978.0492576904591,230.04279258489674" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,580.0 1000,814.2857142857142" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,814.2857142857142 978.106880294223,816.4516573940432 986.348518659918,797.0335533421862" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,853.3333333333333 1000,931.4285714285714" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,931.4285714285714 979.4060558477386,939.1673997800427 982.3610449734416,918.2806717647068" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="1446,462.85714285714283 1510,462.85714285714283" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1510,462.85714285714283 1510,580.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1510,580.0 1450,580.0" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1450,580.0 1469.3068163615883,569.4526381507076 1469.3068163615883,590.5473618492924" fill="#64748B" stroke="#64748B" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Caisse et recharge en espèces</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui ouvre, qui compte, qui ferme, qui dépose</text>
+<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
+<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
+<text x="275.0" y="311.6166666666666" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier (terminal)</text>
+<text x="275.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Superviseur</text>
+<text x="275.0" y="858.2833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin back-office</text>
+<text x="1225.0" y="233.52142857142854" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Ouvrir une session</text>
+<text x="1225.0" y="350.66428571428565" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Compter sa caisse</text>
+<text x="1225.0" y="467.8071428571428" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Recharger en espèces</text>
+<text x="1225.0" y="584.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Prendre la caution due</text>
+<text x="1225.0" y="702.0928571428572" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Caution et espèces dues</text>
+<text x="1225.0" y="819.2357142857143" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Fermer la session</text>
+<text x="1225.0" y="936.3785714285715" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Déposer en banque</text>
+<text x="1645.0" y="145.05" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="middle">inclut</text>
+<text x="60" y="1031.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Aucune espèce sans session ouverte (garde en base). Compté à l&#x27;aveugle ; le fermeur n&#x27;a pas compté. Écart au payeur du contrat (CASH_DIFF). Dépôt : une personne saisit, une autre approuve.</text>
+</g>
 </svg>
