@@ -440,7 +440,8 @@
       "last_transition_at": "2026-10-29T11:39:56.110128+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP14 pret : parcours, isolation, secrets, concurrence, latence, gardes de production, CI, consignation ; RISK-2 tenu, 0039, SC-007, contestation introuvable. Defaut renvoye : interblocages fermeture + recharges espèces par HTTP (it.failing)."
+        "WP14 pret : parcours, isolation, secrets, concurrence, latence, gardes de production, CI, consignation ; RISK-2 tenu, 0039, SC-007, contestation introuvable. Defaut renvoye : interblocages fermeture + recharges espèces par HTTP (it.failing).",
+        "Relecture WP14 : decisions A-E du porteur du 29/10 appliquees (RISK-2 sans exception, 0039, SC-007, DISPUTE 24 h), preuves relancees vertes sur cashless_wp14, 5 mutations tuees sur 6. Reserves : limite residuelle OP-N83 (contestation puis perte), mutation survivante 0039 (deux contestations), interblocage 40P01 (it.failing), OP-N84 a trancher par le porteur."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
