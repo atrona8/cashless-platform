@@ -15,6 +15,7 @@ DepositRequest _$DepositRequestFromJson(Map<String, dynamic> json) =>
       payment: json['payment'] == null
           ? null
           : MoneyMovement.fromJson(json['payment'] as Map<String, dynamic>),
+      cashSessionId: json['cash_session_id'] as String?,
     );
 
 Map<String, dynamic> _$DepositRequestToJson(DepositRequest instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$DepositRequestToJson(DepositRequest instance) =>
       'tap_id': instance.tapId,
       'tap': instance.tap,
       'payment': instance.payment,
+      'cash_session_id': instance.cashSessionId,
     };

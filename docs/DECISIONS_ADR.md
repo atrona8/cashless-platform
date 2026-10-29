@@ -1881,3 +1881,110 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Conséquences.** Aucun droit élargi ; aucune écriture partielle (rien n'est consommé avant le verrou). Report dans
   `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`.
 - **Références.** OP-N80 ; `apps/api/src/vendor-pin/` (`SessionLock`) ; `kitty-specs/terminaux-paiement-en-ligne-01M52QB9/`.
+
+## ADR-131 — Mission 6 : adaptateurs PSP réels et coffre des secrets reportés (OP-N81)
+
+- **Statut** : Acceptée, 27 octobre 2026 (décision du porteur à la spécification de la mission 6,
+  `recharges-caisses-psp-01M5YEBA`). Faux gardés plus longtemps que prévu (règles 1 et 3 de `CLAUDE.md`).
+- **Contexte.** ADR-70 prévoit quatre adaptateurs PSP derrière un même port et des secrets dans AWS Secrets Manager.
+  Aucun accès de test n'existe (action 11) ; écrire des adaptateurs non éprouvés expose la vérification de signature,
+  seule preuve d'un crédit.
+- **Décision.** La mission 6 livre les ports `PspAdapter` et `PspSecretStore`, un faux par fournisseur et un faux
+  coffre, tous refusés au démarrage en production. Adaptateurs réels et coffre AWS : mission dédiée, dès les accès de
+  test obtenus. **Bloque la production : oui pour les recharges en ligne** (non servies) ; espèces non concernées.
+- **Condition de levée.** OP-N81.
+- **Conséquences.** Test de borne : `production-guard.spec.ts`. Reports dans `PROMPTS-A-ENVOYER.md` (mission
+  « Adaptateurs PSP réels ») et `PRD.md`.
+- **Références.** OP-N81, ADR-70, ADR-125 ; `kitty-specs/recharges-caisses-psp-01M5YEBA/research.md` R-08, R-09, R-17.
+
+## ADR-132 — Mission 6 : contrôle des caisses renforcé
+
+- **Statut** : Acceptée, 27 octobre 2026 (plan de la mission 6). Renforcements faits puis consignés (règle 1).
+- **Décision.** (1) Une caisse par terminal `TOPUP_DESK` (`A-CAISSE-<série>`), créée par la base à la première session ;
+  le `cash_account_id` du contrat devient facultatif. (2) La base refuse toute écriture sur un compte `CASH_DESK`
+  sans session ouverte (déclencheur). (3) Comptage à l'aveugle ; fermeture par un `SUPERVISOR` autre que l'auteur du
+  dernier comptage. (4) Ouverture et comptage exigent l'identité du terminal et le jeton de la personne (le contrat
+  ne demandait que le jeton de la personne). (5) Recharge espèces en ligne refusée au-delà du plafond ; découpage
+  vers `L-ESP-A-RENDRE` réservé au hors ligne, avec son anomalie (correction d'un défaut du moteur).
+- **Références.** OP-N49 (levé), ADR-63, ADR-89, ADR-113 ; research R-01 à R-05.
+
+## ADR-133 — Frais PSP par configuration ; compléments de la liste des anomalies et des actions
+
+- **Statut** : Acceptée, 27 octobre 2026 (plan de la mission 6).
+- **Décision.** (1) Les taux PSP sont des `fee_rule` de portée `PSP_CONFIGURATION` (§11.1) ; la convention provisoire
+  d'ADR-82 §3 (`EVENT` + `PSP:<canal>`) est retirée. (2) Nouveau type d'anomalie `PSP_TOPUP_NOT_CREDITED` (paiement
+  réussi non crédité hors plafond : 3-D Secure, grand livre fermé). Un succès notifié après une annulation confirmée
+  est crédité s'il est recevable (R-20 ; décision du porteur du 29/10/2026). (3) Nouvelles actions
+  d'approbation `WALLET_UNBLOCK` (déblocage après contestation) et `CASH_DEPOSIT` (dépôt en banque), à deux.
+  (4) `A-PSP-*` négatif permis, conformément à ADR-77 (contradiction avec SPECIFICATION §5.2 signalée).
+- **Références.** ADR-77, ADR-82 ; research R-11, R-13 à R-15.
+
+## ADR-134 — Mission 6 : le blocage par contestation ne lève jamais un blocage qui a une autre cause (OP-N83)
+
+- **Statut** : Acceptée, 29 octobre 2026. Renforcement fait puis consigné (règle 1). Correction du texte du
+  29/10/2026 (cycle 1) qui attribuait au porteur une limite qu'il n'avait pas validée : le porteur a décidé de la
+  corriger (cycle 2).
+- **Contexte.** `block_wallet_after_chargeback` (0038) posait le marqueur `psp_chargeback.wallet_blocked` sur un
+  portefeuille déjà `BLOCKED` pour une autre cause ; `unblock_wallet` (deux `ORGANIZER_ADMIN`) pouvait alors le
+  remettre `ACTIVE`. Relevé par la relecture de WP13.
+- **Décision.** (1) `0039` : marqueur posé seulement si le portefeuille était `ACTIVE` ou déjà bloqué par une autre
+  contestation non levée (cas « autre cause PUIS contestation »). (2) `0042` : `wallet.other_block`, tenu par le
+  déclencheur `wallet_block_cause_guard` (toute écriture de `BLOCKED` sans l'origine « contestation » le pose, le retour
+  à `ACTIVE` l'efface) ; `unblock_wallet` refuse (CL029) si `other_block` ; la contestation ne marque pas un
+  portefeuille ainsi bloqué. Couvre « contestation PUIS perte » sans que les futurs chemins de blocage changent.
+  Une migration nouvelle à chaque fois : `ops.schema_migrations` vérifie la somme de contrôle de chaque migration.
+- **Risque restant.** Un futur chemin de blocage qui annoncerait l'origine « contestation » (variable locale
+  `app.wallet_block_origin`) ou qui écrirait `ACTIVE` lèverait la cause ; seule `block_wallet_after_chargeback` doit
+  annoncer l'origine. `cashless_app` n'écrit pas `other_block`.
+- **Tests.** `tests_psp_topups.sql` (perte puis contestation ; contestation puis perte ; cause tierce puis deux
+  contestations ; mutation du déclencheur : 4 échecs), `wallet-unblock.spec.ts`, `chargeback.spec.ts`. **À faire relire
+  par une personne** : `block_wallet_after_chargeback`, `unblock_wallet`, `wallet_block_cause_guard` (0038, 0039, 0042).
+- **Références.** OP-N83, ADR-133 ; `docs/passation-6/REPRISE.md`.
+
+## ADR-135 — Mission 6 : compléments consignés à la fin de la mission (WP14)
+
+- **Statut** : Acceptée, 29 octobre 2026 (vérification de la consignation, T073).
+- **Décisions du porteur déjà prises, portées ici.** (1) 27/10/2026 : les comptes `A-PSP-*` sont créés par
+  `open_psp_accounts` (`SECURITY DEFINER`, comptes PSP seulement, jamais exécutable par `cashless_app`) ;
+  `open_event_ledger` est inchangée ; `0037` est à faire relire par une personne. (2) 29/10/2026 : garde d'idempotence
+  (RISK-2) **sans exception** : `initiatePspTopup` et `cancelPspTopup` enchaînent leurs temps courts et l'appel au PSP
+  hors de l'`IdempotentTx` (jamais d'appel réseau sous transaction) et la DERNIÈRE transaction (référence du PSP, ou
+  annulation) est l'`IdempotentTx` de la route ; le contrôleur n'injecte plus `TenantTx`
+  (`test/unit/idempotency-guard.spec.ts`). (3) 29/10/2026 : `LATE_CHARGEBACK` demandée par `ORGANIZER_ADMIN` ou
+  `OPERATOR_ADMIN` (confirmé) ; `WALLET_UNBLOCK` par `ORGANIZER_ADMIN` seul.
+- **Renforcements faits puis consignés.** La vue `CASHIER` d'une session masque `cash_diff_anomaly_id` (l'existence
+  d'une anomalie d'écart révélerait le théorique, comptage à l'aveugle, ADR-132) ; `counted_at` du corps de comptage
+  est validé mais non retenu (l'heure écrite est celle de la base). Une contestation introuvable après 24 h ouvre
+  `PSP_MISMATCH` (clé d'audit `psp_dispute:<configuration>:<contestation>`, comme WP13).
+- **Écart levé en cycle 2 (décision du porteur du 29/10/2026).** OP-N84 : `take_deposit`, `refund_deposit` et
+  `refund_cash_due` ne sont plus accordées à `cashless_app` (`post-roles.sql`) ; le moteur passe par les variantes de
+  session et par `take_deposit_from_balance` / `refund_deposit_from_balance` (0041, sans paramètre de compte) ; le moteur
+  refuse un compte désigné par la commande ; test `[A8-DETTE]` inversé. Interblocage fermeture / recharges espèces
+  (NFR-008) : `0040`, `begin_cash_close` verrouille le terminal (FOR NO KEY UPDATE) avant la session et le solde.
+- **Écart gardé, soumis au porteur.** OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).
+- **Contradiction signalée (§0.3).** `WALLET_BLOCKED` reste `422` (`CL039`, tests exécutables) alors que
+  `contracts/psp.md` écrit `409` ; non corrigé (le test prime sur le contrat).
+- **Références.** OP-N84, OP-N85, ADR-131 à ADR-134 ; `kitty-specs/recharges-caisses-psp-01M5YEBA/`.
+
+## ADR-136 — Mission 6 : droits de `cashless_app` et garde des espèces consignés comme dette (OP-N86, OP-N87)
+
+- **Statut** : Acceptée, 29 octobre 2026 (décision du porteur après la revue post-fusion de la mission 6).
+- **Contexte.** La revue a relevé (1) que `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les
+  recharges et notifications de tous les prestataires et sont exécutables par `cashless_app` (donc par le processus
+  public), que le `psp-poller` tourne sous `cashless_app` sans rôle dédié et que `cashless_app` garde un INSERT direct
+  sur `anomaly` (5 sites de la mission 6) ; (2) que `posting_cash_desk_guard` (0036) ne vaut que si le propriétaire de
+  la fonction contourne la RLS forcée de `cash_desk` (sinon `IF NOT FOUND THEN RETURN NEW` laisse passer sans bruit).
+- **Décision du porteur (29/10/2026).** Consigner les deux comme dette, sans changer le code applicatif ni les
+  migrations.
+- **Risque.** (1) Une connexion `cashless_app` compromise lit les données de tous les prestataires et écrit des
+  anomalies arbitraires. (2) Écriture en espèces sans session si le propriétaire de la fonction est soumis à la RLS.
+- **Mission de levée.** Mission 13.
+- **Condition de levée.** (1) Rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` à
+  `cashless_app` au profit d'une fonction de la base. (2) Rôle propriétaire vérifié au déploiement, ou garde qui refuse
+  si la recherche est impossible.
+- **Tests de borne** (`tests_cash_psp_rights.sql`, écrit à la main) : liste exacte des rôles `cashless_*` qui exécutent
+  les deux fonctions ; liste exacte de ceux qui ont INSERT sur `anomaly` ; le propriétaire de
+  `posting_cash_desk_guard()` est `rolsuper` ou `rolbypassrls`. Le rôle du module `psp-poller` n'a pas de test
+  propre (aucun test existant, non obligatoire) : le test de la liste EXECUTE borne l'exposition.
+- **Références.** OP-N86, OP-N87 ; constats 1 et 2 de `docs/passation-6/rapports/mission-review-6.md` ; ADR-131,
+  ADR-135. Fichiers à faire relire par une personne : `0036`, `0038`, `post-roles.sql`.

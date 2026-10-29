@@ -190,15 +190,41 @@ vendeurs et le catalogue : la mission les ajoute.
 > (décision n° 10, ADR-89, OP-N49) ; servir `cash_session_id` dans `refundCashDue` et `releaseMedia` ; appeler
 > `DepositService.takeDueDeposit` après chaque crédit payé, dans une transaction distincte.
 
-- [ ] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).
-- [ ] /spec-kitty.plan Secrets PSP dans AWS Secrets Manager, rattachés au détenteur des fonds, jamais partagés. Webhook inconnu ou invalide conservé et signalé, jamais ignoré. Clé d'idempotence des webhooks `<psp>:<id>`. Les taux PSP sont des `fee_rule` par configuration. Adaptateurs réels codés derrière l'interface, activés seulement après vérification des accès de test (action 11 de POINTS_OUVERTS).
+> **Spécifiée le 27/10/2026** (slug réel `recharges-caisses-psp-01M5YEBA`, branche `feat/recharges-caisses-psp`).
+> Décisions du porteur du 27/10/2026 (règle 1 de CLAUDE.md) : adaptateurs PSP réels **reportés** à une mission
+> dédiée dès les accès de test obtenus (action 11), faux par fournisseur refusé en production ; adaptateur AWS
+> Secrets Manager reporté avec eux (port + faux coffre refusé en production). Dette nommée au plan (OP + ADR).
+> Hors périmètre : caution payée par mobile money ou carte (restitution impossible sans remboursement PSP en V1).
+
+- [x] /spec-kitty.specify Encaissement de l'argent réel (SPECIFICATION §8.5, §11.1, §11.2, §5.3, §14.2 S14, S20, S26, S26b, ADR-63, ADR-70, ADR-72, ADR-77). Sessions de caisse (`cash_session` : ouverture, comptage, fermeture `CASH_CLOSE` avec écart au payeur du contrat, anomalie `CASH_DIFF`, dépôt `CASH_DEPOSIT`). Recharge en espèces (`TOPUP_CASH`, marge de recharge `wallet_topup_headroom`, découpage vers `L-ESP-A-RENDRE` hors ligne). Prise de caution due après chaque crédit (`take_deposit`, transaction distincte). Configurations PSP par organisateur et par moyen (S26, activation à deux, au plus une par défaut) et choix par événement (S26b, titulaire = détenteur des fonds, sinon `PSP_NOT_CONFIGURED`). Interface commune d'adaptateur PSP (initier, vérifier un webhook, interroger un statut, lire un relevé) ; adaptateurs Wave, Orange Money, PayDunya, Stripe, avec faux PSP tant que les accès de test manquent. Demande de recharge (`POST /topups/psp`), webhook signé stocké brut puis traité de façon idempotente (`TOPUP` et frais PSP au payeur `psp_fee_bearer`), interrogation planifiée puis `EXPIRED`, anomalies `PSP_MISMATCH` et `PSP_TOPUP_OVER_LIMIT`. Carte : 3-D Secure obligatoire, plafond par carte et par jour (`422 CARD_DAILY_LIMIT`), anomalie `CARD_VELOCITY`, contestations (`CHARGEBACK`, portefeuille bloqué, payeur selon `chargeback_bearer`).
+- [x] /spec-kitty.plan Secrets PSP dans AWS Secrets Manager, rattachés au détenteur des fonds, jamais partagés. Webhook inconnu ou invalide conservé et signalé, jamais ignoré. Clé d'idempotence des webhooks `<psp>:<id>`. Les taux PSP sont des `fee_rule` par configuration. Adaptateurs réels codés derrière l'interface, activés seulement après vérification des accès de test (action 11 de POINTS_OUVERTS).
+- [x] /spec-kitty.tasks (27/10/2026 : 14 lots, T001-T074, 13 lanes, `de274f5`)
+- [x] spec-kitty next --agent claude --mission recharges-caisses-psp-01M5YEBA (27-29/10/2026, 14 lots)
+- [x] /spec-kitty.review --mission recharges-caisses-psp-01M5YEBA (14 lots approuvés, relecteurs distincts)
+- [x] /spec-kitty.accept --mission recharges-caisses-psp-01M5YEBA (29/10/2026, `d62258a2`)
+- [x] spec-kitty consolidate --mission recharges-caisses-psp-01M5YEBA (ex-`merge` ; 29/10/2026, squash `a865462c` sur feat)
+
+## Mission 6b — Adaptateurs PSP réels et coffre des secrets
+
+> **Ajoutée le 27/10/2026** (décision du porteur au cadrage de la mission 6 : OP-N81, ADR-131). À lancer dès que les
+> accès de test sont obtenus (action 11 de `docs/POINTS_OUVERTS.md`). Lève aussi OP-N82 (remboursement au payeur).
+
+- [ ] /spec-kitty.specify Adaptateurs PSP réels derrière le port `PspAdapter` de la mission 6 (SPECIFICATION §11.1, §10.3, §13.2, ADR-70, ADR-72, ADR-131) : Wave (API Wave Business), Orange Money, PayDunya et Stripe (initier, vérifier une notification avec le mécanisme propre au PSP, interroger un statut, lire un relevé, rembourser un paiement non crédité, attestation 3-D Secure et empreinte de carte pour la carte). Coffre des secrets AWS Secrets Manager derrière le port `PspSecretStore`, secrets rattachés au détenteur des fonds, rotation à deux secrets. Retrait des faux des processus de production. Remboursement au payeur des paiements non crédités (OP-N82), anomalie clôturée dans la même transaction.
+- [ ] /spec-kitty.plan Chaque adaptateur essayé contre le bac à sable du PSP avec des vecteurs de signature réels ; dépendances (`axios`, `@aws-sdk/client-secrets-manager`) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; région AWS (OP-N11) ; activation d'une configuration impossible en production pour un adaptateur non essayé.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission recharges-caisses-psp
-- [ ] /spec-kitty.review --mission recharges-caisses-psp
-- [ ] /spec-kitty.accept --mission recharges-caisses-psp
-- [ ] spec-kitty merge --mission recharges-caisses-psp
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty merge --mission [slug réel]
+
+---
 
 ## Mission 7 — Hors ligne (snapshots et lots)
+
+> **Hérité de la mission 6 (27/10/2026)** : la base refuse toute écriture sur une caisse inscrite (`cash_desk`) sans
+> session de caisse ouverte (garde sur `posting`, ADR-132). Définir la session d'une recharge espèces hors ligne
+> (`TOPUP_CASH` en `OFFLINE_SYNC`/`EDGE_SYNC`) : session couvrant `occurred_at`, ou session de rattrapage, sans
+> ouvrir d'exemption silencieuse à la garde (constat A17 de la passe contradictoire du plan de la mission 6).
 
 > **Hérité de la mission 4 (bracelets-nfc)** : deux faiblesses du kit, antérieures à la mission 4, consignées sans
 > changement de comportement (relecture du lot 20, ADR-94). **OP-N57** : `cashless_app` choisit la version d'un
@@ -281,6 +307,11 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission passerelle-locale
 
 ## Mission 9 — Remboursements, versements et clôture
+
+> **Hérité de la mission 6 (27/10/2026)** : (1) un paiement réussi chez le PSP mais non crédité n'a aucune écriture
+> (OP-N82) : le contrôle « grand livre = relevé » et le rapprochement doivent exclure les anomalies
+> `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes, ou les représenter (constat A16) ; (2) refuser le passage
+> à `RECONCILING` tant qu'une session de caisse est ouverte (constat A32).
 
 > **Hérité de la mission 4 (bracelets-nfc)** : enchaînement du guichet de retour (`releaseMedia` avec `settle_balance`,
 > `refund_deposit_by`) — **servi par cette mission**, décision du porteur du 15/10/2026 (OP-N51, ADR-91 acceptée) ; le
@@ -409,6 +440,19 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission app-terminal
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
+> par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
+> migration 0041, ADR-135) et OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).
+> **Dettes de sécurité consignées le 29/10/2026 (revue post-fusion, ADR-136)** : OP-N86 (rôle dédié au `psp-poller` ;
+> retrait à `cashless_app` de `psp_poll_candidates`, `psp_events_to_retry` et de l'INSERT sur `anomaly`, au profit d'une
+> fonction de la base) et OP-N87 (rôle propriétaire de `posting_cash_desk_guard` contrôlé au déploiement, ou garde qui
+> refuse si la recherche est impossible) ; tests de borne dans `tests_cash_psp_rights.sql`, à inverser.
+> OP-N88 (porteur, 29/10/2026) : fonction SQL dédiée qui verrouille les comptes d'une écriture dans l'ordre des
+> identifiants avant la lecture des soldes, utilisée par `CHARGEBACK` (aujourd'hui via `wallet_topup_headroom`) et
+> `PURCHASE` (lecture sans verrou), avec un test déterministe pour `PURCHASE`.
+> L'interblocage fermeture / recharges espèces est corrigé (migration 0040, test `cash-concurrency.spec.ts`) :
+> à rejouer sous la charge de la recette.
 
 > **Hérité de la mission 5a, OP-N65 (ADR-108 ; décision du porteur du 19/10/2026)** : au rafraîchissement d'un jeton
 > d'appareil, une représentation du jeton consommé est tolérée 60 s pour le même terminal. Mesurer en recette les

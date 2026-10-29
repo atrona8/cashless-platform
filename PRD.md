@@ -71,7 +71,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   mission 4 ; les routes de terminal et de festivalier y sont servies derrière un port d'identité, l'enrôlement réel
   des terminaux venant en mission 5a et les comptes festivaliers avec leur mission ; le KMS est un port avec un faux,
   l'adaptateur AWS réel venant quand la région et les comptes seront arrêtés (OP-N11) ; la caution payée à part se
-  règle en espèces tant que la mission 6 (PSP) n'est pas livrée. Les routes back-office des lots, des clés, de la
+  règle en espèces ; la mission 6 ne l'ouvre pas au mobile money ni à la carte (sa restitution exigerait un
+  remboursement PSP, absent en V1 ; décision de spécification du 27/10/2026, à confirmer par le porteur). Les routes back-office des lots, des clés, de la
   personnalisation et de la liste noire sont à ajouter au contrat.
 
 ### 2.5 Terminaux et encaissement (§8)
@@ -135,7 +136,10 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
 
 ### 2.8 Argent réel : PSP, caisses, rapprochements, versements (§11)
-- Adaptateurs Wave, Orange Money, PayDunya, Stripe ; configurations PSP par organisateur, choix par événement. (§11.1)
+- Configurations PSP par organisateur, choix par événement ; interface commune d'adaptateur et faux par fournisseur
+  (mission 6). Adaptateurs Wave, Orange Money, PayDunya, Stripe et coffre AWS des secrets : mission « Adaptateurs
+  PSP réels », dès les accès de test obtenus (décision du porteur du 27/10/2026, OP-N81, ADR-131) ; d'ici là, aucune
+  recharge en ligne en production. Remboursement au payeur d'un paiement non crédité : hors plateforme (OP-N82). (§11.1)
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
@@ -237,6 +241,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
    5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
+   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026, décision du porteur ; dès les accès de test, action 11)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
 9. Remboursements, versements et clôture
@@ -261,6 +266,17 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   l'API (OP-N63, ADR-105, bloque la production) ;
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
+- héritages de la mission 6 (27/10/2026) : mission 7, session d'une recharge espèces hors ligne (la base refuse toute
+  écriture de caisse hors session) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
+  et passage à `RECONCILING` refusé tant qu'une session de caisse est ouverte ;
+- héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83, corrigée en cycle 2 par
+  la migration 0042, ADR-134) ; anciennes signatures de caisse retirées à `cashless_app` (OP-N84, levé en cycle 2,
+  ADR-135) ; reprise de la caution due après un arrêt entre COMMIT et `afterCommit` (OP-N85) ; mission 13, recette ;
+- dettes de sécurité de la revue post-fusion de la mission 6 (29/10/2026, ADR-136) : rôle dédié au `psp-poller` et retrait à
+  `cashless_app` de `psp_poll_candidates`, `psp_events_to_retry` et de l'INSERT sur `anomaly` (OP-N86) ; rôle propriétaire
+  de `posting_cash_desk_guard` contrôlé au déploiement ou garde qui refuse (OP-N87) ; mission 13 ;
+- verrouillage ordonné des comptes avant la lecture des soldes par une fonction dédiée, pour `CHARGEBACK` et `PURCHASE`
+  (refus à tort sous concurrence, OP-N88, porteur 29/10/2026) ; mission 13 ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

@@ -32,6 +32,8 @@ function missionRoutes(): Route[] {
   return Object.entries(contract.paths).flatMap(([path, operations]) =>
     (['get', 'post', 'patch'] as const)
       .filter((method) => operations[method] && MISSION_TAGS.includes(operations[method]!.tags[0]!))
+      // Configurations PSP (mission 6, WP10) : leur balayage est dans test/integration/psp-configurations/isolation.
+      .filter((method) => !/PspConfiguration|PspSelection/.test(operations[method]!.operationId))
       .map((method) => ({ method, path, operationId: operations[method]!.operationId })),
   );
 }

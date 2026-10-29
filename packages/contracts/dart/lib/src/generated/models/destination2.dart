@@ -4,7 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'method2.dart';
+import 'method3.dart';
 import 'new_number_otp.dart';
 
 part 'destination2.g.dart';
@@ -21,7 +21,7 @@ class Destination2 {
   factory Destination2.fromJson(Map<String, Object?> json) =>
       _$Destination2FromJson(json);
 
-  final Method2 method;
+  final Method3 method;
   final String? msisdn;
 
   /// Obligatoire si `msisdn` n'est pas le numéro vérifié du titulaire (ADR-76).

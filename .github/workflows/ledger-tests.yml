@@ -8,6 +8,10 @@
 # suites pgTAP (tests/*.sql, lues par test-pgtap.sh), tests HTTPS (certificats générés à
 # l'exécution par apps/api/test/support/tls.ts, aucune clé dans le dépôt) et mesures des
 # terminaux isolées.
+# Mission recharges-caisses-psp (lot WP14, T072) : une étape de plus, la latence des recharges (NFR-006 notifications
+# PSP, NFR-009 recharges espèces), suite seule après la passe parallèle ; les suites pgTAP de la mission
+# (tests_cash_sessions, tests_psp_configurations, tests_psp_topups, tests_cash_psp_rights, tests_execute_grants) sont
+# lues par le motif tests/*.sql de test-pgtap.sh ; `check:generated` garde les .sql générés intacts (C-002).
 name: ledger-tests
 on: [push, pull_request]
 
@@ -154,6 +158,21 @@ jobs:
           npm run reset-db -w @cashless/ledger-sql
           SKIP_LATENCY=1 npm test
 
+      # Concurrence de la mission recharges-caisses-psp (NFR-001, NFR-008, SC-003) : jusqu'à 100 connexions
+      # simultanées par suite ; écartées de la passe parallèle (SKIP_LATENCY=1), lancées seules, en série.
+      - name: Concurrence des caisses, recharges PSP et contestations (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/psp-concurrency end-to-end/cash-concurrency topups/psp-concurrency
+          chargebacks/chargeback-concurrency cash-sessions/close-concurrency
+
+      # Travailleurs psp-poller (interrogation, reprise, purge) : ils voient les recharges de tous les prestataires
+      # (OP-N86) ; suites écartées de la passe parallèle, lancées seules, en série.
+      - name: Travailleurs psp-poller (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/topup-journey end-to-end/topup-secrets webhooks/receive webhooks/retry topups/poller-
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 
@@ -176,3 +195,8 @@ jobs:
       # aucune autre suite ne tourne pendant la mesure.
       - name: Latence du paiement, NFR-001 (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- --runInBand end-to-end/payment-latency
+
+      # NFR-006 (200 notifications PSP authentifiées, p95 <= 500 ms) et NFR-009 (200 recharges espèces, p95 <= 200 ms)
+      # de la mission recharges-caisses-psp (WP14) : en série, serveur seul. Après la passe parallèle, SEULE.
+      - name: Latence des recharges, NFR-006 et NFR-009 (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- --runInBand end-to-end/topup-latency

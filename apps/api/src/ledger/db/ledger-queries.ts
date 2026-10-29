@@ -74,6 +74,20 @@ export async function readSignedBalances(
   return balances;
 }
 
+/**
+ * Verrouille le solde payé du portefeuille jusqu'à la fin de la transaction (le rôle applicatif n'a pas le droit de
+ * verrouiller `account_balance` : on passe par `wallet_topup_headroom`, fonction DEFINER qui prend ce verrou, comme
+ * pour la recharge hors ligne). Le verrou est le même que celui de `post_transaction`, qui y attend donc la dépense.
+ */
+export async function lockWalletPaidBalance(
+  client: Queryable,
+  command: { occurredAt: Date; payload?: unknown },
+): Promise<void> {
+  const walletId = (command.payload as { walletId?: unknown } | undefined)?.walletId;
+  if (typeof walletId !== 'string') return;
+  await readTopupHeadroom(client, walletId, command.occurredAt);
+}
+
 /** Marge sous le plafond du portefeuille (verrouille son solde jusqu'à la fin de la transaction) ; null = sans plafond. */
 export async function readTopupHeadroom(
   client: Queryable,
@@ -224,14 +238,21 @@ export async function readMediaDepositState(
   return row ? { depositStatus: row.deposit_status, assignments: row.assignments } : undefined;
 }
 
+/**
+ * Caution : en espèces, variante de la session de caisse (compte de caisse tiré de la session, A8) ;
+ * sans session, variante `..._from_balance` (aucun compte désigné : caution prélevée sur le solde).
+ * Les fonctions du schéma de référence (`take_deposit`, `refund_deposit`) ne sont plus accordées à l'API.
+ */
 export async function takeDeposit(
   client: Queryable,
   mediaId: string,
-  moneyAccountId: string | null,
+  sessionId: string | null = null,
 ): Promise<string> {
   const { rows } = await client.query<{ outcome: string }>(
-    'SELECT take_deposit($1, $2) AS outcome',
-    [mediaId, moneyAccountId],
+    sessionId === null
+      ? 'SELECT take_deposit_from_balance($1) AS outcome'
+      : 'SELECT take_deposit_for_session($1, $2) AS outcome',
+    sessionId === null ? [mediaId] : [mediaId, sessionId],
   );
   return rows[0]!.outcome;
 }
@@ -239,9 +260,14 @@ export async function takeDeposit(
 export async function refundDeposit(
   client: Queryable,
   mediaId: string,
-  moneyAccountId: string | null,
+  sessionId: string | null = null,
 ): Promise<void> {
-  await client.query('SELECT refund_deposit($1, $2)', [mediaId, moneyAccountId]);
+  await client.query(
+    sessionId === null
+      ? 'SELECT refund_deposit_from_balance($1)'
+      : 'SELECT refund_deposit_for_session($1, $2)',
+    sessionId === null ? [mediaId] : [mediaId, sessionId],
+  );
 }
 
 export async function forfeitDeposit(client: Queryable, mediaId: string): Promise<void> {
@@ -255,11 +281,12 @@ export async function preloadMedia(client: Queryable, mediaId: string): Promise<
   return rows[0]?.id ?? null;
 }
 
+/** Rendu d'espèces dues, toujours sous une session de caisse ouverte (`refund_cash_due_for_session`). */
 export async function refundCashDue(
   client: Queryable,
   args: {
     mediaId: string;
-    cashAccountId: string;
+    sessionId: string;
     key: string;
     actor: string;
     approver?: string;
@@ -267,10 +294,10 @@ export async function refundCashDue(
   },
 ): Promise<string> {
   const { rows } = await client.query<{ id: string }>(
-    'SELECT refund_cash_due($1, $2, $3, $4, $5, $6) AS id',
+    'SELECT refund_cash_due_for_session($1, $2, $3, $4, $5, $6) AS id',
     [
       args.mediaId,
-      args.cashAccountId,
+      args.sessionId,
       args.key,
       args.actor,
       args.approver ?? null,

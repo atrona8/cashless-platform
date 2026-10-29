@@ -4,7 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'method.dart';
+import 'method2.dart';
 
 part 'destination.g.dart';
 
@@ -15,7 +15,7 @@ class Destination {
   factory Destination.fromJson(Map<String, Object?> json) =>
       _$DestinationFromJson(json);
 
-  final Method method;
+  final Method2 method;
   final String? msisdn;
   final String? iban;
 

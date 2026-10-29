@@ -1,0 +1,246 @@
+{
+  "event_count": 274,
+  "last_event_id": "01M63ZEX2XDBS0APE8MG7YWNX9",
+  "materialized_at": "2026-10-29T14:01:43.773849+00:00",
+  "mission_number": "",
+  "mission_slug": "recharges-caisses-psp-01M5YEBA",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 14,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 18,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZDPZ4HSMP1GCHBJPH3WV8",
+      "last_transition_at": "2026-10-29T14:01:04.741041+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP01-contrat-api-types/review-cycle-2.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP01-contrat-api-types/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 31742,
+      "shell_pid_created_at": "1793112740.510273"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZDSWKFFWF1TD57XP4TZTZ",
+      "last_transition_at": "2026-10-29T14:01:07.731682+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP02-base-sessions-caisse/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP02-base-sessions-caisse/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 18673,
+      "shell_pid_created_at": "1793104046.328427"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZDWSWHPQZD3BFVVQ6AG3X",
+      "last_transition_at": "2026-10-29T14:01:10.716325+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP03-base-configurations-psp/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP03-base-configurations-psp/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 18673,
+      "shell_pid_created_at": "1793104046.328427"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 18,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZDZPRPB9EJC6Z8ZCG2V3K",
+      "last_transition_at": "2026-10-29T14:01:13.688632+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP04-base-recharges-psp/review-cycle-2.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP04-base-recharges-psp/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 47363,
+      "shell_pid_created_at": "1793114853.689651"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZE5JH4A5GFCR7CRVDCFSD",
+      "last_transition_at": "2026-10-29T14:01:19.697184+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP05-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP05-droits-base/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 51083,
+      "shell_pid_created_at": "1793115347.691712"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZE2MHB2YVD9SXN1TTKJ5A",
+      "last_transition_at": "2026-10-29T14:01:16.689515+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP06-moteur-especes/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP06-moteur-especes/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 36093,
+      "shell_pid_created_at": "1793113027.775392"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZE8GFM1W7TTFTEECDN5G9",
+      "last_transition_at": "2026-10-29T14:01:22.703931+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP07-ports-psp-faux/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP07-ports-psp-faux/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 55545,
+      "shell_pid_created_at": "1793116465.181627"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEECVDY3DGFCS1WJJ37VT",
+      "last_transition_at": "2026-10-29T14:01:28.732104+00:00",
+      "shell_pid": 62215,
+      "shell_pid_created_at": "1793117419.100807"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEHAA6CWQCN0QZDDXKNTJ",
+      "last_transition_at": "2026-10-29T14:01:31.722717+00:00",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\recharges-caisses-psp-01M5YEBA\\tasks\\WP09-recharge-especes-guichet\\review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP09-recharge-especes-guichet/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 17200,
+      "shell_pid_created_at": "1793194094.9710941"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEBDZFRWPYSGYGTH6E2RQ",
+      "last_transition_at": "2026-10-29T14:01:25.695816+00:00",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\recharges-caisses-psp-01M5YEBA\\tasks\\WP10-configurations-psp-api\\review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP10-configurations-psp-api/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 62211,
+      "shell_pid_created_at": "1793117418.516768"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 16,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEMAEN666M4NCEA03K2ZM",
+      "last_transition_at": "2026-10-29T14:01:34.799101+00:00",
+      "shell_pid": 1268,
+      "shell_pid_created_at": "1793200044.4039457"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEQ7SKGPW5SN7JWC5XNBP",
+      "last_transition_at": "2026-10-29T14:01:37.786033+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/recharges-caisses-psp-01M5YEBA-coord/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP12-notifications-poller/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP12-notifications-poller/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 18712,
+      "shell_pid_created_at": "1793204914.6866264"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZET5KX7AVEAKJ4QM24YWX",
+      "last_transition_at": "2026-10-29T14:01:40.787325+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/recharges-caisses-psp-01M5YEBA-coord/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP13-contestations/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP13-contestations/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 11054,
+      "shell_pid_created_at": "1793268585.970195"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 6,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M63ZEX2XDBS0APE8MG7YWNX9",
+      "last_transition_at": "2026-10-29T14:01:43.773849+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP14:20261029",
+        "reviewer": "relecteur distinct (sous-agent Sonnet)",
+        "verdict": "approved"
+      },
+      "shell_pid": 31098,
+      "shell_pid_created_at": "1793274275.868074"
+    }
+  }
+}

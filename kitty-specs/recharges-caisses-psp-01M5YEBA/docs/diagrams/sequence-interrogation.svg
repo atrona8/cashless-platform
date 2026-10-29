@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2106" height="1704" viewBox="0 0 2106 1704">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1516" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="447.5" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="572.5,236 572.5,1516" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="960.0,236 960.0,1516" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
+<polyline points="1347.5,236 1347.5,1516" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1516" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 1727.0,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,290.72 1707.6931836384117,301.2673618492925 1707.6931836384117,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="820.0" y="253.72000000000003" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,366.72 1339.5,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1339.5,366.72 1320.1931836384117,377.2673618492925 1320.1931836384117,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="662.65" y="329.72" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="416.71999999999997" width="94" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,518.72 193.0,518.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="735.45" y="481.72" width="61.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,594.72 1727.0,594.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,594.72 1707.6931836384117,605.2673618492925 1707.6931836384117,584.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="752.4" y="557.72" width="415.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="64,638.72 1920.0,638.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="70" y="644.72" width="204" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,746.72 193.0,746.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,746.72 212.3068163615882,736.1726381507076 212.3068163615882,757.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="683.45" y="709.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,822.72 1727.0,822.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,822.72 1707.6931836384117,833.2673618492925 1707.6931836384117,812.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="866.8" y="785.72" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="64,866.72 1920.0,866.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="70" y="872.72" width="204" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,974.72 193.0,974.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,974.72 212.3068163615882,964.1726381507076 212.3068163615882,985.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="683.45" y="937.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,1050.72 1727.0,1050.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1050.72 1707.6931836384117,1061.2673618492925 1707.6931836384117,1040.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="872.0" y="1013.72" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="410.71999999999997" width="1856.0" height="673.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="578.5,1160.92 1727.0,1160.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1160.92 1707.6931836384117,1171.4673618492925 1707.6931836384117,1150.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="992.95" y="1123.92" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1236.92 1727.0,1236.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1236.92 1707.6931836384117,1247.4673618492925 1707.6931836384117,1226.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1039.75" y="1199.92" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1585.0" y="1282.92" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1510.0" y="1358.92" width="450" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<polyline points="966.0,1464.9199999999998 1727.0,1464.9199999999998" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1464.9199999999998 1707.6931836384117,1475.4673618492923 1707.6931836384117,1454.3726381507074" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1160.7" y="1427.9199999999998" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Processus psp-poller : trois travailleurs</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Une notification perdue ne laisse pas la recharge en suspens ; rien n’est gardé indéfiniment</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Interrogation et expiration</text>
+<text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Reprise des événements</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Purge</text>
+<text x="1347.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Adaptateur PSP</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="960.0" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharges PENDING &gt; 2 min</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="766.25" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut du paiement</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="74" y="434.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt Payé</text>
+<text x="766.25" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Payé</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="960.0" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Traiter (même clé que la notification)</text>
+<text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="74" y="662.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">else Non payé, échu</text>
+<text x="766.25" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Non payé, échu</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharge EXPIRED</text>
+<text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="74" y="890.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">else Échec confirmé</text>
+<text x="766.25" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Échec confirmé</text>
+<text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="960.0" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharge FAILED</text>
+<text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="1153.75" y="1142.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Événements RETRY et UNMATCHED</text>
+<text x="34.0" y="1163.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="1153.75" y="1218.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Retraiter (même clé)</text>
+<text x="34.0" y="1239.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="1735.0" y="1315.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Plus de 5 essais : alerte</text>
+<text x="34.0" y="1315.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
+<text x="1735.0" y="1391.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">DISPUTE introuvable &gt; 24 h : PSP_MISMATCH</text>
+<text x="34.0" y="1391.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
+<text x="1347.5" y="1446.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Purger les corps bruts &gt; 400 jours</text>
+<text x="34.0" y="1467.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
+<text x="60" y="1561.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Pas d&#x27;appel réseau sous verrou. Le travailleur d&#x27;interrogation et celui de reprise partagent le traitement de la notification (une seule écriture par paiement).</text>
+</g>
+</svg>

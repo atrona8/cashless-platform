@@ -13,7 +13,9 @@ import { ProblemException } from '../../errors/problem';
 import { requestPrincipal, type Role } from '../../identity/principal';
 import type { RolesRequest } from '../../identity/roles.guard';
 import { StaffToken } from '../../identity/staff-token.decorator';
+import type { Language } from '../../http/language';
 import { conflict } from '../../organization/platform/platform.dto';
+import { counterRefusal } from './lifecycle.dto';
 
 /**
  * Route de guichet : jeton d'une personne (garde globale, lu dans `X-Staff-Authorization`, contrat
@@ -36,8 +38,16 @@ export interface CounterActor {
   debitAuthority: 'CENTRAL' | 'EDGE';
   activationModes: string[];
   identityMode: 'ANONYMOUS_ALLOWED' | 'ACCOUNT_REQUIRED';
-  /** Code du compte de caisse de ce terminal (`A-CAISSE-<n° de série>`), s'il existe : créé par les sessions de caisse. */
+  /**
+   * Code du compte de caisse de ce terminal (`A-CAISSE-<n° de série>`), s'il existe : AFFICHAGE seulement.
+   * Aucune écriture ne le transmet : la session ouverte (ci-dessous) décide de la caisse (A8).
+   */
   cashDeskCode: string | null;
+  /**
+   * Session de caisse OUVERTE de ce terminal (`OPEN` seulement : `CLOSING` et `CLOSED` ne le sont pas), lue
+   * par la requête d'autorisation. Aucun solde ni théorique (A27).
+   */
+  cashSession: { id: string; accountId: string; code: string } | null;
   audit: AuditContext;
 }
 
@@ -49,6 +59,9 @@ interface CounterRow {
   currency: string | null;
   debit_authority: 'CENTRAL' | 'EDGE' | null;
   cash_desk_code: string | null;
+  cash_session_id: string | null;
+  cash_session_account_id: string | null;
+  cash_session_code: string | null;
 }
 
 @Injectable()
@@ -65,9 +78,13 @@ export class CounterAccess {
     await client.query('SELECT assert_device_active($1)', [device.deviceId]);
     const { rows } = await client.query<CounterRow>(
       `SELECT e.organizer_id, e.activation_modes, e.identity_mode, l.id AS ledger_id, l.currency, l.debit_authority,
-              (SELECT a.code FROM account a WHERE a.ledger_id = l.id AND a.purpose = 'CASH_DESK' AND a.is_active AND a.code = 'A-CAISSE-' || d.serial) AS cash_desk_code
+              (SELECT a.code FROM account a WHERE a.ledger_id = l.id AND a.purpose = 'CASH_DESK' AND a.is_active AND a.code = 'A-CAISSE-' || d.serial) AS cash_desk_code,
+              s.cash_session_id, s.cash_account_id AS cash_session_account_id, sa.code AS cash_session_code
          FROM device d JOIN event e ON e.id = d.event_id
          LEFT JOIN ledger l ON l.scope_type = 'EVENT' AND l.scope_id = e.id
+         LEFT JOIN cash_session s ON s.device_id = d.id AND s.status = 'OPEN'
+                                 AND s.event_id = d.event_id AND s.ledger_id = l.id
+         LEFT JOIN account sa ON sa.id = s.cash_account_id
         WHERE d.id = $1`,
       [device.deviceId],
     );
@@ -97,6 +114,14 @@ export class CounterAccess {
       activationModes: row.activation_modes,
       identityMode: row.identity_mode,
       cashDeskCode: row.cash_desk_code,
+      cashSession:
+        row.cash_session_id && row.cash_session_account_id && row.cash_session_code
+          ? {
+              id: row.cash_session_id,
+              accountId: row.cash_session_account_id,
+              code: row.cash_session_code,
+            }
+          : null,
       // L'origine d'une action de guichet est le terminal, pas l'adresse du réseau.
       audit: { ...auditContext(req), origin: `device:${device.deviceId}` },
     };
@@ -105,3 +130,22 @@ export class CounterAccess {
 
 /** Portée d'idempotence d'une route de guichet : le terminal (`Idempotency-Key = serial:seq`). */
 export const counterScope = (req: Request): string => `device:${requestDevice(req).deviceId}:`;
+
+/**
+ * Session ouverte du terminal, exigée par toute écriture d'espèces (FR-004, FR-008 ; ADR-89). Aucune session :
+ * `409 CONFLICT_STATE`, AVANT toute écriture. `provided` (`cash_session_id` du corps) doit être cette session.
+ */
+export function requireCashSession(
+  actor: CounterActor,
+  language: Language,
+  provided?: string | null,
+): { id: string; accountId: string; code: string } {
+  const session = actor.cashSession;
+  if (!session)
+    throw conflict(
+      'Aucune caisse ouverte pour ce terminal : une opération en espèces ne peut être faite ici.',
+    );
+  if (provided !== undefined && provided !== null && provided !== session.id)
+    throw counterRefusal('cash.session_mismatch', language, 'CONFLICT_STATE', 409);
+  return session;
+}

@@ -64,6 +64,8 @@ export interface DepositInput {
   tapId: number | null;
   tap: TapInput | null;
   payment: Payment | null;
+  /** Session de caisse indiquée (facultative) : doit être la session ouverte du terminal. */
+  cashSessionId: string | null;
 }
 
 export function parseDeposit(raw: unknown): DepositInput {
@@ -72,6 +74,7 @@ export function parseDeposit(raw: unknown): DepositInput {
     tapId: intField(body, 'tap_id', 0, Number.MAX_SAFE_INTEGER, 'optional') ?? null,
     tap: body.tap === undefined || body.tap === null ? null : parseTap(body.tap),
     payment: payment(body.payment, 'payment'),
+    cashSessionId: parseCashSessionId(body),
   };
 }
 
@@ -190,11 +193,19 @@ const RULES: Record<string, Record<Language, string>> = {
     fr: 'Remplacement refusé : le bracelet à remplacer sert un autre événement que celui de ce terminal. Le remplacer au guichet de son événement.',
     en: 'Replacement refused: the wristband being replaced serves another event than this terminal’s. Replace it at a desk of its event.',
   },
-  'cash_due.no_session': {
-    fr: 'cash_session_id : les sessions de caisse ne sont pas encore servies ; aucune n’est ouverte. Omettre ce champ : la caisse du terminal est créditée.',
-    en: 'cash_session_id: cash sessions are not served yet; none is open. Omit this field: the terminal’s cash desk is credited.',
+  'cash.session_mismatch': {
+    fr: 'cash_session_id : ce n’est pas la session de caisse ouverte de ce terminal.',
+    en: 'cash_session_id: this is not the open cash session of this terminal.',
   },
 };
+
+/** `cash_session_id` facultatif d'un corps : identifiant, sinon `422 VALIDATION_FAILED`. */
+export function parseCashSessionId(body: Record<string, unknown>): string | null {
+  const value = body.cash_session_id;
+  if (value === undefined || value === null) return null;
+  if (!isUuid(value)) throw invalid('cash_session_id : identifiant attendu.');
+  return value;
+}
 
 export type CounterRule = keyof typeof RULES & string;
 

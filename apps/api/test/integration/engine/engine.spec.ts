@@ -189,9 +189,9 @@ describe('moteur d’écritures (intégration)', () => {
     expect(await balance('L-WAL-W1-P')).toBe(before);
   });
 
-  it('caution déléguée (take_deposit, SEPARATE) puis seconde demande sans effet', async () => {
+  it('caution déléguée (take_deposit_for_session, SEPARATE) puis seconde demande sans effet', async () => {
     const deposit = (key: string): LedgerCommand => ({
-      ...command('DEPOSIT_TAKEN', key, { moneyAccount: 'A-CAISSE-C1' }),
+      ...command('DEPOSIT_TAKEN', key, { cashSessionId: fx.cashSessionId }),
       mediaId: fx.mediaId,
     });
     const first = await run(deposit('caution:1'));
@@ -208,6 +208,15 @@ describe('moteur d’écritures (intégration)', () => {
       outcome: 'HELD',
     });
     expect(await transactionCount(fx.ledgerId)).toBe(before);
+  });
+
+  it('caution : un compte désigné par la commande est refusé avant la base (OP-N84 levé)', async () => {
+    expect(
+      await failure({
+        ...command('DEPOSIT_TAKEN', 'caution:compte', { moneyAccount: 'A-CAISSE-C1' }),
+        mediaId: fx.mediaId,
+      }),
+    ).toEqual({ code: 'VALIDATION_FAILED', status: 422 });
   });
 
   it('BACKOFFICE sans second valideur distinct : VALIDATION_FAILED avant la base', async () => {

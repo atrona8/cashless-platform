@@ -90,7 +90,7 @@ export class ActivationService {
         client,
         {
           operatorId: actor.operatorId,
-          cashDeskCode: actor.cashDeskCode,
+          cashSessionId: actor.cashSession?.id ?? null,
           deviceId: actor.device.deviceId,
           audit: actor.audit,
           language,

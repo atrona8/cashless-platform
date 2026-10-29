@@ -1,0 +1,37 @@
+{
+  "accept_commit": "d62258a20ca4c8cc8b3f9a826c3f7cea8ea80d52",
+  "acceptance_history": [
+    {
+      "accept_commit": "d62258a20ca4c8cc8b3f9a826c3f7cea8ea80d52",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-29T12:59:15.753741+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "37e5666798c830e18695948ad9497c22bb20b92a"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-29T12:59:15.753741+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "37e5666798c830e18695948ad9497c22bb20b92a",
+  "baseline_merge_commit": "f0fc257e784209d7b64cdf3ea7b7495493c3ad44",
+  "coordination_branch": "kitty/mission-recharges-caisses-psp-01M5YEBA",
+  "created_at": "2026-10-27T10:26:28.089412+00:00",
+  "flattened": false,
+  "friendly_name": "Recharges, caisses et PSP",
+  "merged_at": "2026-10-29T14:01:53.777545+00:00",
+  "merged_commit": "a865462c63d4b8d2993b4f23b928e276c291143f",
+  "mission_id": "01M5YEBA0MXD3B78FN6Q3RNPZ0",
+  "mission_number": 1,
+  "mission_slug": "recharges-caisses-psp-01M5YEBA",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Le festivalier crédite son portefeuille en espèces au guichet ou en ligne par mobile money ou carte. Cette mission livre les sessions de caisse (ouverture, comptage, fermeture avec écart, dépôt), la recharge en espèces avec la prise de caution due, les configurations PSP par organisateur et leur choix par événement, une interface commune d'adaptateur PSP avec un faux tant que les accès de test manquent, le traitement sûr et idempotent des webhooks, les règles propres à la carte (3-D Secure, plafonds, contestations) et les dettes héritées de la mission 4 sur les comptes de caisse.",
+  "purpose_tldr": "Encaisser l'argent réel : caisses et recharges en espèces, recharges par mobile money et carte via les PSP, avec webhooks sûrs et contestations.",
+  "retain_branches": true,
+  "retain_worktrees": true,
+  "slug": "recharges-caisses-psp-01M5YEBA",
+  "target_branch": "feat/recharges-caisses-psp",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-27T12:27:35.680945+00:00"
+}

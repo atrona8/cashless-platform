@@ -21,7 +21,6 @@ import {
 import {
   intField,
   invalid,
-  isUuid,
   objectBody,
   requireUuid,
 } from '../../organization/platform/platform.dto';
@@ -29,7 +28,7 @@ import { parseTap, type TapInput } from '../taps/taps.dto';
 import { TapService } from '../taps/tap.service';
 import { CashDueService } from './cash-due.service';
 import { CounterAccess, CounterAuth, counterScope } from './counter-access';
-import { counterRefusal } from './lifecycle.dto';
+import { counterRefusal, parseCashSessionId } from './lifecycle.dto';
 
 @Controller('media/:media_id/cash-due-refunds')
 export class CashDueController {
@@ -65,10 +64,7 @@ export class CashDueController {
       body.tap === undefined || body.tap === null ? null : parseTap(body.tap);
     if ((tap === null) === (tapId === null))
       throw invalid('tap ou tap_id : exactement une lecture du bracelet attendue.');
-    if (body.cash_session_id !== undefined && body.cash_session_id !== null) {
-      if (!isUuid(body.cash_session_id)) throw invalid('cash_session_id : identifiant attendu.');
-      throw counterRefusal('cash_due.no_session', language, 'CONFLICT_STATE', 409);
-    }
+    const cashSessionId = parseCashSessionId(body);
     const approve = (req as OnsiteRequest).onsiteApproval
       ? (client: TxClient) => consumeOnsiteApproval(client, req, this.audit)
       : null;
@@ -83,7 +79,7 @@ export class CashDueController {
           txClient,
           actor,
           id,
-          { idempotencyKey: req.header('Idempotency-Key')!, approve },
+          { idempotencyKey: req.header('Idempotency-Key')!, approve, cashSessionId },
           language,
         );
         if (presented.tapId) await this.taps.consume(txClient, presented.tapId, done.transactionId);

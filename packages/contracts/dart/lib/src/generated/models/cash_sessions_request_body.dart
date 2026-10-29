@@ -8,18 +8,14 @@ part 'cash_sessions_request_body.g.dart';
 
 @JsonSerializable()
 class CashSessionsRequestBody {
-  const CashSessionsRequestBody({required this.cashAccountId, this.deviceId});
+  const CashSessionsRequestBody({this.cashAccountId});
 
   factory CashSessionsRequestBody.fromJson(Map<String, Object?> json) =>
       _$CashSessionsRequestBodyFromJson(json);
 
-  /// Compte `CASH_DESK` de la caisse (même grand livre que l'événement).
+  /// Facultatif. S'il est fourni, DOIT être la caisse (`A-CAISSE-<série>`) du terminal.
   @JsonKey(name: 'cash_account_id')
-  final String cashAccountId;
-
-  /// Terminal `TOPUP_DESK` de la caisse, s'il y en a un.
-  @JsonKey(name: 'device_id')
-  final String? deviceId;
+  final String? cashAccountId;
 
   Map<String, Object?> toJson() => _$CashSessionsRequestBodyToJson(this);
 }

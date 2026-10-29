@@ -47,6 +47,7 @@ const _$FeeRuleScopeTypeEnumMap = {
   FeeRuleScopeType.operatorContract: 'OPERATOR_CONTRACT',
   FeeRuleScopeType.event: 'EVENT',
   FeeRuleScopeType.participation: 'PARTICIPATION',
+  FeeRuleScopeType.pspConfiguration: 'PSP_CONFIGURATION',
 };
 
 const _$FeeRuleCreateBasisEnumMap = {

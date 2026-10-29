@@ -5,6 +5,8 @@
 > domaine « Terminaux et encaissement », identité et enrôlement des terminaux (mergée le 21/10/2026).
 > 23/10/2026 : état du projet (5 missions fusionnées, mission 5b en implémentation).
 > 26/10/2026 : mission 5b relue (14 lots approuvés). 27/10/2026 : mission 5b acceptée et mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026 ; revue post-fusion faite (publiable avec réserves).
+> 27/10/2026 : plan de la mission 6 « Recharges, caisses et PSP » finalisé (`recharges-caisses-psp-01M5YEBA`).
+> 29/10/2026 : mission 6 relue (14 lots approuvés), accept/merge à venir.
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -31,7 +33,7 @@ Au 27/10/2026, six missions sont fusionnées dans `main` : 1 (grand livre), 2 (i
 (encaissement en ligne, PR #6 : contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par
 bracelet et par QR, annulation à deux voies, OP-N74 levé, preuves de bout en bout ; latence du paiement par bracelet
 en CI p95 ≈ 29 ms, p99 ≈ 32 ms). Revue post-fusion de la 5b : publiable avec réserves (mineurs de test et de
-consignation). Les missions 6 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
+consignation). La mission 6 (recharges, caisses et PSP) est relue depuis le 29/10/2026 (14 lots approuvés, accept/merge à venir) ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et les missions 7 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
@@ -98,8 +100,14 @@ consignation). Les missions 6 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`).
 ### Argent réel : PSP, caisses, rapprochements, versements
 - Description : Wave, Orange Money, carte (PayDunya, Stripe) ; sessions de caisse ; rapprochements ; versements
   manuels à deux personnes (§11).
-- Statut : 📋 planifié
-- Mission(s) associée(s) : à définir
+- Statut : caisses, recharge en espèces, recharge PSP (demande, notification authentifiée, interrogation, expiration),
+  carte (3-D Secure, plafond par carte et par jour, contestations, contestation tardive et déblocage à deux) et dépôt en
+  banque : 🔎 relue, 14 lots approuvés le 29/10/2026 ; accept/merge à venir (mission 6 ; OP-N49 levé). Limites
+  consignées : PSP et coffre des secrets en faux, refusés en production, donc aucune recharge en ligne en production avant
+  la mission 6b des adaptateurs réels (OP-N81, ADR-131) ; remboursement d'un paiement non crédité hors plateforme
+  (OP-N82) ; reprise de la caution due après un arrêt du processus (OP-N85). Rapprochements et versements : 📋 planifié
+  (mission 9).
+- Mission(s) associée(s) : `recharges-caisses-psp-01M5YEBA` (Recharges, caisses et PSP, 14 lots approuvés, acceptée et mergée le 29/10/2026 sur `feat/recharges-caisses-psp` ; PR vers `main` à venir)
 
 ### Cycle de l'événement et clôture
 - Description : statuts `DRAFT` à `CLOSED`, conditions de clôture vérifiées par la base, droit de place, casse

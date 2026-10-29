@@ -16,6 +16,7 @@ import {
   goLive,
   ledgerIsSound,
   openCashDesk,
+  openCashSession,
   ownerRows as rows,
   seedPersonalizedMedia,
   tapBody,
@@ -28,6 +29,7 @@ describe('restitution d’un bracelet', () => {
   let app: INestApplication;
   let device: TestDevice;
   let cashDesk: string;
+  let session: { sessionId: string; accountId: string; code: string };
   let plain: string; // lot sans caution, usage unique
   let separate: string; // caution payée à part
   let pool: string; // lot réattribuable
@@ -116,12 +118,21 @@ describe('restitution d’un bracelet', () => {
     w = await createMediaWorld();
     await withOwner(async (db) => {
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
-      device = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
+      device = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
       cashDesk = await openCashDesk(db, {
         operatorId: w.ops.a,
         ledgerId: w.ids.ledgerA,
         organizerId: w.ids.organizerA,
         serial: device.serial,
+      });
+      session = await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: device.deviceId,
+        userId: w.cashierA.userId,
       });
       plain = await createBatch(db, {
         operatorId: w.ops.a,
@@ -213,13 +224,22 @@ describe('restitution d’un bracelet', () => {
       );
     });
 
+    // Session citée : doit être celle du terminal (409 sinon, rien n'est rendu) ; renvoyée quand elle l'est.
+    const wrongSession = await post(path, {
+      tap: tapBody(m, next()),
+      cash_session_id: randomUUID(),
+    });
+    expect(wrongSession.status).toBe(409);
+    expect(wrongSession.body.rule).toBe('cash.session_mismatch');
+    expect(await status(m.id)).toBe('ACTIVE');
     const key = randomUUID();
-    const body = { tap: tapBody(m, next()) };
+    const body = { tap: tapBody(m, next()), cash_session_id: session.sessionId };
     const released = await post(path, body, { key });
     expect(released.status).toBe(200);
-    expect(released.body).toEqual({
+    expect(released.body).toMatchObject({
       media_id: m.id,
       media_status: 'RELEASED',
+      cash_session_id: session.sessionId,
       deposit_refund_transaction_id: null,
       promo_expiry_transaction_id: null,
       balance_refund_transaction_id: null,

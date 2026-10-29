@@ -15,6 +15,7 @@ MediaReleaseResponse _$MediaReleaseResponseFromJson(
   promoExpiryTransactionId: json['promo_expiry_transaction_id'] as String?,
   balanceRefundTransactionId: json['balance_refund_transaction_id'] as String?,
   cashToHandBack: (json['cash_to_hand_back'] as num?)?.toInt(),
+  cashSessionId: json['cash_session_id'] as String?,
 );
 
 Map<String, dynamic> _$MediaReleaseResponseToJson(
@@ -26,6 +27,7 @@ Map<String, dynamic> _$MediaReleaseResponseToJson(
   'promo_expiry_transaction_id': instance.promoExpiryTransactionId,
   'balance_refund_transaction_id': instance.balanceRefundTransactionId,
   'cash_to_hand_back': instance.cashToHandBack,
+  'cash_session_id': instance.cashSessionId,
 };
 
 const _$MediaStatusEnumMap = {

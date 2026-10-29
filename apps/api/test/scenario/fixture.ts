@@ -8,6 +8,7 @@
 // utilisent en parallèle ; les montants, les codes et les clés d'idempotence restent ceux du scénario.
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import { withOwner } from '../support/db';
+import { seedOpenCashSession } from '../support/seed-cash-session';
 import { scenario } from '../unit/builders/support/scenario-lines';
 
 export const WALLETS = ['W01', 'W02', 'W03', 'W04', 'W05', 'W06'] as const;
@@ -26,6 +27,8 @@ export interface ScenarioFixture {
   media: { W04: string; W05: string };
   /** Auteur et valideur distincts des écritures BACKOFFICE et des passages de statut. */
   users: { author: string; approver: string };
+  /** Session de caisse ouverte sur `A-CAISSE-C1` : la caution SEPARATE passe par elle (WP14 cycle 2). */
+  cashSessionId: string;
 }
 
 const fresh = <K extends string>(keys: readonly K[]): Record<K, string> =>
@@ -44,6 +47,7 @@ export async function createScenarioFixture(): Promise<ScenarioFixture> {
     participations: fresh(MERCHANTS),
     media: { W04: randomUUID(), W05: randomUUID() },
     users: { author: randomUUID(), approver: randomUUID() },
+    cashSessionId: '',
   };
   const jurisdictionId = randomUUID();
   const op = parties.OPE;
@@ -158,6 +162,12 @@ export async function createScenarioFixture(): Promise<ScenarioFixture> {
         [fx.media[wallet], op, tokenHash, batchId, fx.wallets[wallet]],
       );
     }
+    fx.cashSessionId = await seedOpenCashSession(db, {
+      operatorId: op,
+      ledgerId: fx.ledgerId,
+      eventId: fx.eventId,
+      accountCode: 'A-CAISSE-C1',
+    });
   });
   return fx;
 }

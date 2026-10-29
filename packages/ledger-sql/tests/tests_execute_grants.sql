@@ -91,7 +91,6 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'record_device_heartbeat(uuid,text,timestamptz)',
   'record_enrollment_attempt(bytea,inet,text)',
   'record_enrollment_refusal(bytea,inet,text,text,text,text,text,uuid)', 'recover_media(uuid)',
-  'refund_cash_due(uuid,uuid,text,uuid,uuid,uuid)', 'refund_deposit(uuid,uuid)',
   'register_tap(uuid,bytea,bytea,bigint,timestamptz,uuid,text,uuid,bigint,bytea)',
   'reinstate_media(uuid,uuid,uuid,text)', 'release_media(uuid,text)',
   'replace_media(uuid,uuid)', 'retry_tag_key_job(uuid)',
@@ -99,7 +98,7 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'rotate_device_refresh_token(bytea,bytea,bytea,timestamptz)',
   'set_device_status(uuid,text,text,uuid)', 'set_event_status(uuid,event_status,uuid)',
   'set_media_batch_status(uuid,text,text,uuid)', 'suspend_media(uuid,text,uuid)',
-  'take_deposit(uuid,uuid)', 'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
+  'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
   -- Mission 5b, lot WP07 : vendeurs (0031)
   'assert_vendor_session(uuid,uuid)', 'begin_vendor_pin_check(uuid,uuid)',
   'close_vendor_session(uuid)', 'create_vendor(uuid,text,text,uuid)',
@@ -120,7 +119,33 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'create_customer_qr_token(uuid,uuid,bytea)',
   'create_merchant_payment_request(uuid,uuid,bigint,character,integer,bytea,text,jsonb,integer)',
   'lock_customer_qr_token(bytea,uuid)', 'lock_payment_request_for_pay(uuid,bytea,uuid,uuid)',
-  'payment_request_for_token(uuid,bytea)'
+  'payment_request_for_token(uuid,bytea)',
+  -- Mission 6, lot WP05 : sessions de caisse (0036)
+  'open_cash_session(uuid,uuid)', 'count_cash_session(uuid,bigint,uuid,uuid,text)',
+  'begin_cash_close(uuid,uuid)', 'finish_cash_close(uuid,uuid,uuid)', 'attach_cash_tx(uuid,uuid)',
+  'open_cash_due_anomaly(uuid,uuid,bigint,uuid)', 'take_deposit_for_session(uuid,uuid)',
+  'refund_deposit_for_session(uuid,uuid)',
+  'refund_cash_due_for_session(uuid,uuid,text,uuid,uuid,uuid)',
+  -- cautions sans compte désigné (0041), à la place de take_deposit et refund_deposit
+  'take_deposit_from_balance(uuid)', 'refund_deposit_from_balance(uuid)',
+  -- configurations PSP (0037)
+  'create_psp_configuration(uuid,text,text,uuid,text,boolean,timestamptz,timestamptz,uuid,uuid)',
+  'activate_psp_configuration(uuid,uuid)', 'set_event_psp_selection(uuid,text,uuid,uuid,uuid)',
+  'resolve_psp_configuration(uuid,text)', 'psp_configuration_secret_ref(uuid)',
+  'psp_webhook_context(uuid)',
+  -- recharges (0038)
+  'create_psp_topup(uuid,uuid,text,bigint,text,uuid,uuid,uuid,timestamptz)',
+  'mark_psp_topup_initiated(uuid,text,timestamptz)', 'cancel_psp_topup(uuid)',
+  'expire_psp_topups(uuid[])', 'psp_poll_candidates(integer)',
+  'record_psp_event(uuid,text,text,bytea,jsonb)', 'mark_psp_event(uuid,text,text,uuid)',
+  'psp_events_to_retry(integer)', 'purge_psp_event_bodies(integer)',
+  'read_psp_event_body(uuid,uuid)', 'complete_psp_topup(uuid,uuid,bigint,text)',
+  'complete_card_topup(uuid,uuid,bigint,text,text,text)',
+  'fail_psp_topup(uuid,text,boolean,text,text,text)', 'record_webhook_rejection(uuid,text)',
+  'card_topups_today(uuid,text,timestamptz)', 'wallet_card_count(uuid,text)',
+  -- contestations (0038)
+  'record_chargeback(uuid,text,bigint,boolean)', 'attach_chargeback_tx(uuid,uuid)',
+  'block_wallet_after_chargeback(uuid,uuid)', 'unblock_wallet(uuid,uuid)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -134,7 +159,22 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'vendor_admin_allowed(uuid,uuid,uuid)',
                     'catalog_admin_allowed(uuid,uuid,uuid)',
                     'catalog_lock_pos(uuid,uuid,uuid,boolean)',
-                    'catalog_bump_version(uuid,uuid,uuid)', 'catalog_label(text,text)']) f;
+                    'catalog_bump_version(uuid,uuid,uuid)', 'catalog_label(text,text)',
+                    -- internes de la mission 6 (lot WP05) : helpers, noyaux et fonctions de
+                    -- déclencheur ; open_psp_accounts (0037) n'est appelée que par d'autres
+                    -- fonctions de la base (décision du porteur du 27/10/2026, option b)
+                    'cash_actor_allowed(uuid,uuid,uuid,text[])', 'cash_session_usable(uuid,uuid)',
+                    'cash_session_attach_own(cash_session,text)', 'posting_cash_desk_guard()',
+                    'account_purpose_guard()', 'psp_configuration_immutable()',
+                    'event_psp_selection_guard()', 'psp_operator_admin(uuid,uuid)',
+                    'psp_organizer_admin(uuid,uuid,uuid)', 'psp_account_code(text)',
+                    'open_psp_accounts(uuid)', 'fee_rule_guard()',
+                    'assert_no_legacy_psp_fee_rules()', 'psp_topup_transition_guard()',
+                    'psp_event_guard()', 'psp_session_operator()', 'psp_key_prefix(text)',
+                    'psp_topup_net_credited(uuid)',
+                    'psp_topup_replay_row(uuid,uuid,text,bigint,text)',
+                    'psp_complete_core(uuid,uuid,bigint,text,boolean,text,text)',
+                    'psp_chargeback_cap()', 'psp_chargeback_guard()']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),

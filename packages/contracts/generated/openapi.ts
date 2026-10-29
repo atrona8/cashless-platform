@@ -541,6 +541,9 @@ export type paths = {
          *     (`CASH` → compte `CASH_DESK` de la station). Idempotent : si déjà `HELD`, renvoie l'état courant.
          *     Pendant `EDGE` (passerelle) : seul le mode `SEPARATE` avec `payment.method = CASH` est servi ;
          *     `FROM_BALANCE` → `409 DEBIT_AUTHORITY_EDGE` (ADR-52).
+         *     Caution payée en espèces : la session de caisse `OPEN` du terminal reçoit l'écriture, sinon `409
+         *     CONFLICT_STATE`. `cash_session_id` est facultatif ; fourni, il DOIT être la session ouverte du terminal
+         *     (sinon `409 CONFLICT_STATE`). La réponse le renvoie.
          */
         post: operations["takeDeposit"];
         delete?: never;
@@ -563,6 +566,9 @@ export type paths = {
          * @description Transaction `DEPOSIT_REFUNDED`. Mode `FROM_BALANCE` : recréditée sur le portefeuille. Mode `SEPARATE` :
          *     rendue par `payment.method` (espèces à la station, mobile money). Exige une lecture du bracelet
          *     (`tap_id` ou `tap`) : on ne rend pas une caution sans le bracelet physique.
+         *     Caution rendue en espèces : la session de caisse `OPEN` du terminal reçoit l'écriture, sinon `409
+         *     CONFLICT_STATE`. `cash_session_id` est facultatif ; fourni, il DOIT être la session ouverte du terminal
+         *     (sinon `409 CONFLICT_STATE`). La réponse le renvoie.
          */
         post: operations["refundDeposit"];
         delete?: never;
@@ -588,7 +594,9 @@ export type paths = {
          *     d'abord par `refundCashDue`) et portefeuilles soldés (`409 BALANCE_OUTSTANDING`). L'API contrôle ces
          *     préconditions avant l'appel et renvoie le code précis ; un autre refus `CL020` de la base donne
          *     `409 MEDIA_STATE_INVALID`.
-         *     Cette opération ne rend que des **espèces**, depuis la caisse de la session `cash_session_id`. Elle ne
+         *     Cette opération ne rend que des **espèces**, depuis la caisse de la session `cash_session_id`, qui est
+         *     la session `OPEN` du terminal (sans session ouverte, ou session fournie différente : `409 CONFLICT_STATE`).
+         *     La réponse renvoie `cash_session_id`. Elle ne
          *     rembourse rien par carte ni vers un numéro mobile money saisi au guichet. Le solde payé se rembourse
          *     autrement par les opérations prévues : demande de remboursement (`createMyRefundRequest`, numéro vérifié
          *     du titulaire, ou un autre numéro aux conditions d'ADR-76, puis `approveRefundRequest`). Une caution `SEPARATE` payée par mobile money se rend par `refundDeposit`.
@@ -997,11 +1005,13 @@ export type paths = {
         put?: never;
         /**
          * Recharge en espèces en caisse (TOPUP_CASH)
-         * @description Réservé aux terminaux `TOPUP_DESK` (ou staff `CASHIER`). Débit du compte `CASH_DESK` de la station,
-         *     crédit `WALLET_PAID`. Plafonds réglementaires appliqués par `check_wallet_limits`
-         *     (`WALLET_LIMIT_EXCEEDED`, `MONTHLY_TOPUP_LIMIT_EXCEEDED`). Si une caution `DUE` existe, elle est
-         *     prélevée juste après (transaction `DEPOSIT_TAKEN` distincte, renvoyée dans `deposit`).
-         *     Autorisé même si `debit_authority = EDGE` (crédit).
+         * @description Réservé aux terminaux `TOPUP_DESK` ET à une personne `CASHIER` ou `SUPERVISOR` de l'événement
+         *     (`X-Staff-Authorization`). Débit du compte de caisse `A-CAISSE-<série>` du terminal, crédit
+         *     `WALLET_PAID`. Aucune espèce sans session de caisse `OPEN` du terminal : `409 CONFLICT_STATE`.
+         *     Plafonds réglementaires appliqués par `check_wallet_limits` : au-delà, `422 WALLET_LIMIT_EXCEEDED` ou
+         *     `422 MONTHLY_TOPUP_LIMIT_EXCEEDED` et rien n'est écrit. Si une caution `DUE` existe, elle est prélevée
+         *     ensuite dans une transaction distincte (`DEPOSIT_TAKEN`) ; le champ `deposit` porte l'état de la
+         *     caution lu dans la transaction du crédit. Autorisé même si `debit_authority = EDGE` (crédit).
          */
         post: operations["createCashTopup"];
         delete?: never;
@@ -1022,12 +1032,23 @@ export type paths = {
         /**
          * Initier une recharge PSP (Wave, Orange Money, carte)
          * @description Crée une recharge `PENDING` et une session chez le PSP. AUCUNE écriture comptable ici : la
-         *     transaction `TOPUP` n'est écrite qu'à la réception du webhook de succès (source `PSP_WEBHOOK`,
-         *     clé `wave:<id du paiement>`, `om:<id du paiement>`, ou `psp:<psp_config_id>:<id du paiement>` pour un PSP
-         *     carte, voir `receivePspWebhook`). La recharge enregistre la configuration PSP utilisée (`psp_config_id`).
-         *     Appelable par l'app client (`CUSTOMER`, sur ses
-         *     portefeuilles) ou par un terminal `TOPUP_DESK` (paiement mobile money du festivalier au guichet).
-         *     Plafonds réglementaires pré-vérifiés (refus anticipé), puis revérifiés à l'écriture.
+         *     transaction `TOPUP` n'est écrite qu'à la réception de la notification de succès (source `PSP_WEBHOOK`,
+         *     clé `wave:<psp_config_id>:<id du paiement>`, `om:<psp_config_id>:<id du paiement>` ou
+         *     `psp:<psp_config_id>:<id du paiement>`, qualifiée par la configuration pour tous les moyens, voir
+         *     `receivePspWebhook`). La recharge enregistre la configuration PSP utilisée (`psp_config_id`), résolue
+         *     ainsi : choix de l'événement pour ce moyen, sinon défaut de l'organisateur, soumis au même contrôle
+         *     (configuration `ACTIVE`, titulaire = détenteur des fonds du grand livre), sinon `409 PSP_NOT_CONFIGURED`.
+         *     Deux appelants : (1) le guichet, par un terminal `TOPUP_DESK` ET une personne `CASHIER` ou `SUPERVISOR`
+         *     (`X-Staff-Authorization`), qui désigne le portefeuille par `tap_id` ou `wallet_id` de l'événement ;
+         *     (2) le festivalier (`humanBearer` de client), pour son propre portefeuille.
+         *     Contrôles : grand livre `LIVE` (`409 EVENT_CLOSING` sinon), montant > 0, devise de l'événement,
+         *     portefeuille bloqué ou clos (`422 WALLET_BLOCKED`), au plus 3 recharges `PENDING` par portefeuille et 20
+         *     par terminal (`409 CONFLICT_STATE`), plafond de solde et plafond mensuel estimés (refus anticipé `422`,
+         *     non garanti : le contrôle qui fait foi est celui de la notification). Le plafond par carte et par jour
+         *     n'est PAS contrôlé ici (la carte est inconnue avant la saisie chez le PSP) : il l'est à la notification
+         *     (R-11, R-16). `Idempotency-Key` obligatoire. L'appel au PSP a lieu après validation de la transaction
+         *     locale ; si le PSP échoue, la recharge reste `PENDING` (l'interrogation tranche) et la réponse est
+         *     `503 PSP_UNAVAILABLE` ou `422 PSP_REJECTED`.
          */
         post: operations["initiatePspTopup"];
         delete?: never;
@@ -1043,10 +1064,39 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Suivre une recharge PSP */
+        /**
+         * Suivre une recharge PSP
+         * @description Visible par le demandeur (même terminal et même personne, ou même festivalier) et par un
+         *     `ORGANIZER_ADMIN` de l'événement ; toute autre personne, ou une recharge d'un autre prestataire :
+         *     `404` (réponse neutre).
+         */
         get: operations["getPspTopup"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/topups/psp/{topup_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Annuler une recharge PSP en attente
+         * @description Réservé au demandeur : le festivalier qui l'a initiée, ou le guichet (même terminal et même personne).
+         *     La recharge passe `PENDING` → `CANCELLED` SEULEMENT si le PSP confirme l'annulation ; sinon
+         *     `409 CONFLICT_STATE` (recharge déjà terminée, ou annulation non confirmée). Un succès notifié ensuite par
+         *     le PSP est crédité s'il est recevable (mêmes contrôles qu'un succès ordinaire ; sinon non crédité avec son
+         *     anomalie). Recharge d'une autre personne ou d'un autre prestataire : `404`.
+         */
+        post: operations["cancelPspTopup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1064,12 +1114,15 @@ export type paths = {
         put?: never;
         /**
          * Ouvrir une session de caisse
-         * @description Une caisse d'espèces (`CASH_DESK`, `A-CAISSE-<n>`) fonctionne par session (SPECIFICATION §11.2) :
-         *     ouverture par un agent, opérations, comptage, fermeture. Les opérations en espèces du guichet
-         *     (`createCashTopup`, `releaseMedia`, `refundCashDue`) désignent la session ouverte. Une seule session
-         *     ouverte par compte de caisse (`409 CONFLICT_STATE` sinon). Aucune écriture comptable à l'ouverture.
-         *     La table des sessions est un complément de schéma à créer (SPECIFICATION §14.2). Rôle `CASHIER` ou
-         *     `SUPERVISOR`.
+         * @description Une caisse = un terminal `TOPUP_DESK` (SPECIFICATION §11.2) : son compte d'espèces `A-CAISSE-<série>` est
+         *     créé à la première ouverture. Authentification : les trois preuves du terminal ET une personne `CASHIER`
+         *     ou `SUPERVISOR` de l'événement (`X-Staff-Authorization`) ; un jeton de personne seul est refusé. Une seule
+         *     session `OPEN` par caisse et par terminal (`409 CONFLICT_STATE` sinon). Grand livre `LIVE` ou `CLOSING`
+         *     (`409` sinon). Terminal dont le mode d'application n'est pas `TOPUP_DESK` : `422 DEVICE_MODE_NOT_ALLOWED`.
+         *     Aucune écriture comptable à l'ouverture. Les opérations en espèces du guichet (`createCashTopup`,
+         *     `takeDeposit`, `refundDeposit`, `refundCashDue`, `releaseMedia`) désignent la session ouverte du terminal.
+         *     `Idempotency-Key` = `<série>:<seq>` (numérotation du terminal). Le terminal est celui qui signe : le corps
+         *     ne le désigne pas.
          */
         post: operations["openCashSession"];
         delete?: never;
@@ -1089,9 +1142,11 @@ export type paths = {
         put?: never;
         /**
          * Enregistrer un comptage de la caisse
-         * @description Comptage à l'aveugle : l'agent saisit le montant compté ; le montant théorique ne lui est pas montré.
-         *     Plusieurs comptages sont possibles ; la fermeture utilise le dernier. Aucune écriture comptable.
-         *     Session non `OPEN` : `409 CONFLICT_STATE`.
+         * @description Comptage à l'aveugle : l'agent saisit le montant compté ; le théorique n'est jamais renvoyé (ni
+         *     `expected_amount`, ni `difference`). Authentification : les trois preuves du terminal ET une personne
+         *     `CASHIER` ou `SUPERVISOR` de l'événement (`403 FORBIDDEN` sinon). Plusieurs comptages sont possibles, au
+         *     plus 10 par session (le 11e : `409 CONFLICT_STATE`) ; la fermeture utilise le dernier. Montant négatif :
+         *     `422`. Aucune écriture comptable. Session non `OPEN` : `409 CONFLICT_STATE`.
          */
         post: operations["countCashSession"];
         delete?: never;
@@ -1111,13 +1166,63 @@ export type paths = {
         put?: never;
         /**
          * Fermer une session de caisse (CASH_CLOSE)
-         * @description Exige un comptage (`409 CONFLICT_STATE` sinon). Écrit `CASH_CLOSE` : le compté passe en `A-TRANSIT` ; un
-         *     manque est porté au compte de pertes du payeur désigné par `contract.cash_diff_bearer`, un surplus en
-         *     sens inverse (SPECIFICATION §5.3, §11.2). Un écart non nul ouvre une anomalie `CASH_DIFF`. La session
-         *     passe `CLOSED` ; plus aucune opération en espèces ne peut la désigner. Rôle `SUPERVISOR`.
-         *     Clé d'écriture `bo:<Idempotency-Key>`.
+         * @description Rôle `SUPERVISOR` de l'événement, qui n'a fait AUCUN comptage de la session (`403 FORBIDDEN` sinon).
+         *     Exige un comptage (`409 CONFLICT_STATE` sinon). Une seule transaction : verrou de la session et de la
+         *     caisse, théorique = solde de la caisse, écriture `CASH_CLOSE` (le compté passe en `A-TRANSIT` ; un manque
+         *     est porté au compte de pertes du payeur désigné par `contract.cash_diff_bearer`, un surplus en sens
+         *     inverse, SPECIFICATION §5.3, §11.2), anomalie `CASH_DIFF` si l'écart est non nul, caisse ramenée à 0. La
+         *     session passe `CLOSED` ; plus aucune opération en espèces ne peut la désigner. Clé d'écriture
+         *     `cash-close:<cash_session_id>`. Rejeu de la même `Idempotency-Key` : même réponse. Deux voies : le
+         *     terminal (trois preuves ET `staffBearer`) ou le back-office (`humanBearer`) ; un terminal suspendu ou
+         *     révoqué ne bloque pas la fermeture par le back-office.
          */
         post: operations["closeCashSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cash-sessions/{cash_session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une session de caisse
+         * @description Deux voies : le terminal (trois preuves ET `staffBearer`) ou le back-office (`humanBearer`).
+         *     `CASHIER` : ses propres sessions seulement, SANS théorique tant que la session est `OPEN` (et jamais
+         *     l'écart). `SUPERVISOR` et `ORGANIZER_ADMIN` de l'événement : `expected_amount` et `difference` après
+         *     la fermeture (nuls avant). Session d'un autre prestataire ou d'un autre événement que ceux de la
+         *     personne : `404`.
+         */
+        get: operations["getCashSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/cash-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les sessions de caisse d'un événement
+         * @description Rôles `SUPERVISOR` et `ORGANIZER_ADMIN` de l'événement. Sessions du prestataire de la personne, les plus
+         *     récentes d'abord, filtrables par statut. `expected_amount` et `difference` ne sont rendus qu'après la
+         *     fermeture. Événement d'un autre prestataire : `404`.
+         */
+        get: operations["listCashSessions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1175,6 +1280,212 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/organizers/{organizer_id}/psp-configurations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les configurations PSP d'un organisateur
+         * @description Rôles `OPERATOR_ADMIN` du prestataire et `ORGANIZER_ADMIN` de l'organisateur (lecture). `secret_ref` n'est
+         *     rendu qu'à l'`OPERATOR_ADMIN` ; pour l'autre rôle il est absent ou `null`. Organisateur d'un autre
+         *     prestataire : `404`.
+         */
+        get: operations["listPspConfigurations"];
+        put?: never;
+        /**
+         * Créer une configuration PSP (brouillon)
+         * @description Rôle `OPERATOR_ADMIN`. Crée une configuration au statut `DRAFT` pour un organisateur du prestataire.
+         *     `provider` DOIT être compatible avec `method` (Wave pour `WAVE`, Orange Money pour `ORANGE_MONEY`,
+         *     PayDunya ou Stripe pour `CARD`), sinon `422 VALIDATION_FAILED`. `secret_ref` est une RÉFÉRENCE de la forme
+         *     `psp/<holder_party_id>/<nom>`, jamais un secret : une valeur qui ressemble à un secret est refusée
+         *     `422 VALIDATION_FAILED`. L'activation passe par `requestPspConfigurationChange` (deux personnes). Au plus
+         *     une configuration par défaut `ACTIVE` par organisateur et par moyen.
+         */
+        post: operations["createPspConfiguration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/psp-configurations/{psp_config_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une configuration PSP
+         * @description Rôles `OPERATOR_ADMIN` du prestataire et `ORGANIZER_ADMIN` de l'organisateur (lecture). `secret_ref` n'est
+         *     rendu qu'à l'`OPERATOR_ADMIN` ; pour l'autre rôle il est absent ou `null`. Configuration d'un autre
+         *     prestataire : `404`.
+         */
+        get: operations["getPspConfiguration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/psp-configurations/{psp_config_id}/approval-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander l'activation ou la suspension d'une configuration PSP (deux personnes)
+         * @description Rôle `OPERATOR_ADMIN`. Corps `{status, compliance_ref}` : `ACTIVE` (depuis `DRAFT` ou `SUSPENDED`), avec
+         *     `compliance_ref` OBLIGATOIRE (référence de conformité), ou `SUSPENDED` (depuis `ACTIVE`). Transition
+         *     impossible : `409 CONFLICT_STATE`. Action `PSP_CONFIGURATION`. L'API compose la charge à partir du chemin
+         *     et de la version lue en base (le corps HTTP reste `{status, compliance_ref}`) :
+         *     `{psp_configuration_id, version, status, compliance_ref}`, où `psp_configuration_id` est l'identifiant
+         *     du chemin (`psp_config_id`, en texte) et `version` la version de la configuration ; `compliance_ref`
+         *     est requis pour `ACTIVE` (`status` absent vaut `ACTIVE`), absent pour `SUSPENDED`.
+         *     Opération à deux personnes du back-office (ADR-74) : l'appel crée une demande d'approbation (`PENDING`) et
+         *     répond `202` ; rien n'est exécuté. Une autre personne (≠ auteur) l'approuve par `approveApprovalRequest`,
+         *     qui exécute l'action une seule fois. Ni l'événement ni le prestataire ne viennent du corps : ils sont lus
+         *     en base. Configuration d'un autre prestataire : `404`.
+         */
+        post: operations["requestPspConfigurationChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/psp-selections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire les choix de PSP d'un événement
+         * @description Rôles `ORGANIZER_ADMIN` et `OPERATOR_ADMIN`. Une entrée par moyen choisi pour l'événement ; un moyen sans
+         *     choix utilise la configuration par défaut de l'organisateur. Événement d'un autre prestataire : `404`.
+         */
+        get: operations["getEventPspSelections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/psp-selections/{method}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Choisir la configuration PSP d'un moyen pour l'événement
+         * @description Rôle `ORGANIZER_ADMIN`. Hors `LIVE` : le choix est écrit directement (`200`). Pendant `LIVE` : opération à
+         *     deux personnes (ADR-74), `202` et demande d'approbation (action `EVENT_PSP_SELECTION`) à approuver par une
+         *     autre personne. `422 VALIDATION_FAILED` si la configuration n'est pas du même organisateur, n'est pas
+         *     `ACTIVE`, n'est pas du même moyen, ou si son titulaire n'est pas le détenteur des fonds du grand livre
+         *     de l'événement. Événement d'un autre prestataire : `404`.
+         */
+        put: operations["setEventPspSelection"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/cash-deposits/approval-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander un dépôt en banque des espèces (deux personnes)
+         * @description Rôles `ORGANIZER_ADMIN` ou `OPERATOR_ADMIN` de l'événement du grand livre. Action `CASH_DEPOSIT`, charge
+         *     `{ledger_id, amount, bank_reference}` (`ledger_id` vient du chemin). À l'approbation : écriture
+         *     `CASH_DEPOSIT` (source `BACKOFFICE`, débit `A-BANQUE`, crédit `A-TRANSIT`) ; un montant supérieur au solde
+         *     de `A-TRANSIT` est refusé par la base et la demande passe `FAILED`.
+         *     Opération à deux personnes du back-office (ADR-74) : l'appel crée une demande d'approbation (`PENDING`) et
+         *     répond `202` ; rien n'est exécuté. Une autre personne (≠ auteur) l'approuve par `approveApprovalRequest`,
+         *     qui exécute l'action une seule fois. Ni l'événement ni le prestataire ne viennent du corps : ils sont lus
+         *     en base. Grand livre d'un autre prestataire : `404`.
+         */
+        post: operations["requestCashDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/wallets/{wallet_id}/unblock/approval-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander le déblocage d'un portefeuille (deux personnes)
+         * @description Rôle `ORGANIZER_ADMIN` seul. Action `WALLET_UNBLOCK`, charge `{wallet_id}`. Débloque un portefeuille
+         *     bloqué par une contestation. Portefeuille non bloqué par une contestation : `409 CONFLICT_STATE`.
+         *     Opération à deux personnes du back-office (ADR-74) : l'appel crée une demande d'approbation (`PENDING`) et
+         *     répond `202` ; rien n'est exécuté. Une autre personne (≠ auteur) l'approuve par `approveApprovalRequest`,
+         *     qui exécute l'action une seule fois. Ni l'événement ni le prestataire ne viennent du corps : ils sont lus
+         *     en base. Portefeuille d'un autre prestataire : `404`.
+         */
+        post: operations["requestWalletUnblock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chargebacks/{chargeback_id}/approval-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander l'écriture d'une contestation tardive (deux personnes)
+         * @description Rôles `ORGANIZER_ADMIN` ou `OPERATOR_ADMIN`. Action `LATE_CHARGEBACK`, cible la contestation reçue après
+         *     le verrouillage du grand livre. À l'approbation : écriture `CHARGEBACK` en source `BACKOFFICE`, dans les
+         *     bornes de la réclamation tardive (ADR-77). Contestation non tardive : `409 CONFLICT_STATE`.
+         *     Opération à deux personnes du back-office (ADR-74) : l'appel crée une demande d'approbation (`PENDING`) et
+         *     répond `202` ; rien n'est exécuté. Une autre personne (≠ auteur) l'approuve par `approveApprovalRequest`,
+         *     qui exécute l'action une seule fois. Ni l'événement ni le prestataire ne viennent du corps : ils sont lus
+         *     en base. Contestation d'un autre prestataire : `404`.
+         */
+        post: operations["requestLateChargeback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/webhooks/{provider}/{psp_config_id}": {
         parameters: {
             query?: never;
@@ -1189,35 +1500,43 @@ export type paths = {
          * @description Point d'entrée des notifications Wave (`wave`), Orange Money (`orange-money`) et des PSP carte
          *     configurés pour l'organisateur (ADR-70) : agrégateur local (`paydunya`, …) ou PSP international
          *     (`stripe`, …). Une URL par configuration PSP (`psp_config_id`, S26) : c'est l'URL déclarée chez le PSP.
-         *     La configuration donne le prestataire et le secret AVANT toute lecture du corps.
+         *     La configuration donne le prestataire et les secrets AVANT toute lecture du corps.
          *     Les configurations appartiennent à l'organisateur ; chaque événement en retient une par moyen (S26b,
          *     sinon celle par défaut de l'organisateur), dont le titulaire est le détenteur des fonds de l'événement (ADR-72).
-         *     1. Configuration inconnue, inactive, ou d'un autre `provider` → `404 NOT_FOUND` (réponse neutre), rien
-         *        n'est écrit. Sinon, vérification de signature avec le secret de CETTE configuration, sur le corps
-         *        BRUT (HMAC-SHA256, comparaison à temps constant), et de l'horodatage (tolérance 5 min) ; échec →
-         *        `401 WEBHOOK_SIGNATURE_INVALID`, rien n'est écrit. L'en-tête dépend du PSP (Wave :
-         *        `Wave-Signature: t=…,v1=…` ; autres : `X-Webhook-Signature`) ; un adaptateur par PSP normalise.
+         *     1. Ordre des contrôles (R-10, R-20) : taille du corps ≤ 64 Kio (`413 PAYLOAD_TOO_LARGE`) → configuration
+         *        `ACTIVE` du `provider` de l'URL (inconnue, inactive ou d'un autre `provider` : `404 NOT_FOUND`, réponse
+         *        neutre) → signature HMAC-SHA256 sur le corps BRUT, comparaison à temps constant, deux secrets en
+         *        rotation (`401 WEBHOOK_SIGNATURE_INVALID`) → horodatage, tolérance ±300 s
+         *        (`401 WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`) → conservation puis traitement. L'en-tête dépend du PSP
+         *        (Wave : `Wave-Signature: t=…,v1=…` ; autres : `X-Webhook-Signature`) ; un adaptateur par PSP normalise.
+         *        Un refus (413, 404, 401) n'écrit RIEN au grand livre ni au registre brut des notifications ; il est
+         *        signalé : journal de sécurité `psp.webhook.rejected`, alerte bornée, compteur sans corps.
          *     2. Le tenant est celui de la configuration. La recharge référencée DOIT avoir été initiée avec cette
          *        même configuration ; sinon aucune écriture, anomalie `PSP_MISMATCH`, `200`.
          *     3. Idempotence de la réception : clé `psp:<psp_config_id>:<provider_event_id>` (identifiant de la
          *        notification chez le PSP), mémorisée avec le corps brut. Un rejeu renvoie `200` avec
          *        `duplicate: true`. La transaction `TOPUP` est écrite avec `source = PSP_WEBHOOK` et une clé par
-         *        paiement : `wave:<id du paiement>`, `om:<id du paiement>`, ou `psp:<psp_config_id>:<id du paiement>`
-         *        pour un PSP carte (sans ambiguïté entre deux configurations). Deux notifications d'un même paiement
-         *        n'écrivent donc qu'une fois.
+         *        paiement, qualifiée par la configuration pour tous les moyens : `wave:<psp_config_id>:<id du paiement>`,
+         *        `om:<psp_config_id>:<id du paiement>`, `psp:<psp_config_id>:<id du paiement>`. Deux notifications d'un
+         *        même paiement n'écrivent donc qu'une fois.
          *     4. Succès → `TOPUP` (+ frais PSP selon le payeur configuré). Échec / expiration → recharge `FAILED`
          *        / `EXPIRED`, aucune écriture. Montant ou devise différents de la recharge initiée → aucune
          *        écriture, anomalie `PSP_MISMATCH`, `200` (le PSP ne doit pas réessayer).
-         *     5. Si le plafond réglementaire est dépassé à l'écriture, l'argent est reçu mais non crédité :
-         *        recharge `FAILED` + anomalie `PSP_TOPUP_OVER_LIMIT` + remboursement au payeur (processus back-office).
+         *     5. Cas non créditables (plafond réglementaire dépassé à l'écriture, plafond par carte, 3-D Secure absent,
+         *        empreinte de carte absente, grand livre non `LIVE`, portefeuille bloqué) : l'argent est reçu mais
+         *        non crédité ; recharge `FAILED` (motif dans `failure_reason`) et anomalie `PSP_TOPUP_NOT_CREDITED` ou
+         *        `PSP_TOPUP_OVER_LIMIT`. Le montant est à rendre au payeur HORS plateforme (aucun remboursement n'est
+         *        initié par l'API, OP-N82). Un succès notifié après une annulation confirmée (ou après `FAILED` /
+         *        `EXPIRED`) passe par les mêmes contrôles et est crédité s'il est recevable (R-20, ADR-133).
          *     6. Contestations carte (chargeback, ADR-77) : avant le verrouillage, écriture `CHARGEBACK` (source
          *        `PSP_WEBHOOK`) : compte PSP crédité, portefeuille débité jusqu'à son solde (puis bloqué), le reste au
          *        compte de pertes de la partie désignée par `contract.chargeback_bearer` (organisateur par défaut).
          *        Après le verrouillage : aucune écriture directe ; anomalie `LATE_CHARGEBACK` et demande d'approbation
          *        (action `LATE_CHARGEBACK`, ADR-74), écrite à l'approbation dans le grand livre verrouillé (bornes ADR-77).
          *     7. Recharge carte : 3-D Secure obligatoire ; plafond par carte et par jour
-         *        (`event.card_topup_daily_max_per_card`, `422 CARD_DAILY_LIMIT` à l'initiation) ; anomalie
-         *        `CARD_VELOCITY` au-delà de `event.card_alert_cards_per_wallet` cartes sur un même portefeuille.
+         *        (`event.card_topup_daily_max_per_card`), contrôlé à la NOTIFICATION (la carte est inconnue à
+         *        l'initiation) : recharge `FAILED`, motif `CARD_DAILY_LIMIT`, anomalie `PSP_TOPUP_OVER_LIMIT` ;
+         *        anomalie `CARD_VELOCITY` au-delà de `event.card_alert_cards_per_wallet` cartes sur un même portefeuille.
          *     Réponse rapide (< 2 s) ; le traitement lourd est asynchrone après persistance de l'événement brut.
          */
         post: operations["receivePspWebhook"];
@@ -3327,7 +3646,8 @@ export type paths = {
         /**
          * Créer une règle de frais
          * @description Rôle selon la portée : `OPERATOR_CONTRACT` (prestataire → organisateur) : `OPERATOR_ADMIN` ; `EVENT` et
-         *     `PARTICIPATION` (organisateur → commerçant, frais festivalier) : `ORGANIZER_ADMIN`. `PLATFORM_CONTRACT` est
+         *     `PARTICIPATION` (organisateur → commerçant, frais festivalier) : `ORGANIZER_ADMIN` ; `PSP_CONFIGURATION`
+         *     (frais PSP d'une configuration de paiement) : `OPERATOR_ADMIN`. `PLATFORM_CONTRACT` est
          *     refusée ici (`403`, `createPlatformFeeRule`). `tax_code` doit être une taxe du profil de législation de la
          *     portée. Règle en vigueur de même portée, payeur, bénéficiaire et assiette : `409 CONFLICT_STATE` (la
          *     remplacer). Événement visé `LIVE` : opération à deux personnes (`202`, action `FEE_RULE_CHANGE`). Journalisé
@@ -4053,7 +4373,8 @@ export type components = {
          *     - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
          *     - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
          *     - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
-         *     - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos.
+         *     - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos (à l'initiation d'une recharge PSP et à la
+         *       notification).
          *     - `WALLET_LIMIT_EXCEEDED` (422, `CL008`) : plafond de solde dépassé.
          *     - `MONTHLY_TOPUP_LIMIT_EXCEEDED` (422, `CL009`) : plafond mensuel de recharge dépassé.
          *     - `MEDIA_UNKNOWN` (404) : UID ou bracelet inconnu (chemin en ligne ; dans un lot :
@@ -4105,6 +4426,7 @@ export type components = {
          *     - `SNAPSHOT_VERSION_UNKNOWN` (409) : version de snapshot inconnue pour ce grand livre ; demander un FULL.
          *     - `BATCH_IN_PROGRESS` (409, `CL010`) : un lot est déjà en cours pour ce terminal ; attendre son résultat.
          *     - `BATCH_TOO_LARGE` (413, `CL011`) : lot vide ou de plus de 500 opérations ou 1 Mio.
+         *     - `PAYLOAD_TOO_LARGE` (413) : notification de PSP de plus de 64 Kio ; rien n'est conservé.
          *     - `BATCH_SIGNATURE_INVALID` (400) : signature de l'en-tête du lot invalide ; lot non traité.
          *     - `CHAIN_BROKEN` (409, `CL017`) : chaîne de hachage rompue (terminal ou passerelle) ; alerte, examen manuel.
          *     - `SEQ_OUT_OF_ORDER` (400 pour un lot de terminal non continu ; 409, `CL016`, pour un `edge_seq`
@@ -4118,8 +4440,9 @@ export type components = {
          *     - `QR_TOKEN_INVALID` (422) : jeton de QR client inconnu, expiré ou déjà utilisé.
          *     - `PAYMENT_INTENT_INVALID_STATE` (409, V2) : intention dans un état qui ne permet pas l'action.
          *     - `PAYMENT_INTENT_EXPIRED` (409, V2) : intention expirée.
-         *     - `PSP_UNAVAILABLE` (503) : PSP injoignable ; réessayer avec la même clé.
-         *     - `PSP_NOT_CONFIGURED` (409) : aucune configuration PSP valide pour ce moyen et cet événement (S26b ou défaut de l'organisateur, titulaire = détenteur des fonds, ADR-72).
+         *     - `PSP_UNAVAILABLE` (503) : PSP injoignable ; réessayer avec la même clé. Inclut un fournisseur
+         *       indisponible en production tant que les adaptateurs réels ne sont pas livrés (OP-N81).
+         *     - `PSP_NOT_CONFIGURED` (409) : aucune configuration PSP valide pour ce moyen et cet événement (S26b ou défaut de l'organisateur, titulaire = détenteur des fonds, ADR-72) ; le titulaire est contrôlé à la résolution.
          *     - `PSP_REJECTED` (422) : paiement refusé par le PSP.
          *     - `WEBHOOK_SIGNATURE_INVALID` (401) : signature HMAC du webhook entrant invalide.
          *     - `WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE` (401) : horodatage du webhook hors tolérance (rejeu suspect).
@@ -4127,11 +4450,13 @@ export type components = {
          *     - `REFUND_WINDOW_CLOSED` (422) : fenêtre de remboursement close.
          *     - `REFUND_ALREADY_OPEN` (409) : une demande de remboursement est déjà ouverte pour ce portefeuille.
          *     - `OTP_INVALID` (422) : code à usage unique faux, expiré ou déjà utilisé.
-         *     - `CARD_DAILY_LIMIT` (422) : plafond de recharge par carte et par jour atteint (ADR-77).
+         *     - `CARD_DAILY_LIMIT` (422) : plafond de recharge par carte et par jour atteint (ADR-77). Contrôlé à la
+         *       notification, jamais à l'initiation : c'est le motif d'échec d'une recharge (`failure_reason`).
          *     - `OTP_RATE_LIMITED` (429) : trop de demandes ou d'essais de code à usage unique (défauts : 3 envois par
          *       numéro sur 15 min, 10 demandes par IP et par heure, 5 essais par code puis blocage du numéro 30 min).
          *     - `CONFLICT_STATE` (409) : objet dans un état qui ne permet pas l'action (ex. demande de
-         *       remboursement qui n'est pas `REQUESTED` à l'approbation).
+         *       remboursement qui n'est pas `REQUESTED` à l'approbation ; opération en espèces sans session de caisse
+         *       ouverte pour le terminal, ADR-89).
          *     - `EVENT_TRANSITION_INVALID` (409, `CL018`) : passage de statut d'événement non prévu (ADR-51).
          *     - `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).
          *     - `ENROLLMENT_EVENT_CLOSED` (422, `CL031`) : création d'un code d'enrôlement ou enrôlement refusé pour un
@@ -4146,7 +4471,7 @@ export type components = {
          *       resynchroniser.
          * @enum {string}
          */
-        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE" | "ENROLLMENT_EVENT_CLOSED" | "VENDOR_SESSION_INVALID" | "VENDOR_PIN_INVALID" | "SALE_LINES_INVALID";
+        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "PAYLOAD_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE" | "ENROLLMENT_EVENT_CLOSED" | "VENDOR_SESSION_INVALID" | "VENDOR_PIN_INVALID" | "SALE_LINES_INVALID";
         PageMeta: {
             next_cursor: string | null;
             has_more: boolean;
@@ -4769,6 +5094,11 @@ export type components = {
             mode?: "FROM_BALANCE" | "SEPARATE" | null;
             /** Format: uuid */
             transaction_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Session de caisse qui a reçu l'écriture (espèces) ; null sinon.
+             */
+            cash_session_id?: string | null;
         };
         MediaActivationResponse: {
             /** Format: uuid */
@@ -4782,6 +5112,12 @@ export type components = {
             tap_id?: number;
             tap?: components["schemas"]["TapInput"];
             payment?: components["schemas"]["MoneyMovement"];
+            /**
+             * Format: uuid
+             * @description Facultatif. Espèces : la session `OPEN` du terminal ; fourni, il DOIT être celle-là (sinon
+             *     `409 CONFLICT_STATE`).
+             */
+            cash_session_id?: string;
         };
         /** @description Espèces uniquement (voir `releaseMedia`). */
         MediaReleaseRequest: {
@@ -4790,7 +5126,8 @@ export type components = {
             tap?: components["schemas"]["TapInput"];
             /**
              * Format: uuid
-             * @description Session de caisse ouverte ; obligatoire si des espèces sont rendues.
+             * @description Facultatif. Session de caisse ouverte du terminal, qui reçoit les espèces rendues ; fourni, il DOIT
+             *     être celle-là (sinon `409 CONFLICT_STATE`).
              */
             cash_session_id?: string;
             refund_deposit_by?: components["schemas"]["CashMovement"];
@@ -4817,6 +5154,11 @@ export type components = {
              * @description Montant total en espèces à remettre au festivalier.
              */
             cash_to_hand_back?: number;
+            /**
+             * Format: uuid
+             * @description Session de caisse qui a reçu les écritures en espèces ; null si aucune espèce n'a été rendue.
+             */
+            cash_session_id?: string | null;
         };
         /**
          * @description Ligne d'une vente envoyée par le terminal. Depuis une caisse `CATALOG_POS`, `product_id` est requis (article
@@ -5105,7 +5447,8 @@ export type components = {
             cash_tendered?: number;
             /**
              * Format: uuid
-             * @description Session de caisse ouverte de la station ; une recharge `TOPUP_CASH` est rattachée à une session (SPECIFICATION §5.3).
+             * @description Facultatif. Une recharge `TOPUP_CASH` est rattachée à la session `OPEN` du terminal (SPECIFICATION
+             *     §5.3) ; fourni, il DOIT être celle-là (sinon `409 CONFLICT_STATE`).
              */
             cash_session_id?: string;
         } & (unknown | unknown);
@@ -5122,6 +5465,11 @@ export type components = {
             /** Format: uuid */
             wallet_id: string;
             balance_after: components["schemas"]["Balance"];
+            /**
+             * Format: uuid
+             * @description Session de caisse de la recharge (`TOPUP_CASH`) ; null pour une recharge PSP.
+             */
+            cash_session_id?: string | null;
             deposit?: components["schemas"]["DepositState"] | null;
         };
         /**
@@ -5142,6 +5490,10 @@ export type components = {
             tap_id?: number;
             amount: components["schemas"]["Amount"];
             currency: components["schemas"]["Currency"];
+            /**
+             * @description Moyen de paiement (valeur = méthode, `method` du modèle de données) ; le fournisseur est résolu par
+             *     la configuration PSP. Le nom du champ est conservé pour ne pas rompre les applications.
+             */
             provider: components["schemas"]["PspProvider"];
             payer_msisdn?: string;
             /** Format: uri */
@@ -5168,7 +5520,86 @@ export type components = {
             expires_at?: components["schemas"]["Timestamp"];
             /** Format: uuid */
             transaction_id?: string | null;
+            /**
+             * @description Motif de l'échec, chaîne libre (l'ensemble fermé est arrêté par la livraison de la recharge PSP).
+             *     Valeurs indicatives : `THREE_DS`, `NO_FINGERPRINT`, `CARD_DAILY_LIMIT`, `LEDGER_STATUS`, `CANCELLED`.
+             */
             failure_reason?: string;
+        };
+        /**
+         * @description Fournisseur d'une configuration PSP (`psp_configuration.provider`) : `WAVE` et `ORANGE_MONEY`
+         *     (intégrations directes), `PAYDUNYA` (agrégateur local) et `STRIPE` (PSP international) pour la carte.
+         *     Ne pas confondre avec `PspProvider`, qui porte le MOYEN de paiement (`WAVE`, `ORANGE_MONEY`, `CARD`).
+         * @enum {string}
+         */
+        PspConfigurationProvider: "WAVE" | "ORANGE_MONEY" | "PAYDUNYA" | "STRIPE";
+        PspConfigurationCreate: {
+            method: components["schemas"]["PspProvider"];
+            provider: components["schemas"]["PspConfigurationProvider"];
+            /**
+             * Format: uuid
+             * @description Titulaire des fonds reçus par cette configuration (doit être le détenteur des fonds du grand livre).
+             */
+            holder_party_id: string;
+            /**
+             * @description RÉFÉRENCE du secret dans le coffre (`psp/<uuid>/<nom>`), jamais le secret lui-même : une valeur qui
+             *     ressemble à un secret est refusée `422 VALIDATION_FAILED`.
+             */
+            secret_ref: string;
+            /**
+             * @description Configuration par défaut de l'organisateur pour ce moyen (une seule `ACTIVE`).
+             * @default false
+             */
+            is_default: boolean;
+            valid_from?: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            valid_until?: string | null;
+        };
+        PspConfiguration: {
+            /** Format: uuid */
+            psp_config_id: string;
+            /** Format: uuid */
+            organizer_id: string;
+            method: components["schemas"]["PspProvider"];
+            provider: components["schemas"]["PspConfigurationProvider"];
+            /** Format: uuid */
+            holder_party_id: string;
+            /**
+             * @description Référence du secret (jamais le secret). Rendue au seul `OPERATOR_ADMIN` du prestataire ; `null` ou
+             *     absente pour tout autre rôle (`ORGANIZER_ADMIN` compris).
+             */
+            secret_ref?: string | null;
+            /** @description Référence de conformité fournie à l'activation ; null avant. */
+            compliance_ref?: string | null;
+            /** @enum {string} */
+            status: "DRAFT" | "ACTIVE" | "SUSPENDED";
+            is_default: boolean;
+            valid_from?: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            valid_until?: string | null;
+            /** Format: int64 */
+            version: number;
+            /** Format: uuid */
+            created_by: string;
+            /** Format: uuid */
+            approved_by?: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        /** @description Choix de la configuration PSP d'un moyen pour un événement (`event_psp_selection`). */
+        EventPspSelection: {
+            /** Format: uuid */
+            event_id: string;
+            method: components["schemas"]["PspProvider"];
+            /** Format: uuid */
+            psp_config_id: string;
+            /** Format: uuid */
+            selected_by: string;
+            /**
+             * Format: uuid
+             * @description Seconde personne, pour un choix fait pendant `LIVE` ; null sinon.
+             */
+            approved_by?: string | null;
+            selected_at: components["schemas"]["Timestamp"];
         };
         /** @description Corps natif du PSP (non normalisé) ; seuls `id` et `type` sont exigés ici. */
         PspWebhookEvent: {
@@ -5685,9 +6116,9 @@ export type components = {
             method: "CASH";
         };
         /**
-         * @description Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet). Tant que les
-         *     sessions de caisse ne sont pas livrées, `cash_session_id` est facultatif : le compte crédité est la caisse du
-         *     terminal (`409` si elle n'est pas ouverte).
+         * @description Pas de champ montant. Le serveur le calcule (anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes du bracelet).
+         *     `cash_session_id` est facultatif : le compte crédité est la caisse du terminal, dont la session doit être
+         *     `OPEN` (`409 CONFLICT_STATE` sinon) ; fourni, il DOIT être cette session.
          */
         CashDueRefundRequest: {
             /** Format: int64 */
@@ -5695,7 +6126,7 @@ export type components = {
             tap?: components["schemas"]["TapInput"];
             /**
              * Format: uuid
-             * @description Session de caisse ouverte ; son compte `CASH_DESK` est crédité.
+             * @description Session de caisse ouverte du terminal ; son compte de caisse est crédité.
              */
             cash_session_id?: string;
         } & (unknown | unknown);
@@ -5716,8 +6147,18 @@ export type components = {
              * @description Valideur (`sub` du jeton d'approbation sur place), ou null sous le plafond.
              */
             approved_by?: string | null;
+            /**
+             * Format: uuid
+             * @description Session de caisse dont le compte a été crédité.
+             */
+            cash_session_id?: string;
         };
-        /** @description Session de caisse (objet de l'application ; table à créer, SPECIFICATION §14.2). */
+        /**
+         * @description Session de caisse d'un terminal `TOPUP_DESK` (`cash_session`). Seuls les états `OPEN` et `CLOSED` existent
+         *     dans le contrat. `expected_amount` et `difference` ne sont rendus qu'APRÈS la fermeture, et seulement à
+         *     un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement ; ils sont `null` sinon, y compris dans les
+         *     réponses d'`openCashSession`, de `countCashSession` et pour un `CASHIER`.
+         */
         CashSession: {
             /** Format: uuid */
             cash_session_id: string;
@@ -5739,11 +6180,28 @@ export type components = {
             };
             /** Format: date-time */
             closed_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Personne qui a fermé la session ; null tant qu'elle est `OPEN`.
+             */
+            closed_by?: string | null;
+            /**
+             * Format: int64
+             * @description Montant compté retenu, figé à la fermeture ; null tant que la session est `OPEN`.
+             */
+            counted_amount?: number | null;
+            /**
+             * Format: int64
+             * @description Théorique (solde de la caisse) à la fermeture. Rendu seulement après fermeture et seulement à un
+             *     `SUPERVISOR` ou `ORGANIZER_ADMIN` de l'événement ; null sinon.
+             */
+            expected_amount?: number | null;
             /** Format: uuid */
             cash_close_transaction_id?: string | null;
             /**
              * Format: int64
-             * @description Compté − théorique à la fermeture (négatif = manque) ; renvoyé seulement après fermeture.
+             * @description Compté − théorique à la fermeture (négatif = manque) ; renvoyé seulement après fermeture et seulement
+             *     à un `SUPERVISOR` ou `ORGANIZER_ADMIN` de l'événement ; null sinon.
              */
             difference?: number | null;
             /** Format: uuid */
@@ -5848,7 +6306,7 @@ export type components = {
          *     `WAIVE_SEQ_GAP` → `waiveSeqGap` ; `DEVICE_JOURNAL_IMPORT` → `importDeviceJournal` ; `KYC_REVOCATION` →
          *     `revokeKycVerification` ; `WALLET_REFUND` → `approveRefundRequest` ; `LATE_CLAIM` → `postLateClaim` ;
          *     `FORCE_CENTRAL_AUTHORITY` → `requestDebitAuthorityChange` (`force = true`). `ADJUSTMENT`,
-         *     `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT`, `PSP_CONFIGURATION`, `EVENT_PSP_SELECTION` : opérations
+         *     `ANOMALY_RESOLUTION`, `REINSTATE_MEDIA`, `PAYOUT` : opérations
          *     du back-office à ajouter au contrat (SPECIFICATION §10.4), qui suivent le même flux.
          *     Configuration (deux personnes du même rôle) : `EVENT_GO_LIVE` → `transitionEventStatus` (vers `LIVE`) ;
          *     `EVENT_SETTINGS_CHANGE` et `EVENT_OPERATOR_SETTINGS_CHANGE` → `updateEvent` (événement `LIVE`, réglages de
@@ -5859,11 +6317,18 @@ export type components = {
          *     `JURISDICTION_LIMITS_CHANGE` → `createJurisdictionProfileVersion` (plafond réglementaire modifié).
          *     Bracelets : `TAG_KEY_CREATE` → `requestTagKey` ; `TAG_DEK_ROTATE` → `requestDekRotation` ; `TAG_KEY_RETIRE` →
          *     `requestTagKeyRetirement` ; `REINSTATE_MEDIA` → `requestMediaReinstatement`.
+         *     Recharges et caisses (deux personnes, auteur et valideur distincts) : `CASH_DEPOSIT` → `requestCashDeposit`
+         *     (charge `{ledger_id, amount, bank_reference}`) ; `WALLET_UNBLOCK` → `requestWalletUnblock` (charge
+         *     `{wallet_id}`) ; `LATE_CHARGEBACK` → `requestLateChargeback` ; `PSP_CONFIGURATION` →
+         *     `requestPspConfigurationChange` (charge composée par l'API : `{psp_configuration_id, version, status: ACTIVE, compliance_ref}`
+         *     pour l'activation, `{psp_configuration_id, version, status: SUSPENDED}` pour la suspension ;
+         *     `psp_configuration_id` est le `psp_config_id` du chemin) ; `EVENT_PSP_SELECTION` → `setEventPspSelection`
+         *     (événement `LIVE`).
          *     Paiements : `SALE_REVERSAL` → `reversePayment` (back-office, deux personnes, source `BACKOFFICE` ; demandée
          *     par un `SUPERVISOR` ou un `ORGANIZER_ADMIN` de l'événement de la vente, approuvée par une seconde personne).
          * @enum {string}
          */
-        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE" | "TAG_KEY_CREATE" | "TAG_DEK_ROTATE" | "TAG_KEY_RETIRE" | "SALE_REVERSAL";
+        ApprovalAction: "LATE_CLAIM" | "ADJUSTMENT" | "ANOMALY_RESOLUTION" | "WAIVE_SEQ_GAP" | "FORCE_CENTRAL_AUTHORITY" | "REINSTATE_MEDIA" | "PAYOUT" | "DEVICE_JOURNAL_IMPORT" | "KYC_REVOCATION" | "PSP_CONFIGURATION" | "EVENT_PSP_SELECTION" | "WALLET_REFUND" | "LATE_CHARGEBACK" | "WALLET_UNBLOCK" | "CASH_DEPOSIT" | "EVENT_GO_LIVE" | "EVENT_SETTINGS_CHANGE" | "EVENT_OPERATOR_SETTINGS_CHANGE" | "PARTICIPATION_CHANGE" | "FEE_RULE_CHANGE" | "CONTRACT_VERSION" | "PLATFORM_CONTRACT_VERSION" | "JURISDICTION_LIMITS_CHANGE" | "TAG_KEY_CREATE" | "TAG_DEK_ROTATE" | "TAG_KEY_RETIRE" | "SALE_REVERSAL";
         /**
          * @description `PENDING` → `APPROVED` | `REJECTED` | `EXPIRED` ; `APPROVED` → `EXECUTED` | `FAILED` (garde de la base).
          *     `APPROVED` est un état de passage : `approveApprovalRequest` exécute l'action dans la foulée.
@@ -6817,10 +7282,11 @@ export type components = {
         };
         /**
          * @description Portée d'une règle de frais (§5.6) : `PLATFORM_CONTRACT` (plateforme → prestataire), `OPERATOR_CONTRACT`
-         *     (prestataire → organisateur), `EVENT` et `PARTICIPATION` (organisateur → commerçant, frais festivalier).
+         *     (prestataire → organisateur), `EVENT` et `PARTICIPATION` (organisateur → commerçant, frais festivalier),
+         *     `PSP_CONFIGURATION` (frais PSP propres à une configuration de paiement, `scope_id` = `psp_config_id`).
          * @enum {string}
          */
-        FeeRuleScopeType: "PLATFORM_CONTRACT" | "OPERATOR_CONTRACT" | "EVENT" | "PARTICIPATION";
+        FeeRuleScopeType: "PLATFORM_CONTRACT" | "OPERATOR_CONTRACT" | "EVENT" | "PARTICIPATION" | "PSP_CONFIGURATION";
         /**
          * @description Règle de frais (`fee_rule`, §5.6). Jamais modifiée : elle se ferme (`valid_to`) et une nouvelle version la
          *     remplace. Montants en unités mineures.
@@ -7360,7 +7826,10 @@ export type components = {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description Lot trop volumineux (`BATCH_TOO_LARGE`) ; le découper. */
+        /**
+         * @description Lot trop volumineux (`BATCH_TOO_LARGE`) ; le découper. Notification de PSP de plus de 64 Kio
+         *     (`PAYLOAD_TOO_LARGE`) : rien n'est conservé.
+         */
         PayloadTooLarge: {
             headers: {
                 "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -9535,7 +10004,8 @@ export interface operations {
                      *       "resolved_anomaly_ids": [
                      *         "e2f3a4b5-c6d7-4e8f-9a0b-1c2d3e4f5a6b"
                      *       ],
-                     *       "approved_by": null
+                     *       "approved_by": null,
+                     *       "cash_session_id": "0d4e5f6a-7b8c-4d9e-8f0a-1b2c3d4e5f6a"
                      *     }
                      */
                     "application/json": components["schemas"]["CashDueRefundResult"];
@@ -10374,7 +10844,8 @@ export interface operations {
                  *       "currency": "XOF",
                  *       "occurred_at": "2026-12-11T18:02:00Z",
                  *       "tap_id": 918200,
-                 *       "cash_tendered": 10000
+                 *       "cash_tendered": 10000,
+                 *       "cash_session_id": "0d4e5f6a-7b8c-4d9e-8f0a-1b2c3d4e5f6a"
                  *     }
                  */
                 "application/json": components["schemas"]["CashTopupRequest"];
@@ -10398,6 +10869,7 @@ export interface operations {
                      *       "amount": 10000,
                      *       "currency": "XOF",
                      *       "wallet_id": "b2c3d4e5-f6a7-4890-9bcd-ef0123456789",
+                     *       "cash_session_id": "0d4e5f6a-7b8c-4d9e-8f0a-1b2c3d4e5f6a",
                      *       "balance_after": {
                      *         "spendable": 10000,
                      *         "paid": 10000,
@@ -10497,8 +10969,56 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            422: components["responses"]["Unprocessable"];
+            /**
+             * @description `EVENT_CLOSING` (grand livre non `LIVE`), `PSP_NOT_CONFIGURED` (aucune configuration valide pour ce
+             *     moyen et cet événement), `CONFLICT_STATE` (trop de recharges `PENDING` pour ce portefeuille ou ce
+             *     terminal), `IDEMPOTENCY_KEY_REUSED`.
+             */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/PSP_NOT_CONFIGURED",
+                     *       "title": "Aucune configuration de paiement valide",
+                     *       "status": 409,
+                     *       "code": "PSP_NOT_CONFIGURED",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b",
+                     *       "retryable": false
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /**
+             * @description `WALLET_BLOCKED` (portefeuille bloqué ou clos), `PSP_REJECTED` (paiement refusé par le PSP),
+             *     `VALIDATION_FAILED`, plafond de solde ou mensuel estimé dépassé (`WALLET_LIMIT_EXCEEDED`,
+             *     `MONTHLY_TOPUP_LIMIT_EXCEEDED`). Jamais `CARD_DAILY_LIMIT` (contrôlé à la notification).
+             */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://docs.cashless.test/problems/WALLET_BLOCKED",
+                     *       "title": "Portefeuille bloqué",
+                     *       "status": 422,
+                     *       "code": "WALLET_BLOCKED",
+                     *       "request_id": "0f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b",
+                     *       "retryable": false
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             503: components["responses"]["ServiceUnavailable"];
         };
     };
@@ -10558,7 +11078,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
-    openCashSession: {
+    cancelPspTopup: {
         parameters: {
             query?: never;
             header: {
@@ -10579,6 +11099,101 @@ export interface operations {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
                 /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                topup_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recharge annulée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "topup_id": "0a1b2c3d-4e5f-4a6b-8c7d-8e9f0a1b2c3d",
+                     *       "status": "CANCELLED",
+                     *       "provider": "WAVE",
+                     *       "provider_reference": "WV-88121",
+                     *       "amount": 20000,
+                     *       "currency": "XOF",
+                     *       "wallet_id": "a1b2c3d4-e5f6-4789-8abc-def012345678",
+                     *       "checkout_url": null,
+                     *       "expires_at": "2026-12-01T10:27:00Z",
+                     *       "transaction_id": null,
+                     *       "failure_reason": "CANCELLED"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PspTopup"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    openCashSession: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
+                /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
                  */
@@ -10591,21 +11206,15 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "cash_account_id": "3b4c5d6e-7f80-4a91-8b2c-3d4e5f607182",
-                 *       "device_id": "3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f"
+                 *       "cash_account_id": "3b4c5d6e-7f80-4a91-8b2c-3d4e5f607182"
                  *     }
                  */
                 "application/json": {
                     /**
                      * Format: uuid
-                     * @description Compte `CASH_DESK` de la caisse (même grand livre que l'événement).
+                     * @description Facultatif. S'il est fourni, DOIT être la caisse (`A-CAISSE-<série>`) du terminal.
                      */
-                    cash_account_id: string;
-                    /**
-                     * Format: uuid
-                     * @description Terminal `TOPUP_DESK` de la caisse, s'il y en a un.
-                     */
-                    device_id?: string;
+                    cash_account_id?: string;
                 };
             };
         };
@@ -10628,6 +11237,9 @@ export interface operations {
                      *       "opened_at": "2026-12-11T16:00:00Z",
                      *       "last_count": null,
                      *       "closed_at": null,
+                     *       "closed_by": null,
+                     *       "counted_amount": null,
+                     *       "expected_amount": null,
                      *       "cash_close_transaction_id": null,
                      *       "difference": null
                      *     }
@@ -10639,6 +11251,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     countCashSession: {
@@ -10659,8 +11272,28 @@ export interface operations {
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-                /** @description Identifiant de corrélation fourni par le client. */
-                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -10702,8 +11335,10 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     closeCashSession: {
@@ -10726,6 +11361,15 @@ export interface operations {
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
                 /**
                  * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
                  *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
@@ -10754,6 +11398,110 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    getCashSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Obligatoire quand l'appelant est un terminal (route ouverte aussi à un autre type d'appelant) ; voir
+                 *     `SignatureInput` et `deviceSignature`. Un terminal y couvre aussi `"x-request-id"`, donc envoie `X-Request-Id`.
+                 */
+                "Signature-Input"?: components["parameters"]["SignatureInputIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `Signature` et `deviceSignature`. */
+                Signature?: components["parameters"]["SignatureIfDevice"];
+                /** @description Obligatoire quand l'appelant est un terminal ; voir `ContentDigest` et `deviceSignature`. */
+                "Content-Digest"?: components["parameters"]["ContentDigestIfDevice"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                cash_session_id: components["parameters"]["CashSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session de caisse. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cash_session_id": "0d4e5f6a-7b8c-4d9e-8f0a-1b2c3d4e5f6a",
+                     *       "cash_account_id": "3b4c5d6e-7f80-4a91-8b2c-3d4e5f607182",
+                     *       "device_id": "3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f",
+                     *       "status": "OPEN",
+                     *       "opened_by": "7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d",
+                     *       "opened_at": "2026-12-11T16:00:00Z",
+                     *       "last_count": null,
+                     *       "closed_at": null,
+                     *       "closed_by": null,
+                     *       "counted_amount": null,
+                     *       "expected_amount": null,
+                     *       "cash_close_transaction_id": null,
+                     *       "difference": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CashSession"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listCashSessions: {
+        parameters: {
+            query?: {
+                status?: "OPEN" | "CLOSED";
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement de la personne (sinon `404`). */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de sessions de caisse. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CashSession"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     createKycVerification: {
@@ -10869,6 +11617,496 @@ export interface operations {
             409: components["responses"]["Conflict"];
         };
     };
+    listPspConfigurations: {
+        parameters: {
+            query?: {
+                status?: "DRAFT" | "ACTIVE" | "SUSPENDED";
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de configurations PSP. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PspConfiguration"][];
+                        next_cursor?: string | null;
+                        has_more: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPspConfiguration: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "method": "WAVE",
+                 *       "provider": "WAVE",
+                 *       "holder_party_id": "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a",
+                 *       "secret_ref": "psp/6f1c0000-0000-4000-8000-000000000001/wave-prod",
+                 *       "is_default": true,
+                 *       "valid_from": "2026-11-01T00:00:00Z",
+                 *       "valid_until": null
+                 *     }
+                 */
+                "application/json": components["schemas"]["PspConfigurationCreate"];
+            };
+        };
+        responses: {
+            /** @description Configuration créée (`DRAFT`). */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "psp_config_id": "5e4d3c2b-1a09-4f8e-9d7c-6b5a49382716",
+                     *       "organizer_id": "2b3c4d5e-6f70-4a81-9b2c-3d4e5f607182",
+                     *       "method": "WAVE",
+                     *       "provider": "WAVE",
+                     *       "holder_party_id": "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a",
+                     *       "secret_ref": "psp/6f1c0000-0000-4000-8000-000000000001/wave-prod",
+                     *       "compliance_ref": null,
+                     *       "status": "DRAFT",
+                     *       "is_default": true,
+                     *       "valid_from": "2026-11-01T00:00:00Z",
+                     *       "valid_until": null,
+                     *       "version": 1,
+                     *       "created_by": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+                     *       "approved_by": null,
+                     *       "created_at": "2026-10-27T10:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PspConfiguration"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getPspConfiguration: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                psp_config_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configuration PSP. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PspConfiguration"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    requestPspConfigurationChange: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                psp_config_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "status": "ACTIVE",
+                 *       "compliance_ref": "KYB-2026-0142"
+                 *     }
+                 */
+                "application/json": {
+                    /** @enum {string} */
+                    status: "ACTIVE" | "SUSPENDED";
+                    /** @description Référence de conformité ; obligatoire pour `ACTIVE`. */
+                    compliance_ref?: string;
+                };
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getEventPspSelections: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement de la personne (sinon `404`). */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Choix de l'événement. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "event_id": "7c0e1a52-0000-4000-8000-0000000000e1",
+                     *           "method": "WAVE",
+                     *           "psp_config_id": "5e4d3c2b-1a09-4f8e-9d7c-6b5a49382716",
+                     *           "selected_by": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+                     *           "approved_by": null,
+                     *           "selected_at": "2026-10-27T10:30:00Z"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["EventPspSelection"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setEventPspSelection: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement de la personne (sinon `404`). */
+                event_id: string;
+                method: "WAVE" | "ORANGE_MONEY" | "CARD";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "psp_config_id": "5e4d3c2b-1a09-4f8e-9d7c-6b5a49382716"
+                 *     }
+                 */
+                "application/json": {
+                    /** Format: uuid */
+                    psp_config_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Choix enregistré (événement hors `LIVE`). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPspSelection"];
+                };
+            };
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    requestCashDeposit: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "amount": 450000,
+                 *       "bank_reference": "BORD-2026-12-0042"
+                 *     }
+                 */
+                "application/json": {
+                    amount: components["schemas"]["Amount"];
+                    /** @description Référence du bordereau de dépôt en banque. */
+                    bank_reference: string;
+                };
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    requestWalletUnblock: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                wallet_id: components["parameters"]["WalletId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /** @example {} */
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    requestLateChargeback: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                chargeback_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /** @example {} */
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
     receivePspWebhook: {
         parameters: {
             query?: never;
@@ -10931,6 +12169,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            413: components["responses"]["PayloadTooLarge"];
         };
     };
     getOfflineSnapshot: {

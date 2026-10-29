@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1366" viewBox="0 0 1960 1366">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(20,50)">
+<ellipse cx="275.0" cy="292.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="537.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="782.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="1027.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="189.25" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="311.75" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="434.25" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="556.75" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="679.25" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="801.75" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="924.25" width="430" height="84" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<rect x="1010" y="1046.75" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="448,292.5 1000,231.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,231.25 981.9741494807425,243.8622445685685 979.6477535414595,222.896194634131" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,292.5 1000,966.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,966.25 979.6054838911657,957.9999265041758 995.9229933886006,944.6310727118433" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,537.5 1000,353.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,353.75 985.0127476370229,369.85534900610475 978.3501691008139,349.8404191993708" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,537.5 1000,966.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,966.25 978.2823486460038,962.7366512176744 991.2222839552327,946.0769560790287" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,537.5 1000,1088.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,1088.75 978.8857023668239,1082.5704825869932 993.791780905169,1067.6441236696844" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,782.5 1000,476.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,476.25 988.2343298254449,494.83948641957556 978.0004678300506,476.3934723086934" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,782.5 1000,598.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,598.75 985.0127476370229,614.8553490061047 978.3501691008139,594.8404191993708" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,1027.5 1000,721.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,721.25 988.2343298254449,739.8394864195756 978.0004678300506,721.3934723086934" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,1027.5 1000,843.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,843.75 985.0127476370229,859.8553490061047 978.3501691008139,839.8404191993708" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Recharge en ligne par PSP</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui configure, qui choisit, qui demande, qui est notifié, qui décide à deux</text>
+<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
+<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
+<text x="275.0" y="297.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin prestataire</text>
+<text x="275.0" y="542.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin organisateur</text>
+<text x="275.0" y="787.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier ou festivalier</text>
+<text x="275.0" y="1032.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">PSP (faux)</text>
+<text x="1225.0" y="236.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Configurer un PSP (à deux)</text>
+<text x="1225.0" y="358.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Choisir le PSP de l’événement</text>
+<text x="1225.0" y="481.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Demander une recharge</text>
+<text x="1225.0" y="603.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Suivre ou annuler sa recharge</text>
+<text x="1225.0" y="726.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Notifier un paiement</text>
+<text x="1225.0" y="848.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Notifier une contestation</text>
+<text x="1225.0" y="971.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Contestation tardive (à deux)</text>
+<text x="1225.0" y="1093.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Débloquer un portefeuille (à deux)</text>
+<text x="60" y="1191.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Jamais de crédit sans notification authentifiée. Contestation tardive : OPERATOR_ADMIN ou ORGANIZER_ADMIN demande, une autre personne approuve.</text>
+<text x="60" y="1223.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Déblocage : ORGANIZER_ADMIN, refusé si une autre cause bloque. Faux PSP refusé en production (OP-N81).</text>
+</g>
+</svg>
