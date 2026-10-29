@@ -132,7 +132,7 @@ table(['Élément', 'Valeur'], [
     ['Dépend de', 'Missions 1 (grand livre), 2 (identité, rôles), 3 (configuration), 4 (bracelets NFC), '
      '5a (identité des terminaux), 5b (encaissement en ligne)'],
     ['État au 29 octobre 2026', 'Acceptée (d62258a2) et mergée sur feat/recharges-caisses-psp (squash a865462c) ; '
-     'PR #8 vers main ouverte ; revue post-fusion : ' + REVIEW],
+     'dans main par la PR #8 le 29/10/2026 (9502ce6d) ; revue post-fusion : ' + REVIEW],
 ], widths_from=EX['cover_tbl'])
 add(copy.deepcopy(EX['spacer']))
 add(copy.deepcopy(EX['blank']))
@@ -156,8 +156,8 @@ para('para', 'Les adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) 
 para('para', 'État au 29 octobre 2026 : les 14 lots sont approuvés par des relecteurs distincts (WP14 en deux cycles), '
      'la mission est acceptée et mergée sur feat/recharges-caisses-psp. Batterie sur la tête testée, identique au '
      'code fusionné : Jest 2637 tests verts, 0 échec ; pgTAP 43 fichiers, 3826 tests verts. Latences mesurées : '
-     'accusé de notification p95 82 ms (seuil 500 ms), recharge espèces p95 73 ms (seuil 200 ms). La PR #8 vers '
-     'main est ouverte ; sa CI confirme NFR-010.')
+     'accusé de notification p95 82 ms (seuil 500 ms), recharge espèces p95 73 ms (seuil 200 ms). La PR #8 est '
+     'fusionnée dans main le 29/10/2026, CI verte (NFR-010).')
 para('h2', 'Ce que la mission doit prouver')
 for m in re.finditer(r'^- \*\*(SC-\d{3})\*\* : (.+)$', SPEC, re.M):
     para('list', f'{m.group(2).strip().replace("`", "")} ({m.group(1)}).')
@@ -340,11 +340,11 @@ table(['Étape', 'État', 'Remarque'], [
     ['Addendum documentaire post-relecture', 'Fait', '29/10/2026 ; diagrammes recalés'],
     ['Matrice d’acceptation', 'Faite', '49 critères (FR, NFR, SC), 5 invariants négatifs'],
     ['Accept et fusion', 'Faits', '29/10/2026 (d62258a2, squash a865462c sur feat)'],
-    ['PR vers main', 'Ouverte', 'PR #8 ; la CI confirme NFR-010'],
+    ['PR vers main', 'Fusionnée', 'PR #8 le 29/10/2026 (9502ce6d), CI verte (NFR-010)'],
     ['Revue post-fusion', 'Faite' if REVIEW != 'en cours' else 'En cours', REVIEW],
 ])
-para('para', 'Prochaines étapes : faire relire par une personne les fichiers listés en 7.3 avant de fusionner la '
-     'PR #8 dans main ; mission 6b pour les adaptateurs réels et le coffre ; reports aux missions 7, 9 et 13. '
+para('para', 'Prochaines étapes : relecture humaine des fichiers listés en 7.3 ; '
+     'mission 6b pour les adaptateurs réels et le coffre ; reports aux missions 7, 9 et 13 (OP-N85 à OP-N88). '
      'Reprise : docs/passation-6/REPRISE.md.')
 
 d.save(OUT)

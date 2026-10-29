@@ -224,6 +224,8 @@ worktrees gardés après la fusion.
    reproduite). À trancher par le porteur (aucun affaiblissement : la base refuse le découvert) : fonction SQL dédiée
    qui verrouille tous les comptes dans l'ordre (migration) ; `PURCHASE` (mission 5b) lit aussi les soldes sans
    verrou. Reste : relecture humaine des fichiers listés dans la PR, puis fusion dans main par le porteur.
+   **PR #8 fusionnée dans `main` le 29/10/2026** (`9502ce6d`). Mission 6 close ; docs « dans main » (branche
+   `docs/6-dans-main`). Héritages : mission 6b (OP-N81), 7, 9, 13 (OP-N85 à OP-N88).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
