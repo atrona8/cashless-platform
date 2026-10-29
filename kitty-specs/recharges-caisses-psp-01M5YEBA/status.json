@@ -442,7 +442,8 @@
       "notes": [
         "WP14 pret : parcours, isolation, secrets, concurrence, latence, gardes de production, CI, consignation ; RISK-2 tenu, 0039, SC-007, contestation introuvable. Defaut renvoye : interblocages fermeture + recharges espèces par HTTP (it.failing).",
         "Relecture WP14 : decisions A-E du porteur du 29/10 appliquees (RISK-2 sans exception, 0039, SC-007, DISPUTE 24 h), preuves relancees vertes sur cashless_wp14, 5 mutations tuees sur 6. Reserves : limite residuelle OP-N83 (contestation puis perte), mutation survivante 0039 (deux contestations), interblocage 40P01 (it.failing), OP-N84 a trancher par le porteur.",
-        "Cycle 2 ouvert par l'orchestrateur sur décisions du porteur (29/10) : interblocage, A8-DETTE et 0039 à corriger avant fusion ; cycle 1 approuvé par relecteur distinct"
+        "Cycle 2 ouvert par l'orchestrateur sur décisions du porteur (29/10) : interblocage, A8-DETTE et 0039 à corriger avant fusion ; cycle 1 approuvé par relecteur distinct",
+        "Cycle 2 : 0040 (verrous begin_cash_close), 0041 (OP-N84 levé), 0042 (OP-N83), it.failing -> it, bornage des contrôleurs WP09"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
