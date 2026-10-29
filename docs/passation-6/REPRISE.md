@@ -211,6 +211,12 @@ worktrees gardés après la fusion.
    Reste : PR vers `main` (accord du porteur ; CI = preuve de NFR-010), revue post-fusion
    (`spec-kitty-mission-review` : écarts de sécurité ouverts, fichiers à relire par une personne),
    `docs/Mission-06-Recharges-caisses-PSP.docx`, retrospective (`spec-kitty agent retrospect synthesize`).
+   29/10 nuit : PR #8 ouverte. CI : suites de concurrence de la mission sorties de la passe parallèle (`026bcc09`,
+   connexions épuisées), test de contestation concurrente corrigé (dépense refusée admise), footprint des webhooks
+   limité au prestataire (`cc49912f`). Revue post-fusion (relecteur distinct) : 1 bloquant de consignation, 1
+   majeur ; **décision du porteur : consigner** → OP-N86, OP-N87, ADR-136, 3 tests de borne (`2001f663`, relus,
+   mutations tuées) ; verdict publiable avec réserves. Document Word de la mission : `docs/Mission-06-…docx`.
+   Reste : CI verte de la PR #8, relecture humaine des fichiers listés, puis fusion dans main (porteur).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,

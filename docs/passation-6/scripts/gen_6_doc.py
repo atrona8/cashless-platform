@@ -288,6 +288,9 @@ table(['Point', 'Dette', 'Levée'], [
     ['OP-N83 (ADR-134)', 'Corrigé par 0042 ; limite : la base ne peut empêcher cashless_app d’écrire ACTIVE', 'Mission 13'],
     ['OP-N84 (ADR-135)', 'Levé le 29/10/2026 (0041)', '—'],
     ['OP-N85', 'Caution due non prise si le processus s’arrête entre le COMMIT et sa prise ; reprise au crédit suivant', 'Mission 13'],
+    ['OP-N86 (ADR-136)', 'cashless_app appelle psp_poll_candidates et psp_events_to_retry (tous prestataires) ; psp-poller '
+     'sans rôle dédié ; INSERT direct sur anomaly', 'Mission 13'],
+    ['OP-N87 (ADR-136)', 'Garde de caisse sûre seulement si le propriétaire de posting_cash_desk_guard contourne la RLS', 'Mission 13'],
 ])
 para('h2', '7.2 Contradictions de sources signalées')
 for s in [
