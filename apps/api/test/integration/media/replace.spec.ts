@@ -17,6 +17,7 @@ import {
   goLive,
   ledgerIsSound,
   openCashDesk,
+  openCashSession,
   ownerRows as rows,
   seedPersonalizedMedia,
   tapBody,
@@ -124,12 +125,22 @@ describe('remplacement, perte et bracelet retrouvé', () => {
     w = await createMediaWorld();
     await withOwner(async (db) => {
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
-      device = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
+      device = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
       await openCashDesk(db, {
         operatorId: w.ops.a,
         ledgerId: w.ids.ledgerA,
         organizerId: w.ids.organizerA,
         serial: device.serial,
+      });
+      // Toute espèce passe par la session ouverte du terminal (mission des caisses, WP09).
+      await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: device.deviceId,
+        userId: w.cashierA.userId,
       });
       const base = {
         operatorId: w.ops.a,

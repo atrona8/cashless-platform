@@ -17,6 +17,7 @@ class MediaReleaseResponse {
     this.promoExpiryTransactionId,
     this.balanceRefundTransactionId,
     this.cashToHandBack,
+    this.cashSessionId,
   });
 
   factory MediaReleaseResponse.fromJson(Map<String, Object?> json) =>
@@ -40,6 +41,10 @@ class MediaReleaseResponse {
   /// Montant total en espèces à remettre au festivalier.
   @JsonKey(name: 'cash_to_hand_back')
   final int? cashToHandBack;
+
+  /// Session de caisse qui a reçu les écritures en espèces ; null si aucune espèce n'a été rendue.
+  @JsonKey(name: 'cash_session_id')
+  final String? cashSessionId;
 
   Map<String, Object?> toJson() => _$MediaReleaseResponseToJson(this);
 }

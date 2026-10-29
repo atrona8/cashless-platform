@@ -23,8 +23,15 @@ export function buildCashClose(
   ctx: BuildContext,
 ): Line[] {
   const { cashDesk, counted, expected } = command.payload;
-  requirePositive(expected, 'solde théorique de la caisse');
+  // Théorique nul accepté (surplus seul) ; compté nul accepté (manque total) ; les deux nuls : rien à écrire.
+  if (expected < 0n)
+    throw new BuildError('VALIDATION_FAILED', 'solde théorique de la caisse : montant négatif');
   if (counted < 0n) throw new BuildError('VALIDATION_FAILED', 'espèces comptées : montant négatif');
+  if (counted === 0n && expected === 0n)
+    throw new BuildError(
+      'VALIDATION_FAILED',
+      'fermeture de caisse sans écriture : compté et théorique nuls',
+    );
   const { config } = ctx;
   const { org, ope } = partyAccounts(config);
   const lines: Line[] = [];

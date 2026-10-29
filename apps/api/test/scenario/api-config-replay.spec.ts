@@ -68,6 +68,13 @@ describe('scénario de référence rejoué sur une configuration construite par 
   };
   const execute = async (s: ScenarioStep): Promise<EngineResult> => {
     const command = await s.command(fx, lookup);
+    if (command.type === 'TOPUP') {
+      const channel = (command.payload as { channel: keyof typeof fx.pspConfigurations }).channel;
+      command.metadata = {
+        ...command.metadata,
+        psp_configuration_id: fx.pspConfigurations[channel],
+      };
+    }
     try {
       return await tx.run(fx.parties.OPE, (client) => engine.execute(client, command));
     } catch (error) {
@@ -137,14 +144,20 @@ describe('scénario de référence rejoué sur une configuration construite par 
   it('le résolveur réel rend la configuration du scénario, règle par règle', async () => {
     const resolver = app.get<SqlConfigResolver>(CONFIG_RESOLVER);
     expect(resolver).toBeInstanceOf(SqlConfigResolver);
-    const actual = await tx.run(fx.parties.OPE, (client) =>
-      resolver.resolve({
-        ledgerId: fx.ledgerId,
-        eventId: fx.eventId,
-        occurredAt: new Date('2026-12-11T18:00:00Z'),
-        client,
-      }),
-    );
+    const resolveFor = (pspConfigurationId?: string) =>
+      tx.run(fx.parties.OPE, (client) =>
+        resolver.resolve({
+          ledgerId: fx.ledgerId,
+          eventId: fx.eventId,
+          occurredAt: new Date('2026-12-11T18:00:00Z'),
+          pspConfigurationId,
+          client,
+        }),
+      );
+    const actual = await resolveFor();
+    // WP10 : les frais PSP se lisent par la configuration de chaque recharge, un canal à la fois.
+    for (const id of Object.values(fx.pspConfigurations))
+      Object.assign(actual.pspFees, (await resolveFor(id)).pspFees);
     const reference = scenarioResolvedConfig(fx);
     // Même arithmétique : un taux ou un montant absent de la référence vaut zéro, une borne absente vaut « aucune ».
     const plain = (rule: FeeRule) => ({
@@ -277,7 +290,7 @@ describe('scénario de référence rejoué sur une configuration construite par 
       ['ORG_COM', true, ['PARTICIPATION']],
       ['ORG_FFEST', true, ['EVENT']],
       ['ORG_FPREST', true, ['OPERATOR_CONTRACT']],
-      ['ORG_FPSP', true, ['EVENT']],
+      ['ORG_FPSP', true, ['PSP_CONFIGURATION']],
       ['PLT_REDEV', true, ['PLATFORM_CONTRACT']],
       ['PLT_TAX', true, ['PLATFORM_CONTRACT']],
     ]);
@@ -295,7 +308,13 @@ describe('scénario de référence rejoué sur une configuration construite par 
           WHERE p.ledger_id = $1 AND NOT (f.scope_id = ANY($2::uuid[]))`,
         [
           fx.ledgerId,
-          [fx.eventId, fx.contractId, fx.platformContractId, ...Object.values(fx.participations)],
+          [
+            fx.eventId,
+            fx.contractId,
+            fx.platformContractId,
+            ...Object.values(fx.participations),
+            ...Object.values(fx.pspConfigurations),
+          ],
         ],
       ),
     ).toEqual([]);

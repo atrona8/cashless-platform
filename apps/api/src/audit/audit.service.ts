@@ -93,7 +93,22 @@ export type AuditAction =
   | 'CATALOG_CATEGORY_UPDATED'
   | 'CATALOG_ITEM_CREATED'
   | 'CATALOG_ITEM_UPDATED'
-  | 'CATALOG_POLICY_SET';
+  | 'CATALOG_POLICY_SET'
+  // Mission 6, lot WP10 : configurations PSP et choix par événement
+  | 'PSP_CONFIGURATION_CREATED'
+  | 'PSP_CONFIGURATION_STATUS_CHANGED'
+  | 'EVENT_PSP_SELECTION_CHANGED'
+  // Mission 6 (lot WP08) : sessions de caisse et dépôt en banque
+  | 'CASH_SESSION_OPENED'
+  | 'CASH_SESSION_COUNTED'
+  | 'CASH_SESSION_CLOSED'
+  | 'CASH_DEPOSIT_REQUESTED'
+  | 'CASH_TOPUP'
+  // Mission 6 (lot WP11) : recharges PSP
+  | 'PSP_TOPUP_REQUESTED'
+  | 'PSP_TOPUP_CANCELLED'
+  | 'PSP_TOPUP_CREDITED'
+  | 'PSP_TOPUP_NOT_CREDITED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

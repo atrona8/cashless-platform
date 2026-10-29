@@ -10,6 +10,8 @@ export interface ConfigQuery {
   eventId?: string;
   occurredAt: Date;
   participationId?: string;
+  /** Configuration PSP figée par la recharge (`metadata.psp_configuration_id`) : porte la règle de frais. */
+  pspConfigurationId?: string;
   /** Client de la transaction de l'écriture : le résolveur réel lit la configuration sous le même prestataire. */
   client?: Queryable;
 }

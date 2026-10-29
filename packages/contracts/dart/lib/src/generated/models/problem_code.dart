@@ -43,7 +43,8 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.
 /// - `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.
 /// - `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).
-/// - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos.
+/// - `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos (à l'initiation d'une recharge PSP et à la.
+///   notification).
 /// - `WALLET_LIMIT_EXCEEDED` (422, `CL008`) : plafond de solde dépassé.
 /// - `MONTHLY_TOPUP_LIMIT_EXCEEDED` (422, `CL009`) : plafond mensuel de recharge dépassé.
 /// - `MEDIA_UNKNOWN` (404) : UID ou bracelet inconnu (chemin en ligne ; dans un lot :.
@@ -95,6 +96,7 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `SNAPSHOT_VERSION_UNKNOWN` (409) : version de snapshot inconnue pour ce grand livre ; demander un FULL.
 /// - `BATCH_IN_PROGRESS` (409, `CL010`) : un lot est déjà en cours pour ce terminal ; attendre son résultat.
 /// - `BATCH_TOO_LARGE` (413, `CL011`) : lot vide ou de plus de 500 opérations ou 1 Mio.
+/// - `PAYLOAD_TOO_LARGE` (413) : notification de PSP de plus de 64 Kio ; rien n'est conservé.
 /// - `BATCH_SIGNATURE_INVALID` (400) : signature de l'en-tête du lot invalide ; lot non traité.
 /// - `CHAIN_BROKEN` (409, `CL017`) : chaîne de hachage rompue (terminal ou passerelle) ; alerte, examen manuel.
 /// - `SEQ_OUT_OF_ORDER` (400 pour un lot de terminal non continu ; 409, `CL016`, pour un `edge_seq`.
@@ -108,8 +110,9 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `QR_TOKEN_INVALID` (422) : jeton de QR client inconnu, expiré ou déjà utilisé.
 /// - `PAYMENT_INTENT_INVALID_STATE` (409, V2) : intention dans un état qui ne permet pas l'action.
 /// - `PAYMENT_INTENT_EXPIRED` (409, V2) : intention expirée.
-/// - `PSP_UNAVAILABLE` (503) : PSP injoignable ; réessayer avec la même clé.
-/// - `PSP_NOT_CONFIGURED` (409) : aucune configuration PSP valide pour ce moyen et cet événement (S26b ou défaut de l'organisateur, titulaire = détenteur des fonds, ADR-72).
+/// - `PSP_UNAVAILABLE` (503) : PSP injoignable ; réessayer avec la même clé. Inclut un fournisseur.
+///   indisponible en production tant que les adaptateurs réels ne sont pas livrés (OP-N81).
+/// - `PSP_NOT_CONFIGURED` (409) : aucune configuration PSP valide pour ce moyen et cet événement (S26b ou défaut de l'organisateur, titulaire = détenteur des fonds, ADR-72) ; le titulaire est contrôlé à la résolution.
 /// - `PSP_REJECTED` (422) : paiement refusé par le PSP.
 /// - `WEBHOOK_SIGNATURE_INVALID` (401) : signature HMAC du webhook entrant invalide.
 /// - `WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE` (401) : horodatage du webhook hors tolérance (rejeu suspect).
@@ -117,11 +120,13 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `REFUND_WINDOW_CLOSED` (422) : fenêtre de remboursement close.
 /// - `REFUND_ALREADY_OPEN` (409) : une demande de remboursement est déjà ouverte pour ce portefeuille.
 /// - `OTP_INVALID` (422) : code à usage unique faux, expiré ou déjà utilisé.
-/// - `CARD_DAILY_LIMIT` (422) : plafond de recharge par carte et par jour atteint (ADR-77).
+/// - `CARD_DAILY_LIMIT` (422) : plafond de recharge par carte et par jour atteint (ADR-77). Contrôlé à la.
+///   notification, jamais à l'initiation : c'est le motif d'échec d'une recharge (`failure_reason`).
 /// - `OTP_RATE_LIMITED` (429) : trop de demandes ou d'essais de code à usage unique (défauts : 3 envois par.
 ///   numéro sur 15 min, 10 demandes par IP et par heure, 5 essais par code puis blocage du numéro 30 min).
 /// - `CONFLICT_STATE` (409) : objet dans un état qui ne permet pas l'action (ex. demande de.
-///   remboursement qui n'est pas `REQUESTED` à l'approbation).
+///   remboursement qui n'est pas `REQUESTED` à l'approbation ; opération en espèces sans session de caisse.
+///   ouverte pour le terminal, ADR-89).
 /// - `EVENT_TRANSITION_INVALID` (409, `CL018`) : passage de statut d'événement non prévu (ADR-51).
 /// - `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).
 /// - `ENROLLMENT_EVENT_CLOSED` (422, `CL031`) : création d'un code d'enrôlement ou enrôlement refusé pour un.
@@ -261,6 +266,8 @@ enum ProblemCode {
   batchInProgress('BATCH_IN_PROGRESS'),
   @JsonValue('BATCH_TOO_LARGE')
   batchTooLarge('BATCH_TOO_LARGE'),
+  @JsonValue('PAYLOAD_TOO_LARGE')
+  payloadTooLarge('PAYLOAD_TOO_LARGE'),
   @JsonValue('BATCH_SIGNATURE_INVALID')
   batchSignatureInvalid('BATCH_SIGNATURE_INVALID'),
   @JsonValue('CHAIN_BROKEN')

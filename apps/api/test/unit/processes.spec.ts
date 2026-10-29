@@ -185,6 +185,19 @@ describe('aucun faux en production (démarrage réel)', () => {
     );
   });
 
+  // Contradiction signalée (WP07, R-20/A5) : le processus public ne démarre pas en production, mais
+  // à cause de l'identité du festivalier seule (préexistante) ; les ports PSP n'ajoutent aucun refus.
+  it('API publique : la cause du refus en production n’est pas un faux PSP', async () => {
+    const error = await Test.createTestingModule({ imports: [PublicProcessModule] })
+      .compile()
+      .then(
+        () => null,
+        (e: unknown) => e as Error,
+      );
+    expect(error).toBeInstanceOf(FakeInProductionError);
+    expect(error?.message).not.toMatch(/adaptateurs PSP|coffre/);
+  });
+
   it.each([
     ['API publique', PublicProcessModule],
     ['clés de bracelet', TagKeysProcessModule],

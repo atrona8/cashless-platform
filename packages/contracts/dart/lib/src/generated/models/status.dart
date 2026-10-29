@@ -6,18 +6,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum()
 enum Status {
-  @JsonValue('DRAFT')
-  draft('DRAFT'),
-  @JsonValue('LIVE')
-  live('LIVE'),
-  @JsonValue('CLOSING')
-  closing('CLOSING'),
-  @JsonValue('RECONCILING')
-  reconciling('RECONCILING'),
-  @JsonValue('SETTLING')
-  settling('SETTLING'),
-  @JsonValue('REFUND_WINDOW')
-  refundWindow('REFUND_WINDOW'),
+  @JsonValue('OPEN')
+  open('OPEN'),
   @JsonValue('CLOSED')
   closed('CLOSED');
 
