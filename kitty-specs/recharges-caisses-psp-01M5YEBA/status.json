@@ -1,19 +1,19 @@
 {
-  "event_count": 87,
-  "last_event_id": "01M63KB8X2JTSTRP2YXS9Y96RK",
-  "materialized_at": "2026-10-29T10:30:01.890633+00:00",
+  "event_count": 88,
+  "last_event_id": "01M63KKSVJ9XWTTTY61R6H92M5",
+  "materialized_at": "2026-10-29T10:34:41.394959+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "",
   "summary": {
-    "approved": 12,
+    "approved": 13,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 1
   },
   "work_packages": {
@@ -404,14 +404,20 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M63KB8X2JTSTRP2YXS9Y96RK",
-      "last_transition_at": "2026-10-29T10:30:01.890633+00:00",
+      "lane": "approved",
+      "last_event_id": "01M63KKSVJ9XWTTTY61R6H92M5",
+      "last_transition_at": "2026-10-29T10:34:41.394959+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for review: contestations (DISPUTE branché), LATE_CHARGEBACK, WALLET_UNBLOCK, 38 tests"
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/recharges-caisses-psp-01M5YEBA-coord/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP13-contestations/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP13-contestations/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 15559,
       "shell_pid_created_at": "1793269792.847437",
