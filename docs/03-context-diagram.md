@@ -3,6 +3,7 @@
 > Statut de complétude : voir `06-docs-status.md`. Notation C4 "Contexte" (niveau 1),
 > supportée nativement par Mermaid (`C4Context`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
 > Dernière mise à jour : initialisation du 07/10/2026 (`SPECIFICATION.md` §1.2, §3, §11, §13 ; `PRD.md` §4).
+> Complément du 27/10/2026 : PSP et coffre des secrets, intégrations toujours en faux après la mission 6 (plan ; OP-N81, ADR-131).
 > Complément du 21/10/2026 : liste de révocation des attestations Android et racine Apple App Attest (mission
 > « Identité et enrôlement des terminaux », mergée le 21/10/2026).
 
@@ -47,10 +48,10 @@ C4Context
 | Festivalier | Personne | Charge un portefeuille, paie par bracelet NFC (Android) ou QR, récupère son solde ; anonyme ou avec compte |
 | Staff terrain (`VENDOR`, `CASHIER`, `SUPERVISOR`) | Personne | Encaisse, recharge, gère cautions et bracelets, valide en seconde personne |
 | Administrateurs (`PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `MERCHANT_ADMIN`) | Personne | Configurent, supervisent, clôturent, versent, consultent les relevés |
-| PSP (Wave Business, Orange Money, PayDunya, Stripe) | Système externe | Encaissent les recharges ; webhooks signés ; relevés à rapprocher |
+| PSP (Wave Business, Orange Money, PayDunya, Stripe) | Système externe | Encaissent les recharges ; webhooks signés ; relevés à rapprocher. **Mission 6 (plan du 27/10/2026) : interface commune et un faux par fournisseur seulement, refusés au démarrage en production ; adaptateurs réels dans une mission dédiée dès les accès de test (OP-N81, ADR-131)** |
 | Envoi des codes (WhatsApp, SMS principal, SMS de repli) | Système externe | Livrent les codes à usage unique (fournisseurs à choisir, ADR-66) |
 | AWS KMS | Système externe | Dérivation des mots de passe des bracelets, chiffrement enveloppe, signature des snapshots ; à venir : autorité des terminaux et signature des jetons d'appareil (faux seulement aujourd'hui, OP-N73, mission 7) |
-| AWS Secrets Manager | Système externe | Identifiants PSP et secrets de webhooks, rattachés au détenteur des fonds |
+| AWS Secrets Manager | Système externe | Identifiants PSP et secrets de webhooks, rattachés au détenteur des fonds. **Mission 6 (plan) : port `PspSecretStore` avec faux seulement, refusé en production ; adaptateur AWS reporté avec les adaptateurs PSP réels (OP-N81)** |
 | S3 Object Lock (compte AWS distinct) | Système externe | Copie en écriture unique des scellements du journal |
 | Serveur d'identité OIDC | Système externe | Jetons des personnes et jetons d'approbation sur place |
 | Banque | Système externe | Virements des versements (hors système en V1), relevés importés |
