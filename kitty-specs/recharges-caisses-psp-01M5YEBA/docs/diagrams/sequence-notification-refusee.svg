@@ -1,58 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1178" viewBox="0 0 2006 1178">
-<rect width="100%" height="100%" fill="#FFFFFF"/>
-<g transform="translate(66,50)">
-<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
-<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<polyline points="701.6666666666666,236 701.6666666666666,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="191.0,288.56 693.6666666666666,288.56" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,288.56 674.3598503050785,299.1073618492925 674.3598503050785,278.0126381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="303.3333333333333" y="251.56" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="695.6666666666666,361.56 193.0,361.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,361.56 212.3068163615882,351.0126381507075 212.3068163615882,372.1073618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
-<rect x="329.3333333333333" y="324.56" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,434.55999999999995 1210.3333333333333,434.55999999999995" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,434.55999999999995 1191.026516971745,445.10736184929243 1191.026516971745,424.01263815070746" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="835.6" y="397.55999999999995" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="695.6666666666666,507.56 193.0,507.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,507.56 212.3068163615882,497.0126381507075 212.3068163615882,518.1073618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
-<rect x="298.1333333333333" y="470.56" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="551.6666666666666" y="550.56" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
-<polyline points="695.6666666666666,653.56 193.0,653.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,653.56 212.3068163615882,643.0126381507075 212.3068163615882,664.1073618492924" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
-<rect x="360.5333333333333" y="616.56" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="551.6666666666666" y="696.56" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
-<polyline points="695.6666666666666,799.56 193.0,799.56" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,799.56 212.3068163615882,789.0126381507075 212.3068163615882,810.1073618492924" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
-<rect x="329.3333333333333" y="762.56" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,872.5600000000001 1727.0,872.5600000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,872.5600000000001 1707.6931836384117,883.1073618492925 1707.6931836384117,862.0126381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1031.5333333333333" y="835.5600000000001" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="707.6666666666666,945.5600000000001 1210.3333333333333,945.5600000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,945.5600000000001 1191.026516971745,956.1073618492925 1191.026516971745,935.0126381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="794.0" y="908.5600000000001" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Notification refusée</text>
-<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Rien au grand livre ni au registre brut ; toujours signalée</text>
-<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">PSP ou inconnu</text>
-<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
-<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
-<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Journal et alerte</text>
-<text x="443.3333333333333" y="269.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Notification (corps brut)</text>
-<text x="34.0" y="291.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="443.3333333333333" y="342.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Plus de 64 Kio : 413</text>
-<text x="34.0" y="364.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
-<text x="960.0" y="415.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Configuration ACTIVE ?</text>
-<text x="34.0" y="437.60999999999996" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
-<text x="443.3333333333333" y="488.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Inconnue ou inactive : 404</text>
-<text x="34.0" y="510.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
-<text x="701.6666666666666" y="582.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Signature à temps constant</text>
-<text x="34.0" y="583.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="443.3333333333333" y="634.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Invalide : 401</text>
-<text x="34.0" y="656.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
-<text x="701.6666666666666" y="728.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Horodatage à ±300 s</text>
-<text x="34.0" y="729.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="443.3333333333333" y="780.8349999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Hors tolérance : 401</text>
-<text x="34.0" y="802.6099999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="1218.3333333333335" y="853.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Journal de sécurité, alerte bornée</text>
-<text x="34.0" y="875.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
-<text x="960.0" y="926.835" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Compteur de refus (sans corps)</text>
-<text x="34.0" y="948.61" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
-<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Deux secrets acceptés pendant une rotation. 404 neutre : aucun oracle sur l&#x27;existence d&#x27;une configuration.</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1208" viewBox="0 0 2006 1208">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1020" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1020" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1020" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1020" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 693.6666666666666,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,290.72 674.3598503050785,301.2673618492925 674.3598503050785,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="303.3333333333333" y="253.72000000000003" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,366.72 193.0,366.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,366.72 212.3068163615882,356.17263815070754 212.3068163615882,377.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="329.3333333333333" y="329.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,442.71999999999997 1210.3333333333333,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,442.71999999999997 1191.026516971745,453.26736184929246 1191.026516971745,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="835.6" y="405.71999999999997" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,518.72 193.0,518.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="298.1333333333333" y="481.72" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="551.6666666666666" y="564.72" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="695.6666666666666,670.72 193.0,670.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,670.72 212.3068163615882,660.1726381507076 212.3068163615882,681.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="360.5333333333333" y="633.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="551.6666666666666" y="716.72" width="300" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<polyline points="695.6666666666666,822.72 193.0,822.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,822.72 212.3068163615882,812.1726381507076 212.3068163615882,833.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="329.3333333333333" y="785.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,898.72 1727.0,898.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,898.72 1707.6931836384117,909.2673618492925 1707.6931836384117,888.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1031.5333333333333" y="861.72" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,974.72 1210.3333333333333,974.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,974.72 1191.026516971745,985.2673618492925 1191.026516971745,964.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="794.0" y="937.72" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Notification refusée</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Rien au grand livre ni au registre brut ; toujours signalée</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">PSP ou inconnu</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Journal et alerte</text>
+<text x="443.3333333333333" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Notification (corps brut)</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="443.3333333333333" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Plus de 64 Kio : 413</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="960.0" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Configuration ACTIVE ?</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="443.3333333333333" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Inconnue ou inactive : 404</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="701.6666666666666" y="596.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Signature à temps constant</text>
+<text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="443.3333333333333" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Invalide : 401</text>
+<text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="701.6666666666666" y="748.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Horodatage à ±300 s</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="443.3333333333333" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Hors tolérance : 401</text>
+<text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="1218.3333333333335" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Journal de sécurité, alerte bornée</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="960.0" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Compteur de refus (sans corps)</text>
+<text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1065.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Deux secrets acceptés pendant une rotation. 404 neutre : aucun oracle sur l&#x27;existence d&#x27;une configuration.</text>
+</g>
 </svg>

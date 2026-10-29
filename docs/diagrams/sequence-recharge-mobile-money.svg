@@ -1,39 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1226" viewBox="0 0 2006 1226">
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1378" viewBox="0 0 2006 1378">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(66,50)">
 <ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="185.0,236 185.0,1096" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="185.0,236 185.0,1248" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="447.5" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="572.5,236 572.5,1096" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="572.5,236 572.5,1248" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<polyline points="960.0,236 960.0,1096" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="960.0,236 960.0,1248" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<polyline points="1347.5,236 1347.5,1096" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1347.5,236 1347.5,1248" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="1735.0,236 1735.0,1096" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1735.0,236 1735.0,1248" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <polyline points="191.0,290.72 564.5,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="564.5,290.72 545.1931836384118,301.2673618492925 545.1931836384118,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="269.95" y="253.72000000000003" width="217.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="578.5,366.72 952.0,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,366.72 932.6931836384118,377.2673618492925 932.6931836384118,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="673.05" y="329.72" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="966.0,442.71999999999997 1339.5,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1339.5,442.71999999999997 1320.1931836384117,453.26736184929246 1320.1931836384117,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1050.15" y="405.71999999999997" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1341.5,518.72 580.5,518.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,518.72 599.8068163615882,508.17263815070754 599.8068163615882,529.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="825.2" y="481.72" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1341.5,594.72 968.0,594.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="968.0,594.72 987.3068163615882,584.1726381507076 987.3068163615882,605.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1076.15" y="557.72" width="155.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="775.0" y="640.72" width="370" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="966.0,746.72 1727.0,746.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,746.72 1707.6931836384117,757.2673618492925 1707.6931836384117,736.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1155.5" y="709.72" width="384.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="966.0,442.71999999999997 1727.0,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,442.71999999999997 1707.6931836384117,453.26736184929246 1707.6931836384117,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1228.3" y="405.71999999999997" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="966.0,518.72 1339.5,518.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1339.5,518.72 1320.1931836384117,529.2673618492925 1320.1931836384117,508.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="951.35" y="481.72" width="404.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,594.72 580.5,594.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,594.72 599.8068163615882,584.1726381507076 599.8068163615882,605.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="825.2" y="557.72" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,670.72 968.0,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="968.0,670.72 987.3068163615882,660.1726381507076 987.3068163615882,681.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1076.15" y="633.72" width="155.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="810.0" y="716.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <polyline points="966.0,822.72 1727.0,822.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,822.72 1707.6931836384117,833.2673618492925 1707.6931836384117,812.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1197.1" y="785.72" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1223.1" y="785.72" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="966.0,898.72 1339.5,898.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1339.5,898.72 1320.1931836384117,909.2673618492925 1320.1931836384117,888.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="1128.15" y="861.72" width="51.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="578.5,974.72 952.0,974.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,974.72 932.6931836384118,985.2673618492925 932.6931836384118,964.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="652.25" y="937.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="954.0,1050.72 580.5,1050.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,1050.72 599.8068163615882,1040.1726381507076 599.8068163615882,1061.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="673.05" y="1013.72" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="966.0,974.72 1727.0,974.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,974.72 1707.6931836384117,985.2673618492925 1707.6931836384117,964.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1155.5" y="937.72" width="384.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="966.0,1050.72 1727.0,1050.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1050.72 1707.6931836384117,1061.2673618492925 1707.6931836384117,1040.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1129.5" y="1013.72" width="436.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1126.72 952.0,1126.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,1126.72 932.6931836384118,1137.2673618492925 932.6931836384118,1116.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="652.25" y="1089.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="954.0,1202.72 580.5,1202.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,1202.72 599.8068163615882,1192.1726381507076 599.8068163615882,1213.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="662.65" y="1165.72" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Recharge mobile money (§8.5, §11.1)</text>
-<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Flux de docs/05-sequence-diagrams.md, redessiné avec /illustre le 27/10/2026 (contenu identique à l’ancien Mermaid)</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Recalé sur la mission 6 le 29/10/2026 : 200 dès la conservation, traitement à part, caution prélevée sur le solde</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
 <text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">App festivalier</text>
 <text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
@@ -43,23 +47,27 @@
 <text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
 <text x="766.25" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">POST /topups/psp</text>
 <text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
-<text x="1153.75" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Initie le paiement</text>
+<text x="1347.5" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">PENDING, clé réservée</text>
 <text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
-<text x="960.0" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Validation par le client</text>
+<text x="1153.75" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Initie le paiement (hors transaction)</text>
 <text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
-<text x="1153.75" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Webhook signé</text>
+<text x="960.0" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Validation par le client</text>
 <text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="960.0" y="672.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Vérifie la signature, stocke brut</text>
+<text x="1153.75" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Webhook signé</text>
 <text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
-<text x="1347.5" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">post_transaction (TOPUP, frais PSP)</text>
+<text x="960.0" y="748.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Signature, heure, taille</text>
 <text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="1347.5" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">take_deposit si caution due</text>
+<text x="1347.5" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Conserve le corps brut</text>
 <text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
 <text x="1153.75" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200</text>
 <text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
-<text x="766.25" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">GET /topups/psp/{id}</text>
+<text x="1347.5" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">post_transaction (TOPUP, frais PSP)</text>
 <text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
-<text x="766.25" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharge réussie</text>
+<text x="1347.5" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">take_deposit_from_balance si caution due</text>
 <text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
+<text x="766.25" y="1107.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">GET /topups/psp/{id}</text>
+<text x="34.0" y="1129.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
+<text x="766.25" y="1183.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharge SUCCEEDED</text>
+<text x="34.0" y="1205.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
 </g>
 </svg>

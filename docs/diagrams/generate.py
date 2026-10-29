@@ -99,11 +99,11 @@ files.append(sequence('sequence-bascule-passerelle','Bascule vers la passerelle 
   ('g','t','Coupure internet','note'),('t','g','Paiements (LAN)'),('g','a','Internet revenu','note'),
   ('g','a','POST /edge/handovers/{id}/release'),('g','a','POST /edge/sync-batches (EDGE_SYNC)'),('a','d','record_edge_seq, post_transaction'),
   ('a','d','complete_edge_release (époque +1)'),('a','g','Autorité rendue au central','ret')]))
-files.append(sequence('sequence-recharge-mobile-money','Recharge mobile money (§8.5, §11.1)',SRC,
+files.append(sequence('sequence-recharge-mobile-money','Recharge mobile money (§8.5, §11.1)','Recalé sur la mission 6 le 29/10/2026 : 200 dès la conservation, traitement à part, caution prélevée sur le solde',
  [V('f','Festivalier'),P('p','App festivalier'),P('a','API','primary'),P('s','PSP','accent'),P('d','Base centrale')],
- [('f','p','Recharge 20 000 XOF'),('p','a','POST /topups/psp'),('a','s','Initie le paiement'),('s','p','Validation par le client','ret'),('s','a','Webhook signé'),
-  ('a','a','Vérifie la signature, stocke brut','self'),('a','d','post_transaction (TOPUP, frais PSP)'),('a','d','take_deposit si caution due'),('a','s','200','ret'),
-  ('p','a','GET /topups/psp/{id}'),('a','p','Recharge réussie','ret')]))
+ [('f','p','Recharge 20 000 XOF'),('p','a','POST /topups/psp'),('a','d','PENDING, clé réservée'),('a','s','Initie le paiement (hors transaction)'),('s','p','Validation par le client','ret'),('s','a','Webhook signé'),
+  ('a','a','Signature, heure, taille','self'),('a','d','Conserve le corps brut'),('a','s','200','ret'),('a','d','post_transaction (TOPUP, frais PSP)'),('a','d','take_deposit_from_balance si caution due'),
+  ('p','a','GET /topups/psp/{id}'),('a','p','Recharge SUCCEEDED','ret')]))
 files.append(sequence('sequence-double-validation','Double validation au back-office (§3.2)',SRC,
  [V('u','Auteur'),V('w','Valideur'),P('b','Back-office'),P('a','API','primary'),P('d','Base centrale')],
  [('u','b','Lance une action à deux'),('b','a','Appel de l’opération'),('a','d','Crée approval_request (24 h)'),('a','b','202 demande PENDING','ret'),
