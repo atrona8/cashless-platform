@@ -325,7 +325,8 @@ SELECT is((SELECT array_agg(r || ':' || p.oid::regprocedure::text
               AND (p.proname ~ '^(cash_|psp_|open_cash|count_cash|begin_cash|finish_cash)'
                    OR p.proname IN ('attach_cash_tx', 'open_cash_due_anomaly',
                      'take_deposit_for_session', 'refund_deposit_for_session',
-                     'refund_cash_due_for_session', 'create_psp_configuration',
+                     'refund_cash_due_for_session', 'take_deposit_from_balance',
+                     'refund_deposit_from_balance', 'create_psp_configuration',
                      'activate_psp_configuration', 'set_event_psp_selection',
                      'resolve_psp_configuration', 'create_psp_topup', 'mark_psp_topup_initiated',
                      'cancel_psp_topup', 'expire_psp_topups', 'record_psp_event',
@@ -336,13 +337,18 @@ SELECT is((SELECT array_agg(r || ':' || p.oid::regprocedure::text
                      'block_wallet_after_chargeback', 'unblock_wallet'))
               AND has_function_privilege(r, p.oid, 'EXECUTE')), NULL::text[],
   'PUBLIC et autres rôles cashless_* : aucune fonction de la mission exécutable');
--- [A8-DETTE] : accordées jusqu'à WP09 ; WP09 retire ces trois signatures de post-roles.sql
--- (retouche d'une ligne) et retourne ce test.
-SELECT ok(has_function_privilege('cashless_app', f, 'EXECUTE'),
-  '[A8-DETTE] ' || f || ' : accordée jusqu''à WP09 ; WP09 retire ces trois signatures de '
-  || 'post-roles.sql (retouche d''une ligne) et retourne ce test')
+-- [A8-DETTE] levée (WP14 cycle 2, OP-N84, ADR-135) : les trois signatures du schéma de référence
+-- qui désignent un compte d'argent ne sont plus exécutables par cashless_app ; le moteur passe par
+-- les variantes de session et par les deux fonctions sans compte (0041).
+SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
+  '[A8-DETTE levée] ' || f || ' : EXECUTE retiré à cashless_app')
   FROM unnest(ARRAY['take_deposit(uuid,uuid)', 'refund_deposit(uuid,uuid)',
                     'refund_cash_due(uuid,uuid,text,uuid,uuid,uuid)']) f;
+SELECT ok(has_function_privilege('cashless_app', f, 'EXECUTE'),
+  f || ' : accordée à cashless_app (remplace la signature retirée)')
+  FROM unnest(ARRAY['take_deposit_from_balance(uuid)', 'refund_deposit_from_balance(uuid)',
+                    'take_deposit_for_session(uuid,uuid)', 'refund_deposit_for_session(uuid,uuid)',
+                    'refund_cash_due_for_session(uuid,uuid,text,uuid,uuid,uuid)']) f;
 
 -- 3. Refus réels sous cashless_app ----------------------------------------------------------------
 SET LOCAL ROLE cashless_app;

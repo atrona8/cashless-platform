@@ -91,7 +91,6 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'record_device_heartbeat(uuid,text,timestamptz)',
   'record_enrollment_attempt(bytea,inet,text)',
   'record_enrollment_refusal(bytea,inet,text,text,text,text,text,uuid)', 'recover_media(uuid)',
-  'refund_cash_due(uuid,uuid,text,uuid,uuid,uuid)', 'refund_deposit(uuid,uuid)',
   'register_tap(uuid,bytea,bytea,bigint,timestamptz,uuid,text,uuid,bigint,bytea)',
   'reinstate_media(uuid,uuid,uuid,text)', 'release_media(uuid,text)',
   'replace_media(uuid,uuid)', 'retry_tag_key_job(uuid)',
@@ -99,7 +98,7 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'rotate_device_refresh_token(bytea,bytea,bytea,timestamptz)',
   'set_device_status(uuid,text,text,uuid)', 'set_event_status(uuid,event_status,uuid)',
   'set_media_batch_status(uuid,text,text,uuid)', 'suspend_media(uuid,text,uuid)',
-  'take_deposit(uuid,uuid)', 'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
+  'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
   -- Mission 5b, lot WP07 : vendeurs (0031)
   'assert_vendor_session(uuid,uuid)', 'begin_vendor_pin_check(uuid,uuid)',
   'close_vendor_session(uuid)', 'create_vendor(uuid,text,text,uuid)',
@@ -127,6 +126,8 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'open_cash_due_anomaly(uuid,uuid,bigint,uuid)', 'take_deposit_for_session(uuid,uuid)',
   'refund_deposit_for_session(uuid,uuid)',
   'refund_cash_due_for_session(uuid,uuid,text,uuid,uuid,uuid)',
+  -- cautions sans compte désigné (0041), à la place de take_deposit et refund_deposit
+  'take_deposit_from_balance(uuid)', 'refund_deposit_from_balance(uuid)',
   -- configurations PSP (0037)
   'create_psp_configuration(uuid,text,text,uuid,text,boolean,timestamptz,timestamptz,uuid,uuid)',
   'activate_psp_configuration(uuid,uuid)', 'set_event_psp_selection(uuid,text,uuid,uuid,uuid)',

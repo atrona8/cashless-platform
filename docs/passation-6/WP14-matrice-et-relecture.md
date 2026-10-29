@@ -7,7 +7,7 @@ SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit` (Jest) ; `pg_prove -d 
 vertes (webhooks, chargebacks, psp-configurations, media), 946 assertions pgTAP vertes (7 suites de la mission).
 
 **Critères sans preuve complète (constats à remonter) : voir le compte rendu** — NFR-008 (fermeture et recharges
-espèces simultanées par HTTP : interblocages `40P01`, test `cash-concurrency.spec.ts` en `it.failing`).
+espèces simultanées par HTTP : interblocages `40P01`) ; CORRIGÉ en cycle 2 (migration 0040, `it.failing` -> `it`).
 
 | Critère | Preuve | Commande, résultat |
 |---|---|---|
@@ -49,7 +49,7 @@ espèces simultanées par HTTP : interblocages `40P01`, test `cash-concurrency.s
 | NFR-005 | topup-isolation.spec.ts (19 opérations, 10 tables) ; psp-configurations/isolation.spec.ts | verts |
 | NFR-006 | topup-latency.spec.ts : p95 82 ms (seuil 500), p99 92 ms, max 95 ms, local Docker | vert |
 | NFR-007 | cash-sessions/close.spec.ts ; topup-journey étape 8 (CASH_CLOSE) | verts |
-| NFR-008 | close-concurrency.spec.ts ; psp-concurrency.spec.ts ; cash-concurrency.spec.ts (2 cas verts, 1 `it.failing` : défaut renvoyé) | PARTIEL |
+| NFR-008 | close-concurrency.spec.ts ; psp-concurrency.spec.ts ; cash-concurrency.spec.ts (3 cas verts depuis la migration 0040, 6 passes de suite) | vert (cycle 2) |
 | NFR-009 | topup-latency.spec.ts : p95 73 ms (seuil 200), p99 80 ms, max 86 ms | vert |
 | NFR-010 | pgTAP 946 assertions (7 suites mission) ; Jest lot 84 + 32 suites ; batterie complète : orchestrateur | à rejouer en série |
 | C-001 | contradictions signalées : CL039 (ADR-135), tâches WP14 | revue |
@@ -79,7 +79,7 @@ espèces simultanées par HTTP : interblocages `40P01`, test `cash-concurrency.s
   (`SECURITY DEFINER`, décision du porteur du 27/10/2026).
 - `0038_psp_topups.sql` : `complete_card_topup` et son verrou consultatif, `record_chargeback`, `unblock_wallet`,
   `record_psp_event`. **`0039_chargeback_block_cause.sql`** : `block_wallet_after_chargeback` (correction de WP14).
-- `packages/ledger-sql/post-roles.sql` : droits par colonne et par fonction (dont l'octroi `[A8-DETTE]`, OP-N84).
+- `packages/ledger-sql/post-roles.sql` : droits par colonne et par fonction (l'octroi `[A8-DETTE]` est retiré en cycle 2, OP-N84 levé).
 - `apps/api/src/webhooks/webhook-verifier.ts`, `webhooks.controller.ts`, `webhook-intake.service.ts`,
   `event-dispatcher.ts` (cryptographie, route sans identité, contestation introuvable).
 - `apps/api/src/psp/` (ports, coffre, comparaison à temps constant, échéance du secret précédent).

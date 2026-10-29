@@ -415,6 +415,21 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
         (file) => file !== ALLOWED_CHANGE.file && !MISSION_6_CONTROLLERS.includes(file),
       ),
     ).toEqual([]);
+    // Contenu des trois contrôleurs de WP09 borné : au plus 40 lignes ajoutées et 15 retirées par
+    // fichier, et toute ligne ajoutée qui n'est pas une simple ligne d'import ou de fermeture parle
+    // de la session de caisse (rattachement FR-006), de rien d'autre.
+    for (const file of MISSION_6_CONTROLLERS) {
+      const lines = git('diff', '-U0', base, '--', file).split('\n');
+      const added = lines
+        .filter((l) => l.startsWith('+') && !l.startsWith('+++'))
+        .map((l) => l.slice(1));
+      const removed = lines.filter((l) => l.startsWith('-') && !l.startsWith('---'));
+      expect([file, added.length <= 40, removed.length <= 15]).toEqual([file, true, true]);
+      const substantive = added.filter((l) => !/^\s*([\w{},:\s]+,|\}.*|import .*|\)?;?)$/.test(l));
+      expect(
+        substantive.filter((l) => !/^\s*\/\/|cash_?session|CashSession|\bused\b|\bdone\b/i.test(l)),
+      ).toEqual([]);
+    }
     const diff = git('diff', '-U0', base, '--', ALLOWED_CHANGE.file).split('\n');
     const lines = (sign: '+' | '-') =>
       diff.filter((l) => l.startsWith(sign) && !l.startsWith(`${sign}${sign}${sign}`));

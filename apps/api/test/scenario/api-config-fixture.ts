@@ -11,6 +11,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { withOwner } from '../support/db';
+import { seedOpenCashSession } from '../support/seed-cash-session';
 import type { FakeIdp, TestPerson } from '../support/fake-idp';
 import { scenario, scenarioConfig } from '../unit/builders/support/scenario-lines';
 import {
@@ -254,6 +255,7 @@ export async function createApiConfigFixture(
     Object.fromEntries(keys.map((key) => [key, randomUUID()])) as Record<K, string>;
   const wallets = fresh(WALLETS);
   const media = { W04: randomUUID(), W05: randomUUID() };
+  let cashSessionId = '';
   const platformId = await withOwner(async (db) => {
     const q = (text: string, values: unknown[] = []) => db.query(text, values);
     for (const key of WALLETS)
@@ -308,6 +310,12 @@ export async function createApiConfigFixture(
         [media[wallet], op, randomBytes(32), batchId, wallets[wallet]],
       );
     }
+    cashSessionId = await seedOpenCashSession(db, {
+      operatorId: op,
+      ledgerId,
+      eventId,
+      accountCode: 'A-CAISSE-C1',
+    });
     // La partie plateforme est celle que open_event_ledger a rendue titulaire des comptes de redevance.
     const { rows } = await q(
       `SELECT owner_party_id FROM account WHERE ledger_id = $1 AND purpose = 'PLT_REDEV'`,
@@ -324,6 +332,7 @@ export async function createApiConfigFixture(
     participations,
     media,
     users: { author: randomUUID(), approver: randomUUID() },
+    cashSessionId,
     people: { platformAdmin, operatorAdmin, organizerAdmin },
     contractId: contract.contract_id!,
     platformContractId: platformContract.contract_id!,

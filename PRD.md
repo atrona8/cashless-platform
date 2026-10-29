@@ -269,9 +269,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - héritages de la mission 6 (27/10/2026) : mission 7, session d'une recharge espèces hors ligne (la base refuse toute
   écriture de caisse hors session) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
   et passage à `RECONCILING` refusé tant qu'une session de caisse est ouverte ;
-- héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83,
-  ADR-134) ; retrait des anciennes signatures de caisse accordées à `cashless_app` (OP-N84, `[A8-DETTE]`, ADR-135) ;
-  reprise de la caution due après un arrêt entre COMMIT et `afterCommit` (OP-N85) ; mission 13, recette ;
+- héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83, corrigée en cycle 2 par
+  la migration 0042, ADR-134) ; anciennes signatures de caisse retirées à `cashless_app` (OP-N84, levé en cycle 2,
+  ADR-135) ; reprise de la caution due après un arrêt entre COMMIT et `afterCommit` (OP-N85) ; mission 13, recette ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

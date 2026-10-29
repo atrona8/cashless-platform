@@ -135,6 +135,19 @@ describe('déblocage de portefeuille', () => {
     ).toHaveLength(0);
   });
 
+  it('contestation puis perte : l’autre cause bloque la demande et l’exécution (0042)', async () => {
+    const t = await blocked();
+    // Demande faite quand seule la contestation bloquait, approuvée APRÈS l'arrivée de l'autre cause.
+    const asked = await ask(t.walletId);
+    expect(asked.status).toBe(202);
+    await ownerRows(`UPDATE wallet SET status = 'BLOCKED' WHERE id = $1`, [t.walletId]);
+    const done = await approve(asked.body.approval_request_id);
+    expect(done.body.status).not.toBe('EXECUTED');
+    expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
+    // Une nouvelle demande est refusée d'emblée.
+    expect((await ask(t.walletId)).status).toBe(409);
+  });
+
   it('autre prestataire, autre rôle, plateforme : refus sans fuite', async () => {
     const t = await blocked();
     expect((await ask(t.walletId, c.cw.organizerAdminOp2)).status).toBe(404);

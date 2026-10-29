@@ -6,8 +6,11 @@ import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { ConfigResolver } from '../../../src/ledger/ports/config-resolver';
 import type { ResolvedConfig } from '../../../src/ledger/types';
 import { withOwner } from '../../support/db';
+import { seedOpenCashSession } from '../../support/seed-cash-session';
 
 export interface MiniFixture {
+  /** Session de caisse ouverte sur `A-CAISSE-C1` (cautions SEPARATE). */
+  cashSessionId: string;
   operatorId: string;
   organizerId: string;
   merchantId: string;
@@ -49,6 +52,7 @@ export async function createMiniFixture(): Promise<MiniFixture> {
   const jurisdictionId = randomUUID();
   const batchId = randomUUID();
 
+  let cashSessionId = '';
   await withOwner(async (db) => {
     const q = (text: string, values: unknown[] = []) => db.query(text, values);
     await q(
@@ -145,6 +149,12 @@ export async function createMiniFixture(): Promise<MiniFixture> {
        VALUES ($1, $2, 'NFC_TAG', $3, $4, $5, 'ACTIVE')`,
       [f.mediaId, f.operatorId, randomBytes(32), batchId, f.wallet1],
     );
+    cashSessionId = await seedOpenCashSession(db, {
+      operatorId: f.operatorId,
+      ledgerId: f.ledgerId,
+      eventId: f.eventId,
+      accountCode: 'A-CAISSE-C1',
+    });
   });
 
   const config: ResolvedConfig = {
@@ -165,7 +175,7 @@ export async function createMiniFixture(): Promise<MiniFixture> {
     offlineLossBearer: 'ORGANIZER',
     breakageDestination: 'ORGANIZER',
   };
-  return { ...f, config };
+  return { ...f, cashSessionId, config };
 }
 
 /** ConfigResolver de test, en mémoire : la même configuration quelle que soit la date. */

@@ -420,8 +420,7 @@ GRANT EXECUTE ON FUNCTION
   -- Grand livre (ledger-queries.ts)
   post_transaction(uuid, text, text, timestamptz, text, jsonb, uuid, uuid, uuid, uuid, uuid, uuid,
                    uuid, jsonb),
-  preload_media(uuid), take_deposit(uuid, uuid), refund_deposit(uuid, uuid), forfeit_deposit(uuid),
-  refund_cash_due(uuid, uuid, text, uuid, uuid, uuid), wallet_topup_headroom(uuid, timestamptz),
+  preload_media(uuid), forfeit_deposit(uuid), wallet_topup_headroom(uuid, timestamptz),
   -- Bracelets : lots, codes de rattachement, cycle de vie, liste noire, lectures
   preload_batch(uuid, integer), close_batch(uuid), forfeit_batch_deposits(uuid, integer),
   set_media_batch_status(uuid, text, text, uuid), invalidate_unassociated_codes(uuid),
@@ -688,6 +687,19 @@ BEGIN
   EXECUTE format('GRANT SELECT (%s) ON psp_event TO cashless_app', cols);
 END $$;
 
+-- 7b-bis. wallet.other_block (0042) : tenue par le seul déclencheur wallet_block_cause_guard ;
+-- cashless_app ne l'écrit pas (liste « toutes sauf », comme ci-dessus). Le reste des droits de
+-- cashless_app sur wallet est inchangé.
+REVOKE INSERT, UPDATE ON wallet FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.wallet'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'other_block';
+  EXECUTE format('GRANT INSERT (%s), UPDATE (%s) ON wallet TO cashless_app', cols, cols);
+END $$;
+
 -- 7c. EXECUTE, signature complète, par famille. Séparé de la section 4. Aucun GRANT ON ALL.
 GRANT EXECUTE ON FUNCTION
   -- Sessions de caisse (0036)
@@ -696,6 +708,8 @@ GRANT EXECUTE ON FUNCTION
   open_cash_due_anomaly(uuid, uuid, bigint, uuid), take_deposit_for_session(uuid, uuid),
   refund_deposit_for_session(uuid, uuid),
   refund_cash_due_for_session(uuid, uuid, text, uuid, uuid, uuid),
+  -- Cautions sans compte désigné (0041) : remplacent take_deposit et refund_deposit
+  take_deposit_from_balance(uuid), refund_deposit_from_balance(uuid),
   -- Configurations PSP (0037)
   create_psp_configuration(uuid, text, text, uuid, text, boolean, timestamptz, timestamptz, uuid,
                            uuid),
@@ -716,8 +730,8 @@ GRANT EXECUTE ON FUNCTION
   record_chargeback(uuid, text, bigint, boolean), attach_chargeback_tx(uuid, uuid),
   block_wallet_after_chargeback(uuid, uuid), unblock_wallet(uuid, uuid)
   TO cashless_app;
--- Anciennes signatures de caisse (take_deposit, refund_deposit, refund_cash_due) : encore
--- accordées en section 4 jusqu'à WP09 (test [A8-DETTE] de tests_cash_psp_rights.sql).
+-- Anciennes signatures de caisse (take_deposit, refund_deposit, refund_cash_due) : retirées de la
+-- section 4 (WP14 cycle 2, OP-N84 levé, ADR-135) ; le moteur passe par les variantes ci-dessus.
 
 -- 7d. Fonctions internes : jamais exécutables par cashless_app (REVOKE explicite, redit pour ne
 -- pas dépendre de la section 0). Helpers de contrôle de rôle, noyaux, fonctions de déclencheur
@@ -732,7 +746,7 @@ REVOKE EXECUTE ON FUNCTION
   psp_event_guard(), psp_session_operator(), psp_key_prefix(text), psp_topup_net_credited(uuid),
   psp_topup_replay_row(uuid, uuid, text, bigint, text),
   psp_complete_core(uuid, uuid, bigint, text, boolean, text, text), psp_chargeback_cap(),
-  psp_chargeback_guard()
+  psp_chargeback_guard(), wallet_block_cause_guard()
   FROM cashless_app;
 
 -- 7e. Autres rôles : cashless_platform et les rôles des clés reçoivent des listes nommées plus

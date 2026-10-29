@@ -35,7 +35,6 @@ import {
   BuildError,
   SOURCES,
   TRANSACTION_TYPES,
-  type AccountRef,
   type BuildContext,
   type LedgerCommand,
   type Line,
@@ -56,14 +55,12 @@ export interface EngineResult {
 export interface DelegatedPayload {
   variant?: string;
   /**
-   * Code d'un compte d'argent NON inscrit en caisse (ex. `A-BANQUE`). Les cautions en espèces passent par
-   * `cashSessionId` ; un compte de caisse est refusé par la base hors session (A8).
+   * Refusé : aucun compte d'argent n'est désigné par la commande (`take_deposit` et `refund_deposit` ne sont plus
+   * accordées à l'API). Une caution en espèces passe par `cashSessionId`.
    */
   moneyAccount?: string;
-  /** Session de caisse ouverte d'une caution en espèces (`…_for_session`) ; exclusif de `moneyAccount`. */
+  /** Session de caisse ouverte d'une caution en espèces ou d'un rendu d'espèces dues (`…_for_session`). */
   cashSessionId?: string;
-  /** Code du compte de caisse d'un rendu d'espèces dues. */
-  cashAccount?: string;
 }
 
 /** Clé de métadonnée portant l'empreinte de la commande (détection « même clé, autre contenu »). */
@@ -214,6 +211,11 @@ export class LedgerEngineService {
     if (!mediaId || !UUID.test(mediaId))
       throw new BuildError('VALIDATION_FAILED', `${command.type} : support (mediaId) requis`);
     const payload = (command.payload ?? {}) as DelegatedPayload;
+    if (payload.moneyAccount !== undefined)
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'caution : aucun compte désigné par la commande, utiliser une session de caisse (cashSessionId)',
+      );
     const media = await readMediaDepositState(client, mediaId);
     if (!media) throw new ProblemException('NOT_FOUND');
     // Clé interne écrite par la fonction (voir le schéma) ; refund_cash_due reçoit la clé de la commande.
@@ -249,26 +251,10 @@ export class LedgerEngineService {
 
     const context = await this.ledgerContext(client, command);
     checkStatus(context, command);
-    const account = async (code: string | undefined): Promise<string | null> => {
-      if (code === undefined) return null;
-      const ref: AccountRef = { code };
-      return (await this.accountResolver.resolve(client, command.ledgerId, [ref])).get(ref)!;
-    };
-
-    if (payload.cashSessionId !== undefined && payload.moneyAccount !== undefined)
-      throw new BuildError(
-        'VALIDATION_FAILED',
-        'caution : session de caisse OU compte, pas les deux',
-      );
     const session = payload.cashSessionId ?? null;
     switch (fn) {
       case 'take_deposit': {
-        const outcome = await takeDeposit(
-          client,
-          mediaId,
-          await account(payload.moneyAccount),
-          session,
-        );
+        const outcome = await takeDeposit(client, mediaId, session);
         const transactionId =
           outcome === 'HELD'
             ? ((await findTransactionId(client, command.ledgerId, internalKey)) ?? null)
@@ -277,8 +263,7 @@ export class LedgerEngineService {
       }
       case 'refund_deposit':
       case 'forfeit_deposit': {
-        if (fn === 'refund_deposit')
-          await refundDeposit(client, mediaId, await account(payload.moneyAccount), session);
+        if (fn === 'refund_deposit') await refundDeposit(client, mediaId, session);
         else await forfeitDeposit(client, mediaId);
         const transactionId =
           (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;
@@ -294,15 +279,14 @@ export class LedgerEngineService {
             'VALIDATION_FAILED',
             'rendu d’espèces dues : auteur (createdBy) requis',
           );
-        const cashAccountId = await account(payload.cashAccount);
-        if (!cashAccountId)
+        if (!session)
           throw new BuildError(
             'VALIDATION_FAILED',
-            'rendu d’espèces dues : compte de caisse requis',
+            'rendu d’espèces dues : session de caisse (cashSessionId) requise',
           );
         const transactionId = await refundCashDue(client, {
           mediaId,
-          cashAccountId,
+          sessionId: session,
           key: command.idempotencyKey,
           actor: command.createdBy,
           approver: command.approvedBy,

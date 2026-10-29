@@ -63,46 +63,40 @@ describe('NFR-008, SC-003 : concurrence des caisses', () => {
 
   // Corrigé par la migration 0040 (cycle 2 de WP14) : `begin_cash_close` prend le terminal avant la session et
   // le solde, comme une recharge ; avant, 40P01 (500) dès 2 recharges simultanées.
-  it(
-    'fermeture pendant 8 recharges espèces : théorique = 1000 + recharges acceptées, caisse à 0, un CASH_CLOSE',
-    async () => {
-      const { t, id } = await cw().ready({ expected: 1000, counted: null });
-      const medias = [];
-      for (let i = 0; i < 8; i += 1) medias.push(await brace());
-      const counted = await cw().count(t, id, cw().w.cashierA, 1000);
-      expect(counted.status).toBe(200);
-      const topups = medias.map((m) =>
-        cw().term(t, 'POST', '/topups/cash', cw().w.cashierA, {
-          amount: 100,
-          currency: 'XOF',
-          occurred_at: new Date().toISOString(),
-          tap: tapBody(m, (tap += 1)),
-        }),
-      );
-      const [closed, ...results] = await Promise.all([
-        cw().closeBo(id, cw().supervisor),
-        ...topups,
-      ]);
-      expect(closed.status).toBe(200);
-      const accepted = results.filter((r) => r.status === 201).length;
-      expect(results.every((r) => r.status === 201 || r.status === 409)).toBe(true);
-      const session = (await cw().session(id))!;
-      expect(Number(session.expected_amount)).toBe(1000 + 100 * accepted);
-      expect(await cw().deskBalance(t)).toBe(0);
-      const closes = (await cw().transactionsOf(p().ev.ledgerId, 'CASH_CLOSE')).filter(
-        (x) => x.idempotency_key === `cash-close:${id}`,
-      );
-      expect(closes).toHaveLength(1);
-      // Jamais d'écriture d'espèces après CASH_CLOSE : les TOPUP_CASH rattachés sont les recharges acceptées
-      // (l'amorçage `seedCash` passe par le moteur, sans rattachement).
-      const attached = await ownerRows<{ n: number }>(
-        `SELECT count(*)::int AS n FROM cash_session_tx s JOIN journal_transaction j ON j.id = s.tx_id
+  it('fermeture pendant 8 recharges espèces : théorique = 1000 + recharges acceptées, caisse à 0, un CASH_CLOSE', async () => {
+    const { t, id } = await cw().ready({ expected: 1000, counted: null });
+    const medias = [];
+    for (let i = 0; i < 8; i += 1) medias.push(await brace());
+    const counted = await cw().count(t, id, cw().w.cashierA, 1000);
+    expect(counted.status).toBe(200);
+    const topups = medias.map((m) =>
+      cw().term(t, 'POST', '/topups/cash', cw().w.cashierA, {
+        amount: 100,
+        currency: 'XOF',
+        occurred_at: new Date().toISOString(),
+        tap: tapBody(m, (tap += 1)),
+      }),
+    );
+    const [closed, ...results] = await Promise.all([cw().closeBo(id, cw().supervisor), ...topups]);
+    expect(closed.status).toBe(200);
+    const accepted = results.filter((r) => r.status === 201).length;
+    expect(results.every((r) => r.status === 201 || r.status === 409)).toBe(true);
+    const session = (await cw().session(id))!;
+    expect(Number(session.expected_amount)).toBe(1000 + 100 * accepted);
+    expect(await cw().deskBalance(t)).toBe(0);
+    const closes = (await cw().transactionsOf(p().ev.ledgerId, 'CASH_CLOSE')).filter(
+      (x) => x.idempotency_key === `cash-close:${id}`,
+    );
+    expect(closes).toHaveLength(1);
+    // Jamais d'écriture d'espèces après CASH_CLOSE : les TOPUP_CASH rattachés sont les recharges acceptées
+    // (l'amorçage `seedCash` passe par le moteur, sans rattachement).
+    const attached = await ownerRows<{ n: number }>(
+      `SELECT count(*)::int AS n FROM cash_session_tx s JOIN journal_transaction j ON j.id = s.tx_id
         WHERE s.cash_session_id = $1 AND j.type = 'TOPUP_CASH'`,
-        [id],
-      );
-      expect(attached[0]!.n).toBe(accepted);
-    },
-  );
+      [id],
+    );
+    expect(attached[0]!.n).toBe(accepted);
+  });
 
   it('deux fermetures simultanées (HTTP, clés différentes) : une seule CASH_CLOSE, l’autre 409', async () => {
     const { id } = await cw().ready({ expected: 700, counted: 700 });
