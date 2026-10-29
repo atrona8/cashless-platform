@@ -376,6 +376,7 @@
       "last_transition_at": "2026-10-29T10:00:14.161409+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
         "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/"
       ],
       "provider": "__resolved_provider_absent__",
