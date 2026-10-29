@@ -3807,10 +3807,11 @@ paths:
            / `EXPIRED`, aucune écriture. Montant ou devise différents de la recharge initiée → aucune
            écriture, anomalie `PSP_MISMATCH`, `200` (le PSP ne doit pas réessayer).
         5. Cas non créditables (plafond réglementaire dépassé à l'écriture, plafond par carte, 3-D Secure absent,
-           empreinte de carte absente, grand livre non `LIVE`, recharge annulée, portefeuille bloqué) : l'argent
-           est reçu mais non crédité ; recharge `FAILED` (motif dans `failure_reason`) et anomalie
-           `PSP_TOPUP_NOT_CREDITED` ou `PSP_TOPUP_OVER_LIMIT`. Le montant est à rendre au payeur HORS plateforme
-           (aucun remboursement n'est initié par l'API, OP-N82).
+           empreinte de carte absente, grand livre non `LIVE`, portefeuille bloqué) : l'argent est reçu mais
+           non crédité ; recharge `FAILED` (motif dans `failure_reason`) et anomalie `PSP_TOPUP_NOT_CREDITED` ou
+           `PSP_TOPUP_OVER_LIMIT`. Le montant est à rendre au payeur HORS plateforme (aucun remboursement n'est
+           initié par l'API, OP-N82). Un succès notifié après une annulation confirmée (ou après `FAILED` /
+           `EXPIRED`) passe par les mêmes contrôles et est crédité s'il est recevable (R-20, ADR-133).
         6. Contestations carte (chargeback, ADR-77) : avant le verrouillage, écriture `CHARGEBACK` (source
            `PSP_WEBHOOK`) : compte PSP crédité, portefeuille débité jusqu'à son solde (puis bloqué), le reste au
            compte de pertes de la partie désignée par `contract.chargeback_bearer` (organisateur par défaut).

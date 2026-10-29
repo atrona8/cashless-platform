@@ -37,8 +37,8 @@ ADR-77 ; research R-07 à R-14, R-16, R-17 et **R-20 (fait foi)**.
 8. `getPspTopup` : le demandeur (même terminal et même personne, ou même festivalier) ou un `ORGANIZER_ADMIN` de
    l'événement ; sinon `404`.
 9. `cancelPspTopup` (festivalier ou guichet demandeur) : `PENDING` → `CANCELLED` seulement si l'adaptateur confirme
-   l'annulation ; un succès notifié ensuite est traité comme non crédité (`PSP_TOPUP_NOT_CREDITED`, motif
-   `CANCELLED`).
+   l'annulation ; un succès notifié ensuite passe par les mêmes contrôles qu'un succès ordinaire et est crédité
+   s'il est recevable, sinon non crédité avec son anomalie (R-20 ; décision du porteur du 29/10/2026, ADR-133).
 
 ## Notifications
 
