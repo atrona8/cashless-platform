@@ -439,6 +439,9 @@
       "last_event_id": "01M63PPPFRBGF06CDETP5EQA3C",
       "last_transition_at": "2026-10-29T11:28:41.976937+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP14 pret : parcours, isolation, secrets, concurrence, latence, gardes de production, CI, consignation ; RISK-2 tenu, 0039, SC-007, contestation introuvable. Defaut renvoye : interblocages fermeture + recharges espèces par HTTP (it.failing)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 18211,
