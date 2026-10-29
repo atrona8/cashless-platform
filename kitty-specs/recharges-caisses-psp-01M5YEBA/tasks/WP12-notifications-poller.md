@@ -6,20 +6,23 @@ requirement_refs: [FR-014, FR-015, FR-019, NFR-002, NFR-006]
 planning_base_branch: feat/recharges-caisses-psp
 merge_target_branch: feat/recharges-caisses-psp
 branch_strategy: Planning artifacts for this mission were generated on feat/recharges-caisses-psp. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/recharges-caisses-psp unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-recharges-caisses-psp-01M5YEBA
+base_commit: e29d9298794ee181a92243b28c62a0c3b80c5a59
+created_at: '2026-10-28T16:29:31.154093+00:00'
 subtasks: [T060, T061, T062, T063, T064]
 phase: Phase 4 - PSP
+agent: claude
 history:
 - timestamp: '2026-10-27T15:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
-agent: claude
-model: sonnet
 agent_profile: implementer-ivan
-role: implementer
 authoritative_surface: apps/api/src/webhooks/
-execution_mode: code_change
-owned_files: [apps/api/src/webhooks/**, apps/api/src/topups/poller/**, apps/api/src/main.psp-poller.ts, apps/api/src/processes/psp-poller.module.ts, apps/api/test/integration/webhooks/**, apps/api/test/integration/topups/poller-*.spec.ts]
 create_intent: [apps/api/src/webhooks/webhooks.module.ts, apps/api/src/webhooks/webhooks.controller.ts, apps/api/src/webhooks/webhook-verifier.ts, apps/api/src/webhooks/webhook-rejections.ts, apps/api/src/webhooks/webhook-intake.service.ts, apps/api/src/webhooks/event-dispatcher.ts, apps/api/src/topups/poller/poller.module.ts, apps/api/src/topups/poller/psp-topup-poller.worker.ts, apps/api/src/topups/poller/psp-event-retry.worker.ts, apps/api/src/topups/poller/psp-event-purge.worker.ts, apps/api/src/main.psp-poller.ts, apps/api/src/processes/psp-poller.module.ts, apps/api/test/integration/webhooks/receive.spec.ts, apps/api/test/integration/webhooks/rejections.spec.ts, apps/api/test/integration/webhooks/verifier.spec.ts, apps/api/test/integration/webhooks/retry.spec.ts, apps/api/test/integration/topups/poller-status.spec.ts, apps/api/test/integration/topups/poller-expiry.spec.ts, apps/api/test/integration/topups/poller-alarm.spec.ts, apps/api/test/integration/topups/poller-purge.spec.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [apps/api/src/webhooks/**, apps/api/src/topups/poller/**, apps/api/src/main.psp-poller.ts, apps/api/src/processes/psp-poller.module.ts, apps/api/test/integration/webhooks/**, apps/api/test/integration/topups/poller-*.spec.ts]
+role: implementer
 tags: []
 tracker_refs: []
 ---
