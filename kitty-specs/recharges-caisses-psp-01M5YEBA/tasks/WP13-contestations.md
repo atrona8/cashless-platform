@@ -6,20 +6,23 @@ requirement_refs: [FR-027, FR-028]
 planning_base_branch: feat/recharges-caisses-psp
 merge_target_branch: feat/recharges-caisses-psp
 branch_strategy: Planning artifacts for this mission were generated on feat/recharges-caisses-psp. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/recharges-caisses-psp unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-recharges-caisses-psp-01M5YEBA
+base_commit: 91bbda466cec1dae3485cb5053f84c8319896354
+created_at: '2026-10-29T10:10:16.940955+00:00'
 subtasks: [T065, T066, T067, T068]
 phase: Phase 4 - PSP
+agent: claude
 history:
 - timestamp: '2026-10-27T15:00:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
-agent: claude
-model: sonnet
 agent_profile: implementer-ivan
-role: implementer
 authoritative_surface: apps/api/src/chargebacks/
-execution_mode: code_change
-owned_files: [apps/api/src/chargebacks/**, apps/api/test/integration/chargebacks/**]
 create_intent: [apps/api/src/chargebacks/chargebacks.module.ts, apps/api/src/chargebacks/chargeback.service.ts, apps/api/src/chargebacks/dispute-handler.ts, apps/api/src/chargebacks/late-chargeback-action.ts, apps/api/src/chargebacks/wallet-unblock-action.ts, apps/api/src/chargebacks/chargebacks.dto.ts, apps/api/src/chargebacks/chargebacks.controller.ts, apps/api/test/integration/chargebacks/approval-routes.spec.ts, apps/api/test/integration/chargebacks/chargeback.spec.ts, apps/api/test/integration/chargebacks/late-chargeback.spec.ts, apps/api/test/integration/chargebacks/wallet-unblock.spec.ts, apps/api/test/integration/chargebacks/chargeback-concurrency.spec.ts, apps/api/test/integration/chargebacks/chargeback-fixtures.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [apps/api/src/chargebacks/**, apps/api/test/integration/chargebacks/**]
+role: implementer
 tags: []
 tracker_refs: []
 ---
