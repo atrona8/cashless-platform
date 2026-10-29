@@ -408,6 +408,9 @@
       "last_event_id": "01M63K8PTE1DZB0M9AX984WN1J",
       "last_transition_at": "2026-10-29T10:28:37.839006+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: contestations (DISPUTE branché), LATE_CHARGEBACK, WALLET_UNBLOCK, 38 tests"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 11054,
