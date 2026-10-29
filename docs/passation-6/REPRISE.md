@@ -149,6 +149,9 @@ worktrees gardés après la fusion.
      garde soumise au porteur** (29/10).
    - `end-to-end/media-port-swap.spec.ts` (SC-007 de la mission 4) : `cash-due`, `deposit`, `release`
      modifiés par WP09 (rattachement de la session de caisse, prévu) : liste du test à mettre à jour.
+   - **Décision du porteur (29/10)** : garde RISK-2 **reporté à WP14**, batterie rouge jusque-là. WP14 tranche
+     l'exception de `initiate`/`cancel` (porteur à resolliciter, dette nommée si exception) et corrige aussi
+     la fausse alerte de `CashSessionsController` et la liste de SC-007.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
