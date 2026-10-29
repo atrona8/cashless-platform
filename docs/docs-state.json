@@ -44,8 +44,8 @@
       "spec_index_a_jour": true
     },
     "recharges-caisses-psp-01M5YEBA": {
-      "statut": "relue, 14 lots approuvés ; accept/merge à venir",
-      "verifie_le": "2026-10-29T18:00:00Z",
+      "statut": "mergée sur feat/recharges-caisses-psp (a865462c), acceptée (d62258a2) ; PR vers main à venir",
+      "verifie_le": "2026-10-29T20:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

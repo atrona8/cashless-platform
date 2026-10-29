@@ -107,7 +107,7 @@ consignation). La mission 6 (recharges, caisses et PSP) est relue depuis le 29/1
   la mission 6b des adaptateurs réels (OP-N81, ADR-131) ; remboursement d'un paiement non crédité hors plateforme
   (OP-N82) ; reprise de la caution due après un arrêt du processus (OP-N85). Rapprochements et versements : 📋 planifié
   (mission 9).
-- Mission(s) associée(s) : `recharges-caisses-psp-01M5YEBA` (Recharges, caisses et PSP, relue le 29/10/2026, 14 lots approuvés)
+- Mission(s) associée(s) : `recharges-caisses-psp-01M5YEBA` (Recharges, caisses et PSP, 14 lots approuvés, acceptée et mergée le 29/10/2026 sur `feat/recharges-caisses-psp` ; PR vers `main` à venir)
 
 ### Cycle de l'événement et clôture
 - Description : statuts `DRAFT` à `CLOSED`, conditions de clôture vérifiées par la base, droit de place, casse

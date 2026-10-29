@@ -702,7 +702,7 @@
   {
     "mission": "recharges-caisses-psp-01M5YEBA",
     "titre_cas_usage": "Recharges, caisses et PSP",
-    "statut": "relue, 14 lots approuvés ; accept/merge à venir",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "L'agent ouvre, compte et fait fermer sa caisse",
