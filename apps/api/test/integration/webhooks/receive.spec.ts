@@ -80,12 +80,13 @@ describe('réception des notifications de PSP', () => {
     const b = w.event(t.row, { id: `evt-b-${randomUUID()}` });
     const [ra, rb] = await Promise.all([w.post(a), w.post(b)]);
     expect([ra.status, rb.status]).toEqual([200, 200]);
-    expect(await w.p.transactions(t.row.topupId)).toHaveLength(1);
+    // Issues d'abord : en cas d'échec, elles disent pourquoi (RETRY, NOT_CREDITED...) mieux qu'un compte nul.
     const outcomes = (await w.events(t.row.configurationId))
       .filter((e) => [a.id, b.id].includes(e.provider_event_id))
-      .map((e) => e.outcome)
+      .map((e) => `${e.outcome ?? e.status}`)
       .sort();
     expect(outcomes).toEqual(['CREDITED', 'DUPLICATE_PAYMENT']);
+    expect(await w.p.transactions(t.row.topupId)).toHaveLength(1);
   });
 
   it('nouvelle notification après SUCCEEDED : sans effet sur le grand livre', async () => {
