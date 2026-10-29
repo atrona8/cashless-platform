@@ -108,7 +108,12 @@ export type AuditAction =
   | 'PSP_TOPUP_REQUESTED'
   | 'PSP_TOPUP_CANCELLED'
   | 'PSP_TOPUP_CREDITED'
-  | 'PSP_TOPUP_NOT_CREDITED';
+  | 'PSP_TOPUP_NOT_CREDITED'
+  // Mission 6 (lot WP13) : contestations et déblocage
+  | 'CHARGEBACK_RECORDED'
+  | 'LATE_CHARGEBACK_REQUESTED'
+  | 'WALLET_UNBLOCK_REQUESTED'
+  | 'WALLET_UNBLOCKED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

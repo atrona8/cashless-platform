@@ -155,7 +155,7 @@ describe('reprises des notifications', () => {
     );
   });
 
-  it('une contestation sans gestionnaire reste conservée, n’est pas un essai et n’alerte pas', async () => {
+  it('une contestation reprise par le processus psp-poller est traitée par le gestionnaire de WP13 (recharge inéligible : MISMATCH), sans alerte', async () => {
     const t = await w.p.topup({ method: 'CARD' });
     const notification = {
       ...w.p.notification(t.row, { kind: 'DISPUTE' }),
@@ -170,9 +170,13 @@ describe('reprises des notifications', () => {
     });
     const fresh = await startPoller(w);
     try {
+      expect(await fresh.retry.runOnce()).toBe(1);
       expect(await fresh.retry.runOnce()).toBe(0);
-      expect(await fresh.retry.runOnce()).toBe(0);
-      expect(await event(id)).toMatchObject({ status: 'RECEIVED', outcome: null, attempts: 0 });
+      expect(await event(id)).toMatchObject({
+        status: 'PROCESSED',
+        outcome: 'MISMATCH',
+        attempts: 0,
+      });
       expect(fresh.workers.alarm()).toBe(0);
     } finally {
       await fresh.close();

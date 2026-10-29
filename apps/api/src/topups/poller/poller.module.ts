@@ -6,6 +6,7 @@ import { Module } from '@nestjs/common';
 import { ConfigResolverModule } from '../../configuration/config-resolver.module';
 import { ConfigurationCoreModule } from '../../configuration/configuration-core.module';
 import { DepositService } from '../../media/lifecycle/deposit.service';
+import { CHARGEBACK_DISPUTE_PROVIDERS } from '../../chargebacks/dispute-providers';
 import { EventDispatcher } from '../../webhooks/event-dispatcher';
 import { CardChecks } from '../psp/card-checks';
 import { PspPaymentProcessor } from '../psp/psp-payment-processor';
@@ -22,6 +23,7 @@ import { PspTopupPollerWorker } from './psp-topup-poller.worker';
     DepositService,
     PspPaymentProcessor,
     EventDispatcher,
+    ...CHARGEBACK_DISPUTE_PROVIDERS,
     PspTopupPollerWorker,
     PspEventRetryWorker,
     PspEventPurgeWorker,

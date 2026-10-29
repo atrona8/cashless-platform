@@ -191,7 +191,7 @@ describe('réception des notifications de PSP', () => {
     expect(await w.p.transactions(t.row.topupId)).toHaveLength(0);
   });
 
-  it('contestation sans gestionnaire (avant WP13) : conservée RECEIVED, sans essai', async () => {
+  it('contestation (gestionnaire de WP13 branché) : traitée à la réception, PROCESSED, sans essai', async () => {
     const t = await w.p.topup({ method: 'CARD' });
     await w.post(w.event(t.row, { id: `evt-pay-${randomUUID()}` }), { method: 'CARD' });
     const dispute = fakeEvents.dispute({
@@ -208,6 +208,11 @@ describe('réception des notifications de PSP', () => {
     const kept = (await w.events(t.row.configurationId)).find(
       (e) => e.provider_event_id === dispute.id,
     );
-    expect(kept).toMatchObject({ kind: 'DISPUTE', status: 'RECEIVED', attempts: 0 });
+    expect(kept).toMatchObject({
+      kind: 'DISPUTE',
+      status: 'PROCESSED',
+      outcome: 'CHARGEBACK',
+      attempts: 0,
+    });
   });
 });
