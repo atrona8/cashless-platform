@@ -6,507 +6,507 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "FR-001 — Ouverture de session de caisse",
+      "description": "FR-001 \u2014 Ouverture de session de caisse",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : cash-sessions/open-count.spec.ts ; tests_cash_sessions.sql ; topup-journey.spec.ts étape 3 — résultat : Jest/pgTAP verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : cash-sessions/open-count.spec.ts ; tests_cash_sessions.sql ; topup-journey.spec.ts \u00e9tape 3 \u2014 r\u00e9sultat : Jest/pgTAP verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-002",
-      "description": "FR-002 — Comptage à l'aveugle",
+      "description": "FR-002 \u2014 Comptage \u00e0 l'aveugle",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : cash-sessions/blind-count.spec.ts ; topup-journey étapes 3 et 7 (théorique `null`) ; topup-isolation « A27 » — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : cash-sessions/blind-count.spec.ts ; topup-journey \u00e9tapes 3 et 7 (th\u00e9orique `null`) ; topup-isolation \u00ab A27 \u00bb \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-003",
-      "description": "FR-003 — Fermeture et écart",
+      "description": "FR-003 \u2014 Fermeture et \u00e9cart",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : cash-sessions/close.spec.ts ; close-concurrency.spec.ts ; topup-journey étape 7 (fermeur qui a compté : 403) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : cash-sessions/close.spec.ts ; close-concurrency.spec.ts ; topup-journey \u00e9tape 7 (fermeur qui a compt\u00e9 : 403) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-004",
-      "description": "FR-004 — Espèces rattachées à une session",
+      "description": "FR-004 \u2014 Esp\u00e8ces rattach\u00e9es \u00e0 une session",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/cash-desk-guard.spec.ts ; tests_cash_sessions.sql (garde de caisse) ; topup-journey étape 2 `SC-002 : OP-N49 levé` — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/cash-desk-guard.spec.ts ; tests_cash_sessions.sql (garde de caisse) ; topup-journey \u00e9tape 2 `SC-002 : OP-N49 lev\u00e9` \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-005",
-      "description": "FR-005 — Recharge en espèces en ligne",
+      "description": "FR-005 \u2014 Recharge en esp\u00e8ces en ligne",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/cash-topup.spec.ts, cash-topup-refusals.spec.ts ; engine/topup-cash-split.spec.ts ; topup-journey étape 3 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/cash-topup.spec.ts, cash-topup-refusals.spec.ts ; engine/topup-cash-split.spec.ts ; topup-journey \u00e9tape 3 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-006",
-      "description": "FR-006 — Découpage hors ligne",
+      "description": "FR-006 \u2014 D\u00e9coupage hors ligne",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : engine/topup-cash-split.spec.ts ; media/cash-due.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : engine/topup-cash-split.spec.ts ; media/cash-due.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-007",
-      "description": "FR-007 — Caution due après chaque crédit payé",
+      "description": "FR-007 \u2014 Caution due apr\u00e8s chaque cr\u00e9dit pay\u00e9",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-deposit.spec.ts ; webhooks/retry.spec.ts (A33) ; cash-topup.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-deposit.spec.ts ; webhooks/retry.spec.ts (A33) ; cash-topup.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-008",
-      "description": "FR-008 — Session servie aux routes du guichet",
+      "description": "FR-008 \u2014 Session servie aux routes du guichet",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/cash-desk-guard.spec.ts (takeDeposit, refundDeposit, refundCashDue, createCashTopup) ; media/release.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/cash-desk-guard.spec.ts (takeDeposit, refundDeposit, refundCashDue, createCashTopup) ; media/release.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-009",
-      "description": "FR-009 — Configuration PSP",
+      "description": "FR-009 \u2014 Configuration PSP",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-configurations/configurations.spec.ts, configuration-action.spec.ts ; topup-journey étape 1 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-configurations/configurations.spec.ts, configuration-action.spec.ts ; topup-journey \u00e9tape 1 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-010",
-      "description": "FR-010 — Configuration par défaut unique",
+      "description": "FR-010 \u2014 Configuration par d\u00e9faut unique",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-configurations/configurations.spec.ts ; tests_psp_configurations.sql — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-configurations/configurations.spec.ts ; tests_psp_configurations.sql \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-011",
-      "description": "FR-011 — Choix par événement",
+      "description": "FR-011 \u2014 Choix par \u00e9v\u00e9nement",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-configurations/event-selection.spec.ts, selection-action.spec.ts ; topup-journey étape 1 (202 en LIVE) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-configurations/event-selection.spec.ts, selection-action.spec.ts ; topup-journey \u00e9tape 1 (202 en LIVE) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-012",
-      "description": "FR-012 — Demande de recharge PSP",
+      "description": "FR-012 \u2014 Demande de recharge PSP",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-request.spec.ts ; topup-journey étape 4 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-request.spec.ts ; topup-journey \u00e9tape 4 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-013",
-      "description": "FR-013 — Consultation d'une recharge",
+      "description": "FR-013 \u2014 Consultation d'une recharge",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-read-cancel.spec.ts ; psp-request.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-read-cancel.spec.ts ; psp-request.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-014",
-      "description": "FR-014 — Réception authentifiée des notifications",
+      "description": "FR-014 \u2014 R\u00e9ception authentifi\u00e9e des notifications",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : webhooks/verifier.spec.ts, receive.spec.ts ; unit/psp/hmac-signature.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : webhooks/verifier.spec.ts, receive.spec.ts ; unit/psp/hmac-signature.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-015",
-      "description": "FR-015 — Notifications refusées signalées",
+      "description": "FR-015 \u2014 Notifications refus\u00e9es signal\u00e9es",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : webhooks/rejections.spec.ts ; topup-secrets.spec.ts (empreintes au journal) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : webhooks/rejections.spec.ts ; topup-secrets.spec.ts (empreintes au journal) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-016",
-      "description": "FR-016 — Crédit `TOPUP`",
+      "description": "FR-016 \u2014 Cr\u00e9dit `TOPUP`",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts ; webhooks/receive.spec.ts ; psp-concurrency.spec.ts (100 rejeux) ; topup-journey étape 4 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts ; webhooks/receive.spec.ts ; psp-concurrency.spec.ts (100 rejeux) ; topup-journey \u00e9tape 4 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-017",
-      "description": "FR-017 — Notification non conforme",
+      "description": "FR-017 \u2014 Notification non conforme",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts (montant, devise, configuration) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts (montant, devise, configuration) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-018",
-      "description": "FR-018 — Recharge refusée après paiement",
+      "description": "FR-018 \u2014 Recharge refus\u00e9e apr\u00e8s paiement",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts, psp-card.spec.ts ; topup-journey étape 5 (SC-004) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-process.spec.ts, psp-card.spec.ts ; topup-journey \u00e9tape 5 (SC-004) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-019",
-      "description": "FR-019 — Interrogation planifiée et expiration",
+      "description": "FR-019 \u2014 Interrogation planifi\u00e9e et expiration",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/poller-status.spec.ts, poller-expiry.spec.ts, poller-alarm.spec.ts ; topup-journey (succès jamais notifié) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/poller-status.spec.ts, poller-expiry.spec.ts, poller-alarm.spec.ts ; topup-journey (succ\u00e8s jamais notifi\u00e9) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-020",
-      "description": "FR-020 — Interface commune d'adaptateur",
+      "description": "FR-020 \u2014 Interface commune d'adaptateur",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : unit/psp/fake-psp-adapter.spec.ts, psp-providers.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : unit/psp/fake-psp-adapter.spec.ts, psp-providers.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-021",
-      "description": "FR-021 — Adaptateurs PSP réels",
+      "description": "FR-021 \u2014 Adaptateurs PSP r\u00e9els",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : reporté (OP-N81, ADR-131) : preuve de borne `production-guard.spec.ts`, `psp-production.spec.ts` — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Reporté par décision du porteur du 27/10/2026 (mission 6b ; OP-N81, ADR-131). Preuve de la borne : le faux PSP refuse le démarrage en production (production-guard.spec.ts, psp-production.spec.ts) ; test de borne étendu à import()/require() (WP07).",
+      "evidence": "apps/api/test/integration (et unit) : report\u00e9 (OP-N81, ADR-131) : preuve de borne `production-guard.spec.ts`, `psp-production.spec.ts` \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Report\u00e9 par d\u00e9cision du porteur du 27/10/2026 (mission 6b ; OP-N81, ADR-131). Preuve de la borne : le faux PSP refuse le d\u00e9marrage en production (production-guard.spec.ts, psp-production.spec.ts) ; test de borne \u00e9tendu \u00e0 import()/require() (WP07)."
     },
     {
       "criterion_id": "FR-022",
-      "description": "FR-022 — Coffre des secrets PSP",
+      "description": "FR-022 \u2014 Coffre des secrets PSP",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : unit/psp/fake-secret-store.spec.ts ; tests_psp_configurations.sql (`secret_ref`) ; topup-secrets.spec.ts (42501) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : unit/psp/fake-secret-store.spec.ts ; tests_psp_configurations.sql (`secret_ref`) ; topup-secrets.spec.ts (42501) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-023",
-      "description": "FR-023 — Frais PSP par configuration",
+      "description": "FR-023 \u2014 Frais PSP par configuration",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-configurations/psp-fees.spec.ts ; topups/psp-request.spec.ts (frais estimés) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-configurations/psp-fees.spec.ts ; topups/psp-request.spec.ts (frais estim\u00e9s) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-024",
-      "description": "FR-024 — 3-D Secure obligatoire",
+      "description": "FR-024 \u2014 3-D Secure obligatoire",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts ; topup-journey étape 5 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts ; topup-journey \u00e9tape 5 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-025",
-      "description": "FR-025 — Plafond par carte et par jour",
+      "description": "FR-025 \u2014 Plafond par carte et par jour",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts ; psp-concurrency.spec.ts (plafond par carte simultané) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts ; psp-concurrency.spec.ts (plafond par carte simultan\u00e9) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-026",
-      "description": "FR-026 — Vélocité des cartes",
+      "description": "FR-026 \u2014 V\u00e9locit\u00e9 des cartes",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts (vélocité) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topups/psp-card.spec.ts (v\u00e9locit\u00e9) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-027",
-      "description": "FR-027 — Contestations",
+      "description": "FR-027 \u2014 Contestations",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : chargebacks/chargeback.spec.ts, chargeback-concurrency.spec.ts, late-chargeback.spec.ts ; psp-concurrency (20 DISPUTE) ; topup-journey étape 6 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : chargebacks/chargeback.spec.ts, chargeback-concurrency.spec.ts, late-chargeback.spec.ts ; psp-concurrency (20 DISPUTE) ; topup-journey \u00e9tape 6 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-028",
-      "description": "FR-028 — Déblocage d'un portefeuille",
+      "description": "FR-028 \u2014 D\u00e9blocage d'un portefeuille",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : chargebacks/wallet-unblock.spec.ts (dont 0039) ; tests_psp_topups.sql ; topup-journey étape 6 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : chargebacks/wallet-unblock.spec.ts (dont 0039) ; tests_psp_topups.sql ; topup-journey \u00e9tape 6 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-029",
-      "description": "FR-029 — Dépôt en banque",
+      "description": "FR-029 \u2014 D\u00e9p\u00f4t en banque",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : cash-sessions/cash-deposit.spec.ts ; topup-journey étape 7 — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : cash-sessions/cash-deposit.spec.ts ; topup-journey \u00e9tape 7 \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-030",
-      "description": "FR-030 — Contrat et types",
+      "description": "FR-030 \u2014 Contrat et types",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : contracts : `npm run check -w @cashless/contracts` (WP01) ; topup-isolation « garde du contrat » (19 opérations lues dans `openapi.yaml`) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : contracts : `npm run check -w @cashless/contracts` (WP01) ; topup-isolation \u00ab garde du contrat \u00bb (19 op\u00e9rations lues dans `openapi.yaml`) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "FR-031",
-      "description": "FR-031 — Audit",
+      "description": "FR-031 \u2014 Audit",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : audits vérifiés dans chaque suite du lot (`PSP_TOPUP_REQUESTED`, `CASH_DEPOSIT_REQUESTED`, `WALLET_UNBLOCKED`…) ; retry.spec.ts (contestation introuvable) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : audits v\u00e9rifi\u00e9s dans chaque suite du lot (`PSP_TOPUP_REQUESTED`, `CASH_DEPOSIT_REQUESTED`, `WALLET_UNBLOCKED`\u2026) ; retry.spec.ts (contestation introuvable) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-001",
-      "description": "NFR-001 — Aucun double crédit",
+      "description": "NFR-001 \u2014 Aucun double cr\u00e9dit",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-concurrency.spec.ts (100 rejeux, 100 identifiants, 20 DISPUTE) ; topups/psp-concurrency.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-concurrency.spec.ts (100 rejeux, 100 identifiants, 20 DISPUTE) ; topups/psp-concurrency.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-002",
-      "description": "NFR-002 — Aucun crédit non authentifié",
+      "description": "NFR-002 \u2014 Aucun cr\u00e9dit non authentifi\u00e9",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : webhooks/rejections.spec.ts, verifier.spec.ts ; topup-secrets.spec.ts (refus 401/404 sans écriture) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : webhooks/rejections.spec.ts, verifier.spec.ts ; topup-secrets.spec.ts (refus 401/404 sans \u00e9criture) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-003",
-      "description": "NFR-003 — Secrets jamais exposés",
+      "description": "NFR-003 \u2014 Secrets jamais expos\u00e9s",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-secrets.spec.ts (canari, 4 cas) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-secrets.spec.ts (canari, 4 cas) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-004",
-      "description": "NFR-004 — Aucun faux en production",
+      "description": "NFR-004 \u2014 Aucun faux en production",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-production.spec.ts (a, b, c) ; unit/production-guard.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-production.spec.ts (a, b, c) ; unit/production-guard.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-005",
-      "description": "NFR-005 — Cloisonnement",
+      "description": "NFR-005 \u2014 Cloisonnement",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-isolation.spec.ts (19 opérations, 10 tables) ; psp-configurations/isolation.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-isolation.spec.ts (19 op\u00e9rations, 10 tables) ; psp-configurations/isolation.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-006",
-      "description": "NFR-006 — Réponse aux notifications",
+      "description": "NFR-006 \u2014 R\u00e9ponse aux notifications",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-latency.spec.ts : p95 82 ms (seuil 500), p99 92 ms, max 95 ms, local Docker — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-latency.spec.ts : p95 82 ms (seuil 500), p99 92 ms, max 95 ms, local Docker \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-007",
-      "description": "NFR-007 — Contrôle de caisse",
+      "description": "NFR-007 \u2014 Contr\u00f4le de caisse",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : cash-sessions/close.spec.ts ; topup-journey étape 8 (CASH_CLOSE) — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : cash-sessions/close.spec.ts ; topup-journey \u00e9tape 8 (CASH_CLOSE) \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-008",
-      "description": "NFR-008 — Tout ou rien",
+      "description": "NFR-008 \u2014 Tout ou rien",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : close-concurrency.spec.ts ; psp-concurrency.spec.ts ; cash-concurrency.spec.ts (3 cas verts depuis la migration 0040, 6 passes de suite) — résultat : vert (cycle 2). Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Interblocage fermeture/recharges espèces (40P01) trouvé au cycle 1 de WP14, corrigé au cycle 2 par la migration 0040 (ordre des verrous) ; cash-concurrency vert 6 passes de suite.",
+      "evidence": "apps/api/test/integration (et unit) : close-concurrency.spec.ts ; psp-concurrency.spec.ts ; cash-concurrency.spec.ts (3 cas verts depuis la migration 0040, 6 passes de suite) \u2014 r\u00e9sultat : vert (cycle 2). Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Interblocage fermeture/recharges esp\u00e8ces (40P01) trouv\u00e9 au cycle 1 de WP14, corrig\u00e9 au cycle 2 par la migration 0040 (ordre des verrous) ; cash-concurrency vert 6 passes de suite."
     },
     {
       "criterion_id": "NFR-009",
-      "description": "NFR-009 — Latence de la recharge espèces",
+      "description": "NFR-009 \u2014 Latence de la recharge esp\u00e8ces",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-latency.spec.ts : p95 73 ms (seuil 200), p99 80 ms, max 86 ms — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-latency.spec.ts : p95 73 ms (seuil 200), p99 80 ms, max 86 ms \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "NFR-010",
-      "description": "NFR-010 — Non-régression",
+      "description": "NFR-010 \u2014 Non-r\u00e9gression",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : pgTAP 946 assertions (7 suites mission) ; Jest lot 84 + 32 suites ; batterie complète : orchestrateur — résultat : à rejouer en série. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Rejouée en série par l'orchestrateur ; les 2 échecs hérités (RISK-2, SC-007 de la mission 4) corrigés dans WP14 (décision du porteur du 29/10/2026).",
+      "evidence": "apps/api/test/integration (et unit) : pgTAP 946 assertions (7 suites mission) ; Jest lot 84 + 32 suites ; batterie compl\u00e8te : orchestrateur \u2014 r\u00e9sultat : \u00e0 rejouer en s\u00e9rie. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Rejou\u00e9e en s\u00e9rie par l'orchestrateur ; les 2 \u00e9checs h\u00e9rit\u00e9s (RISK-2, SC-007 de la mission 4) corrig\u00e9s dans WP14 (d\u00e9cision du porteur du 29/10/2026)."
     },
     {
       "criterion_id": "SC-001",
-      "description": "SC-001 — un parcours complet (configuration activée à deux, choix d'événement, session de caisse, recharge espèces, recharge mobile money et carte pa",
+      "description": "SC-001 \u2014 un parcours complet (configuration activ\u00e9e \u00e0 deux, choix d'\u00e9v\u00e9nement, session de caisse, recharge esp\u00e8ces, recharge mobile money et carte pa",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-journey.spec.ts (9 cas) — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-journey.spec.ts (9 cas) \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-002",
-      "description": "SC-002 — OP-N49 est levé : caution en espèces et rendu des espèces dues réussissent sur un terminal à session ouverte, et sont refusés sans session ;",
+      "description": "SC-002 \u2014 OP-N49 est lev\u00e9 : caution en esp\u00e8ces et rendu des esp\u00e8ces dues r\u00e9ussissent sur un terminal \u00e0 session ouverte, et sont refus\u00e9s sans session ;",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-journey étape 2 `SC-002 : OP-N49 levé` ; topups/cash-desk-guard.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-journey \u00e9tape 2 `SC-002 : OP-N49 lev\u00e9` ; topups/cash-desk-guard.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-003",
-      "description": "SC-003 — aucune recharge n'est créditée deux fois, ni sans notification authentifiée ou statut confirmé par le PSP, sur l'ensemble des tests de concu",
+      "description": "SC-003 \u2014 aucune recharge n'est cr\u00e9dit\u00e9e deux fois, ni sans notification authentifi\u00e9e ou statut confirm\u00e9 par le PSP, sur l'ensemble des tests de concu",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-concurrency.spec.ts, cash-concurrency.spec.ts, topups/psp-concurrency.spec.ts — résultat : verts (sauf NFR-008 ci-dessus). Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-concurrency.spec.ts, cash-concurrency.spec.ts, topups/psp-concurrency.spec.ts \u2014 r\u00e9sultat : verts (sauf NFR-008 ci-dessus). Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-004",
-      "description": "SC-004 — aucun portefeuille ne dépasse un plafond réglementaire par une recharge en ligne ; tout paiement non créditable a une anomalie portant son m",
+      "description": "SC-004 \u2014 aucun portefeuille ne d\u00e9passe un plafond r\u00e9glementaire par une recharge en ligne ; tout paiement non cr\u00e9ditable a une anomalie portant son m",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-journey étape 5 ; topups/psp-process.spec.ts — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-journey \u00e9tape 5 ; topups/psp-process.spec.ts \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-005",
-      "description": "SC-005 — chaque session fermée a son écriture de fermeture et, si l'écart est non nul, son anomalie ; le théorique n'est jamais montré à l'agent avan",
+      "description": "SC-005 \u2014 chaque session ferm\u00e9e a son \u00e9criture de fermeture et, si l'\u00e9cart est non nul, son anomalie ; le th\u00e9orique n'est jamais montr\u00e9 \u00e0 l'agent avan",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-journey étapes 3, 7, 8 ; blind-count.spec.ts ; topup-isolation « A27 » — résultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-journey \u00e9tapes 3, 7, 8 ; blind-count.spec.ts ; topup-isolation \u00ab A27 \u00bb \u2014 r\u00e9sultat : verts. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-006",
-      "description": "SC-006 — aucun secret PSP ou de notification n'apparaît dans la base, les journaux ou les réponses (balayage avec canari).",
+      "description": "SC-006 \u2014 aucun secret PSP ou de notification n'appara\u00eet dans la base, les journaux ou les r\u00e9ponses (balayage avec canari).",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-secrets.spec.ts — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-secrets.spec.ts \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-007",
-      "description": "SC-007 — aucune fuite entre prestataires ou organisateurs sur les nouvelles opérations (balayage d'isolation).",
+      "description": "SC-007 \u2014 aucune fuite entre prestataires ou organisateurs sur les nouvelles op\u00e9rations (balayage d'isolation).",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : topup-isolation.spec.ts — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : topup-isolation.spec.ts \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     },
     {
       "criterion_id": "SC-008",
-      "description": "SC-008 — le démarrage en configuration de production est refusé pour chaque faux de la mission (faux PSP par fournisseur, faux coffre, identité festi",
+      "description": "SC-008 \u2014 le d\u00e9marrage en configuration de production est refus\u00e9 pour chaque faux de la mission (faux PSP par fournisseur, faux coffre, identit\u00e9 festi",
       "proof_type": "automated_test",
-      "evidence": "apps/api/test/integration (et unit) : psp-production.spec.ts — résultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test après reset-db), 29/10/2026 : Jest 2637 verts, 0 échec ; pgTAP 43 fichiers / 3826 verts.",
-      "notes": "Lots approuvés par des relecteurs distincts (14 lots, WP14 en 2 cycles).",
+      "evidence": "apps/api/test/integration (et unit) : psp-production.spec.ts \u2014 r\u00e9sultat : vert. Tableau des preuves : docs/passation-6/WP14-matrice-et-relecture.md (lane-m). Batterie de l'orchestrateur sur lane-m finale (8250e552, cashless_test apr\u00e8s reset-db), 29/10/2026 : Jest 2637 verts, 0 \u00e9chec ; pgTAP 43 fichiers / 3826 verts.",
       "pass_fail": "pass",
+      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en s\u00e9rie)",
       "verified_at": "2026-10-29",
-      "verified_by": "orchestrateur (relectures distinctes par lot, rejeu en série)"
+      "notes": "Lots approuv\u00e9s par des relecteurs distincts (14 lots, WP14 en 2 cycles)."
     }
   ],
   "negative_invariants": [
     {
       "invariant_id": "NI-001",
-      "description": "Aucun .sql généré de packages/ledger-sql modifié à la main, ni migrations 0001-0035, ni roles.sql, gen_golden.py, scenario_reference.json, schéma de référence (migrations de la mission : ajouts 0036 à 0042)",
+      "description": "Aucun .sql g\u00e9n\u00e9r\u00e9 de packages/ledger-sql modifi\u00e9 \u00e0 la main, ni migrations 0001-0035, ni roles.sql, gen_golden.py, scenario_reference.json, sch\u00e9ma de r\u00e9f\u00e9rence (migrations de la mission : ajouts 0036 \u00e0 0042)",
       "verification_method": "custom_command",
       "verification_command": "git diff --quiet main...kitty/mission-recharges-caisses-psp-01M5YEBA-lane-m -- packages/ledger-sql/schema_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql packages/ledger-sql/gen_golden.py packages/ledger-sql/scenario_reference.json packages/ledger-sql/roles.sql 'packages/ledger-sql/migrations/00[0-2]*.sql' 'packages/ledger-sql/migrations/003[0-5]*.sql'",
       "result": "confirmed_absent",
-      "evidence": "Exécutée le 2026-10-29 : code de sortie 0. Fichiers modifiés (M) du paquet : post-roles.sql et trois suites pgTAP écrites à la main (tests_definer_trigger_writers.sql, tests_execute_grants.sql, tests_payments.sql) ; le reste est ajouté. check-generated.sh vert (C-002, WP14)."
+      "evidence": "Ex\u00e9cut\u00e9e le 2026-10-29 : code de sortie 0. Fichiers modifi\u00e9s (M) du paquet : post-roles.sql et trois suites pgTAP \u00e9crites \u00e0 la main (tests_definer_trigger_writers.sql, tests_execute_grants.sql, tests_payments.sql) ; le reste est ajout\u00e9. check-generated.sh vert (C-002, WP14)."
     },
     {
       "invariant_id": "NI-002",
-      "description": "Aucun faux (PSP par fournisseur, coffre des secrets, identité, terminal, festivalier) accepté en configuration de production",
+      "description": "Aucun faux (PSP par fournisseur, coffre des secrets, identit\u00e9, terminal, festivalier) accept\u00e9 en configuration de production",
       "verification_method": "custom_command",
       "verification_command": "npm test -w @cashless/api -- unit/production-guard unit/psp end-to-end/psp-production",
       "result": "confirmed_absent",
@@ -514,23 +514,23 @@
     },
     {
       "invariant_id": "NI-003",
-      "description": "Aucune dépendance ajoutée (C-003)",
+      "description": "Aucune d\u00e9pendance ajout\u00e9e (C-003)",
       "verification_method": "custom_command",
       "verification_command": "git diff main...kitty/mission-recharges-caisses-psp-01M5YEBA-lane-m -- package-lock.json 'apps/*/package.json' 'packages/*/package.json' package.json",
       "result": "confirmed_absent",
-      "evidence": "Exécutée le 2026-10-29 : seul ajout, le script start:psp-poller dans apps/api/package.json ; package-lock.json inchangé."
+      "evidence": "Ex\u00e9cut\u00e9e le 2026-10-29 : seul ajout, le script start:psp-poller dans apps/api/package.json ; package-lock.json inchang\u00e9."
     },
     {
       "invariant_id": "NI-004",
-      "description": "Aucun crédit sans notification authentifiée ni statut confirmé par le PSP ; aucun double crédit",
+      "description": "Aucun cr\u00e9dit sans notification authentifi\u00e9e ni statut confirm\u00e9 par le PSP ; aucun double cr\u00e9dit",
       "verification_method": "automated_test",
       "verification_command": "npm test -w @cashless/api -- webhooks/rejections webhooks/verifier psp-concurrency topup-secrets",
       "result": "confirmed_absent",
-      "evidence": "NFR-001, NFR-002, SC-003 : 100 rejeux concurrents, 0 écriture sur refus ; batterie lane-m verte le 29/10/2026."
+      "evidence": "NFR-001, NFR-002, SC-003 : 100 rejeux concurrents, 0 \u00e9criture sur refus ; batterie lane-m verte le 29/10/2026."
     },
     {
       "invariant_id": "NI-005",
-      "description": "Aucun secret PSP ou de notification en clair dans la base, les journaux ou les réponses",
+      "description": "Aucun secret PSP ou de notification en clair dans la base, les journaux ou les r\u00e9ponses",
       "verification_method": "automated_test",
       "verification_command": "npm test -w @cashless/api -- topup-secrets",
       "result": "confirmed_absent",
