@@ -63,9 +63,9 @@ export class PspWorld {
   holderId!: string;
   seq = 0;
 
-  static async create(): Promise<PspWorld> {
+  static async create(overrides?: Parameters<typeof SessionWorld.create>[0]): Promise<PspWorld> {
     const pw = new PspWorld();
-    pw.sw = await SessionWorld.create();
+    pw.sw = await SessionWorld.create(overrides);
     const app = pw.sw.api.app;
     pw.tx = app.get(TenantTx, { strict: false });
     pw.processor = app.get(PspPaymentProcessor, { strict: false });

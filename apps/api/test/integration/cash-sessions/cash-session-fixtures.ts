@@ -52,11 +52,21 @@ export class CashWorld {
   organizerAdminOp2!: TestPerson;
   operatorAdminOp2!: TestPerson;
 
-  static async create(): Promise<CashWorld> {
+  /** `overrides` : fournisseurs de l'application remplacés (WP14 : PSP indisponibles, comme en production). */
+  static async create(
+    overrides?: Parameters<typeof startHttpsApp>[1] extends infer O
+      ? O extends { overrides?: infer V }
+        ? V
+        : never
+      : never,
+  ): Promise<CashWorld> {
     const cw = new CashWorld();
     cw.w = await createMediaWorld();
     const { w } = cw;
-    cw.api = await startHttpsApp(undefined, { identity: w.idp });
+    cw.api = await startHttpsApp(undefined, {
+      identity: w.idp,
+      ...(overrides ? { overrides } : {}),
+    });
     cw.ca = await FakeDeviceCa.fromFiles({
       certFile: cw.api.tls.deviceCaCertFile,
       keyFile: cw.api.tls.deviceCaFakeKeyFile,

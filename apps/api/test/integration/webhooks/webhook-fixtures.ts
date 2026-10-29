@@ -52,8 +52,8 @@ export interface PostOptions {
 export class WebhookWorld {
   constructor(readonly p: PspWorld) {}
 
-  static async create(): Promise<WebhookWorld> {
-    return new WebhookWorld(await PspWorld.create());
+  static async create(overrides?: Parameters<typeof PspWorld.create>[0]): Promise<WebhookWorld> {
+    return new WebhookWorld(await PspWorld.create(overrides));
   }
 
   /** Secret courant de la configuration d'un moyen (lu dans le faux coffre par la référence). */
