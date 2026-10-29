@@ -61,12 +61,9 @@ describe('NFR-008, SC-003 : concurrence des caisses', () => {
     });
   };
 
-  // DÉFAUT RENVOYÉ À L'ORCHESTRATEUR (propriétaires : WP02 `begin_cash_close` / WP09 route `createCashTopup`) : par HTTP,
-  // une fermeture lancée avec des recharges espèces simultanées provoque des interblocages (40P01, réponses 500) sur
-  // les recharges (observé : 6 à 7 sur 8, dès 2 recharges), alors que le cas à une recharge par le service passe
-  // (close-concurrency.spec.ts). `it.failing` : ce test échoue AUJOURD'HUI à dessein ; il devient rouge le jour où le
-  // défaut est corrigé, et il faut alors remplacer `it.failing` par `it`. Aucune retouche de production dans WP14.
-  it.failing(
+  // Corrigé par la migration 0040 (cycle 2 de WP14) : `begin_cash_close` prend le terminal avant la session et
+  // le solde, comme une recharge ; avant, 40P01 (500) dès 2 recharges simultanées.
+  it(
     'fermeture pendant 8 recharges espèces : théorique = 1000 + recharges acceptées, caisse à 0, un CASH_CLOSE',
     async () => {
       const { t, id } = await cw().ready({ expected: 1000, counted: null });
@@ -96,13 +93,14 @@ describe('NFR-008, SC-003 : concurrence des caisses', () => {
         (x) => x.idempotency_key === `cash-close:${id}`,
       );
       expect(closes).toHaveLength(1);
-      // Jamais d'écriture d'espèces après CASH_CLOSE : le nombre de TOPUP_CASH rattachés est celui des recharges acceptées.
+      // Jamais d'écriture d'espèces après CASH_CLOSE : les TOPUP_CASH rattachés sont les recharges acceptées
+      // (l'amorçage `seedCash` passe par le moteur, sans rattachement).
       const attached = await ownerRows<{ n: number }>(
         `SELECT count(*)::int AS n FROM cash_session_tx s JOIN journal_transaction j ON j.id = s.tx_id
         WHERE s.cash_session_id = $1 AND j.type = 'TOPUP_CASH'`,
         [id],
       );
-      expect(attached[0]!.n).toBe(accepted + 1); // + l'amorçage de 1000
+      expect(attached[0]!.n).toBe(accepted);
     },
   );
 
