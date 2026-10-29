@@ -158,6 +158,14 @@ jobs:
           npm run reset-db -w @cashless/ledger-sql
           SKIP_LATENCY=1 npm test
 
+      # Concurrence de la mission recharges-caisses-psp (NFR-001, NFR-008, SC-003) : jusqu'à 100 connexions
+      # simultanées par suite ; écartées de la passe parallèle (SKIP_LATENCY=1), lancées seules, en série.
+      - name: Concurrence des caisses, recharges PSP et contestations (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/psp-concurrency end-to-end/cash-concurrency topups/psp-concurrency
+          chargebacks/chargeback-concurrency cash-sessions/close-concurrency
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 

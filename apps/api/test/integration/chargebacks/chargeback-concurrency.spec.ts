@@ -52,9 +52,17 @@ describe('contestations concurrentes', () => {
       const t = await c.credited({ amount: 10_000 });
       const dispute = c.disputeId();
       const amount = Number(t.net) - 2_000;
-      const [out] = await Promise.all([
+      // Si la contestation passe la première, le solde payé restant ne couvre plus la dépense : la base la
+      // refuse (pas de découvert). C'est le seul refus admis pour la dépense.
+      const [out, spent] = await Promise.all([
         c.handle(t.row, c.notification(t.row, dispute, amount)),
-        c.spend(t.walletId, 5_000),
+        c.spend(t.walletId, 5_000).then(
+          () => true,
+          (e: Error) => {
+            if (!/Solde interdit/.test(e.message)) throw e;
+            return false;
+          },
+        ),
       ]);
       expect(out.outcome).toBe('CHARGEBACK');
       const [tx] = await c.chargebackTxs(t.row.configurationId, dispute);
@@ -63,6 +71,8 @@ describe('contestations concurrentes', () => {
       // Blocage si et seulement si le solde payé n'a pas couvert le montant dans l'ordre de passage.
       const status = await c.walletStatus(t.walletId);
       expect(status).toBe(fromWallet < amount ? 'BLOCKED' : 'ACTIVE');
+      // Dépense refusée : la contestation a tout pris sur le solde payé, sans blocage.
+      if (!spent) expect(fromWallet).toBe(amount);
       // Le solde payé final ne devient jamais négatif.
       expect(await c.p.paidBalance(t.walletId)).toBeGreaterThanOrEqual(0);
       const [row] = await ownerRows<{ n: number }>(
