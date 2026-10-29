@@ -166,6 +166,11 @@ worktrees gardés après la fusion.
    - Relecture humaine : `chargebacks/late-chargeback-action.ts`, `chargeback.service.ts` (`post`),
      `wallet-unblock-action.ts`, avec `unblock_wallet`/`block_wallet_after_chargeback` de 0038.
    Batterie lane-l (`cashless_test` après reset) : 2594 verts, seuls les 2 échecs hérités (WP14).
+   **Décisions du porteur (29/10) pour WP14** : (1) RISK-2 : **revoir les routes** `initiate`/`cancel` (dernière
+   transaction, référence du PSP et réponse, par `IdempotentTx`) ; garde intact, pas d'exception. (2) Défaut
+   de déblocage de 0038 : **corriger dans WP14** (renforcement ; ne remettre ACTIVE que si le blocage vient de
+   la contestation seule), test, relecture humaine. (3) LATE_CHARGEBACK : ORGANIZER_ADMIN ou OPERATOR_ADMIN
+   **confirmé**.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
