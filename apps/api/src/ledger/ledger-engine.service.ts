@@ -16,6 +16,7 @@ import {
   jsonWithBigint,
   linesJson,
   lockIdempotencyKey,
+  lockWalletPaidBalance,
   postTransaction,
   preloadMedia,
   readLedgerContext,
@@ -127,6 +128,9 @@ export class LedgerEngineService {
       pspConfigurationId: pspConfigurationOf(command),
       client,
     });
+    // Contestation : les soldes du portefeuille ne sont lus qu'une fois son solde payé verrouillé (sinon une dépense
+    // validée entre la lecture et l'écriture fausse la répartition et la base refuse le solde interdit).
+    if (command.type === 'CHARGEBACK') await lockWalletPaidBalance(client, command);
     const { command: enriched, balances } = await enrich(client, command);
     const buildContext: BuildContext = { config, ...(balances ? { balances } : {}) };
     if (command.type === 'REVERSAL') {

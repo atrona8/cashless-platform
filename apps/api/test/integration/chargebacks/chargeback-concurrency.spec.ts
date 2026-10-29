@@ -1,5 +1,6 @@
 // Intégration : concurrence des contestations (mission 6, lot WP13, T068 ; NFR-008 ; ordre des verrous : recharge,
 // portefeuille, comptes). Vraie base, notifications signées par HTTPS pour les rejeux.
+import { commitWhileWaiting } from '../../support/db';
 import { ownerRows } from '../../support/media-fixtures';
 import { ChargebackWorld } from './chargeback-fixtures';
 
@@ -48,7 +49,7 @@ describe('contestations concurrentes', () => {
   });
 
   it('contestation pendant que le portefeuille dépense son solde payé : pas d’interblocage, blocage cohérent avec l’ordre', async () => {
-    for (let round = 0; round < 3; round += 1) {
+    for (let round = 0; round < 12; round += 1) {
       const t = await c.credited({ amount: 10_000 });
       const dispute = c.disputeId();
       const amount = Number(t.net) - 2_000;
@@ -80,6 +81,43 @@ describe('contestations concurrentes', () => {
         [t.row.topupId],
       );
       expect(row!.n).toBe(1);
+    }
+  });
+
+  it('dépense validée entre la lecture du solde et l’écriture : la contestation aboutit sur le solde réel (déterministe)', async () => {
+    for (let round = 0; round < 3; round += 1) {
+      const t = await c.credited({ amount: 10_000 });
+      const dispute = c.disputeId();
+      const amount = Number(t.net) - 2_000;
+      // La dépense est écrite dans une transaction ouverte (elle tient le verrou du solde payé) ; elle n'est validée
+      // qu'une fois la contestation en attente de ce verrou : avec une lecture du solde sans verrou, la
+      // contestation répartirait sur l'ancien solde et la base refuserait « Solde interdit ».
+      const out = await commitWhileWaiting(
+        {
+          sql: `WITH s AS (SELECT set_config('app.operator_id', $1, false))
+                SELECT post_transaction($2, 'ADJUSTMENT', $3, clock_timestamp(), 'BACKOFFICE', jsonb_build_array(
+                  jsonb_build_object('account_id', (SELECT id FROM account WHERE wallet_id = $4 AND purpose = 'WALLET_PAID'), 'amount', $5::bigint),
+                  jsonb_build_object('account_id', (SELECT id FROM account WHERE ledger_id = $2 AND code = 'A-PSP-CARTE'), 'amount', -$5::bigint)),
+                  NULL, NULL, $6, $7) FROM s`,
+          params: [
+            c.p.op,
+            c.p.ev.ledgerId,
+            `test-spend:${dispute}`,
+            t.walletId,
+            5_000,
+            c.cw.w.operatorAdminA.userId,
+            c.cw.w.organizerAdminA.userId,
+          ],
+        },
+        { role: 'cashless_app', statement: 'SELECT' },
+        () => c.handle(t.row, c.notification(t.row, dispute, amount)),
+      );
+      expect(out.outcome).toBe('CHARGEBACK');
+      const [tx] = await c.chargebackTxs(t.row.configurationId, dispute);
+      // Solde payé réel au moment de la contestation : net - 5000 ; le reste est allé aux pertes, portefeuille bloqué.
+      expect((await c.lines(tx!.id)).WALLET_PAID).toBe(Number(t.net) - 5_000);
+      expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
+      expect(await c.p.paidBalance(t.walletId)).toBe(0);
     }
   });
 });

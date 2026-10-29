@@ -74,6 +74,20 @@ export async function readSignedBalances(
   return balances;
 }
 
+/**
+ * Verrouille le solde payé du portefeuille jusqu'à la fin de la transaction (le rôle applicatif n'a pas le droit de
+ * verrouiller `account_balance` : on passe par `wallet_topup_headroom`, fonction DEFINER qui prend ce verrou, comme
+ * pour la recharge hors ligne). Le verrou est le même que celui de `post_transaction`, qui y attend donc la dépense.
+ */
+export async function lockWalletPaidBalance(
+  client: Queryable,
+  command: { occurredAt: Date; payload?: unknown },
+): Promise<void> {
+  const walletId = (command.payload as { walletId?: unknown } | undefined)?.walletId;
+  if (typeof walletId !== 'string') return;
+  await readTopupHeadroom(client, walletId, command.occurredAt);
+}
+
 /** Marge sous le plafond du portefeuille (verrouille son solde jusqu'à la fin de la transaction) ; null = sans plafond. */
 export async function readTopupHeadroom(
   client: Queryable,
