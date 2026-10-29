@@ -19,6 +19,7 @@ class CashDueRefundResult {
     required this.currency,
     required this.resolvedAnomalyIds,
     this.approvedBy,
+    this.cashSessionId,
   });
 
   factory CashDueRefundResult.fromJson(Map<String, Object?> json) =>
@@ -39,6 +40,10 @@ class CashDueRefundResult {
   /// Valideur (`sub` du jeton d'approbation sur place), ou null sous le plafond.
   @JsonKey(name: 'approved_by')
   final String? approvedBy;
+
+  /// Session de caisse dont le compte a été crédité.
+  @JsonKey(name: 'cash_session_id')
+  final String? cashSessionId;
 
   Map<String, Object?> toJson() => _$CashDueRefundResultToJson(this);
 }

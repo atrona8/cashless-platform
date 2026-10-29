@@ -69,7 +69,7 @@ export const STEPS: ScenarioStep[] = [
   step(2, topup('W02', 'OM', 15_000n)),
   step(3, topup('W03', 'CARTE', 30_000n)),
   step(4, cash('W04', 10_000n)),
-  step(5, () => ({ moneyAccount: 'A-CAISSE-C1' }), { media: 'W04' }), // take_deposit, lot SEPARATE
+  step(5, (fx) => ({ cashSessionId: fx.cashSessionId }), { media: 'W04' }), // take_deposit_for_session, lot SEPARATE
   step(6, cash('W05', 25_000n)),
   step(7, () => ({}), { media: 'W05' }), // take_deposit, lot FROM_BALANCE
   step(8, (fx) => ({ walletId: W(fx, 'W06'), amount: 6000n })),

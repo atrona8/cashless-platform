@@ -420,8 +420,7 @@ GRANT EXECUTE ON FUNCTION
   -- Grand livre (ledger-queries.ts)
   post_transaction(uuid, text, text, timestamptz, text, jsonb, uuid, uuid, uuid, uuid, uuid, uuid,
                    uuid, jsonb),
-  preload_media(uuid), take_deposit(uuid, uuid), refund_deposit(uuid, uuid), forfeit_deposit(uuid),
-  refund_cash_due(uuid, uuid, text, uuid, uuid, uuid), wallet_topup_headroom(uuid, timestamptz),
+  preload_media(uuid), forfeit_deposit(uuid), wallet_topup_headroom(uuid, timestamptz),
   -- Bracelets : lots, codes de rattachement, cycle de vie, liste noire, lectures
   preload_batch(uuid, integer), close_batch(uuid), forfeit_batch_deposits(uuid, integer),
   set_media_batch_status(uuid, text, text, uuid), invalidate_unassociated_codes(uuid),
@@ -646,3 +645,111 @@ REVOKE INSERT, UPDATE ON payment_request_detail FROM cashless_app;
 -- 6e. Identification au guichet (R-07, C-008 ; renforcement) : aucun usage dans l'API ;
 -- FR-021 à FR-023 reportées à la mission 10, qui accordera ses fonctions. Lecture gardée.
 REVOKE INSERT, UPDATE ON kyc_verification FROM cashless_app;
+
+-- -----------------------------------------------------------------------------------------------
+-- 7. Recharges, caisses et PSP, mission 6 (recharges-caisses-psp, lot WP05 ; contracts/
+-- database-rights.md ; research R-20 A6, A7, A8, A9, A10, A24, A27 ; C-004, NFR-005).
+-- -----------------------------------------------------------------------------------------------
+-- Modèle : section 6. Cette section vient après la section 6 et reste rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (droits de la base) : l'agent qui l'a écrite ne la relit pas.
+
+-- 7a. Tables (0036 à 0038) : fermées en écriture. roles.sql vient de rendre INSERT et UPDATE ;
+-- DELETE et TRUNCATE sont déjà retirés, redits ici pour ne pas dépendre de l'ordre. Toutes
+-- s'écrivent par les fonctions SECURITY DEFINER de 7c. Risque conjuré : un INSERT direct d'une
+-- psp_configuration ACTIVE (contournement de l'approbation), d'un cash_session ou d'un psp_topup
+-- SUCCEEDED (crédit sans écriture), d'un event_psp_selection (choix du PSP sans contrôle).
+-- cashless_app garde son INSERT sur account (A6) : la barrière est account_purpose_guard.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON cash_desk, cash_session, cash_session_count,
+  cash_session_tx, psp_configuration, event_psp_selection, psp_topup, psp_event, psp_chargeback,
+  psp_webhook_rejection FROM cashless_app;
+-- Aucune séquence créée par 0036 à 0038 : rien à retirer côté USAGE.
+
+-- 7b. Colonnes secrètes (A10, A24), liste calculée « toutes sauf » comme en 6a/6d.
+-- psp_configuration.secret_ref désigne l'entrée du coffre du titulaire : lue par la seule fonction
+-- psp_configuration_secret_ref (adaptateur). psp_event.body est un corps authentifié qui contient
+-- des données du payeur : lu par la seule fonction read_psp_event_body (qui audite).
+REVOKE SELECT ON psp_configuration FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.psp_configuration'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'secret_ref';
+  EXECUTE format('GRANT SELECT (%s) ON psp_configuration TO cashless_app', cols);
+END $$;
+REVOKE SELECT ON psp_event FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.psp_event'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'body';
+  EXECUTE format('GRANT SELECT (%s) ON psp_event TO cashless_app', cols);
+END $$;
+
+-- 7b-bis. wallet.other_block (0042) : tenue par le seul déclencheur wallet_block_cause_guard ;
+-- cashless_app ne l'écrit pas (liste « toutes sauf », comme ci-dessus). Le reste des droits de
+-- cashless_app sur wallet est inchangé.
+REVOKE INSERT, UPDATE ON wallet FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.wallet'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'other_block';
+  EXECUTE format('GRANT INSERT (%s), UPDATE (%s) ON wallet TO cashless_app', cols, cols);
+END $$;
+
+-- 7c. EXECUTE, signature complète, par famille. Séparé de la section 4. Aucun GRANT ON ALL.
+GRANT EXECUTE ON FUNCTION
+  -- Sessions de caisse (0036)
+  open_cash_session(uuid, uuid), count_cash_session(uuid, bigint, uuid, uuid, text),
+  begin_cash_close(uuid, uuid), finish_cash_close(uuid, uuid, uuid), attach_cash_tx(uuid, uuid),
+  open_cash_due_anomaly(uuid, uuid, bigint, uuid), take_deposit_for_session(uuid, uuid),
+  refund_deposit_for_session(uuid, uuid),
+  refund_cash_due_for_session(uuid, uuid, text, uuid, uuid, uuid),
+  -- Cautions sans compte désigné (0041) : remplacent take_deposit et refund_deposit
+  take_deposit_from_balance(uuid), refund_deposit_from_balance(uuid),
+  -- Configurations PSP (0037)
+  create_psp_configuration(uuid, text, text, uuid, text, boolean, timestamptz, timestamptz, uuid,
+                           uuid),
+  activate_psp_configuration(uuid, uuid), set_event_psp_selection(uuid, text, uuid, uuid, uuid),
+  resolve_psp_configuration(uuid, text), psp_configuration_secret_ref(uuid),
+  psp_webhook_context(uuid),
+  -- Recharges (0038)
+  create_psp_topup(uuid, uuid, text, bigint, text, uuid, uuid, uuid, timestamptz),
+  mark_psp_topup_initiated(uuid, text, timestamptz), cancel_psp_topup(uuid),
+  expire_psp_topups(uuid[]), psp_poll_candidates(int),
+  record_psp_event(uuid, text, text, bytea, jsonb), mark_psp_event(uuid, text, text, uuid),
+  psp_events_to_retry(int), purge_psp_event_bodies(int), read_psp_event_body(uuid, uuid),
+  complete_psp_topup(uuid, uuid, bigint, text), complete_card_topup(uuid, uuid, bigint, text, text,
+                                                                    text),
+  fail_psp_topup(uuid, text, boolean, text, text, text), record_webhook_rejection(uuid, text),
+  card_topups_today(uuid, text, timestamptz), wallet_card_count(uuid, text),
+  -- Contestations (0038)
+  record_chargeback(uuid, text, bigint, boolean), attach_chargeback_tx(uuid, uuid),
+  block_wallet_after_chargeback(uuid, uuid), unblock_wallet(uuid, uuid)
+  TO cashless_app;
+-- Anciennes signatures de caisse (take_deposit, refund_deposit, refund_cash_due) : retirées de la
+-- section 4 (WP14 cycle 2, OP-N84 levé, ADR-135) ; le moteur passe par les variantes ci-dessus.
+
+-- 7d. Fonctions internes : jamais exécutables par cashless_app (REVOKE explicite, redit pour ne
+-- pas dépendre de la section 0). Helpers de contrôle de rôle, noyaux, fonctions de déclencheur
+-- (elles se déclenchent sans EXECUTE), open_psp_accounts (décision du porteur du 27/10/2026,
+-- option b : appelée par d'autres fonctions de la base seulement).
+REVOKE EXECUTE ON FUNCTION
+  cash_actor_allowed(uuid, uuid, uuid, text[]), cash_session_usable(uuid, uuid),
+  cash_session_attach_own(cash_session, text), posting_cash_desk_guard(), account_purpose_guard(),
+  psp_configuration_immutable(), event_psp_selection_guard(), psp_operator_admin(uuid, uuid),
+  psp_organizer_admin(uuid, uuid, uuid), psp_account_code(text), open_psp_accounts(uuid),
+  fee_rule_guard(), assert_no_legacy_psp_fee_rules(), psp_topup_transition_guard(),
+  psp_event_guard(), psp_session_operator(), psp_key_prefix(text), psp_topup_net_credited(uuid),
+  psp_topup_replay_row(uuid, uuid, text, bigint, text),
+  psp_complete_core(uuid, uuid, bigint, text, boolean, text, text), psp_chargeback_cap(),
+  psp_chargeback_guard(), wallet_block_cause_guard()
+  FROM cashless_app;
+
+-- 7e. Autres rôles : cashless_platform et les rôles des clés reçoivent des listes nommées plus
+-- haut (sections 1 et 5), aucune ne cite une table ou une fonction de cette section. Rien ici.
+-- Constat pour la revue : cashless_app garde un INSERT direct sur anomaly (hérité de roles.sql),
+-- non retiré dans ce lot.

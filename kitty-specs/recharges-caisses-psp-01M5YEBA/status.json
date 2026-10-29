@@ -1,20 +1,475 @@
 {
-  "event_count": 0,
-  "last_event_id": null,
-  "materialized_at": "",
-  "mission_number": "",
-  "mission_slug": "",
+  "event_count": 274,
+  "last_event_id": "01M63ZEX2XDBS0APE8MG7YWNX9",
+  "materialized_at": "2026-10-29T14:01:43.773849+00:00",
+  "mission_number": "1",
+  "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
-    "done": 0,
+    "done": 14,
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
     "planned": 0
   },
-  "work_packages": {}
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 18,
+      "lane": "done",
+      "last_event_id": "01M63ZDPZ4HSMP1GCHBJPH3WV8",
+      "last_transition_at": "2026-10-29T14:01:04.741041+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent status.json, status.events.jsonl, acceptance-matrix.json, baseline-tests.json (artefacts du runtime).",
+        "Cycle 2 (0d87b69e) : charge PSP_CONFIGURATION alignée sur 0037 {psp_configuration_id, version, status, compliance_ref}, motif secret_ref aligné, types TS/Dart régénérés ; Jest contrat 371/371 sur cashless_wp01. Écart de nom psp_config_id (HTTP) / psp_configuration_id (charge) signalé. --force (accord du porteur 27/10/2026) : après réalignement, restent seulement status.*, acceptance-matrix.json, baseline-tests.json.",
+        "Verdict du relecteur distinct du cycle 2 (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. Constats du cycle 1 corrigés (charge PSP_CONFIGURATION = 0037, motif secret_ref). npm run check vert ; Jest contrat 371/371 (implémenteur). LATE_CHARGEBACK : déjà en base (0009/0011/0033), data-model exact. Report : WP08/WP09/WP11 ajoutent leurs cas terminal à device-auth-matrix. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP01-contrat-api-types/review-cycle-2.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP01-contrat-api-types/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 35763,
+      "shell_pid_created_at": "1793113000.283289",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZDSWKFFWF1TD57XP4TZTZ",
+      "last_transition_at": "2026-10-29T14:01:07.731682+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent status.json, status.events.jsonl, acceptance-matrix.json, baseline-tests.json (artefacts du runtime).",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. pgTAP 174/174 sur cashless_wp02, mutations des gardes détectées. 5 mineurs consignés (roles.sql fermé par WP05 ; garde de caisse ouverte si propriétaire non superutilisateur, à relire par une personne ; contrôle d'acteur côté API WP09 ; attach_cash_tx sans borne d'ouverture ; test 147 descriptif). --force (accord du porteur 27/10/2026) : après réalignement sur feat, restent seulement status.*, acceptance-matrix.json, baseline-tests.json."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP02-base-sessions-caisse/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP02-base-sessions-caisse/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 31824,
+      "shell_pid_created_at": "1793112745.192652",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZDWSWHPQZD3BFVVQ6AG3X",
+      "last_transition_at": "2026-10-29T14:01:10.716325+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Prêt pour relecture. --force (accord du porteur du 27/10/2026, mission 6) : après réalignement sur feat, seuls restent les artefacts du runtime (status.*, acceptance-matrix.json, baseline-tests.json).",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. pgTAP 165/165 sur cashless_wp03, 8 mutations sur 10 détectées (2 couvertes par une autre vérification). Mineurs : M1 secret_ref accepte '.'/'..' (à refuser dans le port du coffre WP07), M2 droits directs de cashless_app à fermer par WP05 (bloquant pour sa revue), M3 account_purpose_guard x open_psp_accounts à prouver à la fusion, M4 rejeu sur base peuplée non testé. --force (accord du porteur 27/10/2026) : restent seulement status.*, acceptance-matrix.json, baseline-tests.json, review-feedback-1.md (artefacts du runtime)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP03-base-configurations-psp/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP03-base-configurations-psp/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 32013,
+      "shell_pid_created_at": "1793112749.405901",
+      "subtasks": {
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 18,
+      "lane": "done",
+      "last_event_id": "01M63ZDZPRPB9EJC6Z8ZCG2V3K",
+      "last_transition_at": "2026-10-29T14:01:13.688632+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation eea02fd2 (migration 0038, 284 tests pgTAP verts sur cashless_wp04, 5 mutations détectées). Contradiction signalée à arbitrer avant WP12 : record_psp_event refusé si configuration non ACTIVE (prompt) contre commentaire de 0037. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Cycle 2 (7158248e) : double crédit après résolution manuelle fermé (CL029, fermeture WHERE status='OPEN'), déblocage comparé à blocked_at, assertions resserrées, frais = brut - net. 295 tests pgTAP verts sur cashless_wp04. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct du cycle 2 (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. 4 corrections conformes (7158248e), aucune régression ; pgTAP sur cashless_wp04 : psp_topups 295, definer_trigger_writers 25, payments 109, definer_search_path 14, psp_configurations 165, execute_grants 30, grand_livre 400, scenario 64. Ouvert pour WP05/porteur : SELECT psp_event.body, fonctions neutres multi-prestataires. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP04-base-recharges-psp/review-cycle-2.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP04-base-recharges-psp/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 49192,
+      "shell_pid_created_at": "1793115057.799688",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZE5JH4A5GFCR7CRVDCFSD",
+      "last_transition_at": "2026-10-29T14:01:19.697184+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation 1ae2910e : post-roles.sql section 7 (REVOKE écritures sur 10 tables, colonnes secret_ref/body fermées, 37 GRANT EXECUTE nommés, 23 REVOKE EXECUTE internes), tests_cash_psp_rights 213 ok, 12 mutations détectées. [A8-DETTE] prévue (levée par WP09). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. cashless_wp05 : tests_cash_psp_rights 213, tests_execute_grants 52 ; post-roles rejoué deux fois à ACL identiques ; 57 fonctions de 0036-0038 toutes classées (35 accordées, 22 révoquées) ; 10/11 mutations détectées (ALTER DEFAULT PRIVILEGES non détecté, non exploitable). Défaut antérieur consigné : INSERT direct de cashless_app sur anomaly. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP05-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP05-droits-base/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 53876,
+      "shell_pid_created_at": "1793116094.042587",
+      "subtasks": {
+        "T023": "done",
+        "T024": "done",
+        "T025": "done",
+        "T026": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZE2MHB2YVD9SXN1TTKJ5A",
+      "last_transition_at": "2026-10-29T14:01:16.689515+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation ee906623 : découpage hors ligne limité à OFFLINE_SYNC/EDGE_SYNC, anomalie CASH_TOPUP_OVER_LIMIT dans la même transaction, buildCashClose à théorique nul. Jest 1259 verts sur cashless_wp06. Test d'atomicité via bracelet non attribué (0036 ne vérifie que le grand livre, pas le portefeuille). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. 124 tests moteur/builders verts sur cashless_wp06, tsc propre, 2 mutations détectées (4 et 5 échecs). Échecs du Jest complet dans des suites non touchées (claim-code-order, personalization, platform, migrate-rights) : à confirmer par la batterie de l'orchestrateur. Mineurs : EXECUTE open_cash_due_anomaly par WP05 ; contrôle bracelet = portefeuille de la commande (renforcement, WP09) ; source fixée côté serveur dans les futures routes TOPUP_CASH (WP09). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP06-moteur-especes/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP06-moteur-especes/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42167,
+      "shell_pid_created_at": "1793113591.918818",
+      "subtasks": {
+        "T027": "done",
+        "T028": "done",
+        "T029": "done",
+        "T030": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZE8GFM1W7TTFTEECDN5G9",
+      "last_transition_at": "2026-10-29T14:01:22.703931+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation 21acd126 : ports PSP et coffre, faux par fournisseur, registre, garde de production ; CL041-CL044 mappés ; 273 tests verts sur cashless_wp07 ; 5 mutations détectées. --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Verdict du relecteur distinct (sous-agent Sonnet), enregistré par l'orchestrateur : approuvé. Aucun chemin vers un faux en production (12 mutations ; 3 contournements du test d'import corrigés par a6afb6cb, mutation require() revérifiée par l'orchestrateur). 252 tests verts sur cashless_wp07. Consigné : montant nul refusé partout (choix cohérent avec 0038) ; processus public bloqué en production par le faux d'identité du festivalier (antérieur). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP07-ports-psp-faux/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP07-ports-psp-faux/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 58638,
+      "shell_pid_created_at": "1793116968.857836",
+      "subtasks": {
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done",
+        "T035": "done",
+        "T036": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZEECVDY3DGFCS1WJJ37VT",
+      "last_transition_at": "2026-10-29T14:01:28.732104+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Reprise Windows : tests T042 écrits, fixtures réparées ; 68 tests WP08 + matrice verts sur cashless_wp08 ; mutations théorique et preuve de terminal détectées. Écarts (aucun n'affaiblit) : counted_at non retenu (heure de la base), note ≤200, bank_reference ≤200 (openapi prime sur le prompt : 100), CASH_DIFF par finish_cash_close. --force : garde kitty-specs sur artefacts du runtime seuls.",
+        "Relecture Windows (agent distinct) : 56 tests WP08 + matrice 12/12 verts sur cashless_wp08r, tsc propre ; mutations ORGANIZER_ADMIN fermeur, vue AGENT théorique, filtre opened_by détectées ; fermeur≠compteur API seule non détecté (base CL041 tient). Mineurs : cash_diff_anomaly_id visible en vue AGENT (WP14/revue), test API seule fermeur≠compteur, counted_at ignoré à documenter. --force : garde kitty-specs sur artefacts du runtime seuls."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "reviewer",
+      "shell_pid": 62215,
+      "shell_pid_created_at": "1793117419.100807",
+      "subtasks": {
+        "T037": "done",
+        "T038": "done",
+        "T039": "done",
+        "T040": "done",
+        "T041": "done",
+        "T042": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZEHAA6CWQCN0QZDDXKNTJ",
+      "last_transition_at": "2026-10-29T14:01:31.722717+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP09 : 7 commits (8b54f84..21a0c20) ; cash-topup 10, refusals 11, cash-desk-guard 4, deposit 10, cash-due 6, release 7, matrice 12 verts sur cashless_wp09 ; 9 mutations détectées. Écarts sans affaiblissement : content_sha256 sans tap_id (sync_protocol §3.3 prime), moneyAccount gardé dans DelegatedPayload (refusé avec cashSessionId), 400 au lieu de 422. --force : garde kitty-specs sur artefacts du runtime seuls.",
+        "Relecture Windows (agent distinct) : PASS WITH NOTES, 13 suites vertes sur cashless_wp09r, tsc propre ; mutation takeDeposit tuée. Mineurs reportés à WP14 : test du portefeuille d'un autre grand livre (mutation survivante), test où le contrôle API de CLOSING est seul rempart, toEqual dans release.spec. --force : garde kitty-specs sur artefacts du runtime seuls."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\recharges-caisses-psp-01M5YEBA\\tasks\\WP09-recharge-especes-guichet\\review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP09-recharge-especes-guichet/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 10648,
+      "shell_pid_created_at": "1793197304.297778",
+      "subtasks": {
+        "T043": "done",
+        "T044": "done",
+        "T045": "done",
+        "T046": "done",
+        "T047": "done",
+        "T048": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZEBDZFRWPYSGYGTH6E2RQ",
+      "last_transition_at": "2026-10-29T14:01:25.695816+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation 93f9456b : API des configurations PSP et choix par événement, frais par configuration (convention PSP:<canal> retirée), 75 tests ciblés verts sur cashless_wp10, 3 mutations détectées. À juger en relecture : opérations PSP exclues du balayage configuration-isolation.spec.ts, attentes de tests modifiées (scope_type ORG_FPSP). --force (accord du porteur 27/10/2026) : restent seulement des artefacts du runtime.",
+        "Relecture Windows : 42 tests WP10, résolveur, rejeu et matrice verts sur cashless_wp10, tsc OK, mutations secret_ref et cloisonnement tuées. Mineurs : nom secret_ref à 100 caractères (prompt : 64), JWT avec point non détecté, compte rendu du lot absent, valeur attendue ORG_FPSP changée dans api-config-replay (cohérent avec ADR-133). --force : garde kitty-specs sur artefacts du runtime seuls (autorisé, REPRISE)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\hp\\Documents\\cashless\\cashless-platform\\kitty-specs\\recharges-caisses-psp-01M5YEBA\\tasks\\WP10-configurations-psp-api\\review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP10-configurations-psp-api/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 67485,
+      "shell_pid_created_at": "1793118539.011965",
+      "subtasks": {
+        "T049": "done",
+        "T050": "done",
+        "T051": "done",
+        "T052": "done",
+        "T053": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 16,
+      "lane": "done",
+      "last_event_id": "01M63ZEMAEN666M4NCEA03K2ZM",
+      "last_transition_at": "2026-10-29T14:01:34.799101+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP11 : 10309af..25986f3 ; psp-process 23, card 11, deposit 5, concurrency 3, request 16, read-cancel 11, matrice 13 verts sur cashless_wp11 ; 14/15 mutations tuées (survivante doublée par la base). Écarts sans affaiblissement : verrou consultatif (pas de FOR UPDATE, droits inchangés), CL039 422 vs psp.md 409, succès après annulation crédité (R-20), INSERT anomaly direct (droit antérieur). --force : garde kitty-specs sur artefacts du runtime seuls.",
+        "Relecture Windows (agent distinct) : APPROUVÉ avec notes ; 7 suites vertes sur cashless_wp11r ; 8 mutations nouvelles tuées (clé de verrou, devise, dédoublonnage, plafond, 3DS, portefeuille bloqué, caution). Mineurs : CL029 non classé (RETRY en boucle après anomalie résolue, motif carte erroné) → WP12 ; tests MISMATCH concurrent et process/cancel HTTP → WP14. --force : garde kitty-specs sur artefacts du runtime seuls."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "reviewer",
+      "shell_pid": 1268,
+      "shell_pid_created_at": "1793200044.4039457",
+      "subtasks": {
+        "T054": "done",
+        "T055": "done",
+        "T056": "done",
+        "T057": "done",
+        "T058": "done",
+        "T059": "done"
+      }
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M63ZEQ7SKGPW5SN7JWC5XNBP",
+      "last_transition_at": "2026-10-29T14:01:37.786033+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
+        "Relecture WP12 : 8 suites + tsc verts sur cashless_wp12 ; mutations tuées (horodatage, config non ACTIVE, provider, secret précédent, secret non évalué, apply rethrow, getStatus sous verrou) ; retouche WP11 (NO_EFFECT sur anomalie résolue) sans crédit possible. Mineurs consignés au compte rendu."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/recharges-caisses-psp-01M5YEBA-coord/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP12-notifications-poller/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP12-notifications-poller/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 8770,
+      "shell_pid_created_at": "1793268062.125221",
+      "subtasks": {
+        "T060": "done",
+        "T061": "done",
+        "T062": "done",
+        "T063": "done",
+        "T064": "done"
+      }
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M63ZET5KX7AVEAKJ4QM24YWX",
+      "last_transition_at": "2026-10-29T14:01:40.787325+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: contestations (DISPUTE branché), LATE_CHARGEBACK, WALLET_UNBLOCK, 38 tests",
+        "Review passed: 38 chargeback tests + 42 webhook tests green on cashless_wp13, tsc clean, 6 mutations killed. Reports to WP14: expireUnmatched ignores DISPUTE; block marks wallet_blocked on wallet already BLOCKED for another cause."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/recharges-caisses-psp-01M5YEBA-coord/kitty-specs/recharges-caisses-psp-01M5YEBA/tasks/WP13-contestations/review-cycle-1.md",
+        "reference": "review-cycle://recharges-caisses-psp-01M5YEBA/WP13-contestations/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15559,
+      "shell_pid_created_at": "1793269792.847437",
+      "subtasks": {
+        "T065": "done",
+        "T066": "done",
+        "T067": "done",
+        "T068": "done"
+      }
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": null,
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 6,
+      "lane": "done",
+      "last_event_id": "01M63ZEX2XDBS0APE8MG7YWNX9",
+      "last_transition_at": "2026-10-29T14:01:43.773849+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP14 pret : parcours, isolation, secrets, concurrence, latence, gardes de production, CI, consignation ; RISK-2 tenu, 0039, SC-007, contestation introuvable. Defaut renvoye : interblocages fermeture + recharges espèces par HTTP (it.failing).",
+        "Relecture WP14 : decisions A-E du porteur du 29/10 appliquees (RISK-2 sans exception, 0039, SC-007, DISPUTE 24 h), preuves relancees vertes sur cashless_wp14, 5 mutations tuees sur 6. Reserves : limite residuelle OP-N83 (contestation puis perte), mutation survivante 0039 (deux contestations), interblocage 40P01 (it.failing), OP-N84 a trancher par le porteur.",
+        "Cycle 2 ouvert par l'orchestrateur sur décisions du porteur (29/10) : interblocage, A8-DETTE et 0039 à corriger avant fusion ; cycle 1 approuvé par relecteur distinct",
+        "Cycle 2 : 0040 (verrous begin_cash_close), 0041 (OP-N84 levé), 0042 (OP-N83), it.failing -> it, bornage des contrôleurs WP09",
+        "Cycle 2 approuvé : 0040 (ordre de verrous terminal>session>solde, cash-concurrency 6/6 verts), 0041+post-roles (OP-N84 levé, 4 mutations tuées), 0042 (OP-N83, toutes causes). Jest 1826 verts, pgTAP 0036-0042 verts, tsc propre. Mineurs: GUC app.wallet_block_origin posable par cashless_app, ligne >100 car. wallet-unblock-action.ts.",
+        "Commit 8250e55 (texte seul, décision du porteur du 29/10) postérieur à l'approbation : relecture courte demandée par le porteur",
+        "Relecture du seul commit 8250e55 (texte, décision du porteur du 29/10). --force (accord du porteur 27/10/2026) : après réalignement sur feat (9f7dad04), restent seulement status.*, baseline-tests.json, acceptance-matrix.json.",
+        "Relecture courte de 8250e55 par un relecteur distinct (sous-agent Sonnet)",
+        "Verdict du relecteur distinct, enregistré par l'orchestrateur : APPROUVÉ. 8250e55 (texte seul) fidèle au code : psp-payment-processor.ts:8-12 (R-20), test psp-process.spec.ts:129-155 (annulation puis succès crédité, une seule transaction) ; openapi.ts = régénération (node scripts/check.mjs : types à jour) ; aucun code ni schéma modifié, aucune garantie affaiblie. Mineurs à aligner sur feat après fusion : contracts/psp.md point 9 et description du webhook PSP (openapi.yaml l.3810). --force (accord du porteur 27/10/2026) : seuls des artefacts du runtime restent après réalignement (9f7dad04).",
+        "Réenregistrement de l'approbation sans --force (tampon)",
+        "Verdict du relecteur distinct (relecture courte de 8250e55, texte seul) : APPROUVÉ. Fidèle au code (psp-payment-processor.ts:8-12, psp-process.spec.ts:129-155) ; openapi.ts régénéré à l'identique ; aucun code ni schéma modifié. Mineurs à aligner sur feat : contracts/psp.md point 9, openapi.yaml l.3810."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "reference": "auto-approval:WP14:20261029",
+        "reviewer": "relecteur distinct (sous-agent Sonnet)",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
+      "subtasks": {
+        "T069": "done",
+        "T070": "done",
+        "T071": "done",
+        "T072": "done",
+        "T073": "done",
+        "T074": "done"
+      }
+    }
+  }
 }

@@ -52,6 +52,10 @@ class PspTopup {
   final Timestamp? expiresAt;
   @JsonKey(name: 'transaction_id')
   final String? transactionId;
+
+  /// Motif de l'échec, chaîne libre (l'ensemble fermé est arrêté par la livraison de la recharge PSP).
+  /// Valeurs indicatives : `THREE_DS`, `NO_FINGERPRINT`, `CARD_DAILY_LIMIT`, `LEDGER_STATUS`, `CANCELLED`.
+  ///
   @JsonKey(name: 'failure_reason')
   final String? failureReason;
 

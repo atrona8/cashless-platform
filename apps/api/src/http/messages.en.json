@@ -247,6 +247,10 @@
     "title": "Batch too large",
     "detail": "The batch is empty or exceeds the allowed size."
   },
+  "PAYLOAD_TOO_LARGE": {
+    "title": "Notification too large",
+    "detail": "The notification exceeds the allowed size and was not kept."
+  },
   "BATCH_SIGNATURE_INVALID": {
     "title": "Invalid batch signature",
     "detail": "The batch header signature is invalid; batch not processed."

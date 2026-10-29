@@ -8,6 +8,10 @@
 # suites pgTAP (tests/*.sql, lues par test-pgtap.sh), tests HTTPS (certificats générés à
 # l'exécution par apps/api/test/support/tls.ts, aucune clé dans le dépôt) et mesures des
 # terminaux isolées.
+# Mission recharges-caisses-psp (lot WP14, T072) : une étape de plus, la latence des recharges (NFR-006 notifications
+# PSP, NFR-009 recharges espèces), suite seule après la passe parallèle ; les suites pgTAP de la mission
+# (tests_cash_sessions, tests_psp_configurations, tests_psp_topups, tests_cash_psp_rights, tests_execute_grants) sont
+# lues par le motif tests/*.sql de test-pgtap.sh ; `check:generated` garde les .sql générés intacts (C-002).
 name: ledger-tests
 on: [push, pull_request]
 
@@ -176,3 +180,8 @@ jobs:
       # aucune autre suite ne tourne pendant la mesure.
       - name: Latence du paiement, NFR-001 (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- --runInBand end-to-end/payment-latency
+
+      # NFR-006 (200 notifications PSP authentifiées, p95 <= 500 ms) et NFR-009 (200 recharges espèces, p95 <= 200 ms)
+      # de la mission recharges-caisses-psp (WP14) : en série, serveur seul. Après la passe parallèle, SEULE.
+      - name: Latence des recharges, NFR-006 et NFR-009 (suite seule, sans nouvel essai)
+        run: npm test -w @cashless/api -- --runInBand end-to-end/topup-latency

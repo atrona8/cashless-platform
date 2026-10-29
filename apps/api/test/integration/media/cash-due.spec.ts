@@ -17,6 +17,7 @@ import {
   goLive,
   ledgerIsSound,
   openCashDesk,
+  openCashSession,
   ownerRows as rows,
   seedPersonalizedMedia,
   tapBody,
@@ -28,7 +29,10 @@ describe('espèces dues rendues au guichet', () => {
   let w: MediaWorld;
   let app: INestApplication;
   let device: TestDevice; // caisse ouverte
+  let other: TestDevice; // second terminal à caisse ouverte
   let noDesk: TestDevice;
+  let session: { sessionId: string; accountId: string; code: string };
+  let otherSession: { sessionId: string; accountId: string; code: string };
   let cashDesk: string;
   let batch: string;
   let supervisorEvent: TestPerson; // SUPERVISOR de l'événement A, valideur
@@ -133,13 +137,32 @@ describe('espèces dues rendues au guichet', () => {
     w = await createMediaWorld();
     await withOwner(async (db) => {
       await goLive(db, w.ops.a, w.ids.eventA, w.operatorAdminA.userId);
-      device = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
+      device = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
+      other = await createTestDevice(db, {
+        operatorId: w.ops.a,
+        eventId: w.ids.eventA,
+        kind: 'TOPUP',
+      });
       noDesk = await createTestDevice(db, { operatorId: w.ops.a, eventId: w.ids.eventA });
       cashDesk = await openCashDesk(db, {
         operatorId: w.ops.a,
         ledgerId: w.ids.ledgerA,
         organizerId: w.ids.organizerA,
         serial: device.serial,
+      });
+      session = await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: device.deviceId,
+        userId: w.cashierA.userId,
+      });
+      otherSession = await openCashSession(db, {
+        operatorId: w.ops.a,
+        deviceId: other.deviceId,
+        userId: w.cashierA.userId,
       });
       batch = await createBatch(db, {
         operatorId: w.ops.a,
@@ -179,6 +202,7 @@ describe('espèces dues rendues au guichet', () => {
       currency: 'XOF',
       resolved_anomaly_ids: [a1, a2].sort(),
       approved_by: null,
+      cash_session_id: session.sessionId,
     });
     expect(
       await rows('SELECT type, source, approved_by FROM journal_transaction WHERE id = $1', [
@@ -282,20 +306,45 @@ describe('espèces dues rendues au guichet', () => {
     const wrong = await post(m, { tap: tapBody(other, next()) });
     expect(wrong.status).toBe(422);
     expect(wrong.body.rule).toBe('return.wrong_media');
-    const session = await post(m, { tap: tapBody(m, next()), cash_session_id: randomUUID() });
-    expect(session.status).toBe(409);
-    expect(session.body).toMatchObject({ code: 'CONFLICT_STATE', rule: 'cash_due.no_session' });
+    // Session citée qui n'est pas celle du terminal (inconnue, ou ouverte par un autre terminal) : 409.
+    for (const cash_session_id of [randomUUID(), otherSession.sessionId]) {
+      const refused = await post(m, { tap: tapBody(m, next()), cash_session_id });
+      expect(refused.status).toBe(409);
+      expect(refused.body).toMatchObject({ code: 'CONFLICT_STATE', rule: 'cash.session_mismatch' });
+    }
+    expect((await post(m, { tap: tapBody(m, next()), cash_session_id: 'x' })).status).toBe(400);
+    const accounts = () =>
+      rows<{ n: number }>(
+        `SELECT count(*)::int AS n FROM account WHERE ledger_id = $1 AND purpose = 'CASH_DESK'`,
+        [w.ids.ledgerA],
+      ).then((r) => r[0]!.n);
+    const accountsBefore = await accounts();
     const desk = await post(m, { tap: tapBody(m, next()) }, { device: noDesk });
     expect(desk.status).toBe(409);
     expect(desk.body.code).toBe('CONFLICT_STATE');
+    // Terminal sans session, même avec un identifiant cité : 409 ; aucun compte de caisse créé.
+    const cited = await post(
+      m,
+      { tap: tapBody(m, next()), cash_session_id: session.sessionId },
+      { device: noDesk },
+    );
+    expect(cited.status).toBe(409);
+    expect(await accounts()).toBe(accountsBefore);
     expect(await openAnomalies(m)).toBe(1);
     // tap_id d'une lecture enregistrée par ce terminal : accepté et consommé.
     const tap = await request(app.getHttpServer())
       .post('/v1/taps')
       .set(device.headers)
       .send(tapBody(m, next()));
-    const res = await post(m, { tap_id: tap.body.tap_id });
+    const res = await post(m, { tap_id: tap.body.tap_id, cash_session_id: session.sessionId });
     expect(res.status).toBe(201);
+    // La session est renvoyée, et l'écriture lui est rattachée (FR-004, FR-008).
+    expect(res.body.cash_session_id).toBe(session.sessionId);
+    expect(
+      await rows('SELECT cash_session_id FROM cash_session_tx WHERE tx_id = $1', [
+        res.body.transaction_id,
+      ]),
+    ).toEqual([{ cash_session_id: session.sessionId }]);
     expect(
       await rows('SELECT transaction_id FROM media_tap WHERE id = $1', [tap.body.tap_id]),
     ).toEqual([{ transaction_id: res.body.transaction_id }]);

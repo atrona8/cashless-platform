@@ -15,6 +15,7 @@ TopupResult _$TopupResultFromJson(Map<String, dynamic> json) => TopupResult(
   currency: json['currency'] as String,
   walletId: json['wallet_id'] as String,
   balanceAfter: Balance.fromJson(json['balance_after'] as Map<String, dynamic>),
+  cashSessionId: json['cash_session_id'] as String?,
   deposit: json['deposit'] == null
       ? null
       : DepositState.fromJson(json['deposit'] as Map<String, dynamic>),
@@ -30,6 +31,7 @@ Map<String, dynamic> _$TopupResultToJson(TopupResult instance) =>
       'currency': instance.currency,
       'wallet_id': instance.walletId,
       'balance_after': instance.balanceAfter,
+      'cash_session_id': instance.cashSessionId,
       'deposit': instance.deposit,
     };
 

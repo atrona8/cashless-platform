@@ -21,13 +21,13 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
 | OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 7 (hors ligne), après OP-N11 (confirmé par le porteur le 15/10/2026) |
 | OP-N42 | Identité du terminal — **levé** le 21/10/2026 par la mission 5a (jeton lié, mTLS et signature de chaque requête, ADR-107 ; `device-auth-matrix.spec.ts`, `production-guard.spec.ts`) | Non | Non | — |
-| OP-N43 | Identité du festivalier : faux seulement | Non | **Oui** | Mission 10 (app festivalier) |
+| OP-N43 | Identité du festivalier : faux seulement (routes de la mission 6 derrière le faux : `initiatePspTopup`, `getPspTopup`, `cancelPspTopup`) | Non | **Oui** | Mission 10 (app festivalier) |
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` — **levé** le 21/10/2026 par la mission 5a (droits rôle par rôle, `tests_execute_grants.sql`) | Non | Non | — |
 | OP-N45 | Aiguillage par chemin devant les processus de l'API | Non | **Oui** | Mission 13 (recette V1) (confirmé par le porteur le 15/10/2026) |
 | OP-N46 | Signature d'originalité NXP vérifiée par le poste seulement | Non | Non | Mission 12 (app terminal), avec l'auditeur sécurité (confirmé par le porteur le 15/10/2026) |
 | OP-N47 | Rotation du secret d'empreinte des codes de rattachement non outillée | Non | Non | Mission 10 (app festivalier) : proposée par l'agent le 16/10/2026, à confirmer par le porteur (ADR-104) |
 | OP-N48 | Fichier de commande des codes de rattachement perdu en route : pas de nouvelle émission | Non | Non | Agent (choix laissé par le porteur) ; à revoir en exploitation |
-| OP-N49 | Caution en espèces et espèces dues : aucune caisse avant la mission des caisses (`409`) | Non | **Oui** | Mission « Recharges, caisses et PSP » |
+| OP-N49 | Caution en espèces et espèces dues : aucune caisse avant la mission des caisses (`409`) — **levé** le 29/10/2026 par la mission 6 (migration `0036_cash_sessions.sql` ; `tests_cash_sessions.sql`, `deposit.spec.ts`, `cash-due.spec.ts`, `release.spec.ts`, `cash-desk-guard.spec.ts`, cas `SC-002 : OP-N49 levé` de `topup-journey.spec.ts`) | Non | Non | — |
 | OP-N50 | Lecture liée à une demande de rattachement utilisable par `consume_tap` — **levé** le 21/10/2026 par la mission 5a (migrations 0024, 0026 ; `tests_consume_tap_claim.sql`, `tap-claim-race.spec.ts`) | Non | Non | — |
 | OP-N51 | Guichet de retour : enchaînement des étapes servi par la mission 9 (décidé le 15/10/2026, ADR-91) | Non | Non | Mission 9 |
 | OP-N52 | Sortie de liste noire : valideur non vérifié par la base — **levé** le 15/10/2026 (migration 0017, ADR-94), avec une limite résiduelle : OP-N56 | Non | Non | — |
@@ -61,6 +61,9 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
 | OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026 |
 | OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur), sinon mission 9 |
+| OP-N83 | Cause d'un blocage de portefeuille : corrigée par la migration `0042` (WP14 cycle 2, décision du porteur du 29/10/2026) ; reste : un chemin qui écrit lui-même `ACTIVE` lève aussi la cause de contestation | Non | Non | Levé pour l'ordre des événements ; ADR-134 |
+| OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2) : `take_deposit`, `refund_deposit`, `refund_cash_due` ne sont plus accordées à `cashless_app` | Non | Non | Levé ; ADR-135 |
+| OP-N85 | Caution due non prise si le processus s'arrête entre le COMMIT du crédit et l'appel qui la prend (fenêtre étroite, reprise au rejeu d'une autre notification seulement) | Non | Non | Mission 13 (recette V1) ou lot de reprise ; ADR-135 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -135,6 +138,9 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
 | OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | Une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après |
 | OP-N81 | Les PSP et le coffre des secrets sont des faux (un par fournisseur, `apps/api/src/psp/`) : un faux PSP produit des notifications signées avec des secrets de test | Crédits de portefeuille fabriqués par quiconque connaît le faux ; secrets de test au lieu de secrets par détenteur des fonds | Chaque faux porte `isFake` ; `assertProcessIsSafe` refuse le démarrage en production (processus public et `psp-poller`), test `production-guard.spec.ts` | Mission « Adaptateurs PSP réels » | Adaptateurs essayés contre le bac à sable de chaque PSP, coffre AWS réel, faux retirés de la production (ADR-131) |
+| OP-N83 | CORRIGÉ en cycle 2 de WP14 (migration `0042`) : `wallet.other_block` tenu par le déclencheur `wallet_block_cause_guard` ; le déblocage « contestation » refuse (CL029) dès qu'une autre cause est active, quel que soit l'ordre | Un chemin de blocage qui écrirait `ACTIVE` lui-même lève aussi la contestation (comportement voulu : une personne habilitée de l'autre cause) | `unblock_wallet` refuse si `other_block` ; `block_wallet_after_chargeback` ne marque pas si `other_block` ; `tests_psp_topups.sql` (perte puis contestation, contestation puis perte, cause tierce puis deux contestations) ; `wallet-unblock.spec.ts` | Mission 13 (revue) | Un futur chemin de blocage (perte, fraude) à relire : il doit écrire `BLOCKED` sans annoncer l'origine « contestation » |
+| OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2, décision du porteur) : `take_deposit(uuid,uuid)`, `refund_deposit(uuid,uuid)`, `refund_cash_due(...)` retirées de `post-roles.sql` (section 4) ; le moteur passe par `take_deposit_for_session`, `refund_deposit_for_session`, `refund_cash_due_for_session` et, sans compte désigné (mode `FROM_BALANCE`), par `take_deposit_from_balance` / `refund_deposit_from_balance` (0041) | Aucun : droit plus étroit que celui retiré | `tests_cash_psp_rights.sql` (`[A8-DETTE levée]` : EXECUTE refusé), `tests_execute_grants.sql`, `engine.spec.ts` (compte désigné refusé) | Levé | Aucune ; fonctions à faire relire par une personne |
+| OP-N85 | Reprise de la caution due : faite à l'écriture d'un crédit suivant, jamais seule | Un bracelet crédité sans sa caution due prise tant qu'aucun autre crédit n'arrive | Le travailleur de reprise (WP12) rejoue l'événement ; la caution est idempotente | Mission 13 (recette V1) | Reprise des cautions `DUE` par le travailleur, avec un test qui tue le processus entre COMMIT et `afterCommit` |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -169,6 +175,12 @@ ne crée aucun compte de caisse. Les routes sont livrées et testées (compte po
 répondent `409` « aucune caisse ouverte pour ce terminal » tant que la mission des caisses n'a pas ouvert le compte.
 Aucun argent liquide n'entre donc sans session de caisse. À la charge de la mission des caisses : créer le compte à
 l'ouverture d'une session, sous ce code, ou adapter la recherche du compte (`counter-access.ts`). Décision : ADR-89.
+
+**Levé le 29/10/2026 par la mission 6 (lots WP02 et WP09).** Une session de caisse (migration `0036_cash_sessions.sql`)
+crée `A-CAISSE-<série>` à la première ouverture et la base refuse toute écriture sur une caisse sans session ouverte ;
+`takeDeposit`, `refundDeposit`, `refundCashDue`, `releaseMedia` et `createCashTopup` répondent `409` sans session et
+servent `cash_session_id`. Preuves : `tests_cash_sessions.sql`, `deposit.spec.ts`, `cash-due.spec.ts`,
+`release.spec.ts`, `cash-desk-guard.spec.ts`, cas `SC-002 : OP-N49 levé` (étape 2 de `topup-journey.spec.ts`).
 
 ### OP-N50 — Rattachement par code : trois décisions et une limite (14 octobre 2026)
 
@@ -839,7 +851,8 @@ Décision du porteur au cadrage de la mission 6 (`recharges-caisses-psp-01M5YEBA
 Plan de la mission 6 (R-11, R-17). **Bloque la production : non.**
 
 - **Constat.** Un paiement réussi chez le PSP mais non créditable (plafond réglementaire, 3-D Secure non attesté,
-  plafond de carte du jour, grand livre au-delà de `CLOSING`, annulation déjà confirmée) n'écrit rien au grand livre ;
+  plafond de carte du jour, grand livre au-delà de `CLOSING`) n'écrit rien au grand livre (un succès notifié après une
+  annulation confirmée est crédité s'il est recevable : R-20, décision du porteur du 29/10/2026) ;
   une anomalie (`PSP_TOPUP_OVER_LIMIT` ou `PSP_TOPUP_NOT_CREDITED`) porte le montant à rendre. La plateforme n'a aucun
   canal de remboursement PSP (« pas de remboursement par carte en V1 »).
 - **Risque.** Argent du payeur détenu sans écriture jusqu'au remboursement manuel ; suivi par l'anomalie et, au
@@ -847,6 +860,53 @@ Plan de la mission 6 (R-11, R-17). **Bloque la production : non.**
 - **Condition de levée.** Remboursement par l'adaptateur (mission des adaptateurs réels), écriture et clôture de
   l'anomalie dans la même transaction.
 - **Test.** Tests de la mission 6 : aucune écriture et une anomalie avec montant pour chaque cas non créditable.
+- **Complété le 29/10/2026 (WP14).** Écart ATTENDU au contrôle « grand livre = relevé du PSP » (mission 9) : un paiement
+  non crédité est dans le relevé du PSP et pas au grand livre ; les anomalies `PSP_TOPUP_OVER_LIMIT` et
+  `PSP_TOPUP_NOT_CREDITED` (et `PSP_MISMATCH` d'une notification ou d'une contestation introuvable après 24 h) sont à
+  exclure du rapprochement ou à représenter (constat A16, report mission 9). Preuves : `psp-process.spec.ts`,
+  `psp-card.spec.ts`, `topup-journey.spec.ts` (étape 5).
+
+### OP-N83 — Cause d'un blocage de portefeuille (29 octobre 2026) — CORRIGÉ en cycle 2 de WP14
+
+Défaut de la migration `0038`, corrigé en deux temps : `0039` (cause autre PUIS contestation) puis `0042`
+(WP14 cycle 2, décision du porteur du 29/10/2026 : toutes causes, quel que soit l'ordre). **Bloque la production : non.**
+
+- **Constat.** `block_wallet_after_chargeback` posait le marqueur sur un portefeuille déjà `BLOCKED` pour une autre
+  cause (0039 l'évite). Dans l'ordre inverse (contestation PUIS perte), l'autre cause ne laissait aucune trace et le
+  déblocage « contestation » remettait `ACTIVE` un portefeuille encore bloqué. `0039` n'avait pas couvert ce cas ; la
+  limite n'avait pas été validée par le porteur (ADR-134 corrigé).
+- **Correction (`0042`).** `wallet.other_block` ; le déclencheur `wallet_block_cause_guard` le pose à toute écriture de
+  `BLOCKED` qui n'annonce pas l'origine « contestation » (même sur un portefeuille déjà `BLOCKED`), l'efface au retour
+  à `ACTIVE` ; `unblock_wallet` refuse (CL029) si `other_block` ; la demande API refuse d'emblée (409). `cashless_app`
+  n'écrit pas la colonne (`post-roles.sql`, 7b-bis). Tests : `tests_psp_topups.sql` (perte puis contestation,
+  contestation puis perte, cause tierce puis deux contestations), `wallet-unblock.spec.ts`.
+- **Limite restante.** Un chemin qui écrit lui-même `ACTIVE` lève aussi l'état de contestation (c'est la personne
+  habilitée de l'autre cause qui débloque). Un futur chemin de blocage doit écrire `BLOCKED` sans annoncer l'origine
+  « contestation » : seul `block_wallet_after_chargeback` le fait. **Fonctions à faire relire par une personne** :
+  `block_wallet_after_chargeback`, `unblock_wallet`, `wallet_block_cause_guard`.
+
+### OP-N84 — Octroi provisoire des anciennes signatures de caisse à `cashless_app` (29 octobre 2026) — LEVÉ
+
+`[A8-DETTE]` de WP05, levé le 29/10/2026 en cycle 2 de WP14 (décision du porteur ; ADR-135). **Bloque la production : non.**
+
+- **Fait.** `take_deposit`, `refund_deposit`, `refund_cash_due` retirées de `post-roles.sql` (section 4). Le moteur
+  passe par `take_deposit_for_session`, `refund_deposit_for_session`, `refund_cash_due_for_session` (0036) et, pour la
+  caution prélevée sur le solde ou une caution due (aucun compte désigné), par `take_deposit_from_balance` et
+  `refund_deposit_from_balance` (0041, plus étroites que le droit retiré). Test `[A8-DETTE]` inversé.
+- **Conséquence fonctionnelle (signalée au porteur).** Le moteur refuse une commande de caution qui désigne un compte
+  d'argent (`moneyAccount`, ex. banque) : aucun appelant de production n'en avait (le guichet exige espèces ET session).
+  Une caution payée à part sur un compte autre qu'une caisse exigerait une fonction à compte libre : non créée.
+
+### OP-N85 — Reprise de la caution due après un arrêt entre COMMIT et `afterCommit` (29 octobre 2026)
+
+Relevé par la relecture de WP12 (affaiblit légèrement A33, fenêtre étroite). **Bloque la production : non.**
+
+- **Constat.** La caution due est prise après le COMMIT du crédit (transaction distincte). Si le processus s'arrête
+  entre les deux, elle n'est reprise qu'au rejeu d'une autre notification ou d'un autre crédit du même bracelet.
+- **Risque.** Bracelet crédité dont la caution due n'est pas prise ; l'argent n'est pas perdu (suivi par le
+  portefeuille), la caution reste `DUE`.
+- **Condition de levée.** Reprise des cautions `DUE` par le travailleur, test qui tue le processus entre COMMIT et
+  `afterCommit`.
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;

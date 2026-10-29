@@ -3,8 +3,8 @@
 // passe l'écriture `WALLET_REFUND` (débit `L-ESP-A-RENDRE`, crédit caisse) et clôt les anomalies.
 // Au-delà de `event.cash_refund_single_max`, une seconde personne valide sur place (jeton consommé
 // dans cette transaction, ADR-74) ; la base refuse de toute façon un rendu au-delà du maximum sans
-// valideur distinct de l'auteur, et ce service ne double pas la règle. Le compte crédité est la
-// caisse du terminal (décision du porteur n° 10) : sans caisse ouverte, refus.
+// valideur distinct de l'auteur, et ce service ne double pas la règle. Le compte crédité est celui de la SESSION de
+// caisse ouverte du terminal (`refund_cash_due_for_session`, A8) : sans session, refus avant toute écriture.
 // Deux contrôles que la base ne fait pas (`refund_cash_due` ne lit ni l'état du bracelet ni
 // l'événement du terminal) : le bracelet doit être `ACTIVE` (une lecture citée par `tap_id` peut
 // avoir été enregistrée `BLOCKED`, ou avant la déclaration de perte : on ne rend rien au porteur
@@ -15,8 +15,7 @@ import { AuditService } from '../../audit/audit.service';
 import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import type { Language } from '../../http/language';
-import { conflict } from '../../organization/platform/platform.dto';
-import type { CounterActor } from './counter-access';
+import { requireCashSession, type CounterActor } from './counter-access';
 import { counterRefusal } from './lifecycle.dto';
 import { lockCounterMedia } from './release.service';
 
@@ -27,6 +26,8 @@ export interface CashDueContext {
    * présenté.
    */
   approve: ((client: TxClient) => Promise<string>) | null;
+  /** `cash_session_id` du corps, s'il y en a un : doit être la session ouverte du terminal. */
+  cashSessionId: string | null;
 }
 
 @Injectable()
@@ -40,6 +41,8 @@ export class CashDueService {
     context: CashDueContext,
     language: Language,
   ) {
+    // Session ouverte du terminal, avant toute lecture ou écriture (FR-004, ADR-89).
+    const session = requireCashSession(actor, language, context.cashSessionId);
     await lockCounterMedia(client, actor, mediaId);
     const media = await client.query<{ status: string }>('SELECT status FROM media WHERE id = $1', [
       mediaId,
@@ -63,30 +66,21 @@ export class CashDueService {
       throw counterRefusal('cash_due.other_ledger', language, 'CONFLICT_STATE', 409);
     }
     const ledgerId = actor.ledgerId;
-    const { rows } = await client.query<{
-      currency: string;
-      single_max: bigint | null;
-      cash_account: string | null;
-    }>(
-      `SELECT l.currency, e.cash_refund_single_max AS single_max,
-              (SELECT a.id FROM account a WHERE a.ledger_id = l.id AND a.purpose = 'CASH_DESK' AND a.is_active AND a.code = $2) AS cash_account
+    const { rows } = await client.query<{ currency: string; single_max: bigint | null }>(
+      `SELECT l.currency, e.cash_refund_single_max AS single_max
          FROM ledger l LEFT JOIN event e ON l.scope_type = 'EVENT' AND e.id = l.scope_id WHERE l.id = $1`,
-      [ledgerId, actor.cashDeskCode],
+      [ledgerId],
     );
     const ledger = rows[0]!;
-    if (!ledger.cash_account)
-      throw conflict(
-        'Aucune caisse ouverte pour ce terminal au grand livre de ces espèces : elles ne peuvent pas être rendues ici.',
-      );
 
     // Seuil de l'événement (même lecture que la base) : au-delà, seconde personne obligatoire.
     const approverId =
       amount > BigInt(ledger.single_max ?? 0) ? await this.approver(client, context) : null;
     const tx = await client.query<{ id: string }>(
-      'SELECT refund_cash_due($1, $2, $3, $4, $5, $6) AS id',
+      'SELECT refund_cash_due_for_session($1, $2, $3, $4, $5, $6) AS id',
       [
         mediaId,
-        ledger.cash_account,
+        session.id,
         context.idempotencyKey,
         actor.userId,
         approverId,
@@ -102,6 +96,7 @@ export class CashDueService {
       currency: ledger.currency.trim(),
       resolved_anomaly_ids: due.rows.map((row) => row.id),
       approved_by: approverId,
+      cash_session_id: session.id,
     };
     await this.audit.record(client, {
       ...actor.audit,
@@ -115,6 +110,7 @@ export class CashDueService {
         amount: result.amount,
         currency: result.currency,
         resolved_anomaly_ids: result.resolved_anomaly_ids,
+        cash_session_id: session.id,
       },
     });
     return { result, transactionId };

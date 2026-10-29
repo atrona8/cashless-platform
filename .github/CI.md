@@ -77,6 +77,7 @@ trouve plus ses modules). Chaque script npm source `env.sh` lui-même.
 | Étape | Commande | Ce qu'elle garantit |
 |---|---|---|
 | Latence du paiement, NFR-001 | `npm test -w @cashless/api -- --runInBand end-to-end/payment-latency` | 200 paiements par bracelet en un aller-retour, **en série**, serveur seul (temps mesuré autour de `PaymentsService.create`) : p95 ≤ 200 ms, p99 ≤ 500 ms ; suite seule, sans nouvel essai ; valeurs mesurées écrites sur la sortie |
+| Latence des recharges, NFR-006 et NFR-009 (mission recharges-caisses-psp, WP14) | `npm test -w @cashless/api -- --runInBand end-to-end/topup-latency` | 200 notifications PSP authentifiées en série (temps autour de `WebhookIntake.receive`) : p95 ≤ 500 ms ; 200 recharges espèces en série (autour de `CashTopupService.create`) : p95 ≤ 200 ms ; suite seule, sans nouvel essai ; mesure locale du 29/10/2026 : notifications p95 82 ms (p99 92 ms), espèces p95 73 ms (p99 80 ms) |
 
 Les autres preuves de la mission (`payment-journey`, `payment-isolation`, `payment-secrets`, `payment-concurrency`,
 dans `apps/api/test/integration/end-to-end/`) tournent dans la passe parallèle générale (aucune mesure de temps).

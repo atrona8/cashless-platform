@@ -24,6 +24,7 @@ class TopupResult {
     required this.currency,
     required this.walletId,
     required this.balanceAfter,
+    this.cashSessionId,
     this.deposit,
   });
 
@@ -42,6 +43,10 @@ class TopupResult {
   final String walletId;
   @JsonKey(name: 'balance_after')
   final Balance balanceAfter;
+
+  /// Session de caisse de la recharge (`TOPUP_CASH`) ; null pour une recharge PSP.
+  @JsonKey(name: 'cash_session_id')
+  final String? cashSessionId;
   final DepositState? deposit;
 
   Map<String, Object?> toJson() => _$TopupResultToJson(this);

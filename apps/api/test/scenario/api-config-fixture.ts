@@ -11,6 +11,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { withOwner } from '../support/db';
+import { seedOpenCashSession } from '../support/seed-cash-session';
 import type { FakeIdp, TestPerson } from '../support/fake-idp';
 import { scenario, scenarioConfig } from '../unit/builders/support/scenario-lines';
 import {
@@ -36,6 +37,8 @@ export interface ApiConfigFixture extends ScenarioFixture {
   jurisdictionId: string;
   /** Règle de commission par commerçant. */
   commissionRules: Record<MerchantKey, string>;
+  /** Configuration PSP (brouillon) portant la règle de frais de chaque canal (WP10) ; l'organisateur est le titulaire. */
+  pspConfigurations: Record<(typeof CHANNELS)[number], string>;
 }
 
 export async function createApiConfigFixture(
@@ -220,14 +223,39 @@ export async function createApiConfigFixture(
     });
   await eventRule('ORG_FFEST', 'WALLET_PAID', 'PER_MEDIA', config.activationFee);
   await eventRule('ORG_FFEST', 'WALLET_PAID', 'PER_REFUND', config.refundFee);
-  for (const channel of CHANNELS)
-    await eventRule(`PSP:${channel}`, 'ORG_FPSP', 'TOPUP_AMOUNT', config.pspFees[channel]!);
+  // Frais PSP (WP10) : une configuration par canal et sa règle `PSP_CONFIGURATION` (convention PSP:<canal> retirée).
+  const pspConfigurations = {} as Record<(typeof CHANNELS)[number], string>;
+  const METHODS = { WAVE: 'WAVE', OM: 'ORANGE_MONEY', CARTE: 'CARD' } as const;
+  const PROVIDERS = { WAVE: 'WAVE', OM: 'ORANGE_MONEY', CARTE: 'STRIPE' } as const;
+  for (const channel of CHANNELS) {
+    const res = await call(operatorAdmin, 'post', `/organizers/${org}/psp-configurations`, {
+      method: METHODS[channel],
+      provider: PROVIDERS[channel],
+      holder_party_id: org,
+      secret_ref: `psp/${org}/scenario-${channel.toLowerCase()}`,
+    });
+    if (res.status !== 201) throw new Error(`configuration PSP : ${res.status} ${res.text}`);
+    pspConfigurations[channel] = (res.body as { psp_config_id: string }).psp_config_id;
+    const rule = config.pspFees[channel]!;
+    await created(operatorAdmin, `/operators/${op}/fee-rules`, {
+      scope_type: 'PSP_CONFIGURATION',
+      scope_id: pspConfigurations[channel],
+      payer_purpose: 'ORG_FPSP',
+      beneficiary_purpose: 'PSP_FRAIS',
+      basis: 'TOPUP_AMOUNT',
+      rate_bps: Number(rule.rateBps ?? 0n),
+      fixed_amount: Number(rule.fixed ?? 0n),
+      trigger: 'REALTIME',
+      valid_from: EFFECTIVE,
+    });
+  }
 
   // --- Ce que les missions suivantes créeront : portefeuilles, caisse, canaux de paiement, supports avec caution.
   const fresh = <K extends string>(keys: readonly K[]): Record<K, string> =>
     Object.fromEntries(keys.map((key) => [key, randomUUID()])) as Record<K, string>;
   const wallets = fresh(WALLETS);
   const media = { W04: randomUUID(), W05: randomUUID() };
+  let cashSessionId = '';
   const platformId = await withOwner(async (db) => {
     const q = (text: string, values: unknown[] = []) => db.query(text, values);
     for (const key of WALLETS)
@@ -282,6 +310,12 @@ export async function createApiConfigFixture(
         [media[wallet], op, randomBytes(32), batchId, wallets[wallet]],
       );
     }
+    cashSessionId = await seedOpenCashSession(db, {
+      operatorId: op,
+      ledgerId,
+      eventId,
+      accountCode: 'A-CAISSE-C1',
+    });
     // La partie plateforme est celle que open_event_ledger a rendue titulaire des comptes de redevance.
     const { rows } = await q(
       `SELECT owner_party_id FROM account WHERE ledger_id = $1 AND purpose = 'PLT_REDEV'`,
@@ -298,10 +332,12 @@ export async function createApiConfigFixture(
     participations,
     media,
     users: { author: randomUUID(), approver: randomUUID() },
+    cashSessionId,
     people: { platformAdmin, operatorAdmin, organizerAdmin },
     contractId: contract.contract_id!,
     platformContractId: platformContract.contract_id!,
     jurisdictionId,
     commissionRules,
+    pspConfigurations,
   };
 }

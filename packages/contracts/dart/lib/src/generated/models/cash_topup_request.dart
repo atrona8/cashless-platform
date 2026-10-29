@@ -38,7 +38,9 @@ class CashTopupRequest {
   @JsonKey(name: 'cash_tendered')
   final int? cashTendered;
 
-  /// Session de caisse ouverte de la station ; une recharge `TOPUP_CASH` est rattachée à une session (SPECIFICATION §5.3).
+  /// Facultatif. Une recharge `TOPUP_CASH` est rattachée à la session `OPEN` du terminal (SPECIFICATION.
+  /// §5.3) ; fourni, il DOIT être celle-là (sinon `409 CONFLICT_STATE`).
+  ///
   @JsonKey(name: 'cash_session_id')
   final String? cashSessionId;
 

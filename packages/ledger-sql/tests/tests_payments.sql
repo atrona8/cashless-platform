@@ -273,8 +273,8 @@ SELECT is((SELECT count(*)::int FROM unnest(ARRAY[
   'approval_request_action_check : les 24 actions de 0011 et SALE_REVERSAL');
 SELECT is((SELECT (length(d) - length(replace(d, '::text', ''))) / 6 FROM
             (SELECT pg_get_constraintdef(oid) AS d FROM pg_constraint
-              WHERE conname = 'approval_request_action_check') c), 25,
-  'approval_request_action_check : aucune autre action');
+              WHERE conname = 'approval_request_action_check') c), 27,
+  'approval_request_action_check : aucune autre action (WALLET_UNBLOCK et CASH_DEPOSIT depuis 0038)');
 
 -- 1. record_sale_attribution (A11) ---------------------------------------------------------------
 SELECT pg_temp.a();
