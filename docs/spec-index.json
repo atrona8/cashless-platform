@@ -698,5 +698,118 @@
       "Latence mesurée : p95 ≈ 68,7 ms et p99 ≈ 84,3 ms (seuils 200 et 500 ms)"
     ],
     "source": "kitty-specs/terminaux-paiement-en-ligne-01M52QB9/spec.md"
+  },
+  {
+    "mission": "recharges-caisses-psp-01M5YEBA",
+    "titre_cas_usage": "Recharges, caisses et PSP",
+    "statut": "planifiée",
+    "user_stories": [
+      {
+        "titre": "L'agent ouvre, compte et fait fermer sa caisse",
+        "detail": "Un agent `CASHIER` ouvre une session de caisse sur un terminal `TOPUP_DESK` ; le compte `A-CAISSE-<série>` est créé au besoin. Il compte à l'aveugle ; un `SUPERVISOR` qui n'a pas compté ferme : le compté passe en transit, l'écart va au payeur du contrat et ouvre `CASH_DIFF`."
+      },
+      {
+        "titre": "L'agent recharge un bracelet en espèces",
+        "detail": "`TOPUP_CASH` crédite le portefeuille payé et fait entrer l'espèce dans la caisse de la session ouverte ; refus sans session ou au-delà du plafond ; la caution due est prise ensuite, dans une transaction distincte."
+      },
+      {
+        "titre": "Caution et espèces dues par la caisse",
+        "detail": "Caution en espèces, restitution, rendu des espèces dues et rendu à la libération passent par la session ouverte du terminal (lève OP-N49) ; `cash_session_id` est servi."
+      },
+      {
+        "titre": "Configurer les PSP, choisir par événement",
+        "detail": "Un `OPERATOR_ADMIN` crée une configuration PSP au nom du détenteur des fonds, une seconde personne l'active ; un `ORGANIZER_ADMIN` choisit la configuration de son événement par moyen (à deux pendant `LIVE`)."
+      },
+      {
+        "titre": "Recharger en ligne par mobile money ou carte",
+        "detail": "Une demande de recharge `PENDING` est enregistrée ; le portefeuille n'est crédité qu'à la notification authentifiée du PSP (ou à l'interrogation planifiée), une seule fois, avec les frais PSP au payeur configuré ; la caution due est prise ensuite."
+      },
+      {
+        "titre": "Refuser les notifications non authentifiées",
+        "detail": "Signature invalide, horodatage hors tolérance ou configuration inconnue : rien au grand livre ni au registre brut, mais un signalement de sécurité et une alerte bornée."
+      },
+      {
+        "titre": "Protéger la carte : 3-D Secure, plafonds, contestations",
+        "detail": "Crédit carte sur attestation 3-D Secure, plafond par carte et par jour, anomalie `CARD_VELOCITY`, contestation écrite une fois (blocage du portefeuille si le solde ne suffit pas, `LATE_CHARGEBACK` après verrouillage)."
+      },
+      {
+        "titre": "Déposer en banque les espèces en transit",
+        "detail": "Une personne saisit le dépôt, une seconde l'approuve ; `CASH_DEPOSIT` n'excède jamais le transit."
+      }
+    ],
+    "entites_cles": [
+      "Session de caisse",
+      "Caisse (compte A-CAISSE)",
+      "Comptage",
+      "Configuration PSP",
+      "Choix PSP d'un événement",
+      "Recharge PSP",
+      "Notification PSP",
+      "Contestation",
+      "Dépôt en banque",
+      "Anomalie"
+    ],
+    "resultat_mesurable": "un parcours complet (configuration activée à deux, choix d'événement, session de caisse, recharge espèces, recharge mobile money et carte par le faux PSP, notification, caution due prise, contestation, fermeture de caisse, dépôt) se déroule par l'API sans intervention en base ; aucun double crédit sur 100 rejeux concurrents ; aucune écriture pour 100 % des notifications refusées.",
+    "hypotheses": [
+      "Compte de caisse par terminal (`A-CAISSE-<série>`), créé par une fonction de la base à la première ouverture de session (ADR-89)",
+      "Sessions tenues depuis le terminal : trois preuves et jeton de la personne (renforcement du contrat, consigné en ADR)",
+      "Recharge espèces en ligne au-delà d'un plafond : refus ; le découpage vers `L-ESP-A-RENDRE` est réservé au hors ligne",
+      "Paiement réussi mais non créditable : anomalie portant le montant ; remboursement hors plateforme (OP-N82)",
+      "Compte `A-PSP-*` négatif permis (ADR-77) malgré SPECIFICATION §5.2",
+      "Caution payée par mobile money ou carte : hors périmètre",
+      "Tous les portefeuilles restent non identifiés (mission 10)",
+      "Interrogation planifiée par un processus `ProcessWorker` (`psp-poller`)"
+    ],
+    "contraintes": [
+      "Priorité des sources SPECIFICATION §0.3",
+      "Fichiers `.sql` générés intouchables",
+      "Pile du document 08, aucune nouvelle dépendance",
+      "Écritures par fonctions de la base seulement",
+      "Aucun nouveau secret dans `loadConfig` sans ADR",
+      "Aucun faux en production (démarrage refusé, test)",
+      "Dette nommée pour tout écart de sécurité (OP-N81, OP-N82)",
+      "Hors périmètre : rapprochement, versements, identification, hors ligne, écrans",
+      "Clés d'idempotence de `openapi.yaml`",
+      "Recharge PSP, caution et restitution jamais hors ligne"
+    ],
+    "cas_limites": [
+      "Notification de succès après `CLOSING` : rien crédité, anomalie portant le montant",
+      "Notification arrivée avant la fin de la création de la recharge",
+      "Contestation sans recharge d'origine connue",
+      "Terminal suspendu ou révoqué avec une session ouverte",
+      "Fermeture d'une caisse au théorique nul",
+      "Changement de configuration PSP pendant une recharge en attente",
+      "Portefeuille bloqué par une contestation",
+      "Grand livre en mode `EDGE`",
+      "Même notification reçue deux fois ou deux notifications du même paiement",
+      "Contestation supérieure au montant restant de la recharge"
+    ],
+    "fonctionnel": [
+      "Sessions de caisse : ouverture, comptage à l'aveugle, fermeture et écart",
+      "Recharge en espèces rattachée à la session",
+      "Caution due après chaque crédit payé",
+      "Configurations PSP, défaut unique, choix par événement",
+      "Demande, consultation, annulation d'une recharge PSP",
+      "Réception authentifiée et traitement idempotent des notifications",
+      "Interrogation planifiée et expiration",
+      "Interface commune d'adaptateur PSP et faux par fournisseur",
+      "3-D Secure, plafond par carte, vélocité",
+      "Contestations, déblocage à deux, dépôt en banque",
+      "Contrat d'API et types régénérés",
+      "Adaptateurs PSP réels : reportés (OP-N81)"
+    ],
+    "non_fonctionnel": [
+      "Aucun double crédit",
+      "Aucun crédit non authentifié",
+      "Secrets jamais exposés (balayage avec canari)",
+      "Aucun faux en production",
+      "Cloisonnement par prestataire et organisateur",
+      "Accusé de notification p95 ≤ 500 ms",
+      "Contrôle de caisse sur 100 % des sessions",
+      "Tout ou rien",
+      "Recharge espèces p95 ≤ 200 ms",
+      "Non-régression des tests"
+    ],
+    "source": "kitty-specs/recharges-caisses-psp-01M5YEBA/spec.md"
   }
 ]
