@@ -11,6 +11,7 @@ import {
   ageTopup,
   captureLogs,
   closeBacklog,
+  closePending,
   insertEvent,
   startPoller,
   WebhookWorld,
@@ -37,6 +38,8 @@ describe('codes d’alerte du processus psp-poller', () => {
   });
 
   it('rien à signaler : 0', async () => {
+    await closeBacklog();
+    await closePending();
     const proc = await startPoller(w);
     try {
       await proc.workers.drain();

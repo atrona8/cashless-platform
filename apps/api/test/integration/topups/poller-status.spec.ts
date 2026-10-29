@@ -8,6 +8,7 @@ import {
   ageTopup,
   captureLogs,
   closeBacklog,
+  closePending,
   startPoller,
   WebhookWorld,
   type PollerProcess,
@@ -177,6 +178,7 @@ describe('interrogation des recharges PSP', () => {
 
   it('--list n’écrit rien, --once rend 0 sans travail', async () => {
     await closeBacklog();
+    await closePending();
     const before = await w.footprint();
     const logs = captureLogs();
     let listed: number;

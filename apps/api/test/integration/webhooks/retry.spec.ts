@@ -37,6 +37,10 @@ describe('reprises des notifications', () => {
     await proc.close();
     await w.close();
   });
+  // Chaque test part d'un registre sans événement ouvert : un reste d'un test précédent fausserait les reprises.
+  beforeEach(async () => {
+    await closeBacklog();
+  });
   afterEach(() => jest.restoreAllMocks());
 
   const event = (id: string) =>
@@ -287,5 +291,27 @@ describe('reprises des notifications', () => {
     expect(replay.status).toBe(200);
     expect(await w.p.transactions(t.row.topupId)).toHaveLength(1);
     expect(await state()).toBe('HELD');
+  });
+  it('CL029 « anomalie déjà résolue » : succès tardif sans effet, ni reprise ni nouveau refus', async () => {
+    const t = await w.p.topup({ method: 'CARD', amount: 6000 });
+    const refused = await w.p.pay(t.row, {
+      card: { fingerprint: `fp-${randomUUID()}`, threeDs: 'FAILED' },
+    });
+    expect(refused.outcome).toBe('NOT_CREDITED');
+    const failed = (await w.p.read(t.row.topupId))!;
+    await ownerRows(`UPDATE anomaly SET status = 'RESOLVED' WHERE id = $1`, [failed.anomalyId]);
+    const before = await w.p.anomalies('PSP_TOPUP_NOT_CREDITED');
+    const late = await w.p.pay(
+      t.row,
+      { card: { fingerprint: `fp-${randomUUID()}`, threeDs: 'SUCCEEDED' } },
+      {},
+    );
+    expect(late.outcome).toBe('NO_EFFECT');
+    expect(await w.p.read(t.row.topupId)).toMatchObject({
+      status: 'FAILED',
+      failureReason: 'THREE_DS',
+    });
+    expect(await w.p.transactions(t.row.topupId)).toEqual([]);
+    expect(await w.p.anomalies('PSP_TOPUP_NOT_CREDITED')).toHaveLength(before.length);
   });
 });

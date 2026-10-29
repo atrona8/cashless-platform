@@ -281,9 +281,9 @@ export interface CapturedLogs {
 export function captureLogs(): CapturedLogs {
   const lines: string[] = [];
   const spies = (['log', 'warn', 'error', 'debug', 'verbose'] as const).map((level) =>
-    jest.spyOn(Logger.prototype, level).mockImplementation((message: unknown) => {
+    jest.spyOn(Logger.prototype, level).mockImplementation(((message: unknown) => {
       lines.push(typeof message === 'string' ? message : JSON.stringify(message));
-    }),
+    }) as never),
   );
   const record = (chunk: unknown): boolean => {
     lines.push(String(chunk));
@@ -329,5 +329,12 @@ export function closeBacklog(): Promise<unknown[]> {
   return ownerRows(
     `UPDATE psp_event SET status = 'PROCESSED', outcome = 'NO_EFFECT', processed_at = clock_timestamp()
       WHERE status <> 'PROCESSED'`,
+  );
+}
+
+/** Annule les recharges encore `PENDING` (restes d'un test précédent) pour qu'aucune ne soit interrogée. */
+export function closePending(): Promise<unknown[]> {
+  return ownerRows(
+    `UPDATE psp_topup SET status = 'CANCELLED', failure_reason = 'CANCELLED' WHERE status = 'PENDING'`,
   );
 }
