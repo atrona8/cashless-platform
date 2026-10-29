@@ -1019,10 +1019,38 @@ SELECT is((SELECT count(*)::int FROM psp_chargeback c JOIN psp_topup t USING (ps
 SELECT is(pg_temp.code(format($$SELECT unblock_wallet(%L, %L)$$, pg_temp.wl('wc11'), pg_temp.id('38aa57'))), 'CL029',
   'déblocage : demande rejouée : CL029');
 -- Portefeuille bloqué pour une autre cause.
+SELECT pg_temp.mkt('65', 'wc9', 'CARD', 6000, 'REF-65');
+SELECT pg_temp.paycard('65', 'fpG');
+CREATE TEMP TABLE cbo AS SELECT psp_chargeback_id AS id FROM record_chargeback(pg_temp.t('65'), 'DSP-O', 1000);
 UPDATE wallet SET status = 'BLOCKED' WHERE id = pg_temp.wl('wc9');
 SELECT pg_temp.wreq('38aa58', pg_temp.wl('wc9'), '38f101', '38f102');
 SELECT is(pg_temp.code(format($$SELECT unblock_wallet(%L, %L)$$, pg_temp.wl('wc9'), pg_temp.id('38aa58'))), 'CL029',
   'déblocage : portefeuille bloqué pour une autre cause : CL029');
+-- Défaut de 0038 corrigé par 0039 : une contestation sur un portefeuille DÉJÀ bloqué pour une autre
+-- cause ne pose pas le marqueur de blocage par contestation, et le déblocage « contestation » refuse.
+SELECT lives_ok(format($$SELECT block_wallet_after_chargeback(%L, %L)$$, pg_temp.wl('wc9'), (SELECT id FROM cbo)),
+  'blocage demandé sur un portefeuille déjà bloqué pour une autre cause : sans erreur');
+SELECT is((SELECT wallet_blocked FROM psp_chargeback WHERE psp_chargeback_id = (SELECT id FROM cbo)), false,
+  'autre cause : le marqueur de blocage par contestation n''est PAS posé');
+SELECT is((SELECT blocked_at IS NULL FROM psp_chargeback WHERE psp_chargeback_id = (SELECT id FROM cbo)), true,
+  'autre cause : blocked_at reste vide');
+SELECT lives_ok(format($$SELECT block_wallet_after_chargeback(%L, %L)$$, pg_temp.wl('wc9'), (SELECT id FROM cbo)),
+  'autre cause : rejeu du blocage sans effet');
+SELECT pg_temp.wreq('38aa59', pg_temp.wl('wc9'), '38f101', '38f102');
+SELECT is(pg_temp.code(format($$SELECT unblock_wallet(%L, %L)$$, pg_temp.wl('wc9'), pg_temp.id('38aa59'))), 'CL029',
+  'autre cause + contestation : le déblocage par contestation est refusé (CL029)');
+SELECT is((SELECT status FROM wallet WHERE id = pg_temp.wl('wc9')), 'BLOCKED',
+  'autre cause + contestation : le portefeuille reste BLOCKED');
+-- Portefeuille ACTIVE : blocage et marqueur posés par la contestation (cas nominal inchangé).
+UPDATE wallet SET status = 'ACTIVE' WHERE id = pg_temp.wl('wc9');
+SELECT block_wallet_after_chargeback(pg_temp.wl('wc9'), (SELECT id FROM cbo));
+SELECT is((SELECT status || ':' || (SELECT wallet_blocked FROM psp_chargeback WHERE psp_chargeback_id = (SELECT id FROM cbo))
+             FROM wallet WHERE id = pg_temp.wl('wc9')), 'BLOCKED:true',
+  'portefeuille ACTIVE : bloqué et marqué par la contestation');
+-- Déjà bloqué PAR une contestation : une seconde contestation est marquée aussi (cause identique).
+SELECT is((SELECT wallet_blocked FROM psp_chargeback WHERE psp_chargeback_id = (SELECT id FROM cbm)), true,
+  'déjà bloqué par une contestation : la contestation suivante est marquée');
+UPDATE wallet SET status = 'BLOCKED' WHERE id = pg_temp.wl('wc9');
 
 -- 8. Extensions de listes fermées (T021) ----------------------------------------------------------
 SELECT is(pg_temp.code(format($$INSERT INTO anomaly (operator_id, kind, amount) VALUES (%L, 'PSP_TOPUP_NOT_CREDITED', 100)$$,

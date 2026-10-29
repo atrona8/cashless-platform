@@ -168,8 +168,8 @@ export class EventDispatcher {
 
   /**
    * Fenêtre de 24 h écoulée sans recharge correspondante. Un succès est de l'argent reçu qui ne correspond à rien :
-   * anomalie `PSP_MISMATCH` UNE fois par paiement (même clé d'audit que `PspPaymentProcessor`). Les autres natures
-   * n'ont aucun effet. Aucune recharge, donc aucun grand livre : l'anomalie est sans montant ni grand livre (le
+   * anomalie `PSP_MISMATCH` UNE fois par paiement (même clé d'audit que `PspPaymentProcessor`) ; une contestation
+   * de même (`expireUnmatchedDispute`). Les autres natures n'ont aucun effet. Aucune recharge, donc aucun grand livre : l'anomalie est sans montant ni grand livre (le
    * montant à rendre est dans la ligne d'audit et dans `psp_event.normalized`, lacune signalée au porteur).
    */
   private async expireUnmatched(
@@ -214,6 +214,59 @@ export class EventDispatcher {
       });
       return { disposition: 'PROCESSED', outcome: 'MISMATCH', topupId: null, payment: null };
     }
+    if (notification.kind === 'DISPUTE')
+      return this.expireUnmatchedDispute(client, event, notification);
     return { disposition: 'PROCESSED', outcome: 'NO_EFFECT', topupId: null, payment: null };
+  }
+
+  /**
+   * Contestation toujours introuvable après 24 h : même anomalie `PSP_MISMATCH` UNE fois par contestation, avec la
+   * même clé d'audit que `ChargebackService.mismatch` (`psp_dispute` / `<configuration>:<contestation>`), donc une
+   * seule anomalie quel que soit le chemin qui la voit en premier. Le montant contesté est dans l'audit.
+   */
+  private async expireUnmatchedDispute(
+    client: TxClient,
+    event: PspEventRef,
+    notification: NormalizedNotification,
+  ): Promise<DispatchOutcome> {
+    const disputeId = notification.dispute?.providerDisputeId ?? notification.notificationId;
+    const key = `${event.configurationId}:${disputeId}`;
+    const seen = await client.query(
+      `SELECT 1 FROM audit_log
+        WHERE operator_id = $1 AND action = 'PSP_TOPUP_NOT_CREDITED'
+          AND object_type = 'psp_dispute' AND object_id = $2 LIMIT 1`,
+      [event.operatorId, key],
+    );
+    if (seen.rowCount === 0) {
+      // Sans grand livre (recharge introuvable), la contrainte `anomaly_check` impose un montant nul : le montant
+      // contesté est dans la ligne d'audit et dans `psp_event.normalized` (même lacune que pour un paiement).
+      const amount = notification.dispute !== null ? notification.dispute.amount : 0n;
+      await client.query(
+        `INSERT INTO anomaly (operator_id, ledger_id, kind, amount, status)
+         VALUES ($1, NULL, 'PSP_MISMATCH', 0, 'OPEN')`,
+        [event.operatorId],
+      );
+      await this.audit.record(client, {
+        ...AUDIT,
+        operatorId: event.operatorId,
+        action: 'PSP_TOPUP_NOT_CREDITED',
+        objectType: 'psp_dispute',
+        objectId: key,
+        after: {
+          reason: 'UNMATCHED_EXPIRED',
+          psp_event_id: event.pspEventId,
+          amount,
+          currency: notification.payment.currency,
+        },
+      });
+    }
+    logPspAlert(this.log, {
+      event: 'psp.event.unmatched_expired',
+      severity: 'ERROR',
+      reason: 'PSP_MISMATCH',
+      psp_event_id: event.pspEventId,
+      psp_config_id: event.configurationId,
+    });
+    return { disposition: 'PROCESSED', outcome: 'MISMATCH', topupId: null, payment: null };
   }
 }

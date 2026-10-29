@@ -104,6 +104,47 @@ describe('reprises des notifications', () => {
     expect(proc.workers.alarm()).toBe(0);
   });
 
+  it('contestation UNMATCHED de 25 h : PSP_MISMATCH une seule fois (clé psp_dispute) ; de 23 h : attente', async () => {
+    const disputeOf = (disputeId: string) => ({
+      ...orphan(randomUUID(), `pay-${randomUUID()}`),
+      kind: 'DISPUTE' as const,
+      dispute: { providerDisputeId: disputeId, amount: 7000n },
+    });
+    const youngId = `dp-young-${randomUUID()}`;
+    const oldId = `dp-old-${randomUUID()}`;
+    const young = await insertEvent({
+      configId: w.p.configs.WAVE,
+      operatorId: w.p.op,
+      notification: disputeOf(youngId),
+      status: 'UNMATCHED',
+      ageHours: 23,
+    });
+    const old = await insertEvent({
+      configId: w.p.configs.WAVE,
+      operatorId: w.p.op,
+      notification: disputeOf(oldId),
+      status: 'UNMATCHED',
+      ageHours: 25,
+    });
+    const audits = (disputeId: string) =>
+      ownerRows<{ n: number }>(
+        `SELECT count(*)::int AS n FROM audit_log
+          WHERE action = 'PSP_TOPUP_NOT_CREDITED' AND object_type = 'psp_dispute'
+            AND object_id = $1`,
+        [`${w.p.configs.WAVE}:${disputeId}`],
+      ).then((rows) => rows[0]!.n);
+    const before = await mismatches();
+    const ran = await proc.retry.runOnce();
+    expect(ran).toBe(1);
+    expect(await event(old)).toMatchObject({ status: 'PROCESSED', outcome: 'MISMATCH' });
+    expect(await event(young)).toMatchObject({ status: 'UNMATCHED' });
+    expect(await mismatches()).toBe(before + 1);
+    expect(await audits(oldId)).toBe(1);
+    expect(await audits(youngId)).toBe(0);
+    expect(await proc.retry.runOnce()).toBe(0);
+    expect(await mismatches()).toBe(before + 1);
+  });
+
   it('erreur injectée : RETRY (essai 1) puis succès à la reprise, un seul TOPUP', async () => {
     const t = await w.p.topup();
     jest.spyOn(w.p.processor, 'process').mockRejectedValueOnce(new Error('panne'));

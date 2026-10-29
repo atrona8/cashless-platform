@@ -7,11 +7,15 @@
 //  - MANAGER (`SUPERVISOR` ou `ORGANIZER_ADMIN`) : toutes les sessions de l'événement ;
 //  - AGENT (`CASHIER`) : ses seules sessions (`opened_by`), jamais le théorique ni l'écart ;
 //  - tout autre cas : la session n'existe pas pour lui (404, identique à une session inexistante).
-import { Injectable } from '@nestjs/common';
-import type { TxClient } from '../db/tenant-tx';
+import { Inject, Injectable } from '@nestjs/common';
+import type { Request } from 'express';
+import { TenantTx, type TxClient } from '../db/tenant-tx';
+import { requestDevice, type DeviceRequest } from '../device-identity/device-identity.port';
 import { ProblemException } from '../errors/problem';
-import type { Principal, Role } from '../identity/principal';
+import { requestPrincipal, type Principal, type Role } from '../identity/principal';
+import { CounterAccess } from '../media/lifecycle/counter-access';
 import { exercisedRole, resolveChain, type ScopeLink } from '../identity/scope-resolver';
+import { TENANT_CONTEXT, type TenantContextProvider } from '../tenancy/tenant-context';
 import { isUuid, pageOf, type Page, type PageRequest } from '../organization/platform/platform.dto';
 import {
   toDto,
@@ -63,6 +67,28 @@ export async function loadSession(
 
 @Injectable()
 export class CashSessionReadService {
+  constructor(
+    private readonly tx: TenantTx,
+    private readonly counter: CounterAccess,
+    @Inject(TENANT_CONTEXT) private readonly tenant: TenantContextProvider,
+  ) {}
+
+  /**
+   * `getCashSession` pour une requête HTTP : ouvre sa transaction de lecture (le contrôleur, qui porte des routes
+   * `@Idempotent`, n'injecte pas `TenantTx` : RISK-2). Chemin terminal : le terminal est autorisé d'abord.
+   */
+  async getForRequest(req: Request, sessionId: string): Promise<CashSessionDto> {
+    const principal = requestPrincipal(req);
+    const terminal = (req as DeviceRequest).device !== undefined;
+    const operatorId = terminal
+      ? requestDevice(req).operatorId
+      : this.tenant.current(req).operatorId;
+    return this.tx.run(operatorId, async (client) => {
+      const actor = terminal ? await this.counter.authorize(client, req) : null;
+      return this.get(client, principal, sessionId, actor?.device.deviceId ?? null);
+    });
+  }
+
   /**
    * `getCashSession` : la session doit être dans la vue de la personne, sinon 404. Sur le chemin terminal,
    * un `CASHIER` ne lit que la session de CE terminal (`deviceId`).

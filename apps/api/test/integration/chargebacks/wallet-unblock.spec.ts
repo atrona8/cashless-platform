@@ -115,6 +115,26 @@ describe('déblocage de portefeuille', () => {
     ).toHaveLength(0);
   });
 
+  it('bloqué pour une autre cause puis contesté : pas de voie de déblocage par contestation (0039)', async () => {
+    const t = await c.credited({ amount: 10_000 });
+    await c.spend(t.walletId, Number(t.net));
+    // Portefeuille déjà BLOCKED (perte, fraude…) avant l'arrivée de la contestation.
+    await ownerRows(`UPDATE wallet SET status = 'BLOCKED' WHERE id = $1`, [t.walletId]);
+    await c.handle(t.row, c.notification(t.row, c.disputeId(), 2_000));
+    const [cb] = await c.chargebacks(t.row.topupId);
+    expect(cb).toMatchObject({ wallet_blocked: false });
+    expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
+    const res = await ask(t.walletId);
+    expect(res.status).toBe(409);
+    expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
+    expect(
+      await ownerRows(
+        `SELECT 1 FROM approval_request WHERE action = 'WALLET_UNBLOCK' AND target_id = $1`,
+        [t.walletId],
+      ),
+    ).toHaveLength(0);
+  });
+
   it('autre prestataire, autre rôle, plateforme : refus sans fuite', async () => {
     const t = await blocked();
     expect((await ask(t.walletId, c.cw.organizerAdminOp2)).status).toBe(404);

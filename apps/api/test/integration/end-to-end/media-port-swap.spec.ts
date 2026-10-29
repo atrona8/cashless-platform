@@ -65,6 +65,18 @@ const ALLOWED_CHANGE = {
   added: ['  @DeviceAuth({ nfcOnly: true })'],
 };
 
+/**
+ * Contrôleurs de la mission 4 modifiés par la mission 6 (lot WP09 : rattachement de la session de
+ * caisse aux espèces dues, à la caution et à la libération avec espèces, prévu par le plan de la
+ * mission 6, FR-006 ; décision du porteur du 29/10/2026). Liste fermée : tout autre contrôleur
+ * modifié fait échouer le test.
+ */
+const MISSION_6_CONTROLLERS = [
+  'apps/api/src/media/lifecycle/cash-due.controller.ts',
+  'apps/api/src/media/lifecycle/deposit.controller.ts',
+  'apps/api/src/media/lifecycle/release.controller.ts',
+];
+
 function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
 }
@@ -398,7 +410,11 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
     const changed = git('diff', '--name-only', base, '--', MISSION_4_CONTROLLERS)
       .split('\n')
       .filter((file) => file.endsWith('.controller.ts'));
-    expect(changed.filter((file) => file !== ALLOWED_CHANGE.file)).toEqual([]);
+    expect(
+      changed.filter(
+        (file) => file !== ALLOWED_CHANGE.file && !MISSION_6_CONTROLLERS.includes(file),
+      ),
+    ).toEqual([]);
     const diff = git('diff', '-U0', base, '--', ALLOWED_CHANGE.file).split('\n');
     const lines = (sign: '+' | '-') =>
       diff.filter((l) => l.startsWith(sign) && !l.startsWith(`${sign}${sign}${sign}`));

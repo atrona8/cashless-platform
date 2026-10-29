@@ -16,6 +16,7 @@ import type { Request } from 'express';
 import { auditContext } from '../../audit/audit-context';
 import { AuditService } from '../../audit/audit.service';
 import { requestCustomer } from '../../customer-identity/customer-identity.port';
+import type { IdempotentTx } from '../../idempotency/idempotent.decorator';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
 import { assertDeviceMode, requestDevice } from '../../device-identity/device-identity.port';
 import { ProblemException } from '../../errors/problem';
@@ -125,7 +126,13 @@ export class PspTopupsService {
 
   // ------------------------------------------------------------------------------ T054 : la demande
 
-  async request(req: Request, body: unknown, scope: string, key: string): Promise<PspTopupView> {
+  async request(
+    req: Request,
+    body: unknown,
+    scope: string,
+    key: string,
+    idem: IdempotentTx,
+  ): Promise<PspTopupView> {
     const input = parsePspTopupRequest(body);
     const requester = requesterOf(req);
     if (requester === null) throw new ProblemException('FORBIDDEN');
@@ -140,21 +147,21 @@ export class PspTopupsService {
       return topupView(row, { estimatedFee: prepared.estimatedFee });
     // Temps 2 : HORS transaction. Aucune erreur brute de l'adaptateur ne sort.
     const result = await this.callAdapter(row, prepared, input);
-    // Temps 3 : la référence du PSP et l'échéance.
+    // Temps 3 : la référence du PSP et l'échéance, dans l'IdempotentTx de la route (réponse enregistrée avec).
     const expiresAt =
       result.expiresAt.getTime() > Date.now() &&
       result.expiresAt.getTime() < Date.now() + MAX_PSP_LIFETIME_MS
         ? result.expiresAt
         : null;
-    const updated = await this.tx.run(requester.operatorId, async (client) => {
+    return idem.run(async (client) => {
       await client.query('SELECT mark_psp_topup_initiated($1, $2, $3)', [
         row.topupId,
         result.providerPaymentRef,
         expiresAt,
       ]);
-      return (await this.lookup.find(client, row.topupId))!;
+      const updated = (await this.lookup.find(client, row.topupId))!;
+      return topupView(updated, { action: result.action, estimatedFee: prepared.estimatedFee });
     });
-    return topupView(updated, { action: result.action, estimatedFee: prepared.estimatedFee });
   }
 
   private async prepare(
@@ -369,7 +376,7 @@ export class PspTopupsService {
     });
   }
 
-  async cancel(req: Request, topupId: string): Promise<PspTopupView> {
+  async cancel(req: Request, topupId: string, idem: IdempotentTx): Promise<PspTopupView> {
     const requester = requesterOf(req);
     if (requester === null) throw new ProblemException('NOT_FOUND');
     // Temps 1 : lecture, droit du demandeur, état.
@@ -408,8 +415,8 @@ export class PspTopupsService {
       throw this.adapterProblem(error, first.row.topupId);
     }
     if (!cancelled) throw conflict('Le PSP n’a pas confirmé l’annulation de cette recharge.');
-    // Temps 2 : sous le verrou de la recharge, re-contrôle puis annulation.
-    return this.tx.run(requester.operatorId, async (client) => {
+    // Temps 2 : sous le verrou de la recharge, re-contrôle puis annulation (IdempotentTx de la route).
+    return idem.run(async (client) => {
       await this.lookup.lock(client, topupId);
       const row = (await this.lookup.find(client, topupId))!;
       if (row.status === 'CANCELLED') return topupView(row);

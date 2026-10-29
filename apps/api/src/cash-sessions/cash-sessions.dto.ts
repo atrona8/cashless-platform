@@ -74,7 +74,8 @@ export function toDto(row: CashSessionRow, view: CashSessionView): CashSessionDt
     expected_amount: revealed ? expected : null,
     cash_close_transaction_id: closed ? row.close_tx_id : null,
     difference: revealed && counted !== null && expected !== null ? counted - expected : null,
-    cash_diff_anomaly_id: closed ? row.cash_diff_anomaly_id : null,
+    // Masquée à la vue AGENT (aveugle) : l'existence d'une anomalie d'écart révélerait le théorique.
+    cash_diff_anomaly_id: revealed ? row.cash_diff_anomaly_id : null,
   };
 }
 

@@ -88,7 +88,7 @@ describe('contestation : écriture CHARGEBACK et blocage', () => {
     expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
   });
 
-  it('portefeuille déjà BLOQUÉ : le blocage est idempotent, pas d’erreur ; portefeuille clos : pas de blocage', async () => {
+  it('portefeuille déjà BLOQUÉ (autre cause) : pas d’erreur, marqueur non posé (0039) ; portefeuille clos : pas de blocage', async () => {
     const t = await c.credited({ amount: 10_000 });
     await c.spend(t.walletId, Number(t.net));
     await (
@@ -96,7 +96,9 @@ describe('contestation : écriture CHARGEBACK et blocage', () => {
     ).ownerRows(`UPDATE wallet SET status = 'BLOCKED' WHERE id = $1`, [t.walletId]);
     const out = await c.handle(t.row, c.notification(t.row, c.disputeId(), 1_000));
     expect(out.outcome).toBe('CHARGEBACK');
-    expect((await c.chargebacks(t.row.topupId))[0]!.wallet_blocked).toBe(true);
+    // Bloqué pour une autre cause : la contestation ne s'attribue pas ce blocage (0039, renforcement).
+    expect((await c.chargebacks(t.row.topupId))[0]!.wallet_blocked).toBe(false);
+    expect(await c.walletStatus(t.walletId)).toBe('BLOCKED');
     const u = await c.credited({ amount: 10_000 });
     await c.spend(u.walletId, Number(u.net));
     await (
