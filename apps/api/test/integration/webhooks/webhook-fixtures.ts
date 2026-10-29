@@ -155,13 +155,16 @@ export class WebhookWorld {
   }
 
   /** Photographie des tables qu'un refus ne doit jamais toucher. */
+  /** Lignes du prestataire du monde : les suites qui tournent en parallèle sur la même base n'y écrivent pas. */
   async footprint(): Promise<Record<string, number>> {
     const [row] = await ownerRows<Record<string, number>>(
-      `SELECT (SELECT count(*) FROM psp_event)::int AS psp_event,
-              (SELECT count(*) FROM journal_transaction)::int AS journal_transaction,
-              (SELECT count(*) FROM posting)::int AS posting,
-              (SELECT count(*) FROM anomaly)::int AS anomaly,
-              (SELECT count(*) FROM psp_topup WHERE status <> 'PENDING')::int AS topup_settled`,
+      `SELECT (SELECT count(*) FROM psp_event WHERE operator_id = $1)::int AS psp_event,
+              (SELECT count(*) FROM journal_transaction WHERE operator_id = $1)::int AS journal_transaction,
+              (SELECT count(*) FROM posting p JOIN journal_transaction t ON t.id = p.transaction_id
+                WHERE t.operator_id = $1)::int AS posting,
+              (SELECT count(*) FROM anomaly WHERE operator_id = $1)::int AS anomaly,
+              (SELECT count(*) FROM psp_topup WHERE operator_id = $1 AND status <> 'PENDING')::int AS topup_settled`,
+      [this.p.op],
     );
     return row!;
   }
