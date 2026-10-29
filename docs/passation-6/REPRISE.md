@@ -217,6 +217,13 @@ worktrees gardés après la fusion.
    majeur ; **décision du porteur : consigner** → OP-N86, OP-N87, ADR-136, 3 tests de borne (`2001f663`, relus,
    mutations tuées) ; verdict publiable avec réserves. Document Word de la mission : `docs/Mission-06-…docx`.
    Reste : CI verte de la PR #8, relecture humaine des fichiers listés, puis fusion dans main (porteur).
+   **CI de la PR #8 verte** (`959b4cdd`, NFR-010 prouvé). Causes des échecs levées : suites des travailleurs
+   psp-poller (cross-prestataires, OP-N86) et de concurrence sorties de la passe parallèle (`c3484d7c`) ; **défaut
+   réel corrigé** : la contestation répartissait d'après un solde payé lu sans verrou (refus « Solde interdit »,
+   RETRY) → verrou pris avant la lecture via `wallet_topup_headroom` (`959b4cdd`, relecteur distinct, mutation
+   reproduite). À trancher par le porteur (aucun affaiblissement : la base refuse le découvert) : fonction SQL dédiée
+   qui verrouille tous les comptes dans l'ordre (migration) ; `PURCHASE` (mission 5b) lit aussi les soldes sans
+   verrou. Reste : relecture humaine des fichiers listés dans la PR, puis fusion dans main par le porteur.
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
