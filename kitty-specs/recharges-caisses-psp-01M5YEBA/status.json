@@ -1,7 +1,7 @@
 {
-  "event_count": 79,
-  "last_event_id": "01M61NGT6TESZQVKVG2QH3S3JE",
-  "materialized_at": "2026-10-28T16:29:31.733757+00:00",
+  "event_count": 82,
+  "last_event_id": "01M63HPF00R1NRXPPRFWPJR6JR",
+  "materialized_at": "2026-10-29T10:01:11.424704+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "software-dev",
@@ -12,8 +12,8 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
-    "in_review": 0,
+    "in_progress": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -370,15 +370,26 @@
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M61NGT6TESZQVKVG2QH3S3JE",
-      "last_transition_at": "2026-10-28T16:29:31.733757+00:00",
+      "force_count": 2,
+      "lane": "in_review",
+      "last_event_id": "01M63HPF00R1NRXPPRFWPJR6JR",
+      "last_transition_at": "2026-10-29T10:01:11.424704+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/"
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 3281,
-      "shell_pid_created_at": "1793267336.923607"
+      "role": "reviewer",
+      "shell_pid": 8770,
+      "shell_pid_created_at": "1793268062.125221",
+      "subtasks": {
+        "T060": "done",
+        "T061": "done",
+        "T062": "done",
+        "T063": "done",
+        "T064": "done"
+      }
     },
     "WP13": {
       "actor": "finalize-tasks",
