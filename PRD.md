@@ -241,14 +241,25 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
    5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
-   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026, décision du porteur ; dès les accès de test, action 11)
+   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026 ; fondue dans la 12b le 29/10/2026)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
 9. Remboursements, versements et clôture
-10. App festivalier
-11. Back-office web
-12. App terminal (après la validation NFC sur vrais bracelets)
+10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
+11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
+12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
+12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1
+
+**Réorganisation du 29/10/2026 (décision du porteur, au lancement de la mission 7).** Les services externes sont
+simulés jusqu'à la mission 12b : chaque mission travaille derrière un port avec un faux refusé en production (AWS KMS
+et Secrets Manager, PSP réels, fournisseurs SMS et WhatsApp, serveur d'identité réel, signatures NXP réelles). Les
+applications clientes (10b, 11, 12) sont déléguées à d'autres équipes, qui codent contre `openapi.yaml` ; la partie
+serveur reste chez nous (10a, 11a, et missions 7 à 9). Conséquences sur les héritages ci-dessous : la mission 6b est
+fondue dans la 12b ; OP-N41 et OP-N73 (adaptateurs KMS) passent de la mission 7 à la 12b ; OP-N56 (preuve de la
+personne qui décide) et OP-N46 (signature NXP côté serveur) passent à la 12b ; OP-N60, OP-N79, OP-N76 et le côté
+serveur d'OP-N64 passent à la 11a ; les héritages de la mission 10 vont à la 10a. Détail et ordre de démarrage :
+`PROMPTS-A-ENVOYER.md`, section « Feuille de route révisée ».
 
 **Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
 dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,

@@ -29,6 +29,7 @@
 | 19/10/2026 | Mission 5a, plan : mTLS dans les processus, Android 12 minimum, `serial` par prestataire (ADR-109), grâce de 60 s (OP-N65 → mission 13), limite iOS (OP-N64 → mission 12) | §2.5 ; §8 héritages (missions 12 et 13) | Oui (missions 5a, 12, 13) |
 | 22/10/2026 | Cadrage de la mission 5b (7 décisions du porteur : PIN serveur et session de vendeur, blocage, annulation, prix des lignes, OP-N74) | §2.5 Terminaux et encaissement | Oui (mission 5b, cadrage et case specify) |
 | 22/10/2026 | Plan de la mission 5b (pile, secret du PIN, session, QR festivalier, identification reportée à la mission 10) | §2.5 Terminaux et encaissement | Oui (missions 7 et 10 : héritages) |
+| 29/10/2026 | Réorganisation de la feuille de route au lancement de la mission 7 (décision du porteur) : services externes simulés jusqu'à une mission 12b « Intégrations réelles » (6b fondue dedans, KMS OP-N41 et OP-N73, OTP, identité, NXP) ; apps déléguées (10b, 11, 12) ; mission 10 coupée (10a serveur) ; 11a durcissements serveur hérités | §8 Découpage anticipé en missions | Oui (section « Feuille de route révisée », missions 10a, 10b, 11a, 12b ; 6b, 7, 11, 12 annotées) |
 
 ## Documents globaux
 
