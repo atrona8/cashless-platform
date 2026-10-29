@@ -448,6 +448,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > retrait à `cashless_app` de `psp_poll_candidates`, `psp_events_to_retry` et de l'INSERT sur `anomaly`, au profit d'une
 > fonction de la base) et OP-N87 (rôle propriétaire de `posting_cash_desk_guard` contrôlé au déploiement, ou garde qui
 > refuse si la recherche est impossible) ; tests de borne dans `tests_cash_psp_rights.sql`, à inverser.
+> OP-N88 (porteur, 29/10/2026) : fonction SQL dédiée qui verrouille les comptes d'une écriture dans l'ordre des
+> identifiants avant la lecture des soldes, utilisée par `CHARGEBACK` (aujourd'hui via `wallet_topup_headroom`) et
+> `PURCHASE` (lecture sans verrou), avec un test déterministe pour `PURCHASE`.
 > L'interblocage fermeture / recharges espèces est corrigé (migration 0040, test `cash-concurrency.spec.ts`) :
 > à rejouer sous la charge de la recette.
 
