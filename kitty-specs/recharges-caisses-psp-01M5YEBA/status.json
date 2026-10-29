@@ -1,7 +1,7 @@
 {
-  "event_count": 80,
-  "last_event_id": "01M63HKXS1S26J2G0EETMX51SN",
-  "materialized_at": "2026-10-29T09:59:48.257734+00:00",
+  "event_count": 81,
+  "last_event_id": "01M63HMQ2HBQGZYNV9EWSH7NDP",
+  "materialized_at": "2026-10-29T10:00:14.161409+00:00",
   "mission_number": "",
   "mission_slug": "recharges-caisses-psp-01M5YEBA",
   "mission_type": "",
@@ -366,14 +366,14 @@
       }
     },
     "WP12": {
-      "actor": "claude",
+      "actor": "user",
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 1,
+      "force_count": 2,
       "lane": "for_review",
-      "last_event_id": "01M63HKXS1S26J2G0EETMX51SN",
-      "last_transition_at": "2026-10-29T09:59:48.257734+00:00",
+      "last_event_id": "01M63HMQ2HBQGZYNV9EWSH7NDP",
+      "last_transition_at": "2026-10-29T10:00:14.161409+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/"
