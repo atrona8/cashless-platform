@@ -11,7 +11,9 @@ module.exports = {
   // `SKIP_LATENCY=1` : les mesures de temps (latence NFR-003 et NFR-006, indistinction des codes NFR-007) sont écartées
   // de la passe parallèle ; la CI les lance seules ensuite. Même chose pour les suites de concurrence de la mission
   // recharges-caisses-psp (jusqu'à 100 connexions simultanées) : en parallèle, elles épuisent les 100 connexions
-  // de la base de la CI ; elles tournent seules, en série, juste après.
+  // de la base de la CI ; elles tournent seules, en série, juste après. Idem pour les suites qui lancent les
+  // travailleurs `psp-poller` (interrogation, reprise, purge) : ils voient les recharges de tous les prestataires
+  // (OP-N86) et agiraient sur celles des suites voisines.
   testPathIgnorePatterns: [
     '/node_modules/',
     ...(process.env.SKIP_LATENCY
@@ -24,6 +26,11 @@ module.exports = {
           'topups/psp-concurrency',
           'chargebacks/chargeback-concurrency',
           'cash-sessions/close-concurrency',
+          'end-to-end/topup-journey',
+          'end-to-end/topup-secrets',
+          'webhooks/receive',
+          'webhooks/retry',
+          'topups/poller-',
         ]
       : []),
   ],

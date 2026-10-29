@@ -166,6 +166,13 @@ jobs:
           end-to-end/psp-concurrency end-to-end/cash-concurrency topups/psp-concurrency
           chargebacks/chargeback-concurrency cash-sessions/close-concurrency
 
+      # Travailleurs psp-poller (interrogation, reprise, purge) : ils voient les recharges de tous les prestataires
+      # (OP-N86) ; suites écartées de la passe parallèle, lancées seules, en série.
+      - name: Travailleurs psp-poller (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/topup-journey end-to-end/topup-secrets webhooks/receive webhooks/retry topups/poller-
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 
