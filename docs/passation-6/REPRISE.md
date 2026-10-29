@@ -190,6 +190,16 @@ worktrees gardés après la fusion.
    plus : 0040, 0041, 0042, `post-roles.sql` §4, 7b-bis, 7c, 7d, `ledger-engine.service.ts`,
    `ledger/db/ledger-queries.ts`. Suite : addendum documentaire post-review, matrice d'acceptation, `accept`,
    `merge`, PR vers `main`.
+   29/10 après-midi : diagrammes de la mission régénérés et relus, flux global « Recharge mobile money » de 05
+   recalé (`d619306a`) ; matrice d'acceptation remplie (49 critères, 5 invariants ; `8de768cd` coordination,
+   `37e56667` feat) ; **mission acceptée** (`d62258a2`, `0a423895`). `consolidate` (ex-`merge`) refusé sans
+   rien changer : (1) WP01-WP11 sans tampon d'approbation (approuvés avec `--force`) ; vérifié qu'aucune lane n'a
+   reçu de code après son approbation : **attestation accordée par le porteur** ; (2) lane-m porte `8250e55`
+   (textes ADR-133/OP-N82/openapi, décision du porteur) après l'approbation de WP14 : **relecture courte
+   accordée** ; WP14 repassé en `for_review` (lane-m réalignée `9f7dad04`, `--force` sur artefacts seuls).
+   Ensuite : approbation de WP14, `spec-kitty consolidate --mission … --keep-branch --keep-worktree --yes
+   --attest-approved-reviewed WP01 … WP11 --attest-reason …`, comparaison du code de feat à la tête testée de
+   lane-m, Prettier, batterie, PR (accord du porteur).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
