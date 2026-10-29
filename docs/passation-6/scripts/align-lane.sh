@@ -1,7 +1,7 @@
 #!/bin/bash
 # Réaligne kitty-specs/ d'une lane sur feat (sauf artefacts du runtime) et affiche ce qui reste.
 set -e
-R=/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform
+R=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 cd "$R/.worktrees/recharges-caisses-psp-01M5YEBA-lane-$1" || exit 1
 RT='status\.(json|events\.jsonl)$|baseline-tests\.json$|acceptance-matrix\.json$'
 git diff --name-only feat/recharges-caisses-psp -- kitty-specs/ | grep -vE "$RT" | while read f; do

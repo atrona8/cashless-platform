@@ -31,7 +31,7 @@ sur `feat/recharges-caisses-psp`. Ne relis pas CLAUDE.md, README ni la SPECIFICA
 - Serveur : `PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres` (sans mot de passe). **`cashless_test` est réservée à
   l'orchestrateur.** Chaque lot utilise sa base : `PGDATABASE=cashless_wpXX` (ex. `cashless_wp02`).
 - Remise à zéro de ta base depuis la lane : `PGDATABASE=cashless_wpXX bash packages/ledger-sql/scripts/reset-db.sh`.
-- pgTAP : `PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/af4a46d5-14bd-4952-a5b6-41953bf81cb4/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
+- pgTAP : `PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/c1df7274-09c6-4654-9040-fd736a5b47e2/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
   puis, dans `packages/ledger-sql/tests/`, `PGDATABASE=cashless_wpXX pg_prove -d cashless_wpXX <fichier>.sql`
   (ce `pg_prove` s'exécute dans le conteneur). Après un Jest, refaire `reset-db` avant pgTAP.
 - Jest ciblé depuis `apps/api` de la lane : `PGDATABASE=cashless_wpXX SKIP_LATENCY=1 npx jest <chemin>`. Ne lance
