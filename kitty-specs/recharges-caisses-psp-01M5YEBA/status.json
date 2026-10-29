@@ -377,7 +377,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
-        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/"
+        "Implémentation reprise (sous-agent Sonnet) ; --force par l'orchestrateur (accord du porteur 27/10) : après align-lane.sh k, seuls status.*, baseline-tests.json et acceptance-matrix.json restent sous kitty-specs/",
+        "Relecture WP12 : 8 suites + tsc verts sur cashless_wp12 ; mutations tuées (horodatage, config non ACTIVE, provider, secret précédent, secret non évalué, apply rethrow, getStatus sous verrou) ; retouche WP11 (NO_EFFECT sur anomalie résolue) sans crédit possible. Mineurs consignés au compte rendu."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
