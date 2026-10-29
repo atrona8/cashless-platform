@@ -445,6 +445,18 @@ describe('SC-001 à SC-005 : parcours complet des recharges, caisses et PSP, tou
     expect(closed2.status).toBe(200);
     expect(closed2.body.difference).toBe(-500);
     expect(await cw().anomaliesOf(p().ev.ledgerId)).toHaveLength(1);
+    // Vue du caissier d'une session fermée avec écart : ni théorique, ni écart, ni anomalie d'écart (aveugle).
+    const blind = await cw().term(t2, 'GET', `/cash-sessions/${session2Id}`, cw().cashier2);
+    expect(blind.status).toBe(200);
+    expect(blind.body).toMatchObject({
+      status: 'CLOSED',
+      expected_amount: null,
+      difference: null,
+      cash_diff_anomaly_id: null,
+    });
+    // Vue du SUPERVISOR : l'anomalie d'écart est visible.
+    const seen = await cw().bo('GET', `/cash-sessions/${session2Id}`, cw().supervisor);
+    expect(seen.body.cash_diff_anomaly_id).toEqual(expect.any(String));
     // Dépôt en banque à deux, refusé au-delà du transit.
     const transit = await cw().balance(p().ev.ledgerId, 'A-TRANSIT');
     expect(transit).toBeGreaterThan(0);

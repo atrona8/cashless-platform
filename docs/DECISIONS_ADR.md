@@ -1917,3 +1917,41 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   d'approbation `WALLET_UNBLOCK` (déblocage après contestation) et `CASH_DEPOSIT` (dépôt en banque), à deux.
   (4) `A-PSP-*` négatif permis, conformément à ADR-77 (contradiction avec SPECIFICATION §5.2 signalée).
 - **Références.** ADR-77, ADR-82 ; research R-11, R-13 à R-15.
+
+## ADR-134 — Mission 6 : le blocage par contestation ne s'attribue que le blocage qu'il a posé (OP-N83)
+
+- **Statut** : Acceptée, 29 octobre 2026 (décision du porteur ; renforcement fait puis consigné, règle 1).
+- **Contexte.** `block_wallet_after_chargeback` (0038) posait le marqueur `psp_chargeback.wallet_blocked` sur un
+  portefeuille déjà `BLOCKED` pour une autre cause ; `unblock_wallet` (deux `ORGANIZER_ADMIN`) pouvait alors le
+  remettre `ACTIVE` par la voie « contestation ». Relevé par la relecture de WP13.
+- **Décision.** Migration `0039_chargeback_block_cause.sql` (`CREATE OR REPLACE`, même signature et mêmes droits) :
+  marqueur posé seulement si le portefeuille était `ACTIVE` (bloqué ici) ou déjà bloqué par une autre contestation
+  non levée. Une nouvelle migration plutôt qu'une retouche de 0038 : `ops.schema_migrations` vérifie la somme de
+  contrôle de chaque migration appliquée. `unblock_wallet` inchangée.
+- **Risque résiduel.** `wallet.status` ne porte pas la cause (OP-N83) : deux causes successives restent confondues.
+- **Tests.** `tests_psp_topups.sql` (cause autre : marqueur absent, CL029 au déblocage, nominal inchangé),
+  `wallet-unblock.spec.ts` (409, aucune demande créée), `chargeback.spec.ts`. **À faire relire par une personne** :
+  `block_wallet_after_chargeback`, `unblock_wallet` (migrations 0038 et 0039).
+- **Références.** OP-N83, ADR-133 ; `docs/passation-6/REPRISE.md`.
+
+## ADR-135 — Mission 6 : compléments consignés à la fin de la mission (WP14)
+
+- **Statut** : Acceptée, 29 octobre 2026 (vérification de la consignation, T073).
+- **Décisions du porteur déjà prises, portées ici.** (1) 27/10/2026 : les comptes `A-PSP-*` sont créés par
+  `open_psp_accounts` (`SECURITY DEFINER`, comptes PSP seulement, jamais exécutable par `cashless_app`) ;
+  `open_event_ledger` est inchangée ; `0037` est à faire relire par une personne. (2) 29/10/2026 : garde d'idempotence
+  (RISK-2) **sans exception** : `initiatePspTopup` et `cancelPspTopup` enchaînent leurs temps courts et l'appel au PSP
+  hors de l'`IdempotentTx` (jamais d'appel réseau sous transaction) et la DERNIÈRE transaction (référence du PSP, ou
+  annulation) est l'`IdempotentTx` de la route ; le contrôleur n'injecte plus `TenantTx`
+  (`test/unit/idempotency-guard.spec.ts`). (3) 29/10/2026 : `LATE_CHARGEBACK` demandée par `ORGANIZER_ADMIN` ou
+  `OPERATOR_ADMIN` (confirmé) ; `WALLET_UNBLOCK` par `ORGANIZER_ADMIN` seul.
+- **Renforcements faits puis consignés.** La vue `CASHIER` d'une session masque `cash_diff_anomaly_id` (l'existence
+  d'une anomalie d'écart révélerait le théorique, comptage à l'aveugle, ADR-132) ; `counted_at` du corps de comptage
+  est validé mais non retenu (l'heure écrite est celle de la base). Une contestation introuvable après 24 h ouvre
+  `PSP_MISMATCH` (clé d'audit `psp_dispute:<configuration>:<contestation>`, comme WP13).
+- **Écarts gardés, soumis au porteur.** OP-N84 (octroi provisoire `[A8-DETTE]` des anciennes signatures de caisse,
+  jamais levé) ; OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).
+- **Contradiction signalée (§0.3).** `WALLET_BLOCKED` reste `422` (`CL039`, tests exécutables) alors que
+  `contracts/psp.md` écrit `409` ; non corrigé (le test prime sur le contrat).
+- **Références.** OP-N84, OP-N85, ADR-131 à ADR-134 ; `kitty-specs/recharges-caisses-psp-01M5YEBA/`.
+

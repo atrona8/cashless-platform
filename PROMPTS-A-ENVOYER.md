@@ -441,6 +441,13 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 13 — Recette V1
 
+> **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille non portée par le
+> portefeuille, limite résiduelle de la migration 0039, ADR-134), OP-N84 (octroi provisoire `[A8-DETTE]` des anciennes
+> signatures de caisse, à lever avant la fusion de la mission 6 si le porteur le décide, ADR-135) et OP-N85 (reprise de
+> la caution due après un arrêt entre COMMIT et `afterCommit`). Relever aussi en recette le dimensionnement des
+> verrous de caisse : une fermeture simultanée à des recharges espèces par HTTP provoque des interblocages (défaut
+> renvoyé à l'orchestrateur, test `cash-concurrency.spec.ts`).
+
 > **Hérité de la mission 5a, OP-N65 (ADR-108 ; décision du porteur du 19/10/2026)** : au rafraîchissement d'un jeton
 > d'appareil, une représentation du jeton consommé est tolérée 60 s pour le même terminal. Mesurer en recette les
 > pertes de réponse réelles ; si la grâce ne sert pas, revenir au mode strict et lever la limite.
