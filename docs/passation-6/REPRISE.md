@@ -200,6 +200,17 @@ worktrees gardés après la fusion.
    Ensuite : approbation de WP14, `spec-kitty consolidate --mission … --keep-branch --keep-worktree --yes
    --attest-approved-reviewed WP01 … WP11 --attest-reason …`, comparaison du code de feat à la tête testée de
    lane-m, Prettier, batterie, PR (accord du porteur).
+   29/10 soir : **mission fusionnée sur feat** (`consolidate`, squash `a865462c`). Obstacles levés : WP14 relu à
+   nouveau pour `8250e55` (relecteur distinct, approuvé) ; attestation de WP01-WP11 (accord du porteur) ;
+   lanes périmées rattrapées en y fusionnant la lane précédente (conflits de code : unions de
+   `tests_definer_trigger_writers.sql`, `app.module.ts`, `audit.service.ts`) ; `PROMPTS-A-ENVOYER.md` remis à
+   la base avant la fusion puis recoché ; coordination mise à jour contre feat (journal d'événements uni, 361) ;
+   comptes rendus de relecture de WP12-WP14 recopiés sur feat et lanes réalignées (le script `align-lane.sh`
+   supprimait des lanes les fichiers absents de feat). Code de feat identique à `8250e552` (batterie verte de
+   lane-m valable) ; Prettier propre ; contrats alignés (`0315a210`) ; docs « mergée » (`d0352e4a`).
+   Reste : PR vers `main` (accord du porteur ; CI = preuve de NFR-010), revue post-fusion
+   (`spec-kitty-mission-review` : écarts de sécurité ouverts, fichiers à relire par une personne),
+   `docs/Mission-06-Recharges-caisses-PSP.docx`, retrospective (`spec-kitty agent retrospect synthesize`).
    **Pause du 28/10 après WP09** (demande du porteur), tout poussé. Reprendre par WP11 (lane-j :
    dépend de g et i) : `spec-kitty agent action implement WP11 --agent claude --mission …`, puis contrôler
    l'encodage du prompt dans la lane (`grep -c "Ã©"`) et réaligner au besoin (`scripts/align-lane.sh`,
