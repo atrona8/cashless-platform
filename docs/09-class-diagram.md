@@ -140,6 +140,7 @@ classDiagram
   }
   class Wallet {
     text status
+    boolean other_block  blocage hors contestation
     uuid customer_id  null = anonyme
   }
   class JournalTransaction {
@@ -480,10 +481,12 @@ classDiagram
   PaymentRequestDetail "*" --> "1" VendorSession
 ```
 
-## 4 quater. Caisses, recharges et PSP (mission « Recharges, caisses et PSP », 📋 planifiée, plan du 27/10/2026)
+## 4 quater. Caisses, recharges et PSP (mission « Recharges, caisses et PSP », 🔎 relue, 14 lots approuvés le 29/10/2026 ; accept/merge à venir)
 
-> Tables prévues par `kitty-specs/recharges-caisses-psp-01M5YEBA/data-model.md` (migrations `0036` à `0038`) ; non encore
-> implémentées. À recaler sur le schéma réel à l'addendum post-relecture.
+> Tables créées par les migrations `0036` à `0038` de la mission (10 tables, comme prévu par
+> `kitty-specs/recharges-caisses-psp-01M5YEBA/data-model.md`). Les migrations `0039` à `0042`, hors plan, ne créent aucune
+> table : `0042` ajoute la colonne `wallet.other_block` et le déclencheur `wallet_block_cause_guard`. Recalé sur le code de la
+> lane le 29/10/2026 ; le SQL fait foi.
 
 Une caisse est le compte `A-CAISSE-<série>` d'un terminal `TOPUP_DESK`, inscrit dans `cash_desk` ; une garde sur
 `posting` refuse toute écriture de ce compte sans session `OPEN`. Une session reçoit des comptages (à l'aveugle) et ses
@@ -564,7 +567,7 @@ classDiagram
 
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne »),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP »),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -599,7 +602,7 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `ledger` | Grand livre d'une portée (un par événement) et d'une devise : émetteur, détenteur des fonds, statut, autorité de débit (central ou passerelle) et son époque. | réf. |
 | `account` | Compte du plan de comptes d'un grand livre : code, famille, usage (`purpose` : caisse, portefeuille payé, offert, espèces à rendre…), sens normal, découvert permis ou non. | réf. |
 | `account_balance` | Solde en cache d'un compte, tenu par les écritures ; recalculable depuis les lignes (contrôle `balance_drift`). | réf. |
-| `wallet` | Portefeuille d'un festivalier dans un grand livre ; anonyme tant que `customer_id` est nul. Ses fonds sont deux comptes : crédits payés et crédits offerts. | réf. |
+| `wallet` | Portefeuille d'un festivalier dans un grand livre ; anonyme tant que `customer_id` est nul. Ses fonds sont deux comptes : crédits payés et crédits offerts. `other_block` : une cause de blocage autre que la contestation est active (déclencheur, 0042). | réf. (+0042) |
 | `journal_transaction` | Écriture comptable : type, clé d'idempotence, source (en ligne, hors ligne…), date, terminal, bracelet, auteur et valideur, écriture contre-passée. | réf. |
 | `posting` | Ligne d'une écriture : compte et montant ; la somme des lignes d'une écriture vaut zéro. | réf. |
 | `ledger_seal` | Scellement périodique de la chaîne des écritures d'un grand livre (empreinte figée, copie externe). | réf. |
@@ -646,22 +649,22 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `sale_attribution` | Vendeur, session, terminal et moyen (NFC, QR commerçant, QR client) d'une vente ou d'une annulation ; écrite par la base d'après la session, sans écriture directe de l'API. | 0033 |
 | `payment_request_detail` | Détail d'une demande de paiement QR : session de vendeur, lignes, version du catalogue, clé d'idempotence unique par prestataire. | 0034 |
 
-### Caisses, recharges et PSP (mission 6, plan)
+### Caisses, recharges et PSP (mission 6, relue)
 
 | Table | Rôle | Origine |
 |---|---|---|
-| `cash_desk` | Caisses inscrites (compte `A-CAISSE-<série>`, terminal, grand livre) : seules soumises à la garde de caisse ; remplie par `open_cash_session`. | 0036 (plan) |
-| `cash_session` | Session de caisse d'un terminal : `OPEN`, `CLOSING`, `CLOSED` ; compté et théorique figés à la fermeture ; écriture `CASH_CLOSE` et anomalie `CASH_DIFF` ; une seule session ouverte par caisse et par terminal. | 0036 (plan) |
-| `cash_session_count` | Comptage à l'aveugle (au plus 10 par session) : montant, auteur, date. | 0036 (plan) |
-| `cash_session_tx` | Transactions d'espèces rattachées à leur session. | 0036 (plan) |
-| `psp_configuration` | Configuration d'un fournisseur pour un organisateur et un moyen : titulaire = détenteur des fonds, `secret_ref` (jamais un secret), statut, défaut unique, version, activation à deux. | 0037 (plan) |
-| `event_psp_selection` | Configuration retenue par un événement et par moyen ; la base contrôle organisateur, statut et titulaire. | 0037 (plan) |
-| `psp_topup` | Recharge PSP : configuration figée, montant, frais, statut (`PENDING`, `SUCCEEDED`, `FAILED`, `EXPIRED`, `CANCELLED`), référence de paiement, échéance, carte (empreinte, 3-D Secure), transaction `TOPUP`. | 0038 (plan) |
-| `psp_event` | Notification authentifiée conservée brute (64 Kio au plus, purgée à 400 jours), état de traitement et issue. | 0038 (plan) |
-| `psp_webhook_rejection` | Compteur par minute des notifications refusées, sans corps. | 0038 (plan) |
-| `psp_chargeback` | Contestation d'une recharge carte : unique par configuration et identifiant, plafonnée au montant de la recharge, transaction `CHARGEBACK` (vide tant qu'une contestation tardive attend son approbation). | 0038 (plan) |
+| `cash_desk` | Caisses inscrites (compte `A-CAISSE-<série>`, terminal, grand livre) : seules soumises à la garde de caisse ; remplie par `open_cash_session`. | 0036 |
+| `cash_session` | Session de caisse d'un terminal : `OPEN`, `CLOSING`, `CLOSED` ; compté et théorique figés à la fermeture ; écriture `CASH_CLOSE` et anomalie `CASH_DIFF` ; une seule session ouverte par caisse et par terminal. | 0036 |
+| `cash_session_count` | Comptage à l'aveugle (au plus 10 par session) : montant, auteur, date. | 0036 |
+| `cash_session_tx` | Transactions d'espèces rattachées à leur session. | 0036 |
+| `psp_configuration` | Configuration d'un fournisseur pour un organisateur et un moyen : titulaire = détenteur des fonds, `secret_ref` (jamais un secret), statut, défaut unique, version, activation à deux. | 0037 |
+| `event_psp_selection` | Configuration retenue par un événement et par moyen ; la base contrôle organisateur, statut et titulaire. | 0037 |
+| `psp_topup` | Recharge PSP : configuration figée, montant, frais, statut (`PENDING`, `SUCCEEDED`, `FAILED`, `EXPIRED`, `CANCELLED`), référence de paiement, échéance, carte (empreinte, 3-D Secure), transaction `TOPUP`. | 0038 |
+| `psp_event` | Notification authentifiée conservée brute (64 Kio au plus, purgée à 400 jours), état de traitement et issue. | 0038 |
+| `psp_webhook_rejection` | Compteur par minute des notifications refusées, sans corps. | 0038 |
+| `psp_chargeback` | Contestation d'une recharge carte : unique par configuration et identifiant, plafonnée au montant de la recharge, transaction `CHARGEBACK` (vide tant qu'une contestation tardive attend son approbation). | 0038 |
 
-Extensions prévues de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGURATION` ; `anomaly.kind` + `PSP_TOPUP_NOT_CREDITED` ; `approval_request.action` + `WALLET_UNBLOCK`, `CASH_DEPOSIT` ; comptes `A-PSP-WAVE`, `A-PSP-OM`, `A-PSP-CARTE`.
+Extensions de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGURATION` ; `anomaly.kind` + `PSP_TOPUP_NOT_CREDITED` ; `approval_request.action` + `WALLET_UNBLOCK`, `CASH_DEPOSIT` (0038) ; comptes `A-PSP-WAVE`, `A-PSP-OM`, `A-PSP-CARTE` (fonction `open_psp_accounts`) ; **`wallet.other_block`** (boolean, faux par défaut : une cause de blocage autre que la contestation est active ; tenu par le déclencheur `wallet_block_cause_guard`, que `cashless_app` n'écrit pas) (0042).
 
 ### Bracelets
 
@@ -698,5 +701,5 @@ Extensions prévues de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGUR
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaine : mission 6 caisses et PSP, section 4 quater ajoutée au plan le 27/10/2026, 10 tables prévues, migrations `0036` à `0038`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : mission 7, hors ligne). Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.

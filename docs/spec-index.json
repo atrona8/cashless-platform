@@ -702,11 +702,11 @@
   {
     "mission": "recharges-caisses-psp-01M5YEBA",
     "titre_cas_usage": "Recharges, caisses et PSP",
-    "statut": "planifiée",
+    "statut": "relue, 14 lots approuvés ; accept/merge à venir",
     "user_stories": [
       {
         "titre": "L'agent ouvre, compte et fait fermer sa caisse",
-        "detail": "Un agent `CASHIER` ouvre une session de caisse sur un terminal `TOPUP_DESK` ; le compte `A-CAISSE-<série>` est créé au besoin. Il compte à l'aveugle ; un `SUPERVISOR` qui n'a pas compté ferme : le compté passe en transit, l'écart va au payeur du contrat et ouvre `CASH_DIFF`."
+        "detail": "Un agent `CASHIER` ouvre une session de caisse sur un terminal `TOPUP_DESK` ; le compte `A-CAISSE-<série>` est créé au besoin. Il compte à l'aveugle ; un `SUPERVISOR` qui n'a pas compté ferme : le compté passe en transit, l'écart va au payeur du contrat et ouvre `CASH_DIFF`. Fermer et recharger en espèces au même moment ne s'interbloquent plus (verrous terminal, session, solde)."
       },
       {
         "titre": "L'agent recharge un bracelet en espèces",
@@ -730,11 +730,11 @@
       },
       {
         "titre": "Protéger la carte : 3-D Secure, plafonds, contestations",
-        "detail": "Crédit carte sur attestation 3-D Secure, plafond par carte et par jour, anomalie `CARD_VELOCITY`, contestation écrite une fois (blocage du portefeuille si le solde ne suffit pas, `LATE_CHARGEBACK` après verrouillage)."
+        "detail": "Crédit carte sur attestation 3-D Secure, plafond par carte et par jour, anomalie `CARD_VELOCITY`, contestation écrite une fois (blocage du portefeuille si le solde ne suffit pas, `LATE_CHARGEBACK` après verrouillage). Le blocage par contestation ne lève jamais un blocage d'une autre cause (`wallet.other_block`) ; contestation tardive et déblocage : demandes à deux personnes."
       },
       {
         "titre": "Déposer en banque les espèces en transit",
-        "detail": "Une personne saisit le dépôt, une seconde l'approuve ; `CASH_DEPOSIT` n'excède jamais le transit."
+        "detail": "Une personne saisit le dépôt (`ORGANIZER_ADMIN` ou `OPERATOR_ADMIN`), une seconde l'approuve ; `CASH_DEPOSIT` n'excède jamais le transit."
       }
     ],
     "entites_cles": [
@@ -747,7 +747,8 @@
       "Notification PSP",
       "Contestation",
       "Dépôt en banque",
-      "Anomalie"
+      "Anomalie",
+      "Cause de blocage d'un portefeuille"
     ],
     "resultat_mesurable": "un parcours complet (configuration activée à deux, choix d'événement, session de caisse, recharge espèces, recharge mobile money et carte par le faux PSP, notification, caution due prise, contestation, fermeture de caisse, dépôt) se déroule par l'API sans intervention en base ; aucun double crédit sur 100 rejeux concurrents ; aucune écriture pour 100 % des notifications refusées.",
     "hypotheses": [
@@ -758,7 +759,8 @@
       "Compte `A-PSP-*` négatif permis (ADR-77) malgré SPECIFICATION §5.2",
       "Caution payée par mobile money ou carte : hors périmètre",
       "Tous les portefeuilles restent non identifiés (mission 10)",
-      "Interrogation planifiée par un processus `ProcessWorker` (`psp-poller`)"
+      "Interrogation planifiée par un processus `ProcessWorker` (`psp-poller`)",
+      "Succès notifié après une annulation confirmée : crédité s'il est recevable (R-20 contre `contracts/psp.md`, à confirmer par le porteur)"
     ],
     "contraintes": [
       "Priorité des sources SPECIFICATION §0.3",
@@ -770,7 +772,9 @@
       "Dette nommée pour tout écart de sécurité (OP-N81, OP-N82)",
       "Hors périmètre : rapprochement, versements, identification, hors ligne, écrans",
       "Clés d'idempotence de `openapi.yaml`",
-      "Recharge PSP, caution et restitution jamais hors ligne"
+      "Recharge PSP, caution et restitution jamais hors ligne",
+      "Dette ouverte : OP-N81, OP-N82, OP-N85 ; levées en cours de mission : OP-N83 (`0042`) et OP-N84 (`0041`)",
+      "Garde d'idempotence RISK-2 sans exception : `initiate` et `cancel` finissent sous `IdempotentTx`"
     ],
     "cas_limites": [
       "Notification de succès après `CLOSING` : rien crédité, anomalie portant le montant",
@@ -782,7 +786,10 @@
       "Portefeuille bloqué par une contestation",
       "Grand livre en mode `EDGE`",
       "Même notification reçue deux fois ou deux notifications du même paiement",
-      "Contestation supérieure au montant restant de la recharge"
+      "Contestation supérieure au montant restant de la recharge",
+      "Contestation sur un portefeuille déjà bloqué pour une autre cause (perte, fraude), dans les deux ordres",
+      "Contestation introuvable après 24 h (`PSP_MISMATCH`)",
+      "Fermeture de caisse et recharge espèces simultanées"
     ],
     "fonctionnel": [
       "Sessions de caisse : ouverture, comptage à l'aveugle, fermeture et écart",
@@ -794,9 +801,10 @@
       "Interrogation planifiée et expiration",
       "Interface commune d'adaptateur PSP et faux par fournisseur",
       "3-D Secure, plafond par carte, vélocité",
-      "Contestations, déblocage à deux, dépôt en banque",
-      "Contrat d'API et types régénérés",
-      "Adaptateurs PSP réels : reportés (OP-N81)"
+      "Contestations, contestation tardive et déblocage à deux, dépôt en banque (demandes à deux)",
+      "Contrat d'API et types régénérés (12 opérations ajoutées, 192 au total)",
+      "Adaptateurs PSP réels : reportés (OP-N81)",
+      "Processus `psp-poller` : interrogation, expiration, reprise, purge des corps bruts"
     ],
     "non_fonctionnel": [
       "Aucun double crédit",
@@ -804,11 +812,12 @@
       "Secrets jamais exposés (balayage avec canari)",
       "Aucun faux en production",
       "Cloisonnement par prestataire et organisateur",
-      "Accusé de notification p95 ≤ 500 ms",
+      "Accusé de notification p95 ≤ 500 ms (mesuré : 82 ms)",
       "Contrôle de caisse sur 100 % des sessions",
       "Tout ou rien",
-      "Recharge espèces p95 ≤ 200 ms",
-      "Non-régression des tests"
+      "Recharge espèces p95 ≤ 200 ms (mesuré : 73 ms)",
+      "Non-régression des tests",
+      "Aucun interblocage fermeture / recharges espèces (NFR-008)"
     ],
     "source": "kitty-specs/recharges-caisses-psp-01M5YEBA/spec.md"
   }
