@@ -1,13 +1,21 @@
 # Reprise — mission 7 (hors-ligne-snapshots-lots-01M645RN)
 
-État au 30/10/2026 : **plan finalisé** sur `feat/hors-ligne-snapshots-lots` (`e38c1ce0`, `8fd1e037`), addendum
-documentaire fait (`beb00e94`). Prochaine étape : `/spec-kitty.tasks` (fichier d'interfaces commun d'abord, prompts de
-lots de 150 à 250 lignes, voir la mémoire « prompts allégés »), puis `/spec-kitty.analyze`.
+État au 30/10/2026 (fin de matinée) : **tâches finalisées et analysées** sur `feat/hors-ligne-snapshots-lots`
+(`0d22b8f6` tâches, `64377f6a` interfaces et décisions, `d7fe73ba` analyse : verdict `ready`, 0 critique, 0 élevé,
+7 moyens, 5 faibles). 21 lots, 21 lanes, 44/44 FR rattachées. Prochaine étape : traiter (ou non, au choix du
+porteur) les constats moyens I2, I3, I4, U2 de `analysis-report.md` (toute retouche de planification impose une
+nouvelle analyse), puis `spec-kitty next --agent claude --mission hors-ligne-snapshots-lots-01M645RN`
+(un implémenteur et un relecteur distincts par lot ; tests en série par l'orchestrateur).
 
+Verrou du runtime `decisions/index.json.lock` exclu localement (`.git/info/exclude`) : il bloquait
+`record-analysis` (`DIRTY_WORKTREE`).
 ## Décisions du porteur (Decision Moments dans `kitty-specs/…/decisions/`)
 
 - 29/10 : KMS simulé jusqu'à 12b ; vendeur hors ligne = session en ligne valable 12 h ; trou de plus de 24 h = alerte ;
   OP-N57/58/68/69/75 levés ; seuils (lot 500 en 60 s p95, FULL 50 000 en 30 s, DELTA 2 s p95).
+- 30/10 (tâches, ADR-140, OP-N91) : `discard_offline_snapshot_draft` et `mark_offline_retry_alerted` au
+  signataire, audit `SNAPSHOT_PUBLISHED` écrit par `publish_offline_snapshot` ; `device_journal_imports_processing()`
+  (identifiants seuls) à `cashless_app` ; `offline_block_time` = date de blocage la plus ancienne.
 - 30/10 : aucune recharge espèces hors ligne (`TOPUP_CASH` d'un lot rejeté par opération) ; exposition = ventes non
   acquittées, stricte ; deux processus de snapshots (`snapshot-content` Decrypt+DataKey, `snapshot-signer` Sign) ;
   trace `RETRY` pour le quatrième `CL007` (ADR-139, OP-N90).
