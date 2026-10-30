@@ -15,5 +15,7 @@
   "retain_worktrees": true,
   "slug": "hors-ligne-snapshots-lots-01M645RN",
   "target_branch": "feat/hors-ligne-snapshots-lots",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-30T11:24:58.699081+00:00"
 }
