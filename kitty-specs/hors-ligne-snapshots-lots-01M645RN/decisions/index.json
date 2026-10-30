@@ -289,6 +289,76 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-10-30T11:07:55.110627Z",
+      "decision_id": "01M667XBV66NBKA5DEFFXY15HM",
+      "final_answer": "EXECUTE de discard_offline_snapshot_draft et de mark_offline_retry_alerted (colonne offline_batch_retry.alerted_at) accord\u00e9s \u00e0 cashless_snapsign ; audit SNAPSHOT_PUBLISHED \u00e9crit par publish_offline_snapshot (DEFINER), aucun droit d'audit au r\u00f4le ; ADR-140.",
+      "input_key": "signer_rights",
+      "mission_id": "01M645RN3VGKZB9AD4NQ9GJJS6",
+      "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
+      "opened_by": "cli",
+      "options": [
+        "Deux EXECUTE + audit en base",
+        "Aucun droit ajout\u00e9",
+        "Discard seulement"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "R\u00f4le cashless_snapsign : rejet d'un brouillon alt\u00e9r\u00e9, marque des alertes RETRY de plus de 24 h, audit SNAPSHOT_PUBLISHED ?",
+      "rationale": null,
+      "resolved_at": "2026-10-30T11:08:09.952871Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.signer-rights",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-30T11:08:17.348697Z",
+      "decision_id": "01M667Y1J4DT3HY96ZBCXXMXBT",
+      "final_answer": "device_journal_imports_processing() DEFINER STABLE (WP05) rend seulement (import_id, operator_id) des imports PROCESSING ; accord\u00e9e \u00e0 cashless_app ; traitement ensuite sous RLS par prestataire ; ADR-140.",
+      "input_key": "journal_import_listing",
+      "mission_id": "01M645RN3VGKZB9AD4NQ9GJJS6",
+      "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
+      "opened_by": "cli",
+      "options": [
+        "Fonction \u00e9troite",
+        "D\u00e9placer au processus maintenance"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Travailleur journal-import (API, cashless_app) : comment lister les imports PROCESSING de tous les prestataires sans SELECT sur device_journal_import ?",
+      "rationale": null,
+      "resolved_at": "2026-10-30T11:08:32.098686Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.journal-import-listing",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-30T11:08:39.472514Z",
+      "decision_id": "01M667YQ5GEVNHMJ3MHGJBJ220",
+      "final_answer": "La plus ancienne date de blocage connue (premier blocage) ; '-infinity' si bloqu\u00e9 sans date ; NULL si jamais bloqu\u00e9.",
+      "input_key": "offline_block_time",
+      "mission_id": "01M645RN3VGKZB9AD4NQ9GJJS6",
+      "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
+      "opened_by": "cli",
+      "options": [
+        "La plus ancienne",
+        "La plus r\u00e9cente"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "offline_block_time : date de blocage retenue entre bracelet, lot et portefeuille ?",
+      "rationale": null,
+      "resolved_at": "2026-10-30T11:08:54.297780Z",
+      "resolved_by": null,
+      "slot_key": "plan.domain.offline-block-time",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M645RN3VGKZB9AD4NQ9GJJS6",

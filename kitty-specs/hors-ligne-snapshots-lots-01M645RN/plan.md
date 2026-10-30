@@ -43,7 +43,7 @@ flowchart LR
 
 **Language/Version**: TypeScript 5.9 sur Node.js 22 LTS (API et processus, document 08) ; SQL PostgreSQL 17 (migrations, pgTAP)
 **Primary Dependencies**: NestJS 11, `pg`, `canonicalize` (RFC 8785), `@cashless/tag-format` (enveloppe ECDH-ES), `node:crypto` (ECDSA P-256, AES-256-GCM, SHA-256) — tous existants ; aucune nouvelle dépendance (R-22)
-**Storage**: PostgreSQL 17 — migrations `0043` à `0048`, `post-roles.sql` ; schéma de référence et `.sql` générés inchangés
+**Storage**: PostgreSQL 17 — migrations `0043` à `0049` (numérotation : `contracts/interfaces.md` § 1), `post-roles.sql` ; schéma de référence et `.sql` générés inchangés
 **Testing**: pgTAP (une suite par migration, droits et bornes des cinq dettes, concurrence d'inscription) ; Jest (unitaires purs : table de conflit, conformité, horloge, chaîne, empreintes avec vecteurs fixes ; intégration avec le terminal de test et la vraie base ; parcours complet ; tests minimaux §13 ; isolation ; balayage des secrets avec canari ; garde de production ; mesures sous `SKIP_LATENCY`, lancées seules) ; tests en série (base partagée)
 **Target Platform**: serveur Linux ; processus nouveaux `snapshot-content`, `snapshot-signer`, `maintenance` (plus l'API publique et les existants)
 **Project Type**: monorepo npm (`apps/api`, `packages/contracts`, `packages/ledger-sql`, `packages/tag-format`)
@@ -106,12 +106,7 @@ kitty-specs/hors-ligne-snapshots-lots-01M645RN/
 
 ```
 packages/ledger-sql/
-├── migrations/0043_offline_policy.sql       # set/clear_offline_policy, log DEFINER, CHECK espèces, risque
-├── migrations/0044_offline_snapshots.sql    # publication, contenu, état, journal, enveloppes, clés de signature
-├── migrations/0045_offline_batches.sql      # open/complete remplacées, IMPORT, import de journal, trous
-├── migrations/0046_offline_anomalies.sql    # colonnes, open_offline_anomaly, réduction, wallet_status_history
-├── migrations/0047_offline_device_vendor.sql# ack, station, statut daté, session de vendeur datée
-├── migrations/0048_rights_hardening.sql     # objets de droits hors post-roles (si besoin)
+├── migrations/0043 à 0049                    # numérotation et contenu : contracts/interfaces.md § 1
 ├── post-roles.sql                           # retraits, rôles cashless_snapcontent, cashless_snapsign, cashless_maint, défaut global
 └── tests/tests_offline_policy.sql, tests_offline_snapshots.sql, tests_offline_batches.sql,
     tests_offline_anomalies.sql, tests_offline_rights.sql, _grants_for_tests.sql (+ suites existantes adaptées)

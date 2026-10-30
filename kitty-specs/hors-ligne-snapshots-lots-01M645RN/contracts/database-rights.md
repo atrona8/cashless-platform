@@ -24,7 +24,7 @@ Toute fonction de la mission : SECURITY DEFINER si elle écrit ou lit hors RLS, 
 `assert_vendor_session_at`, `record_sale_attribution_at`, `open_offline_anomaly`, `reduce_offline_shortfall`,
 `record_offline_retry`, `record_offline_op_result`, `create_device_journal_import`, `begin_device_journal_import`,
 `finish_device_journal_import`, `set_device_station_name`, `offline_device_exposure`, `offline_config_in_force`,
-`offline_snapshot_ack_floor`. Chaque accord a un appelant nommé dans l'API ; `mark_seq_gap_alerted` et
+`offline_snapshot_ack_floor`, `device_journal_imports_processing` (identifiants seuls, ADR-140). Chaque accord a un appelant nommé dans l'API ; `mark_seq_gap_alerted` et
 `event_sync_deadline` ne sont pas accordés (R-30.12).
 
 ## Tables nouvelles
@@ -38,7 +38,9 @@ aussi sur `offline_snapshot_entry`, `offline_snapshot_key`, `offline_snapshot_st
 
 Processus `snapshot-content` (`DecryptPort` + `DataKeyPort`). `EXECUTE` : `offline_snapshot_targets`,
 `offline_snapshot_source`, `offline_snapshot_source_delta`, `save_offline_snapshot_draft`,
-`wrap_offline_snapshot_key`, `offline_snapshot_keys_to_wrap`, `purge_offline_snapshot_content`. `SELECT (id,
+`wrap_offline_snapshot_key`, `offline_snapshot_keys_to_wrap`, `purge_offline_snapshot_content`,
+`append_offline_snapshot_draft_entries`, `seal_offline_snapshot_draft`, `discard_offline_snapshot_draft` (brouillon
+qu'il abandonne, ADR-140). `SELECT (id,
 operator_id, key_index, version, status, wrapping_kms_key_ref, encrypted_dek) ON tag_data_key`. Délais propres
 (`statement_timeout` 30 s, `transaction_timeout` 60 s). Rien d'autre (liste figée par test).
 
@@ -46,7 +48,9 @@ operator_id, key_index, version, status, wrapping_kms_key_ref, encrypted_dek) ON
 
 Processus `snapshot-signer` (`SignPort` seul). `EXECUTE` : `offline_snapshot_drafts_ready`,
 `offline_snapshot_draft_content`, `publish_offline_snapshot`, `offline_seq_gaps_to_alert`, `mark_seq_gap_alerted`,
-`offline_retries_to_alert`. Aucun droit sur `tag_data_key`, `media`, ni sur les enveloppes. Rien d'autre.
+`offline_retries_to_alert`, `mark_offline_retry_alerted`, `discard_offline_snapshot_draft` (ADR-140, décision du
+porteur du 30/10/2026). L'audit `SNAPSHOT_PUBLISHED` est écrit par `publish_offline_snapshot` : aucun droit d'audit
+au rôle. Aucun droit sur `tag_data_key`, `media`, ni sur les enveloppes. Rien d'autre.
 
 ## Rôle `cashless_maint` (nouveau ; LOGIN, NOINHERIT, NOBYPASSRLS)
 

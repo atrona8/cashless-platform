@@ -3,7 +3,7 @@
 Tables existantes du schéma de référence (`S:`) complétées par migration, et tables nouvelles. **Toute table nouvelle
 porte `operator_id` et `tenant_isolation` (ENABLE + FORCE)** ; aucune n'est écrite directement par `cashless_app`
 (`INSERT, UPDATE, DELETE` retirés dans `post-roles.sql`, test générique) ; chaque écriture passe par une fonction
-SECURITY DEFINER (`search_path = public, pg_temp`). Décisions : `research.md` (R-xx ; R-30 fait foi).
+SECURITY DEFINER (`search_path = public, pg_temp`). Décisions : `research.md` (R-xx ; R-30 fait foi). Numéros de migration indicatifs : `contracts/interfaces.md` § 1 fait foi.
 
 ## offline_policy (S:747) — complétée (0043)
 
