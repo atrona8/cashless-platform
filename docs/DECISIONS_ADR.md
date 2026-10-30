@@ -2035,3 +2035,17 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Risque.** Numéro jamais renvoyé, sans `SEQ_GAP` avant le lot suivant. **Test de borne** : clôture refusée sans
   ligne ni trace ; trace écrite par la seule fonction. Fichier à faire relire par une personne : migration 0045.
 
+## ADR-140 — Mission 7 : droits ajoutés pour les snapshots et l'import de journal (OP-N91)
+
+- **Statut** : Acceptée, 30 octobre 2026 (décisions du porteur, DM `01M667XBV66NBKA5DEFFXY15HM`,
+  `01M667Y1J4DT3HY96ZBCXXMXBT`).
+- **Contexte.** Aux tâches, `database-rights.md` contredisait `interfaces.md` (rejet d'un brouillon, alerte unique
+  des `RETRY`, audit de publication, liste des imports en cours).
+- **Décision.** Signataire : `discard_offline_snapshot_draft`, `mark_offline_retry_alerted` (colonne
+  `offline_batch_retry.alerted_at`) ; aucun droit d'audit, `publish_offline_snapshot` écrit `SNAPSHOT_PUBLISHED`.
+  Contenu : `append_…_entries`, `seal_…`, `discard_…`. API : `device_journal_imports_processing()` DEFINER,
+  `(import_id, operator_id)` seulement, traitement sous RLS. Options écartées : brouillon faux laissé `READY` et
+  alerte en mémoire (alerte répétée à chaque redémarrage) ; travailleur d'import dans `maintenance` (lui donnerait
+  l'écriture du grand livre).
+- **Risque.** Voir OP-N91. **Test de borne** : listes figées de `tests_execute_grants.sql`. Fichier à faire relire
+  par une personne : `post-roles.sql`.

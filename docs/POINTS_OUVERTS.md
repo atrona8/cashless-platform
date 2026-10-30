@@ -69,6 +69,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N88 | Soldes lus sans verrou avant l'écriture : `CHARGEBACK` verrouille le solde payé en détournant `wallet_topup_headroom` (correctif de la PR #8) ; `PURCHASE` (mission 5b) lit encore les soldes promo et payé sans verrou | Non | Non (aucun argent créé : la base refuse le découvert ; refus à tort sous concurrence) | Mission 13 : fonction SQL dédiée qui verrouille les comptes de l'écriture dans l'ordre des identifiants avant la lecture, utilisée par `CHARGEBACK` et `PURCHASE` ; décision du porteur du 29/10/2026 |
 | OP-N89 | Signature des snapshots hors ligne et clés de contenu par un faux KMS (`SignPort`, `DataKeyPort` simulés) : aucun snapshot servi en production avant la mission 12b (plan de la mission 7, ADR-138) | Non | **Oui** (démarrage refusé en production) | Mission 12b |
 | OP-N90 | Rejet réessayable d'un lot (4e `CL007`) : un numéro sans résultat final admis à la clôture du lot sur une trace `offline_batch_retry` écrite par la base (écart à l'invariant I2, décision du porteur du 30/10/2026, ADR-139) | Non | Non (alerte à 24 h) | — (écart permanent, revu en mission 13) |
+| OP-N91 | Droits ajoutés au contrat de la mission 7 : `cashless_snapsign` exécute `discard_offline_snapshot_draft` et `mark_offline_retry_alerted` ; `cashless_snapcontent` jette ses brouillons ; `cashless_app` lit les identifiants des imports de journal en cours de tous les prestataires (`device_journal_imports_processing`) (décisions du porteur du 30/10/2026, ADR-140) | Non | Non | — (écart permanent, revu en mission 13) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -151,6 +152,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N88 | Lecture des soldes avant `post_transaction` : `PURCHASE` sans verrou ; `CHARGEBACK` verrouillé par `wallet_topup_headroom` | Paiement par bracelet refusé à tort (« Solde interdit ») quand une dépense simultanée du même portefeuille passe entre la lecture et l'écriture ; interblocage possible, faible, pour la contestation (RETRY) | `chargeback-concurrency.spec.ts` (cas déterministe : contestation aboutie malgré une dépense validée entre lecture et écriture) ; aucun test pour `PURCHASE` | Mission 13 | Fonction SQL dédiée de verrouillage ordonné, test déterministe pour `PURCHASE` |
 | OP-N89 | `SignPort` et `DataKeyPort` du processus des snapshots en faux (mission 7) | Snapshots signés par une clé dérivée d'une graine du code : faux snapshots acceptés par les terminaux | Faux refusé au démarrage en production (`createKms`, `assertProcessIsSafe`) ; `403 OFFLINE_NOT_ALLOWED` sans clé `ACTIVE` | Mission 12b | Adaptateur AWS KMS (`kms:Sign`, `GenerateDataKey`, `Decrypt`), rôle IAM par processus, garde levée pour ces ports seulement |
 | OP-N90 | Numéro de lot laissé sans résultat final (`offline_batch_retry`) | Numéro jamais renvoyé : vente non écrite sans trou `SEQ_GAP` | Trace écrite par la base dans la transaction de l'opération ; clôture du lot refusée sans elle ; alerte à 24 h | Mission 13 (revue) | Aucune trace ouverte de plus de 24 h en recette ; test de borne inchangé |
+| OP-N91 | Lecture inter-prestataires des imports en cours par `cashless_app` ; deux `EXECUTE` de plus pour le signataire | Fuite de l'existence d'un import d'un autre prestataire si l'API était compromise ; signataire qui jette un brouillon valide | Fonction qui ne rend que `(import_id, operator_id)` ; traitement ensuite sous RLS ; jeter n'efface rien de publié et le brouillon est reconstruit | Mission 13 (revue) | Listes d'`EXECUTE` figées inchangées ; colonnes rendues inchangées |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1003,6 +1005,23 @@ ADR-139. **Bloque la production : non.**
 - **Garde.** Alerte du travailleur `seq-gap-age` si une trace reste ouverte plus de 24 h.
 - **Test qui échoue si la limite s'élargit.** `tests_offline_batches.sql` : clôture refusée pour un numéro sans ligne
   ni trace ; trace écrite par la seule fonction (`cashless_app` sans `INSERT`).
+
+### OP-N91 — Droits ajoutés au contrat de la mission 7 (30 octobre 2026)
+
+Tâches de la mission 7 (contradictions relevées par les rédacteurs des lots) ; décisions du porteur du 30/10/2026
+(DM `01M667XBV66NBKA5DEFFXY15HM`, `01M667Y1J4DT3HY96ZBCXXMXBT`) ; ADR-140. **Bloque la production : non.**
+
+- **Constat.** `contracts/database-rights.md` ne donnait au signataire ni le rejet d'un brouillon altéré ni la marque
+  d'alerte des numéros `RETRY`, et retirait à `cashless_app` toute lecture de `device_journal_import`, dont le
+  travailleur d'import a besoin pour trouver les imports en cours.
+- **Décision.** `cashless_snapsign` : `EXECUTE` de `discard_offline_snapshot_draft` et `mark_offline_retry_alerted`
+  (nouvelle). `cashless_snapcontent` : `append_…_entries`, `seal_…`, `discard_…` de ses brouillons. `cashless_app` :
+  `device_journal_imports_processing()` (DEFINER, identifiants seuls). L'audit `SNAPSHOT_PUBLISHED` est écrit par
+  `publish_offline_snapshot`, sans droit d'audit pour le signataire.
+- **Risque.** API compromise : elle apprend qu'un autre prestataire a un import en cours (identifiants seuls).
+  Signataire compromis : il jette des brouillons (déni de publication, rien de publié n'est touché).
+- **Test qui échoue si la limite s'élargit.** `tests_execute_grants.sql` (listes figées par rôle) ;
+  `tests_offline_batches.sql` : colonnes rendues par `device_journal_imports_processing` figées.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

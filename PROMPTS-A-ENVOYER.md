@@ -553,6 +553,11 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 13 — Recette V1
 
+> **Hérité de la mission 7 (tâches du 30/10/2026, ADR-139, ADR-140)** : OP-N90 (trace `offline_batch_retry` : vérifier
+> en recette qu'aucune trace ne reste ouverte plus de 24 h) et OP-N91 (droits ajoutés : `discard_offline_snapshot_draft`
+> et `mark_offline_retry_alerted` au signataire, `device_journal_imports_processing` à `cashless_app`, identifiants
+> seuls) : revoir les listes d'`EXECUTE` figées et décider s'ils restent permanents.
+
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
 > migration 0041, ADR-135) et OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).
