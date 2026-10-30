@@ -19,7 +19,7 @@ Quatre exigences structurent la mission :
 - **une opération, une écriture au plus** : quel que soit le chemin (en ligne, lot, rejeu), une clé `<série>:<numéro>` n'écrit qu'une fois ;
 - **aucun numéro perdu en silence** : chaque numéro consommé aboutit à un résultat final ou à un trou levé par deux personnes ;
 - **aucun faux en production** : les services externes (clés de signature) sont simulés derrière des ports ; leurs faux font refuser le démarrage en configuration de production ;
-- **aucune écriture sans garde** : la recharge espèces hors ligne ne contourne jamais la garde de caisse.
+- **aucune recharge espèces hors ligne** : décision du porteur du 30/10/2026 ; une recharge espèces portée par un lot est rejetée, la garde de caisse reste inchangée.
 
 Les adaptateurs AWS KMS (signature des snapshots, OP-N41, OP-N73) partent en mission 12b (feuille de route révisée du 29/10/2026). La passerelle locale relève de la mission 8, l'application du terminal (déléguée) d'une autre équipe, les rapprochements de la mission 9.
 
@@ -30,7 +30,7 @@ Les adaptateurs AWS KMS (signature des snapshots, OP-N41, OP-N73) partent en mis
 | Snapshot | Photo signée de l'état des bracelets d'un événement (soldes, blocages, mots de passe chiffrés), à une version donnée | « cache », « export » |
 | Version | Numéro strictement croissant d'un snapshot, par grand livre | « révision » |
 | `FULL` / `DELTA` | Snapshot complet / changements depuis une version de base connue | |
-| Politique hors ligne | Réglage `offline_policy` par organisateur, événement ou terminal : hors ligne permis, plafonds, âge maximal du snapshot, recharge espèces permise | « mode secours » |
+| Politique hors ligne | Réglage `offline_policy` par organisateur, événement ou terminal : hors ligne permis, plafonds, âge maximal du snapshot ; la recharge espèces hors ligne est toujours interdite (décision du 30/10/2026) | « mode secours » |
 | Plafonds du prestataire | Valeurs maximales que la politique d'un organisateur ne peut pas dépasser | |
 | Politique effective | Politique calculée pour un terminal (héritage, plafonds du prestataire) ; `capped` si un plafond l'a réduite | |
 | Politique en vigueur | Politique de la configuration réellement détenue par le terminal à l'instant de l'opération (`policy_in_force`) | « politique courante » |
@@ -160,7 +160,7 @@ Chaque numéro consommé par un terminal aboutit à un résultat final. Si des n
 
 ### User Story 6 - Les cas de temps et de période sont tranchés sans perdre l'argent (Priority: P2)
 
-Les horloges des terminaux se trompent, et certaines opérations arrivent trop tard. Le serveur corrige les dates fautives en gardant l'original et signale l'écart. Les ventes arrivées après la date limite de synchronisation sont rejetées mais gardent le commerçant garanti par le back-office. Les recharges espèces tardives sont écrites avec une anomalie, jamais refusées pour ce motif.
+Les horloges des terminaux se trompent, et certaines opérations arrivent trop tard. Le serveur corrige les dates fautives en gardant l'original et signale l'écart. Les ventes arrivées après la date limite de synchronisation sont rejetées mais gardent le commerçant garanti par le back-office.
 
 **Why this priority**: évite les écritures à une mauvaise date et les ventes perdues à la clôture, sans bloquer le cœur de la mission.
 
@@ -174,28 +174,25 @@ Les horloges des terminaux se trompent, et certaines opérations arrivent trop t
 4. **Given** un terminal à +2 h puis à -2 h, **When** ses lots sont traités, **Then** les corrections et anomalies sont celles du protocole (test minimal §13, point 6).
 5. **Given** une opération datée dans une période close, **When** elle est traitée, **Then** elle est `REJECTED` (`PERIOD_CLOSED`), rien n'est écrit, anomalie `PERIOD_CLOSED_OPERATION`, traitement manuel ; grand livre `LOCKED` : `REJECTED` (`LEDGER_LOCKED`).
 6. **Given** une vente ou son annulation reçue événement en `SETTLING` ou au-delà, **When** elle est traitée, **Then** elle est `REJECTED` (`SYNC_DEADLINE_PASSED`) avec l'anomalie `LATE_OFFLINE_SYNC` (et non `PERIOD_CLOSED_OPERATION`) ; le commerçant reste garanti par une écriture du back-office.
-7. **Given** une recharge en espèces reçue événement en `SETTLING` ou `REFUND_WINDOW`, **When** elle est traitée, **Then** elle est écrite normalement (`ACCEPTED`) avec l'anomalie `LATE_OFFLINE_SYNC`.
+7. *(retiré le 30/10/2026 : plus de recharge espèces hors ligne, voir User Story 7.)*
 8. **Given** une opération confirmée en ligne, **When** elle est jugée sur la période, **Then** les contrôles de période s'appliquent, mais pas les contrôles de conformité du terminal.
 9. **Given** une signature d'originalité absente alors que la puce en a une, **When** la vente est traitée, **Then** elle est gardée avec son résultat habituel et une anomalie `SIGNATURE_MISMATCH` s'ajoute.
 
 ---
 
-### User Story 7 - La recharge espèces faite hors ligne passe par la garde de caisse (Priority: P2)
+### User Story 7 - La recharge espèces hors ligne est refusée (Priority: P2)
 
-Si la politique le permet, un terminal `TOPUP_DESK` recharge un bracelet en espèces hors ligne. À la synchronisation, la recharge est écrite et rattachée à la session de caisse du même terminal qui couvre son heure, si cette session est encore ouverte. Au-delà d'un plafond réglementaire, elle est écrite en deux parts (portefeuille jusqu'à la marge, reste en `L-ESP-A-RENDRE`) avec une anomalie `CASH_TOPUP_OVER_LIMIT`. Si la session couvrante est déjà fermée, ou s'il n'y en a aucune, la recharge est refusée (`REJECTED`) : rien n'est écrit, ni au portefeuille ni en caisse, et une anomalie porte le montant pour régularisation au back-office.
+Décision du porteur du 30/10/2026 : aucune recharge espèces ne se fait hors ligne. La politique ne peut pas l'autoriser. Si un terminal en envoie quand même une dans un lot, elle est rejetée seule, sans bloquer le reste du lot, et une anomalie porte le montant : l'espèce est déjà dans le tiroir, la régularisation se fait au back-office.
 
-**Why this priority**: l'argent a changé de main ; l'écriture doit exister, sans jamais ouvrir d'exemption silencieuse à la garde de caisse.
+**Why this priority**: ferme un chemin d'argent liquide sans contrôle de caisse ; la garde de caisse (ADR-132) reste inchangée.
 
-**Independent Test**: synchroniser une recharge avec une session ouverte, avec une session fermée couvrant l'heure, sans session, et au-delà d'un plafond.
+**Independent Test**: tenter de régler `cash_topup_offline` à vrai ; envoyer un lot contenant une vente puis un `TOPUP_CASH`.
 
 **Acceptance Scenarios**:
 
-1. **Given** une recharge espèces hors ligne et une session ouverte du même terminal couvrant son heure, **When** elle est synchronisée, **Then** `TOPUP_CASH` est écrite, rattachée à cette session.
-2. **Given** une session du même terminal déjà fermée mais qui couvrait l'heure de la recharge, **When** la recharge est synchronisée, **Then** elle est `REJECTED` : rien n'est écrit (ni portefeuille ni caisse), la fermeture n'est pas touchée et une anomalie porte le bracelet, le terminal et le montant.
-3. **Given** aucune session du terminal ne couvre l'heure de la recharge, **When** elle est synchronisée, **Then** elle est `REJECTED` : rien n'est écrit, une anomalie porte le montant ; il n'existe aucune exemption à la garde de caisse.
-4. **Given** une recharge au-delà d'un plafond réglementaire, **When** elle est écrite, **Then** le portefeuille reçoit la marge (`wallet_topup_headroom`), le reste est crédité sur `L-ESP-A-RENDRE`, le résultat est `ACCEPTED` et l'anomalie `CASH_TOPUP_OVER_LIMIT` porte le bracelet et le montant.
-5. **Given** une recharge dont le montant dépasse `max_per_sale` ou une politique sans `cash_topup_offline`, **When** elle est traitée, **Then** elle est `REJECTED` comme non conforme.
-6. **Given** une recharge espèces hors ligne synchronisée, **When** le solde est lu, **Then** il n'est dépensable ailleurs qu'après la nouvelle version de snapshot qui le reflète.
+1. **Given** une politique d'organisateur, d'événement ou de terminal, **When** `cash_topup_offline` est réglé à vrai, **Then** la demande est refusée (`422`) et la politique effective rend toujours `cash_topup_offline` faux.
+2. **Given** un lot qui contient un `TOPUP_CASH`, **When** il est traité, **Then** cette opération est `REJECTED` (`OFFLINE_NOT_ALLOWED`), rien n'est écrit (ni portefeuille ni caisse), une anomalie `NON_COMPLIANT_OPERATION` porte le bracelet, le terminal, le numéro et le montant, et les autres opérations du lot sont traitées.
+3. **Given** ce rejet, **When** le registre est lu, **Then** le numéro a un résultat final (aucun trou) et le renvoi du même lot rend le même résultat.
 
 ---
 
@@ -284,7 +281,6 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 - Clé de signature des snapshots retirée ou inactive : aucun snapshot n'est produit ; l'exploitation est alertée ; aucun snapshot n'est signé avec une clé inactive.
 - Deux clés actives seulement par signataire pendant une rotation : le terminal reçoit les deux clés publiques et accepte l'une ou l'autre.
 - Terminal `SUSPENDED` puis `REVOKED` avec des lots en cours : le lot en cours est traité jusqu'au bout ; les suivants sont refusés.
-- Recharge espèces hors ligne d'un terminal dont la session de caisse a été fermée avec un compté déjà constaté : écart a posteriori signalé, la fermeture n'est jamais réécrite.
 - Événement en `LOCKED` : tout lot est `REJECTED` (`LEDGER_LOCKED`) ; en `CLOSING` ou `RECONCILING` : ventes acceptées.
 - Même lecture citée par un lot sans `online_tap_id` : lecture réutilisée si même terminal, même compteur, même UID et jamais utilisée ; un passage ne sert qu'à une seule écriture.
 
@@ -294,7 +290,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 
 | ID | Title | User Story | Priority | Status | Delivery | No-op passable? |
 |----|-------|------------|----------|--------|----------|-----------------|
-| FR-001 | Politique hors ligne à trois portées | En tant qu'`ORGANIZER_ADMIN`, je veux régler la politique hors ligne par organisation, par événement et par terminal ; un champ vide hérite du niveau au-dessus ; sans réglage, hors ligne interdit, plafonds à 0, âge maximal 900 s, recharge espèces interdite. | High | Open | [build] | no |
+| FR-001 | Politique hors ligne à trois portées | En tant qu'`ORGANIZER_ADMIN`, je veux régler la politique hors ligne par organisation, par événement et par terminal ; un champ vide hérite du niveau au-dessus ; sans réglage, hors ligne interdit, plafonds à 0, âge maximal 900 s ; la recharge espèces hors ligne est interdite à toutes les portées (`cash_topup_offline` toujours faux). | High | Open | [build] | no |
 | FR-002 | Plafonds du prestataire et politique effective | En tant que prestataire, je veux fixer des plafonds maximaux que la politique d'un organisateur ne dépasse jamais ; la politique effective d'un terminal est calculée par `effective_offline_policy` et signale `capped` si un plafond l'a réduite. | High | Open | [build] | no |
 | FR-003 | Risque maximal affiché | En tant qu'organisateur, je veux lire le risque maximal de mon événement (somme des `max_total_per_device`) quand je règle mes plafonds, par une route du contrat. | High | Open | [build] | no |
 | FR-004 | Historique des politiques par la base | En tant qu'auditeur, je veux que chaque modification, création ou suppression d'une politique écrive l'historique par un déclencheur de la base aux droits du propriétaire, et que l'application ne puisse pas l'écrire (OP-N58). | High | Open | [build] | no |
@@ -320,8 +316,8 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 | FR-024 | Contrôles de période | En tant que plateforme, je veux rejeter, pour toute opération y compris confirmée en ligne, une date dans une période close (`PERIOD_CLOSED`, `PERIOD_CLOSED_OPERATION`) ou un grand livre `LOCKED` (`LEDGER_LOCKED`), et une vente ou annulation en `SETTLING` ou au-delà (`SYNC_DEADLINE_PASSED`, anomalie `LATE_OFFLINE_SYNC`). | High | Open | [build] | no |
 | FR-025 | Horodatage corrigé | En tant que plateforme, je veux ramener une date future à l'heure du serveur et une date antérieure au snapshot à l'heure de celui-ci, ouvrir `CLOCK_SKEW`, garder l'original dans `metadata.device_occurred_at`, et signaler une inversion de dates entre numéros sans changer le résultat. | High | Open | [build] | no |
 | FR-026 | Signature d'originalité | En tant que plateforme, je veux ouvrir `SIGNATURE_MISMATCH` quand la signature d'originalité est absente alors que la puce en a une, en gardant l'opération ; une signature différente met le bracelet en liste noire et la part en attente. | High | Open | [build] | no |
-| FR-027 | Recharge espèces hors ligne | En tant que plateforme, je veux écrire une recharge espèces hors ligne (`TOPUP_CASH`), la découper au-delà d'un plafond réglementaire (portefeuille jusqu'à `wallet_topup_headroom`, reste en `L-ESP-A-RENDRE`, `CASH_TOPUP_OVER_LIMIT`), l'accepter même tardive avec `LATE_OFFLINE_SYNC`, et la refuser si la politique ne la permet pas. | High | Open | [build] | no |
-| FR-028 | Session de caisse d'une recharge hors ligne | En tant que plateforme, je veux rattacher une recharge espèces hors ligne à la session du même terminal qui couvre `occurred_at` si elle est encore ouverte ; si cette session est déjà fermée, ou s'il n'y en a aucune, l'opération est `REJECTED`, rien n'est écrit (ni portefeuille ni caisse) et une anomalie porte le montant pour régularisation au back-office ; la garde de caisse n'est pas modifiée. | High | Open | [build] | no |
+| FR-027 | Recharge espèces hors ligne interdite | En tant que plateforme, je veux que `cash_topup_offline` ne puisse être réglé à vrai à aucune portée (`422`) et que la politique effective le rende toujours faux (décision du porteur du 30/10/2026). | High | Open | [build] | no |
+| FR-028 | Recharge espèces portée par un lot | En tant que plateforme, je veux rejeter un `TOPUP_CASH` porté par un lot (`REJECTED`, `OFFLINE_NOT_ALLOWED`), sans rien écrire (ni portefeuille ni caisse), avec une anomalie `NON_COMPLIANT_OPERATION` portant le montant pour régularisation au back-office, sans bloquer le reste du lot ; la garde de caisse n'est pas modifiée. | High | Open | [build] | no |
 | FR-029 | Résultat et reprise d'un lot | En tant que terminal, je veux relire le résultat mémorisé d'un lot (`getOfflineBatchResult` : `200`, `202` avec `Retry-After`, `404`), et que le plus grand numéro continu acquitté, les numéros manquants et la version de snapshot suivante accompagnent chaque réponse. | High | Open | [build] | no |
 | FR-030 | Lot abandonné | En tant que plateforme, je veux passer `REJECTED` (`ABANDONED`) tout lot resté `PROCESSING` plus de 15 min à l'ouverture du lot suivant du même terminal, en gardant les résultats déjà inscrits. | High | Open | [build] | no |
 | FR-031 | Trous de séquence | En tant que plateforme, je veux traiter un lot qui suit un trou, rendre `missing_seqs`, ouvrir une anomalie `SEQ_GAP` par numéro manquant, et clore l'anomalie quand le numéro est renvoyé. | High | Open | [build] | no |
@@ -336,7 +332,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 | FR-040 | Rôle de maintenance | En tant que plateforme, je veux un rôle et une connexion de maintenance dédiés aux purges des nonces et des essais d'enrôlement, l'application perdant l'exécution de ces purges (OP-N75). | High | Open | [build] | no |
 | FR-041 | Bornage des dettes levées | En tant que relecteur, je veux, pour chacun des cinq points OP-N57, OP-N58, OP-N68, OP-N69 et OP-N75, un test qui échoue si le droit s'élargit, et la levée consignée dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md`. | High | Open | [ratchet] | no |
 | FR-042 | Contrat et types | En tant que développeur des apps, je veux que le contrat couvre les routes nouvelles (politiques hors ligne, plafonds du prestataire, risque maximal) et les précisions de cette mission, et que les types TypeScript et Dart soient régénérés. | High | Open | [build] | no |
-| FR-043 | Audit | En tant qu'auditeur, je veux une trace de chaque modification de politique, snapshot produit, lot reçu ou refusé (signature, chaîne, borne), levée de trou, import de journal et recharge espèces hors ligne refusée ou en attente (auteur, terminal, date). | Medium | Open | [build] | no |
+| FR-043 | Audit | En tant qu'auditeur, je veux une trace de chaque modification de politique, snapshot produit, lot reçu ou refusé (signature, chaîne, borne), levée de trou, import de journal et recharge espèces portée par un lot et refusée (auteur, terminal, date). | Medium | Open | [build] | no |
 | FR-044 | Tests minimaux du protocole | En tant que relecteur, je veux les tests minimaux de `sync_protocol.md` §13 côté serveur : rejeu de lots, panne au milieu d'un lot de 500, scénario de référence (transaction 22), horloges à +2 h et -2 h, bracelet bloqué pendant un isolement. | High | Open | [ratchet] | no |
 
 ### Non-Functional Requirements
@@ -345,8 +341,8 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 |----|-------|-------------|----------|----------|--------|
 | NFR-001 | Aucune double écriture | 0 double écriture sur 100 rejeux (dont concurrents) d'un même lot et d'une même opération, tous chemins confondus (en ligne, lot, import). | Reliability | High | Open |
 | NFR-002 | Reprise après panne | Après une coupure du serveur au milieu d'un lot de 500 opérations puis un rejeu, 100 % des résultats sont identiques à un traitement sans panne, 0 double écriture, plus grand numéro continu correct. | Reliability | High | Open |
-| NFR-003 | Débit d'un lot | Un lot de 500 opérations est traité en 60 s au plus pour 95 % des lots, mesuré côté serveur sur le jeu d'essai (seuil proposé, à confirmer au plan). | Performance | Medium | Open |
-| NFR-004 | Production d'un snapshot | Un `FULL` de 50 000 bracelets est produit en 30 s au plus et signé ; un `DELTA` est servi en 2 s au plus pour 95 % des demandes (seuils proposés). | Performance | Medium | Open |
+| NFR-003 | Débit d'un lot | Un lot de 500 opérations est traité en 60 s au plus pour 95 % des lots, mesuré côté serveur sur le jeu d'essai (seuil confirmé le 29/10/2026). | Performance | Medium | Open |
+| NFR-004 | Production d'un snapshot | Un `FULL` de 50 000 bracelets est produit en 30 s au plus et signé ; un `DELTA` est servi en 2 s au plus pour 95 % des demandes (seuils confirmés le 29/10/2026). | Performance | Medium | Open |
 | NFR-005 | Fraîcheur après blocage | 100 % des blocages sont visibles dans une nouvelle version publiée en 5 s au plus ; 100 % des autres changements en 60 s au plus. | Performance | High | Open |
 | NFR-006 | Version toujours croissante | 0 version de snapshot non croissante ou plantée par l'application sur 100 % des essais (OP-N57). | Security | High | Open |
 | NFR-007 | Aucun secret exposé | 0 mot de passe de bracelet, clé privée, clé de contenu non enveloppée, PIN ou empreinte de PIN en clair dans la base, les journaux, les réponses, les snapshots et les variables d'environnement, vérifié par un balayage avec canari. | Security | High | Open |
@@ -356,7 +352,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 | NFR-011 | Tout ou rien | 0 écriture partielle : une opération est écrite avec son résultat au registre dans une même transaction, ou ni l'un ni l'autre. | Reliability | High | Open |
 | NFR-012 | Aucune perte silencieuse | 100 % des numéros reçus ou manquants ont un résultat final ou une anomalie `SEQ_GAP` ouverte ; 0 numéro sans trace. | Reliability | High | Open |
 | NFR-013 | Un lot à la fois | 100 % des lots concurrents d'un même terminal au-delà du premier sont refusés (`BATCH_IN_PROGRESS`), sur 50 envois concurrents. | Reliability | High | Open |
-| NFR-014 | Garde de caisse | 0 écriture sur une caisse sans session couvrante, y compris par synchronisation hors ligne, prouvé par test. | Security | High | Open |
+| NFR-014 | Aucune espèce hors ligne | 0 écriture (portefeuille ou caisse) issue d'un `TOPUP_CASH` porté par un lot ; 0 politique effective avec `cash_topup_offline` vrai, prouvé par test. | Security | High | Open |
 | NFR-015 | Non-régression | 100 % des tests existants (pgTAP, Jest) restent verts. | Reliability | High | Open |
 
 ### Constraints
@@ -373,7 +369,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 | C-008 | Dette nommée | Tout écart accepté qui affaiblit la sécurité : point ouvert, ADR, test de borne, reports PROMPTS/PRD (règle 3 de CLAUDE.md) ; tout écart est soumis au porteur avant d'être codé (règle 1). | Regulatory | High | Open |
 | C-009 | Hors périmètre | Passerelle locale et son snapshot propre (mission 8) ; application du terminal (équipe déléguée) ; adaptateurs AWS KMS réels et OP-N41, OP-N73 (mission 12b) ; rapprochements, versements et clôture (mission 9) ; écrans du back-office (mission 11). | Business | High | Open |
 | C-010 | Idempotence | Clé d'une opération : `<série>:<numéro>` (numéro complété à 4 chiffres au moins, jamais tronqué) ; clé d'un lot : `batch_id` ; unicité `(grand livre, clé)` quel que soit le chemin. | Technical | High | Open |
-| C-011 | Pas de nouvelle écriture hors du protocole | Les opérations jamais permises hors ligne (QR, recharge PSP, remboursement, activation, caution, restitution, remplacement, rendu d'espèces dues) sont refusées si un lot les porte. | Business | High | Open |
+| C-011 | Pas de nouvelle écriture hors du protocole | Les opérations jamais permises hors ligne (QR, recharge PSP, recharge espèces, remboursement, activation, caution, restitution, remplacement, rendu d'espèces dues) sont refusées si un lot les porte. | Business | High | Open |
 | C-012 | Tolérance d'horloge | 120 s ; abandon d'un lot à 15 min ; saut maximal de numéro 10 000 ; session de vendeur 12 h : valeurs de plateforme, non réglables par l'organisateur. | Technical | High | Open |
 | C-013 | Garde de caisse | La base refuse toute écriture sur une caisse inscrite sans session couvrante (ADR-132) ; la mission ne la contourne pas ; toute évolution de la garde est soumise au porteur avant d'être codée. | Regulatory | High | Open |
 
@@ -405,7 +401,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 - **SC-007** : aucun mot de passe de bracelet, clé privée, PIN ou empreinte de PIN n'apparaît en clair dans la base, les journaux, les réponses ou les snapshots (balayage avec canari) — [build] · no-op passable: no
 - **SC-008** : le démarrage en configuration de production est refusé pour chaque faux de la mission ; les snapshots ne sont donc pas servis en production avant la mission 12b — [build] · no-op passable: no
 - **SC-009** : OP-N57, OP-N58, OP-N68, OP-N69 et OP-N75 sont levés, chacun par un test nommé qui échoue si le droit s'élargit — [build] · no-op passable: no
-- **SC-010** : aucune recharge espèces hors ligne n'est écrite sans session de caisse couvrante ; sans session, le montant est en attente avec une anomalie ; aucune exemption silencieuse à la garde — [build] · no-op passable: no
+- **SC-010** : aucune recharge espèces n'est écrite par un lot ou un import ; chaque `TOPUP_CASH` reçu est rejeté avec une anomalie qui porte le montant ; la garde de caisse est inchangée — [build] · no-op passable: no
 - **SC-011** : aucune fuite entre prestataires ou organisateurs sur les nouvelles opérations (balayage d'isolation) — [build] · no-op passable: no
 - **SC-012** : les tests minimaux de `sync_protocol.md` §13 passent côté serveur, dont l'écriture de la transaction 22 identique à `scenario_reference.json` — [build] · no-op passable: no
 
@@ -414,11 +410,11 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 - **Colonnes des tableaux d'exigences** : les colonnes de la mission 6 (`ID`, `Title`, `User Story`, `Priority`, `Status`) sont reprises ; `Delivery` et `No-op passable?` sont ajoutées en fin. Le texte de l'exigence se lit dans la colonne `User Story`, comme dans la mission 6.
 - **Signature des snapshots simulée** (décision `01M645SWY4PETSJE3PJ7YXKYTP`) : le port de clés existant est utilisé avec un faux de signature, refusé en production ; la vérification de signature côté terminal est hors périmètre (application déléguée), mais la mission fournit un jeu d'essai (clé publique, vecteurs) pour la tester. L'algorithme par défaut est `ECDSA_P256_SHA256` ; Ed25519 est prévu par l'identifiant de clé et sera vérifié sur le KMS réel en 12b (OP-N13).
 - **Routes de politique absentes du contrat** : `openapi.yaml` ne contient aucune route pour régler la politique hors ligne, les plafonds du prestataire ni lire le risque maximal. Le plan les ajoute au contrat (FR-042) ; la forme exacte est arrêtée au plan.
-- **Seuils de performance** : NFR-003 et NFR-004 sont des propositions de l'agent, à confirmer au plan ; les valeurs du protocole (60 s, 5 s, 500, 1 Mio, 15 min, 10 000, 120 s) sont normatives.
+- **Seuils de performance** : NFR-003 et NFR-004 confirmés par le porteur le 29/10/2026 (DM `01M64AMCNF5R4DNR87CK8DCJS7`) ; les valeurs du protocole (60 s, 5 s, 500, 1 Mio, 15 min, 10 000, 120 s) sont normatives.
 - **Terminal `SUSPENDED`** : il peut encore envoyer ses lots ; ses opérations datées après la suspension sont rejetées comme non conformes. Terminal `REVOKED` : lots refusés, import à deux.
 - **Suspension automatique du hors ligne après 24 h de trou** : le protocole dit « PEUT ». Non retenue : l'exploitation est alertée (FR-034) ; la décision de suspendre reste humaine. Une suspension automatique éventuelle serait une mission ultérieure.
-- **Recharge espèces hors ligne sans session couvrante** : le résultat est `REJECTED` (raison à arrêter au plan), non écrit au portefeuille, avec une anomalie portant le montant ; « montant en attente » signifie que le montant reste tracé par l'anomalie et, si le plan le permet sans toucher à la garde, au compte d'attente. Le type d'anomalie (nouveau ou `CASH_TOPUP_OVER_LIMIT` avec motif) est arrêté au plan.
-- **Garde de caisse inchangée** : aucune écriture sur une caisse dont la session est fermée ; la recharge tardive est rejetée avec une anomalie (décisions `01M64AEGKJ7GTEXZRXCCNKP28X`, `01M64AEZ8SBKNQTD4AHV15YBWA`).
+- **Recharge espèces hors ligne retirée** (décision `01M663D0XP43K575Q78DSSQ1MB`, 30/10/2026) : elle remplace les décisions du 29/10 sur la session couvrante ; aucune caisse n'est touchée par la mission.
+- **Garde de caisse inchangée** : ADR-132 s'applique telle quelle ; la mission n'écrit aucune transaction sur une caisse.
 - **Session de vendeur** : la durée de 12 h et la vérification du PIN par le serveur viennent de la mission 5b ; la mission n'ajoute aucun chemin d'authentification du vendeur hors ligne.
 - **Plus grand numéro** : une valeur de numéro supérieure à 2^53 est lue sans perte de précision ou refusée explicitement ; le choix est arrêté au plan.
 - **Production des snapshots** : un processus planifié (modèle des processus existants) produit les versions ; la fréquence interne est choisie pour tenir 60 s et 5 s.
@@ -429,8 +425,8 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 ## Contradictions de sources
 
 1. **Politique hors ligne sans route** : SPECIFICATION §9.3 (réglée par l'organisateur, plafonds du prestataire, risque maximal affiché) ; `openapi.yaml` n'a aucune route pour cela. Appliqué : SPECIFICATION ; les routes sont ajoutées au contrat au plan (FR-042).
-2. **Écriture tardive d'une recharge sur une caisse fermée** : `sync_protocol.md` §7.5 et §11 cas 39 (« écrites normalement », « la caisse est déjà fermée ») ; garde de caisse ADR-132 (aucune écriture sans session ouverte). Appliqué : décision du porteur du 29/10/2026 : la garde l'emporte ; recharge rattachée seulement à une session encore ouverte qui couvre `occurred_at`, sinon `REJECTED` avec anomalie portant le montant (rien d'écrit).
-3. **Session de la recharge hors ligne** : PROMPTS Mission 7 propose « session couvrant `occurred_at`, ou session de rattrapage » ; la décision du porteur écarte la session de rattrapage. Appliqué : la décision.
+2. **Recharge espèces hors ligne** : `sync_protocol.md` §5.4, §7.5, §8 et §11 cas 22 et 39 la permettent selon la politique (`cash_topup_offline`) ; décision du porteur du 30/10/2026 : aucune recharge espèces hors ligne. Appliqué : la décision ; le protocole et SPECIFICATION §9 sont à mettre en accord (signalé, report dans `PRD.md`).
+3. **Session de la recharge hors ligne** : sans objet depuis la décision du 30/10/2026 (point 2).
 4. **Colonnes encore écrites par l'application** : OP-N69 (`POINTS_OUVERTS`) liste le plancher, la dernière présence, le nom de station et la version de snapshot ; PROMPTS Mission 7 ajoute `app_mode`, `nfc_enabled` et `personal_phone`, et un autre passage cite l'affectation. Appliqué : les deux listes réunies, `personal_phone` et `app_mode` inclus (décision `01M647MH0SF6Q7KTM3CMXQZR0B`) ; la liste exacte est vérifiée au plan contre les droits réels de la base.
 5. **« Signature invalide »** : l'intention parle d'une anomalie `SIGNATURE_MISMATCH` ; le protocole en distingue deux sortes. La signature du lot invalide (`400 BATCH_SIGNATURE_INVALID`, lot non traité, sans anomalie comptable) et la signature d'originalité du bracelet (`SIGNATURE_MISMATCH`, anomalie, opération gardée). Appliqué : les deux sont traitées (FR-013, FR-026), le refus du lot étant signalé dans l'audit.
 6. **Signature des snapshots** : SPECIFICATION §9.4 et `sync_protocol.md` §4.1 exigent une clé dans le KMS/HSM ; la décision `01M645SWY4PETSJE3PJ7YXKYTP` simule le KMS jusqu'à la mission 12b. Appliqué : la décision, faux refusé en production, dette nommée (C-007) ; aucun snapshot réel n'est servi en production avant 12b.
@@ -443,9 +439,12 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 |---|---|
 | Services externes simulés (DM `01M645SWY4PETSJE3PJ7YXKYTP`) | Résolue le 29/10/2026 par le porteur : la signature des snapshots passe par le port de clés existant, dont le faux est refusé en production ; adaptateurs AWS KMS (signature, OP-N41, OP-N73) en mission 12b (feuille de route révisée) |
 | Connexion du vendeur hors ligne (DM `01M647M2MDHBNDZ1AVC93PFR16`) | Résolue le 29/10/2026 par le porteur : un vendeur connecté en ligne garde sa session hors ligne jusqu'à expiration (12 h) ; aucune nouvelle connexion hors ligne ; aucun secret ni empreinte de PIN envoyé au terminal |
-| Recharge espèces hors ligne et session de caisse (DM `01M647M9W14H6E7BWZDRWPGNDZ`) | Résolue le 29/10/2026 par le porteur, précisée par les deux décisions suivantes : rattachée à la session du même terminal qui couvre `occurred_at` si elle est encore ouverte ; jamais d'exemption à la garde |
+| Recharge espèces hors ligne et session de caisse (DM `01M647M9W14H6E7BWZDRWPGNDZ`) | Résolue le 29/10/2026 par le porteur, précisée par les deux décisions suivantes : rattachée à la session du même terminal qui couvre `occurred_at` si elle est encore ouverte ; jamais d'exemption à la garde ; **remplacée le 30/10/2026** par la décision `01M663D0XP43K575Q78DSSQ1MB` |
 | Héritages de droits levés dans la mission (DM `01M647MH0SF6Q7KTM3CMXQZR0B`) | Résolue le 29/10/2026 par le porteur : OP-N57 (snapshot inscrit par une fonction qui calcule la version), OP-N58 (historique par déclencheur `SECURITY DEFINER`, `INSERT` retiré à l'application), OP-N68 (droit par défaut global), OP-N69 (écritures du terminal par fonctions, `personal_phone` et `app_mode` compris), OP-N75 (rôle de maintenance dédié), chacun avec son test et la levée du point |
-| Session couvrante déjà fermée (DM `01M64AEGKJ7GTEXZRXCCNKP28X`) | Résolue le 29/10/2026 par le porteur : refus complet (`REJECTED`), rien écrit (ni portefeuille ni caisse), anomalie portant le montant, régularisation au back-office ; garde de caisse inchangée |
-| Aucune session couvrante (DM `01M64AEZ8SBKNQTD4AHV15YBWA`) | Résolue le 29/10/2026 par le porteur : rejet et anomalie portant le montant ; rien écrit |
+| Session couvrante déjà fermée (DM `01M64AEGKJ7GTEXZRXCCNKP28X`) | Résolue le 29/10/2026 par le porteur : refus complet (`REJECTED`), rien écrit (ni portefeuille ni caisse), anomalie portant le montant, régularisation au back-office ; garde de caisse inchangée ; **remplacée le 30/10/2026** par la décision `01M663D0XP43K575Q78DSSQ1MB` |
+| Aucune session couvrante (DM `01M64AEZ8SBKNQTD4AHV15YBWA`) | Résolue le 29/10/2026 par le porteur : rejet et anomalie portant le montant ; rien écrit ; **remplacée le 30/10/2026** par la décision `01M663D0XP43K575Q78DSSQ1MB` |
 | Trou de numérotation de plus de 24 h (DM `01M64AFDTANCENGM3N0FQ56BDB`) | Résolue le 29/10/2026 par le porteur : alerte seulement, le terminal continue ; levée à deux |
+| Recharge espèces hors ligne (DM `01M663D0XP43K575Q78DSSQ1MB`) | Résolue le 30/10/2026 par le porteur : retirée ; `TOPUP_CASH` dans un lot rejeté par opération (`OFFLINE_NOT_ALLOWED`, `NON_COMPLIANT_OPERATION` portant le montant) |
+| Exposition des plafonds (DM `01M66316M7AK30QY27GQ67P7ME`) | Résolue le 30/10/2026 par le porteur : ventes non acquittées, acquittement de moins de 120 s compté (strict) |
+| Seuils de performance (DM `01M64AMCNF5R4DNR87CK8DCJS7`) | Confirmés le 29/10/2026 : lot de 500 en 60 s (p95), FULL de 50 000 en 30 s, DELTA en 2 s (p95) |
 | Autres choix ci-dessus (Assumptions, Contradictions) | Propositions de l'agent, égales ou plus strictes que les sources ; à confirmer par le porteur |

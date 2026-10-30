@@ -259,6 +259,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > session de caisse ouverte (garde sur `posting`, ADR-132). Définir la session d'une recharge espèces hors ligne
 > (`TOPUP_CASH` en `OFFLINE_SYNC`/`EDGE_SYNC`) : session couvrant `occurred_at`, ou session de rattrapage, sans
 > ouvrir d'exemption silencieuse à la garde (constat A17 de la passe contradictoire du plan de la mission 6).
+>
+> **Tranché le 30/10/2026 (porteur, plan de la mission 7)** : aucune recharge espèces hors ligne. `cash_topup_offline`
+> interdit en base ; un `TOPUP_CASH` porté par un lot est rejeté par opération (`OFFLINE_NOT_ALLOWED`,
+> `NON_COMPLIANT_OPERATION` portant le montant) ; garde de caisse inchangée. La mission 8 (passerelle) hérite de la
+> même règle pour `EDGE_SYNC`, sauf décision contraire du porteur.
 
 > **Hérité de la mission 4 (bracelets-nfc)** : deux faiblesses du kit, antérieures à la mission 4, consignées sans
 > changement de comportement (relecture du lot 20, ADR-94). **OP-N57** : `cashless_app` choisit la version d'un
@@ -323,7 +328,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > lots hors ligne ; non écrite par la mission 5b (aucune dette de sécurité : le chemin en ligne refuse déjà `CL002`).
 
 - [x] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
-- [ ] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
+- [x] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission hors-ligne-snapshots-lots-01M645RN
 - [ ] /spec-kitty.review --mission hors-ligne-snapshots-lots-01M645RN
@@ -331,6 +336,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission hors-ligne-snapshots-lots-01M645RN
 
 ## Mission 8 — Passerelle locale
+
+> **Hérité de la mission 7 (porteur, 30/10/2026)** : aucune recharge espèces hors ligne. La liste `x-edge-available`
+> ci-dessous cite les recharges espèces par la passerelle : à confirmer avec le porteur au specify (la passerelle est
+> sur site, avec sessions de caisse ; la décision visait les terminaux sans réseau).
 
 - [ ] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
 - [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker absent de la machine de développement actuelle). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).

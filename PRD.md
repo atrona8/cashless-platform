@@ -127,6 +127,16 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Snapshot signé, plafonds hors ligne par politique (`offline_policy`), refus par défaut. (§9.1 à §9.4)
 - Numérotation `seq` par terminal, lots de 500 opérations, registre des numéros, trous de séquence. (§9.5)
 - Conflits à la synchronisation : commerçant garanti, part non couverte en compte d'attente. (§9.6)
+- **Aucune recharge espèces hors ligne** (décision du porteur du 30/10/2026, mission 7) : `cash_topup_offline` est
+  toujours faux ; un `TOPUP_CASH` porté par un lot est rejeté seul (`OFFLINE_NOT_ALLOWED`), rien n'est écrit et une
+  anomalie `NON_COMPLIANT_OPERATION` porte le montant. Écart signalé à `sync_protocol.md` (§5.4, §7.5, §8, §11 cas 22
+  et 39) et à SPECIFICATION §9, à mettre en accord. La passerelle locale (mission 8) suit la même règle sauf décision
+  contraire.
+- Vendeur hors ligne : session ouverte en ligne valable jusqu'à son expiration (12 h), aucune connexion hors ligne,
+  aucun secret de PIN sur le terminal (porteur, 29/10/2026). Plafonds jugés sur la configuration détenue ; exposition
+  = ventes non acquittées (acquittement de moins de 120 s compté, porteur 30/10/2026).
+- Snapshots produits par un processus dédié (seul détenteur des clés), une version signée par pas ; signature par un
+  faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b.
 - Passerelle locale qui prend l'autorité de débit pendant une coupure (bascule, époque, reprise forcée). (§9.7)
 
 ### 2.7 API (§10, `openapi.yaml`)
@@ -278,7 +288,7 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
 - héritages de la mission 6 (27/10/2026) : mission 7, session d'une recharge espèces hors ligne (la base refuse toute
-  écriture de caisse hors session) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
+  écriture de caisse hors session) — sans objet depuis le 30/10/2026 (recharge espèces hors ligne retirée) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
   et passage à `RECONCILING` refusé tant qu'une session de caisse est ouverte ;
 - héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83, corrigée en cycle 2 par
   la migration 0042, ADR-134) ; anciennes signatures de caisse retirées à `cashless_app` (OP-N84, levé en cycle 2,
