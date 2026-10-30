@@ -40,7 +40,8 @@ Processus `snapshot-content` (`DecryptPort` + `DataKeyPort`). `EXECUTE` : `offli
 `offline_snapshot_source`, `offline_snapshot_source_delta`, `save_offline_snapshot_draft`,
 `wrap_offline_snapshot_key`, `offline_snapshot_keys_to_wrap`, `purge_offline_snapshot_content`,
 `append_offline_snapshot_draft_entries`, `seal_offline_snapshot_draft`, `discard_offline_snapshot_draft` (brouillon
-qu'il abandonne, ADR-140). `SELECT (id,
+qu'il abandonne, ADR-140), `offline_snapshot_state_hashes`, `offline_snapshot_entry_sha256` (ajouts de WP03, lecture
+de l'état de son propre grand livre). `SELECT (id,
 operator_id, key_index, version, status, wrapping_kms_key_ref, encrypted_dek) ON tag_data_key`. Délais propres
 (`statement_timeout` 30 s, `transaction_timeout` 60 s). Rien d'autre (liste figée par test).
 

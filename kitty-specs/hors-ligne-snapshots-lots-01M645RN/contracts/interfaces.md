@@ -83,7 +83,9 @@ save_offline_snapshot_draft(p_ledger uuid, p_kind text, p_header jsonb, p_conten
   RETURNS bigint   -- id du brouillon ; réserve version = max(publiée, brouillons) + 1 sous verrou consultatif
 append_offline_snapshot_draft_entries(p_draft bigint, p_entries jsonb) RETURNS int   -- content ; paquets ≤ 5 000
 seal_offline_snapshot_draft(p_draft bigint) RETURNS void   -- content ; READY (plus d'ajout)
-offline_snapshot_drafts_ready() RETURNS SETOF offline_snapshot_draft      -- signer ; STABLE
+offline_snapshot_drafts_ready()                                         -- signer ; STABLE
+  RETURNS TABLE (id bigint, operator_id uuid, ledger_id uuid, kind text, base_version bigint, version bigint,
+                 header jsonb, created_at timestamptz)   -- jamais content_key_wrapped (recopiée par publish)
 offline_snapshot_draft_content(p_draft bigint)                            -- signer ; STABLE
   RETURNS TABLE (token_hash bytea, entry jsonb, removed boolean)          -- jamais pwd_pack_enc
 publish_offline_snapshot(p_draft bigint, p_key_id text, p_signature bytea) RETURNS offline_snapshot  -- signer
@@ -93,6 +95,9 @@ publish_offline_snapshot(p_draft bigint, p_key_id text, p_signature bytea) RETUR
 -- met à jour state ; brouillon PUBLISHED ; écrit elle-même l'audit SNAPSHOT_PUBLISHED (DM 01M667XBV66NBKA5DEFFXY15HM)
 discard_offline_snapshot_draft(p_draft bigint, p_reason text) RETURNS void   -- signer et content (ADR-140)
 purge_offline_snapshot_content(p_ledger uuid) RETURNS int   -- content ; avant l'avant-dernier FULL
+offline_snapshot_state_hashes(p_ledger uuid)   -- content ; STABLE (ajout WP03)
+  RETURNS TABLE (token_hash bytea, entry_sha256 bytea, removed boolean)
+offline_snapshot_entry_sha256(p_entry jsonb) RETURNS bytea   -- content ; IMMUTABLE, INVOKER (ajout WP03)
 ```
 
 ```sql
