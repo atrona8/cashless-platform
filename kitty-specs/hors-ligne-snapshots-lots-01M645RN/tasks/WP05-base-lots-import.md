@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/hors-ligne-snapshots-lots
 merge_target_branch: feat/hors-ligne-snapshots-lots
 branch_strategy: Planning artifacts for this mission were generated on feat/hors-ligne-snapshots-lots. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/hors-ligne-snapshots-lots unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-hors-ligne-snapshots-lots-01M645RN
+base_commit: ab7eaa9c66d882cf70dd73b6338e6df1af8cb417
+created_at: '2026-10-30T11:35:04.592647+00:00'
 subtasks: [T019, T020, T021, T022, T023]
 phase: Phase 1 - Contrat et base de données
 agent: claude
