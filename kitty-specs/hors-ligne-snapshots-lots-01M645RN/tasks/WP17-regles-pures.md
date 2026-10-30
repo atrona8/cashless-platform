@@ -13,6 +13,9 @@ branch_strategy: >-
   During /spec-kitty.implement this WP may branch from a dependency-specific base, but
   completed changes must merge back into feat/hors-ligne-snapshots-lots unless the human
   explicitly redirects the landing branch.
+base_branch: kitty/mission-hors-ligne-snapshots-lots-01M645RN
+base_commit: 9d22678ba7939d9ee0c740c8f4349915c0b682fd
+created_at: '2026-10-30T11:45:03.382009+00:00'
 subtasks: [T068, T069, T070, T071]
 phase: Phase 3 - API
 agent: claude
