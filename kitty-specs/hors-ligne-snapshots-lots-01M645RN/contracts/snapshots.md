@@ -34,8 +34,9 @@ base64 standard.
 - `content_sha256 = SHA-256(JCS({"entries": [...], "removed_token_hashes": [...]}))` : deux clés toujours présentes,
   entrées sans `pwd_pack_enc`, triées par `token_hash` hex croissant, `null` gardé ; `removed_token_hashes` trié.
 - Entrée : `token_hash, nfc_uid, key_index, originality_sig_sha256, status, batch_event_id, batch_status,
-  wallet_status, spendable, last_counter, pwd_pack_sha256` (signés) et `pwd_pack_enc` (base64 de nonce ‖ chiffré ‖
-  tag ; nul si aucun ; hors empreinte, lié par `pwd_pack_sha256`).
+  wallet_status, spendable, last_counter, pwd_pack_sha256` (signés) et `pwd_pack_enc` (objet `EncryptedBlob`
+  `{nonce, ciphertext, tag}` en base64, `openapi.yaml` prime ; nul si aucun ; hors empreinte, lié par
+  `pwd_pack_sha256` = SHA-256 de nonce ‖ chiffré ‖ tag, 34 octets).
 - `pwd_pack_key` (`WrappedKey`) : `{alg: "ECDH-ES+HKDF-SHA256+A256GCM", epk, iv, wrapped_key}`, construction
   `sealForRecipient` de `@cashless/tag-format`, AAD `CASHLESS/SNAPKEY/v1 ‖ ledger_id ‖ version ‖ device_id`. Requise
   dès qu'une entrée porte un mot de passe. Vecteurs fixes livrés (`packages/tag-format/test/snapshot-vectors.json`).

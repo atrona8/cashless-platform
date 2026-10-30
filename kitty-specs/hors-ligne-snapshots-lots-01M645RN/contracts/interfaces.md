@@ -273,7 +273,9 @@ fonctions pures ne lisent jamais la base.
 | `getOfflineCeiling`, `setOfflineCeiling`, `get/set{Organizer,Event,Device}OfflinePolicy`, `getEventOfflineRisk` | WP14 |
 | `getOfflineSnapshot`, `ackOfflineSnapshot` | WP15 (module `offline/snapshots/`, sans port de clé) |
 | `submitOfflineBatch`, `getOfflineBatchResult` | WP18 (réception) + WP19 (traitement) |
-| `waiveSeqGap`, `importDeviceJournal` (+ approbation `DEVICE_JOURNAL_IMPORT`) | WP20 |
+| `waiveSeqGap`, `importDeviceJournal` (+ approbation `DEVICE_JOURNAL_IMPORT`), `getDeviceJournalImport` (ajout du
+30/10 : `GET /devices/{device_id}/journal-imports/{import_id}`, `SUPERVISOR`/`ORGANIZER_ADMIN`, `404` neutre hors
+prestataire, rend `DeviceJournalImportResult` par `device_journal_import_view`) | WP20 |
 | `getDeviceConfig` (`snapshot_keys`, `offline_enabled` faux sans clé), battement de cœur (`latest_snapshot_version`, `sync_requested`) | WP15 |
 
 ## 11. Processus
