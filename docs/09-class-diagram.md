@@ -565,6 +565,34 @@ classDiagram
   PspChargeback "0..1" --> "1" Transaction : CHARGEBACK
 ```
 
+## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », 📐 prévue, plan finalisé le 30/10/2026)
+
+> **Prévu, non implémenté.** Tables décrites par `kitty-specs/hors-ligne-snapshots-lots-01M645RN/data-model.md`
+> (10 tables nouvelles, migrations `0043` à `0048` prévues). À recaler sur le SQL réel à la fin de la mission ; le SQL fait foi.
+
+Un snapshot est une version par grand livre. Son contenu (une entrée par bracelet, mot de passe chiffré sous une clé par
+version) est préparé comme brouillon par le processus `snapshot-content`, puis vérifié, signé et publié par
+`snapshot-signer` ; la clé de la version est enveloppée pour chaque terminal. Un lot reçu du terminal garde le résultat
+de chaque opération ; les numéros à réessayer ont une trace `RETRY`. Une anomalie hors ligne porte la partie qui supporte
+la perte. Aucune table nouvelle n'est écrite directement par `cashless_app` : chaque écriture passe par une fonction
+SECURITY DEFINER.
+
+```mermaid
+classDiagram
+  OfflineSnapshot "1" --> "*" OfflineSnapshotEntry : contenu
+  OfflineSnapshot "1" --> "*" OfflineSnapshotKey : enveloppe par terminal
+  OfflineSnapshot "1" --> "*" OfflineSnapshotMediaLog : changements
+  OfflineSnapshotDraft "0..1" --> "0..1" OfflineSnapshot : publié
+  OfflineSnapshotAck "*" --> "1" Device
+  OfflineSnapshotKey "*" --> "1" Device
+  OfflineBatch "1" --> "*" OfflineOpResult : résultat par opération
+  OfflineBatch "1" --> "*" OfflineBatchRetry : numéro à réessayer
+  DeviceJournalImport "*" --> "1" Device : révoqué
+  DeviceJournalImport "1" --> "1" ApprovalRequest : DEVICE_JOURNAL_IMPORT
+  Anomaly "*" --> "0..1" OfflineBatch
+  WalletStatusHistory "*" --> "1" Wallet
+```
+
 ## 5. Description des tables
 
 Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP »),
@@ -666,6 +694,23 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 
 Extensions de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGURATION` ; `anomaly.kind` + `PSP_TOPUP_NOT_CREDITED` ; `approval_request.action` + `WALLET_UNBLOCK`, `CASH_DEPOSIT` (0038) ; comptes `A-PSP-WAVE`, `A-PSP-OM`, `A-PSP-CARTE` (fonction `open_psp_accounts`) ; **`wallet.other_block`** (boolean, faux par défaut : une cause de blocage autre que la contestation est active ; tenu par le déclencheur `wallet_block_cause_guard`, que `cashless_app` n'écrit pas) (0042).
 
+### Hors ligne : snapshots, lots, anomalies (mission 7, prévue)
+
+| Table | Rôle | Origine |
+|---|---|---|
+| `offline_snapshot_entry` | Contenu d'une version de snapshot : une ligne par bracelet (entrée sans mot de passe, mot de passe chiffré sous la clé de la version, indicateur de retrait). | 0044 (prévue) |
+| `offline_snapshot_state` | État courant par grand livre et bracelet (empreinte de l'entrée, dernière version) ; sert à calculer un `DELTA`. | 0044 (prévue) |
+| `offline_snapshot_media_log` | Journal sans secret des changements d'un bracelet par version ; relu pour juger l'état à une version donnée. | 0044 (prévue) |
+| `offline_snapshot_key` | Clé de contenu d'une version, enveloppée pour un terminal et sa clé d'accord courante ; lue seulement par le terminal appelant. | 0044 (prévue) |
+| `offline_snapshot_draft` | Brouillon d'une version préparé par `snapshot-content`, publié par `snapshot-signer` (`READY`, `PUBLISHED`, `DISCARDED`). | 0044 (prévue) |
+| `offline_snapshot_ack` | Historique des accusés de version par terminal (heure de la base). | 0047 (prévue) |
+| `offline_op_result` | Résultat rendu pour chaque opération d'un lot ; relu à la reprise après panne et à la clôture. | 0045 (prévue) |
+| `offline_batch_retry` | Trace d'un numéro rejeté à réessayer (`INSUFFICIENT_FUNDS_RETRY`), close à son résultat final ; alerte à 24 h. | 0045 (prévue) |
+| `device_journal_import` | Import à deux du journal d'un terminal révoqué : lots exportés, empreinte, synthèse, demande d'approbation, statut, résultat. | 0045 (prévue) |
+| `wallet_status_history` | Historique daté des changements de statut d'un portefeuille (écrit par déclencheur) ; sert au moment du blocage et à la cadence de 5 s. | 0046 (prévue) |
+
+Extensions prévues de tables existantes : `offline_policy` (`CHECK` : jamais de recharge espèces hors ligne ; portée `OPERATOR_CEILING`), `offline_snapshot` (+ `content_key_wrapped`), `snapshot_signing_key` (au plus deux clés actives ou retirées par signataire), `offline_batch` (+ `IMPORT`, `size_bytes`, `import_id`), `anomaly` (+ `loss_bearer`, `detail`, `batch_id`), `approval_request.action` + `DEVICE_JOURNAL_IMPORT`. Rôles nouveaux : `cashless_snapcontent`, `cashless_snapsign`, `cashless_maint`.
+
 ### Bracelets
 
 | Table | Rôle | Origine |
@@ -701,5 +746,5 @@ Extensions de tables existantes : `fee_rule.scope_type` + `PSP_CONFIGURATION` ; 
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaine : mission 7, hors ligne). Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : mission 7, hors ligne, plan finalisé le 30/10/2026, section 4 quinquies prévue). Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.

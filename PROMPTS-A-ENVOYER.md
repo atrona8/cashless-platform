@@ -340,6 +340,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la mission 7 (porteur, 30/10/2026)** : aucune recharge espèces hors ligne. La liste `x-edge-available`
 > ci-dessous cite les recharges espèces par la passerelle : à confirmer avec le porteur au specify (la passerelle est
 > sur site, avec sessions de caisse ; la décision visait les terminaux sans réseau).
+>
+> **Hérité de la mission 7 (plan du 30/10/2026)** : tests minimaux §13-4 et §13-5 de `sync_protocol.md` (bascules
+> CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.
 
 - [ ] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
 - [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker absent de la machine de développement actuelle). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
@@ -534,6 +537,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > réels (WhatsApp, SMS principal, SMS de repli) ; serveur d'identité OIDC réel et preuve de la personne qui décide une
 > demande d'approbation (OP-N56) ; vérification serveur de la signature NXP à la personnalisation (OP-N46). Chaque faux
 > remplacé reste refusé en production tant que son adaptateur n'est pas essayé contre le vrai service.
+>
+> **Hérité de la mission 7 (plan du 30/10/2026, OP-N89, ADR-138)** : deux processus de snapshots à adapter, chacun
+> avec son rôle IAM : `snapshot-content` (`DecryptPort` + `DataKeyPort`) et `snapshot-signer` (`SignPort` seul,
+> `kms:Sign` `ECDSA_SHA_256`, signature DER) ; vérifier Ed25519 (OP-N13) ; lever la garde de production pour ces
+> ports seulement et retirer le `403 SNAPSHOTS_UNAVAILABLE`.
 
 - [ ] /spec-kitty.specify Intégrations réelles derrière les ports existants (SPECIFICATION §10.3, §11.1, §13.2, ADR-65, ADR-66, ADR-70, ADR-72, ADR-88, ADR-119, ADR-131) : PSP Wave, Orange Money, PayDunya, Stripe (contenu de la mission 6b), AWS Secrets Manager, AWS KMS (snapshots, OP-N41, OP-N73), fournisseurs OTP, serveur d'identité OIDC (OP-N56), signature NXP (OP-N46). Retrait des faux des processus de production.
 - [ ] /spec-kitty.plan Chaque adaptateur essayé contre le bac à sable ou le compte de test du service ; dépendances vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; activation impossible en production pour un adaptateur non essayé.

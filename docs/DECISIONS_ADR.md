@@ -1988,3 +1988,50 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   propre (aucun test existant, non obligatoire) : le test de la liste EXECUTE borne l'exposition.
 - **Références.** OP-N86, OP-N87 ; constats 1 et 2 de `docs/passation-6/rapports/mission-review-6.md` ; ADR-131,
   ADR-135. Fichiers à faire relire par une personne : `0036`, `0038`, `post-roles.sql`.
+
+## ADR-137 — Mission 7 : décisions du plan du hors ligne
+
+- **Statut** : Acceptée, 30 octobre 2026 (plan de la mission `hors-ligne-snapshots-lots-01M645RN` ; décisions du
+  porteur des 29 et 30/10/2026 ; propositions de l'agent égales ou plus strictes que les sources).
+- **Recharge espèces hors ligne retirée (porteur, DM `01M663D0XP43K575Q78DSSQ1MB`).** `cash_topup_offline` interdit en
+  base ; un `TOPUP_CASH` porté par un lot est rejeté seul (`OFFLINE_NOT_ALLOWED`, `NON_COMPLIANT_OPERATION` portant le
+  montant) ; garde de caisse (ADR-132) inchangée. Contredit `sync_protocol.md` §5.4, §7.5, §8, §11 cas 22 et 39 et
+  SPECIFICATION §9, à mettre en accord. Remplace les décisions du 29/10 sur la session couvrante.
+- **Exposition (porteur, DM `01M66316M7AK30QY27GQ67P7ME`).** Ventes du terminal non acquittées, un acquittement de
+  moins de 120 s compté ; heures de référence bornées par le serveur (`received_at` du lot, `completed_at`).
+- **Snapshots.** Deux processus et rôles (porteur, DM `01M664RXTFR2Q90H3M0A190C20`) : `snapshot-content`
+  (`DecryptPort` + `DataKeyPort`) prépare un brouillon non signé, `snapshot-signer` (`SignPort` seul) vérifie, signe et
+  publie ; l'API publique n'a aucun port de clé. Une version signée par pas (`FULL` ou `DELTA` de la version
+  précédente, contrainte `UNIQUE (ledger_id, version)` du schéma), version calculée par la base (lève OP-N57) ;
+  dernier `FULL` servi au-delà de 5 pas ; version de maintien à `valid_until/3`. Clé de contenu par version enveloppée
+  par terminal `ACTIVE` (construction `sealForRecipient` du kit, `A256GCM` au lieu de `A256KW` au contrat) ;
+  `pwd_pack_sha256` dans le contenu signé (renforcement du §4.1-3).
+- **Lots.** Empreintes et chaîne recalculées par le serveur ; `CONFIRMED` exempté seulement si la transaction en ligne
+  existe ; `config_id` et snapshot cités datés et non périmés ; numéros au-delà de 2^53−1 refusés sur tous les chemins ;
+  résultat de chaque opération écrit dans sa transaction ; reprise sous verrou de session sur un pool dédié.
+- **Droits.** Toute table nouvelle cloisonnée et fermée à `cashless_app` ; anomalies écrites par fonction (l'INSERT
+  direct sur `anomaly` est retiré, ce qui lève par anticipation la partie « anomalies » d'OP-N86) ; clés de signature
+  par `rotate_snapshot_signing_key`, deux au plus par signataire ; OP-N58, OP-N68, OP-N69, OP-N75 levés comme prévu.
+- **Références.** `kitty-specs/hors-ligne-snapshots-lots-01M645RN/research.md` (R-01 à R-30),
+  `research-adversarial.md` (33 constats) ; ADR-138, ADR-139.
+
+## ADR-138 — Mission 7 : snapshots signés par un faux KMS jusqu'à la mission 12b (OP-N89)
+
+- **Statut** : Acceptée, 30 octobre 2026 (décision du porteur du 29/10/2026, DM `01M645SWY4PETSJE3PJ7YXKYTP`).
+- **Risque.** Faux snapshots signés par une clé dérivée du code si le faux atteignait la production.
+- **Raison.** Aucun accès AWS avant la mission 12b.
+- **Mission de levée.** 12b. **Condition.** Adaptateur AWS de `SignPort`, `DataKeyPort`, `DecryptPort`, rôle IAM par
+  processus.
+- **Test de borne.** Démarrage refusé en production pour `snapshot-content` et `snapshot-signer` ; `403
+  OFFLINE_NOT_ALLOWED` sans clé `ACTIVE`. Report : PROMPTS-A-ENVOYER et PRD (mission 12b).
+
+## ADR-139 — Mission 7 : trace `RETRY` pour le rejet réessayable d'un lot (OP-N90)
+
+- **Statut** : Acceptée, 30 octobre 2026 (décision du porteur, DM `01M664S4Y4FW6W6TMP76BQGWV7`).
+- **Contexte.** Protocole §7.1-9 (rien au registre au quatrième `CL007`) contre `complete_offline_batch` (invariant
+  I2 : chaque numéro du lot a un résultat final).
+- **Décision.** Trace `offline_batch_retry` écrite par la base dans la transaction de l'opération ; seule admise à la
+  clôture ; close au résultat final ; alerte à 24 h. Option écartée : rejet définitif (commerçant non garanti).
+- **Risque.** Numéro jamais renvoyé, sans `SEQ_GAP` avant le lot suivant. **Test de borne** : clôture refusée sans
+  ligne ni trace ; trace écrite par la seule fonction. Fichier à faire relire par une personne : migration 0045.
+

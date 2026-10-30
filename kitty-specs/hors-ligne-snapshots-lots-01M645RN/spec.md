@@ -48,7 +48,7 @@ Les adaptateurs AWS KMS (signature des snapshots, OP-N41, OP-N73) partent en mis
 
 ### User Story 1 - L'organisateur fixe la politique hors ligne et voit son risque maximal (Priority: P1)
 
-Un `ORGANIZER_ADMIN` règle la politique hors ligne de son organisation, d'un événement ou d'un terminal : hors ligne permis ou non, montant maximal par vente, par bracelet et par terminal, âge maximal du snapshot, recharge espèces hors ligne permise. Un champ vide hérite du niveau au-dessus. Le prestataire fixe des plafonds que l'organisateur ne peut pas dépasser. L'organisateur voit le risque maximal de son événement quand il règle ses plafonds.
+Un `ORGANIZER_ADMIN` règle la politique hors ligne de son organisation, d'un événement ou d'un terminal : hors ligne permis ou non, montant maximal par vente, par bracelet et par terminal, âge maximal du snapshot (la recharge espèces hors ligne reste interdite à toutes les portées, User Story 7). Un champ vide hérite du niveau au-dessus. Le prestataire fixe des plafonds que l'organisateur ne peut pas dépasser. L'organisateur voit le risque maximal de son événement quand il règle ses plafonds.
 
 **Why this priority**: sans politique, aucun terminal n'a le droit de vendre hors ligne ; le risque maximal est ce que l'organisateur accepte de perdre.
 
@@ -375,7 +375,7 @@ La mission alimente le registre des numéros par les lots avec la même forme d'
 
 ### Key Entities
 
-- **Politique hors ligne** : portée (organisation, événement, terminal), hors ligne permis, plafonds (par vente, par bracelet et par terminal), âge maximal du snapshot, recharge espèces permise, version, auteur.
+- **Politique hors ligne** : portée (organisation, événement, terminal), hors ligne permis, plafonds (par vente, par bracelet et par terminal), âge maximal du snapshot, recharge espèces hors ligne (toujours faux), version, auteur.
 - **Plafonds du prestataire** : valeurs maximales par champ de politique, au niveau du prestataire.
 - **Historique des politiques** : une ligne par modification (portée, version, valeurs, suppression, auteur), écrite par la base.
 - **Configuration servie** : terminal, `config_id`, politique effective figée, époque, plancher de numérotation.

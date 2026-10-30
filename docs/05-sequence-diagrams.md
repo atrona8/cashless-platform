@@ -5,7 +5,7 @@
 > dans le détail local de la mission concernée). Tous les flux sont désormais en `/illustre` (préférence du porteur du 13/10/2026 ;
 > les six flux des missions 1 à 3, d'abord en Mermaid, ont été redessinés et uniformisés le 27/10/2026, décision du
 > porteur), sources dans [`diagrams/`](diagrams/).
-> Dernière mise à jour : 29/10/2026 (lignes de la mission 6 recalées à la review, aucun flux global redessiné) ; 21/10/2026 (flux « Enrôlement et requête signée d'un terminal », mission « Identité et
+> Dernière mise à jour : 30/10/2026 (flux « Vente hors ligne » recalé sur le plan de la mission 7, image non redessinée) ; 29/10/2026 (lignes de la mission 6 recalées à la review, aucun flux global redessiné) ; 21/10/2026 (flux « Enrôlement et requête signée d'un terminal », mission « Identité et
 > enrôlement des terminaux », mergée le 21/10/2026).
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 
@@ -32,6 +32,17 @@ signataire des jetons : faux seulement, refusés en production (OP-N73).
 ![Vente hors ligne puis synchronisation](diagrams/sequence-vente-hors-ligne.png)
 
 Sources : [`sequence-vente-hors-ligne.excalidraw`](diagrams/sequence-vente-hors-ligne.excalidraw), [`sequence-vente-hors-ligne.svg`](diagrams/sequence-vente-hors-ligne.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
+
+> **Recalage du 30/10/2026 (plan de la mission 7, rien d'implémenté).** L'image ci-dessus date de l'initialisation ; elle
+> n'est pas redessinée. Le plan de la mission 7 la précise sur trois points. (1) **Aucune recharge espèces hors ligne**
+> (décision du porteur du 30/10/2026 ; l'image, relue le 30/10/2026, n'en montre pas) ; un `TOPUP_CASH`
+> porté par un lot est rejeté seul (`OFFLINE_NOT_ALLOWED`) avec une anomalie `NON_COMPLIANT_OPERATION` qui porte le
+> montant. (2) **Deux processus de snapshots** : `snapshot-content` prépare le contenu (mots de passe chiffrés, enveloppes
+> par terminal) et `snapshot-signer` signe et publie ; le terminal ne parle qu'à l'API publique, qui ne détient aucun
+> secret. (3) Au retour du réseau, un lot signé et chaîné est traité **une transaction par opération** ; le vendeur
+> hors ligne garde la session ouverte en ligne (12 h), sans nouvelle connexion. Détail des flux locaux (politique, snapshot,
+> lot, conflit, trou, import du journal) : [`sequence.md`](../kitty-specs/hors-ligne-snapshots-lots-01M645RN/docs/sequence.md)
+> de la mission 7 (créé avec la mission ; prévu, non encore implémenté).
 
 ## Flux : Bascule vers la passerelle et retour (§9.7)
 
@@ -79,7 +90,7 @@ Sources et autres flux de la mission (session de vendeur, paiement par bracelet,
 |---|---|---|
 | Paiement en ligne par bracelet | Terminal, bracelets, API, grand livre | `bracelets-nfc-01M4TD3W` (✅ mergée le 16/10/2026, dans `main` par la PR #3 : demande de mot de passe au processus des clés et lecture `POST /taps` servies ; lecture embarquée dans une opération, avec lecture suspecte persistée malgré l'échec ; le paiement lui-même vient en mission 5) ; `terminaux-paiement-en-ligne-01M52QB9` (✅ mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026) : vente attribuée au vendeur, lignes, annulation à deux voies, QR commerçant et client — flux remonté dans la section « Annulation d'une vente » ci-dessus, six flux locaux dans [`sequence.md`](../kitty-specs/terminaux-paiement-en-ligne-01M52QB9/docs/sequence.md)) |
 | Enrôlement et requête signée d'un terminal | Back-office, terminal, API, autorité des terminaux, attestation, base | `identite-enrolement-terminaux-01M52R6H` (✅ mergée le 21/10/2026, dans `main` par la PR #4 : flux remonté ici, détail dans [`sequence.md`](../kitty-specs/identite-enrolement-terminaux-01M52R6H/docs/sequence.md) ; la demande de mot de passe et la lecture du flux « Paiement en ligne par bracelet » passent par les trois preuves) |
-| Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | à définir |
+| Vente hors ligne puis synchronisation | Terminal, synchronisation, grand livre | `hors-ligne-snapshots-lots-01M645RN` (📐 planifiée, plan finalisé le 30/10/2026, pas encore implémentée) : côté serveur, snapshot signé servi au terminal (processus `snapshot-content` puis `snapshot-signer`), lot signé traité une transaction par opération, conflits et trous, import du journal d'un terminal révoqué ; aucune recharge espèces hors ligne ; flux locaux dans [`sequence.md`](../kitty-specs/hors-ligne-snapshots-lots-01M645RN/docs/sequence.md) (prévu) ; passerelle : mission 8 |
 | Bascule vers la passerelle et retour | Passerelle, API, grand livre | à définir |
 | Recharge mobile money | App festivalier, PSP, API, grand livre | `recharges-caisses-psp-01M5YEBA` (✅ mergée le 29/10/2026 sur `feat/recharges-caisses-psp` (squash `a865462c`), acceptée (`d62258a2`), dans `main` par la PR #8 le 29/10/2026 (CI verte)) : demande, notification conservée puis traitée, interrogation planifiée, notification refusée, contestation carte — flux locaux dans [`sequence.md`](../kitty-specs/recharges-caisses-psp-01M5YEBA/docs/sequence.md) ; flux global ci-dessus recalé le 29/10/2026 (200 dès la conservation du corps brut, traitement à part, `take_deposit_from_balance`) |
 | Session de caisse et recharge en espèces | Terminal, back-office, API, moteur, base | `recharges-caisses-psp-01M5YEBA` (✅ mergée le 29/10/2026 sur `feat/recharges-caisses-psp` (squash `a865462c`), acceptée (`d62258a2`), dans `main` par la PR #8 le 29/10/2026 (CI verte)) : ouverture, comptage, fermeture, recharge espèces et caution due — flux locaux dans [`sequence.md`](../kitty-specs/recharges-caisses-psp-01M5YEBA/docs/sequence.md) |

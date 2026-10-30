@@ -67,6 +67,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N86 | Droits de `cashless_app` plus larges que nécessaire : `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les recharges et notifications de tous les prestataires ; le `psp-poller` tourne sous `cashless_app` sans rôle dédié ; INSERT direct sur `anomaly` gardé (5 sites de la mission 6) | Non | Non (limite connue, bornée par tests) | Mission 13 (recette V1) : rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` au profit d'une fonction de la base ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N87 | `posting_cash_desk_guard` (0036) lit `cash_desk` sous RLS forcée : la garde « aucune espèce sans session » ne vaut que si le propriétaire de la fonction contourne la RLS ; sinon elle laisse passer sans bruit | Non | Non (dépend du déploiement, borné par un test) | Mission 13 (déploiement) : rôle propriétaire contrôlé, ou garde qui refuse si la recherche est impossible ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N88 | Soldes lus sans verrou avant l'écriture : `CHARGEBACK` verrouille le solde payé en détournant `wallet_topup_headroom` (correctif de la PR #8) ; `PURCHASE` (mission 5b) lit encore les soldes promo et payé sans verrou | Non | Non (aucun argent créé : la base refuse le découvert ; refus à tort sous concurrence) | Mission 13 : fonction SQL dédiée qui verrouille les comptes de l'écriture dans l'ordre des identifiants avant la lecture, utilisée par `CHARGEBACK` et `PURCHASE` ; décision du porteur du 29/10/2026 |
+| OP-N89 | Signature des snapshots hors ligne et clés de contenu par un faux KMS (`SignPort`, `DataKeyPort` simulés) : aucun snapshot servi en production avant la mission 12b (plan de la mission 7, ADR-138) | Non | **Oui** (démarrage refusé en production) | Mission 12b |
+| OP-N90 | Rejet réessayable d'un lot (4e `CL007`) : un numéro sans résultat final admis à la clôture du lot sur une trace `offline_batch_retry` écrite par la base (écart à l'invariant I2, décision du porteur du 30/10/2026, ADR-139) | Non | Non (alerte à 24 h) | — (écart permanent, revu en mission 13) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -147,6 +149,8 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N86 | `psp_poll_candidates` et `psp_events_to_retry` (toutes les recharges et notifications, tous prestataires) exécutables par `cashless_app` ; `psp-poller` sous `cashless_app` ; INSERT direct sur `anomaly` | Le processus public, si compromis, lit les recharges et notifications de tous les prestataires et écrit des anomalies arbitraires | `tests_cash_psp_rights.sql` (liste exacte des rôles qui exécutent les deux fonctions ; liste exacte des rôles ayant INSERT sur `anomaly`) | Mission 13 | Rôle dédié au `psp-poller` ; les deux fonctions et l'INSERT sur `anomaly` retirés à `cashless_app`, remplacés par une fonction de la base ; tests de borne inversés |
 | OP-N87 | Garde « aucune espèce sans session » (`posting_cash_desk_guard`, 0036) : `IF NOT FOUND THEN RETURN NEW` si la lecture de `cash_desk` ne voit rien | Propriétaire de la fonction soumis à la RLS : la garde laisse passer une écriture en espèces sans session | `tests_cash_psp_rights.sql` (le propriétaire de la fonction est superutilisateur ou BYPASSRLS) | Mission 13 | Rôle propriétaire vérifié au déploiement, ou garde qui refuse quand la recherche est impossible ; fichier à faire relire par une personne |
 | OP-N88 | Lecture des soldes avant `post_transaction` : `PURCHASE` sans verrou ; `CHARGEBACK` verrouillé par `wallet_topup_headroom` | Paiement par bracelet refusé à tort (« Solde interdit ») quand une dépense simultanée du même portefeuille passe entre la lecture et l'écriture ; interblocage possible, faible, pour la contestation (RETRY) | `chargeback-concurrency.spec.ts` (cas déterministe : contestation aboutie malgré une dépense validée entre lecture et écriture) ; aucun test pour `PURCHASE` | Mission 13 | Fonction SQL dédiée de verrouillage ordonné, test déterministe pour `PURCHASE` |
+| OP-N89 | `SignPort` et `DataKeyPort` du processus des snapshots en faux (mission 7) | Snapshots signés par une clé dérivée d'une graine du code : faux snapshots acceptés par les terminaux | Faux refusé au démarrage en production (`createKms`, `assertProcessIsSafe`) ; `403 OFFLINE_NOT_ALLOWED` sans clé `ACTIVE` | Mission 12b | Adaptateur AWS KMS (`kms:Sign`, `GenerateDataKey`, `Decrypt`), rôle IAM par processus, garde levée pour ces ports seulement |
+| OP-N90 | Numéro de lot laissé sans résultat final (`offline_batch_retry`) | Numéro jamais renvoyé : vente non écrite sans trou `SEQ_GAP` | Trace écrite par la base dans la transaction de l'opération ; clôture du lot refusée sans elle ; alerte à 24 h | Mission 13 (revue) | Aucune trace ouverte de plus de 24 h en recette ; test de borne inchangé |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -968,6 +972,37 @@ Défaut trouvé par la CI de la PR #8 (mission 6) ; décision du porteur du 29/1
   l'ordre des identifiants avant la lecture des soldes, utilisée par `CHARGEBACK` et `PURCHASE` ; test déterministe
   pour `PURCHASE`.
 - **Test.** `chargeback-concurrency.spec.ts` (cas déterministe, mutation vérifiée) ; `PURCHASE` : aucun à ce jour.
+
+### OP-N89 — Snapshots hors ligne signés par un faux KMS (30 octobre 2026)
+
+Plan de la mission 7 ; décision du porteur du 29/10/2026 (services externes simulés jusqu'à la mission 12b) ; ADR-138.
+**Bloque la production : oui** (démarrage refusé, donc aucun hors ligne en production avant 12b).
+
+- **Constat.** Les processus `snapshot-content` (`DecryptPort`, `DataKeyPort`) et `snapshot-signer` (`SignPort`)
+  n'ont que le faux KMS (`apps/api/src/kms/fake-kms.ts`), dont les clés se dérivent d'une graine du code.
+- **Raison.** Aucun accès AWS avant la mission 12b (feuille de route révisée du 29/10/2026).
+- **Risque.** En production, de faux snapshots (bracelet bloqué présenté comme actif) seraient signés et acceptés.
+- **Mission qui lève.** Mission 12b (avec OP-N41 et OP-N73).
+- **Condition de levée.** Adaptateur AWS des trois ports, un rôle IAM par processus, garde de production levée pour ces
+  ports seulement, vérification d'Ed25519 (OP-N13).
+- **Test qui échoue si la limite s'élargit.** `test/unit/production-guard.spec.ts` : chacun des deux processus refuse
+  de démarrer en production avec le faux ; `GET /offline-snapshots/current` répond `403 OFFLINE_NOT_ALLOWED`
+  (`SNAPSHOTS_UNAVAILABLE`) sans clé `ACTIVE`.
+
+### OP-N90 — Rejet réessayable : numéro sans résultat final admis à la clôture (30 octobre 2026)
+
+Plan de la mission 7 (passe contradictoire A24) ; décision du porteur du 30/10/2026 (DM `01M664S4Y4FW6W6TMP76BQGWV7`) ;
+ADR-139. **Bloque la production : non.**
+
+- **Constat.** `sync_protocol.md` §7.1-9 : au quatrième `CL007`, rien n'est écrit au registre pour que le terminal
+  renvoie l'opération ; `complete_offline_batch` (schéma) refusait de clore un lot dont un numéro n'a pas de ligne.
+- **Décision.** `record_offline_retry` écrit `offline_batch_retry` dans la transaction de l'opération ;
+  `complete_offline_batch` (remplacée) n'admet un numéro sans ligne que sur cette trace ; trace close au résultat final.
+- **Risque.** Un numéro jamais renvoyé reste sans résultat final ni anomalie `SEQ_GAP` (le trou n'apparaît qu'au lot
+  suivant).
+- **Garde.** Alerte du travailleur `seq-gap-age` si une trace reste ouverte plus de 24 h.
+- **Test qui échoue si la limite s'élargit.** `tests_offline_batches.sql` : clôture refusée pour un numéro sans ligne
+  ni trace ; trace écrite par la seule fonction (`cashless_app` sans `INSERT`).
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
