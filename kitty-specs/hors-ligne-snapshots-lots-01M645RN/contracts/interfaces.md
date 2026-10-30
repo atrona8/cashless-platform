@@ -88,7 +88,8 @@ offline_snapshot_drafts_ready()                                         -- signe
                  header jsonb, created_at timestamptz)   -- jamais content_key_wrapped (recopiée par publish)
 offline_snapshot_draft_content(p_draft bigint)                            -- signer ; STABLE
   RETURNS TABLE (token_hash bytea, entry jsonb, removed boolean)          -- jamais pwd_pack_enc
-publish_offline_snapshot(p_draft bigint, p_key_id text, p_signature bytea) RETURNS offline_snapshot  -- signer
+publish_offline_snapshot(p_draft bigint, p_key_id text, p_signature bytea)   -- signer
+  RETURNS TABLE (ledger_id uuid, version bigint, kind text, generated_at timestamptz)   -- jamais la clé enveloppée
 -- l'empreinte JCS est recalculée par le signataire (TypeScript, RFC 8785) avant la signature ; la base vérifie
 -- l'en-tête contre le brouillon (kind, base, version, entries/removed comptés, époque, clé), version = max + 1 (CL048),
 -- DELTA ⇒ base = version précédente, clé ACTIVE CENTRAL ; insère offline_snapshot, entry, media_log,
