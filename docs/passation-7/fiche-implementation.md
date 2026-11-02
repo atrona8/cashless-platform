@@ -39,7 +39,7 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
 - Serveur : `PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres` (sans mot de passe). **`cashless_test` est réservée à
   l'orchestrateur.** Chaque lot utilise sa base : `PGDATABASE=cashless_wpXX` (ex. `cashless_wp02`).
 - Remise à zéro de ta base depuis la lane : `PGDATABASE=cashless_wpXX bash packages/ledger-sql/scripts/reset-db.sh`.
-- pgTAP : `export PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/b1808a66-dd00-47bb-81e7-eb70a9ebb7d1/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
+- pgTAP : `export PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/37744718-0c4b-42c2-917c-75d3376803cb/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
   puis, depuis `packages/ledger-sql/tests/` **de ta lane**, `pg_prove -d cashless_wpXX <fichier>.sql` (ce lanceur
   copie `packages/ledger-sql` de ta lane dans le conteneur et y lance `pg_prove`). Après un Jest, refaire `reset-db`.
 - Jest ciblé depuis `apps/api` de la lane : `export PGDATABASE=cashless_wpXX; source ../../tools/dev-db/env.sh`
