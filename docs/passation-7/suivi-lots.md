@@ -258,6 +258,16 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - WP21 : la CI doit remettre la base à zéro avant pgTAP (les suites WP11 laissent des brouillons READY committés :
   `tests_offline_rights.sql` test 87 faux sinon).
 
+## Issu de WP18 (implémentation a5c19b68, 02/11) — pour WP19, WP21
+- WP19 : `BatchContext`, `ParsedOperation`, `OperationResult`, jeton `OFFLINE_OPERATION_PROCESSOR` dans
+  `offline/batches/batch.types.ts` (forme d'`interfaces.md` § 8) ; `UnavailableOperationProcessor` par défaut (lot
+  laissé `PROCESSING`, 500) jusqu'au branchement de WP19 ; faux processeur interdit en production.
+- Corps de `POST /offline-batches` lu jusqu'à 4 Mio, `413 BATCH_TOO_LARGE` au-delà de 1 Mio.
+- Préexistant, hors mission : un corps de plus de 100 ko sur les autres routes donne `500` au lieu de `400/413` :
+  à consigner (WP21, point ouvert).
+- Contradictions de documentation : ordre des contrôles `batches.md` contre R-10 ; migration de
+  `complete_offline_batch` (0045 dans R-11, 0046 dans `interfaces.md`).
+
 ## Règle de tests (02/11, issue de WP13)
 - Un processus de fond (signataire, contenu, travailleurs de WP18-WP20) traite toute la base : ses tests créent leur
   propre prestataire/grand livre et n'affirment rien de global (`runOnce`, compteurs, alarmes) ; preuve exigée en
@@ -271,6 +281,7 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 |---|---|---|---|---|
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
+| WP18 | r | for_review | a5c19b68 | relecture en cours ; 46 tests en --maxWorkers=3 |
 | WP15 | o | for_review | 60189b18 | relecture en cours ; `snapshots-seed.ts` révoque toutes les clés de la base (isolation à vérifier) |
 | WP11 | k | cycle 3 en cours | b443defe | rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
 | WP13 | m | approved | 42828a6d | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; pgTAP 4780 PASS ; Jest : 2 suites du signataire dépendaient de l'isolation (corrigé par `42828a6d`, tests seulement, vert en `--maxWorkers=3`) ; reste config:270 (WP15) |
