@@ -217,6 +217,21 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Pas de test d'intégration réel de `lookup` (dont isolation entre prestataires) ni d'`openAnomaly` : WP18/WP19 les
   couvrent par le bout en bout.
 
+## WP11 rejeté (cycle 1, 02/11) et WP03 rouvert (décision du porteur)
+- WP11 (a) : `mem.reserved` levé seulement à la publication : brouillon READY jeté par le signataire = plus aucun
+  `save_` (0 version en 12 passages). Cycle 2 : lever la réservation après délai, test d'intégration ; mineurs :
+  ligne `OWNED_FIELD_MISMATCH` et appel de purge sans test, pas de temporisation sur échec répété.
+- Trous de 0044 (b), porteur 02/11 : WP03 rouvert (cycle 3) : fonction de jet des brouillons OPEN/READY d'un grand
+  livre, empreinte d'état indépendante du chiffré du mot de passe, plafond `max_snapshot_age` dans
+  `offline_snapshot_targets`. WP11 cycle 2 après approbation de WP03 : refusionner lane-c dans lane-k, GRANT de la
+  nouvelle fonction à `cashless_snapcontent` dans `post-roles.sql` (+ tests de droits), adopter le plafond. WP12
+  attend. WP21 : reporter les ajouts au contrat.
+- WP15 : `pwd_pack_enc` de `offline_snapshot_for_device` = blob base64 de 34 octets (nonce 12, chiffré 6, tag 16) :
+  le découper en `EncryptedBlob {nonce, ciphertext, tag}` (openapi prime).
+- WP13 (implémenté, be9d8e0f) : `verifyDraft` refuse aussi un en-tête périmé et un entier non sûr (renforce) ;
+  `architecture.spec.ts` de lane-m complété (fusion avec la version de WP10 à la consolidation) ; conflit possible
+  `SNAPSHOT_POLL_SECONDS` dans `config.ts` avec WP11.
+
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
