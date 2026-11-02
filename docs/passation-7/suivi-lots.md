@@ -251,6 +251,11 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   régénère ; `publish_` ne recompare que les comptes, l'immuabilité d'un READY repose sur 0044/WP08.
 - Relecture humaine : `header-signer.ts`, `draft-verifier.ts`, `post-roles.sql` § 8f, `config.ts` (référence de clé).
 
+## Règle de tests (02/11, issue de WP13)
+- Un processus de fond (signataire, contenu, travailleurs de WP18-WP20) traite toute la base : ses tests créent leur
+  propre prestataire/grand livre et n'affirment rien de global (`runOnce`, compteurs, alarmes) ; preuve exigée en
+  `--maxWorkers=3`.
+
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
@@ -259,7 +264,7 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 |---|---|---|---|---|
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
-| WP13 | m | approved | 43aacee5 | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; batterie en cours |
+| WP13 | m | approved | 42828a6d | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; pgTAP 4780 PASS ; Jest : 2 suites du signataire dépendaient de l'isolation (corrigé par `42828a6d`, tests seulement, vert en `--maxWorkers=3`) ; reste config:270 (WP15) |
 | WP03 | c | approved (cycle 3) | 6500ff5c | rouvert le 02/11 (trous de 0044) ; 145/145 ; relu |
 | WP05 | e | approved | a09a117b | 167 assertions ; batterie pgTAP 3996 PASS ; gen_tests.py retouché (sortie du générateur identique) ; relu, 6 mineurs |
 | WP17 | q | approved | b32e6592 | implémenteur interrompu ; 136 tests ; relu, 4 mineurs (voir « Pour WP19 ») |
