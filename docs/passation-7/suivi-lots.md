@@ -185,6 +185,13 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   contrat (nom absent d'`interfaces.md`) à reporter par WP21.
 - M4 (porteur, 02/11) : RESTREINDRE : `cashless_app` ne lit plus `offline_snapshot.content_key_wrapped`
   (SELECT par colonne). WP15 : ne jamais sélectionner cette colonne ni `SELECT *`.
+- Cycle 2 (`c2ee1033`) : `lock_device(uuid, text)` appelé aussi par `payments.service.ts` et `reversal.service.ts`
+  (`FOR UPDATE OF d`) ; 3 specs à matchers SQL retouchées. Batterie orchestrateur (`cashless_test`) : pgTAP 51
+  fichiers / 4777 PASS ; Jest 162 suites vertes, 5 en échec : `config.spec.ts:270` (pour WP15, ci-dessous),
+  `media-port-swap` (purge, WP10), `claim-code-order` et `migrate-lock` (instables connues), `personalization`
+  (délai sous charge, verte seule 44/44).
+- WP15 : `devices/config.spec.ts:270` (« téléphone personnel : jamais hors ligne ») insère `cash_topup_offline: true`,
+  refusé par la contrainte de 0043 (décision du porteur) : réécrire le test avec un autre réglage hors ligne.
 
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
