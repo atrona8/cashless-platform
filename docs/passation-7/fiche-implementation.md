@@ -54,10 +54,12 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
 1. Dans la lane : `git status`, `git add <tes fichiers>`, `git commit -m "feat(WPxx): …"` (terminer le message par
    `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`). Rien d'autre que tes fichiers ; jamais de push.
 2. `LC_ALL=C LANG=C spec-kitty agent tasks mark-status <Txxx…> --status done --mission hors-ligne-snapshots-lots-01M645RN`.
-3. `LC_ALL=C LANG=C spec-kitty agent tasks move-task WPxx --to for_review --mission hors-ligne-snapshots-lots-01M645RN
+3. `mark-status` modifie les prompts de tâches dans la lane, ce que refuse le garde `kitty-specs` : juste avant
+   `move-task`, lance `bash <R>/docs/passation-7/scripts/align-lane.sh <lettre de ta lane>` (réaligne et commite).
+4. `LC_ALL=C LANG=C spec-kitty agent tasks move-task WPxx --to for_review --mission hors-ligne-snapshots-lots-01M645RN
    --note "…"` : la commande lance une passe de tests et peut durer quelques minutes, attends qu'elle rende la main.
    Si un garde `kitty-specs` bloque : **n'utilise pas `--force`**, arrête-toi et signale-le (l'orchestrateur gère).
-4. Compte rendu final (≤ 25 lignes) : commits, fichiers, retouches hors carte, écarts au plan (sens : renforce /
+5. Compte rendu final (≤ 25 lignes) : commits, fichiers, retouches hors carte, écarts au plan (sens : renforce /
    affaiblit), points soumis au porteur, fichiers à faire relire par une personne, critères (FR/NFR) couverts
    avec commande de preuve et résultat.
 
