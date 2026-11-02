@@ -193,6 +193,16 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - WP15 : `devices/config.spec.ts:270` (« téléphone personnel : jamais hors ligne ») insère `cash_topup_offline: true`,
   refusé par la contrainte de 0043 (décision du porteur) : réécrire le test avec un autre réglage hors ligne.
 
+## Issu de WP16 (implémentation, 02/11)
+- `reduce_offline_shortfall` câblé dans `offline/anomalies/anomaly-writer.ts` sans appelant : l'annulation
+  (`reversal.service.ts`, hors carte) doit l'appeler avec la vraie transaction d'annulation : WP19 (ou lot désigné
+  par l'orchestrateur) ; sinon dette à consigner par WP21.
+- 6 `INSERT INTO anomaly` restent hors carte (statu quo du porteur du 30/10, mission 13), dont
+  `reversal.service.ts:212` (CLOCK_SKEW).
+- `Number(seq)` hors carte : `payment-request.service.ts:452,464`, `enrollment.service.ts:204` (exacts depuis
+  `MAX_DEVICE_SEQ = 2^53−1`) ; `device-config.service.ts` : WP15.
+- `chained-content.ts` et `test/fixtures/offline-vectors/vectors.json` font référence pour WP18 et WP19.
+
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
