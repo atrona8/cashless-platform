@@ -203,6 +203,13 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   `MAX_DEVICE_SEQ = 2^53−1`) ; `device-config.service.ts` : WP15.
 - `chained-content.ts` et `test/fixtures/offline-vectors/vectors.json` font référence pour WP18 et WP19.
 
+## Relecture de WP10 (approuvé, 02/11)
+- 5/5 mutants tués (`architecture.spec.ts`). Mineurs : (1) en production, `DATABASE_URL_MAINT` pointant vers le rôle
+  propriétaire n'est pas refusé au démarrage (la purge réussirait) : contrôle du rôle au démarrage à décider (porteur)
+  ou consigner (WP21) ; (2) WP13 : rendre obligatoires dans `architecture.spec.ts` les racines et `main.*.ts` de
+  `snapshot-signer` (aujourd'hui « si le fichier existe ») ; WP11 de même pour `snapshot-content` ; (3) test
+  « sign seulement depuis snapshot-signer » vacueux tant que `SIGN_PORT` n'existe pas (WP13).
+
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
@@ -218,4 +225,5 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 | WP06 | f | approved | 37655778 | 121/121 ; relu, mineurs (voir « Relecture de WP06 ») |
 | WP07 | g | approved | a18c9599 | 109/109, aussi avec la vraie 0045 ; relu, 4/4 mutants tués |
 | WP09 | i | approved | b71e2a2a | 88/88 Jest + processes.spec 24/24 ; relu, 3 mineurs, 2/2 mutants tués |
+| WP10 | j | approved | 824c5fb1 | processus maintenance ; relu, 5/5 mutants tués, 3 mineurs ; batterie en cours |
 | WP08 | h | approved (cycle 2) | c2ee1033 | rejet cycle 1 (verrous `device`) ; cycle 2 : `lock_device`, M1-M4 ; relu, 2/2 mutants tués ; pgTAP 4777 PASS, Jest vert hors connus |
