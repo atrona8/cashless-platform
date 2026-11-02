@@ -239,7 +239,9 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   `snapshot_signing_key`).
 - WP03 cycle 3 (6500ff5c) : `discard_open_offline_snapshot_drafts(p_ledger uuid) RETURNS int` ;
   `offline_snapshot_targets()` + `max_snapshot_age interval` (plus petit plafond des terminaux, défaut 15 min) ;
-  `offline_snapshot_entry_sha256` ignore `pwd_pack_sha256`. En relecture. À reporter au contrat par WP21.
+  `offline_snapshot_entry_sha256` ignore `pwd_pack_sha256`. APPROUVÉ (relu, 5 mutants tués ; aucun chemin où le mot
+  de passe change sans `key_index`/`nfc_uid`/`status`). pgTAP complet de lane-c : seuls 215-217, 222 de
+  `tests_grand_livre_cashless.sql` (régression connue, corrigée par WP08 dans lane-h). À reporter au contrat par WP21.
 
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
@@ -249,7 +251,7 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 |---|---|---|---|---|
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
-| WP03 | c | approved (cycle 2) | ab3c396b | 116/116 ; B1-B3, M1 corrigés |
+| WP03 | c | approved (cycle 3) | 6500ff5c | rouvert le 02/11 (trous de 0044) ; 145/145 ; relu |
 | WP05 | e | approved | a09a117b | 167 assertions ; batterie pgTAP 3996 PASS ; gen_tests.py retouché (sortie du générateur identique) ; relu, 6 mineurs |
 | WP17 | q | approved | b32e6592 | implémenteur interrompu ; 136 tests ; relu, 4 mineurs (voir « Pour WP19 ») |
 | WP04 | d | approved | 1638f20e | 135 assertions ; CL054 à deux connexions ; relu, 3 mineurs, 10/13 mutants tués |
