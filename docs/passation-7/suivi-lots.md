@@ -232,6 +232,15 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   `architecture.spec.ts` de lane-m complété (fusion avec la version de WP10 à la consolidation) ; conflit possible
   `SNAPSHOT_POLL_SECONDS` dans `config.ts` avec WP11.
 
+## Décision du porteur du 02/11 (WP13, clé de signature)
+- `cashless_snapsign` reçoit l'EXECUTE de `snapshot_public_keys` (lecture seule de clés publiques) : le signataire
+  vérifie sa signature contre la clé publique du `key_id` de l'en-tête et refuse de publier sinon. Droit élargi
+  accepté par le porteur : WP21 rédige l'ADR (risque, raison) ; test de droits qui borne (aucun droit de table sur
+  `snapshot_signing_key`).
+- WP03 cycle 3 (6500ff5c) : `discard_open_offline_snapshot_drafts(p_ledger uuid) RETURNS int` ;
+  `offline_snapshot_targets()` + `max_snapshot_age interval` (plus petit plafond des terminaux, défaut 15 min) ;
+  `offline_snapshot_entry_sha256` ignore `pwd_pack_sha256`. En relecture. À reporter au contrat par WP21.
+
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
