@@ -208,4 +208,4 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 | WP06 | f | approved | 37655778 | 121/121 ; relu, mineurs (voir « Relecture de WP06 ») |
 | WP07 | g | approved | a18c9599 | 109/109, aussi avec la vraie 0045 ; relu, 4/4 mutants tués |
 | WP09 | i | approved | b71e2a2a | 88/88 Jest + processes.spec 24/24 ; relu, 3 mineurs, 2/2 mutants tués |
-| WP08 | h | cycle 2 en cours | f4ada3d9 | rejet cycle 1 (30/10) : B1 verrous `FOR UPDATE` sur `device` cassés (27 suites Jest) ; cycle 2 : fonction DEFINER de verrou (voie a), M1-M4 |
+| WP08 | h | approved (cycle 2) | c2ee1033 | rejet cycle 1 (verrous `device`) ; cycle 2 : `lock_device`, M1-M4 ; relu, 2/2 mutants tués ; pgTAP 4777 PASS, Jest vert hors connus |
