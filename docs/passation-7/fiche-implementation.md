@@ -46,6 +46,8 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   **puis** `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`. `PGDATABASE` seul ne suffit pas :
   `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test`. Ne lance pas la batterie
   complète : l'orchestrateur la passe en série.
+- Mémoire du poste (16 Go, VM Docker comprise) : Jest **toujours** en `--runInBand` dans les lots ; la batterie
+  complète de l'orchestrateur en `--maxWorkers=2`. Jamais de Jest sans l'une de ces options.
 - Horloge Docker en avance/recul de ~100 ms : aucun test ne compare l'horloge de Node à une date posée par la base.
 - Instabilités connues (pas un défaut du lot) : `tests_event_ledger.sql` 63-66, `claim-code-order.spec.ts`,
   `transverse/migrate-lock.spec.ts`, latences `config.spec`/`heartbeat.spec` sous Docker.
