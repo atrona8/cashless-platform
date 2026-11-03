@@ -393,7 +393,10 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - **Contradiction de contrat à trancher** : `contracts/compliance.md` (l. 2) et R-30 exigent la session de vendeur
   (sinon `OFFLINE_NOT_ALLOWED`/`VENDOR_SESSION`), mais le schéma `OfflineOperation` d'`openapi.yaml` n'a AUCUN champ
   `vendor_session_id` (ni l'exemple seq 87/88) ; `sync_protocol.md` muet. Un terminal qui suit `openapi.yaml` voit
-  toutes ses opérations rejetées. Soumis au porteur.
+  toutes ses opérations rejetées. **Décision du porteur (03/11) : corriger via WP21** (retouche hors carte de
+  `packages/contracts/openapi.yaml` de WP01) : `vendor_session_id` (uuid) dans `OfflineOperation`, requis pour
+  `PURCHASE` et `REVERSAL`, exemples seq 87/88 et types générés (`packages/contracts/src`, `dart`) mis à jour ; code
+  de WP19 inchangé ; signaler la contradiction au rapport de mission.
 - Mineurs : `TOLERANCE_MS` exporté par `compliance-input.reader.ts` (le placer dans `rules/`) ; test `TOPUP_CASH`
   (reliquat) ; annulation d'une vente sans bracelet rejetée `MEDIA_NOT_IN_SNAPSHOT` (plus strict, sans effet hors
   ligne).
