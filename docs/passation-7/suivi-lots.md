@@ -285,14 +285,24 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   `reduce_offline_shortfall` appelé depuis `reversal.service.ts` (hors carte) par WP19, sinon dette WP21.
 - WP14 : dépendances approuvées, à lancer quand une relecture se libère (mémoire du poste).
 
+## Relecture de WP15 cycle 2 (approuvé, 03/11) — pour WP19, WP21
+- `snapshot_keys` vient de `snapshot_public_keys($operatorId)` : toute suite qui crée des clés les met en
+  `operator_id` de son prestataire ; `offline_enabled` est faux sans clé ACTIVE.
+- Mineurs : tests « sans clé ACTIVE » font `return` si une clé de plateforme existe (vacueux dans ce cas) ; une ligne
+  SQL de `snapshots-seed.ts` > 100 car. (Prettier à la fusion) ; pas de test croisé entre prestataires dans
+  `snapshots.spec` (isolation par la fonction SQL et la RLS) : à couvrir par WP21.
+- Relecture humaine : `offline-snapshots.service.ts` (lecture de l'enveloppe, découpe de `pwd_pack_enc`),
+  `snapshot-etag.ts`.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
+| WP14 | n | in_progress | | lancé le 03/11 (lanes a, b, h fusionnées par merge-deps.sh) |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
 | WP18 | r | approved | a5c19b68 | relu le 02/11 : 46/46 (maxWorkers=3 et runInBand), 6 mutants tués, 0 bloquant ; mineurs perdus avec la session (non consignés au fichier de relecture) |
-| WP15 | o | cycle 2 en relecture | b4ca0427 | rejet cycle 1 : tests à effet global sur les clés (4/4 échecs en parallèle), preuve « téléphone » vacueuse ; API conforme (4 mutants tués) |
+| WP15 | o | approved (cycle 2) | b4ca0427 | relu le 03/11 : 5 constats du cycle 1 levés, 5 mutants tués (1 équivalent), maxWorkers=3 ×2 vert ; rejet cycle 1 : tests à effet global sur les clés (4/4 échecs en parallèle), preuve « téléphone » vacueuse ; API conforme (4 mutants tués) |
 | WP11 | k | cycle 3 en relecture | dc7d041c | rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
 | WP13 | m | approved | 42828a6d | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; pgTAP 4780 PASS ; Jest : 2 suites du signataire dépendaient de l'isolation (corrigé par `42828a6d`, tests seulement, vert en `--maxWorkers=3`) ; reste config:270 (WP15) |
 | WP03 | c | approved (cycle 3) | 6500ff5c | rouvert le 02/11 (trous de 0044) ; 145/145 ; relu |
