@@ -380,10 +380,19 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   SUSPENSE), `money/spend.ts`, `purchase.ts`, `offline-sale.writer.ts` (SAVEPOINT/CL007), `shortfall-reduction.ts`
   et son appel dans `reversal.service.ts`, `compliance-input.reader.ts`.
 
+## WP19 cycle 2 (implémentation d65390e2, 03/11)
+- B1 corrigé (annulation seq 88 acceptée ; cible introuvable sans tap = `REVERSAL_TARGET_NOT_FOUND`, faits
+  « favorables » posés pour les contrôles 6 à 9) ; `BatchContext.inversions` + `BatchOpening` (hors carte WP18 :
+  `batch.types.ts`, `batch-runner.ts`, `offline-batches.service.ts` ; `batch-runner` importe `TOLERANCE_MS` de
+  `processing/`) ; anomalie `CLOCK_SKEW` `DATE_INVERSION` ; tests M6, M7.
+- Contradiction de contrat : exemples `openapi.yaml` seq 87/88 sans `vendor_session_id`, exigé par le processeur
+  (plus strict) : corriger l'exemple ou décider (WP21 / rapport).
+- Non traité : test `TOPUP_CASH` qui ne distingue pas l'arrêt anticipé de `checkCompliance` (mineur, WP21).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
-| WP19 | s | cycle 2 en cours | 603848fa | rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
+| WP19 | s | cycle 2 en relecture | d65390e2 | rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
