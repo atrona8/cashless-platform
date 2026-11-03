@@ -322,11 +322,29 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   seul `OPERATOR_ADMIN` le lit ou le coupe (à confirmer côté produit) ; pas de test de course coupure contre `PUT`
   organisateur (WP21 peut l'ajouter).
 
+## Issu de WP12 (implémentation 149599fe, 03/11) — pour la relecture, WP21
+- `WrappedKey` : `iv` = nonce (base64), `wrapped_key` = base64(chiffré ‖ tag 16) ; confirmé par un vecteur Python
+  indépendant. `pwd_pack_enc` 34 octets (12/6/16), hex dans le brouillon, base64 servi ; `pwd_pack_sha256` sur les
+  octets bruts. Version connue avant chiffrement par `expectedVersion` (WP03 non rouvert).
+- **À trancher (sécurité ?)** : entrée publiée SANS mot de passe si le `pwd_pack_enc` ne s'ouvre pas
+  (`PWD_DEK_RETIRED|MISSING`, `PWD_OPEN_FAILED`, `PWD_INCOMPLETE_ROW`), non rejouée par DELTA (FULL suivant ≤ 1 h).
+  Soumise au relecteur ; au porteur si c'est un affaiblissement.
+- Limites pour WP21 (OP/ADR) : `content_key_wrapped` sans référence de la clé d'emballage (rotation = anciennes
+  versions inouvrables) ; clé d'accord invalide en tête de `offline_snapshot_keys_to_wrap` (au-delà de 500, affame
+  les suivantes) ; `DekCache` jusqu'à `tagDekCacheSeconds`.
+- Retouches hors carte dans les fichiers de WP11 (`entry-encryptor.ts`, `snapshot-builder.ts`, worker, repository :
+  colonne `media_id`, module) et `build-diff.spec.ts` ; supports de tests `snapshot-crypto-fixtures.ts`,
+  `snapshot-secrets-db.ts`.
+- Incident : un passage de `secrets-sweep` a visé `cashless_test` (variables non exportées) : remettre
+  `cashless_test` à zéro avant la batterie de l'orchestrateur.
+- Relecture humaine : `device-envelope.ts` (tag-format), `crypto/snapshot-entry-encryptor.ts`,
+  `crypto/snapshot-key-wrapper.ts`, `crypto/device-wrapping.worker.ts`, `crypto/device-wrapping.repository.ts`.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
-| WP12 | l | in_progress | | lancé le 03/11 (lanes d, k incluses) |
+| WP12 | l | for_review | 3528e30d | implémenté le 03/11 (149599fe + style) ; 115/115 maxWorkers=3 ×2 ; relecture en cours |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
