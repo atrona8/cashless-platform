@@ -40,8 +40,9 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   l'orchestrateur.** Chaque lot utilise sa base : `PGDATABASE=cashless_wpXX` (ex. `cashless_wp02`).
 - Remise à zéro de ta base depuis la lane : `PGDATABASE=cashless_wpXX bash packages/ledger-sql/scripts/reset-db.sh`.
 - pgTAP : `export PATH=/private/tmp/claude-501/-Users-xaamga-Documents-omar-sylla-work-cashless-cashless-platform/a3fd69bf-f597-45d6-a435-6218a169bfc8/scratchpad/bin:/Library/PostgreSQL/18/bin:$PATH`
-  puis, depuis `packages/ledger-sql/tests/` **de ta lane**, `pg_prove -d cashless_wpXX <fichier>.sql` (ce lanceur
-  copie `packages/ledger-sql` de ta lane dans le conteneur et y lance `pg_prove`). Après un Jest, refaire `reset-db`.
+  puis, depuis `packages/ledger-sql/` **de ta lane** (pas depuis `tests/` : `\ir ../roles.sql` échouerait),
+  `pg_prove -d cashless_wpXX tests/<fichier>.sql` (ce lanceur copie le dossier courant dans le conteneur Docker et
+  y lance `pg_prove`). Après un Jest, refaire `reset-db`.
 - Jest ciblé depuis `apps/api` de la lane : `export PGDATABASE=cashless_wpXX; source ../../tools/dev-db/env.sh`
   **puis** `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`. `PGDATABASE` seul ne suffit pas :
   `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test`. Ne lance pas la batterie

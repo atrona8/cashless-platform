@@ -294,16 +294,28 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Relecture humaine : `offline-snapshots.service.ts` (lecture de l'enveloppe, découpe de `pwd_pack_enc`),
   `snapshot-etag.ts`.
 
+## Relecture de WP11 cycle 3 (approuvé, 03/11) — pour WP12, WP13, WP21
+- Verrou consultatif de session par grand livre (`apps/api/src/db/advisory-session.ts`) ; délai d'orphelin
+  `SNAPSHOT_ORPHAN_DISCARD_SECONDS` = 600 s, config refuse ≤ 300 s ; aucun droit de base ajouté.
+- WP21 : consigner (ADR + POINTS_OUVERTS) le verrou et le délai de 10 min, et la limite connue : au démarrage, le
+  balayage jette un brouillon READY tout juste scellé par l'instance précédente (le signataire l'écarte par
+  DRAFT_NOT_READY). CI : `reset-db` avant pgTAP (rappel).
+- Signataire : tolérer DRAFT_NOT_READY après redémarrage de snapshot-content ; alarme à 5 min inchangée.
+- Mineur : `releaseExcept` dans `runOnce` sans try/catch (une panne de base remonte à l'appelant).
+- Relecture humaine : `snapshot-draft.repository.ts`, `advisory-session.ts`, `snapshot-content.worker.ts`.
+- Fiche corrigée : `pg_prove` se lance depuis `packages/ledger-sql/` avec `tests/<fichier>.sql`.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
+| WP12 | l | in_progress | | lancé le 03/11 (lanes d, k incluses) |
 | WP14 | n | in_progress | | lancé le 03/11 (lanes a, b, h fusionnées par merge-deps.sh) |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
 | WP18 | r | approved | a5c19b68 | relu le 02/11 : 46/46 (maxWorkers=3 et runInBand), 6 mutants tués, 0 bloquant ; mineurs perdus avec la session (non consignés au fichier de relecture) |
 | WP15 | o | approved (cycle 2) | b4ca0427 | relu le 03/11 : 5 constats du cycle 1 levés, 5 mutants tués (1 équivalent), maxWorkers=3 ×2 vert ; rejet cycle 1 : tests à effet global sur les clés (4/4 échecs en parallèle), preuve « téléphone » vacueuse ; API conforme (4 mutants tués) |
-| WP11 | k | cycle 3 en relecture | dc7d041c | rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
+| WP11 | k | approved (cycle 3) | dc7d041c | relu le 03/11 : 8 mutants tués, 62/62 en maxWorkers=3 ×2 ; rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
 | WP13 | m | approved | 42828a6d | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; pgTAP 4780 PASS ; Jest : 2 suites du signataire dépendaient de l'isolation (corrigé par `42828a6d`, tests seulement, vert en `--maxWorkers=3`) ; reste config:270 (WP15) |
 | WP03 | c | approved (cycle 3) | 6500ff5c | rouvert le 02/11 (trous de 0044) ; 145/145 ; relu |
 | WP05 | e | approved | a09a117b | 167 assertions ; batterie pgTAP 3996 PASS ; gen_tests.py retouché (sortie du générateur identique) ; relu, 6 mineurs |
