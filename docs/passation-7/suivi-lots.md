@@ -305,12 +305,20 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Relecture humaine : `snapshot-draft.repository.ts`, `advisory-session.ts`, `snapshot-content.worker.ts`.
 - Fiche corrigée : `pg_prove` se lance depuis `packages/ledger-sql/` avec `tests/<fichier>.sql`.
 
+## Issu de WP14 (implémentation 01dc40c6, 03/11) — à trancher en relecture, pour WP21
+- Contradictions : le prompt annonce onze `operationId`, le contrat en déclare 9 ; « policy nulle » pour un niveau
+  absent alors que le schéma exige un objet (rendu : 5 valeurs null, `cash_topup_offline: false`, `version: 0`).
+- `OPERATOR_ADMIN` peut couper un terminal (`{offline_enabled:false, version}` seul) ; l'API relit le niveau puis
+  appelle `set_offline_policy` : base contractuelle et course lecture/écriture à vérifier par le relecteur.
+- Renforcement : `cash_topup_offline: null` refusé (422) en plus de `true`.
+- Retouches hors carte : `app.module.ts`, `audit.service.ts` (`OFFLINE_POLICY_SET`, `OFFLINE_POLICY_CLEARED`).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
 | WP12 | l | in_progress | | lancé le 03/11 (lanes d, k incluses) |
-| WP14 | n | in_progress | | lancé le 03/11 (lanes a, b, h fusionnées par merge-deps.sh) |
+| WP14 | n | for_review | 01dc40c6 | implémenté le 03/11 (19 tests, maxWorkers=3 ×2) ; relecture en cours |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
 | WP18 | r | approved | a5c19b68 | relu le 02/11 : 46/46 (maxWorkers=3 et runInBand), 6 mutants tués, 0 bloquant ; mineurs perdus avec la session (non consignés au fichier de relecture) |
