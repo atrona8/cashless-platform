@@ -313,12 +313,21 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Renforcement : `cash_topup_offline: null` refusé (422) en plus de `true`.
 - Retouches hors carte : `app.module.ts`, `audit.service.ts` (`OFFLINE_POLICY_SET`, `OFFLINE_POLICY_CLEARED`).
 
+## Relecture de WP14 (approuvé, 03/11) — pour WP21
+- Contradictions tranchées par `openapi.yaml` : 9 routes (le « onze » du prompt est faux, à corriger au rapport) ;
+  niveau absent conforme (« policy nulle et version 0 ») ; coupure par `OPERATOR_ADMIN` prévue au contrat
+  (`setDeviceOfflinePolicy`), bornée à `offline_enabled:false`, montants en 403 ; course fermée par la `version`
+  (FOR UPDATE + CL046), lue dans le code, non reproduite.
+- Mineurs : refus au-dessus de 2^53−1 alors que le contrat dit int64 (plus strict) ; terminal sans événement :
+  seul `OPERATOR_ADMIN` le lit ou le coupe (à confirmer côté produit) ; pas de test de course coupure contre `PUT`
+  organisateur (WP21 peut l'ajouter).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
 | WP12 | l | in_progress | | lancé le 03/11 (lanes d, k incluses) |
-| WP14 | n | for_review | 01dc40c6 | implémenté le 03/11 (19 tests, maxWorkers=3 ×2) ; relecture en cours |
+| WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
 | WP18 | r | approved | a5c19b68 | relu le 02/11 : 46/46 (maxWorkers=3 et runInBand), 6 mutants tués, 0 bloquant ; mineurs perdus avec la session (non consignés au fichier de relecture) |
