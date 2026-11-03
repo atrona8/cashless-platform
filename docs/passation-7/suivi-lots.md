@@ -353,10 +353,23 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   lane-l (WP12 ne dépend pas de lane-a) : réglé à la consolidation.
 - Relecture humaine : voir « Issu de WP12 ».
 
+## Issu de WP19 (implémentation 603848fa, 03/11) — pour la relecture, WP20, WP21
+- Moteur touché : `ledger-engine.service.ts` (`EngineResult.shortfall`), `money/spend.ts` (`coveredCap`, dans
+  l'empreinte de commande), `purchase.ts` ; `tap.service.ts` (`registerOffline`). Relecture humaine : ces lignes.
+- Hors carte : `offline-batches.module.ts` (vrai processeur sur `OFFLINE_OPERATION_PROCESSOR`,
+  `UnavailableOperationProcessor` retiré) ; `reversal.service.ts` (`reduce_offline_shortfall` avec la vraie
+  annulation, testé) ; `test/scenario/commands.ts` (étape 22, `coveredCap: 6000n`).
+- Écarts à classer en relecture : vente hors catalogue (`CL034`) écrite sans lignes (`CATALOG_MISMATCH`) ;
+  inversions de dates non ouvertes en `CLOCK_SKEW` (`BatchContext` sans la liste : WP18) ; `config_id` inconnu =
+  `OFFLINE_NOT_ALLOWED` (WP17) contre `POLICY_LIMIT_EXCEEDED` (§ 7.2) ; `REVERSAL` sans `tap` rejeté
+  (`PACK_NOT_VERIFIED`, à trancher avec le porteur) ; `detail = {codes:[…]}`.
+- Dettes : annulation back-office (`sale-reversal-action.ts`) sans `reduce_offline_shortfall` ; non testés :
+  `WRONG_EVENT` (conflit), `NOT_ACTIVATED`, canal `IMPORT` (code présent).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
-| WP19 | s | in_progress | | lancé le 03/11 |
+| WP19 | s | for_review | 603848fa | implémenté le 03/11 ; 105 suites / 2010 tests (maxWorkers=3) ; relecture en cours |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
