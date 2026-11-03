@@ -340,11 +340,24 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Relecture humaine : `device-envelope.ts` (tag-format), `crypto/snapshot-entry-encryptor.ts`,
   `crypto/snapshot-key-wrapper.ts`, `crypto/device-wrapping.worker.ts`, `crypto/device-wrapping.repository.ts`.
 
+## Relecture de WP12 (approuvé, 03/11) — pour WP21
+- Entrée sans mot de passe : échec FERMÉ, pas un affaiblissement : `sync_protocol.md` § 6, contrôle 3, le terminal
+  refuse un bracelet dont le PWD est absent du snapshot ; `pwd_pack_enc` nul prévu par `contracts/snapshots.md`
+  et `data-model.md`, demandé par T050. Coût : disponibilité (bracelet refusé hors ligne ≤ 1 h). Échouer toute la
+  version retarderait les blocages (§ 4.2-1).
+- AAD conformes à R-08 (`SNAPKEY` : ledger, version, device ; `SNAPPWD` : ledger, version, token_hash, nfc_uid).
+- WP21 : OP/ADR pour l'entrée sans mot de passe, `content_key_wrapped` sans référence de clé, file d'enveloppes
+  (> 500 invalides, risque faible : point P-256 validé à l'enrôlement) ; alarme (pas seulement un journal ERROR) et
+  seuil sur les entrées `skipped` ; test d'effacement de `pwdPack` (mutant `zeroize(pwdPack)` survivant).
+- `openapi.yaml` (`WrappedKey` A256GCM avec `iv`) vient de WP01 (lane-a) : présent dans lane-o (WP15), absent de
+  lane-l (WP12 ne dépend pas de lane-a) : réglé à la consolidation.
+- Relecture humaine : voir « Issu de WP12 ».
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | in_progress | | lancé le 03/11 |
-| WP12 | l | for_review | 3528e30d | implémenté le 03/11 (149599fe + style) ; 115/115 maxWorkers=3 ×2 ; relecture en cours |
+| WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
