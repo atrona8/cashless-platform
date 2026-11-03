@@ -401,11 +401,26 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   (reliquat) ; annulation d'une vente sans bracelet rejetée `MEDIA_NOT_IN_SNAPSHOT` (plus strict, sans effet hors
   ligne).
 
+## Issu de WP20 (implémentation 1b824251, 03/11) — pour la relecture, WP21
+- Défaut de WP19 corrigé hors carte : `offline-sale.writer.ts` passait `approverId` à
+  `record_sale_attribution_at` (refusé hors annulation, CL001 : tout import de vente échouait) ; passe `null`,
+  l'approbateur reste `approved_by` de l'écriture.
+- Limite de corps de l'import : 21 037 056 octets (20 lots de 1 Mio + 64 Kio) puis 413 ; lu seulement avec un en-tête
+  `Authorization` (sinon limite globale de 100 ko). À juger en relecture (déni de service).
+- **Trou de base (WP05)** : demande rejetée/expirée ou `begin_` en échec (CL053, CL010) laisse l'import PENDING ;
+  l'index d'unicité bloque alors tout nouvel import du terminal. Aucune fonction de sortie. Non contourné.
+- Contradictions : `CHAIN_BROKEN` 409 (catalogue) contre 400 (prompt) ; 422 sur `{seq}` > 2^53−1, 400 sur un
+  numéro de lot (FR-033 contre R-14) ; approbation rend PROCESSING (R-30.10) contre `openapi.yaml`.
+- Hors carte : `app.module.ts`, `audit.service.ts` (4 actions), `batch-body.ts`, `offline-batches.module.ts`,
+  `test/integration/offline/journal-world.ts`.
+- Relecture humaine : `journal-import.action.ts`, `journal-import.worker.ts`, `journal-verify.ts`,
+  `journal-body.ts`, `offline-sale.writer.ts` (ligne corrigée).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
-| WP20 | t | in_progress | | lancé le 03/11 (lanes e, s incluses) |
+| WP20 | t | for_review | 1b824251 | implémenté le 03/11 ; 24 tests maxWorkers=3 ×2, 1674 tests runInBand ; relecture en cours |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
