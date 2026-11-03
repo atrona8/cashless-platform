@@ -389,10 +389,19 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   (plus strict) : corriger l'exemple ou décider (WP21 / rapport).
 - Non traité : test `TOPUP_CASH` qui ne distingue pas l'arrêt anticipé de `checkCompliance` (mineur, WP21).
 
+## Relecture de WP19 cycle 2 (approuvé, 03/11)
+- **Contradiction de contrat à trancher** : `contracts/compliance.md` (l. 2) et R-30 exigent la session de vendeur
+  (sinon `OFFLINE_NOT_ALLOWED`/`VENDOR_SESSION`), mais le schéma `OfflineOperation` d'`openapi.yaml` n'a AUCUN champ
+  `vendor_session_id` (ni l'exemple seq 87/88) ; `sync_protocol.md` muet. Un terminal qui suit `openapi.yaml` voit
+  toutes ses opérations rejetées. Soumis au porteur.
+- Mineurs : `TOLERANCE_MS` exporté par `compliance-input.reader.ts` (le placer dans `rules/`) ; test `TOPUP_CASH`
+  (reliquat) ; annulation d'une vente sans bracelet rejetée `MEDIA_NOT_IN_SNAPSHOT` (plus strict, sans effet hors
+  ligne).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
-| WP19 | s | cycle 2 en relecture | d65390e2 | rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
+| WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
