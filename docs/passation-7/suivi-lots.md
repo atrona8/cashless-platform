@@ -441,11 +441,19 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Relecture humaine : 0050, `post-roles.sql` (1 ligne), tests de droits, `real-device-identity.ts`,
   `authentication.guard.ts`, `body-gate.ts`.
 
+## Relecture de WP20 cycle 2 (approuvé, 03/11) — pour WP21
+- `preAuthenticate` ne remplace jamais la garde complète (nonce, signature, rejeu toujours exécutés ensuite) ; corps
+  jamais lu en cas d'échec, erreur du filtre fermée ; 0050 bornée (prestataire, demande approuvée refusée).
+- **À corriger avant la fusion** : `test/integration/end-to-end/device-auth-matrix.spec.ts` échoue (2 tests) :
+  `POST /offline-batches` et `GET /offline-batches/{id}` (WP18) absents de la matrice des routes de terminal (OP-N70).
+- Mineurs : `gatedBody` lit sans filtre si l'identité n'a pas de `preAuthenticate` (pas fermé par principe ; test de
+  présence du filtre en configuration réelle) ; consigner REJECTED au lieu de FAILED (écart au libellé du porteur).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
-| WP20 | t | cycle 2 en relecture | 8aabe5ae | rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
+| WP20 | t | approved (cycle 2) | 8aabe5ae | relu le 03/11 : 7 mutants tués, 130/130 maxWorkers=3 ×2, pgTAP vert ; rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
