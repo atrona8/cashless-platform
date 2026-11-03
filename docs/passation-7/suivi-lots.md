@@ -276,14 +276,24 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 ## Divers
 - Issue-matrix : `#10` (ligne de la table de conflit, WP17) = `not-applicable`.
 
+## Reprise du 03/11
+- Session du 02/11 interrompue pendant les relectures de WP11 (cycle 3) et WP15 (cycle 2) : relectures relancées.
+- colima redémarré (3 Gio) ; `pg_prove` = lanceur Docker `docs/passation-5b/scripts/pg_prove-docker` lié dans le
+  `bin` du scratchpad de la session (chemin mis à jour dans la fiche d'implémentation).
+- WP19 : lane-s créée, lanes f, g, p, q, r fusionnées par `merge-deps.sh` (l'auto-fusion de lane-q échouait sur
+  `kitty-specs/`) ; implémentation lancée. Arbitrages donnés : `device_id` garanti par WP19 (0048 inchangée) ;
+  `reduce_offline_shortfall` appelé depuis `reversal.service.ts` (hors carte) par WP19, sinon dette WP21.
+- WP14 : dépendances approuvées, à lancer quand une relecture se libère (mémoire du poste).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
+| WP19 | s | in_progress | | lancé le 03/11 |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
 | WP01 | a | approved | ed1eaef0 | cycle 2 ; route getDeviceJournalImport, pwd_pack_sha256 précisé |
-| WP18 | r | for_review | a5c19b68 | relecture en cours ; 46 tests en --maxWorkers=3 |
-| WP15 | o | cycle 2 en cours | 60189b18 | rejet cycle 1 : tests à effet global sur les clés (4/4 échecs en parallèle), preuve « téléphone » vacueuse ; API conforme (4 mutants tués) |
-| WP11 | k | cycle 3 en cours | b443defe | rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
+| WP18 | r | approved | a5c19b68 | relu le 02/11 : 46/46 (maxWorkers=3 et runInBand), 6 mutants tués, 0 bloquant ; mineurs perdus avec la session (non consignés au fichier de relecture) |
+| WP15 | o | cycle 2 en relecture | b4ca0427 | rejet cycle 1 : tests à effet global sur les clés (4/4 échecs en parallèle), preuve « téléphone » vacueuse ; API conforme (4 mutants tués) |
+| WP11 | k | cycle 3 en relecture | dc7d041c | rejet cycle 1 (réservation), cycle 2 (jet mutuel entre instances) |
 | WP13 | m | approved | 42828a6d | relu, 7 mutants tués, 4 mineurs ; décision porteur clé publique ; pgTAP 4780 PASS ; Jest : 2 suites du signataire dépendaient de l'isolation (corrigé par `42828a6d`, tests seulement, vert en `--maxWorkers=3`) ; reste config:270 (WP15) |
 | WP03 | c | approved (cycle 3) | 6500ff5c | rouvert le 02/11 (trous de 0044) ; 145/145 ; relu |
 | WP05 | e | approved | a09a117b | 167 assertions ; batterie pgTAP 3996 PASS ; gen_tests.py retouché (sortie du générateur identique) ; relu, 6 mineurs |
