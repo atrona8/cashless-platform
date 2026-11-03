@@ -416,11 +416,22 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Relecture humaine : `journal-import.action.ts`, `journal-import.worker.ts`, `journal-verify.ts`,
   `journal-body.ts`, `offline-sale.writer.ts` (ligne corrigée).
 
+## Décisions du porteur du 03/11 (relecture de WP20) — pour WP21 (ADR, contrat)
+- Import bloqué en PENDING (trou de 0046) : corrigé dans WP20 cycle 2 par la migration
+  `0050_device_journal_import_cancel.sql` (hors plan : 0043-0049 seulement), EXECUTE à `cashless_app` dans
+  `post-roles.sql` ; appel au rejet et à l'expiration. WP21 : reporter au contrat (`interfaces.md`), ADR.
+  Relecture humaine : 0050 et le § ajouté de `post-roles.sql`.
+- Corps lu avant le jeton : corrigé sur l'import ET sur `POST /offline-batches` (WP18) : jeton (et rôle pour
+  l'import) vérifié avant la lecture.
+- Restent pour WP21 : 500 `INTERNAL_ERROR` au lieu de 413 au-delà de la limite globale de 100 ko (défaut ancien) ;
+  contradictions tranchées par le relecteur (`CHAIN_BROKEN` 409, 422/400 pour seq > 2^53−1, PROCESSING selon
+  R-30.10) à noter au rapport.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
-| WP20 | t | for_review | 1b824251 | implémenté le 03/11 ; 24 tests maxWorkers=3 ×2, 1674 tests runInBand ; relecture en cours |
+| WP20 | t | cycle 2 en cours | 1b824251 | rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
