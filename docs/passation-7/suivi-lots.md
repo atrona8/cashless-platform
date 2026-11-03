@@ -427,11 +427,25 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   contradictions tranchées par le relecteur (`CHAIN_BROKEN` 409, 422/400 pour seq > 2^53−1, PROCESSING selon
   R-30.10) à noter au rapport.
 
+## WP20 cycle 2 (implémentation 8aabe5ae, 03/11) — pour la relecture, WP21
+- 0050 : `cancel_device_journal_import(p_import, p_actor, p_reason)` DEFINER, idempotente, `assert_tenant` ;
+  passe PENDING → **REJECTED** (pas FAILED : garde de 0046 et contrainte `device_journal_import_approved`) ; refuse
+  si la demande est encore valable (CL001) ou l'import non PENDING (CL053). Appelée au rejet, à l'expiration, à
+  l'échec avant `begin_` ; une nouvelle demande libère un import dont la demande a expiré.
+- Identité avant lecture du corps : `offline/batches/body-gate.ts` ; `preAuthenticate` (preuves 1 à 4 sans nonce)
+  ajouté à `authentication.guard.ts` et `device-identity/*` (hors carte, relecture humaine).
+- Hors carte aussi : `approval/action-registry.ts` (crochet `onClosed`), `approval.service.ts`, `audit.service.ts`
+  (`DEVICE_JOURNAL_IMPORT_CANCELLED`).
+- WP21 : consigner les limites de 0050 (REJECTED, pas d'annulation tant que la demande est valable) ; instabilité
+  observée de `processing-reversal-clock` (ordre de lignes, horloge Docker).
+- Relecture humaine : 0050, `post-roles.sql` (1 ligne), tests de droits, `real-device-identity.ts`,
+  `authentication.guard.ts`, `body-gate.ts`.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
-| WP20 | t | cycle 2 en cours | 1b824251 | rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
+| WP20 | t | cycle 2 en relecture | 8aabe5ae | rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
