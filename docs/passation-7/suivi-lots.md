@@ -366,10 +366,24 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Dettes : annulation back-office (`sale-reversal-action.ts`) sans `reduce_offline_shortfall` ; non testés :
   `WRONG_EVENT` (conflit), `NOT_ACTIVATED`, canal `IMPORT` (code présent).
 
+## Décisions du porteur du 03/11 (relecture de WP19) — pour WP21 (ADR, rapport)
+- Inversions de dates (FR-025) : branchées via WP18 (liste ajoutée à `BatchContext`, retouche hors carte d'un lot
+  approuvé) et anomalie `CLOCK_SKEW` ouverte par WP19 ; pas de dette.
+- Annulation hors ligne : suit le contrat (exemple `openapi.yaml`, seq 88) : sans tap re-présenté, devise du grand
+  livre, bracelet de la vente visée, cible limitée au même terminal.
+- Classés neutres par le relecteur, à consigner (ADR + POINTS_OUVERTS) par WP21 : vente hors catalogue écrite sans
+  lignes (`CATALOG_MISMATCH`) ; `config_id` inconnu = `OFFLINE_NOT_ALLOWED` + `POLICY_LIMIT_EXCEEDED` en détail
+  (§ 7.2 de `sync_protocol.md` à signaler) ; annulation back-office sans `reduce_offline_shortfall` (perte
+  surestimée). WP21 : tests `WRONG_EVENT` (conflit), `NOT_ACTIVATED` ; WP20 : canal IMPORT de bout en bout
+  (`approver()` lève si l'import n'a pas d'approbateur).
+- Chemin en ligne du moteur relu strictement inchangé. Relecture humaine : `ledger-engine.service.ts` (somme
+  SUSPENSE), `money/spend.ts`, `purchase.ts`, `offline-sale.writer.ts` (SAVEPOINT/CL007), `shortfall-reduction.ts`
+  et son appel dans `reversal.service.ts`, `compliance-input.reader.ts`.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
-| WP19 | s | for_review | 603848fa | implémenté le 03/11 ; 105 suites / 2010 tests (maxWorkers=3) ; relecture en cours |
+| WP19 | s | cycle 2 en cours | 603848fa | rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
 | WP14 | n | approved | 01dc40c6 | relu le 03/11 : 19/19 maxWorkers=3 ×2, 7 mutants tués, 0 bloquant |
 | WP02 | b | approved | 9a4bd1fc | 82/82 pgTAP ; relu, 3 mineurs consignés |
