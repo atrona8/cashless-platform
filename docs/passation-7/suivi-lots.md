@@ -473,6 +473,15 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   N93(a)(c), N94(1)(3) ; `GET /devices/{id}/journal-imports/{import_id}` en 404 pour son superviseur (à examiner) ;
   `interfaces.md` et `quickstart.md` (orchestrateur, sur feat).
 
+## WP21 part D (04/11) et décisions du porteur
+- D : `969dd3b5` (`vendor_session_id` au contrat, FR-042), `8f394474` (`GET /device/seq-status` servie, sans droit
+  ajouté). Import PENDING en 404 : voulu (PENDING jamais exposé), pas un défaut de WP20.
+- Décisions du porteur (04/11) : `GET /events/{event_id}/device-sync-status` servie par une **enveloppe DEFINER
+  étroite** (migration 0051, lecture seule, bornée au prestataire, EXECUTE à `cashless_app` sur elle seule ;
+  `event_sync_deadline` reste retirée) : droit élargi accepté, ADR + OP + test de droits + relecture humaine ;
+  rôles = ceux de `getEventOfflineRisk`, 404 neutre pour un autre prestataire, contrat complété ;
+  `seq-status` servie au terminal SUSPENDU (comme les lots) : gardé, à consigner et préciser au contrat.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
