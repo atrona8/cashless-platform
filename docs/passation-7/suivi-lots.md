@@ -598,7 +598,7 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
-| WP21 | u | for_review | eccde273 | parts A à J ; matrice 35 pass / 9 pending (`eccde273`) ; relecture cycle 1 lancée le 04/11 (`rapports/WP21-review-cycle-1.md`) |
+| WP21 | u | approved (cycle 2) | a0406433 | relu le 04/11 : A1, A2, I1, S1 tués (I2 témoin) ; rejet cycle 1 : empreinte d'isolation globale, lint, garde non prouvée ; `rapports/WP21-review-cycle-1.md`, `-cycle-2.md` ; matrice 35+ pass, réserve FR-024 (WP19) |
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
 | WP20 | t | approved (cycle 2) | 8aabe5ae | relu le 03/11 : 7 mutants tués, 130/130 maxWorkers=3 ×2, pgTAP vert ; rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
