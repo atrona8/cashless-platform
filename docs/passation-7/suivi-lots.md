@@ -540,6 +540,8 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
   large, la forme compte) ; (2) dénormaliser le montant débité dans `device_seq_registry` (≈10 s par lot ; schéma et
   chemin d'écriture d'un plafond d'argent, lecture toujours par la base) ; (3) juger le seuil sur la CI Linux (sans
   VM), mesures locales consignées comme dépendantes du poste. Rien de codé en attendant.
+- **Décision du porteur (04/11, soir) : (1) réduire les allers-retours** (regrouper les 44 requêtes par opération ;
+  chemin des lots WP18/WP19, nouvelle relecture). À faire après la part I.
 
 ## WP21 part I (04/11, soir) : blocage visible en 5 s (NFR-005), reprise après redémarrage du poste
 - Trouvé non commité dans la lane u après redémarrage (colima arrêté) : migration 0054 (`offline_snapshot_source_rows`
@@ -558,6 +560,26 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
   rouge, mais poste chargé (compilation LLVM par Homebrew lancée à 19h38 hors session, charge jusqu'à 13,7 ; pose du
   jeu 34-44 s au lieu de 18-19 s). **À remesurer au repos** (3 passes) avant de conclure ; marge faible (3-4 s
   typiques) : pistes restantes, détection des retraits (~245 ms) et `stateHashes` (0,25-0,4 s) à chaque passage.
+- Remesures au repos (après arrêt, à la demande du porteur, d'une compilation LLVM par Homebrew) : 1,8-4,1 s sauf
+  **un premier essai à 32 s, 2 passes sur 14**. Cause : `offline_snapshot_source_rows` coupée par le statement_timeout
+  (30 s) juste après le chargement massif, avant l'autoanalyze : la détection des retraits (`NOT EXISTS`, héritée de
+  0053) partait en anti-jointure en boucle imbriquée (50 000 × 50 000). Reproduit en supprimant les statistiques
+  (> 60 s ; 0053 aussi). Risque réel en production : premier événement d'un prestataire sur une base presque vide.
+- `6483e3a4` : **migration 0055**, retraits en `EXCEPT` (DELTA et FULL) : 0,28 s sans statistiques. `enable_nestloop =
+  off` sur la fonction écarté (robuste mais parcours complets de tables partagées entre prestataires). Test
+  `tests_offline_snapshot_source_no_stats.sql` (20 000 bracelets, délai 5 s) : passe sur 0055, échoue sur 0054 ;
+  appels directs, pas `lives_ok` (sa sous-transaction sur lignes non validées ralentit tout ×100, sans rapport avec
+  la production). pgTAP 4895/4895 (55 fichiers), Jest 203/203.
+- Malgré 0055 : encore 2 passes sur 10 à 33-35 s (`offline_snapshot_source_delta` coupée, relevée par
+  `pg_stat_activity`). Le premier DELTA après un FULL relit l'historique posé par le chargement : 20 000 à 50 000
+  candidats au lieu de ~100 estimés ; (a) EXISTS corrélés du filtre en parcours complet par ligne (aucun index sur
+  `media_id` / `batch_id`), (b) jointure `cand` × vue en boucle imbriquée relisant `cand` à chaque ligne (81 s pour
+  20 000). `9689f21d` : **0056** (3 index) et **0057** (`CROSS JOIN LATERAL … OFFSET 0`, lecture par
+  candidat). Cas « fenêtre pleine » du test sans statistiques : vert sur 0057, rouge sur 0055.
+- **Résultat part I** : pgTAP 4896/4896, Jest 203/203 ; blocage pendant un FULL d'un autre grand livre, 10 passes
+  au repos : **max 4,1 s** (1,5-4,1 s), aucune requête coupée. NFR-005 (blocage 5 s) tenu sur le poste.
+- À faire relire par une personne (règle 4) : migrations 0054, 0055, 0057 (`offline_snapshot_source_rows`,
+  SECURITY DEFINER) et `snapshot-signer.worker.ts` (ordonnancement du signataire).
 
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
