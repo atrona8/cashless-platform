@@ -23,6 +23,7 @@ Numérotation définitive ; elle fait foi sur les numéros indicatifs du plan, d
 | `0048_offline_device_vendor.sql` | WP07 | accusés, statut daté, vendeur daté, configuration en vigueur, nom de station |
 | `0049_rights_hardening.sql` | WP08 | ce qui ne peut pas aller dans `post-roles.sql` (ex. `ALTER DEFAULT PRIVILEGES` si posé en migration) ; `lock_device` (cycle 2, ci-dessous) |
 | `0050_device_journal_import_cancel.sql` | WP20 | hors plan (décision du porteur du 03/11/2026) : `cancel_device_journal_import` |
+| `0051_event_device_sync_status_api.sql` | WP21 | hors plan (décision du porteur du 04/11/2026, ADR-148) : `event_device_sync_status_api(p_event uuid) RETURNS TABLE (sync_deadline timestamptz, device_id uuid, serial text, caught_up boolean, reason text)`, DEFINER, STABLE, lecture seule, EXECUTE à `cashless_app` seule |
 
 Nouveaux SQLSTATE (réservés, traduits par WP01 dans `apps/api/src/errors/sqlstate-map.ts`) :
 
