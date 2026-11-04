@@ -449,9 +449,16 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Mineurs : `gatedBody` lit sans filtre si l'identité n'a pas de `preAuthenticate` (pas fermé par principe ; test de
   présence du filtre en configuration réelle) ; consigner REJECTED au lieu de FAILED (écart au libellé du porteur).
 
+## WP21 lancé (04/11)
+- Réclamé par l'orchestrateur (lane-u, déjà à jour des lanes a à t). Trois implémenteurs en parallèle dans la lane :
+  A = T087 + T089 (`cashless_wp21`), B = T088 + correctif de `device-auth-matrix.spec.ts` (routes de WP18 absentes
+  de la matrice, hors carte, renforce ; `cashless_wp21b`), C = T090 + T091 (`cashless_wp21c`) ; `jest.config.cjs`
+  à C. `mark-status` et `move-task` par l'orchestrateur une fois les trois parts réunies.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
+| WP21 | u | in_progress | — | lancé le 04/11, trois parts (A, B, C) |
 | WP19 | s | approved (cycle 2) | d65390e2 | relu le 03/11 : 4 mutants tués (M6, M7a, M7b, M10), 139/139 maxWorkers=3 ; rejet cycle 1 (03/11) : B1 annulation, inversions CLOCK_SKEW (porteur), tests M6/M7 ; constats `rapports/WP19-review-cycle-1.md` |
 | WP20 | t | approved (cycle 2) | 8aabe5ae | relu le 03/11 : 7 mutants tués, 130/130 maxWorkers=3 ×2, pgTAP vert ; rejet cycle 1 (03/11) : 4 mutants survivants, import PENDING bloqué, corps lu avant le jeton ; `rapports/WP20-review-cycle-1.md` |
 | WP12 | l | approved | 3528e30d | relu le 03/11 : 92/92 maxWorkers=3 ×2, 8/9 mutants tués, 0 bloquant |
