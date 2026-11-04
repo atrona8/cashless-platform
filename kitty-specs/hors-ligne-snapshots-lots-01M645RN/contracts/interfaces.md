@@ -25,6 +25,7 @@ Numérotation définitive ; elle fait foi sur les numéros indicatifs du plan, d
 | `0050_device_journal_import_cancel.sql` | WP20 | hors plan (décision du porteur du 03/11/2026) : `cancel_device_journal_import` |
 | `0051_event_device_sync_status_api.sql` | WP21 | hors plan (décision du porteur du 04/11/2026, ADR-148) : `event_device_sync_status_api(p_event uuid) RETURNS TABLE (sync_deadline timestamptz, device_id uuid, serial text, caught_up boolean, reason text)`, DEFINER, STABLE, lecture seule, EXECUTE à `cashless_app` seule |
 | `0052_offline_exposure_bounded.sql` | WP21 | hors plan (NFR-003, décision du porteur du 04/11/2026) : `offline_device_exposure` réécrite par `CREATE OR REPLACE`, même signature, même résultat, mêmes droits (EXECUTE à `cashless_app` seule) ; coût borné par la fenêtre de tolérance au lieu de l'historique ; index `device_seq_registry_batch_idx`, `device_seq_registry_online_idx`, `device_seq_registry_unknown_idx`, `offline_batch_completed_idx` |
+| `0053_snapshot_source_not_materialized.sql` | WP21 | hors plan (NFR-005, décision du porteur du 04/11/2026) : `offline_snapshot_source_rows` réécrite par `CREATE OR REPLACE` avec l'expression `live` en `NOT MATERIALIZED`, mêmes colonnes, mêmes droits, `assert_tenant` en premier ; seul le plan change |
 
 Nouveaux SQLSTATE (réservés, traduits par WP01 dans `apps/api/src/errors/sqlstate-map.ts`) :
 
