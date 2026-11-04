@@ -55,3 +55,6 @@ __pycache__/
 .kittify/workspaces/
 .worktrees/
 kitty-ops/ops-index.jsonl
+
+# Archives de la version propre (tools/export/export-clean.sh)
+exports/
