@@ -523,6 +523,24 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
 `SNAPCONTENT_URL`/`SNAPSIGN_URL`. À ajouter à SKIP_LATENCY : `end-to-end/offline-journey`, `end-to-end/offline-minimal`
 (et vérifier les trois autres). NFR-001 n'éprouve pas l'import en concurrence (lot et paiement seuls) : à noter en relecture.
 
+## WP21 parts F, G, H (04/11) : corrections et mesures au repos
+- F : migration 0052 (`offline_device_exposure` bornée par la fenêtre de tolérance au lieu de l'historique, 4 index,
+  pgTAP d'équivalence `tests_offline_exposure_bounded`). Regroupement des lectures de conformité (5a2d0414) annulé
+  par l'orchestrateur (5b79f57c) : mesuré au repos, il triplait la durée d'un lot (122-136 s contre 44-68 s).
+- G : tranches coopératives (`processes/cooperative.ts`) dans l'empreinte, le chiffreur et la vérification du
+  signataire ; migration 0053 (`offline_snapshot_source_rows` sans matérialisation) ; clés publiques en base64 sur
+  une ligne (WP15) ; SKIP_LATENCY + étape CI « Parcours hors ligne » ; dette OP-N98 / ADR-151 (autres changements
+  60 s + boucle, test de borne, `it.failing` sur le strict). Blocage pendant un FULL : 1,8-12,1 s (agents en route),
+  à remesurer au repos.
+- H (profil par lot, au repos) : aucune requête ne croît avec le volume ; l'exposition plafonne au lot 3 (23 ms par
+  appel, ~23 % du lot). NFR-003 sur le poste : lots bimodaux 43-49 s ou 65-73 s, **p95 68,3 s** (seuil 60 s non
+  tenu, non desserré). ~22 000 requêtes par lot, la base n'en prend que 16-19 s : le reste est l'aller-retour
+  hôte ↔ VM colima et le CPU de Node.
+- **À décider par le porteur (NFR-003)** : (1) réduire les allers-retours (44 requêtes par opération ; chantier
+  large, la forme compte) ; (2) dénormaliser le montant débité dans `device_seq_registry` (≈10 s par lot ; schéma et
+  chemin d'écriture d'un plafond d'argent, lecture toujours par la base) ; (3) juger le seuil sur la CI Linux (sans
+  VM), mesures locales consignées comme dépendantes du poste. Rien de codé en attendant.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
