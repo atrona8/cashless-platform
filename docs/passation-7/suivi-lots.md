@@ -491,6 +491,15 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   (04/11) : **corriger dans WP21** (404 neutre ; renforcement, à consigner).
 - `architecture.spec` : « SELECT * sur media » sur `offline-snapshots.service.ts` (WP15), à examiner (commentaire ?).
 
+## WP21 parts D et E, suite (04/11)
+- D : `8c78d86c` (0051 `event_device_sync_status_api`, `device-sync-status` servie, rôles du risque ; a embarqué la
+  retouche de E sur `seq-gap.service.ts`) ; ADR-148 / OP-N96 intégrés par l'orchestrateur (`dc546b5d`).
+- E : `48747024` : fuite d'existence corrigée (404 neutre, levée de trou et import ; `journal-import-cycle2.spec.ts`
+  de WP20 passe de 403 à 404). Le contrat garde 403 (personne sans le rôle nulle part : identique, sans fuite).
+- `architecture.spec` : la garde des noms secrets (mission 4) échouait sur `pwd_pack_enc` dans
+  `offline-snapshots.service.ts` (WP15, approuvé malgré cela). Décision du porteur (04/11) : **exemption étroite**
+  (`pwd_pack_enc`, ce fichier seul, liste figée), ADR-150 + OP-N97 ; E l'applique (ADR-149 = 404 neutre).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
