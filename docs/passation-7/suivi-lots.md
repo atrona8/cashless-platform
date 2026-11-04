@@ -455,6 +455,24 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   de la matrice, hors carte, renforce ; `cashless_wp21b`), C = T090 + T091 (`cashless_wp21c`) ; `jest.config.cjs`
   à C. `mark-status` et `move-task` par l'orchestrateur une fois les trois parts réunies.
 
+## WP21 parts B et C rendues (04/11) et décisions du porteur
+- B (`56dfe639`, `cace1dce`, `da6f8160`) : isolation, secrets (canari), production ; matrice des routes de terminal
+  13/13 (routes de WP18 et snapshots ajoutées) ; `production-guard.spec.ts` complété (`RefusingEntryEncryptor`,
+  `FakeOperationProcessor`). 61/61 sur `cashless_wp21b`. Lignes > 100 car. (Prettier à la fusion).
+- C (`a7e6b0ba`, `4c255e7a`) : CI, `SKIP_LATENCY`, levées N57 N58 N68 N69 N75 (pg_prove vert), ADR-141 à 147,
+  OP-N92 à N95, ADR-137 corrigé. Matrice : scratchpad de la session 8b13eab6 (`wp21-acceptance-matrix.md`).
+- Décisions du porteur (04/11) :
+  - OP-N95(3) : **refuser au démarrage** en production un `DATABASE_URL_MAINT` vers le propriétaire ou un
+    superutilisateur, avec test (renforcement, WP21).
+  - `GET /device/seq-status` et `GET /events/{event_id}/device-sync-status` (contrat, non servies) : **servies dans
+    la mission 7** (WP21, hors carte), avec cas d'isolation.
+  - 403 au lieu du 404 neutre pour une personne d'un autre prestataire : vérifier l'absence de fuite d'existence,
+    puis décider.
+  - OP-N93(a) (clés publiques par prestataire) : **confirmé en 12b**.
+- Reste à WP21 : FR-042 (`vendor_session_id` au contrat), test FR-018 (`VOID_CONFLICT`), tests de borne d'OP-N95(1)(4),
+  N93(a)(c), N94(1)(3) ; `GET /devices/{id}/journal-imports/{import_id}` en 404 pour son superviseur (à examiner) ;
+  `interfaces.md` et `quickstart.md` (orchestrateur, sur feat).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
