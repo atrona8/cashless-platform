@@ -509,6 +509,20 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
 - Script d'export reproductible ; contrôle de l'archive (aucun secret, aucun fichier interne) ; après relecture de
   WP21, avant accept/merge. Voir `docs/Delegation-applications-clientes.docx` (§5, §5.1, §8).
 
+## WP21 part A (04/11) : seuils non tenus et décisions du porteur
+Part A rendue (commits df77c83a … ba994549) : parcours 8/8, §13 7/7, concurrence 3/3, FULL 50k 27,6 s (base neuve),
+DELTA servi p95 60 ms. Seuils non tenus (poste local, charge 2,6-3,8, colima 3 Gio), jamais desserrés :
+1. NFR-003 lot de 500 : p95 83,6 s (coût par opération croissant avec le volume, WP18/WP19). **Porteur : corriger
+   dans la mission 7** (part F).
+2. NFR-005 blocage pendant un FULL d'un autre grand livre : 8,9 à 43,3 s (construction du FULL dans la boucle
+   d'événements, WP11). **Porteur : corriger dans la mission 7** (part G).
+3. NFR-005 autres changements : 60,9 à 62,2 s (`DELTA_AFTER_MS` = 60 s + signature/publication). **Porteur : dette
+   nommée** (OP + ADR + test de borne + report PROMPTS/PRD ; consignation part G).
+Défauts annexes : `snapshot_keys[].public_key` en base64 coupé à 76 colonnes (WP15, à corriger, part G) ;
+horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retombe sur `cashless_test` pour
+`SNAPCONTENT_URL`/`SNAPSIGN_URL`. À ajouter à SKIP_LATENCY : `end-to-end/offline-journey`, `end-to-end/offline-minimal`
+(et vérifier les trois autres). NFR-001 n'éprouve pas l'import en concurrence (lot et paiement seuls) : à noter en relecture.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
