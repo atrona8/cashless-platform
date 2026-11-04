@@ -581,6 +581,20 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
 - À faire relire par une personne (règle 4) : migrations 0054, 0055, 0057 (`offline_snapshot_source_rows`,
   SECURITY DEFINER) et `snapshot-signer.worker.ts` (ordonnancement du signataire).
 
+## WP21 part J (04/11, nuit) : NFR-003, moins d'allers-retours (décision du porteur)
+- Inventaire (`rapports/NFR-003-inventaire.md`, `8e5f748a`) : 48,5 requêtes par opération. Porteur : étapes 1 et 2.
+- `6a9f18f2` : état du lot relu dans la transaction de l'opération, après `lock_device` (−3, plus strict) ;
+  événement lu une fois par résolution de configuration (−2, en ligne compris) ; mémoire de référence limitée à un lot
+  (contrat et législation immuables par déclencheur, partie plateforme de `PLT_REDEV`) ; droits de place non lus hors
+  ligne. Aucun statut, configuration datée, entrée de conformité ni solde mémorisés. **39,5 requêtes par opération.**
+- Unitaires + intégration offline, payments, topups, configuration, reversals : 2122 verts ; `offline-isolation`
+  rouge en passe parallèle seulement (comparaison d'un état global), verte seule 11/11.
+- **Série NFR-003 (20 lots de 500, au repos) : p95 43,4 s, puis 42,8 s** (36,7-45,2 s) : seuil 60 s **tenu** sur le
+  poste ; plus de lots bimodaux. Étape 3 (conformité en une fonction SQL) inutile pour le seuil : non lancée.
+- À faire relire par une personne : `batch-runner.ts` (garde), `offline-operation.processor.ts`,
+  `sql-config-resolver.ts` (périmètre de la mémoire ; `platform-party` non protégé par déclencheur, seule
+  mémorisation fragile).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
