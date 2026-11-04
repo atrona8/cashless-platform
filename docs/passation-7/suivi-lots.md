@@ -500,6 +500,15 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   `offline-snapshots.service.ts` (WP15, approuvé malgré cela). Décision du porteur (04/11) : **exemption étroite**
   (`pwd_pack_enc`, ce fichier seul, liste figée), ADR-150 + OP-N97 ; E l'applique (ADR-149 = 404 neutre).
 
+## À faire avant la fin de la mission 7 : version propre exposée avec l'API (demande du porteur, 04/11)
+- Deux archives datées, séparées (décision du porteur) :
+  1. **Kit client** : contrat `openapi.yaml`, types générés (TypeScript, Dart), `tag-format` Dart et ses vecteurs,
+     documentation de synthèse, guide d'accès, serveur simulé depuis le contrat ; aucun code serveur.
+  2. **API exécutable nettoyée** (collègue / environnement d'intégration) : code de l'API et des paquets, schéma SQL,
+     lancement local avec Docker et les faux ; sans `kitty-specs/`, `docs/passation-*`, notes de session, secrets.
+- Script d'export reproductible ; contrôle de l'archive (aucun secret, aucun fichier interne) ; après relecture de
+  WP21, avant accept/merge. Voir `docs/Delegation-applications-clientes.docx` (§5, §5.1, §8).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
