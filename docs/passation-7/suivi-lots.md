@@ -482,6 +482,15 @@ Notes à transmettre aux lots suivants (à reprendre dans les prompts d'arbitrag
   rôles = ceux de `getEventOfflineRisk`, 404 neutre pour un autre prestataire, contrat complété ;
   `seq-status` servie au terminal SUSPENDU (comme les lots) : gardé, à consigner et préciser au contrat.
 
+## WP21 part E (04/11) et décision du porteur
+- E : `cfef4f50` : garde de démarrage de `DATABASE_URL_MAINT` en production (OP-N95(3) levé ; `maintenance-role-guard.ts`,
+  `maintenance-db.module.ts` hors carte, relecture humaine) ; `offline-bounds.spec.ts` (N95(1)(4), N93(a)(c), N94(1)(3),
+  FR-018 `VOID_CONFLICT`) ; N93(a) confirmé en 12b. 18/18.
+- Vérification 403/404 : aucune fuite entre prestataires ; **fuite d'existence dans un prestataire** (SUPERVISOR d'un
+  autre organisateur : 403 si le terminal existe, 404 sinon, sur la levée de trou et l'import). Décision du porteur
+  (04/11) : **corriger dans WP21** (404 neutre ; renforcement, à consigner).
+- `architecture.spec` : « SELECT * sur media » sur `offline-snapshots.service.ts` (WP15), à examiner (commentaire ?).
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
