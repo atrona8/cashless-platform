@@ -15,10 +15,13 @@ npm run check -w @cashless/contracts
 npm run reset-db -w @cashless/ledger-sql && (cd apps/api && SKIP_LATENCY=1 npx jest)
 (cd apps/api && npx jest --runInBand end-to-end/offline-latency end-to-end/snapshot-latency end-to-end/offline-concurrency)
 
-# Processus
-node apps/api/dist/main.snapshot-content.js --once   # une passe de préparation ; --list : grands livres dus
-node apps/api/dist/main.snapshot-signer.js --once    # signe et publie les brouillons prêts
-node apps/api/dist/main.maintenance.js --once   # purges (rôle cashless_maint)
+# Processus (corrigé le 04/11/2026, WP21 : construire d'abord, lancer depuis apps/api avec tsx ;
+# DATABASE_URL_SNAPCONTENT, DATABASE_URL_SNAPSIGN et DATABASE_URL_MAINT viennent de tools/dev-db/env.sh,
+# sinon le processus retombe sur cashless_test)
+npm run build -w @cashless/api && source tools/dev-db/env.sh
+(cd apps/api && npm run start:snapshot-content -- --once)  # une passe de préparation ; --list : grands livres dus
+(cd apps/api && npm run start:snapshot-signer -- --once)   # signe et publie les brouillons prêts
+(cd apps/api && npm run start:maintenance -- --once)       # purges (rôle cashless_maint)
 ```
 
 Parcours de démonstration (`apps/api/test/integration/end-to-end/offline-journey.spec.ts`) :

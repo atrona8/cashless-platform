@@ -21,7 +21,8 @@ Numérotation définitive ; elle fait foi sur les numéros indicatifs du plan, d
 | `0046_offline_batches.sql` | WP05 | lots, registre, `RETRY`, résultats, import, trous |
 | `0047_offline_anomalies.sql` | WP06 | colonnes d'anomalie, fonctions d'anomalie, `wallet_status_history` |
 | `0048_offline_device_vendor.sql` | WP07 | accusés, statut daté, vendeur daté, configuration en vigueur, nom de station |
-| `0049_rights_hardening.sql` | WP08 | ce qui ne peut pas aller dans `post-roles.sql` (ex. `ALTER DEFAULT PRIVILEGES` si posé en migration) |
+| `0049_rights_hardening.sql` | WP08 | ce qui ne peut pas aller dans `post-roles.sql` (ex. `ALTER DEFAULT PRIVILEGES` si posé en migration) ; `lock_device` (cycle 2, ci-dessous) |
+| `0050_device_journal_import_cancel.sql` | WP20 | hors plan (décision du porteur du 03/11/2026) : `cancel_device_journal_import` |
 
 Nouveaux SQLSTATE (réservés, traduits par WP01 dans `apps/api/src/errors/sqlstate-map.ts`) :
 
@@ -72,7 +73,10 @@ Forme d'une entrée (`entry jsonb`, clés exactes, toutes présentes, `null` per
 -- WP03 : source, brouillon, publication (rôles : content = cashless_snapcontent, signer = cashless_snapsign)
 offline_snapshot_targets()                     -- content ; STABLE
   RETURNS TABLE (operator_id uuid, ledger_id uuid, event_id uuid, last_version bigint,
-                 last_generated_at timestamptz, last_full_version bigint, eligible_devices int)
+                 last_generated_at timestamptz, last_full_version bigint, eligible_devices int,
+                 max_snapshot_age interval)     -- colonne ajoutée par WP03 (rapporté le 04/11/2026)
+discard_open_offline_snapshot_drafts(p_ledger uuid) RETURNS int   -- content ; DEFINER ; brouillons OPEN|READY
+                  -- orphelins du grand livre jetés (jamais PUBLISHED), nombre rendu (WP03 cycle 3, B1)
 offline_snapshot_source(p_ledger uuid)         -- content ; STABLE ; état complet, retirés compris
   RETURNS TABLE (token_hash bytea, media_id uuid, entry jsonb, pwd_pack_enc bytea, pwd_pack_dek_id uuid,
                  key_index int, nfc_uid bytea, removed boolean)
@@ -147,6 +151,10 @@ open_imported_batch(p_import uuid, p_batch uuid, p_seq_from bigint, p_prev_chain
                     p_last_chain_hash bytea, p_signature bytea) RETURNS offline_batch
                   -- jumelle d'open_offline_batch pour un terminal REVOKED, canal IMPORT, mêmes contrôles de chaîne
 finish_device_journal_import(p_import uuid, p_status text, p_result jsonb) RETURNS void   -- APPLIED | FAILED
+cancel_device_journal_import(p_import uuid, p_actor uuid, p_reason text) RETURNS void
+                  -- 0050 (WP20 cycle 2, décision du porteur du 03/11) ; cashless_app ; DEFINER, assert_tenant ;
+                  -- p_reason REJECTED|EXPIRED|FAILED ; PENDING -> REJECTED (jamais FAILED : garde de 0046) ;
+                  -- demande encore valable -> CL001 ; import non PENDING -> CL053 ; idempotente ; p_actor non contrôlé
 device_journal_import_view(p_import uuid, p_with_batches boolean DEFAULT false) RETURNS device_journal_import
                   -- STABLE ; batches vidés sauf p_with_batches
 device_journal_imports_processing() RETURNS TABLE (import_id uuid, operator_id uuid)
@@ -215,6 +223,10 @@ Rôles nouveaux créés dans `post-roles.sql` : `cashless_snapcontent`, `cashles
 corrigé par R-30.12, plus les fonctions de ce fichier selon le rôle indiqué en commentaire (« content », « signer »,
 `cashless_app` par défaut pour le reste). Fichier commun de tests : `packages/ledger-sql/tests/_grants_for_tests.sql`
 (inclus par `\ir` après `post-roles.sql` dans les 41 suites concernées).
+
+`lock_device(p_device uuid, p_mode text) RETURNS boolean` (0049, WP08 cycle 2) : DEFINER, `cashless_app` ; prend le
+verrou de ligne du terminal (`'UPDATE'` ou `'NO KEY UPDATE'`) à la place de l'API, qui n'a plus d'`UPDATE` sur
+`device` (OP-N69) ; faux si le terminal n'est pas au prestataire courant. Rapporté le 04/11/2026.
 
 ## 8. API — ports et modules partagés
 
