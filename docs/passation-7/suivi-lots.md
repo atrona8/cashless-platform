@@ -541,6 +541,24 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
   chemin d'écriture d'un plafond d'argent, lecture toujours par la base) ; (3) juger le seuil sur la CI Linux (sans
   VM), mesures locales consignées comme dépendantes du poste. Rien de codé en attendant.
 
+## WP21 part I (04/11, soir) : blocage visible en 5 s (NFR-005), reprise après redémarrage du poste
+- Trouvé non commité dans la lane u après redémarrage (colima arrêté) : migration 0054 (`offline_snapshot_source_rows`
+  par candidats indexés, DELTA seul ; FULL inchangé) + pgTAP d'équivalence (vert, 29 assertions avec 0052), détachement
+  du FULL dans le travailleur de contenu, traces de mesure `@@`.
+- Mesure (au repos, 0054) : blocage 1,7-7,3 s, **max 7,3 s** (seuil 5 s). Cause de l'essai lent : le **signataire**
+  traite ses brouillons en série ; le DELTA du grand livre A attend ~4,3 s la vérification et la publication du FULL du
+  grand livre B. Le contenu, lui, ne bloque plus.
+- Reste coûteux sans être la cause : `sourceDelta` 0,3 s au repos (0,55-0,95 s en charge), dont ~245 ms pour détecter
+  les retraits (anti-jointure sur les 50 000 jetons) ; `stateHashes` 0,25-0,4 s (état complet lu à chaque changement).
+- `95243ac7` (lane u) : signataire par grand livre (brouillons d'un grand livre en série et dans l'ordre, grands
+  livres en parallèle, détachement sur FULL, `--once` attend tout ; vérification et signature inchangées), traces
+  retirées, harnais d'intégration du signataire en `settleAll`, `source-plan.spec` adapté à 0054. 203/203 (unitaires,
+  intégration signataire et contenu, parcours hors ligne, secrets) en `--runInBand`.
+- Remesure du blocage : passe 1 (charge 2,9) **max 4,1 s** (1,9-4,1 s), verte ; passe 2 **max 8,5 s** (2,7-8,5 s),
+  rouge, mais poste chargé (compilation LLVM par Homebrew lancée à 19h38 hors session, charge jusqu'à 13,7 ; pose du
+  jeu 34-44 s au lieu de 18-19 s). **À remesurer au repos** (3 passes) avant de conclure ; marge faible (3-4 s
+  typiques) : pistes restantes, détection des retraits (~245 ms) et `stateHashes` (0,25-0,4 s) à chaque passage.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|
