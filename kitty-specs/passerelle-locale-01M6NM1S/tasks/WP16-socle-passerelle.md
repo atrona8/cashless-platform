@@ -8,10 +8,11 @@ requirement_refs:
 - NFR-009
 - C-007
 - C-011
+- FR-002
 planning_base_branch: feat/passerelle-locale
 merge_target_branch: feat/passerelle-locale
 branch_strategy: Planning artifacts for this mission were generated on feat/passerelle-locale. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/passerelle-locale unless the human explicitly redirects the landing branch.
-subtasks: [T070, T071, T072, T073, T074]
+subtasks: [T070, T071, T072, T073, T074, T118]
 phase: Phase 4 - Passerelle
 agent: claude
 history:
@@ -20,16 +21,19 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/gateway/src/processes/
-create_intent: [apps/gateway/package.json, apps/gateway/tsconfig.json, apps/gateway/tsconfig.build.json, apps/gateway/jest.config.cjs, apps/gateway/migrations/edge-0001_schema.sql, apps/gateway/src/main.ts, apps/gateway/src/config/config.ts, apps/gateway/src/db/pool.ts, apps/gateway/src/db/gateway-tx.ts, apps/gateway/src/db/migrate.ts, apps/gateway/src/key-store/hardware-keystore.port.ts, apps/gateway/src/key-store/fake-hardware-keystore.ts, apps/gateway/src/clock/gateway-clock.ts, apps/gateway/src/processes/bootstrap.ts, apps/gateway/src/processes/gateway.module.ts, apps/gateway/src/processes/startup-guard.ts, apps/gateway/src/testing/failpoints.ts, apps/gateway/test/startup/architecture.spec.ts, apps/gateway/test/startup/config.spec.ts, apps/gateway/test/startup/startup-guard.spec.ts, apps/gateway/test/startup/failpoints.spec.ts, apps/gateway/test/startup/clock.spec.ts, apps/gateway/test/startup/schema.spec.ts, apps/gateway/test/startup/keystore.spec.ts]
+create_intent: [apps/gateway/package.json, apps/gateway/tsconfig.json, apps/gateway/tsconfig.build.json, apps/gateway/jest.config.cjs, apps/gateway/migrations/edge-0001_schema.sql, apps/gateway/src/main.ts, apps/gateway/src/config/config.ts, apps/gateway/src/db/pool.ts, apps/gateway/src/db/gateway-tx.ts, apps/gateway/src/db/migrate.ts, apps/gateway/src/key-store/hardware-keystore.port.ts, apps/gateway/src/key-store/fake-hardware-keystore.ts, apps/gateway/src/clock/gateway-clock.ts, apps/gateway/src/processes/bootstrap.ts, apps/gateway/src/processes/gateway.module.ts, apps/gateway/src/processes/startup-guard.ts, apps/gateway/src/testing/failpoints.ts, apps/gateway/test/startup/architecture.spec.ts, apps/gateway/test/startup/config.spec.ts, apps/gateway/test/startup/startup-guard.spec.ts, apps/gateway/test/startup/failpoints.spec.ts, apps/gateway/test/startup/clock.spec.ts, apps/gateway/test/startup/schema.spec.ts, apps/gateway/test/startup/keystore.spec.ts, apps/gateway/src/enrollment/enrollment.service.ts]
 execution_mode: code_change
 model: sonnet
-owned_files: [apps/gateway/package.json, apps/gateway/tsconfig*.json, apps/gateway/jest.config.cjs, apps/gateway/migrations/**, apps/gateway/src/main.ts, apps/gateway/src/config/**, apps/gateway/src/db/**, apps/gateway/src/key-store/**, apps/gateway/src/clock/**, apps/gateway/src/processes/**, apps/gateway/src/testing/**, apps/gateway/test/startup/**]
+owned_files: [apps/gateway/package.json, apps/gateway/tsconfig*.json, apps/gateway/jest.config.cjs, apps/gateway/migrations/**, apps/gateway/src/main.ts, apps/gateway/src/config/**, apps/gateway/src/db/**, apps/gateway/src/key-store/**, apps/gateway/src/clock/**, apps/gateway/src/processes/**, apps/gateway/src/testing/**, apps/gateway/test/startup/**, apps/gateway/src/enrollment/**]
 role: implementer
 tags: []
 tracker_refs: []
 ---
 
 # Work Package Prompt: WP16 – Socle de la passerelle
+
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.1 et § 13.2 : T118, enrôlement dans `apps/gateway/src/enrollment/**`, avec tests (fichier invalide refusé, fichier supprimé, refus de servir sans enrôlement, exactement deux clés de site) ; `edge_site_order_key` dans `edge-0001` ; clé `GATEWAY_ADMIN_PORT`.
+
 
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour les noms de § 12.9 et `gateway.module.ts`.
 

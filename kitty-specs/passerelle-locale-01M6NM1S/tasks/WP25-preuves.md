@@ -23,6 +23,8 @@ requirement_refs:
 - SC-007
 - C-001
 - C-013
+- NFR-007
+- NFR-013
 planning_base_branch: feat/passerelle-locale
 merge_target_branch: feat/passerelle-locale
 branch_strategy: Planning artifacts for this mission were generated on feat/passerelle-locale. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/passerelle-locale unless the human explicitly redirects the landing branch.
@@ -35,16 +37,19 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/gateway/test/e2e/
-create_intent: [apps/gateway/test/support/tcp-relay.ts, apps/gateway/test/support/two-process-bench.ts, apps/gateway/test/support/disposable-databases.ts, apps/gateway/test/support/canary.ts, apps/gateway/test/support/queue-generator.ts, apps/gateway/test/support/sql-probes.ts, apps/gateway/test/e2e/jest.e2e.config.cjs, apps/gateway/test/e2e/sc-001-journey.spec.ts, apps/gateway/test/e2e/exclusion-under-load.spec.ts, apps/gateway/test/e2e/release-10000.spec.ts, apps/gateway/test/e2e/replay-100.spec.ts, apps/gateway/test/e2e/crash-points.spec.ts, apps/gateway/test/e2e/latency-two-process.spec.ts, apps/gateway/test/e2e/handover-and-freshness.spec.ts, apps/gateway/test/e2e/forced-resume.spec.ts, apps/gateway/test/e2e/production-refusals.spec.ts, apps/gateway/test/e2e/canary-end-to-end.spec.ts, apps/gateway/test/e2e/scoping.spec.ts, apps/gateway/test/e2e/contract-stability.spec.ts, apps/gateway/test/e2e/purge-end-to-end.spec.ts, apps/gateway/test/e2e/acceptance-matrix.spec.ts, apps/gateway/test/e2e/consignation.spec.ts, apps/gateway/test/e2e/ci-workflow.spec.ts, .github/workflows/ledger-tests.yml, .github/CI.md]
+create_intent: [apps/gateway/test/support/tcp-relay.ts, apps/gateway/test/support/two-process-bench.ts, apps/gateway/test/support/disposable-databases.ts, apps/gateway/test/support/canary.ts, apps/gateway/test/support/queue-generator.ts, apps/gateway/test/support/sql-probes.ts, apps/gateway/test/e2e/jest.e2e.config.cjs, apps/gateway/test/e2e/sc-001-journey.spec.ts, apps/gateway/test/e2e/exclusion-under-load.spec.ts, apps/gateway/test/e2e/release-10000.spec.ts, apps/gateway/test/e2e/replay-100.spec.ts, apps/gateway/test/e2e/crash-points.spec.ts, apps/gateway/test/e2e/latency-two-process.spec.ts, apps/gateway/test/e2e/handover-and-freshness.spec.ts, apps/gateway/test/e2e/forced-resume.spec.ts, apps/gateway/test/e2e/production-refusals.spec.ts, apps/gateway/test/e2e/canary-end-to-end.spec.ts, apps/gateway/test/e2e/scoping.spec.ts, apps/gateway/test/e2e/contract-stability.spec.ts, apps/gateway/test/e2e/purge-end-to-end.spec.ts, apps/gateway/test/e2e/acceptance-matrix.spec.ts, apps/gateway/test/e2e/consignation.spec.ts, apps/gateway/test/e2e/ci-workflow.spec.ts, .github/workflows/ledger-tests.yml, .github/CI.md, .github/CODEOWNERS]
 execution_mode: code_change
 model: sonnet
-owned_files: [apps/gateway/test/support/**, apps/gateway/test/e2e/**, .github/workflows/ledger-tests.yml, .github/CI.md]
+owned_files: [apps/gateway/test/support/**, apps/gateway/test/e2e/**, .github/workflows/ledger-tests.yml, .github/CI.md, .github/CODEOWNERS]
 role: implementer
 tags: []
 tracker_refs: []
 ---
 
 # Work Package Prompt: WP25 – Preuves de bout en bout, CI et consignation
+
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.4, § 13.6, § 13.7, § 13.8 : pas de `EDGE_PACK_DELAY_SECONDS` à tester ; `consignation.spec.ts` sur les onze écarts ; `CODEOWNERS` et branchement CI à toi ; NFR-006 échoue au-delà de 10 min, NFR-008 sur 50 blocages, NFR-007 et NFR-013 sont à toi.
+
 
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour § 12.8 et le rôle de référence de NFR-005.
 

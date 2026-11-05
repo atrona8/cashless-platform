@@ -7,6 +7,7 @@ requirement_refs:
 - FR-011
 - FR-012
 - NFR-005
+- C-012
 planning_base_branch: feat/passerelle-locale
 merge_target_branch: feat/passerelle-locale
 branch_strategy: Planning artifacts for this mission were generated on feat/passerelle-locale. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/passerelle-locale unless the human explicitly redirects the landing branch.
@@ -19,7 +20,7 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/gateway/src/operations/sales/
-create_intent: [apps/gateway/src/operations/sales/taps.service.ts, apps/gateway/src/operations/sales/payments.service.ts, apps/gateway/src/operations/sales/reversals.service.ts, apps/gateway/src/operations/sales/sales.controller.ts, apps/gateway/src/operations/sales/unavailable-operations.ts, apps/gateway/src/operations/sales/sales.module.ts, apps/gateway/test/sales/taps.spec.ts, apps/gateway/test/sales/payments.spec.ts, apps/gateway/test/sales/reversals.spec.ts, apps/gateway/test/sales/refusals.spec.ts, apps/gateway/test/sales/reference-scenarios.spec.ts, apps/gateway/test/sales/contract.spec.ts, apps/gateway/test/sales/latency.spec.ts]
+create_intent: [apps/gateway/src/operations/sales/taps.service.ts, apps/gateway/src/operations/sales/payments.service.ts, apps/gateway/src/operations/sales/reversals.service.ts, apps/gateway/src/operations/sales/sales.controller.ts, apps/gateway/src/operations/sales/unavailable-operations.ts, apps/gateway/src/operations/sales/sales.module.ts, apps/gateway/test/sales/taps.spec.ts, apps/gateway/test/sales/payments.spec.ts, apps/gateway/test/sales/reversals.spec.ts, apps/gateway/test/sales/refusals.spec.ts, apps/gateway/test/sales/reference-scenarios.spec.ts, apps/gateway/test/sales/contract.spec.ts, apps/gateway/test/sales/latency.spec.ts, apps/gateway/test/sales/shared-rules-parity.spec.ts]
 execution_mode: code_change
 model: sonnet
 owned_files: [apps/gateway/src/operations/sales/**, apps/gateway/test/sales/**]
@@ -29,6 +30,9 @@ tracker_refs: []
 ---
 
 # Work Package Prompt: WP21 – Ventes sur la passerelle
+
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.6 : ajoute le test de borne d'OP-N109, `shared-rules-parity.spec.ts`.
+
 
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour l'annulation par le vendeur seul (§ 12.10).
 
