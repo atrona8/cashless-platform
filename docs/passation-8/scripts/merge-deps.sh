@@ -21,5 +21,5 @@ for l in $deps "$@"; do
     git commit -q --no-edit 2>/dev/null
   fi
 done
-bash "$R/docs/passation-7/scripts/align-lane.sh" "$L" 2>&1 | grep -v 'spec-kitty guard'
+bash "$R/docs/passation-8/scripts/align-lane.sh" "$L" 2>&1 | grep -v 'spec-kitty guard'
 if git grep -q '^<<<<<<< ' -- . ':!*.md'; then echo "MARQUEURS DE CONFLIT RESTANTS"; exit 1; fi
