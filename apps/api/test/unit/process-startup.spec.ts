@@ -5,7 +5,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import request from 'supertest';
-import { APP_CONFIG, loadConfig, type AppConfig } from '../../src/config/config';
+import { APP_CONFIG, corsAllowAll, loadConfig, type AppConfig } from '../../src/config/config';
 import { FakeKms } from '../../src/kms/fake-kms';
 import { KMS_PROVIDER } from '../../src/kms/kms.module';
 import { FakeInProductionError } from '../../src/kms/production-guard';
@@ -40,6 +40,45 @@ describe('démarrage réel des processus', () => {
     } finally {
       await app.close();
     }
+  });
+
+  describe('CORS (ADR-154)', () => {
+    const preflight = async (): Promise<string | undefined> => {
+      const create = jest.spyOn(NestFactory, 'create');
+      await serve(WithoutOptionalServices, 0);
+      const app = (await create.mock.results[0]?.value) as INestApplication;
+      try {
+        const res = await request(app.getHttpServer())
+          .options('/v1/absente')
+          .set('Origin', 'https://client.example')
+          .set('Access-Control-Request-Method', 'POST');
+        return res.headers['access-control-allow-origin'];
+      } finally {
+        await app.close();
+      }
+    };
+    afterEach(() => {
+      delete process.env.CORS_ALLOW_ALL;
+    });
+
+    it('sans le réglage, aucun en-tête CORS', async () => {
+      await expect(preflight()).resolves.toBeUndefined();
+    });
+
+    it('avec CORS_ALLOW_ALL=1, toutes les origines', async () => {
+      process.env.CORS_ALLOW_ALL = '1';
+      await expect(preflight()).resolves.toBe('*');
+    });
+
+    it('refusé en production, et toute autre valeur refusée', () => {
+      expect(() => corsAllowAll({ NODE_ENV: 'production', CORS_ALLOW_ALL: '1' })).toThrow(
+        /interdit en production/,
+      );
+      expect(() => corsAllowAll({ NODE_ENV: 'development', CORS_ALLOW_ALL: 'true' })).toThrow(
+        /1 attendu/,
+      );
+      expect(corsAllowAll({ NODE_ENV: 'production' })).toBe(false);
+    });
   });
 
   it('un processus sans route et sans service optionnel démarre', async () => {

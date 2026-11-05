@@ -2333,3 +2333,14 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   sécurité : rien n'est affaibli en production.
 - **Test de borne.** `test/integration/docs/api-docs.spec.ts` : 404 des trois routes en configuration de production,
   absence de CSP posée sur les autres routes, `main.ts` seul point d'entrée qui monte la documentation.
+
+## ADR-154 — CORS ouvert à toutes les origines, hors production seulement
+
+- **Décision du porteur (05/11/2026).** Pour partager un serveur de développement (tunnel ngrok) avec des clients web,
+  `CORS_ALLOW_ALL=1` pose `Access-Control-Allow-Origin: *`. Sans le réglage, aucun en-tête CORS.
+- **Risque.** N'importe quel site peut appeler ce serveur depuis un navigateur. Pas d'envoi de cookies (`credentials`
+  non activé) ; l'API s'authentifie par en-têtes. Le serveur concerné ne porte que des données de test.
+- **Sécurité.** Aucun affaiblissement en production : le démarrage y est refusé si le réglage est posé. La politique
+  CORS de production reste à décider (origines du back-office, mission 11 ou 13).
+- **Test de borne.** `test/unit/process-startup.spec.ts` : aucun en-tête sans le réglage, refus en production.
+

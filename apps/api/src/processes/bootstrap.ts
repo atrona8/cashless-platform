@@ -11,7 +11,7 @@ import type {
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { mountApiDocs } from '../docs/api-docs';
-import { API_PREFIX, APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
+import { API_PREFIX, APP_CONFIG, corsAllowAll, loadConfig, type AppConfig } from '../config/config';
 import { CUSTOMER_IDENTITY } from '../customer-identity/customer-identity.port';
 import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
 import { OFFLINE_OPERATION_PROCESSOR } from '../offline/batches/batch.types';
@@ -107,6 +107,7 @@ export async function serve(
 ): Promise<void> {
   // Même environnement que la configuration injectée (APP_CONFIG) : il faut le certificat avant de créer le serveur.
   const transport = loadConfig();
+  const cors = corsAllowAll();
   const httpsOptions = tlsServerOptions(transport);
   assertSafeTransport({
     production: transport.production,
@@ -123,6 +124,8 @@ export async function serve(
   });
   const config = assertProcessIsSafe(app);
   applyTrustProxy(app, config.trustProxyHops);
+  // Avant toute route, documentation comprise. Sans cookie : l'authentification passe par des en-têtes.
+  if (cors) app.enableCors({ origin: '*', exposedHeaders: '*' });
   // `POST /offline-batches` lit son corps lui-même (1 Mio), avant l'analyseur global qui reste à 100 ko (WP18).
   applyBatchBody(app);
   // Documentation interactive : API publique seulement, jamais en production (décidé au démarrage, routes non montées).

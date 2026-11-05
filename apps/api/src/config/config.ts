@@ -726,6 +726,19 @@ function orphanDiscardSeconds(value: string | undefined): number {
   return seconds;
 }
 
+/**
+ * CORS ouvert à toutes les origines (`CORS_ALLOW_ALL=1`, ADR-154) : partage d'un serveur de développement avec des
+ * clients web. Refusé au démarrage en production ; sans le réglage, aucun en-tête CORS n'est posé.
+ */
+export function corsAllowAll(env: NodeJS.ProcessEnv = process.env): boolean {
+  const value = env.CORS_ALLOW_ALL;
+  if (value === undefined || value === '') return false;
+  if (value !== '1') throw new Error(`CORS_ALLOW_ALL : 1 attendu (reçu « ${value} »)`);
+  if (nodeEnv(env.NODE_ENV) === 'production')
+    throw new Error('CORS_ALLOW_ALL interdit en production');
+  return true;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const production = nodeEnv(env.NODE_ENV) === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
