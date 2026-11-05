@@ -595,6 +595,18 @@ horloge Docker en avance de 2,6 s sur Node (poste) ; `test/support/db.ts` retomb
   `sql-config-resolver.ts` (périmètre de la mémoire ; `platform-party` non protégé par déclencheur, seule
   mémorisation fragile).
 
+## Acceptation, fusion, export (05/11/2026)
+- Matrice d'acceptation finale sur la coordination (`b0c0f2b5`) : 44/44 pass, 5 invariants confirmés (rejoués :
+  76/76 ; `.sql` générés = sortie du générateur ; aucune dépendance). Accept `2865183c`.
+- Consolidate (squash) `f3bef0c0` sur feat après 6 essais (voir mémoire « pièges de consolidate ») : coordination
+  fusionnée dans les lanes, lanes chaînées (code en conflit pris de lane-u, union testée), kitty-specs des lanes
+  aligné (feat, sinon coordination), feat fusionné dans la coordination. Code de feat identique à la tête testée
+  `2d568283` (seul `tools/export` en plus, venu de feat).
+- Export (`tools/export/export-clean.sh`, df5c229b) : `exports/cashless-kit-client-2026-11-05-df5c229b.tar.gz` (788
+  fichiers) et `exports/cashless-api-2026-11-05-df5c229b.tar.gz` (1817 fichiers), contrôles passés, sommes SHA256.
+- Reste : revue post-fusion, reformatage Prettier (100 car.), PR vers main (sur demande), relecture humaine des
+  fichiers sensibles.
+
 ## État des lots
 | Lot | Lane | État | Commit | Notes |
 |---|---|---|---|---|

@@ -565,7 +565,7 @@ classDiagram
   PspChargeback "0..1" --> "1" Transaction : CHARGEBACK
 ```
 
-## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », 🔎 implémentée, relue le 04/11/2026)
+## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », ✅ mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir)
 
 > **Recalée le 05/11/2026 sur les migrations réelles** `0043` à `0057` (`packages/ledger-sql/migrations`) : 10 tables
 > nouvelles (`0044` : 4, `0045` : 1, `0046` : 3, `0047` : 1, `0048` : 1). `0043`, `0049` à `0057` ne créent aucune table

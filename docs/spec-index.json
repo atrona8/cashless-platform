@@ -824,7 +824,7 @@
   {
     "mission": "hors-ligne-snapshots-lots-01M645RN",
     "titre_cas_usage": "Hors ligne : snapshots et lots",
-    "statut": "relue",
+    "statut": "mergée",
     "user_stories": [
       {
         "titre": "Fixer la politique et voir le risque",
