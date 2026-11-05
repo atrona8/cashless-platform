@@ -2308,3 +2308,28 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   `PLT_REDEV`. Cette dernière n'est protégée par aucun déclencheur : aucun code ne la modifie et aucun refus n'en
   dépend (elle n'oriente que l'attribution d'une écriture). Aucun statut, configuration datée, entrée de conformité ni
   solde n'est mémorisé ; test `test/unit/offline/batch-reference.spec.ts`. À relire : `sql-config-resolver.ts`.
+
+## ADR-153 — Documentation interactive de l'API : Swagger UI par CDN, hors production seulement
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision du porteur).
+- **Contexte.** Les équipes clientes et l'équipe serveur veulent parcourir et essayer les routes sans outil externe.
+  Le contrat `packages/contracts/openapi.yaml`, écrit à la main, fait foi : aucun contrat ne doit être généré depuis le
+  code. `@nestjs/swagger` génère le contrat depuis le code, et `swagger-ui-dist` (qui servirait la page) dépend de
+  `@scarf/scarf`, dont le script d'installation envoie des statistiques : les deux sont écartés.
+- **Décision.** L'API publique sert, hors production seulement, `GET /docs` (page HTML), `GET /docs/init.js` (script
+  d'initialisation, aucun script en ligne dans la page) et `GET /docs/openapi.yaml` (le fichier du contrat, octets
+  identiques). Swagger UI 5.34.0 est chargé depuis jsDelivr, version épinglée, avec intégrité SRI (sha384) et
+  `crossorigin="anonymous"`. Les routes sont hors contrat comme `GET /v1/health` (C-009) et hors du préfixe `/v1`. Elles
+  sont posées sur l'application express au démarrage, avant le routeur de Nest : sans garde d'authentification. En
+  production elles ne sont pas montées (404 comme toute route inconnue) ; les autres processus (clés, snapshots,
+  maintenance, interrogation PSP…) ne les montent jamais. Une CSP propre aux routes `/docs` n'autorise que
+  `script-src 'self' https://cdn.jsdelivr.net`, `style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'` (styles en
+  ligne de Swagger UI, styles seulement), `img-src 'self' data:`, `connect-src 'self'`. Aucune dépendance npm ajoutée.
+- **Conséquences.** La carte des routes et des schémas est visible sans jeton hors production (environnements locaux et
+  d'intégration) : ne pas ouvrir `/docs` sur un environnement qui tient des données réelles, et le démarrer en
+  `NODE_ENV=production` sinon. L'affichage dépend du CDN (le contrat reste lisible en `/docs/openapi.yaml`) ; l'intégrité
+  SRI protège contre un fichier altéré. La version de Swagger UI se monte à la main : changer l'URL et les deux
+  empreintes ensemble (`apps/api/src/docs/api-docs.ts`), le test `api-docs.spec.ts` fige les valeurs. Aucun écart de
+  sécurité : rien n'est affaibli en production.
+- **Test de borne.** `test/integration/docs/api-docs.spec.ts` : 404 des trois routes en configuration de production,
+  absence de CSP posée sur les autres routes, `main.ts` seul point d'entrée qui monte la documentation.

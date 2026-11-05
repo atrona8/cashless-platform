@@ -67,6 +67,18 @@
 ### V2 (non implémenté en V1)
 - Intentions de paiement (`/payment-intents*`, `/device/payment-intents`) et abonnements aux webhooks sortants (`/webhook-endpoints*`).
 
+## Documentation interactive (hors production)
+
+- **URL** : `GET /docs` (page Swagger UI), sur le port de l'API (3000 par défaut), hors du préfixe `/v1`. Le contrat
+  est servi par `GET /docs/openapi.yaml` (le fichier `packages/contracts/openapi.yaml` tel quel, jamais un contrat
+  généré depuis le code) et le script d'initialisation par `GET /docs/init.js`. Ces routes sont hors contrat, comme
+  `GET /v1/health`, et sans authentification.
+- **Absente en production** : les routes ne sont pas montées (404). Les autres processus ne les servent pas.
+- **Chargement** : Swagger UI 5.34.0 vient du CDN jsDelivr, version épinglée, avec intégrité SRI ; une CSP propre à
+  ces routes n'autorise que ce CDN. L'affichage demande donc l'accès au CDN.
+- **Aucune dépendance** : `swagger-ui-dist` et `@nestjs/swagger` sont écartés, car `swagger-ui-dist` dépend de
+  `@scarf/scarf`, script d'installation qui envoie des statistiques (ADR-153).
+
 ## Conventions transverses
 
 - **Authentification et permissions** : jeton porteur JWT court + rafraîchissement pour les personnes ; jeton d'appareil lié à la clé du Keystore (ou mTLS) et lots signés pour les terminaux ; mTLS pour la passerelle ; signature HMAC ou mécanisme du PSP pour les webhooks entrants ; `X-Approval-Token` pour la seconde personne au guichet. Depuis la mission « Identité et enrôlement des terminaux » : certificat client, jeton d'appareil lié et signature de chaque requête exigés ensemble (le « ou mTLS » ne vaut plus) ; jeton de la personne au guichet dans `X-Staff-Authorization`. Le prestataire est toujours déduit de l'identité, jamais d'un paramètre ; un objet d'un autre prestataire répond `404 NOT_FOUND` (§10.3, §13.1).

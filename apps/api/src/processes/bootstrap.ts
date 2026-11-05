@@ -10,6 +10,7 @@ import type {
   Type,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { mountApiDocs } from '../docs/api-docs';
 import { API_PREFIX, APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { CUSTOMER_IDENTITY } from '../customer-identity/customer-identity.port';
 import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
@@ -99,7 +100,11 @@ function pollSeconds(variable = 'TAG_JOB_POLL_SECONDS', fallback = 5): number {
  * tourner ses travailleurs à intervalle (0 = jamais). `rawBody` garde le corps brut pour `Content-Digest` (R-04) ; le
  * corps JSON reste analysé comme avant.
  */
-export async function serve(rootModule: Type<unknown>, port: number): Promise<void> {
+export async function serve(
+  rootModule: Type<unknown>,
+  port: number,
+  options: { apiDocs?: boolean } = {},
+): Promise<void> {
   // Même environnement que la configuration injectée (APP_CONFIG) : il faut le certificat avant de créer le serveur.
   const transport = loadConfig();
   const httpsOptions = tlsServerOptions(transport);
@@ -117,6 +122,8 @@ export async function serve(rootModule: Type<unknown>, port: number): Promise<vo
   applyTrustProxy(app, config.trustProxyHops);
   // `POST /offline-batches` lit son corps lui-même (1 Mio), avant l'analyseur global qui reste à 100 ko (WP18).
   applyBatchBody(app);
+  // Documentation interactive : API publique seulement, jamais en production (décidé au démarrage, routes non montées).
+  if (options.apiDocs) mountApiDocs(app, config);
   app.setGlobalPrefix(API_PREFIX);
   app.enableShutdownHooks();
   await app.listen(port);

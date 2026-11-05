@@ -15,6 +15,7 @@ serveur ; elle ne se tranche pas côté client (règle de priorité : SPECIFICAT
 |---|---|---|
 | Serveur simulé | Dès le premier jour, pour toute route, servie ou non | `npx @stoplight/prism-cli@5.16.0 mock packages/contracts/openapi.yaml` (port 4010). Réponses tirées des exemples et schémas du contrat ; aucune règle métier. |
 | API locale (archive « API ») | Pour jouer de vrais parcours, avec les faux de l'équipe serveur | Voir `LISEZMOI.md` de l'archive API : PostgreSQL dans Docker, migrations, API en configuration de développement. |
+| Documentation interactive | Pour parcourir et essayer les routes | `http://localhost:3000/docs` avec l'API locale de l'archive « API » (port 3000 par défaut, `PORT`). Affiche `openapi.yaml` tel quel ; absente en production ; Swagger UI se charge depuis un CDN public (accès Internet requis). |
 | Environnement d'intégration | Quand l'équipe serveur l'aura ouvert | URL, comptes d'essai par rôle et codes d'enrôlement fournis par le référent. |
 
 Le serveur simulé ne vérifie ni les droits, ni l'idempotence, ni le cloisonnement entre prestataires : un écran qui
