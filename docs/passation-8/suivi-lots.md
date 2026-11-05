@@ -13,3 +13,8 @@ Notes à transmettre aux lots suivants.
 - WP13, WP16 : partir de la lane-b ; liens `node_modules/@cashless/shared-rules`.
 - Relecture humaine : `packages/shared-rules/src/edge-content.ts`, `edge-chain.ts`.
 - `npm ci --ignore-scripts` dans le checkout principal après la fusion.
+
+## Relecture de WP03 (approuvé)
+- WP09 (`tests_edge_rights.sql`) : ajouter des cas inter-prestataires pour `rotate`, `swap`, `set_role`, `edge_register_snapshot_key` (retirer `assert_tenant` ne ferait aujourd'hui échouer aucun test) ; isolation réelle de `edge_reference_change` ; retrait des droits par défaut de `cashless_app` sur `edge_gateway` ET `edge_reference_change`.
+- Mineurs consignés : `touch_edge_gateway` (passerelle inconnue sans effet, autre prestataire `no_data_found` : oracle faible) ; `register`/`rotate` 23505 sur empreinte prise (outil d'administration seul).
+- Matrice d'acceptation : à tenir au fil des lots (orchestrateur), critères de WP03 : FR-002, FR-031 (partie base), FR-037 (partie base), C-009.
