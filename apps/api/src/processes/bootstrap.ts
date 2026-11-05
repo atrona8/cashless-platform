@@ -113,7 +113,10 @@ export async function serve(
     tls: httpsOptions !== undefined,
     trustProxyHops: transport.trustProxyHops,
   });
+  // `abortOnError: false` : sinon Nest arrête le processus sur tout `app.get` sans réponse, avant le `catch` de
+  // `optional`. Un échec de création reste fatal : le point d'entrée n'attrape pas la promesse rejetée.
   const app = await NestFactory.create(rootModule, {
+    abortOnError: false,
     bufferLogs: true,
     rawBody: true,
     ...(httpsOptions ? { httpsOptions } : {}),
@@ -157,7 +160,10 @@ export async function runWorkers(
   argv: string[],
   options: { pollSeconds?: number } = {},
 ): Promise<number> {
-  const app = await NestFactory.createApplicationContext(rootModule, { bufferLogs: true });
+  const app = await NestFactory.createApplicationContext(rootModule, {
+    abortOnError: false,
+    bufferLogs: true,
+  });
   try {
     assertProcessIsSafe(app);
     const workers = app.get(WorkerRegistry, { strict: false });
