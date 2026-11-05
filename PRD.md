@@ -151,6 +151,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   production avant la mission 12b.
 - Contrat d'API stable depuis le 05/11/2026 : les routes sont partagées avec les équipes clientes ; aucun renommage,
   retrait ni changement ; un ajout seulement s'il est indispensable et rétrocompatible.
+- Écarts acceptés de la mission 8 (passe contradictoire du plan, décisions du porteur du 05/11/2026, `OP-N100` à `OP-N110`, `ADR-155` à `ADR-165`) :
+  clés de la passerelle simulées jusqu'à la 12b ; jetons d'appareil de la passerelle sans rotation ; jeton de personne expiré toléré au guichet (12 h) ;
+  ventes `EDGE_ONLINE` bornées au rejeu avec perte maximale chiffrée ; inscription par une personne avec alerte et délai ; purge des secrets (limite du
+  mini-PC volé) ; passerelle perdue sans rejeu automatique ; dépassement temporaire d'un plafond réglementaire à la recharge espèces (à signaler au
+  juriste) ; `STALE` seulement si confirmé ou plausible ; « même moteur » devient « mêmes modules ».
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

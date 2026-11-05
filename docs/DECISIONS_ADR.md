@@ -2344,3 +2344,156 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   CORS de production reste à décider (origines du back-office, mission 11 ou 13).
 - **Test de borne.** `test/unit/process-startup.spec.ts` : aucun en-tête sans le réglage, refus en production.
 
+
+## ADR-155 — Mission 8 : clés de la passerelle simulées jusqu'à la mission 12b (OP-N100)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision du porteur ; contrainte C-007 de la mission 8).
+- **Contexte.** La passerelle signe les lots de sa file, les snapshots et ses jetons, et déchiffre les mots de passe des bracelets avec une clé
+  d'accord. Ces clés doivent vivre dans un module matériel non exportable ; aucun matériel n'est choisi avant la mission 12b.
+- **Décision.** Un port `HARDWARE_KEYSTORE` (`sign`, `agree`, `publicKey`, jamais d'export) et un port `EDGE_CA` (autorité des certificats de passerelles)
+  existent, avec un **faux de développement** (clés en fichier ou en mémoire) refusé au démarrage en production. Adaptateurs réels en mission 12b.
+- **Risque.** Clé de signature et clé d'accord lisibles par quiconque lit le disque ou la mémoire du faux. La passerelle n'est pas utilisable en
+  production avant la 12b.
+- **Mission qui le lève.** 12b. **Condition de levée.** Adaptateurs réels essayés contre le matériel ; faux retirés des processus de production ;
+  preuves NFR-009 refaites avec les adaptateurs réels.
+- **Test de borne.** Un test de démarrage réel (`NestFactory`) par faux : `NODE_ENV=production` avec `HARDWARE_KEYSTORE=fake` ou `EDGE_CA` factice refuse de démarrer.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 12b) et `PRD.md` §2.6.
+
+## ADR-156 — Mission 8 : jetons d'appareil signés par une clé propre à la passerelle (OP-N101)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 2 du porteur).
+- **Contexte.** Pendant `EDGE`, le central n'est plus joint ; les terminaux ont besoin d'un jeton d'appareil de 15 minutes au plus pour appeler la passerelle.
+- **Décision.** La passerelle signe ses jetons (ES256, `kid` `edge:<gateway_id>:<n>`, `aud` `cashless-edge/<gateway_id>`) avec une clé propre, générée dans le
+  port de stockage matériel. Ils ne valent que sur elle et sont refusés au central. Elle ne vérifie que ses propres `kid` ; les clés du central ne sont pas
+  répliquées.
+- **Risque.** Secret de signature de jetons sur un mini-PC de site, hors du KMS central, jusqu'à la 12b.
+- **Mission qui le lève.** 12b. **Condition de levée.** Clé dans le module matériel non exportable, rotation de `kid` éprouvée.
+- **Test de borne.** Un jeton signé par la clé de la passerelle est refusé par le vérificateur central (`kid`, puis audience) ; un jeton forgé avec le `kid` du
+  central est refusé par signature, puis par audience ; la clé ne signe jamais une audience du central. Le vérificateur central n'est pas modifié.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md` §2.6.
+
+## ADR-157 — Mission 8 : renouvellement du jeton d'appareil sans rotation sur la passerelle (OP-N102)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 11 du porteur, passe contradictoire A01).
+- **Contexte.** Sans renouvellement, le site s'arrête 15 minutes après la coupure. Le central fait tourner le jeton de rafraîchissement (usage unique,
+  détection de réutilisation) ; une rotation locale donnerait au retour un jeton inconnu du central, et aucun champ du contrat ne permet de le reverser.
+- **Décision.** La passerelle reçoit l'empreinte SHA-256 courante du jeton de rafraîchissement de chaque terminal et son certificat (champ facultatif sous
+  `/edge/*`), vérifie le certificat, la preuve de possession et l'empreinte, émet un jeton d'accès court valable sur elle seule, et **ne fait pas tourner** le
+  jeton de rafraîchissement. Le central marque les familles exposées et force la rotation au retour ; la détection de réutilisation est alors retrouvée.
+- **Risque.** Pendant `EDGE`, un jeton de rafraîchissement volé n'est pas détecté ; des empreintes de jetons de rafraîchissement sont stockées sur le site
+  (un secret dérivé de plus). Hors décision : rétablir la rotation demande un champ de contrat de retour.
+- **Mission qui le lève.** À fixer par le porteur (12b pour le matériel ; la rotation demande une décision de contrat). **Condition de levée.** Renouvellement avec
+  rotation et canal d'inscription du nouveau jeton au central.
+- **Test de borne.** Empreinte différente de l'empreinte courante : refus ; la passerelle ne rend jamais de nouveau jeton de rafraîchissement ; l'empreinte n'est
+  servie qu'à la passerelle `PRIMARY` ; après le rendu, rotation forcée au central et réutilisation d'un jeton copié : famille révoquée.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md` §2.6.
+
+## ADR-158 — Mission 8 : jeton de personne expiré toléré au guichet de la passerelle (OP-N103)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 3 du porteur, renforcée par la passe contradictoire A15 ; audit versé au central, décision 18).
+- **Contexte.** Le serveur d'identité n'est pas joint pendant la coupure ; les guichets s'arrêteraient à l'expiration des jetons de personne.
+- **Décision.** Un jeton expiré est toléré sur la passerelle seulement, aux conditions toutes exigées : bien signé (copie des clés d'identité) ; personne qui a
+  ouvert la session de caisse ; même terminal ; session `OPEN` et utilisable sur la passerelle ; émis avant la bascule ; **encore valable à la bascule
+  (`exp >= activated_at`, renforcement A15)** ; 12 h au plus après la bascule ; personne habilitée dans l'état répliqué ; chaque usage audité et versé au central.
+- **Risque.** Un compte révoqué ou désactivé pendant la coupure continue d'agir au guichet jusqu'à 12 h. Une horloge système reculée pendant un arrêt de la machine
+  fait perdre la durée de l'arrêt (plafond d'heure persisté, limite consignée).
+- **Mission qui le lève.** À fixer par le porteur (proposition : mission d'exploitation de la 12b). **Condition de levée.** Jeton de coupure délivré par le central à
+  l'ouverture de session.
+- **Test de borne.** Refus à 12 h + 1 s, `exp` antérieur à la bascule, autre personne, autre terminal, session fermée ou ouverte après la bascule ; redémarrage avec
+  horloge reculée de 2 h et de 13 h.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-159 — Mission 8 : ventes `EDGE_ONLINE` sans signature du terminal, perte maximale (OP-N104)
+
+Valeurs fixées par le porteur le 05/11/2026 : 50 000 XOF par vente, 500 000 XOF par terminal et par heure, réglables côté plateforme, proposition à revoir en recette.
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 13 du porteur, passe contradictoire A07).
+- **Contexte.** Pour une vente décidée par la passerelle (`EDGE_ONLINE`), le contrat ne relaie aucune signature du terminal. La passerelle ne détient aucune clé
+  de bracelet.
+- **Décision.** Pas de changement de contrat. Au rejeu, l'enveloppe SQL exige la preuve du bracelet (compteur strictement croissant, UID, signature de passage
+  vérifiée par le processus des clés, portefeuille désigné), applique un plafond par vente et par terminal et par heure (part au-delà en compte d'attente, alerte) et
+  rogne `charged_to_wallet` au solde central sous verrou.
+- **Risque.** Une passerelle compromise ne peut qu'utiliser des passages réels. Perte maximale par cycle `EDGE` :
+  `min(somme des soldes de l'événement ; T × H × plafond_terminal_heure ; N_passages_réels × plafond_vente)`. Les **valeurs des plafonds sont à soumettre au porteur**.
+- **Mission qui le lève.** Mission 13 (recette V1), ou plus tôt si le porteur décide de relayer la signature du terminal (changement de contrat).
+  **Condition de levée.** Signature du terminal relayée et vérifiée, ou plafonds validés par le porteur et mesurés.
+- **Test de borne.** Vente au rejeu sans `tap` valide, à compteur non croissant, ou au-delà du plafond horaire : refusée ou rognée avec alerte ; scénario de passerelle
+  hostile (2 000 ventes fictives) dont la perte reste sous la formule.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-160 — Mission 8 : inscription d'une passerelle par une seule personne (OP-N105)
+
+Délai fixé par le porteur le 05/11/2026 : `EDGE_PACK_DELAY` = 30 minutes.
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 16 du porteur, **contre la recommandation** de la passe contradictoire A16, qui préconisait deux personnes).
+- **Contexte.** Une passerelle inscrite reçoit les mots de passe de tous les bracelets de l'événement.
+- **Décision.** Une personne inscrit par l'outil d'administration hors API publique. Compensations : alerte immédiate à l'inscription et à tout changement de rôle ;
+  délai avant l'envoi des mots de passe (durée à soumettre au porteur, proposition 30 minutes) ; rien n'est servi à une passerelle `STANDBY` non promue ; échange de
+  rôles atomique.
+- **Risque.** Une personne disposant du rôle de l'outil inscrit une passerelle à sa clé d'accord et obtient les mots de passe après le délai si l'alerte n'est pas traitée.
+- **Mission qui le lève.** 12b ou 13 (approbation à deux à l'inscription). **Condition de levée.** Demande d'approbation par une seconde personne.
+- **Test de borne.** Inscription par une personne : alerte levée, aucun colis avant le délai, aucun colis à une `STANDBY`, aucun colis sans rôle `PRIMARY`.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-161 — Mission 8 : purge des secrets du site, limite du mini-PC volé (OP-N106)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 17 du porteur, passe contradictoire A21).
+- **Contexte.** La passerelle garde sur disque les colis de mots de passe, la clé d'accord, la clé de jetons et des empreintes de jetons de rafraîchissement.
+- **Décision.** Purge automatique à la clôture de l'événement (statut `CLOSED` répliqué, file acquittée) et purge manuelle sur ordre de deux personnes distinctes :
+  destruction des clés dans le port matériel (effacement cryptographique), suppression des colis, des empreintes et des tables répliquées ; la clé de signature des
+  lots est détruite après le dernier lot.
+- **Risque.** Un mini-PC volé avant la purge garde ses secrets : la révocation à distance ne joint pas une machine débranchée.
+- **Mission qui le lève.** Mission d'exploitation (chiffrement des tables avec une clé du module matériel dès la 12b). **Condition de levée.** Données au repos chiffrées
+  sous une clé matérielle détruite à la révocation.
+- **Test de borne.** Après la purge, aucune occurrence du canari sous toutes ses représentations et aucune clé utilisable ; une purge manuelle est refusée si la file
+  n'est pas acquittée.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md` §2.6.
+
+## ADR-162 — Mission 8 : passerelle perdue sans rejeu automatique (OP-N107)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 4 du porteur).
+- **Contexte.** Le contrat interdit `ACTIVATION` et `DEPOSIT_CASH` dans un lot de terminal ; après une reprise forcée, le journal d'un terminal ne peut pas les rejouer.
+- **Décision.** Pas de changement de contrat. Une `ONLINE_REF` à une opération inconnue du central ouvre `EDGE_REPLAY_FAILED` ; un `TOPUP_CASH` suit le refus existant,
+  avec une anomalie portant le montant. Les opérations déjà rejouées sont reconnues par la clé du terminal et n'ouvrent aucune anomalie.
+- **Risque.** Activations et cautions non reversées, rétablissement manuel ; aucune perte silencieuse.
+- **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Procédure de rétablissement éprouvée en recette.
+- **Test de borne.** Reprise forcée avec journal : anomalies pour les seules opérations non rejouées, résolution à deux.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-163 — Mission 8 : dépassement temporaire d'un plafond réglementaire au rejeu d'une recharge espèces (OP-N108)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 14 du porteur, passe contradictoire A09). **À signaler au juriste.**
+- **Contexte.** La passerelle crédite localement une recharge espèces sur les données répliquées ; au rejeu, l'état central peut avoir changé (autres recharges, palier
+  d'identification).
+- **Décision.** Une recharge espèces n'est jamais rejetée pour un plafond au rejeu : écrite en deux parts (portefeuille jusqu'à la marge, reste en `L-ESP-A-RENDRE`),
+  anomalie `CASH_TOPUP_OVER_LIMIT` résolue à deux (protocole §8).
+- **Risque.** Entre la recharge locale et le rejeu, le solde du portefeuille sur la passerelle peut dépasser un plafond réglementaire. Le solde local peut dépasser le solde
+  central de la somme des recharges non rejouées ; la borne de `charged_to_wallet` au solde central protège le central.
+- **Mission qui le lève.** Mission 13 (recette V1), après avis du juriste. **Condition de levée.** Avis écrit du juriste sur le dépassement temporaire.
+- **Test de borne.** Recharge dépassant la marge au rejeu : jamais `REJECTED`, deux parts, anomalie avec `media_id` et montant ; ventes dépendantes en manque.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-164 — Mission 8 : « même moteur » devient « mêmes modules » (OP-N109)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 1 du porteur).
+- **Contexte.** `SPECIFICATION.md` §9 dit que la passerelle utilise le même moteur d'écritures. Le flux du contrat ne porte que des soldes ; `post_transaction` refuse les
+  débits de portefeuille hors `EDGE_SYNC` sous `EDGE` ; les services de l'API dépendent de tables sans objet sur un site.
+- **Décision.** La passerelle tient une base PostgreSQL locale au schéma réduit (série de migrations propre) ; les règles pures sont partagées en TypeScript
+  (`@cashless/shared-rules`) et prouvées par les mêmes scénarios de référence ; le central seul tient la comptabilité.
+- **Risque.** Deux implémentations de calcul si le paquet partagé est contourné ; texte de `SPECIFICATION.md` en retard.
+- **Mission qui le lève.** Mission 13 (reporter l'écart dans `SPECIFICATION.md`). **Condition de levée.** Texte de §9 aligné.
+- **Test de borne.** Test d'architecture de `packages/shared-rules` (aucun import de Nest, `pg`, système de fichiers, réseau, `apps/`) ; scénarios de référence lus par les
+  tests de la passerelle.
+- **Report.** `PRD.md` §2.6.
+
+## ADR-165 — Mission 8 : `STALE` persisté seulement si confirmé ou plausible (OP-N110)
+
+- **Statut** : Acceptée, 5 novembre 2026 (décision 15 du porteur, passe contradictoire A12).
+- **Contexte.** L'en-tête `X-Authority-Epoch` d'un terminal ne peut pas être vérifié hors du central ; un terminal défectueux ou volé pouvait arrêter tout le site avec une époque
+  forgée.
+- **Décision.** Une époque supérieure vue dans une requête de terminal ne fait persister `STALE` que si elle est confirmée par le canal de contrôle du central ou plausible
+  (au plus l'époque détenue + 2) ; sinon `409 STALE_AUTHORITY_EPOCH` pour cette requête, sans arrêt, avec alerte. Levée locale de `STALE` à deux personnes si le lien est coupé.
+- **Risque.** Une époque forgée à `epoch + 1` ou `epoch + 2` provoque encore un arrêt des débits jusqu'à la levée locale (disponibilité, pas argent).
+- **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Époque signée par le central dans la requête, ou canal de contrôle toujours disponible.
+- **Test de borne.** En-tête forgé à 9999 : aucun arrêt ; à `epoch + 1` : arrêt, levée à deux personnes distinctes, audit `LOCAL_UNSTALE`, refus de la levée si le central a confirmé.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.

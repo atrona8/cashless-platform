@@ -96,7 +96,7 @@ Au retour du réseau, un admin demande le rendu. La passerelle persiste cet éta
 2. **Given** une passerelle en `RELEASING` redémarrée, **When** elle repart, **Then** elle ne reprend jamais les débits, sauf échec explicite du handover signalé par le central pour la même époque.
 3. **Given** un rendu avec un numéro manquant, **When** elle demande le rendu final, **Then** le central répond `409 EDGE_NOT_CAUGHT_UP` et elle reprend le vidage.
 4. **Given** une chaîne incohérente, **When** le central la compare, **Then** il répond `409 CHAIN_BROKEN` et une alerte demande un examen manuel.
-5. **Given** une opération déjà reçue directement du terminal, **When** elle arrive par la file, **Then** elle est marquée `DUPLICATE` et la passerelle corrige son solde par la réplication.
+5. **Given** une opération déjà reçue directement du terminal, **When** elle arrive par la file, **Then** elle est marquée `DUPLICATE` et la passerelle annule son delta local selon la règle par issue (le central a déjà débité ; solde jamais sur-évalué).
 6. **Given** un événement à clôturer, **When** l'autorité est encore à la passerelle, **Then** le passage en `RECONCILING` est refusé.
 
 ---
@@ -107,7 +107,7 @@ Tant que le lien existe, la passerelle reçoit les soldes, les statuts et les no
 
 **Why this priority**: Une décision de la passerelle ne vaut que par la fraîcheur de ce qu'elle sait.
 
-**Independent Test**: Crédit et blocage au central pendant `EDGE`, puis lecture de l'état sur la passerelle et vérification que le solde vu y reste inférieur ou égal au solde central.
+**Independent Test**: Crédit et blocage au central pendant `EDGE`, puis lecture de l'état sur la passerelle et vérification que le solde vu pour les débits locaux ne dépasse jamais le solde réel (il ne le dépasse que de la somme des recharges espèces locales pas encore rejouées), et qu'un blocage sans écriture comptable posé une seconde avant la bascule refuse la première vente après l'accusé.
 
 **Acceptance Scenarios**:
 
@@ -187,7 +187,11 @@ Un opérateur inscrit une passerelle pour un événement, avec son certificat et
 - Lien qui revient pendant `EDGE` : `ISOLATED`, puis `CATCHING_UP`, puis `ACTIVE`, en continuant de servir les terminaux.
 - Passerelle zombie après reprise forcée : risque résiduel accepté par le protocole (§9.7-4), borné par le compte d'attente et imputé selon le contrat.
 - Rejeu impossible d'une activation ou d'une caution : `REJECTED EDGE_REPLAY_FAILED`, anomalie, espèces au compte d'attente, résolution à deux.
-- Crédit de l'événement fait au central pendant `EDGE` : accepté, puis répliqué ; le solde vu sur le site reste inférieur ou égal au solde réel.
+- Crédit de l'événement fait au central pendant `EDGE` : accepté, puis répliqué ; pour les débits locaux le solde vu sur le site reste inférieur ou égal au solde réel (les recharges espèces locales non encore rejouées sont la seule exception ; au rejeu la borne du solde central protège le central).
+- Requête de terminal portant une époque forgée très supérieure : refusée sans arrêter les débits ; seule une époque confirmée ou plausible (au plus l'époque détenue + 2) fait persister l'arrêt, levé localement à deux personnes si le lien est coupé.
+- Redémarrage de la passerelle avec une horloge système reculée : l'heure servie ne recule jamais sous le plafond persisté.
+- Passerelle de secours inscrite par une seule personne : alerte immédiate et aucun mot de passe de bracelet servi avant le délai ; rien du tout tant qu'elle n'est pas promue.
+- Clôture de l'événement ou ordre de purge à deux personnes : les clés et les mots de passe de la passerelle sont détruits.
 - Session de caisse fermée au central pendant `EDGE` : la fermeture répliquée met fin aux recharges sur cette session.
 - Session vendeur expirée pendant la coupure : aucune ouverture de session sur la passerelle ; le vendeur ne peut plus vendre sous son nom.
 - Redémarrage de la passerelle en plein traitement : aucun numéro perdu, aucune réponse renvoyée sans écriture persistée.
@@ -206,25 +210,25 @@ Un opérateur inscrit une passerelle pour un événement, avec son certificat et
 | FR-005 | Canal de contrôle | En tant que passerelle, je veux interroger le central en attente longue (`getCurrentEdgeHandover`, 25 s au plus), ce qui vaut battement de cœur, afin de recevoir accords et demandes de rendu. | High | Open | build | no |
 | FR-006 | Accusé de bascule | En tant que passerelle, je veux accuser réception (`époque`, filigrane atteint), le central refusant un accusé incomplet, et ne débiter qu'après sa réponse `200`. | High | Open | build | no |
 | FR-007 | Échec de bascule | En tant qu'admin, je veux qu'une bascule non accusée puisse échouer (`fail_edge_grant`) et rendre l'autorité au central. | High | Open | build | no |
-| FR-008 | Flux de réplication | En tant que passerelle, je veux tirer en continu `getEdgeReplicationFeed` et mémoriser ma position, afin de recevoir soldes, statuts, nouveaux bracelets et mots de passe chiffrés pour ma clé d'accord. | High | Open | build | no |
-| FR-009 | Données de service répliquées | En tant que passerelle, je veux recevoir aussi les sessions de caisse ouvertes, les sessions vendeur valides, les terminaux de l'événement et leurs clés publiques, le catalogue et les réglages de l'événement, par des champs facultatifs et rétrocompatibles limités à `/edge/*`. | High | Open | build | no |
+| FR-008 | Flux de réplication | En tant que passerelle, je veux tirer en continu `getEdgeReplicationFeed` et mémoriser ma position, afin de recevoir soldes, statuts, nouveaux bracelets et mots de passe chiffrés pour ma clé d'accord, sans jamais manquer une écriture validée hors ordre ni un blocage sans écriture comptable. | High | Open | build | no |
+| FR-009 | Données de service répliquées | En tant que passerelle, je veux recevoir aussi les sessions de caisse ouvertes, les sessions vendeur valides, les terminaux de l'événement et leurs clés publiques, le catalogue et les réglages de l'événement, par des champs facultatifs et rétrocompatibles limités à `/edge/*` (schéma unique : `contracts/replication-page-additions.yaml`). | High | Open | build | no |
 | FR-010 | Opérations servies | En tant que terminal, je veux que la passerelle serve exactement les 16 opérations marquées `x-edge-available`, avec le même format et les mêmes erreurs qu'au central. | High | Open | build | no |
 | FR-011 | Opérations refusées | En tant que terminal, je veux un refus `409 DEBIT_AUTHORITY_EDGE` pour tout prélèvement sur solde autre qu'une vente, remboursement, restitution, paiement par QR. | High | Open | build | no |
-| FR-012 | Exclusion par l'époque | En tant que système, je veux que la passerelle ne débite que si elle détient l'autorité active et que la requête porte son époque, et qu'elle cesse de débiter dès qu'elle voit une époque supérieure, de façon persistante. | High | Open | build | no |
+| FR-012 | Exclusion par l'époque | En tant que système, je veux que la passerelle ne débite que si elle détient l'autorité active et que la requête porte son époque, et qu'elle cesse de débiter, de façon persistante, dès qu'elle voit une époque supérieure confirmée par le central ou plausible (au plus l'époque détenue + 2) ; une époque implausible est refusée sans arrêt ni persistance, avec alerte. | High | Open | build | no |
 | FR-013 | Refus central pendant EDGE | En tant que système, je veux que tout débit central réponde `409 DEBIT_AUTHORITY_EDGE`, avec l'adresse de la passerelle et l'époque, en acceptant les crédits, sur tous les chemins de débit. | High | Open | ratchet | no |
-| FR-014 | Numérotation et chaîne | En tant que passerelle, je veux numéroter chaque décision par un `edge_seq` continu et chaîné, persistant, avec la clé d'origine du terminal, écrit avant toute réponse au terminal. | High | Open | build | no |
-| FR-015 | Recharges espèces | En tant que caissier, je veux recharger sur la passerelle, seulement sur une session ouverte au central et répliquée avant la bascule ; toute autre recharge est refusée et rien n'est écrit. | High | Open | build | no |
+| FR-014 | Numérotation et chaîne | En tant que passerelle, je veux numéroter chaque décision par un `edge_seq` continu et chaîné, persistant, avec la clé d'origine du terminal (son `Idempotency-Key`), écrit avant toute réponse au terminal. | High | Open | build | no |
+| FR-015 | Recharges espèces | En tant que caissier, je veux recharger sur la passerelle, seulement sur une session ouverte au central et répliquée avant la bascule ; toute autre recharge est refusée et rien n'est écrit. Au rejeu au central, elle n'est jamais rejetée pour un plafond réglementaire (deux parts, anomalie résolue à deux). | High | Open | build | no |
 | FR-016 | Activation et caution | En tant que caissier, je veux activer un bracelet sans frais sur solde et prendre une caution en espèces, transmises au central dans la même file (`ACTIVATION`, `DEPOSIT_CASH`). | High | Open | build | no |
 | FR-017 | Vidage de la file | En tant que passerelle, je veux envoyer mes opérations par `submitEdgeSyncBatch`, dans l'ordre, un lot en vol à la fois (500 opérations et 1 Mio au plus), dès le retour du lien, en continuant de servir les terminaux. | High | Open | build | no |
 | FR-018 | Rejeu au central | En tant que central, je veux écrire chaque opération en `EDGE_SYNC`, avec la clé d'origine, `origin_occurred_at` et `origin_mode`, en reprenant la décision de la passerelle et en ne recalculant que frais et commissions ; une clé déjà connue est `DUPLICATE`. | High | Open | build | no |
 | FR-019 | Refus de la file | En tant que central, je veux refuser un lot hors ordre (`SEQ_OUT_OF_ORDER`), à la chaîne rompue (`CHAIN_BROKEN`, avec alerte), à la signature invalide ou d'une époque périmée. | High | Open | build | no |
-| FR-020 | Rejeu impossible | En tant que central, je veux traiter un rejeu impossible d'activation ou de caution en `REJECTED EDGE_REPLAY_FAILED`, avec anomalie et espèces au compte d'attente, sans jamais le rejouer. | High | Open | build | no |
+| FR-020 | Rejeu impossible | En tant que central, je veux traiter un rejeu impossible d'activation ou de caution en `REJECTED EDGE_REPLAY_FAILED`, avec anomalie et espèces au compte d'attente, sans jamais le rejouer ; une opération déjà rejouée sous la même clé de terminal n'ouvre aucune anomalie. | High | Open | build | no |
 | FR-021 | Demande de rendu | En tant qu'admin, je veux demander le retour au central (`RELEASE_REQUESTED`) ; la passerelle persiste `RELEASING`, cesse de débiter (`409 DEBIT_AUTHORITY_MOVING`) et refuse les nouveaux lots. | High | Open | build | no |
 | FR-022 | Rendu final | En tant que passerelle, je veux demander le rendu (`final_edge_seq`, `last_chain_hash`, `operations_count`) ; le central passe en `RELEASING` avant toute vérification, répond `409 EDGE_NOT_CAUGHT_UP` si la continuité manque, sinon reprend l'autorité. | High | Open | build | no |
 | FR-023 | Pas de reprise après RELEASING | En tant que système, je veux qu'une passerelle en `RELEASING` ne reprenne jamais les débits, même après redémarrage, sauf échec du handover signalé pour la même époque. | High | Open | build | no |
 | FR-024 | Autorité avant clôture | En tant que système, je veux que le passage en `RECONCILING` soit refusé tant que l'autorité n'est pas revenue au central (`CL019`). | High | Open | ratchet | no |
 | FR-025 | Lots hors ligne relayés | En tant que passerelle, je veux traiter les lots de terminaux selon les règles de la mission 7 avec mes soldes, puis les relayer avec l'en-tête et la signature d'origine. | High | Open | build | no |
-| FR-026 | Accusé du central aux terminaux | En tant que terminal, je veux lire sur la passerelle (`getDeviceSeqStatus`) l'accusé contigu du central, jamais un accusé provisoire, seul à m'autoriser à marquer une opération acquittée. | High | Open | build | no |
+| FR-026 | Accusé du central aux terminaux | En tant que terminal, je veux lire sur la passerelle (`getDeviceSeqStatus`) l'accusé contigu du central, jamais un accusé provisoire, seul à m'autoriser à marquer une opération acquittée (donnée `device_seq_acked` du flux). | High | Open | build | no |
 | FR-027 | Blocages et snapshots locaux | En tant que passerelle, je veux appliquer un blocage dès réception et produire un snapshot au format de la mission 7, signé par ma clé propre déclarée dans `config.snapshot_keys`. | High | Open | build | no |
 | FR-028 | Reprise forcée | En tant qu'`OPERATOR_ADMIN`, je veux demander la reprise forcée (constat physique déclaré), approuvée par une seconde personne (`FORCE_CENTRAL_AUTHORITY`), qui révoque la passerelle et rend l'autorité au central. | High | Open | build | no |
 | FR-029 | Journal après reprise | En tant que central, je veux traiter le journal non acquitté renvoyé par les terminaux, y compris les opérations confirmées par la passerelle, sans double écriture, comme prévu par le protocole (§9.7-3). | High | Open | build | no |
@@ -233,6 +237,11 @@ Un opérateur inscrit une passerelle pour un événement, avec son certificat et
 | FR-032 | Port de stockage matériel | En tant qu'opérateur, je veux que la clé de signature et la clé d'accord de la passerelle passent par un port de stockage matériel, avec un faux refusé au démarrage en production. | High | Open | build | no |
 | FR-033 | Image et procédure de site | En tant qu'opérateur, je veux une image de déploiement de la passerelle et une procédure de site (disque chiffré, onduleur, Wi-Fi dédié, révocation à distance). | Medium | Open | build | no |
 | FR-034 | Audit et alertes | En tant que responsable, je veux un audit de chaque bascule, rendu, reprise et révocation, et une alerte sur chaîne rompue, rendu bloqué et passerelle muette. | Medium | Open | build | no |
+| FR-035 | Purge des secrets du site | En tant qu'opérateur, je veux que les clés et les mots de passe de bracelets de la passerelle soient détruits à la clôture de l'événement et sur ordre de deux personnes, afin qu'un mini-PC récupéré ne livre rien (limite : mini-PC volé avant la purge). | High | Open | build | no |
+| FR-036 | Audit de la tolérance versé au central | En tant que responsable, je veux que chaque usage d'un jeton de personne expiré toléré au guichet soit versé au central avec le lot suivant (champ facultatif sous `/edge/*`) et recopié dans l'audit, afin de voir ce qui s'est passé pendant la coupure. | High | Open | build | no |
+| FR-037 | Inscription avec alerte et délai | En tant que responsable, je veux qu'une inscription ou un changement de rôle de passerelle lève une alerte immédiate et qu'aucun mot de passe de bracelet ne parte avant un délai, ni vers une `STANDBY` non promue. | High | Open | build | no |
+| FR-038 | Bornes du rejeu `EDGE_ONLINE` | En tant que central, je veux, au rejeu d'une vente ou d'une annulation décidée par la passerelle, vérifier en SQL sous verrou le type, les comptes, la preuve du bracelet, le plafond par vente et par terminal et par heure, et rogner à la borne du solde central, afin de borner la perte d'une passerelle compromise. | High | Open | build | no |
+| FR-039 | Jeton d'appareil sans rotation | En tant que terminal, je veux renouveler mon jeton d'accès sur la passerelle avec mon certificat, ma preuve de possession et mon jeton de rafraîchissement, sans que la passerelle le fasse tourner, afin de continuer à vendre au-delà de 15 minutes de coupure. | High | Open | build | no |
 
 ### Non-Functional Requirements
 
@@ -242,21 +251,22 @@ Un opérateur inscrit une passerelle pour un événement, avec son certificat et
 | NFR-002 | Rendu d'une grosse file | Rendu avec 10 000 opérations en file : continuité vérifiée, 0 débit de passerelle après `RELEASING`, 0 opération perdue (§13-5). | Reliability | High | Open |
 | NFR-003 | Aucune double écriture | 0 double écriture sur 100 rejeux d'une même opération, par tous les chemins (direct, passerelle, journal après reprise). | Reliability | High | Open |
 | NFR-004 | Tenue aux pannes | Arrêt brutal de la passerelle à 3 moments (avant écriture, après écriture avant réponse, pendant le vidage) : 0 opération perdue et numérotation continue au redémarrage. | Reliability | High | Open |
-| NFR-005 | Latence d'un paiement sur la passerelle | Paiement par bracelet sur la passerelle, réseau local : p95 ≤ 200 ms et p99 ≤ 500 ms sur 200 paiements, comme au central. | Performance | High | Open |
+| NFR-005 | Latence d'un paiement sur la passerelle | Paiement par bracelet sur la passerelle, réseau local : p95 ≤ 200 ms et p99 ≤ 500 ms sur 1 000 paiements (200 ne donnerait que 2 observations au-delà du p99), serveur seul, comme au central. | Performance | High | Open |
 | NFR-006 | Durée du vidage | 10 000 opérations reversées au central en moins de 10 minutes sur un lien local, mesuré sur poste, à remesurer en recette. | Performance | Medium | Open |
 | NFR-007 | Prise d'autorité | Accusé de bascule en moins de 30 s après l'accord quand le lien est sain et que moins de 10 000 écritures restent à rattraper. | Performance | Medium | Open |
 | NFR-008 | Fraîcheur de la réplication | Un blocage au central est appliqué sur la passerelle en moins de 5 s, lien sain, au p95. | Security | High | Open |
-| NFR-009 | Aucun faux en production | 100 % des ports à faux de la passerelle refusent le démarrage en configuration de production, chacun prouvé par un test. | Security | High | Open |
-| NFR-010 | Aucune clé maître | 0 clé maître et 0 mot de passe en clair de bracelet dans le flux, dans la base de la passerelle et dans les journaux, prouvé par un test à canari. | Security | High | Open |
+| NFR-009 | Aucun faux en production | 100 % des ports à faux et réglages de développement de la passerelle (stockage de clés, autorité des passerelles, points d'arrêt, identité de test, CORS ouvert, écoute sans TLS, joker d'autorité, `NODE_ENV` inconnu) refusent le démarrage en configuration de production, chacun prouvé par un démarrage réel. | Security | High | Open |
+| NFR-010 | Aucune clé maître | 0 clé maître et 0 mot de passe en clair de bracelet, sous aucune représentation (hexadécimal, base64, échappé), dans le flux, la base de la passerelle, les journaux (PostgreSQL local compris), la sortie des processus et l'image, prouvé par un test à canari avec contrôle positif. | Security | High | Open |
 | NFR-011 | Cloisonnement | 0 lecture d'une autre passerelle, d'un autre événement ou d'un autre prestataire, prouvé par test sur chaque route `/edge/*`. | Security | High | Open |
-| NFR-012 | Stabilité du contrat | 0 différence pour les routes hors `/edge/*`, et différences limitées à des ajouts facultatifs sous `/edge/*`, vérifié en CI contre le contrat du 05/11/2026. | Maintainability | High | Open |
+| NFR-012 | Stabilité du contrat | 0 différence pour les routes hors `/edge/*`, et différences limitées à des ajouts facultatifs sous `/edge/*` (aucune valeur d'énumération ajoutée), vérifié en CI contre le contrat du 05/11/2026. | Maintainability | High | Open |
+| NFR-013 | Purge | Après la purge (clôture ou ordre à deux), 0 occurrence du canari sous toute représentation et 0 clé utilisable (`sign`, `agree` refusés). | Security | High | Open |
 
 ### Constraints
 
 | ID | Title | Constraint | Category | Priority | Status |
 |----|-------|------------|----------|----------|--------|
 | C-001 | Priorité des sources | SPECIFICATION §0.3 ; toute contradiction est signalée, jamais tranchée en silence. | Regulatory | High | Open |
-| C-002 | Contrat stable | Décision du porteur du 05/11/2026 : aucun renommage, retrait ni changement de route, schéma ou code d'erreur. Ajouts facultatifs et rétrocompatibles sous `/edge/*` seulement ; tout autre ajout est soumis au porteur avant d'être codé. | Business | High | Open |
+| C-002 | Contrat stable | Décision du porteur du 05/11/2026 : aucun renommage, retrait ni changement de route, schéma ou code d'erreur. Ajouts facultatifs et rétrocompatibles sous `/edge/*` seulement (champs de `ReplicationPage`, paramètre `after_change_seq`, propriété `staff_token_audit` d'`EdgeSyncBatch`) ; aucune valeur d'énumération ajoutée ; tout autre ajout est soumis au porteur avant d'être codé. | Business | High | Open |
 | C-003 | Fonctions de bascule | L'application n'appelle jamais `set_debit_authority` ; seules les fonctions S12 changent l'autorité. Les fonctions S12 et S13 existantes sont appelées, pas réécrites, et complétées par migration sans affaiblir les contrôles. | Technical | High | Open |
 | C-004 | Bascule anticipée | Décision du porteur du 05/11/2026 : la bascule est demandée par un admin, avec le lien. Aucune prise d'autorité automatique par la passerelle. | Business | High | Open |
 | C-005 | Session de caisse | Décision du porteur du 05/11/2026 : aucune ouverture, relève ni fermeture de session sur la passerelle. Garde de caisse inchangée, aucune exemption. | Business | High | Open |
@@ -294,17 +304,24 @@ Un opérateur inscrit une passerelle pour un événement, avec son certificat et
 
 - La passerelle tourne en configuration de développement jusqu'à la mission 12b, comme le KMS : services réels simulés, faux refusés en production.
 - Une session vendeur ouverte au central avant la bascule reste valable sur la passerelle jusqu'à son expiration (12 h, décision du 29/10/2026) ; on n'ouvre aucune session vendeur sur la passerelle, `x-edge-available` ne le prévoit pas.
-- Les jetons de personne présentés au guichet sont vérifiés hors réseau avec une copie des clés publiques du serveur d'identité. Leur durée de vie sur une longue coupure est à régler au plan et sera soumise au porteur si elle affaiblit un contrôle.
+- Les jetons de personne présentés au guichet sont vérifiés hors réseau avec une copie des clés publiques du serveur d'identité, tenue par la passerelle. Un jeton expiré pendant la coupure est toléré aux conditions de la décision 3 du porteur, renforcées (le jeton était valable à la bascule), pendant 12 h au plus après la bascule, chaque usage audité et versé au central (décisions 3 et 18).
+- Les jetons d'appareil délivrés par la passerelle sont signés par sa clé propre, valables sur elle seule et renouvelés sans rotation du jeton de rafraîchissement (décisions 2 et 11) ; un jeton du central présenté à la passerelle y est refusé (le terminal rafraîchit).
+- La passerelle sert une heure qui ne recule jamais sous un plafond persisté ; une horloge système reculée pendant un arrêt fait perdre la durée de l'arrêt (limite consignée).
+- La passerelle exécute PostgreSQL local avec `fsync`, `full_page_writes` et `synchronous_commit` actifs ; la coupure de courant sans onduleur relève de la procédure de site.
 - Les preuves tournent sur le poste et en CI : central et passerelle en deux processus, deux bases, lien coupé par simulation. Les seuils de performance sont à remesurer en recette sur le matériel réel.
 - Disque chiffré, onduleur et Wi-Fi dédié relèvent d'une procédure de site, non testable sans matériel.
-- Les fonctions S12 et S13 du schéma sont correctes ; un défaut trouvé se corrige par migration, signalé au porteur s'il touche à la sécurité.
+- Les fonctions S12 et S13 du schéma sont correctes ; un défaut trouvé se corrige par migration, signalé au porteur s'il touche à la sécurité. Les migrations ne rendent jamais les suites SQL générées du kit inexécutables (colonnes nouvelles nullables, aucune contrainte qui casse leurs insertions ni `force_central_authority`).
 
 ## Contradictions de sources
 
 1. **Recharges espèces** : le `PRD.md` appliquait à la passerelle l'interdiction du 30/10/2026 « sauf décision contraire ». Tranché par le porteur le 05/11/2026 : servies sous session de caisse, `PRD.md` mis à jour.
 2. **Flux de réplication** : `ReplicationPage` ne porte que portefeuilles et bracelets, alors que SPECIFICATION §9.7 demande à la passerelle de servir des opérations qui exigent aussi sessions, terminaux et catalogue. Tranché par le porteur le 05/11/2026 : ajouts facultatifs limités à `/edge/*`.
 3. **Inscription d'une passerelle** : le schéma porte `edge_gateway`, mais le contrat n'a aucune route d'inscription. Tranché par le porteur le 05/11/2026 : outil d'administration, hors API publique.
+4. **« Même moteur d'écritures »** (SPECIFICATION §9) : le flux ne porte que des soldes et `post_transaction` refuse les débits sous `EDGE`. Tranché par le porteur le 05/11/2026 : « mêmes modules », base locale à schéma réduit.
+5. **`TOPUP_CASH` « toujours rejeté »** (`OfflineOperationType`) contre la recharge espèces servie par la passerelle : l'interdiction vaut pour un lot de terminal, pas pour une décision de la passerelle (C-006).
 
 ## Decisions
 
 Décisions du porteur du 05/11/2026, consignées dans `decisions/` : recharges espèces servies ; contrat stable ; bascule anticipée par un admin ; sessions de caisse ouvertes avant la bascule ; port de stockage matériel avec faux refusé en production et adaptateur réel en 12b ; `STANDBY` promue par handover normal seulement ; ajouts limités à `/edge/*` et inscription par outil d'administration.
+
+Décisions du porteur après la passe contradictoire du plan (05/11/2026, `docs/passation-8/contexte-m8.md` 11 à 18) : jeton d'appareil renouvelé sans rotation sur la passerelle (FR-039) ; paramètre `after_change_seq` accepté ; ventes `EDGE_ONLINE` bornées au rejeu avec perte maximale chiffrée (FR-038) ; recharge espèces jamais rejetée pour un plafond au rejeu (FR-015) ; `STALE` seulement si confirmé ou plausible (FR-012) ; inscription par une personne avec alerte et délai (FR-037) ; purge (FR-035) ; audit de la tolérance versé au central (FR-036).

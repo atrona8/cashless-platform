@@ -358,7 +358,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.
 
 - [x] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
-- [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker absent de la machine de développement actuelle). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
+- [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker est présent sur le poste, l'image se construit et se balaie en CI). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission passerelle-locale-01M6NM1S
 - [ ] /spec-kitty.review --mission passerelle-locale-01M6NM1S
@@ -563,6 +563,15 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la mission 8 (porteur, 05/11/2026 ; bloque la production de la passerelle)** : écrire l'adaptateur réel du port
 > de stockage matériel de la passerelle (TPM ou équivalent, clé de signature des snapshots et clé d'accord), choisir le
 > matériel du mini-PC, puis retirer le faux des processus de production.
+>
+> **Hérité de la mission 8, écarts de sécurité acceptés (passe contradictoire du plan, 05/11/2026, ADR-155 à ADR-165 ; bloquent la
+> production de la passerelle)** : OP-N100 (adaptateurs réels de `HARDWARE_KEYSTORE` et `EDGE_CA`, faux retirés) ; OP-N101 (clé de
+> jetons d'appareil de la passerelle en module matériel non exportable, rotation de `kid` éprouvée) ; OP-N102 (renouvellement du jeton
+> d'appareil sans rotation : décider avec le porteur d'un canal de retour, sinon la limite reste) ; OP-N103 (jeton de coupure délivré
+> par le central pour remplacer la tolérance des jetons de personne expirés, mission à fixer par le porteur, proposition : exploitation
+> de la 12b) ; OP-N105 (approbation à deux à l'inscription d'une passerelle) ; OP-N106 (tables de la passerelle chiffrées sous une clé
+> matérielle détruite à la révocation, limite du mini-PC volé avant la purge). À soumettre au porteur avant le codage de la mission 8 :
+> valeurs des plafonds de rejeu `EDGE_ONLINE` (OP-N104) et délai avant l'envoi des mots de passe (OP-N105).
 
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
 > avant la recette. Prérequis : accès de test PSP (action 11), devis et comptes OTP (action 10), compte AWS et région
@@ -611,6 +620,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > à lever en ramenant le délai à 55 s au plus ou en reformulant NFR-005, ADR-151).
 > OP-N99 (FR-024 : câblage des refus `LEDGER_LOCKED` et `SYNC_DEADLINE_PASSED` depuis le lecteur de conformité à
 > prouver par deux cas d'intégration, refus et aucune écriture).
+>
+> **Hérité de la mission 8 (05/11/2026, ADR-159, ADR-162 à ADR-165)** : OP-N104 (perte maximale `EDGE_ONLINE` : mesurer sur une passerelle
+> hostile, ou relayer la signature du terminal) ; OP-N107 (procédure de rétablissement après passerelle perdue) ; OP-N108 (avis écrit du
+> juriste sur le dépassement temporaire d'un plafond réglementaire à la recharge espèces) ; OP-N109 (aligner §9 de `SPECIFICATION.md` :
+> « mêmes modules ») ; OP-N110 (`STALE` d'une époque forgée à `epoch + 1` ou `+ 2`).
 
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
