@@ -1489,6 +1489,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   seule transaction ; un échec du rejeu annule toute la série. Le droit par défaut global est reporté. Écart au plan
   (contrôle non tenu) accepté et borné.
 - **Mission qui la lève.** Mission 7 (hors ligne), qui revoit déjà les droits de la base (OP-N57, OP-N58).
+  **Levée le 04/11/2026 (WP08, constatée par WP21)** : `post-roles.sql` §8a pose le droit par
+  défaut global ; `tests_execute_grants.sql` §4 est inversé (fonction créée à la main non
+  exécutable par `PUBLIC`).
 - **Condition de levée.** Droit par défaut global posé pour le propriétaire, suites pgTAP adaptées.
 - **Conséquences.** Une fonction créée à la main hors de `migrate.ts` reste exécutable par `PUBLIC` jusqu'au rejeu :
   règle d'exploitation « aucune fonction hors migration ». Tests de borne : `tests_execute_grants.sql` §4 et
@@ -1507,6 +1510,8 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Condition de levée.** Écritures par des fonctions de la base qui contrôlent la transition ; `UPDATE` directs
   retirés.
 - **Conséquences.** Test de borne : `tests_device_rights.sql` §1 (liste exacte des colonnes modifiables).
+  **Levée le 04/11/2026 (WP07 et WP08, constatée par WP21)** : la liste est VIDE, les écritures
+  passent par `record_device_heartbeat`, `ack_offline_snapshot`, `set_device_station_name`.
 - **Références.** OP-N69 ; WP07 de la mission 5a.
 
 ## ADR-113 — Routes de guichet : jeton de la personne dans `X-Staff-Authorization`
@@ -1552,6 +1557,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   accepté, listé dans la revue des écarts de sécurité.
 - **Mission de levée (21/10/2026, décision du porteur après la revue post-fusion de la mission 5a, SEC-1).** Mission 7 :
   rôle et connexion de maintenance dédiés, `EXECUTE` retiré à `cashless_app` ; fiche OP-N75.
+- **Levée le 04/11/2026 (WP08 et WP10, constatée par WP21).** Rôle `cashless_maint`, processus
+  `maintenance`, `EXECUTE` retiré à `cashless_app` ; `tests_device_purge_window.sql` s'exécute
+  sous `cashless_maint`.
 - **Références.** WP07 et WP12 de la mission 5a ; ADR-113.
 
 ## ADR-115 — Terminal révoqué : `403 DEVICE_REVOKED` à la requête suivante
@@ -2009,9 +2017,12 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Lots.** Empreintes et chaîne recalculées par le serveur ; `CONFIRMED` exempté seulement si la transaction en ligne
   existe ; `config_id` et snapshot cités datés et non périmés ; numéros au-delà de 2^53−1 refusés sur tous les chemins ;
   résultat de chaque opération écrit dans sa transaction ; reprise sous verrou de session sur un pool dédié.
-- **Droits.** Toute table nouvelle cloisonnée et fermée à `cashless_app` ; anomalies écrites par fonction (l'INSERT
-  direct sur `anomaly` est retiré, ce qui lève par anticipation la partie « anomalies » d'OP-N86) ; clés de signature
-  par `rotate_snapshot_signing_key`, deux au plus par signataire ; OP-N58, OP-N68, OP-N69, OP-N75 levés comme prévu.
+- **Droits.** Toute table nouvelle cloisonnée et fermée à `cashless_app` ; anomalies hors ligne
+  écrites par fonction (`open_offline_anomaly`) ; **correction du 04/11/2026 (WP21) : l'INSERT
+  direct sur `anomaly` n'est PAS retiré à `cashless_app`**, décision du porteur du 30/10/2026
+  (ADR-141), OP-N86 reste ouvert ; clés de signature par `rotate_snapshot_signing_key`, deux au
+  plus par signataire ; OP-N57, OP-N58, OP-N68, OP-N69, OP-N75 levés comme prévu (constat de
+  WP21, 04/11/2026).
 - **Références.** `kitty-specs/hors-ligne-snapshots-lots-01M645RN/research.md` (R-01 à R-30),
   `research-adversarial.md` (33 constats) ; ADR-138, ADR-139.
 
@@ -2049,3 +2060,245 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   l'écriture du grand livre).
 - **Risque.** Voir OP-N91. **Test de borne** : listes figées de `tests_execute_grants.sql`. Fichier à faire relire
   par une personne : `post-roles.sql`.
+
+## ADR-141 — Mission 7 : INSERT direct sur `anomaly` gardé pour `cashless_app` (OP-N86)
+
+- **Statut** : Acceptée, 30 octobre 2026 (décision du porteur, WP08) ; consignée le 04/11/2026 par
+  WP21.
+- **Contexte.** Le plan retirait l'`INSERT` direct sur `anomaly` à `cashless_app`, croyant
+  `payments.service.ts` seul appelant. Il reste sept appelants de la mission 6
+  (`psp-payment-processor.ts` ×2, `event-dispatcher.ts` ×2, `chargeback.service.ts`,
+  `reversal.service.ts`). **Écart au plan : un contrôle retiré est reporté.**
+- **Décision.** Statu quo d'OP-N86 et d'ADR-136 : l'`INSERT` est gardé. La mission 7 ajoute
+  `open_offline_anomaly` pour les anomalies hors ligne et retire seulement l'insertion de
+  `CLOCK_SKEW` de `payments.service.ts`. Correction d'ADR-137, qui annonçait le retrait.
+- **Risque.** Une connexion `cashless_app` compromise écrit des anomalies arbitraires de son
+  prestataire.
+- **Mission de levée.** Mission 13. **Condition.** Les sept appelants passent par une fonction de la
+  base ; `INSERT` retiré ; test de borne inversé.
+- **Test de borne.** `tests_cash_psp_rights.sql` : liste exacte des rôles `cashless_*` qui ont
+  `INSERT` sur `anomaly` (PASS le 04/11/2026). Report : PROMPTS-A-ENVOYER et PRD (mission 13,
+  OP-N86).
+
+## ADR-142 — Mission 7 : lectures de clés de signature accordées (OP-N92)
+
+- **Statut** : Acceptée, 30 octobre et 2 novembre 2026 (décisions du porteur, WP09 et WP13) ;
+  consignée par WP21.
+- **Contexte.** Le signataire doit vérifier sa signature avant de publier ; le travailleur de
+  rotation doit retrouver les références KMS de ses clés.
+- **Décision.** (1) `cashless_keyadmin` : `SELECT` sur cinq colonnes de `snapshot_signing_key`
+  (`key_id`, `kms_key_ref`, `operator_id`, `owner`, `status`), sans `public_key`. (2)
+  `cashless_snapsign` : `EXECUTE` de `snapshot_public_keys(uuid)` (lecture de clés publiques), aucun
+  droit de table. (3) `KeyAdminPort.publicKey(ref)` en lecture seule ; `key-admin` ne reçoit pas
+  `sign`. **Droits élargis par rapport au plan, acceptés.**
+- **Risque.** Un rôle compromis apprend des références KMS ou des clés publiques ; aucune clé
+  privée, aucune écriture. **Mission de levée.** Aucune : limite acceptée, revue en mission 13.
+- **Test de borne.** `tests_offline_rights.sql` (colonnes lisibles de `cashless_keyadmin`, liste
+  exacte ; `cashless_snapsign` sans droit de table, `snapshot_public_keys` exécutable) ;
+  `tests_execute_grants.sql` (listes figées). Fichiers à faire relire par une personne :
+  `post-roles.sql`, `apps/api/src/kms/`.
+
+## ADR-143 — Mission 7 : rotation de la clé de signature sans approbation à deux (OP-N92)
+
+- **Statut** : Acceptée, 30 octobre 2026 (décision du porteur, WP09) ; consignée par WP21.
+- **Décision.** La rotation est un passage explicite `--once` avec
+  `SNAPSHOT_KEY_ROTATE_ACTOR=<uuid>`, sinon rien. Pas d'approbation à deux personnes ; l'acteur est
+  un uuid valide, non vérifié comme personne existante (aucune table de personnes) ; l'audit est
+  écrit par l'API. Reprise sans seconde clé par une ligne d'audit `SNAPSHOT_SIGNING_KEY_CREATED`
+  posée avant la rotation. **Contrôle reporté : écart au plan accepté.**
+- **Risque.** Qui lance la commande peut la faire sous un acteur arbitraire et retirer la plus
+  ancienne clé ; un arrêt entre la création KMS et l'audit laisse une clé orpheline.
+- **Renforcements faits.** Écrivain unique des actions `SNAPSHOT_SIGNING_KEY_*` (politique
+  RESTRICTIVE de `0049`) ; deux clés valides au plus (`CL054`) ; clé publique validée P-256 SPKI.
+- **Mission de levée.** Mission 13 (avec OP-N56). **Condition.** Demande approuvée à deux, acteur
+  contrôlé.
+- **Test de borne.** `snapshot-keys/rotation.spec.ts` (troisième clé : `CL054` ; acteur réel audité)
+  ; `tests_offline_rights.sql` (aucune écriture directe). Report : PROMPTS-A-ENVOYER et PRD (mission
+  13).
+
+## ADR-144 — Mission 7 : limites des snapshots hors ligne consignées (OP-N93)
+
+- **Statut** : Acceptée, 4 novembre 2026 (relectures de WP04, WP11, WP12 et WP13) ; consignée par
+  WP21.
+- **Décisions et limites.** (a) `snapshot_public_keys` rend les clés du prestataire s'il a une clé
+  `CENTRAL` `ACTIVE`, sinon celles de la plateforme (anciens snapshots plateforme non vérifiables
+  ensuite). (b) Une entrée dont le mot de passe ne s'ouvre pas est publiée sans mot de passe : échec
+  FERMÉ (le terminal la refuse, `sync_protocol.md` §6 contrôle 3), au prix de la disponibilité. (c)
+  `content_key_wrapped` sans référence de la clé d'emballage ; famine au-delà de 500 enveloppes si
+  une clé d'accord invalide est en tête ; `DekCache` borné par `tagDekCacheSeconds`. (d) Verrou
+  consultatif par grand livre (`advisory-session.ts`) et orphelin jeté après 600 s (la configuration
+  refuse 300 s ou moins) ; au démarrage, le balayage peut jeter un brouillon `READY` tout juste
+  scellé, régénéré ensuite (`DRAFT_NOT_READY` côté signataire). (e) Une `SNAPSHOT_SIGNING_KEY_REF`
+  erronée fait jeter chaque brouillon `READY` (alarme 3).
+- **Risque.** Disponibilité du hors ligne et vérification d'anciens snapshots ; aucun droit élargi,
+  aucun faux accepté. **Mission de levée.** Mission 13 ; (a) : clés par prestataire, 12b (confirmé par le
+  porteur le 04/11/2026).
+- **Test de borne.** `orphan-config.spec.ts`, `crypto-encryptor.spec.ts`, `key-missing.spec.ts`,
+  `draft-tamper.spec.ts`, `cadence.spec.ts` ; WP21 part E (`offline-bounds.spec.ts`) : « OP-N93(a) » et « OP-N93(c) :
+  famine au-delà de 500 enveloppes ». Fichiers à faire
+  relire par une personne : `snapshot-draft.repository.ts`, `advisory-session.ts`,
+  `snapshot-content.worker.ts`, `snapshots-content/crypto/`.
+
+## ADR-145 — Mission 7 : traitement des lots, choix classés neutres (OP-N94)
+
+- **Statut** : Acceptée, 3 novembre 2026 (décisions du porteur, relectures de WP19 et WP20) ;
+  consignée par WP21.
+- **Décisions.** (1) Vente hors catalogue (`CL034`) écrite sans lignes (`CATALOG_MISMATCH`). (2)
+  `config_id` inconnu : `OFFLINE_NOT_ALLOWED`, `POLICY_LIMIT_EXCEEDED` en détail (`sync_protocol.md`
+  §7.2 à mettre en accord). (3) Annulation du back-office sans `reduce_offline_shortfall` : perte
+  surestimée. (4) Annulation hors ligne sans tap re-présenté, devise du grand livre, même terminal
+  (contrat, seq 88). (5) Inversions de dates : anomalie `CLOCK_SKEW` (`BatchContext.inversions`),
+  pas de dette. (6) `vendor_session_id` exigé par le processeur : le porteur a décidé d'ajouter le
+  champ à `OfflineOperation` de `openapi.yaml` (contradiction signalée).
+- **Risque.** Écarts comptables ou de perte, jamais de montant sous-estimé ; la base ne contrôle pas
+  l'appartenance de `p_actor` et `p_approver` au prestataire (l'API le fait : `assertApprover`).
+- **Mission de levée.** Mission 13 pour (3) et le contrôle en base. **Test de borne.**
+  `processing.spec.ts` (configuration inconnue), `journal-import-cycle2.spec.ts` (`assertApprover`,
+  403) ; WP21 part E (`offline-bounds.spec.ts`) : « OP-N94(1) » et « OP-N94(3) ». Fichiers à faire relire par une personne :
+  `ledger-engine.service.ts`, `money/spend.ts`, `purchase.ts`, `offline-sale.writer.ts`,
+  `shortfall-reduction.ts`.
+
+## ADR-146 — Mission 7 : migration `0050` hors plan et `lock_device` ajoutés au contrat (OP-N94)
+
+- **Statut** : Acceptée, 3 novembre 2026 (décision du porteur, relecture de WP20) ; consignée par
+  WP21.
+- **Contexte.** Une demande d'import rejetée ou expirée laissait l'import `PENDING` et l'index
+  d'unicité bloquait tout nouvel import du terminal. Le plan ne prévoyait que `0043` à `0049`.
+- **Décision.** `0050_device_journal_import_cancel.sql` : `cancel_device_journal_import(p_import,
+  p_actor, p_reason)` (DEFINER, idempotente, `assert_tenant`), `PENDING` vers `REJECTED` (et non
+  `FAILED` : garde de `0046` et contrainte `device_journal_import_approved`, écart au libellé du
+  porteur), refusée tant que la demande est valable (`CL001`) ou hors `PENDING` (`CL053`) ;
+  `EXECUTE` à `cashless_app` (droit ajouté, accepté). Appelée au rejet, à l'expiration et à l'échec
+  avant `begin_`. `0049` ajoute `lock_device(uuid, text)` (DEFINER, verrou de terminal, renforce).
+- **Risque.** API compromise : annule un import `PENDING` de son prestataire (déni borné). **Mission
+  de levée.** Aucune pour `0050` (permanente, revue en mission 13). **À reporter au contrat**
+  (`interfaces.md`) : `0050`, `lock_device`, `discard_open_offline_snapshot_drafts`,
+  `offline_snapshot_targets` (plafond `max_snapshot_age`).
+- **Test de borne.** `tests_device_journal_import_cancel.sql` et listes figées de
+  `tests_execute_grants.sql` (PASS le 04/11/2026). Fichiers à faire relire par une personne :
+  `0050`, `post-roles.sql`.
+
+## ADR-147 — Mission 7 : limites de corps et de démarrage consignées (OP-N95)
+
+- **Statut** : Acceptée, 3 novembre 2026 (relectures de WP10, WP18 et WP20) ; consignée par WP21.
+- **Constats.** (1) Au-delà de 100 ko, hors lots et import, la réponse est `500` au lieu de `413`
+  (défaut antérieur). (2) Le corps de l'import est lu jusqu'à 21 037 056 octets, après vérification
+  du jeton et du rôle (`body-gate.ts`). (3) LEVÉ le 04/11/2026 (décision du porteur, renforcement) : en
+  production, `DATABASE_URL_MAINT` vers le propriétaire, un superutilisateur ou un rôle hors
+  `cashless_maint` est refusé au démarrage (`maintenance-role-guard.ts`). (4) `gatedBody` lit sans filtre si l'identité n'a pas
+  de `preAuthenticate`.
+- **Risque.** (1) et (2) : mémoire, `500` trompeur ; (3) droit élargi sans alarme par mauvaise
+  configuration. **Mission de levée.** Mission 13 pour (1), (2), (4). **Condition.** `413` sur la limite
+  globale ; filtre d'identité exigé au démarrage.
+- **Test de borne.** (2) `journal-import-cycle2.spec.ts`, `batches-intake.spec.ts`. WP21 part E
+  (`offline-bounds.spec.ts`) : « OP-N95(1) », « OP-N95(3) » (production + propriétaire : refus ;
+  production + `cashless_maint` : démarre), « OP-N95(4) ». Fichiers à faire relire par une
+  personne : `body-gate.ts`, `authentication.guard.ts`, `device-identity/`.
+
+## ADR-148 — Mission 7 : migration `0051` hors plan, enveloppe de lecture de la remontée des terminaux (OP-N96)
+
+- **Statut** : Acceptée, 4 novembre 2026 (décision du porteur, option (a) ; WP21 partie D) ; consignée par WP21.
+- **Contexte.** Le contrat sert `GET /events/{event_id}/device-sync-status` (`getEventDeviceSyncStatus`, ADR-73). Les
+  fonctions de base `event_device_sync_status` et `event_sync_deadline` sont fermées à `cashless_app` (R-30.12) ; la
+  route était donc non servie (404). Le plan ne prévoyait que `0043` à `0049`.
+- **Décision.** `0051_event_device_sync_status_api.sql` : `event_device_sync_status_api(p_event uuid) RETURNS TABLE
+  (sync_deadline timestamptz, device_id uuid, serial text, caught_up boolean, reason text)`, `STABLE`, `SECURITY
+  DEFINER`, `search_path = public, pg_temp`, lecture seule. `assert_tenant(tenant_of_event(p_event))` d'abord :
+  événement inexistant, d'un autre prestataire ou appel sans prestataire de session lèvent la même erreur
+  `P0002` (404 neutre). Elle appelle les deux fonctions existantes (le calcul n'est pas recopié) et ne rend que les
+  colonnes de la réponse du contrat. `REVOKE ALL FROM PUBLIC` ; `EXECUTE` à `cashless_app` sur elle SEULE
+  (`post-roles.sql` 8d, droit ajouté accepté). `event_device_sync_status` et `event_sync_deadline` restent refusées à
+  `cashless_app`. Côté API : rôles de `getEventOfflineRisk` (`ORGANIZER_ADMIN` de l'organisateur de l'événement,
+  `OPERATOR_ADMIN`) ; aucun rôle : 403 ; autre prestataire ou autre organisateur : 404.
+- **Risque.** API compromise : lit, pour un événement de SON prestataire (déjà lisible par RLS : `event`, `device`),
+  la date limite de synchronisation et l'état « à jour » des terminaux, y compris l'existence d'anomalies `SEQ_GAP`
+  ouvertes et de lots en cours (agrégés en une raison). Aucune écriture, aucune donnée d'un autre prestataire
+  (`assert_tenant`). Fonction DEFINER : une faute dans son corps élargirait la lecture (d'où la liste de colonnes
+  figée par test). **Mission de levée.** Aucune (droit permanent), relue en mission 13 (recette V1).
+- **Test de borne.** `tests_offline_rights.sql` (section 6 quater : prestataire courant, autre prestataire, sans
+  prestataire, événement inexistant, colonnes exactes, `EXECUTE` à `cashless_app` seul, fonctions sous-jacentes
+  toujours refusées, DEFINER/STABLE/`search_path`) et la liste exacte de `tests_execute_grants.sql` : ils échouent si le
+  droit s'élargit. Côté API : `offline-sync-status.spec.ts` (nominal, 401, 403, 404). PASS le 04/11/2026. Fichiers à
+  faire relire par une personne : `0051`, `post-roles.sql`.
+- **À reporter au contrat** (`interfaces.md`) : `0051` et la signature ci-dessus.
+
+## ADR-149 — Mission 7 : levée de trou et import de journal, 404 neutre sans le rôle voulu (renforcement)
+
+- **Statut** : Acceptée, 4 novembre 2026 (décision du porteur ; WP21 partie E) ; consignée par WP21.
+- **Contexte.** `waiveSeqGap` et `importDeviceJournal` (demande) répondaient 404 pour un terminal inconnu ou d'un autre
+  prestataire, mais 403 `FORBIDDEN` à une personne du MÊME prestataire sans `SUPERVISOR` sur l'événement du terminal :
+  la différence révélait l'existence d'un terminal (oracle d'existence intra-prestataire).
+- **Décision.** Sans rôle sur l'événement du terminal, ou terminal sans événement, la réponse est celle d'un terminal
+  inconnu : 404 `NOT_FOUND`, même corps. Le contrôle de rôle reste, avant tout indice sur le trou ou l'import ; seul
+  le statut change. Le 403 ne subsiste que pour une personne qui ne tient le rôle nulle part (identique, que
+  l'objet existe ou non). La lecture d'un import (`getDeviceJournalImport`) répondait déjà 404.
+- **Risque.** Aucun droit élargi ; renforce. `openapi.yaml` déclare encore `403` à côté de `404` sur ces deux routes
+  (compatible, à rapprocher de la règle « jamais 403 » à la prochaine révision du contrat).
+- **Test de borne.** `offline-bounds.spec.ts` (« SUPERVISOR d'un autre organisateur du MÊME prestataire : terminal
+  existant et inconnu, même 404 »), `journal-import-cycle2.spec.ts` (« 404 neutre (04/11/2026), rien créé »). Fichiers
+  à faire relire par une personne : `seq-gap.service.ts`, `journal-import.service.ts`.
+
+## ADR-150 — Mission 7 : garde des noms secrets de l'API publique, exemption étroite pour `pwd_pack_enc` (OP-N97)
+
+- **Statut** : Acceptée, 4 novembre 2026 (décision du porteur ; WP21 partie E) ; consignée par WP21.
+- **Contexte.** `architecture.spec.ts` interdit à tout fichier atteignable depuis l'API publique de nommer
+  `pwd_pack_enc`, `pwd_pack_dek_id`, `encrypted_dek`, `offline_snapshot_rows` ou de faire `SELECT * FROM media`.
+  `offline/snapshots/offline-snapshots.service.ts` (WP15) met en forme l'enveloppe `pwd_pack_enc` des entrées du
+  snapshot (nonce, chiffré, tag) que le contrat sert au terminal, et nomme donc ce champ.
+- **Décision.** Exemption étroite : `pwd_pack_enc` seul, dans ce fichier seul (liste constante dans le test).
+  `pwd_pack_dek_id`, `encrypted_dek`, `offline_snapshot_rows` et `SELECT * FROM media` restent interdits partout, y
+  compris dans ce fichier.
+- **Risque.** Affaiblit la garde : un autre usage du champ `pwd_pack_enc` dans ce fichier ne serait plus vu. Le champ
+  est un blob chiffré sous K_v (clé de contenu du snapshot, enveloppée par terminal), jamais le mot de passe en
+  clair ; l'API ne détient pas K_v. **Mission qui le relit.** Mission 13 (recette V1). **Condition de levée.**
+  Servir l'entrée sans que le service nomme la colonne (mise en forme déplacée dans le traitement de contenu).
+- **Test de borne.** `architecture.spec.ts` : « exemption des noms secrets : liste figée » (échoue si la liste
+  grandit) et « exemption des noms secrets (contrôle) » (le même nom ailleurs, ou un autre nom, est attrapé).
+  Fichier à faire relire par une personne : `offline-snapshots.service.ts`.
+
+## ADR-151 — Mission 7 : changement ordinaire visible en 60 s plus la boucle, écart consigné (OP-N98)
+
+- **Statut** : Acceptée, 4 novembre 2026 (décision du porteur ; WP21 partie G) ; consignée par WP21.
+- **Contexte.** NFR-005 : un changement non bloquant visible en 60 s au plus. La cadence (R-30.5) attend 60 s après
+  la dernière version avant un DELTA ordinaire ; production, signature et publication s'ajoutent. WP21 (partie A) a
+  mesuré 60,9 à 62,2 s.
+- **Décision.** Garder `DELTA_AFTER_MS` = 60 s. Écart accepté : au plus 2,5 s au-delà de 60 s, pour les changements non
+  bloquants seulement. Les changements bloquants tiennent 5 s (corrigé dans la même partie).
+- **Risque.** Un changement ordinaire arrive 1 à 2 s en retard sur la cible ; pas d'effet sur la sécurité.
+  **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** `DELTA_AFTER_MS` à 55 s au plus, ou
+  NFR-005 reformulée par le porteur.
+- **Test de borne.** `cadence-bounds.spec.ts` (`DELTA_AFTER_MS` ≤ 60 000) ; `snapshot-latency.spec.ts` (échec au-delà
+  de 62,5 s ; cas strict `it.failing`, qui échoue dès que l'écart disparaît).
+- **Même partie, correction du blocage (renforce, ne change aucun droit).** Cause de NFR-005 (blocage en 5 s) : (1)
+  construction et vérification de 50 000 entrées d'un seul tenant dans la boucle d'événements (arrêts de 1,6 à 3,8 s),
+  maintenant découpées en tranches de 500 lignes (`processes/cooperative.ts`) ; (2) `offline_snapshot_source_rows`
+  matérialisait toute la vue (3 s par passage et par grand livre), maintenant `AS NOT MATERIALIZED` (migration `0053`,
+  même fonction, mêmes droits, seul le plan change ; `source-plan.spec.ts` échoue si elle est perdue). Empreinte,
+  canonicalisation, chaînage et signature inchangés (`cooperative-equivalence.spec.ts` égale les deux calculs).
+
+## ADR-152 — Mission 7 : migrations hors plan de performance de WP21 (0052, 0054 à 0057)
+
+- **Statut** : Acceptée, 4 novembre 2026 ; consignée par WP21 (relecture, cycle 2). Complète ADR-151 (migration
+  `0053`) ; même démarche qu'ADR-146 (`0050`) et ADR-148 (`0051`).
+- **Contexte.** NFR-003 : un lot de 500 ventes doit être traité en 60 s ; la mesure a montré que
+  `offline_device_exposure` coûtait de plus en plus cher avec l'historique du terminal (lots de 60,4 s, 72,8 s puis
+  73,8 s). NFR-005 : un blocage doit être visible en 5 s ; `offline_snapshot_source_rows` coûtait 0,65 s au repos sur
+  50 000 bracelets, et plus de 30 s (coupée par `statement_timeout`) juste après un chargement massif, avant que les
+  statistiques ne soient à jour. Aucune de ces migrations n'était au plan.
+- **Décision.** Chaque migration est une réécriture de plan : même résultat, mêmes droits (`CREATE OR REPLACE`
+  conserve propriétaire et ACL, aucun `GRANT`), `assert_tenant` toujours en premier, un test d'équivalence.
+  - `0052` : `offline_device_exposure` désigne d'abord les ventes non acquittées (trois parties exclusives), puis
+    calcule le montant une seule fois par vente ; `tests_offline_exposure_bounded.sql` compare au résultat de 0048/0049.
+  - `0054` : DELTA de `offline_snapshot_source_rows` lu à partir de candidats trouvés par les historiques, avec les
+    cinq conditions d'origine gardées en filtre ; le FULL garde la requête de `0053`.
+  - `0055` : détection des retraits en `EXCEPT` (FULL et DELTA), sans boucle imbriquée, sans dépendre des statistiques ;
+    `tests_offline_snapshot_source_no_stats.sql`.
+  - `0056` : trois index ordinaires, sur `media_status_history (media_id, at)`, `media_batch_status_history
+    (batch_id, at)` et `media_assignment (media_id, wallet_id)`.
+  - `0057` : lecture de la vue des bracelets par jointure `LATERAL` avec `OFFSET 0`, insensible aux estimations ;
+    `tests_offline_snapshot_source_candidates.sql` recopie `0053` et compare ligne à ligne sur 11 scénarios.
+- **Risque et conséquences.** Aucun droit, colonne ni format ne change. Coût : un index de plus à chaque insertion
+  d'historique de statut, d'historique de statut de lot et de rattachement (coût d'écriture). Un plan qui dérive reste
+  possible : `source-plan.spec.ts` et les tests « sans statistiques » échouent s'il perd sa forme. Ce ne sont pas des
+  écarts de sécurité (aucun contrôle retiré). **Fichiers à faire relire par une personne** : migrations `0052`, `0054`,
+  `0055`, `0057` (fonctions `SECURITY DEFINER`), `0056` (index).

@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "#10": {
+      "evidence_ref": "Pas une issue : num\u00e9ro de ligne (#10) de la table de conflit \u00a77.3 dans tasks/WP17-regles-pures.md:143",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": "WP17"
+    }
+  },
+  "schema_version": 1
+}

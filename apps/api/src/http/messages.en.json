@@ -237,7 +237,7 @@
   },
   "SNAPSHOT_VERSION_UNKNOWN": {
     "title": "Unknown snapshot version",
-    "detail": "Unknown snapshot version; request a full snapshot."
+    "detail": "This snapshot version was not served to this device, or its digest differs."
   },
   "BATCH_IN_PROGRESS": {
     "title": "Batch in progress",
@@ -245,7 +245,7 @@
   },
   "BATCH_TOO_LARGE": {
     "title": "Batch too large",
-    "detail": "The batch is empty or exceeds the allowed size."
+    "detail": "The batch exceeds the allowed size."
   },
   "PAYLOAD_TOO_LARGE": {
     "title": "Notification too large",

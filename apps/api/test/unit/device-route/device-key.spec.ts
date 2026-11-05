@@ -39,11 +39,11 @@ function codeOf(fn: () => unknown): string {
 describe('parseDeviceKey (A14)', () => {
   it('clé du terminal : seq rendu en bigint', () => {
     expect(parseDeviceKey('SN-TEST-0001:0001', DEVICE)).toBe(1n);
-    expect(parseDeviceKey('SN-TEST-0001:9223372036854775807', DEVICE)).toBe(9223372036854775807n);
+    expect(parseDeviceKey('SN-TEST-0001:9007199254740991', DEVICE)).toBe(9007199254740991n);
   });
 
-  it('seq au-delà de 2^63 − 1 (borne du registre) → 422, jamais un 500 de la base (WP08, constat 3)', () => {
-    expect(() => parseDeviceKey('SN-TEST-0001:9223372036854775808', DEVICE)).toThrow(
+  it('seq au-delà de 2^53 − 1 (borne R-14, JCS exact) → 422, jamais un 500 de la base (WP08, constat 3)', () => {
+    expect(() => parseDeviceKey('SN-TEST-0001:9007199254740992', DEVICE)).toThrow(
       expect.objectContaining({ code: 'VALIDATION_FAILED', status: 422 }),
     );
     expect(() => parseDeviceKey('SN-TEST-0001:123456789012345678901', DEVICE)).toThrow(

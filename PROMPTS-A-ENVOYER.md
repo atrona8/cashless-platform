@@ -558,6 +558,22 @@ vendeurs et le catalogue : la mission les ajoute.
 > et `mark_offline_retry_alerted` au signataire, `device_journal_imports_processing` à `cashless_app`, identifiants
 > seuls) : revoir les listes d'`EXECUTE` figées et décider s'ils restent permanents.
 
+> **Hérité de la mission 7 (consignation de WP21, 04/11/2026, ADR-141 à ADR-147)** : OP-N86 étendu
+> (l'`INSERT` direct sur `anomaly` est gardé pour `cashless_app` avec sept appelants,
+> `open_offline_anomaly` ajoutée) ; OP-N92 (rotation de la clé de signature des snapshots à deux
+> personnes, acteur vérifié, avec OP-N56 ; lectures de `cashless_keyadmin` et `cashless_snapsign` à
+> revoir) ; OP-N93 (alarme et seuil sur les entrées de snapshot publiées sans mot de passe,
+> référence de la clé d'emballage, reprise du brouillon scellé au démarrage) ; OP-N94
+> (`reduce_offline_shortfall` appelée par l'annulation du back-office, contrôle d'appartenance de
+> l'acteur et de l'approbateur d'un import en base, migration `0050`) ; OP-N95 (`413` au lieu de
+> `500` au-delà de 100 ko ; le refus au démarrage d'un `DATABASE_URL_MAINT` propriétaire ou
+> superutilisateur est déjà livré par WP21, 04/11/2026) ; OP-N96 (relire l'enveloppe
+> `event_device_sync_status_api` de la migration `0051` et son `EXECUTE` à `cashless_app`, ADR-148) ; OP-N97 (relire l'exemption de garde `pwd_pack_enc` dans
+> `offline-snapshots.service.ts`, ADR-150). Les clés de signature par prestataire
+> (OP-N93 a) partent en 12b (confirmé par le porteur le 04/11/2026).
+> OP-N98 (NFR-005 : changement ordinaire visible en 60 s plus la boucle de production, `DELTA_AFTER_MS` gardé à 60 s ;
+> à lever en ramenant le délai à 55 s au plus ou en reformulant NFR-005, ADR-151).
+
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
 > migration 0041, ADR-135) et OP-N85 (reprise de la caution due après un arrêt entre COMMIT et `afterCommit`).

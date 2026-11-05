@@ -13,12 +13,14 @@ import {
   generateKeyPairSync,
   randomBytes,
   randomUUID,
+  sign as cryptoSign,
   webcrypto,
   type KeyObject,
 } from 'node:crypto';
 import { request as httpsRequest } from 'node:https';
 import { deviceAad, openForRecipient, type EncryptedBlob } from '@cashless/tag-format';
 import * as x509 from '@peculiar/x509';
+import canonicalize from 'canonicalize';
 import type { Client } from 'pg';
 import {
   androidAgreeChallenge,
@@ -182,6 +184,111 @@ async function asOperator<T>(db: Client, operatorId: string, fn: () => Promise<T
   }
 }
 
+// ----- Lots hors ligne (mission 7, lot WP18, T076) -----
+
+/**
+ * Les ONZE champs chaînés d'une opération (sync_protocol.md §3.3), recopiés ICI à la main : le terminal de test ne
+ * passe JAMAIS par `chainedContent` du serveur (sinon le test vérifierait le serveur par lui-même). Ils sont
+ * contrôlés contre `offline-vectors/vectors.json` (batches-intake.spec.ts).
+ */
+const TEST_CHAINED_FIELDS = [
+  'seq',
+  'type',
+  'occurred_at',
+  'amount',
+  'currency',
+  'tap',
+  'lines',
+  'reverses_seq',
+  'reverses_transaction_id',
+  'online_operation',
+  'void_reason',
+] as const;
+
+/** `content_sha256` = SHA-256(JCS(champs chaînés présents)), calculé par la bibliothèque de test. */
+export function testContentSha256(op: Record<string, unknown>): Buffer {
+  const picked: Record<string, unknown> = {};
+  for (const field of TEST_CHAINED_FIELDS) if (op[field] !== undefined) picked[field] = op[field];
+  return createHash('sha256').update(canonicalize(picked)!, 'utf8').digest();
+}
+
+/** Départ de la chaîne d'un terminal : SHA-256(`CASHLESS/CHAIN/v1` ‖ 16 octets de l'UUID). */
+export function chainGenesis(deviceId: string): Buffer {
+  return createHash('sha256')
+    .update('CASHLESS/CHAIN/v1', 'utf8')
+    .update(Buffer.from(deviceId.replace(/-/g, ''), 'hex'))
+    .digest();
+}
+
+/** `chain_hash(n) = SHA-256(chain_hash(n-1) ‖ content_sha256(n))`. */
+export function chainHash(prev: Buffer, content: Buffer): Buffer {
+  return createHash('sha256').update(prev).update(content).digest();
+}
+
+/** Opération telle que l'écrit un test : sans `seq` ni `chain_hash` (posés par `buildJournal`). */
+export type JournalOpInput = Record<string, unknown> & { type: string; occurred_at: string };
+
+export interface BuiltJournal {
+  /** Opérations numérotées de `fromSeq`, avec leur `chain_hash` déclaré. */
+  operations: Array<Record<string, unknown>>;
+  contents: Buffer[];
+  prev: Buffer;
+  last: Buffer;
+}
+
+/**
+ * Constructeur de journal : numérote les opérations à partir de `fromSeq` et chaîne leurs empreintes depuis `prev`
+ * (`content_sha256` par `testContentSha256`).
+ */
+export function buildJournal(
+  ops: JournalOpInput[],
+  options: { fromSeq: number; prev: Buffer },
+): BuiltJournal {
+  let chain = options.prev;
+  const contents: Buffer[] = [];
+  const operations = ops.map((input, index) => {
+    const op: Record<string, unknown> = { ...input, seq: options.fromSeq + index };
+    const content = testContentSha256(op);
+    chain = chainHash(chain, content);
+    contents.push(content);
+    return { ...op, chain_hash: chain.toString('hex') };
+  });
+  return { operations, contents, prev: options.prev, last: chain };
+}
+
+/** Sabotages d'un lot, utilisables par les autres lots de la mission. */
+export interface OfflineBatchOptions {
+  batchId?: string;
+  /** Premier numéro (défaut : le suivant du terminal, `nextBatchSeq`). */
+  fromSeq?: number;
+  /** Empreinte de départ (défaut : la pointe de chaîne du terminal). */
+  prev?: Buffer;
+  ledgerId: string;
+  epoch?: number;
+  /** Série de l'en-tête (défaut : celle du terminal). */
+  serial?: string;
+  /** Altère un champ APRÈS le chaînage : la signature de l'en-tête reste bonne, l'empreinte non. */
+  alterOp?: { index: number; field: string; value: unknown };
+  /** Décale d'un numéro toutes les opérations à partir de cet indice (numéros non continus). */
+  skipSeqAt?: number;
+  /** Altère le `chain_hash` DÉCLARÉ de cette opération (le reste du lot est cohérent). */
+  tamperChainHashAt?: number;
+  /** Altère le `last_chain_hash` de l'en-tête (avant signature). */
+  tamperLastChainHash?: boolean;
+  /** Signature : de l'en-tête (défaut), d'un AUTRE en-tête, par une autre clé, ou au format IEEE P1363. */
+  signature?: 'own' | 'other-header' | { privateKey: KeyObject } | 'p1363' | 'none';
+}
+
+export interface BuiltBatch {
+  body: {
+    header: Record<string, unknown>;
+    operations: Array<Record<string, unknown>>;
+    signature: string;
+  };
+  header: Record<string, unknown>;
+  journal: BuiltJournal;
+}
+
 export class TestTerminal {
   readonly signing = p256Pair();
   readonly agreement = p256Pair();
@@ -196,6 +303,10 @@ export class TestTerminal {
   token = '';
   /** Prochain numéro de `seqKey` (mission 5b) ; à relever si la base impose un plancher. */
   nextSeq = 1;
+  /** Premier numéro du prochain lot (`buildBatch`). */
+  nextBatchSeq = 1;
+  /** Pointe de la chaîne du terminal (`null` : départ, calculé depuis `deviceId` au premier lot). */
+  chainTip: Buffer | null = null;
 
   constructor(
     readonly os: TerminalOs = 'ANDROID',
@@ -505,6 +616,117 @@ export class TestTerminal {
   ): Promise<TerminalResponse> {
     return send(this.prepare(baseUrl, spec, proofs), serverCaPem);
   }
+
+  /** Signature ECDSA P-256 / SHA-256 DER de `JCS(header)` par la clé de signature du terminal. */
+  signBatch(
+    header: Record<string, unknown>,
+    privateKey: KeyObject = this.signing.privateKey,
+  ): Buffer {
+    return cryptoSign('sha256', Buffer.from(canonicalize(header)!, 'utf8'), {
+      key: privateKey,
+      dsaEncoding: 'der',
+    });
+  }
+
+  /**
+   * Lot signé (corps de `POST /offline-batches`). Avance `nextBatchSeq` et la pointe de chaîne, sauf sabotage de
+   * numéro (`skipSeqAt`) qui n'avance que du nombre d'opérations.
+   */
+  buildBatch(ops: JournalOpInput[], options: OfflineBatchOptions): BuiltBatch {
+    const fromSeq = options.fromSeq ?? this.nextBatchSeq;
+    const prev = options.prev ?? this.chainTip ?? chainGenesis(this.deviceId);
+    const journal = buildJournal(ops, { fromSeq, prev });
+    let operations = journal.operations.map((op) => ({ ...op }));
+    if (options.skipSeqAt !== undefined) operations = rechain(operations, prev, options.skipSeqAt);
+    const last =
+      operations.length > 0 ? Buffer.from(String(operations.at(-1)!.chain_hash), 'hex') : prev;
+    const header: Record<string, unknown> = {
+      batch_id: options.batchId ?? randomUUID(),
+      device_serial: options.serial ?? this.serial,
+      ledger_id: options.ledgerId,
+      authority_epoch: options.epoch ?? 0,
+      seq_from: fromSeq,
+      seq_to: fromSeq + ops.length - 1,
+      count: ops.length,
+      created_at: new Date().toISOString(),
+      prev_chain_hash: prev.toString('hex'),
+      last_chain_hash: options.tamperLastChainHash
+        ? chainHash(last, Buffer.from('tamper')).toString('hex')
+        : last.toString('hex'),
+    };
+    if (options.tamperChainHashAt !== undefined)
+      operations[options.tamperChainHashAt] = {
+        ...operations[options.tamperChainHashAt]!,
+        chain_hash: '00'.repeat(32),
+      };
+    if (options.alterOp) {
+      const { index, field, value } = options.alterOp;
+      operations[index] = { ...operations[index]!, [field]: value };
+    }
+    const mode = options.signature ?? 'own';
+    let signature: string;
+    if (mode === 'none') signature = '';
+    else if (mode === 'other-header')
+      signature = this.signBatch({ ...header, batch_id: randomUUID() }).toString('base64');
+    else if (mode === 'p1363')
+      signature = cryptoSign('sha256', Buffer.from(canonicalize(header)!, 'utf8'), {
+        key: this.signing.privateKey,
+        dsaEncoding: 'ieee-p1363',
+      }).toString('base64');
+    else if (mode === 'own') signature = this.signBatch(header).toString('base64');
+    else signature = this.signBatch(header, mode.privateKey).toString('base64');
+    this.nextBatchSeq = fromSeq + ops.length;
+    this.chainTip = last;
+    return { body: { header, operations, signature }, header, journal: { ...journal, operations } };
+  }
+
+  /** Envoie un lot (`POST /offline-batches`) : `Idempotency-Key` = `batch_id`, `X-Authority-Epoch` = époque du lot. */
+  submitBatch(
+    baseUrl: string,
+    serverCaPem: string,
+    batch: { body: unknown; header: Record<string, unknown> },
+    options: {
+      proofs?: ProofOptions;
+      idempotencyKey?: string;
+      /** `null` : en-tête absent ; défaut : l'époque de l'en-tête du lot. */
+      epochHeader?: string | null;
+    } = {},
+  ): Promise<TerminalResponse> {
+    const prepared = this.prepare(
+      baseUrl,
+      {
+        method: 'POST',
+        path: '/offline-batches',
+        body: batch.body,
+        idempotencyKey: options.idempotencyKey ?? String(batch.header.batch_id),
+      },
+      {
+        ...options.proofs,
+        headers: {
+          ...(options.epochHeader === null
+            ? {}
+            : { 'X-Authority-Epoch': options.epochHeader ?? String(batch.header.authority_epoch) }),
+          ...options.proofs?.headers,
+        },
+      },
+    );
+    return send(prepared, serverCaPem);
+  }
+}
+
+/** Recalcule la chaîne après avoir décalé d'un numéro les opérations à partir de `from` (numéros non continus). */
+function rechain(
+  operations: Array<Record<string, unknown>>,
+  prev: Buffer,
+  from: number,
+): Array<Record<string, unknown>> {
+  let chain = prev;
+  return operations.map((op, index) => {
+    const shifted = index >= from ? { ...op, seq: Number(op.seq) + 1 } : op;
+    const { chain_hash: _declared, ...fields } = shifted;
+    chain = chainHash(chain, testContentSha256(fields));
+    return { ...fields, chain_hash: chain.toString('hex') };
+  });
 }
 
 /** Serveur HTTPS de test : adresse et autorité de son certificat. */

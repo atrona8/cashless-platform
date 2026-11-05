@@ -67,6 +67,36 @@ export class TapService {
     };
   }
 
+  /**
+   * `register_tap` hors ligne (mode `OFFLINE`), dans la transaction de l'appelant : lot hors ligne (mission 7, WP19).
+   * Pas d'`assert_device_active` : un terminal `SUSPENDED` voit ses lots traités, son statut DATÉ est jugé par la
+   * conformité (`device_status_at`), et le terminal d'un import est `REVOKED`. Ne lève jamais sur un résultat non
+   * `OK` : l'appelant applique la table de conflit. `onlineTapId` : `tap_id` reçu en ligne, réutilisé par la base
+   * s'il est du même terminal, bracelet, compteur et UID et n'a servi à aucune écriture (ADR-50).
+   */
+  async registerOffline(
+    client: TxClient,
+    device: Pick<DeviceContext, 'deviceId' | 'operatorId'>,
+    tap: TapInput,
+    onlineTapId: string | null,
+  ): Promise<{ result: TapResult; tapId: string | null }> {
+    const { rows } = await client.query<{ result: TapResult; tap_id: string | null }>(
+      `SELECT result, tap_id::text AS tap_id
+         FROM register_tap($1, $2, $3, $4, $5, $6, 'OFFLINE', NULL, $7::bigint, $8)`,
+      [
+        device.operatorId,
+        tap.tokenHash,
+        tap.uid,
+        tap.counter,
+        tap.occurredAt,
+        device.deviceId,
+        onlineTapId,
+        tap.signature,
+      ],
+    );
+    return { result: rows[0]!.result, tapId: rows[0]!.tap_id };
+  }
+
   /** Relie une lecture à l'écriture qu'elle a servie : une lecture ne sert qu'à une écriture (`CL022` sinon). */
   async consume(client: TxClient, tapId: string, transactionId: string): Promise<void> {
     await client.query('SELECT consume_tap($1, $2)', [tapId, transactionId]);

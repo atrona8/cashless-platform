@@ -74,6 +74,7 @@ describe('loadConfig', () => {
     expect(config.personalizationDatabaseUrl).toContain('cashless_perso:');
     expect(config.tagCheckDatabaseUrl).toContain('cashless_tagcheck:');
     expect(config.keyAdminDatabaseUrl).toContain('cashless_keyadmin:');
+    expect(config.maintenanceDatabaseUrl).toContain('cashless_maint:');
     expect(config.claimCodeHmacKey.length).toBeGreaterThanOrEqual(32);
     expect(config.tagDekCacheSeconds).toBe(300);
     expect(config.tagWrappingKeyRef).toBe('fake-kms:wrap:test');
@@ -97,8 +98,15 @@ describe('loadConfig', () => {
       config.personalizationDatabaseUrl,
       config.tagCheckDatabaseUrl,
       config.keyAdminDatabaseUrl,
-    ]).toEqual(['', '', '', '']);
+      config.maintenanceDatabaseUrl,
+    ]).toEqual(['', '', '', '', '']);
     expect(config.tagWrappingKeyRef).toBe(PRODUCTION.TAG_WRAPPING_KEY_REF);
+  });
+
+  it('DATABASE_URL_MAINT : lue telle quelle, vide acceptée au chargement en production', () => {
+    const url = 'postgres://cashless_maint:x@h:5432/d';
+    expect(loadConfig({ ...LOCAL, DATABASE_URL_MAINT: url }).maintenanceDatabaseUrl).toBe(url);
+    expect(loadConfig({ ...PRODUCTION, DATABASE_URL_MAINT: '' }).maintenanceDatabaseUrl).toBe('');
   });
 
   // Revue post-fusion de bracelets-nfc, RISK-4 : refus au chargement, plus seulement à la première

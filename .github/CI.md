@@ -100,6 +100,53 @@ WP13 fusionnées) :
 | Jest après `reset-db` (`SKIP_LATENCY=1 npm test`) | API : 136 suites, **2195 tests** (2186 verts, 7 ignorés dont la latence ; `claim-code-order.spec.ts` et `migrate-lock.spec.ts` instables connus du poste, verts seuls : 20/20) ; `contracts` et `tag-format` : 39 tests verts |
 | Latence du paiement (suite seule) | p50 61,5 ms, p95 67,4 ms, p99 79,1 ms (1re passe) ; p95 81,1 ms, p99 96,6 ms (passe finale) |
 
+## Mission hors-ligne-snapshots-lots (lot WP21, 2026-11-04)
+
+Étapes ajoutées au workflow, **après** la passe parallèle (`SKIP_LATENCY=1 npm test`) ; aucune étape
+existante retirée ni rendue facultative. Les trois suites sont écartées de la passe parallèle par
+`apps/api/jest.config.cjs` (liste `SKIP_LATENCY`) et ne tournent donc qu'ici, seules, en série.
+
+| Étape | Commande | Ce qu'elle garantit |
+|---|---|---|
+| Concurrence des lots hors ligne (NFR-001, NFR-011, NFR-013) | `npm test -w @cashless/api -- --runInBand end-to-end/offline-concurrency` | 100 rejeux d'un même lot (dont concurrents) : une écriture par opération ; 50 envois concurrents d'un terminal : un seul accepté, les autres `BATCH_IN_PROGRESS` ; pool de verrous réduit : réponse définie, sans écriture partielle |
+| Latence des lots et des snapshots, NFR-003 à NFR-005 | `npm test -w @cashless/api -- --runInBand end-to-end/offline-latency end-to-end/snapshot-latency` | Lot de 500 opérations, p95 ≤ 60 s ; jeu de 50 000 bracelets : `FULL` signé en 30 s au plus, `DELTA` servi en 2 s au plus pour 95 % des demandes, blocage publié en 5 s au plus, autre changement en 60 s au plus |
+
+Les autres preuves de la mission (`offline-journey`, `offline-minimal`, `offline-isolation`,
+`offline-secrets`, `offline-production`, dans `apps/api/test/integration/end-to-end/`, et les suites
+des lots) tournent dans la passe parallèle générale. Un processus de fond (signataire, contenu,
+travailleurs de lots et d'import) traite toute la base : ces suites créent leur propre prestataire
+et grand livre et n'affirment rien de global.
+
+Déjà pris par les étapes existantes, sans modification : les suites `tests_offline_*.sql`,
+`tests_execute_grants.sql`, `tests_device_rights.sql`, `tests_device_purge_window.sql` et
+`tests_device_journal_import_cancel.sql` par `test:pgtap` (qui lit `tests/[!_]*.sql`) ;
+`check:generated` ne voit aucun `.sql` généré modifié par la mission. **pgTAP tourne avant Jest, sur
+la base fraîchement migrée** : les suites de contenu des snapshots laissent des brouillons `READY`
+committés (`tests_offline_rights.sql`, test 87, faux sinon) ; relancer `reset-db` avant `test:pgtap`
+en local si Jest a déjà tourné.
+
+Variables nouvelles : `CASHLESS_SNAPCONTENT_PASSWORD`, `CASHLESS_SNAPSIGN_PASSWORD`,
+`CASHLESS_MAINT_PASSWORD` (mots de passe des rôles, posés par `post-roles.sql`) et
+`DATABASE_URL_SNAPCONTENT`, `DATABASE_URL_SNAPSIGN`, `DATABASE_URL_MAINT` (valeurs de test du job,
+port 5432 ; sans elles `config.ts` retombe sur `127.0.0.1:5433`). `SNAPSHOT_SIGNING_KEY_REF` n'est
+pas posée : le faux KMS est permis hors production (OP-N89).
+
+Processus lancés à la main : `npm run build -w @cashless/api`, puis, depuis `apps/api`, `node
+--require tsx/cjs dist/main.snapshot-content.js --once` (`--list` : version due par grand livre),
+`dist/main.snapshot-signer.js --once` et `dist/main.maintenance.js --once` (même forme que les
+scripts `start:*`) ; `node dist/main.*.js` seul échoue (`ERR_MODULE_NOT_FOUND`, import sans
+extension de `@cashless/contracts`).
+
+Répétition locale (macOS, PostgreSQL 17 en Docker sur colima 3 Gio, base propre `cashless_wp21c`,
+lane de WP21) :
+
+| Passe | Résultat |
+|---|---|
+| Types du contrat (`check -w @cashless/contracts`) | à jour (TypeScript et Dart) |
+| pgTAP (`test:pgtap`) | 52 fichiers, **4 850 assertions** ; un échec isolé (`tests_psp_configurations.sql`, test 121) qui passe seul (165/165), non reproduit |
+| Suites citées par les fiches d'OP levés | `tests_offline_snapshots` 145, `tests_offline_rights` 197, `tests_offline_policy` 82, `tests_definer_trigger_writers` 24, `tests_execute_grants` 79, `tests_device_rights` 89, `tests_device_purge_window` 9 : PASS |
+| Mesures NFR-003 à NFR-005 | voir le compte rendu de la part A de WP21 (machine, `CI` non posé, p95, p99, maximum) |
+
 ## Répétition locale du 2026-10-14 (mission bracelets-nfc, WP20)
 
 macOS (Intel), PostgreSQL 17 en Docker (colima, `127.0.0.1:5433`) avec pgTAP, `pg_prove` 3.37 (CPAN), Node 24.17,

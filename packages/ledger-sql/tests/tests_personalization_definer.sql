@@ -19,6 +19,7 @@
 \set ON_ERROR_STOP 1
 \set QUIET 1
 BEGIN;
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 

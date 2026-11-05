@@ -16,9 +16,13 @@ import { HealthModule } from './health/health.controller';
 import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdentityModule } from './identity/identity.module';
 import { MediaPublicModule } from './media/media-public.module';
+import { OfflineBatchesModule } from './offline/batches/offline-batches.module';
+import { OfflineJournalModule } from './offline/journal/offline-journal.module';
+import { OfflineSeqModule } from './offline/seq/offline-seq.module';
 import { PaymentRequestsModule } from './payment-requests/payment-requests.module';
 import { PaymentsModule } from './payments/payments.module';
 import { CashSessionsModule } from './cash-sessions/cash-sessions.module';
+import { OfflinePolicyModule } from './offline/policy/offline-policy.module';
 import { PspConfigurationsModule } from './psp-configurations/psp-configurations.module';
 import { PspModule } from './psp/psp.module';
 import { ReversalsModule } from './reversals/reversals.module';
@@ -67,10 +71,17 @@ import { WorkerRegistry } from './processes/worker';
     PspModule,
     PspConfigurationsModule,
     CashSessionsModule,
+    // Mission hors-ligne-snapshots-lots (lot WP14) : politique hors ligne et risque.
+    OfflinePolicyModule,
     CashTopupModule,
     PspTopupsModule,
     WebhooksModule,
     ChargebacksModule,
+    // Mission 7 (lot WP18) : réception des lots hors ligne.
+    OfflineBatchesModule,
+    // Mission 7 (lot WP20) : levée de trou de séquence et import du journal d'un terminal révoqué.
+    OfflineSeqModule,
+    OfflineJournalModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

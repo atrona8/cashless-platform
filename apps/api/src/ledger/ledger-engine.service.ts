@@ -29,6 +29,7 @@ import {
   takeDeposit,
   type LedgerContextRow,
 } from './db/ledger-queries';
+import type { ReferenceMemo } from './ports/reference-memo';
 import { ACCOUNT_RESOLVER, type AccountResolver, type Queryable } from './ports/account-resolver';
 import { CONFIG_RESOLVER, type ConfigResolver } from './ports/config-resolver';
 import { isAccepted, type EventStatus } from './status-matrix';
@@ -43,11 +44,27 @@ import {
   type WalletBalances,
 } from './types';
 
+/**
+ * Options propres au traitement d'un lot hors ligne (NFR-003). Le chemin en ligne n'en passe JAMAIS : comportement et
+ * lectures inchangés.
+ */
+export interface EngineOptions {
+  /** Mémoire de lot : lectures d'objets immuables seulement (voir `ReferenceMemo`). */
+  memo?: ReferenceMemo;
+  /** Les droits de place ne sont pas lus (types autres que `PITCH_FEE`). */
+  skipPitchFees?: boolean;
+}
+
 /** Résultat d'une commande. `transactionId` est null quand une fonction déléguée n'a rien écrit (voir `outcome`). */
 export interface EngineResult {
   transactionId: string | null;
   /** La transaction existait déjà sous cette clé : rien n'a été écrit. */
   replayed: boolean;
+  /**
+   * Vente `OFFLINE_SYNC` écrite : part portée au compte d'attente (somme des lignes `SUSPENSE`), 0 si tout est couvert.
+   * Absent pour tout autre type, pour une relecture (`replayed`) et pour les fonctions déléguées.
+   */
+  shortfall?: bigint;
   /** Fonctions déléguées : `take_deposit` → NONE | DUE | HELD ; les autres → WRITTEN | NOOP. */
   outcome?: string;
 }
@@ -83,13 +100,17 @@ export class LedgerEngineService {
     @Inject(ACCOUNT_RESOLVER) private readonly accountResolver: AccountResolver,
   ) {}
 
-  async execute(client: Queryable, command: LedgerCommand): Promise<EngineResult> {
+  async execute(
+    client: Queryable,
+    command: LedgerCommand,
+    options?: EngineOptions,
+  ): Promise<EngineResult> {
     try {
       validate(command);
       const delegatedFn = delegation(command);
       return delegatedFn
         ? await this.delegate(client, command, delegatedFn)
-        : await this.writeLines(client, command);
+        : await this.writeLines(client, command, options);
     } catch (error) {
       // Erreurs de construction → code stable ; les erreurs SQL remontent telles quelles au filtre (WP10).
       if (error instanceof BuildError) {
@@ -101,7 +122,11 @@ export class LedgerEngineService {
 
   // ---------------------------------------------------------------- types à lignes
 
-  private async writeLines(client: Queryable, command: LedgerCommand): Promise<EngineResult> {
+  private async writeLines(
+    client: Queryable,
+    command: LedgerCommand,
+    options?: EngineOptions,
+  ): Promise<EngineResult> {
     const fingerprint = commandFingerprint(command);
     // Deux commandes de même clé passent l'une après l'autre : la lecture qui suit est donc exacte.
     await lockIdempotencyKey(client, command.ledgerId, command.idempotencyKey);
@@ -127,6 +152,8 @@ export class LedgerEngineService {
       participationId: participationOf(command),
       pspConfigurationId: pspConfigurationOf(command),
       client,
+      ...(options?.memo ? { memo: options.memo } : {}),
+      ...(options?.skipPitchFees ? { skipPitchFees: true } : {}),
     });
     // Contestation : les soldes du portefeuille ne sont lus qu'une fois son solde payé verrouillé (sinon une dépense
     // validée entre la lecture et l'écriture fausse la répartition et la base refuse le solde interdit).
@@ -200,6 +227,12 @@ export class LedgerEngineService {
         over.toString(),
         transactionId,
       ]);
+    }
+    if (command.type === 'PURCHASE' && command.source === 'OFFLINE_SYNC') {
+      const shortfall = lines
+        .filter((line) => 'purpose' in line.account && line.account.purpose === 'SUSPENSE')
+        .reduce((sum, line) => sum + line.amount, 0n);
+      return { transactionId, replayed: false, shortfall };
     }
     return { transactionId, replayed: false };
   }

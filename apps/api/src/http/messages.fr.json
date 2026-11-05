@@ -237,7 +237,7 @@
   },
   "SNAPSHOT_VERSION_UNKNOWN": {
     "title": "Version de snapshot inconnue",
-    "detail": "Version de snapshot inconnue ; demandez un snapshot complet."
+    "detail": "Cette version de snapshot n'a pas été servie à ce terminal ou son empreinte diffère."
   },
   "BATCH_IN_PROGRESS": {
     "title": "Lot en cours",
@@ -245,7 +245,7 @@
   },
   "BATCH_TOO_LARGE": {
     "title": "Lot trop volumineux",
-    "detail": "Le lot est vide ou dépasse la taille permise."
+    "detail": "Le lot dépasse la taille permise."
   },
   "PAYLOAD_TOO_LARGE": {
     "title": "Notification trop volumineuse",

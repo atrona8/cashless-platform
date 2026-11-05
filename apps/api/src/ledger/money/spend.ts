@@ -9,6 +9,12 @@ export interface SpendInput {
   paidBalance: bigint;
   promoFirst: boolean;
   mode: SpendMode;
+  /**
+   * Hors ligne seulement : plafond de la part couverte (table de conflit, `sync_protocol.md` §7.3). La part couverte
+   * vaut `min(amount, soldes, coveredCap)`, jamais négative ; le reste va au compte d'attente. Ignoré en ligne : un
+   * débit en ligne n'est jamais plafonné, il est couvert en entier ou refusé.
+   */
+  coveredCap?: bigint;
 }
 
 export interface SpendSplit {
@@ -36,6 +42,7 @@ export function spendSplit({
   paidBalance,
   promoFirst,
   mode,
+  coveredCap,
 }: SpendInput): SpendSplit {
   if (mode === 'ONLINE') {
     if (promoBalance + paidBalance < amount) throw new InsufficientFundsError();
@@ -43,7 +50,8 @@ export function spendSplit({
     return { fromPromo, fromPaid: amount - fromPromo, uncovered: 0n };
   }
   // Hors ligne : la vente a eu lieu, le commerçant est garanti ; on couvre ce que les soldes permettent.
-  const covered = min(amount, max(paidBalance, 0n) + max(promoBalance, 0n));
+  const fromBalances = min(amount, max(paidBalance, 0n) + max(promoBalance, 0n));
+  const covered = coveredCap === undefined ? fromBalances : min(fromBalances, max(coveredCap, 0n));
   const fromPromo = promoFirst ? min(covered, promoBalance) : max(0n, covered - paidBalance);
   return { fromPromo, fromPaid: covered - fromPromo, uncovered: amount - covered };
 }

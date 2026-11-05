@@ -6,6 +6,7 @@ import { AuditModule } from '../audit/audit.module';
 import { ProcessDbModule } from '../db/process-db.module';
 import { KmsModule } from '../kms/kms.module';
 import { MediaKeyAdminModule } from '../media/media-key-admin.module';
+import { SnapshotKeysModule } from '../snapshot-keys/snapshot-keys.module';
 import { ProcessBaseModule } from './process-base';
 
 @Module({
@@ -15,6 +16,7 @@ import { ProcessBaseModule } from './process-base';
     AuditModule,
     KmsModule.forCapabilities(['keyAdmin']),
     MediaKeyAdminModule,
+    SnapshotKeysModule,
   ],
 })
 export class KeyAdminProcessModule {}

@@ -6,10 +6,14 @@ import { createDeviceIdentity } from '../../src/device-identity/device-identity.
 import { FakeDeviceIdentity } from '../../src/device-identity/fake-device-identity';
 import { RealDeviceIdentity } from '../../src/device-identity/real-device-identity';
 import { FakeKms } from '../../src/kms/fake-kms';
+import { FakeOperationProcessor } from '../../src/offline/batches/fake-operation-processor';
+import { OFFLINE_OPERATION_PROCESSOR } from '../../src/offline/batches/batch.types';
+import { createEntryEncryptor } from '../../src/snapshots-content/entry-encryptor';
 import { PspAdapterRegistry } from '../../src/psp/psp-adapter-registry';
 import { FakePspAdapter } from '../../src/psp/fake/fake-psp-adapter';
 import { FakePspSecretStore } from '../../src/psp/fake/fake-psp-secret-store';
 import { createKms, KMS_PROVIDER } from '../../src/kms/kms.module';
+import { SIGN_PORT } from '../../src/kms/kms.ports';
 import {
   assertNoFakeInProduction,
   assertSafeTransport,
@@ -142,6 +146,40 @@ describe('aucun faux en production', () => {
     expect(() =>
       assertProcessIsSafe(processWith(true, KMS_PROVIDER, new FakeKms()) as never),
     ).toThrow(/service de clés/);
+  });
+
+  // ----- Mission hors-ligne-snapshots-lots (WP09, T040) : le signataire de snapshots -----
+
+  // ----- Mission hors-ligne-snapshots-lots (WP21, T088) : faux ajoutés par WP11 et WP18 -----
+
+  it('chiffreur d’entrées provisoire (RefusingEntryEncryptor) : refusé en production', () => {
+    expect(() => createEntryEncryptor(PRODUCTION)).toThrow(FakeInProductionError);
+    expect((createEntryEncryptor(LOCAL) as { isFake?: boolean }).isFake).toBe(true);
+  });
+
+  it('faux processeur d’opérations hors ligne (OFFLINE_OPERATION_PROCESSOR) : production refusée', () => {
+    const fake = new FakeOperationProcessor(undefined as never);
+    expect(fake.isFake).toBe(true);
+    expect(() =>
+      assertProcessIsSafe(processWith(true, OFFLINE_OPERATION_PROCESSOR, fake) as never),
+    ).toThrow(/processeur d’opérations hors ligne/);
+    expect(() =>
+      assertProcessIsSafe(processWith(false, OFFLINE_OPERATION_PROCESSOR, fake) as never),
+    ).not.toThrow();
+  });
+
+  it('signataire de snapshots : createKms({production: true}) refuse le faux (a)', () => {
+    expect(() => createKms({ production: true })).toThrow(FakeInProductionError);
+    expect(createKms({ production: false }).isFake).toBe(true);
+  });
+
+  it('signataire de snapshots : un faux SIGN_PORT fait refuser la production (b), pas ailleurs (c)', () => {
+    const fake = new FakeKms();
+    expect(() => assertProcessIsSafe(processWith(true, SIGN_PORT, fake) as never)).toThrow(
+      /le signataire de snapshots est un faux/,
+    );
+    expect(() => assertProcessIsSafe(processWith(false, SIGN_PORT, fake) as never)).not.toThrow();
+    expect(() => assertProcessIsSafe(processWith(true, SIGN_PORT, {}) as never)).not.toThrow();
   });
 
   it('transport (R-03, OP-N53) : en production avec TLS, TRUST_PROXY_HOPS > 0 refusé', () => {

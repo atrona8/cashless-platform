@@ -25,6 +25,7 @@ EdgeSyncOperation _$EdgeSyncOperationFromJson(Map<String, dynamic> json) =>
           : TapInput.fromJson(json['tap'] as Map<String, dynamic>),
       snapshotVersion: (json['snapshot_version'] as num?)?.toInt(),
       configId: (json['config_id'] as num?)?.toInt(),
+      vendorSessionId: json['vendor_session_id'] as String?,
       localAvailableBefore: (json['local_available_before'] as num?)?.toInt(),
       onlineStatus: $enumDecodeNullable(
         _$OfflineOperationOnlineStatusEnumMap,
@@ -68,6 +69,7 @@ Map<String, dynamic> _$EdgeSyncOperationToJson(EdgeSyncOperation instance) =>
       'tap': instance.tap,
       'snapshot_version': instance.snapshotVersion,
       'config_id': instance.configId,
+      'vendor_session_id': instance.vendorSessionId,
       'local_available_before': instance.localAvailableBefore,
       'online_status': instance.onlineStatus,
       'online_tap_id': instance.onlineTapId,

@@ -34,6 +34,19 @@ export const KEYADMIN_URL = roleUrl(
   'CASHLESS_KEYADMIN_PASSWORD',
 );
 
+/** Rôles de processus de la mission hors-ligne-snapshots-lots (WP08, post-roles.sql). */
+export const MAINT_URL = roleUrl('DATABASE_URL_MAINT', 'cashless_maint', 'CASHLESS_MAINT_PASSWORD');
+export const SNAPCONTENT_URL = roleUrl(
+  'DATABASE_URL_SNAPCONTENT',
+  'cashless_snapcontent',
+  'CASHLESS_SNAPCONTENT_PASSWORD',
+);
+export const SNAPSIGN_URL = roleUrl(
+  'DATABASE_URL_SNAPSIGN',
+  'cashless_snapsign',
+  'CASHLESS_SNAPSIGN_PASSWORD',
+);
+
 const REPO_ROOT = join(__dirname, '../../../..');
 
 /** Recrée la base de test par les migrations (packages/ledger-sql/scripts/reset-db.sh). */

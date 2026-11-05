@@ -4,13 +4,11 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-/// `ECDSA_P256_SHA256` par défaut ; Ed25519 si le KMS le permet (POINTS_OUVERTS OP-N13).
+/// `ECDSA_P256_SHA256` seulement.
 @JsonEnum()
 enum Algorithm {
   @JsonValue('ECDSA_P256_SHA256')
-  ecdsaP256Sha256('ECDSA_P256_SHA256'),
-  @JsonValue('Ed25519')
-  ed25519('Ed25519');
+  ecdsaP256Sha256('ECDSA_P256_SHA256');
 
   const Algorithm(this.json);
 

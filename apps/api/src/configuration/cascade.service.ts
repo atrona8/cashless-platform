@@ -147,9 +147,17 @@ export class CascadeService {
   }
 
   /** Configuration résolue d'une chaîne de niveaux à une date (défaut : maintenant, à l'horloge de la base). */
-  async resolve(client: TxClient, target: CascadeTarget, at?: Date): Promise<ResolvedConfigView> {
+  async resolve(
+    client: TxClient,
+    target: CascadeTarget,
+    at?: Date,
+    /** Ligne `event` déjà lue (`SELECT *`) par l'appelant dans la même transaction : évite de la relire. */
+    knownEvent?: Record<string, unknown>,
+  ): Promise<ResolvedConfigView> {
     const versions = await this.versionsAt(client, target, at);
-    const event = target.eventId ? await this.eventColumns(client, target.eventId) : null;
+    const event = target.eventId
+      ? (knownEvent ?? (await this.eventColumns(client, target.eventId)))
+      : null;
     const hasEventVersions = target.eventId
       ? await this.hasVersions(client, 'EVENT', target.eventId)
       : false;
@@ -214,12 +222,17 @@ export class CascadeService {
     eventId: string,
     at?: Date,
     participationId?: string,
+    /** Ligne `event` complète déjà lue par l'appelant dans la même transaction (le résolveur du moteur). */
+    knownEvent?: Record<string, unknown> & { operator_id: string; organizer_id: string },
   ): Promise<ResolvedConfigView> {
-    const { rows } = await client.query<{ operator_id: string; organizer_id: string }>(
-      'SELECT operator_id, organizer_id FROM event WHERE id = $1',
-      [eventId],
-    );
-    const event = rows[0];
+    const event =
+      knownEvent ??
+      (
+        await client.query<{ operator_id: string; organizer_id: string }>(
+          'SELECT operator_id, organizer_id FROM event WHERE id = $1',
+          [eventId],
+        )
+      ).rows[0];
     if (!event) throw new ProblemException('NOT_FOUND');
     if (participationId !== undefined) {
       const participation = await client.query(
@@ -232,6 +245,7 @@ export class CascadeService {
       client,
       { operatorId: event.operator_id, organizerId: event.organizer_id, eventId, participationId },
       at,
+      knownEvent,
     );
   }
 

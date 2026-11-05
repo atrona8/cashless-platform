@@ -3,18 +3,17 @@
 // ligne d'import.
 import { Module } from '@nestjs/common';
 import { AttestationModule } from '../attestation/attestation.module';
-import { DeviceMaintenanceModule } from '../device-identity/device-maintenance';
 import { DeviceConfigModule } from './config/device-config.module';
 import { EnrollmentCodesModule } from './enrollment-codes/enrollment-codes.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { DeviceTokenRefreshModule } from './tokens/tokens.module';
 import { DeviceAdminModule } from './admin/device-admin.module';
+import { OfflineSnapshotsModule } from '../offline/snapshots/offline-snapshots.module';
 import { HeartbeatModule } from './heartbeat/heartbeat.module';
 
 @Module({
   imports: [
-    // Lot WP12 : purges des nonces et des essais d'enrôlement (travailleur de l'API publique).
-    DeviceMaintenanceModule,
+    // Les purges des nonces et des essais d'enrôlement sont au processus `maintenance` (WP10, OP-N75).
     // Lot WP14 : vérificateur d'attestation (lu par la garde de démarrage), codes, enrôlement.
     AttestationModule,
     EnrollmentCodesModule,
@@ -26,6 +25,8 @@ import { HeartbeatModule } from './heartbeat/heartbeat.module';
     // Lot WP17 : configuration servie et battement de cœur.
     DeviceConfigModule,
     HeartbeatModule,
+    // Mission 7, lot WP15 : snapshots hors ligne servis et accusés.
+    OfflineSnapshotsModule,
   ],
 })
 export class DevicesModule {}

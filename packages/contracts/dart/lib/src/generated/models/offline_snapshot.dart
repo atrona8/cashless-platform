@@ -17,20 +17,28 @@ class OfflineSnapshot {
     required this.header,
     required this.signature,
     required this.entries,
+    required this.removedTokenHashes,
     this.pwdPackKey,
-    this.removedTokenHashes,
   });
 
   factory OfflineSnapshot.fromJson(Map<String, Object?> json) =>
       _$OfflineSnapshotFromJson(json);
 
   final SnapshotHeader header;
+
+  /// Signature ECDSA P-256 / SHA-256 de `JCS(header)`, **DER**, base64 standard.
   final String signature;
+
+  /// Requise dès qu'une entrée porte un `pwd_pack_enc` (mot de passe) ; absente seulement si aucune.
+  /// entrée n'en porte.
+  ///
   @JsonKey(name: 'pwd_pack_key')
   final WrappedKey? pwdPackKey;
   final List<SnapshotEntry> entries;
+
+  /// Toujours présent (vide pour un `FULL`), trié ; entre dans `content_sha256`.
   @JsonKey(name: 'removed_token_hashes')
-  final List<Hex32>? removedTokenHashes;
+  final List<Hex32> removedTokenHashes;
 
   Map<String, Object?> toJson() => _$OfflineSnapshotToJson(this);
 }

@@ -13,12 +13,12 @@ OfflineSnapshot _$OfflineSnapshotFromJson(Map<String, dynamic> json) =>
       entries: (json['entries'] as List<dynamic>)
           .map((e) => SnapshotEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
+      removedTokenHashes: (json['removed_token_hashes'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
       pwdPackKey: json['pwd_pack_key'] == null
           ? null
           : WrappedKey.fromJson(json['pwd_pack_key'] as Map<String, dynamic>),
-      removedTokenHashes: (json['removed_token_hashes'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
     );
 
 Map<String, dynamic> _$OfflineSnapshotToJson(OfflineSnapshot instance) =>

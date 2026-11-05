@@ -13,8 +13,11 @@ import { NestFactory } from '@nestjs/core';
 import { API_PREFIX, APP_CONFIG, loadConfig, type AppConfig } from '../config/config';
 import { CUSTOMER_IDENTITY } from '../customer-identity/customer-identity.port';
 import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
+import { OFFLINE_OPERATION_PROCESSOR } from '../offline/batches/batch.types';
+import { applyBatchBody } from '../offline/batches/batch-body';
 import { PSP_ADAPTERS, PSP_SECRET_STORE } from '../psp/psp.tokens';
 import { KMS_PROVIDER } from '../kms/kms.module';
+import { SIGN_PORT } from '../kms/kms.ports';
 import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
 import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../security/port-tokens';
 import { WorkerRegistry } from './worker';
@@ -32,6 +35,7 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
   const config = app.get<AppConfig>(APP_CONFIG, { strict: false });
   assertNoFakeInProduction(config.production, {
     'le service de clés': optional(app, KMS_PROVIDER),
+    'le signataire de snapshots': optional(app, SIGN_PORT),
     'l’identité du terminal': optional(app, DEVICE_IDENTITY),
     'l’identité du festivalier': optional(app, CUSTOMER_IDENTITY),
     'l’autorité des terminaux': optional(app, DEVICE_CA),
@@ -39,6 +43,7 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'le vérificateur d’attestation': optional(app, ATTESTATION_VERIFIER),
     'les adaptateurs PSP': optional(app, PSP_ADAPTERS),
     'le coffre des secrets PSP': optional(app, PSP_SECRET_STORE),
+    'le processeur d’opérations hors ligne': optional(app, OFFLINE_OPERATION_PROCESSOR),
   });
   return config;
 }
@@ -80,12 +85,12 @@ export function tlsServerOptions(
   };
 }
 
-function pollSeconds(): number {
-  const raw = process.env.TAG_JOB_POLL_SECONDS;
-  if (raw === undefined || raw === '') return 5;
+function pollSeconds(variable = 'TAG_JOB_POLL_SECONDS', fallback = 5): number {
+  const raw = process.env[variable];
+  if (raw === undefined || raw === '') return fallback;
   const parsed = Number(raw);
   if (!Number.isInteger(parsed) || parsed < 0 || parsed > 3600)
-    throw new Error(`TAG_JOB_POLL_SECONDS : entier de 0 à 3600 attendu (reçu « ${raw} »)`);
+    throw new Error(`${variable} : entier de 0 à 3600 attendu (reçu « ${raw} »)`);
   return parsed;
 }
 
@@ -110,6 +115,8 @@ export async function serve(rootModule: Type<unknown>, port: number): Promise<vo
   });
   const config = assertProcessIsSafe(app);
   applyTrustProxy(app, config.trustProxyHops);
+  // `POST /offline-batches` lit son corps lui-même (1 Mio), avant l'analyseur global qui reste à 100 ko (WP18).
+  applyBatchBody(app);
   app.setGlobalPrefix(API_PREFIX);
   app.enableShutdownHooks();
   await app.listen(port);
@@ -135,9 +142,14 @@ export async function serve(rootModule: Type<unknown>, port: number): Promise<vo
 
 /**
  * Processus sans route : `--list` décrit ce qui attend, `--once` traite tout ce qui attend puis s'arrête, sans option
- * il repasse à intervalle. Rend le code de sortie (0 : rien à signaler).
+ * il repasse à intervalle (`options.pollSeconds`, sinon `TAG_JOB_POLL_SECONDS`, 5 s : les processus de snapshots
+ * demandent 1 s). Rend le code de sortie (0 : rien à signaler).
  */
-export async function runWorkers(rootModule: Type<unknown>, argv: string[]): Promise<number> {
+export async function runWorkers(
+  rootModule: Type<unknown>,
+  argv: string[],
+  options: { pollSeconds?: number } = {},
+): Promise<number> {
   const app = await NestFactory.createApplicationContext(rootModule, { bufferLogs: true });
   try {
     assertProcessIsSafe(app);
@@ -152,7 +164,7 @@ export async function runWorkers(rootModule: Type<unknown>, argv: string[]): Pro
       // l'ordonnanceur alerte sur tout code non nul.
       return workers.alarm();
     }
-    const interval = pollSeconds() || 5;
+    const interval = options.pollSeconds ?? (pollSeconds() || 5);
     app.enableShutdownHooks();
     for (;;) {
       await workers.drain();

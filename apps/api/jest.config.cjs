@@ -14,6 +14,12 @@ module.exports = {
   // de la base de la CI ; elles tournent seules, en série, juste après. Idem pour les suites qui lancent les
   // travailleurs `psp-poller` (interrogation, reprise, purge) : ils voient les recharges de tous les prestataires
   // (OP-N86) et agiraient sur celles des suites voisines.
+  // Mission hors-ligne-snapshots-lots (WP21) : la concurrence des lots (100 rejeux, 50 envois concurrents,
+  // pool de verrous réduit) épuise aussi les connexions de la base de la CI en parallèle ; les deux suites de
+  // mesures (lot de 500 opérations, snapshots de 50 000 bracelets) ne valent que serveur seul. Les parcours
+  // `offline-journey` et `offline-minimal` lancent les travailleurs de snapshots, qui voient les grands livres de
+  // toutes les suites : ils tournent aussi seuls. Toutes ces suites tournent en série, juste après la passe
+  // parallèle.
   testPathIgnorePatterns: [
     '/node_modules/',
     ...(process.env.SKIP_LATENCY
@@ -31,6 +37,11 @@ module.exports = {
           'webhooks/receive',
           'webhooks/retry',
           'topups/poller-',
+          'end-to-end/offline-concurrency',
+          'end-to-end/offline-journey',
+          'end-to-end/offline-minimal',
+          'end-to-end/offline-latency',
+          'end-to-end/snapshot-latency',
         ]
       : []),
   ],

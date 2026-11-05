@@ -65,4 +65,5 @@ const _$OfflineRejectReasonEnumMap = {
   OfflineRejectReason.insufficientFundsRetry: 'INSUFFICIENT_FUNDS_RETRY',
   OfflineRejectReason.syncDeadlinePassed: 'SYNC_DEADLINE_PASSED',
   OfflineRejectReason.edgeReplayFailed: 'EDGE_REPLAY_FAILED',
+  OfflineRejectReason.onlineNotExecuted: 'ONLINE_NOT_EXECUTED',
 };

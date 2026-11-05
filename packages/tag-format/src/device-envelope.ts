@@ -7,6 +7,10 @@ import { createCipheriv, createDecipheriv, createECDH, hkdfSync, randomBytes } f
 import { TagFormatError, requireLength } from './errors';
 import { assertUid, uuidToBytes } from './kdf';
 
+const MAX_U64 = (1n << 64n) - 1n;
+const TOKEN_HASH_LENGTH = 32;
+const GCM_TAG_LENGTH = 16;
+
 export const RECIPIENT_ALG = 'ECDH-ES+HKDF-SHA256+A256GCM';
 export const P256_PUBLIC_KEY_LENGTH = 65; // point non compressé : 04 ‖ X ‖ Y
 
@@ -40,6 +44,76 @@ export function stationAad(mediaId: string, uid: Uint8Array): Buffer {
     uuidToBytes(mediaId),
     uid,
   ]);
+}
+
+function versionBytes(version: bigint): Buffer {
+  if (typeof version !== 'bigint' || version < 0n || version > MAX_U64)
+    throw new TagFormatError('BAD_LENGTH', 'version de snapshot : entier de 0 à 2^64-1 attendu');
+  const out = Buffer.alloc(8);
+  out.writeBigUInt64BE(version);
+  return out;
+}
+
+/** AAD de l'enveloppe de la clé de contenu `K_v` d'un terminal (snapshot hors ligne, R-08). */
+export function snapshotKeyAad(ledgerId: string, version: bigint, deviceId: string): Buffer {
+  return Buffer.concat([
+    Buffer.from('CASHLESS/SNAPKEY/v1', 'ascii'),
+    uuidToBytes(ledgerId),
+    versionBytes(version),
+    uuidToBytes(deviceId),
+  ]);
+}
+
+/** AAD d'un mot de passe de bracelet chiffré sous `K_v` dans un snapshot (R-08). */
+export function snapshotPwdAad(
+  ledgerId: string,
+  version: bigint,
+  tokenHash: Uint8Array,
+  nfcUid: Uint8Array,
+): Buffer {
+  requireLength(tokenHash, TOKEN_HASH_LENGTH, 'BAD_LENGTH', 'token_hash');
+  assertUid(nfcUid);
+  return Buffer.concat([
+    Buffer.from('CASHLESS/SNAPPWD/v1', 'ascii'),
+    uuidToBytes(ledgerId),
+    versionBytes(version),
+    tokenHash,
+    nfcUid,
+  ]);
+}
+
+/** `WrappedKey` du contrat : `iv` = nonce, `wrapped_key` = chiffré ‖ étiquette (base64). */
+export interface WrappedKey {
+  alg: typeof RECIPIENT_ALG;
+  /** Clé publique éphémère, point non compressé, base64url. */
+  epk: string;
+  /** Nonce AES-GCM de 12 octets, base64. */
+  iv: string;
+  /** Chiffré ‖ étiquette d'authentification de 16 octets, base64. */
+  wrapped_key: string;
+}
+
+export function toWrappedKey(blob: EncryptedBlob): WrappedKey {
+  const sealed = Buffer.concat([
+    Buffer.from(blob.ciphertext, 'base64'),
+    Buffer.from(blob.tag, 'base64'),
+  ]);
+  return { alg: blob.alg, epk: blob.epk, iv: blob.nonce, wrapped_key: sealed.toString('base64') };
+}
+
+export function fromWrappedKey(key: WrappedKey): EncryptedBlob {
+  if (key.alg !== RECIPIENT_ALG)
+    throw new TagFormatError('AUTH_FAILED', 'algorithme d’enveloppe inconnu');
+  const sealed = Buffer.from(key.wrapped_key, 'base64');
+  if (sealed.length <= GCM_TAG_LENGTH)
+    throw new TagFormatError('BAD_LENGTH', 'wrapped_key : chiffré et étiquette attendus');
+  return {
+    alg: key.alg,
+    epk: key.epk,
+    nonce: key.iv,
+    ciphertext: sealed.subarray(0, sealed.length - GCM_TAG_LENGTH).toString('base64'),
+    tag: sealed.subarray(sealed.length - GCM_TAG_LENGTH).toString('base64'),
+  };
 }
 
 function contentKey(shared: Buffer, aad: Uint8Array): Buffer {

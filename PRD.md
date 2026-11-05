@@ -301,6 +301,19 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - héritages de la mission 7 (tâches, 30/10/2026, ADR-139 et ADR-140) : trace `RETRY` d'un lot réexaminée (OP-N90) ;
   droits ajoutés au signataire et au contenu des snapshots, et lecture des imports de journal en cours par
   identifiants (OP-N91) revus ; mission 13 ;
+- héritages de la mission 7 (consignation de WP21, 04/11/2026, ADR-141 à ADR-147) : `INSERT` direct sur `anomaly` gardé
+  pour `cashless_app` (OP-N86 étendu, sept appelants) ; rotation de la clé de signature des snapshots à deux personnes
+  avec acteur vérifié, lectures de clés accordées à `cashless_keyadmin` et `cashless_snapsign` revues (OP-N92) ;
+  alarme sur les entrées de snapshot sans mot de passe, référence de la clé d'emballage, reprise du brouillon scellé
+  (OP-N93) ; annulation du back-office qui réduit l'anomalie de perte, contrôle d'appartenance en base de l'acteur
+  d'un import, migration `0050` (OP-N94) ; `413` au-delà de 100 ko (OP-N95) ; mission 13 ; clés de signature par prestataire (OP-N93 a) en 12b
+  (confirmé par le porteur le 04/11/2026) ; le refus d'un `DATABASE_URL_MAINT` propriétaire ou superutilisateur en
+  production est livré par WP21 (OP-N95 point 3, 04/11/2026) ;
+  relecture en mission 13 de l'enveloppe de lecture `event_device_sync_status_api` (migration `0051`, `EXECUTE` à
+  `cashless_app`, OP-N96, ADR-148) ; relecture de l'exemption de garde `pwd_pack_enc` dans
+  `offline-snapshots.service.ts` (OP-N97, ADR-150) ;
+  écart de NFR-005 sur les changements non bloquants (visibles en 60 s plus 2,5 s au plus, `DELTA_AFTER_MS` gardé à 60 s ;
+  levée par un délai de 55 s au plus ou une reformulation, OP-N98, ADR-151) ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

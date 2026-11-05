@@ -4,6 +4,11 @@ export interface AppConfig {
   port: number;
   databaseUrl: string;
   poolSize: number;
+  /**
+   * Taille du pool DÉDIÉ aux verrous de lot hors ligne (`OFFLINE_BATCH_POOL_SIZE`, 20 ; R-30.7, mission 7) : une
+   * connexion tenue par lot en cours de traitement, séparée du pool principal.
+   */
+  offlineBatchPoolSize: number;
   /** Rôle `cashless_platform` (contrat platform-access) : écritures de niveau plateforme seulement. */
   platformDatabaseUrl: string;
   platformPoolSize: number;
@@ -15,6 +20,20 @@ export interface AppConfig {
   personalizationDatabaseUrl: string;
   tagCheckDatabaseUrl: string;
   keyAdminDatabaseUrl: string;
+  /** Processus `maintenance` (mission hors-ligne-snapshots-lots, WP10) : rôle `cashless_maint`, purges seules. */
+  maintenanceDatabaseUrl: string;
+  /** Rôle `cashless_snapcontent` du processus snapshot-content (mission hors-ligne-snapshots-lots, WP11). */
+  snapshotContentDatabaseUrl: string;
+  /** Pas entre deux passages du processus snapshot-content, en secondes (`SNAPSHOT_POLL_SECONDS`, 1). */
+  snapshotPollSeconds: number;
+  /** Âge au-delà duquel le prochain snapshot est un FULL (`SNAPSHOT_FULL_EVERY_SECONDS`, 3 600). */
+  snapshotFullEverySeconds: number;
+  /** Attente d'une signature avant de jeter un brouillon (`SNAPSHOT_ORPHAN_DISCARD_SECONDS`, 600 ; > 300, alarme du signataire). */
+  snapshotOrphanDiscardSeconds: number;
+  /** Rôle `cashless_snapsign` du processus snapshot-signer (WP13) ; vide accepté hors de ce processus. */
+  snapshotSignerDatabaseUrl: string;
+  /** Référence KMS de la clé de signature des snapshots (WP13) ; vide en production refusé par le signataire. */
+  snapshotSigningKeyRef: string;
   /** Secret de l'empreinte des codes de rattachement (32 octets au moins), hors de la base. */
   claimCodeHmacKey: Buffer;
   /** Durée de vie en mémoire d'une clé de données en clair, en secondes (0 à 300 ; 0 = aucun cache). */
@@ -172,6 +191,11 @@ const LOCAL_TAG_URLS = {
     'postgres://cashless_tagcheck:cashless_tagcheck_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_KEYADMIN:
     'postgres://cashless_keyadmin:cashless_keyadmin_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_MAINT: 'postgres://cashless_maint:cashless_maint_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_SNAPCONTENT:
+    'postgres://cashless_snapcontent:cashless_snapcontent_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_SNAPSIGN:
+    'postgres://cashless_snapsign:cashless_snapsign_local@127.0.0.1:5433/cashless_test',
 } as const;
 
 /** Secret de test, hors production seulement : sa valeur est publique. */
@@ -692,6 +716,16 @@ function positiveInt(name: string, value: string | undefined, fallback: number):
   return parsed;
 }
 
+/** Délai avant jet d'un brouillon non signé : strictement au-delà de l'alarme de 5 min du signataire. */
+function orphanDiscardSeconds(value: string | undefined): number {
+  const seconds = positiveInt('SNAPSHOT_ORPHAN_DISCARD_SECONDS', value, 600);
+  if (seconds <= 300)
+    throw new Error(
+      `SNAPSHOT_ORPHAN_DISCARD_SECONDS : doit dépasser 300 s, l'alarme du signataire (reçu ${seconds})`,
+    );
+  return seconds;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const production = nodeEnv(env.NODE_ENV) === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
@@ -716,6 +750,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     port: positiveInt('PORT', env.PORT, 3000),
     databaseUrl: databaseUrl || LOCAL_DATABASE_URL,
     poolSize: positiveInt('DB_POOL_SIZE', env.DB_POOL_SIZE, 10),
+    offlineBatchPoolSize: positiveInt('OFFLINE_BATCH_POOL_SIZE', env.OFFLINE_BATCH_POOL_SIZE, 20),
     platformDatabaseUrl: platformDatabaseUrl || LOCAL_PLATFORM_DATABASE_URL,
     platformPoolSize: positiveInt('DB_PLATFORM_POOL_SIZE', env.DB_PLATFORM_POOL_SIZE, 2),
     problemTypeBase: base.endsWith('/') ? base : `${base}/`,
@@ -725,6 +760,17 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     personalizationDatabaseUrl: tagUrl('DATABASE_URL_PERSO'),
     tagCheckDatabaseUrl: tagUrl('DATABASE_URL_TAGCHECK'),
     keyAdminDatabaseUrl: tagUrl('DATABASE_URL_KEYADMIN'),
+    maintenanceDatabaseUrl: tagUrl('DATABASE_URL_MAINT'),
+    snapshotContentDatabaseUrl: tagUrl('DATABASE_URL_SNAPCONTENT'),
+    snapshotPollSeconds: positiveInt('SNAPSHOT_POLL_SECONDS', env.SNAPSHOT_POLL_SECONDS, 1),
+    snapshotFullEverySeconds: positiveInt(
+      'SNAPSHOT_FULL_EVERY_SECONDS',
+      env.SNAPSHOT_FULL_EVERY_SECONDS,
+      3600,
+    ),
+    snapshotOrphanDiscardSeconds: orphanDiscardSeconds(env.SNAPSHOT_ORPHAN_DISCARD_SECONDS),
+    snapshotSignerDatabaseUrl: tagUrl('DATABASE_URL_SNAPSIGN'),
+    snapshotSigningKeyRef: env.SNAPSHOT_SIGNING_KEY_REF || (production ? '' : 'fake-kms:ecc:test'),
     claimCodeHmacKey: claimKey,
     tagDekCacheSeconds: tagDekCacheSeconds(env.TAG_DEK_CACHE_SECONDS),
     tagWrappingKeyRef: tagWrappingKeyRef(env.TAG_WRAPPING_KEY_REF, production),

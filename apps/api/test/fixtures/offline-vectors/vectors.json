@@ -1,0 +1,196 @@
+{
+  "chain": {
+    "chain_hash_0": "33f349a4325c26677ad21aa3eb062099345fd9a45c8a754f44f84027e7480845",
+    "device_id": "3b9f0c52-7a1e-4d68-9c24-5e8a1f7b6d30",
+    "links": [
+      {
+        "chain_hash": "86d24c1a4d8f72936429e227688b839e9c23cadff309913790a62fde9c6e2fb1",
+        "content_sha256": "5d4e50e548b8b5b719d1241bebe8b7798ec2defbb62fca9be373b7a8a922fa7a"
+      },
+      {
+        "chain_hash": "faa833b9dd24a24c2c78743df6aa638ae7fbbd6afdfc6c71bf4e89748d56bc01",
+        "content_sha256": "2fdef3771b8bc57b967147034eacaa35831de33e2bf58a97987a0c3f9250d099"
+      },
+      {
+        "chain_hash": "ba8b710d77573e391847b95afa1175212e9d1164e94b4dfe9e32e352963c1573",
+        "content_sha256": "97907ef8c8262fbfe70fe76e6c128343bba4c19b6ae05725a8359c906e80eceb"
+      }
+    ]
+  },
+  "ops": [
+    {
+      "canonical": "{\"amount\":6000,\"currency\":\"XOF\",\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-11T19:10:00Z\",\"seq\":1,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "content_sha256": "3bea7bf24e0c18626e98856e8e5d20341b8103a00999b47206c357dc0d745c7b",
+      "name": "5b_purchase_tap_lines",
+      "op": {
+        "amount": 6000,
+        "currency": "XOF",
+        "lines": [
+          {
+            "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+            "quantity": 2,
+            "unit_price": 3000
+          }
+        ],
+        "occurred_at": "2026-12-11T19:10:00Z",
+        "seq": 1,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "canonical": "{\"amount\":4000,\"currency\":\"XOF\",\"occurred_at\":\"2026-12-11T20:05:00Z\",\"seq\":7,\"type\":\"PURCHASE\"}",
+      "content_sha256": "24c53c208f16d9621bbee7294f00c1542db47b7e1007fa579f8c3382c48ef704",
+      "name": "5b_purchase_keypad",
+      "op": {
+        "amount": 4000,
+        "currency": "XOF",
+        "occurred_at": "2026-12-11T20:05:00Z",
+        "seq": 7,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "canonical": "{\"amount\":6000,\"currency\":\"XOF\",\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-12T08:00:00Z\",\"seq\":12,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "content_sha256": "5d4e50e548b8b5b719d1241bebe8b7798ec2defbb62fca9be373b7a8a922fa7a",
+      "name": "batch_sale_lines",
+      "op": {
+        "amount": 6000,
+        "currency": "XOF",
+        "lines": [
+          {
+            "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+            "quantity": 2,
+            "unit_price": 3000
+          }
+        ],
+        "occurred_at": "2026-12-12T08:00:00Z",
+        "seq": 12,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "canonical": "{\"occurred_at\":\"2026-12-12T08:05:00Z\",\"reverses_seq\":12,\"seq\":13,\"type\":\"REVERSAL\"}",
+      "content_sha256": "2fdef3771b8bc57b967147034eacaa35831de33e2bf58a97987a0c3f9250d099",
+      "name": "reversal_by_seq",
+      "op": {
+        "occurred_at": "2026-12-12T08:05:00Z",
+        "reverses_seq": 12,
+        "seq": 13,
+        "type": "REVERSAL"
+      }
+    },
+    {
+      "canonical": "{\"occurred_at\":\"2026-12-12T08:06:00Z\",\"reverses_transaction_id\":\"0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a\",\"seq\":14,\"type\":\"REVERSAL\"}",
+      "content_sha256": "97907ef8c8262fbfe70fe76e6c128343bba4c19b6ae05725a8359c906e80eceb",
+      "name": "reversal_by_transaction",
+      "op": {
+        "occurred_at": "2026-12-12T08:06:00Z",
+        "reverses_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+        "seq": 14,
+        "type": "REVERSAL"
+      }
+    },
+    {
+      "canonical": "{\"occurred_at\":\"2026-12-12T08:07:00Z\",\"seq\":15,\"type\":\"VOID\",\"void_reason\":\"TERMINAL_ERROR\"}",
+      "content_sha256": "35fd744655e80be92fe567e6f9ef69819ead73fe0ba8ffbe0fe23b412fe00990",
+      "name": "void",
+      "op": {
+        "occurred_at": "2026-12-12T08:07:00Z",
+        "seq": 15,
+        "type": "VOID",
+        "void_reason": "TERMINAL_ERROR"
+      }
+    },
+    {
+      "canonical": "{\"amount\":1500,\"currency\":\"XOF\",\"occurred_at\":\"2026-12-12T08:08:00Z\",\"online_operation\":\"PURCHASE\",\"seq\":16,\"type\":\"ONLINE_REF\"}",
+      "content_sha256": "993179e6be54a3a5900d1da11a1d920302e02cbf4dc464cac26c104c3ff35cda",
+      "name": "online_ref",
+      "op": {
+        "amount": 1500,
+        "currency": "XOF",
+        "occurred_at": "2026-12-12T08:08:00Z",
+        "online_operation": "PURCHASE",
+        "seq": 16,
+        "type": "ONLINE_REF"
+      }
+    },
+    {
+      "canonical": "{\"amount\":500,\"currency\":\"XOF\",\"occurred_at\":\"2026-12-12T09:00:00Z\",\"seq\":4294967296,\"type\":\"PURCHASE\"}",
+      "content_sha256": "6284880f52174d08336d21764e13ac6b6d79fe4e7c7ed5630ea832c73505164b",
+      "name": "seq_2_pow_32",
+      "op": {
+        "amount": 500,
+        "currency": "XOF",
+        "occurred_at": "2026-12-12T09:00:00Z",
+        "seq": 4294967296,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "canonical": "{\"amount\":500,\"currency\":\"XOF\",\"occurred_at\":\"2026-12-12T09:01:00Z\",\"seq\":9007199254740991,\"type\":\"PURCHASE\"}",
+      "content_sha256": "cf26ad1e95cf5dca33f48413f09a2021e57399d46cced177c2c397cba80d1598",
+      "name": "seq_max_safe",
+      "op": {
+        "amount": 500,
+        "currency": "XOF",
+        "occurred_at": "2026-12-12T09:01:00Z",
+        "seq": 9007199254740991,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "canonical": "{\"amount\":500,\"currency\":\"XOF\",\"occurred_at\":\"2026-12-12T09:02:00Z\",\"seq\":17,\"tap\":{\"counter\":413,\"extra_é\":\"ü\",\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "content_sha256": "2712dcdcfcbc3350928cb905418615024fa0588dad824cac8a567e2aea3d4eeb",
+      "name": "unknown_tap_property",
+      "op": {
+        "amount": 500,
+        "currency": "XOF",
+        "occurred_at": "2026-12-12T09:02:00Z",
+        "seq": 17,
+        "tap": {
+          "counter": 413,
+          "extra_é": "ü",
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    }
+  ],
+  "state_fields": {
+    "clock": {
+      "x": 1
+    },
+    "config_id": 3,
+    "customer_qr_token": "CQ7M2K9XQ4TP",
+    "local_available_before": 9000,
+    "online_status": "CONFIRMED",
+    "online_tap_id": 5,
+    "online_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+    "snapshot_version": 12,
+    "tap_id": 99,
+    "vendor_session_id": "2f3a4b5c-6d7e-4f80-9a1b-2c3d4e5f6a7b"
+  }
+}

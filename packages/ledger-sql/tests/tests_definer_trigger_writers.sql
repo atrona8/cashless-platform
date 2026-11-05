@@ -10,8 +10,8 @@
 --      tests_personalization_definer.sql prouve les contrôles de lot et de clé de données de la fonction ;
 --   2. la liste exacte des droits d'écriture des rôles cashless_* sur `media` et `media_batch` est figée, ainsi que la
 --      liste des fonctions de déclencheur SECURITY DEFINER ;
---   3. les droits d'écriture actuels sur `offline_snapshot` et `offline_policy_history` (OP-N57, OP-N58, mission 7)
---      sont figés : la suite échoue si la limite s'élargit ;
+--   3. OP-N57, OP-N58 (levées par la mission 7, WP08) : aucun rôle cashless_* n'écrit `offline_snapshot`,
+--      `offline_policy` ni `offline_policy_history` ; la suite échoue si un droit d'écriture réapparaît ;
 --   4. OP-N59, levée par la mission 5a (migration 0021) : aucune fonction SECURITY DEFINER sans pg_temp en dernier
 --      dans son search_path ; OP-N60 (mission 11) : les droits de cashless_app sur media_batch sont figés, colonne par
 --      colonne.
@@ -20,6 +20,7 @@
 \set ON_ERROR_STOP 1
 \set QUIET 1
 BEGIN;
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 
@@ -120,18 +121,27 @@ SELECT is((SELECT count(*)::int FROM pg_policies WHERE tablename = 'media' AND r
   'aucune politique nominative de cashless_perso sur media');
 
 -- 2. Écrivains de media et media_batch (déclencheurs SECURITY DEFINER depuis 0018) ---------------------------------------
+-- Mission 7, WP05 : close_offline_batch_retry (0046) clôt les traces RETRY au passage d'une ligne du registre ; seules
+-- les fonctions DEFINER du registre y écrivent (cashless_app n'a aucun INSERT sur device_seq_registry, roles.sql).
 SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relname, p.proname)
              FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_class c ON c.oid = t.tgrelid
             WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace),
   'account:account_hot_switch anomaly:anomaly_cash_due_guard app_user:app_user_guard audit_log:audit_log_chain '
-  'config_version:config_version_assign contract:contract_version_assign event:event_jurisdiction_bounds '
+  'config_version:config_version_assign contract:contract_version_assign '
+  'device_seq_registry:close_offline_batch_retry event:event_jurisdiction_bounds '
   'event:event_references_guard event_psp_selection:event_psp_selection_guard fee_rule:fee_rule_guard '
   'media:log_media_status media_batch:log_batch_status '
-  'merchant_participation:participation_guard point_of_sale:point_of_sale_guard '
+  'merchant_participation:participation_guard '
+  -- Mission hors-ligne-snapshots-lots (WP08) : log_offline_policy passe en DEFINER (0043, OP-N58),
+  -- offline_policy_scope_guard (0043, contrôle de portée) et log_wallet_status (0047, AFTER UPDATE et
+  -- AFTER INSERT avec WHEN : deux déclencheurs, une fonction)
+  'offline_policy:log_offline_policy offline_policy:offline_policy_scope_guard '
+  'point_of_sale:point_of_sale_guard '
   'posting:posting_cash_desk_guard '
   'psp_chargeback:psp_chargeback_cap psp_chargeback:psp_chargeback_guard '
   'psp_configuration:psp_configuration_immutable psp_event:psp_event_guard '
-  'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard',
+  'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard '
+  'wallet:log_wallet_status wallet:log_wallet_status',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
 -- Liste exacte des droits d'écriture des rôles de l'application sur les deux tables. Avant 0018 :
 --   cashless_app (UPDATE status de media, INSERT et UPDATE de media_batch) avait INSERT sur les deux historiques :
@@ -159,33 +169,22 @@ SELECT is((SELECT string_agg(r || ':' || t || ':' || p, ' ' ORDER BY r, t, p)
             WHERE has_table_privilege(r, t, p)),
   NULL, 'aucun rôle cashless_* ne supprime de bracelet ni de lot');
 
--- 3. Tables hors ligne (OP-N57 offline_snapshot, OP-N58 offline_policy_history ; mission 7) --------------------------------
--- Limite acceptée en l'état : seul cashless_app y écrit, et seulement INSERT et UPDATE (UPDATE refusé par le
--- déclencheur forbid_mutation). La suite échoue si un rôle ou un droit s'ajoute.
-SELECT is((SELECT string_agg(r || ':' || t || ':' || p || ':' ||
-                    CASE WHEN has_table_privilege(r, t, p) THEN 'ALL'
-                         ELSE (SELECT string_agg(a.attname, ',' ORDER BY a.attname) FROM pg_attribute a
-                                WHERE a.attrelid = t::regclass AND a.attnum > 0 AND NOT a.attisdropped
-                                  AND has_column_privilege(r, t, a.attname, p)) END,
-                  ' ' ORDER BY r, t, p)
-             FROM (SELECT rolname::text AS r FROM pg_roles WHERE rolname LIKE 'cashless\_%') roles,
-                  unnest(ARRAY['offline_snapshot','offline_policy_history']) t,
-                  unnest(ARRAY['INSERT','UPDATE']) p
-            WHERE has_any_column_privilege(r, t, p)),
-  'cashless_app:offline_policy_history:INSERT:ALL cashless_app:offline_policy_history:UPDATE:ALL '
-  'cashless_app:offline_snapshot:INSERT:ALL cashless_app:offline_snapshot:UPDATE:ALL',
-  'OP-N57, OP-N58 : écritures sur offline_snapshot et offline_policy_history limitées à INSERT et UPDATE de cashless_app');
+-- 3. Tables hors ligne (OP-N57 offline_snapshot, OP-N58 offline_policy_history ; levées par la mission 7, WP08) --------
+-- AVANT : seul cashless_app y écrivait (INSERT et UPDATE de offline_snapshot, offline_policy_history). APRÈS : aucun rôle
+-- cashless_* n'a le moindre droit d'écriture, colonne comprise, sur les trois tables ; écrivains légitimes :
+-- publish_offline_snapshot, set_offline_policy, clear_offline_policy et le déclencheur log_offline_policy (DEFINER).
 SELECT is((SELECT string_agg(r || ':' || t || ':' || p, ' ' ORDER BY r, t, p)
              FROM (SELECT rolname::text AS r FROM pg_roles WHERE rolname LIKE 'cashless\_%') roles,
-                  unnest(ARRAY['offline_snapshot','offline_policy_history']) t, unnest(ARRAY['DELETE','TRUNCATE']) p
-            WHERE has_table_privilege(r, t, p)),
-  NULL, 'OP-N57, OP-N58 : aucun rôle cashless_* ne supprime de snapshot ni d''historique de politique');
+                  unnest(ARRAY['offline_snapshot','offline_policy_history','offline_policy']) t,
+                  unnest(ARRAY['INSERT','UPDATE','DELETE','TRUNCATE']) p
+            WHERE has_table_privilege(r, t, p) OR (p IN ('INSERT','UPDATE') AND has_any_column_privilege(r, t, p))),
+  NULL, 'OP-N57, OP-N58 levées : aucun rôle cashless_* n''écrit offline_snapshot, offline_policy ni son historique');
 SELECT is((SELECT string_agg(tgname, ' ' ORDER BY tgname) FROM pg_trigger
             WHERE tgrelid IN ('offline_snapshot'::regclass, 'offline_policy_history'::regclass) AND NOT tgisinternal),
   'offline_policy_history_immutable offline_snapshot_check offline_snapshot_immutable',
   'OP-N57, OP-N58 : contrôles en place (version croissante, lignes immuables)');
-SELECT ok(NOT (SELECT prosecdef FROM pg_proc WHERE proname = 'log_offline_policy'),
-  'OP-N58 : log_offline_policy reste aux droits de l''appelant (comportement inchangé dans cette mission)');
+SELECT ok((SELECT prosecdef FROM pg_proc WHERE proname = 'log_offline_policy'),
+  'OP-N58 levée : log_offline_policy est SECURITY DEFINER (0043) ; avant : aux droits de l''appelant');
 
 -- 4. OP-N59 (ADR-96, levée) ; limite acceptée par le porteur le 15/10/2026 : OP-N60 (ADR-97) ---------------------------
 -- OP-N59 : levée par la mission 5a (identite-enrolement-terminaux, migration 0021). Toute fonction SECURITY DEFINER du

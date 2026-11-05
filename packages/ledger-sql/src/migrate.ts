@@ -141,6 +141,13 @@ export async function migrate(
       ['cashless_perso', report.postRoles ? process.env.CASHLESS_PERSO_PASSWORD : undefined],
       ['cashless_tagcheck', report.postRoles ? process.env.CASHLESS_TAGCHECK_PASSWORD : undefined],
       ['cashless_keyadmin', report.postRoles ? process.env.CASHLESS_KEYADMIN_PASSWORD : undefined],
+      // Processus de snapshots et de maintenance (WP08), créés par post-roles.sql.
+      [
+        'cashless_snapcontent',
+        report.postRoles ? process.env.CASHLESS_SNAPCONTENT_PASSWORD : undefined,
+      ],
+      ['cashless_snapsign', report.postRoles ? process.env.CASHLESS_SNAPSIGN_PASSWORD : undefined],
+      ['cashless_maint', report.postRoles ? process.env.CASHLESS_MAINT_PASSWORD : undefined],
     ];
     for (const [role, password] of passwords) {
       if (!password) continue;

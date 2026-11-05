@@ -38,6 +38,7 @@ import {
   DeviceSeqRegistry,
   isRegistrable,
 } from '../../payments/device-seq-registry';
+import { chainedContent } from '../../payments/chained-content';
 import { parseCashTopup, type CashTopupInput } from './cash-topup.dto';
 
 const CASH_ACCOUNT_PREFIX = 'A-CAISSE-';
@@ -74,14 +75,16 @@ interface Progress {
 function topupContent(seq: bigint, body: unknown): Buffer | null {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
   const raw = body as Record<string, unknown>;
-  return contentSha256({
-    seq: Number(seq),
-    type: 'TOPUP_CASH',
-    occurred_at: raw.occurred_at,
-    amount: raw.amount,
-    currency: raw.currency,
-    tap: raw.tap,
-  });
+  return contentSha256(
+    chainedContent({
+      seq,
+      type: 'TOPUP_CASH',
+      occurred_at: raw.occurred_at,
+      amount: raw.amount,
+      currency: raw.currency,
+      tap: raw.tap,
+    }),
+  );
 }
 
 @Injectable()
@@ -147,7 +150,8 @@ export class CashTopupService {
     const { device, language } = args;
     // 1. Terminal pris FOR UPDATE en première instruction (ordre global des verrous) ; heure de la base.
     const clock = await client.query<{ now: Date }>(
-      'SELECT clock_timestamp() AS now FROM device WHERE id = $1 FOR UPDATE',
+      // lock_device (DEFINER) : cashless_app n'a aucun UPDATE sur device ; faux = introuvable (aucune ligne).
+      "SELECT clock_timestamp() AS now FROM (SELECT lock_device($1, 'UPDATE') AS ok) l WHERE l.ok",
       [device.deviceId],
     );
     if (!clock.rows[0]) throw new ProblemException('NOT_FOUND');

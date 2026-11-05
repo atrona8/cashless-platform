@@ -23,7 +23,4 @@ Map<String, dynamic> _$SnapshotKeysToJson(SnapshotKeys instance) =>
       'not_after': instance.notAfter?.toIso8601String(),
     };
 
-const _$AlgorithmEnumMap = {
-  Algorithm.ecdsaP256Sha256: 'ECDSA_P256_SHA256',
-  Algorithm.ed25519: 'Ed25519',
-};
+const _$AlgorithmEnumMap = {Algorithm.ecdsaP256Sha256: 'ECDSA_P256_SHA256'};

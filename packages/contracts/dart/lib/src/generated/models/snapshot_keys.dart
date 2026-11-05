@@ -5,7 +5,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'algorithm.dart';
-import 'timestamp.dart';
 
 part 'snapshot_keys.g.dart';
 
@@ -15,7 +14,7 @@ class SnapshotKeys {
     required this.keyId,
     required this.algorithm,
     required this.publicKey,
-    this.notAfter,
+    required this.notAfter,
   });
 
   factory SnapshotKeys.fromJson(Map<String, Object?> json) =>
@@ -24,12 +23,16 @@ class SnapshotKeys {
   @JsonKey(name: 'key_id')
   final String keyId;
 
-  /// `ECDSA_P256_SHA256` par défaut ; Ed25519 si le KMS le permet (POINTS_OUVERTS OP-N13).
+  /// `ECDSA_P256_SHA256` seulement.
   final Algorithm algorithm;
+
+  /// Clé publique, SPKI DER en base64 standard.
   @JsonKey(name: 'public_key')
   final String publicKey;
+
+  /// Fin de validité de la clé ; `null` pour une clé `ACTIVE` (aucune date de fin).
   @JsonKey(name: 'not_after')
-  final Timestamp? notAfter;
+  final DateTime? notAfter;
 
   Map<String, Object?> toJson() => _$SnapshotKeysToJson(this);
 }

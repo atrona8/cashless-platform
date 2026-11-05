@@ -32,6 +32,7 @@ class SnapshotEntry {
     required this.spendable,
     required this.lastCounter,
     required this.pwdPackEnc,
+    required this.pwdPackSha256,
   });
 
   factory SnapshotEntry.fromJson(Map<String, Object?> json) =>
@@ -63,8 +64,18 @@ class SnapshotEntry {
   final int? lastCounter;
 
   /// PWD||PACK chiffré (AES-256-GCM, clé de contenu `pwd_pack_key`) ; null si le bracelet n'est pas utilisable.
+  /// Objet `EncryptedBlob`, hors empreinte `content_sha256` ; lié au contenu signé par `pwd_pack_sha256` =.
+  /// SHA-256 de nonce ‖ ciphertext ‖ tag (octets bruts décodés, concaténés).
+  ///
   @JsonKey(name: 'pwd_pack_enc')
   final EncryptedBlob? pwdPackEnc;
+
+  /// SHA-256 de nonce ‖ ciphertext ‖ tag de `pwd_pack_enc` (octets bruts décodés du base64, concaténés), soit 34 octets hachés ; inclus.
+  /// dans le contenu signé (renforcement, R-30.9) : le terminal vérifie le chiffré reçu contre cette valeur.
+  /// Null si `pwd_pack_enc` est null.
+  ///
+  @JsonKey(name: 'pwd_pack_sha256')
+  final Hex32? pwdPackSha256;
 
   Map<String, Object?> toJson() => _$SnapshotEntryToJson(this);
 }

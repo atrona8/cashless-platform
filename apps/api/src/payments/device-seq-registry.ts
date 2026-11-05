@@ -20,6 +20,7 @@
 import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import canonicalize from 'canonicalize';
+import { chainedContent } from './chained-content';
 import type { TxClient } from '../db/tenant-tx';
 import { TenantTx } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
@@ -28,6 +29,41 @@ import { isSqlError } from '../errors/sqlstate-map';
 import type { ResolvedProblem } from '../errors/problem.filter';
 
 export type SeqChannel = 'ONLINE' | 'BATCH' | 'EDGE';
+
+/** Ligne du registre rendue par `record_device_seq` / `lookup`. */
+export interface RegistryRow {
+  replayed: boolean;
+  outcome: string;
+  reason: string | null;
+  transactionId: string | null;
+  contiguousAckedSeq: bigint;
+}
+
+interface RegistryRecordInput {
+  deviceId: string;
+  seq: bigint;
+  content: Buffer;
+  outcome: 'ACCEPTED' | 'ACCEPTED_WITH_SHORTFALL' | 'DUPLICATE' | 'REJECTED' | 'VOID';
+  reason?: string;
+  transactionId?: string;
+  batchId?: string;
+}
+
+interface RegistrySqlRow {
+  replayed: boolean;
+  outcome: string;
+  reason: string | null;
+  transaction_id: string | null;
+  contiguous_acked_seq: string | number | bigint;
+}
+
+const toRow = (r: RegistrySqlRow): RegistryRow => ({
+  replayed: r.replayed,
+  outcome: r.outcome,
+  reason: r.reason,
+  transactionId: r.transaction_id,
+  contiguousAckedSeq: BigInt(r.contiguous_acked_seq),
+});
 
 /** Champs chaînés d'une vente que le terminal a pu envoyer (noms de `OfflineOperation`). */
 const PURCHASE_FIELDS = ['occurred_at', 'amount', 'currency', 'tap', 'lines'] as const;
@@ -53,12 +89,7 @@ export function purchaseContent(seq: bigint, body: unknown): Buffer | null {
   const raw = body as Record<string, unknown>;
   const picked: Record<string, unknown> = {};
   for (const field of PURCHASE_FIELDS) picked[field] = raw[field];
-  return contentSha256({ seq: seqNumber(seq), type: 'PURCHASE', ...picked });
-}
-
-/** `seq` en nombre JSON (exact jusqu'à 2^53 − 1 ; au-delà, le contrat des lots devra le dire). */
-function seqNumber(seq: bigint): number {
-  return Number(seq);
+  return contentSha256(chainedContent({ seq, type: 'PURCHASE', ...picked }));
 }
 
 /** Ce refus doit-il être rangé au registre ? Seuls les refus 4xx définitifs, sauf ceux du registre lui-même. */
@@ -74,19 +105,67 @@ export function isRegistrable(problem: ResolvedProblem, error: unknown): boolean
 export class DeviceSeqRegistry {
   constructor(private readonly tx: TenantTx) {}
 
+  /**
+   * Enregistre un numéro par `record_device_seq` (`seq` en texte). Ne lève PAS quand `replayed` est vrai :
+   * l'appelant décide. `CL002` (autre contenu) et `CL021` (hors plage) remontent tels quels. Le terminal doit
+   * être déjà verrouillé par l'appelant (`lock_device`).
+   */
+  async record(
+    client: TxClient,
+    input: RegistryRecordInput,
+    channel: SeqChannel = 'BATCH',
+  ): Promise<RegistryRow> {
+    const { rows } = await client.query<RegistrySqlRow>(
+      `SELECT replayed, outcome, reason, transaction_id, contiguous_acked_seq
+         FROM record_device_seq($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        input.deviceId,
+        input.seq.toString(),
+        input.content,
+        input.outcome,
+        channel,
+        input.transactionId ?? null,
+        input.reason ?? null,
+        input.batchId ?? null,
+      ],
+    );
+    return toRow(rows[0]!);
+  }
+
+  /**
+   * Lecture sans effet : la ligne du registre pour (terminal, numéro) et le `contiguous_acked_seq` du
+   * terminal (SELECT sous RLS, droit déjà accordé à `cashless_app`). `null` si le numéro n'est pas rangé.
+   */
+  async lookup(client: TxClient, deviceId: string, seq: bigint): Promise<RegistryRow | null> {
+    const { rows } = await client.query<RegistrySqlRow>(
+      `SELECT false AS replayed, r.outcome, r.reason, r.transaction_id, d.contiguous_acked_seq
+         FROM device_seq_registry r JOIN device d ON d.id = r.device_id
+        WHERE r.device_id = $1 AND r.seq = $2`,
+      [deviceId, seq.toString()],
+    );
+    return rows[0] ? toRow(rows[0]) : null;
+  }
+
   /** Réussite : dans la transaction de l'écriture (terminal déjà tenu FOR UPDATE). */
   async accept(
     client: TxClient,
     input: { deviceId: string; seq: bigint; content: Buffer; transactionId: string },
     channel: SeqChannel = 'ONLINE',
   ): Promise<void> {
-    const { rows } = await client.query<{ replayed: boolean }>(
-      `SELECT replayed FROM record_device_seq($1, $2, $3, 'ACCEPTED', $4, $5)`,
-      [input.deviceId, input.seq.toString(), input.content, channel, input.transactionId],
+    const row = await this.record(
+      client,
+      {
+        deviceId: input.deviceId,
+        seq: input.seq,
+        content: input.content,
+        outcome: 'ACCEPTED',
+        transactionId: input.transactionId,
+      },
+      channel,
     );
     // Numéro déjà rangé avec ce contenu : cette écriture n'aurait pas dû avoir lieu (l'idempotence aurait rejoué
     // la réponse). Tout annuler plutôt que lier deux ventes à un numéro.
-    if (rows[0]?.replayed !== false)
+    if (row.replayed !== false)
       throw new ProblemException('IDEMPOTENCY_KEY_REUSED', {
         detail: 'Ce numéro du terminal est déjà enregistré.',
       });
@@ -103,15 +182,20 @@ export class DeviceSeqRegistry {
     inside?: (client: TxClient) => Promise<T>,
   ): Promise<T | undefined> {
     return this.tx.run(operatorId, async (client) => {
-      await client.query('SELECT 1 FROM device WHERE id = $1 FOR UPDATE', [input.deviceId]);
+      // Verrou par fonction DEFINER (cashless_app n'a aucun UPDATE sur device : FOR UPDATE direct refusé).
+      await client.query("SELECT lock_device($1, 'UPDATE')", [input.deviceId]);
       const extra = inside ? await inside(client) : undefined;
-      await client.query(`SELECT record_device_seq($1, $2, $3, 'REJECTED', $4, NULL, $5)`, [
-        input.deviceId,
-        input.seq.toString(),
-        input.content,
+      await this.record(
+        client,
+        {
+          deviceId: input.deviceId,
+          seq: input.seq,
+          content: input.content,
+          outcome: 'REJECTED',
+          reason: input.reason,
+        },
         channel,
-        input.reason,
-      ]);
+      );
       return extra;
     });
   }

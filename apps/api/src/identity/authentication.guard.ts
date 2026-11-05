@@ -13,7 +13,7 @@ import {
   type IdentityVerifier,
   type VerifiedToken,
 } from './oidc-verifier';
-import type { Assignment, PrincipalRequest, Role, ScopeType } from './principal';
+import type { Assignment, Principal, PrincipalRequest, Role, ScopeType } from './principal';
 import { IS_PUBLIC } from './public.decorator';
 import { STAFF_AUTHORIZATION_HEADER, STAFF_TOKEN_ROUTE } from './staff-token.decorator';
 
@@ -39,7 +39,28 @@ export class AuthenticationGuard implements CanActivate {
     if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets)) return true;
 
     const source = staffRoute ? STAFF_AUTHORIZATION_HEADER : 'authorization';
-    const token = BEARER.exec(req.header(source) ?? '')?.[1];
+    req.principal = await this.authenticate(req.header(source));
+    return true;
+  }
+
+  /**
+   * Contrôle PRÉALABLE à la lecture d'un gros corps (mission 7, WP20 : `batch-body.ts`, `journal-body.ts`) : le jeton
+   * de `Authorization` est vérifié, la personne retrouvée ACTIVE, et (si `roles` est donné) elle tient l'un de ces
+   * rôles quelque part. Aucune écriture ; la garde refait ces contrôles à la requête, ce n'est qu'un filtre qui
+   * évite de lire 21 Mio pour un inconnu. `false` pour tout échec (la garde répondra 401 ou le contrôleur 403).
+   */
+  async preAuthenticate(req: PrincipalRequest, roles?: readonly Role[]): Promise<boolean> {
+    if (req.header(STAFF_AUTHORIZATION_HEADER) !== undefined) return false;
+    try {
+      const principal = await this.authenticate(req.header('authorization'));
+      return !roles || principal.assignments.some((a) => roles.includes(a.role));
+    } catch {
+      return false;
+    }
+  }
+
+  private async authenticate(header: string | undefined): Promise<Principal> {
+    const token = BEARER.exec(header ?? '')?.[1];
     if (!token) throw new ProblemException('UNAUTHENTICATED');
     const verified = await this.verify(token);
 
@@ -48,7 +69,7 @@ export class AuthenticationGuard implements CanActivate {
     if (verified.operatorClaim !== undefined && verified.operatorClaim !== person.operator_id) {
       throw new ProblemException('UNAUTHENTICATED');
     }
-    req.principal = {
+    return {
       userId: person.user_id,
       operatorId: person.operator_id,
       assignments: person.assignments.map(
@@ -61,7 +82,6 @@ export class AuthenticationGuard implements CanActivate {
       issuer: verified.issuer,
       subject: verified.subject,
     };
-    return true;
   }
 
   private async verify(token: string): Promise<VerifiedToken> {

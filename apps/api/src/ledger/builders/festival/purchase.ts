@@ -16,13 +16,18 @@ export interface PurchasePayload {
   walletId: string;
   participationId: string;
   amount: bigint;
+  /**
+   * Vente `OFFLINE_SYNC` seulement : plafond de la part prélevée sur le portefeuille (table de conflit hors ligne).
+   * Absent : tout ce que les soldes permettent. Sans effet pour une vente en ligne.
+   */
+  coveredCap?: bigint;
 }
 
 export function buildPurchase(
   command: LedgerCommand<'PURCHASE', PurchasePayload>,
   ctx: BuildContext,
 ): Line[] {
-  const { walletId, participationId, amount } = command.payload;
+  const { walletId, participationId, amount, coveredCap } = command.payload;
   requireId(walletId, 'portefeuille');
   requireId(participationId, 'participation');
   requirePositive(amount, 'vente');
@@ -39,6 +44,7 @@ export function buildPurchase(
       paidBalance: balances.paid,
       promoFirst: config.spendOrder === 'PROMO_FIRST',
       mode: command.source === 'ONLINE' ? 'ONLINE' : 'OFFLINE',
+      ...(coveredCap === undefined ? {} : { coveredCap }),
     });
   } catch (error) {
     if (error instanceof InsufficientFundsError)

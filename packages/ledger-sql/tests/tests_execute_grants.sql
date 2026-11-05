@@ -12,6 +12,11 @@ BEGIN;
 SET LOCAL client_min_messages = warning;
 \ir ../roles.sql
 \ir ../post-roles.sql
+-- post-roles.sql vient de fermer le défaut des fonctions futures (OP-N68) : pgtap, créée ensuite, n'aurait plus
+-- d'EXECUTE pour PUBLIC et les assertions sous SET ROLE échoueraient. On rouvre le défaut le temps de créer
+-- l'extension ; le §4 rejoue post-roles.sql (défaut refermé) AVANT de créer sa fonction de preuve, et
+-- n'inclut jamais ce fichier.
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 
@@ -86,7 +91,6 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'post_transaction(uuid,text,text,timestamptz,text,jsonb,uuid,uuid,uuid,uuid,uuid,uuid,uuid,'
     || 'jsonb)',
   'preload_batch(uuid,integer)', 'preload_media(uuid)', 'public_balance_lookup(bytea,text)',
-  'purge_device_enrollment_attempts()', 'purge_device_request_nonces(integer)',
   'reassign_pool_media(uuid,bytea)', 'record_config_served(uuid,uuid)',
   'record_device_heartbeat(uuid,text,timestamptz)',
   'record_enrollment_attempt(bytea,inet,text)',
@@ -145,7 +149,39 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'card_topups_today(uuid,text,timestamptz)', 'wallet_card_count(uuid,text)',
   -- contestations (0038)
   'record_chargeback(uuid,text,bigint,boolean)', 'attach_chargeback_tx(uuid,uuid)',
-  'block_wallet_after_chargeback(uuid,uuid)', 'unblock_wallet(uuid,uuid)'
+  'block_wallet_after_chargeback(uuid,uuid)', 'unblock_wallet(uuid,uuid)',
+  -- Mission hors-ligne-snapshots-lots, lot WP08 (post-roles.sql §8d ; ADR-140) : politique (0043),
+  -- snapshot lu par le terminal (0045), lots, registre, import (0046), anomalies (0047), terminal,
+  -- vendeur et configuration datés (0048) ; effective_offline_policy, policy_in_force,
+  -- device_missing_seqs et waive_seq_gap sont pré-existantes (database-rights.md)
+  'set_offline_policy(text,uuid,jsonb,integer,uuid)', 'clear_offline_policy(text,uuid,integer,uuid)',
+  'offline_policy_level(text,uuid)', 'offline_max_exposure(uuid)',
+  'effective_offline_policy(uuid)', 'policy_in_force(uuid,bigint)',
+  'offline_snapshot_for_device(uuid,bigint)', 'snapshot_public_keys(uuid)',
+  'open_offline_batch(uuid,uuid,uuid,bigint,bytea,bytea[],bytea,bytea,text,integer)',
+  'complete_offline_batch(uuid,jsonb)', 'offline_batch_state(uuid)',
+  'record_offline_retry(uuid,bigint,text)', 'record_offline_op_result(uuid,bigint,jsonb)',
+  'offline_op_results(uuid)', 'offline_batch_retries_open(uuid)',
+  'check_seq_gap_waivable(uuid,bigint)', 'device_missing_seqs(uuid,integer)',
+  'waive_seq_gap(uuid,bigint,uuid,uuid,text)',
+  'create_device_journal_import(uuid,jsonb,bytea,jsonb,text,uuid)',
+  'begin_device_journal_import(uuid,bytea,uuid)',
+  'open_imported_batch(uuid,uuid,bigint,bytea,bytea[],bytea,bytea)',
+  'finish_device_journal_import(uuid,text,jsonb)', 'device_journal_import_view(uuid,boolean)',
+  'device_journal_imports_processing()', 'cancel_device_journal_import(uuid,uuid,text)',
+  'open_offline_anomaly(uuid,text,uuid,uuid,bigint,uuid,bigint,text,jsonb,uuid)',
+  'reduce_offline_shortfall(uuid,bigint,uuid)', 'offline_block_time(uuid,uuid,timestamptz)',
+  'ack_offline_snapshot(uuid,bigint,bytea)', 'offline_snapshot_ack_floor(uuid,timestamptz)',
+  'offline_snapshot_meta(uuid,bigint,uuid)', 'offline_media_state_at(uuid,bytea,bigint)',
+  'offline_config_in_force(uuid,bigint,timestamptz,interval)',
+  'device_status_at(uuid,timestamptz)', 'device_revoked_at(uuid)',
+  'assert_vendor_session_at(uuid,uuid,timestamptz)',
+  'record_sale_attribution_at(uuid,uuid,text,uuid,timestamptz)',
+  'set_device_station_name(uuid,text,uuid)',
+  'offline_device_exposure(uuid,uuid,bigint,timestamptz,interval)', 'lock_device(uuid,text)',
+  -- 0051 (WP21 partie D) : enveloppe étroite de la remontée des terminaux ; les deux fonctions qu'elle appelle
+  -- (event_device_sync_status, event_sync_deadline) restent refusées à cashless_app
+  'event_device_sync_status_api(uuid)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -174,7 +210,27 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'psp_topup_net_credited(uuid)',
                     'psp_topup_replay_row(uuid,uuid,text,bigint,text)',
                     'psp_complete_core(uuid,uuid,bigint,text,boolean,text,text)',
-                    'psp_chargeback_cap()', 'psp_chargeback_guard()']) f;
+                    'psp_chargeback_cap()', 'psp_chargeback_guard()',
+                    -- OP-N75 levée (WP08) : les deux purges vont à cashless_maint
+                    'purge_device_request_nonces(integer)', 'purge_device_enrollment_attempts()',
+                    -- mission hors-ligne-snapshots-lots : jamais accordées à l'API publique
+                    -- (R-30.12 ; internes de 0043 à 0046 ; processus de snapshot et d'alerte)
+                    'open_offline_batch_core(uuid,uuid,uuid,bigint,bytea,bytea[],bytea,bytea,text,'
+                      || 'integer,boolean,uuid)',
+                    'mark_seq_gap_alerted(uuid)', 'event_sync_deadline(uuid)',
+                    'mark_offline_retry_alerted(uuid,bigint)',
+                    'offline_seq_gaps_to_alert(interval)', 'offline_retries_to_alert(interval)',
+                    'offline_policy_scope_operator(text,uuid)', 'offline_policy_actor_check(uuid,uuid)',
+                    'offline_snapshot_add_entries(bigint,jsonb)',
+                    'offline_snapshot_draft_locked(bigint,boolean)',
+                    'offline_snapshot_source_rows(uuid,timestamptz)',
+                    'offline_snapshot_item_ok(jsonb)', 'offline_snapshot_header_ok(jsonb)',
+                    'offline_snapshot_envelope_ok(jsonb)', 'offline_snapshot_keys_to_wrap(integer)',
+                    'wrap_offline_snapshot_key(uuid,bigint,uuid,bytea,jsonb)',
+                    'rotate_snapshot_signing_key(text,bytea,text,uuid)',
+                    'publish_offline_snapshot(bigint,text,bytea)',
+                    'save_offline_snapshot_draft(uuid,text,jsonb,bytea,jsonb)',
+                    'discard_offline_snapshot_draft(bigint,text)']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),
@@ -198,9 +254,50 @@ SELECT is(pg_temp.fns('cashless_tagcheck'), '{}'::text[],
   'cashless_tagcheck : aucune fonction');
 SELECT is(pg_temp.fns('cashless_keyadmin'), pg_temp.sigs(ARRAY[
   'claim_tag_key_job(text[],integer)', 'claim_tag_key_job_for(uuid[],text[],integer)',
-  'finish_tag_key_job(uuid,text,text,jsonb,integer)', 'tag_key_job_refusal(uuid)'
+  'finish_tag_key_job(uuid,text,text,jsonb,integer)', 'tag_key_job_refusal(uuid)',
+  'rotate_snapshot_signing_key(text,bytea,text,uuid)'
 ]::text[]::regprocedure[]),
-  'cashless_keyadmin : liste exacte');
+  'cashless_keyadmin : liste exacte (rotation de la clé de signature des snapshots, WP08)');
+-- Rôles de processus de la mission hors-ligne-snapshots-lots (post-roles.sql §8e à §8g). Listes figées.
+SELECT is(pg_temp.fns('cashless_snapcontent'), pg_temp.sigs(ARRAY[
+  'offline_snapshot_targets()', 'offline_snapshot_source(uuid)',
+  'offline_snapshot_source_delta(uuid,timestamptz)',
+  'save_offline_snapshot_draft(uuid,text,jsonb,bytea,jsonb)',
+  'wrap_offline_snapshot_key(uuid,bigint,uuid,bytea,jsonb)',
+  'offline_snapshot_keys_to_wrap(integer)', 'purge_offline_snapshot_content(uuid)',
+  'append_offline_snapshot_draft_entries(bigint,jsonb)', 'seal_offline_snapshot_draft(bigint)',
+  'discard_offline_snapshot_draft(bigint,text)', 'offline_snapshot_state_hashes(uuid)',
+  'offline_snapshot_entry_sha256(jsonb)', 'discard_open_offline_snapshot_drafts(uuid)'
+]::text[]::regprocedure[]),
+  'cashless_snapcontent : liste exacte');
+SELECT is(pg_temp.fns('cashless_snapsign'), pg_temp.sigs(ARRAY[
+  'offline_snapshot_drafts_ready()', 'offline_snapshot_draft_content(bigint)',
+  'publish_offline_snapshot(bigint,text,bytea)', 'discard_offline_snapshot_draft(bigint,text)',
+  'offline_seq_gaps_to_alert(interval)', 'mark_seq_gap_alerted(uuid)',
+  'offline_retries_to_alert(interval)', 'mark_offline_retry_alerted(uuid,bigint)',
+  'snapshot_public_keys(uuid)'
+]::text[]::regprocedure[]),
+  'cashless_snapsign : liste exacte (ADR-140)');
+SELECT is(pg_temp.fns('cashless_maint'), pg_temp.sigs(ARRAY[
+  'purge_device_request_nonces(integer)', 'purge_device_enrollment_attempts()'
+]::text[]::regprocedure[]),
+  'cashless_maint : les deux purges, rien d''autre (OP-N75)');
+-- Jamais accordées à un rôle quelconque (internes DEFINER sans garde propre, gardes, fonctions de déclencheur).
+SELECT is((SELECT count(*)::int FROM pg_proc p CROSS JOIN unnest(ARRAY['public', 'cashless_app',
+            'cashless_platform', 'cashless_tagkeys', 'cashless_perso', 'cashless_tagcheck',
+            'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint']) r
+           WHERE p.pronamespace = 'public'::regnamespace
+             AND p.proname IN ('offline_snapshot_add_entries', 'offline_snapshot_draft_locked',
+                               'offline_snapshot_source_rows', 'offline_snapshot_item_ok',
+                               'offline_snapshot_header_ok', 'offline_snapshot_envelope_ok',
+                               'snapshot_signing_key_cap', 'open_offline_batch_core',
+                               'offline_policy_scope_operator', 'offline_policy_actor_check',
+                               'offline_policy_scope_guard', 'log_offline_policy', 'log_wallet_status',
+                               'close_offline_batch_retry', 'device_journal_import_guard',
+                               'offline_batch_retry_guard', 'event_sync_deadline')
+             AND has_function_privilege(r, p.oid, 'EXECUTE')), 0,
+  'fonctions internes et de déclencheur de 0043 à 0048 : exécutables par aucun rôle (ADR-140)');
+-- Toute fonction de public créée par 0043 à 0049 est nommée par une des listes ci-dessus : tests_offline_rights.sql.
 
 -- 3. Refus à l'appel (et non seulement au catalogue) ---------------------------------------------
 SET LOCAL ROLE cashless_tagcheck;
@@ -211,12 +308,14 @@ SELECT throws_ok($$SELECT open_event_ledger('00000000-0000-0000-0000-00000000000
   '42501', NULL,
   'plateforme : n''exécute plus les fonctions d''API des prestataires');
 SET LOCAL ROLE cashless_app;
--- Purges : accordées à l'API publique seule (travailleur device-purge, lot WP12) ; refusées aux
+-- Purges : accordées à cashless_maint seul (OP-N75 levée, WP08) ; refusées à l'API publique et aux
 -- processus des clés, dont celui qui consomme aussi des nonces (POST /media/auth-keys).
-SELECT lives_ok($$SELECT purge_device_request_nonces(1)$$,
-  'API publique : purge des nonces exécutable (travailleur device-purge, lot WP12)');
-SELECT lives_ok($$SELECT purge_device_enrollment_attempts()$$,
-  'API publique : purge des essais d''enrôlement exécutable (lot WP12)');
+SELECT throws_ok($$SELECT purge_device_request_nonces(1)$$, '42501', NULL,
+  'API publique : purge des nonces refusée (cashless_maint seul, OP-N75)');
+SELECT throws_ok($$SELECT purge_device_enrollment_attempts()$$, '42501', NULL,
+  'API publique : purge des essais d''enrôlement refusée (OP-N75)');
+SELECT throws_ok($$SELECT mark_seq_gap_alerted('00000000-0000-0000-0000-000000000000')$$, '42501', NULL,
+  'API publique : mark_seq_gap_alerted refusée (R-30.12)');
 SELECT throws_ok($$SELECT seal_ledger('00000000-0000-0000-0000-000000000000', interval '1 hour')$$,
   '42501', NULL, 'API publique : fonction du schéma qu''elle n''appelle pas refusée (scellement)');
 SET LOCAL ROLE cashless_tagkeys;
@@ -225,25 +324,29 @@ SELECT throws_ok($$SELECT purge_device_request_nonces(1)$$, '42501', NULL,
 RESET ROLE;
 
 -- 4. Fonction créée à la main, hors de migrate.ts, par le propriétaire --------------------------
--- LIMITE RESTANTE (décision du porteur du 20/10/2026, option c) : migrate.ts applique une série et
--- rejoue roles.sql puis post-roles.sql dans une même transaction, une fonction d'une migration
--- n'est donc jamais validée exécutable par PUBLIC (migrate-rights.spec.ts de l'API). Une fonction
--- créée à la main hors de migrate.ts reste exécutable par PUBLIC jusqu'au prochain rejeu de
--- post-roles.sql : la première assertion le borne, la suite prouve la fermeture au rejeu.
+-- OP-N68 LEVÉE (WP08) : post-roles.sql §8a pose ALTER DEFAULT PRIVILEGES … REVOKE EXECUTE ON FUNCTIONS
+-- FROM PUBLIC pour le propriétaire. Ce paragraphe ne rouvre JAMAIS le défaut (pas d'inclusion de
+-- _grants_for_tests.sql) : il rejoue roles.sql puis post-roles.sql (défaut refermé après l'ouverture du
+-- haut de fichier), crée la fonction, et prouve qu'elle n'est exécutable ni par PUBLIC ni par aucun rôle.
 CREATE TEMP TABLE wp07_before AS
   SELECT r, pg_temp.fns(r) AS f
     FROM unnest(ARRAY['public', 'cashless_app', 'cashless_platform', 'cashless_tagkeys',
-                      'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin']) r;
-CREATE FUNCTION public.wp07_future_probe() RETURNS int LANGUAGE sql AS 'SELECT 1';
-SELECT ok(has_function_privilege('public', 'public.wp07_future_probe()', 'EXECUTE'),
-  'LIMITE RESTANTE : fonction créée à la main hors de migrate.ts exécutable par PUBLIC jusqu''au '
-  || 'rejeu');
+                      'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin',
+                      'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint']) r;
 \ir ../roles.sql
 \ir ../post-roles.sql
+CREATE FUNCTION public.wp07_future_probe() RETURNS int LANGUAGE sql AS 'SELECT 1';
 SELECT ok(NOT has_function_privilege('public', 'public.wp07_future_probe()', 'EXECUTE')
-      AND NOT has_function_privilege('cashless_app', 'public.wp07_future_probe()', 'EXECUTE'),
-  'rejeu roles.sql puis post-roles.sql : la fonction nouvelle n''est exécutable ni par PUBLIC '
-  || 'ni par cashless_app');
+      AND NOT has_function_privilege('cashless_app', 'public.wp07_future_probe()', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_snapcontent', 'public.wp07_future_probe()', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_snapsign', 'public.wp07_future_probe()', 'EXECUTE'),
+  'OP-N68 levée : fonction créée à la main par le propriétaire, exécutable ni par PUBLIC ni par un rôle');
+SELECT is((SELECT count(*)::int FROM pg_default_acl d WHERE d.defaclobjtype = 'f'
+             AND d.defaclnamespace = 0 AND d.defaclrole = (SELECT oid FROM pg_roles WHERE rolname = current_user)
+             AND NOT EXISTS (SELECT 1 FROM aclexplode(d.defaclacl) a WHERE a.grantee = 0)), 1,
+  'défaut global (sans IN SCHEMA) posé pour le propriétaire courant, PUBLIC retiré');
+\ir ../roles.sql
+\ir ../post-roles.sql
 SELECT is((SELECT array_agg(r ORDER BY r) FROM wp07_before
              WHERE f IS DISTINCT FROM pg_temp.fns(r)), NULL::text[],
   'rejeu : liste de chaque rôle inchangée (idempotent)');

@@ -11,7 +11,10 @@
     "start:personalization": "node --require tsx/cjs dist/main.personalization.js",
     "start:tag-check": "node --require tsx/cjs dist/main.tag-check.js",
     "start:psp-poller": "node --require tsx/cjs dist/main.psp-poller.js",
+    "start:maintenance": "node --require tsx/cjs dist/main.maintenance.js",
+    "start:snapshot-signer": "node --require tsx/cjs dist/main.snapshot-signer.js",
     "start:key-admin": "node --require tsx/cjs dist/main.key-admin.js",
+    "start:snapshot-content": "node --require tsx/cjs dist/main.snapshot-content.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest"
   },

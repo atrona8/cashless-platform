@@ -18,15 +18,15 @@ class OfflineOperationResult {
     required this.seq,
     required this.idempotencyKey,
     required this.status,
+    required this.effect,
+    required this.retryable,
     this.transactionId,
-    this.effect,
     this.chargedToWallet,
     this.shortfallAmount,
     this.shortfallReason,
     this.anomalyId,
     this.tapResult,
     this.rejectReason,
-    this.retryable,
     this.detail,
   });
 
@@ -40,21 +40,29 @@ class OfflineOperationResult {
   @JsonKey(name: 'transaction_id')
   final String? transactionId;
 
-  /// NONE pour VOID, ONLINE_REF non exécuté, REJECTED.
-  final OfflineOperationResultEffect? effect;
+  /// NONE pour VOID, ONLINE_REF non exécuté, REJECTED. Un `DUPLICATE` dont l'opération est déjà au journal.
+  /// (en ligne, passerelle) vaut `LEDGER_WRITTEN` et porte le `transaction_id` d'origine.
+  ///
+  final OfflineOperationResultEffect effect;
   @JsonKey(name: 'charged_to_wallet')
   final int? chargedToWallet;
   @JsonKey(name: 'shortfall_amount')
   final int? shortfallAmount;
   @JsonKey(name: 'shortfall_reason')
   final ShortfallReason? shortfallReason;
+
+  /// Identifiant (`anomaly.id`) de l'anomalie ouverte par l'opération, s'il y en a une.
   @JsonKey(name: 'anomaly_id')
   final String? anomalyId;
   @JsonKey(name: 'tap_result')
   final TapResultCode? tapResult;
   @JsonKey(name: 'reject_reason')
   final OfflineRejectReason? rejectReason;
-  final bool? retryable;
+
+  /// Vrai seulement pour `INSUFFICIENT_FUNDS_RETRY` (le terminal renvoie l'opération dans un lot ultérieur).
+  final bool retryable;
+
+  /// Précision lisible, sans secret ni identifiant interne.
   final String? detail;
 
   Map<String, Object?> toJson() => _$OfflineOperationResultToJson(this);

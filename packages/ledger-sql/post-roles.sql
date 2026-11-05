@@ -12,13 +12,13 @@
 -- défaut de colonne, aucune contrainte ni aucune vue n'appelle une fonction de public. Extensions :
 -- pgcrypto n'est appelée ni par le schéma ni par l'API (ses fonctions perdent aussi PUBLIC) ; pgtap
 -- n'existe que dans la transaction d'une suite de test, créée par le propriétaire.
--- Fonctions futures (décision du porteur du 20/10/2026, option c) : aucun droit par défaut n'est
--- posé (la forme « ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE … FROM PUBLIC » est sans effet
--- en PostgreSQL ; la forme globale retirerait EXECUTE à PUBLIC sur pgtap et sur les fonctions
--- pg_temp des suites). migrate.ts applique la série et rejoue ce fichier dans UNE transaction : une
--- fonction créée par une migration n'est jamais validée exécutable par PUBLIC
--- (apps/api/test/integration/transverse/migrate-rights.spec.ts). Limite restante : une fonction
--- créée à la main hors de migrate.ts le reste jusqu'au prochain rejeu (tests_execute_grants.sql §4).
+-- Fonctions futures (OP-N68, levée par la mission hors-ligne-snapshots-lots, WP08 ; supersede la décision du
+-- porteur du 20/10/2026, option c) : la section 8 pose `ALTER DEFAULT PRIVILEGES FOR ROLE <propriétaire>
+-- REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC`, FORME GLOBALE (sans IN SCHEMA). La forme « IN SCHEMA public »
+-- seule serait sans effet : un droit par défaut retiré « pour un schéma » ne retire rien à ce que PostgreSQL
+-- accorde globalement à PUBLIC. Une fonction créée ensuite par le propriétaire (celui qui exécute migrate.ts)
+-- n'est donc exécutable de personne d'autre tant qu'un GRANT nominatif ne la nomme pas, même créée à la main
+-- hors de migrate.ts. Conséquence pour les suites pgTAP (pgtap, fonctions pg_temp) : tests/_grants_for_tests.sql.
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
 REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM cashless_app;
 -- Tables temporaires (OP-N59, seconde barrière ; la première est le search_path des fonctions
@@ -469,7 +469,8 @@ GRANT EXECUTE ON FUNCTION
   revoke_device_token_family(uuid, uuid, text),
   device_token_family_active(uuid, uuid), consume_device_nonce(uuid, bytea, timestamptz, integer),
   assert_device_active(uuid),
-  purge_device_request_nonces(integer), purge_device_enrollment_attempts(),
+  -- Les deux purges (purge_device_request_nonces, purge_device_enrollment_attempts) ne sont plus
+  -- accordées à ce rôle (OP-N75 levée, WP08) : cashless_maint, section 8.
   -- Configuration servie (lot WP17, S10) : enregistre la configuration servie et rend config_id ;
   -- assert_tenant sur le prestataire du terminal. La route relit d'abord le statut du terminal
   -- (verrou, révoqué refusé) dans la même transaction. Migration 0029 (ADR-118) : la fonction
@@ -531,8 +532,9 @@ TO cashless_app;
 -- d'OP-N74 et de FR-015 ; la version du catalogue servie à ce terminal devenait celle d'un autre
 -- point de vente). Le reste d'OP-N69 (numérotation, suivi) reste à la mission 7.
 REVOKE INSERT, UPDATE ON device FROM cashless_app;
-GRANT UPDATE (station_name, last_snapshot_version, last_seen_at, next_seq_floor) ON device
-  TO cashless_app;
+-- OP-N69 levée (mission hors-ligne-snapshots-lots, WP08) : plus aucun UPDATE direct sur device ; les écritures
+-- légitimes sont record_device_heartbeat, ack_offline_snapshot, set_device_station_name et les fonctions
+-- d'enrôlement (SECURITY DEFINER).
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device_enrollment_code, device_refresh_token,
   device_status_history, device_request_nonce, device_enrollment_attempt FROM cashless_app;
 -- Empreinte des codes d'enrôlement (SEC-2 de la revue post-fusion de la mission 5a, renforcement
@@ -753,3 +755,173 @@ REVOKE EXECUTE ON FUNCTION
 -- haut (sections 1 et 5), aucune ne cite une table ou une fonction de cette section. Rien ici.
 -- Constat pour la revue : cashless_app garde un INSERT direct sur anomaly (hérité de roles.sql),
 -- non retiré dans ce lot.
+
+-- -----------------------------------------------------------------------------------------------
+-- 8. Hors ligne, snapshots et lots, mission hors-ligne-snapshots-lots (WP08 ; contracts/
+-- database-rights.md corrigé par research R-30.2, R-30.6, R-30.8, R-30.12 et ADR-140 ;
+-- contracts/interfaces.md §2 à §7). Rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (droits de la base, rôles, colonnes de tag_data_key) : l'agent qui
+-- l'a écrite ne la relit pas.
+-- -----------------------------------------------------------------------------------------------
+
+-- 8a. OP-N68 : défaut global. Les fonctions que le propriétaire (le rôle qui exécute migrate.ts :
+-- DATABASE_URL_OWNER, le même en CI et en production) créera après ce fichier ne sont plus exécutables
+-- par PUBLIC. Forme globale, sans IN SCHEMA (la forme IN SCHEMA public est sans effet). Le rôle est
+-- current_user, jamais un nom en dur.
+DO $$ BEGIN
+  EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC', current_user);
+END $$;
+
+-- 8b. Rôles de processus nouveaux. Mots de passe hors de ce fichier (CASHLESS_SNAPCONTENT_PASSWORD,
+-- CASHLESS_SNAPSIGN_PASSWORD, CASHLESS_MAINT_PASSWORD, posés par migrate.ts). Bloc séparé de la boucle des
+-- rôles de clés (section 2) : délais propres, tout remis à zéro puis accordé un à un.
+DO $$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['cashless_snapcontent','cashless_snapsign','cashless_maint'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+      EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT', r);
+    END IF;
+    EXECUTE format('ALTER ROLE %I SET statement_timeout = ''30s''', r);
+    EXECUTE format('ALTER ROLE %I SET idle_in_transaction_session_timeout = ''10s''', r);
+    EXECUTE format('ALTER ROLE %I SET lock_timeout = ''5s''', r);
+    IF current_setting('server_version_num')::int >= 170000 THEN
+      EXECUTE format('ALTER ROLE %I SET transaction_timeout = ''60s''', r);
+    END IF;
+    EXECUTE format('REVOKE ALL ON ALL TABLES IN SCHEMA public FROM %I', r);
+    EXECUTE format('REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM %I', r);
+    EXECUTE format('REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM %I', r);
+    EXECUTE format('GRANT USAGE ON SCHEMA public TO %I', r);
+    EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM %I', current_database(), r);
+  END LOOP;
+END $$;
+
+-- 8c. Retraits à cashless_app (après roles.sql, qui rend tout). OP-N57, OP-N58, OP-N69, renforcements.
+--   OP-N57 : un snapshot ne s'écrit que par publish_offline_snapshot (cashless_snapsign).
+--   OP-N58 : la politique et son historique ne s'écrivent que par set_/clear_offline_policy (DEFINER).
+--   Le nom de l'historique est lu au catalogue (OP-N58 vise offline_policy_history).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON offline_snapshot, offline_policy FROM cashless_app;
+DO $$
+BEGIN
+  IF to_regclass('public.offline_policy_history') IS NOT NULL THEN
+    REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON offline_policy_history FROM cashless_app;
+  END IF;
+END $$;
+--   Décision du porteur (02/11/2026, relecture de WP08, M4) : la clé de contenu enveloppée n'est pas lisible
+--   par l'API. SELECT par colonne sur offline_snapshot, toutes les colonnes sauf content_key_wrapped (la signature
+--   reste lisible). Les fonctions DEFINER qui la lisent (offline_snapshot_for_device, ...) ne sont pas touchées.
+REVOKE SELECT ON offline_snapshot FROM cashless_app;
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(quote_ident(attname), ', ' ORDER BY attnum) INTO cols FROM pg_attribute
+   WHERE attrelid = 'public.offline_snapshot'::regclass AND attnum > 0 AND NOT attisdropped
+     AND attname <> 'content_key_wrapped';
+  EXECUTE format('GRANT SELECT (%s) ON offline_snapshot TO cashless_app', cols);
+END $$;
+--   OP-N69 : device, plus aucun UPDATE (colonnes comprises) ni INSERT, DELETE, TRUNCATE.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device FROM cashless_app;
+--   Renforcement : clés de signature (rotate_snapshot_signing_key seule).
+--   ÉCART AU PLAN décidé par le porteur le 30/10/2026 : cashless_app GARDE son INSERT direct sur anomaly (statu quo
+--   d'OP-N86 / ADR-136, levé en mission 13 ; sept appelants de l'API l'utilisent). open_offline_anomaly lui est
+--   accordée. ADR à rédiger par WP21 ; borne : tests_offline_rights.sql (liste exacte des rôles ayant INSERT).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON snapshot_signing_key FROM cashless_app;
+--   Tables nouvelles de 0043 à 0048 : aucune écriture directe ; lecture par fonctions seulement pour les
+--   cinq qui portent le contenu, les enveloppes et les imports (R-30.2).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON offline_snapshot_draft, offline_snapshot_entry, offline_snapshot_state,
+  offline_snapshot_media_log, offline_snapshot_key, offline_snapshot_ack, offline_batch_retry, offline_op_result,
+  device_journal_import, wallet_status_history FROM cashless_app;
+REVOKE SELECT ON offline_snapshot_entry, offline_snapshot_key, offline_snapshot_state, offline_snapshot_draft,
+  device_journal_import FROM cashless_app;
+
+-- 8d. EXECUTE de cashless_app, signature complète, par famille. Aucun GRANT ON ALL. Jamais accordées :
+-- open_offline_batch_core (INVOKER, p_allow_revoked), mark_seq_gap_alerted et event_sync_deadline (R-30.12),
+-- les fonctions internes de 0043 à 0045, les gardes et fonctions de déclencheur, et les fonctions des
+-- processus de snapshot (8e, 8f).
+GRANT EXECUTE ON FUNCTION
+  -- Politique (0043 ; WP14) et lectures pré-existantes citées par database-rights.md
+  set_offline_policy(text, uuid, jsonb, integer, uuid), clear_offline_policy(text, uuid, integer, uuid),
+  offline_policy_level(text, uuid), offline_max_exposure(uuid),
+  effective_offline_policy(uuid), policy_in_force(uuid, bigint),
+  -- Snapshot lu par le terminal et clés publiques de vérification (0045 ; WP15)
+  offline_snapshot_for_device(uuid, bigint), snapshot_public_keys(uuid),
+  -- Lots, registre, trous, import (0046 ; WP18, WP20)
+  open_offline_batch(uuid, uuid, uuid, bigint, bytea, bytea[], bytea, bytea, text, integer),
+  complete_offline_batch(uuid, jsonb), offline_batch_state(uuid), record_offline_retry(uuid, bigint, text),
+  record_offline_op_result(uuid, bigint, jsonb), offline_op_results(uuid), offline_batch_retries_open(uuid),
+  check_seq_gap_waivable(uuid, bigint), device_missing_seqs(uuid, integer),
+  waive_seq_gap(uuid, bigint, uuid, uuid, text),
+  create_device_journal_import(uuid, jsonb, bytea, jsonb, text, uuid),
+  begin_device_journal_import(uuid, bytea, uuid),
+  open_imported_batch(uuid, uuid, bigint, bytea, bytea[], bytea, bytea),
+  finish_device_journal_import(uuid, text, jsonb), device_journal_import_view(uuid, boolean),
+  device_journal_imports_processing(), cancel_device_journal_import(uuid, uuid, text),
+  -- Anomalies et blocages (0047 ; WP16, WP19)
+  open_offline_anomaly(uuid, text, uuid, uuid, bigint, uuid, bigint, text, jsonb, uuid),
+  reduce_offline_shortfall(uuid, bigint, uuid), offline_block_time(uuid, uuid, timestamptz),
+  -- Terminal, vendeur, configuration datés (0048 ; WP13, WP15, WP16, WP19)
+  ack_offline_snapshot(uuid, bigint, bytea), offline_snapshot_ack_floor(uuid, timestamptz),
+  offline_snapshot_meta(uuid, bigint, uuid), offline_media_state_at(uuid, bytea, bigint),
+  offline_config_in_force(uuid, bigint, timestamptz, interval), device_status_at(uuid, timestamptz),
+  device_revoked_at(uuid), assert_vendor_session_at(uuid, uuid, timestamptz),
+  record_sale_attribution_at(uuid, uuid, text, uuid, timestamptz), set_device_station_name(uuid, text, uuid),
+  offline_device_exposure(uuid, uuid, bigint, timestamptz, interval),
+  -- Verrou de ligne du terminal (0049 §3 ; remplace FOR UPDATE / FOR NO KEY UPDATE, sans UPDATE sur device)
+  lock_device(uuid, text),
+  -- Remontée des terminaux d'un événement (0051 ; WP21 partie D) : enveloppe étroite, en lecture seule
+  event_device_sync_status_api(uuid)
+  TO cashless_app;
+-- Redit explicite : jamais exécutables par cashless_app, quoi que roles.sql ait accordé.
+REVOKE EXECUTE ON FUNCTION
+  open_offline_batch_core(uuid, uuid, uuid, bigint, bytea, bytea[], bytea, bytea, text, integer, boolean, uuid),
+  mark_seq_gap_alerted(uuid), event_sync_deadline(uuid), offline_policy_scope_operator(text, uuid),
+  offline_policy_actor_check(uuid, uuid), offline_snapshot_add_entries(bigint, jsonb),
+  offline_snapshot_draft_locked(bigint, boolean), offline_snapshot_source_rows(uuid, timestamptz),
+  offline_snapshot_item_ok(jsonb), offline_snapshot_header_ok(jsonb), offline_snapshot_envelope_ok(jsonb),
+  purge_device_request_nonces(integer), purge_device_enrollment_attempts()
+  FROM cashless_app;
+
+-- 8e. cashless_snapcontent (processus snapshot-content : DecryptPort et DataKeyPort). Liste figée.
+GRANT EXECUTE ON FUNCTION
+  offline_snapshot_targets(), offline_snapshot_source(uuid), offline_snapshot_source_delta(uuid, timestamptz),
+  save_offline_snapshot_draft(uuid, text, jsonb, bytea, jsonb), wrap_offline_snapshot_key(uuid, bigint, uuid, bytea, jsonb),
+  offline_snapshot_keys_to_wrap(integer), purge_offline_snapshot_content(uuid),
+  append_offline_snapshot_draft_entries(bigint, jsonb), seal_offline_snapshot_draft(bigint),
+  discard_offline_snapshot_draft(bigint, text), offline_snapshot_state_hashes(uuid),
+  offline_snapshot_entry_sha256(jsonb), discard_open_offline_snapshot_drafts(uuid)
+  TO cashless_snapcontent;
+-- Colonnes de tag_data_key : liste FIGÉE (jamais « toutes sauf »), encrypted_dek comprise (R-30.12).
+GRANT SELECT (id, operator_id, key_index, version, status, wrapping_kms_key_ref, encrypted_dek)
+  ON tag_data_key TO cashless_snapcontent;
+
+-- 8f. cashless_snapsign (processus snapshot-signer : SignPort seul). snapshot_public_keys(uuid) : lecture des clés
+-- publiques (décision du porteur, 02/11/2026) pour vérifier la signature contre la clé du key_id ; aucun droit de table. Aucun droit d'audit (l'audit
+-- SNAPSHOT_PUBLISHED est écrit par publish_offline_snapshot), aucun sur tag_data_key, media, enveloppes.
+GRANT EXECUTE ON FUNCTION
+  offline_snapshot_drafts_ready(), offline_snapshot_draft_content(bigint),
+  publish_offline_snapshot(bigint, text, bytea), discard_offline_snapshot_draft(bigint, text),
+  offline_seq_gaps_to_alert(interval), mark_seq_gap_alerted(uuid),
+  offline_retries_to_alert(interval), mark_offline_retry_alerted(uuid, bigint),
+  snapshot_public_keys(uuid)
+  TO cashless_snapsign;
+
+-- 8g. cashless_maint : les deux purges, rien d'autre (OP-N75).
+GRANT EXECUTE ON FUNCTION purge_device_request_nonces(integer), purge_device_enrollment_attempts()
+  TO cashless_maint;
+
+-- 8h. cashless_keyadmin : rotation de la clé de signature des snapshots (WP09). Le travailleur
+-- snapshot-key-admin reprend une rotation interrompue : il relit la clé qu'il a notée (audit
+-- SNAPSHOT_SIGNING_KEY_CREATED, écrit par lui) et regarde si elle est déjà dans snapshot_signing_key.
+GRANT EXECUTE ON FUNCTION rotate_snapshot_signing_key(text, bytea, text, uuid) TO cashless_keyadmin;
+--   Lecture de snapshot_signing_key par colonnes nommées (ni la clé publique ni les dates) ; pas d'écriture.
+--   Accepté par le porteur le 30/10/2026 ; borné par tests_offline_rights.sql.
+GRANT SELECT (key_id, operator_id, owner, kms_key_ref, status) ON snapshot_signing_key TO cashless_keyadmin;
+--   Audit des clés de signature : lignes de la plateforme (operator_id NULL) des seules actions
+--   SNAPSHOT_SIGNING_KEY_*, en lecture et en écriture. Sans cette politique, la RLS tenant_isolation refuse
+--   toute ligne sans prestataire à ce rôle. Politiques permissives nominatives, ajoutées à tenant_isolation.
+DROP POLICY IF EXISTS keyadmin_snapshot_key_audit_read ON audit_log;
+DROP POLICY IF EXISTS keyadmin_snapshot_key_audit_insert ON audit_log;
+CREATE POLICY keyadmin_snapshot_key_audit_read ON audit_log FOR SELECT TO cashless_keyadmin
+  USING (operator_id IS NULL AND action LIKE 'SNAPSHOT\_SIGNING\_KEY\_%');
+CREATE POLICY keyadmin_snapshot_key_audit_insert ON audit_log FOR INSERT TO cashless_keyadmin
+  WITH CHECK (operator_id IS NULL AND action LIKE 'SNAPSHOT\_SIGNING\_KEY\_%');

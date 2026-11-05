@@ -113,7 +113,22 @@ export type AuditAction =
   | 'CHARGEBACK_RECORDED'
   | 'LATE_CHARGEBACK_REQUESTED'
   | 'WALLET_UNBLOCK_REQUESTED'
-  | 'WALLET_UNBLOCKED';
+  | 'WALLET_UNBLOCKED'
+  // Mission 7 (lot WP09) : rotation de la clé de signature des snapshots
+  | 'SNAPSHOT_SIGNING_KEY_ROTATED'
+  | 'SNAPSHOT_SIGNING_KEY_CREATED'
+  // Mission hors-ligne-snapshots-lots (lot WP14) : politique hors ligne
+  | 'OFFLINE_POLICY_SET'
+  | 'OFFLINE_POLICY_CLEARED'
+  // Mission 7 (lot WP18) : réception des lots hors ligne
+  | 'OFFLINE_BATCH_RECEIVED'
+  | 'OFFLINE_BATCH_REFUSED'
+  // Mission 7 (lot WP20) : levée de trou et import du journal
+  | 'SEQ_GAP_WAIVE_REQUESTED'
+  | 'SEQ_GAP_WAIVED'
+  | 'DEVICE_JOURNAL_IMPORT_REQUESTED'
+  | 'DEVICE_JOURNAL_IMPORTED'
+  | 'DEVICE_JOURNAL_IMPORT_CANCELLED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

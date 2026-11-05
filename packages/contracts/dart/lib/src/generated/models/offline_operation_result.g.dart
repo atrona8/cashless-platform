@@ -12,11 +12,9 @@ OfflineOperationResult _$OfflineOperationResultFromJson(
   seq: (json['seq'] as num).toInt(),
   idempotencyKey: json['idempotency_key'] as String,
   status: $enumDecode(_$OfflineOperationStatusEnumMap, json['status']),
+  effect: $enumDecode(_$OfflineOperationResultEffectEnumMap, json['effect']),
+  retryable: json['retryable'] as bool,
   transactionId: json['transaction_id'] as String?,
-  effect: $enumDecodeNullable(
-    _$OfflineOperationResultEffectEnumMap,
-    json['effect'],
-  ),
   chargedToWallet: (json['charged_to_wallet'] as num?)?.toInt(),
   shortfallAmount: (json['shortfall_amount'] as num?)?.toInt(),
   shortfallReason: $enumDecodeNullable(
@@ -29,7 +27,6 @@ OfflineOperationResult _$OfflineOperationResultFromJson(
     _$OfflineRejectReasonEnumMap,
     json['reject_reason'],
   ),
-  retryable: json['retryable'] as bool?,
   detail: json['detail'] as String?,
 );
 
@@ -108,4 +105,5 @@ const _$OfflineRejectReasonEnumMap = {
   OfflineRejectReason.insufficientFundsRetry: 'INSUFFICIENT_FUNDS_RETRY',
   OfflineRejectReason.syncDeadlinePassed: 'SYNC_DEADLINE_PASSED',
   OfflineRejectReason.edgeReplayFailed: 'EDGE_REPLAY_FAILED',
+  OfflineRejectReason.onlineNotExecuted: 'ONLINE_NOT_EXECUTED',
 };

@@ -6,8 +6,10 @@
 //     (S10), dont la ligne donne `config_id` (`device_config_served.id`, entier du contrat), stable
 //     tant que la politique, l'époque, le plancher et les réglages ne changent pas ;
 //   - `debit_authority` : relue sur le grand livre de l'événement (CENTRAL d'époque 0 tant que la
-//     mission 8 n'existe pas) ; `snapshot_keys` = [] (aucune clé de snapshot : hors ligne
-//     impossible, refus par défaut) ;
+//     mission 8 n'existe pas) ; `snapshot_keys` = clés publiques de signature du central
+//     (`snapshot_public_keys`, au plus deux) ; sans clé `ACTIVE`, `offline_enabled` est servi `false`
+//     quelle que soit la politique (R-30.9, refus par défaut) ; `cash_topup_offline` toujours `false`
+//     (aucune recharge en espèces hors ligne, décision du porteur) ;
 //   - `catalog` (mission 5b, lot WP10 ; FR-008, A2) : pour CATALOG_POS, dernière version du
 //     catalogue du point de vente, servie `{version, items}` dans la langue demandée
 //     (`ServedCatalog`) ; quand la configuration est remise au terminal (`GET /device/config`),
@@ -87,6 +89,24 @@ interface LedgerRow {
   edge_base_url: string | null;
 }
 
+interface SnapshotKeyRow {
+  key_id: string;
+  algorithm: 'ECDSA_P256_SHA256';
+  public_key: string;
+  not_after: Date | null;
+}
+
+/**
+ * Numéro de séquence lu en texte (bigint) puis exposé sans perte : au-delà de 2^53-1 (`maximum` du
+ * contrat, R-14), erreur interne (journalisée, jamais un nombre arrondi).
+ */
+export function exactSeq(text: string, name: string): number {
+  const value = BigInt(text);
+  if (value < 0n || value > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new Error(`${name} hors de la plage exacte du contrat (0 à 2^53-1).`);
+  return Number(value);
+}
+
 /** Affectation incomplète : rien de valide à servir (jamais une valeur inventée, R-10). */
 const unassigned = (detail: string) => new ProblemException('CONFLICT_STATE', { detail });
 
@@ -132,10 +152,17 @@ export class DeviceConfigService {
   ): Promise<ServedConfig> {
     // Statut relu et verrou pris AVANT record_config_served (R-14). NO KEY UPDATE : sérialise deux
     // lectures du même terminal et attend une révocation en cours (set_device_status : FOR UPDATE).
+    // Le verrou passe par lock_device (DEFINER) : cashless_app n'a aucun UPDATE sur device. Même transaction,
+    // même ordre : verrou d'abord, lecture ordinaire ensuite.
+    const { rows: locked } = await client.query<{ ok: boolean }>(
+      "SELECT lock_device($1, 'NO KEY UPDATE') AS ok",
+      [device.deviceId],
+    );
+    if (!locked[0]?.ok) throw new ProblemException('UNAUTHENTICATED');
     const { rows: devices } = await client.query<DeviceRow>(
       `SELECT serial, kind, app_mode, os, nfc_enabled, status, station_name,
               contiguous_acked_seq::text AS contiguous_acked_seq, event_id, pos_id
-         FROM device WHERE id = $1 FOR NO KEY UPDATE`,
+         FROM device WHERE id = $1`,
       [device.deviceId],
     );
     const d = devices[0];
@@ -203,6 +230,21 @@ export class DeviceConfigService {
       pos = rows[0] ?? null;
     }
 
+    // Clés publiques de signature des snapshots (au plus deux). Aucune clé : hors ligne refusé (R-30.9).
+    // `encode(…, 'base64')` de PostgreSQL coupe toutes les 76 colonnes : les retours à la ligne sont retirés
+    // (openapi.yaml : base64 standard, sur une ligne).
+    const { rows: keyRows } = await client.query<SnapshotKeyRow>(
+      `SELECT key_id, algorithm, translate(encode(public_key, 'base64'), E'\\n', '') AS public_key, not_after
+         FROM snapshot_public_keys($1)`,
+      [device.operatorId],
+    );
+    const snapshotKeys: DeviceConfigBody['snapshot_keys'] = keyRows.map((k) => ({
+      key_id: k.key_id,
+      algorithm: k.algorithm,
+      public_key: k.public_key,
+      not_after: k.not_after ? k.not_after.toISOString() : null,
+    }));
+
     const { rows: clock } = await client.query<{ now: Date }>('SELECT clock_timestamp() AS now');
 
     const body: DeviceConfigBody = {
@@ -230,21 +272,20 @@ export class DeviceConfigService {
       pos,
       catalog,
       offline_policy: {
-        offline_enabled: s.offline_enabled,
+        offline_enabled: s.offline_enabled && snapshotKeys.length > 0,
         max_per_sale: Number(s.max_per_sale),
         max_per_media_per_device: Number(s.max_per_media_per_device),
         max_total_per_device: Number(s.max_total_per_device),
         max_snapshot_age_seconds: s.max_snapshot_age_seconds,
-        cash_topup_offline: s.cash_topup_offline,
+        // Aucune recharge en espèces hors ligne (contrainte de 0043) : toujours faux.
+        cash_topup_offline: false,
         capped: s.capped,
       },
-      // Aucune clé de snapshot avant la mission des snapshots : le terminal ne peut rien faire hors
-      // ligne (§9, refus par défaut).
-      snapshot_keys: [],
+      snapshot_keys: snapshotKeys,
       debit_authority: debitAuthority(l),
       seq: {
-        next_seq_floor: Number(s.next_seq_floor),
-        contiguous_acked_seq: Number(d.contiguous_acked_seq),
+        next_seq_floor: exactSeq(s.next_seq_floor, 'next_seq_floor'),
+        contiguous_acked_seq: exactSeq(d.contiguous_acked_seq, 'contiguous_acked_seq'),
       },
       server_time: clock[0]!.now.toISOString(),
       clock_tolerance_seconds: this.config.clockToleranceSeconds,

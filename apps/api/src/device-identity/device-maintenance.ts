@@ -1,11 +1,11 @@
 // Purges des terminaux (mission 5a, lot WP12 ; relecture de WP04, M3 ; compte rendu de WP07) :
 // nonces de requête expirés (`purge_device_request_nonces`, par lots, heure de la base) et essais
-// d'enrôlement de plus de 24 h (`purge_device_enrollment_attempts`). Travailleur du registre de
-// l'API publique (seul processus qui le charge, par DevicesModule) : `serve` le fait tourner à
-// intervalle, et ce travailleur ne purge qu'une fois par `DEVICE_PURGE_INTERVAL_SECONDS` (300 s par
-// défaut). Rôle de base qui exécute les purges : cashless_app (post-roles.sql, section 4a), le seul
-// à qui elles sont accordées. Fonctions SECURITY DEFINER sans prestataire de session : transaction
-// sans prestataire (`TenantTx.withoutTenant`).
+// d'enrôlement de plus de 24 h (`purge_device_enrollment_attempts`). Travailleur du processus
+// `maintenance` (mission hors-ligne-snapshots-lots, WP10, OP-N75) : seul processus qui charge ce
+// module, `serve` n'en a plus ; il ne purge qu'une fois par `DEVICE_PURGE_INTERVAL_SECONDS` (300 s
+// par défaut). Rôle de base qui exécute les purges : cashless_maint (post-roles.sql, section 8g), le
+// seul à qui elles sont accordées. Fonctions SECURITY DEFINER sans prestataire de session :
+// transaction sans prestataire (`TenantTx.withoutTenant`).
 import { Injectable, Module, type OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TenantTx } from '../db/tenant-tx';
@@ -39,7 +39,7 @@ export class DevicePurgeWorker implements ProcessWorker, OnModuleInit {
     private readonly tx: TenantTx,
   ) {}
 
-  /** Le registre est un fournisseur du module racine de l'API publique (app.module.ts). */
+  /** Le registre est celui du processus `maintenance` (processes/maintenance.module.ts). */
   onModuleInit(): void {
     this.moduleRef.get(WorkerRegistry, { strict: false }).register(this);
   }

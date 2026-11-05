@@ -31,6 +31,7 @@ import { TagKeysProcessModule } from '../../src/processes/tag-keys.module';
 import { applyTrustProxy, tlsServerOptions } from '../../src/processes/bootstrap';
 import { PublicProcessModule } from '../../src/processes/public.module';
 import { WorkerRegistry } from '../../src/processes/worker';
+import { applyBatchBody } from '../../src/offline/batches/batch-body';
 import { APP_URL, KEYADMIN_URL, PERSO_URL, PLATFORM_URL, TAGCHECK_URL, TAGKEYS_URL } from './db';
 import { useTestTls, type TestTls } from './tls';
 
@@ -108,6 +109,7 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
     options.trustProxyHops ?? app.get<AppConfig>(APP_CONFIG, { strict: false }).trustProxyHops,
   );
   app.setGlobalPrefix(API_PREFIX);
+  applyBatchBody(app);
   await app.init();
   return app;
 }
@@ -215,6 +217,7 @@ export async function startHttpsApp(
   const app = moduleRef.createNestApplication({ logger: false, rawBody: true, httpsOptions });
   applyTrustProxy(app, options.trustProxyHops ?? config.trustProxyHops);
   app.setGlobalPrefix(API_PREFIX);
+  applyBatchBody(app);
   await app.listen(0, '127.0.0.1');
   const { port } = app.getHttpServer().address() as AddressInfo;
   return {

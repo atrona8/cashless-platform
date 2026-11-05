@@ -19,7 +19,7 @@
   "friendly_name": "Hors ligne : snapshots et lots",
   "mid8": "01M645RN",
   "mission_id": "01M645RN3VGKZB9AD4NQ9GJJS6",
-  "mission_number": null,
+  "mission_number": 2,
   "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
   "mission_type": "software-dev",
   "pr_bound": true,
