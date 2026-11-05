@@ -505,7 +505,12 @@ export class OfflineDataset {
 
   /** Une transaction du propriétaire, dans le prestataire du jeu. */
   async inOperator<T>(
-    fn: (query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<{ id: string } & Record<string, unknown>> }>) => Promise<T>,
+    fn: (
+      query: (
+        sql: string,
+        params?: unknown[],
+      ) => Promise<{ rows: Array<{ id: string } & Record<string, unknown>> }>,
+    ) => Promise<T>,
   ): Promise<T> {
     const client = await this.owner.connect();
     try {

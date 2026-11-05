@@ -38,7 +38,12 @@ describe('annulation sans lecture, réduction du manque, inversions de dates (WP
   });
 
   const shortfallDetail = (deviceId: string) =>
-    ownerRows<{ amount: string; status: string; resolution_tx_id: string | null; detail: { reductions?: unknown[] } }>(
+    ownerRows<{
+      amount: string;
+      status: string;
+      resolution_tx_id: string | null;
+      detail: { reductions?: unknown[] };
+    }>(
       `SELECT amount::text, status, resolution_tx_id, detail FROM anomaly
         WHERE device_id = $1 AND kind = 'OFFLINE_SHORTFALL'`,
       [deviceId],

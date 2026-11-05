@@ -142,7 +142,9 @@ export class SnapshotContentWorker implements ProcessWorker {
       const detached = new Promise<void>((resolve) => {
         detach = resolve;
       });
-      const task = this.process(target, detach).finally(() => this.inFlight.delete(target.ledgerId));
+      const task = this.process(target, detach).finally(() =>
+        this.inFlight.delete(target.ledgerId),
+      );
       this.inFlight.set(target.ledgerId, task);
       started.push(Promise.race([task, detached]));
     }
