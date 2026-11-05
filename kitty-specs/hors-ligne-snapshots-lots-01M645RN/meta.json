@@ -28,6 +28,7 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "hors-ligne-snapshots-lots-01M645RN",
+  "status_phase": "1",
   "target_branch": "feat/hors-ligne-snapshots-lots",
   "topology": "coord",
   "vcs": "git",
