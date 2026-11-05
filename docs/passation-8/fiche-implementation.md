@@ -12,7 +12,7 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
 2. Travaille **uniquement** dans le worktree de la lane indiqué
    (`<R>/.worktrees/passerelle-locale-01M6NM1S-lane-x`) : `cd <lane> || exit 1` avant toute commande.
    Écrire dans le checkout principal est une faute grave.
-3. Si `node_modules/@cashless/{api,contracts,ledger-sql}` manque dans la lane : liens vers `../../apps/api`,
+3. Si `node_modules/@cashless/{api,contracts,ledger-sql}` manque dans la lane (et `shared-rules` dès que la lane contient WP02, vers `../../packages/shared-rules`) : liens vers `../../apps/api`,
    `../../packages/contracts`, `../../packages/ledger-sql` (`mkdir -p node_modules/@cashless` puis `ln -s`). Les
    autres dépendances se résolvent vers le `node_modules` du checkout principal.
 
