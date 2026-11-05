@@ -6,6 +6,7 @@ import { DEVICE_IDENTITY } from '../../../src/device-identity/device-identity.po
 import { KMS_PROVIDER } from '../../../src/kms/kms.module';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
 import { MaintenanceProcessModule } from '../../../src/processes/maintenance.module';
+import { MAINT_URL } from '../../support/db';
 import { DEVICE_PRODUCTION } from '../../support/tls';
 
 const PRODUCTION = {
@@ -22,7 +23,9 @@ const PRODUCTION = {
   TRUST_PROXY_HOPS: '1',
   ...DEVICE_PRODUCTION,
 };
-const MAINT = 'postgres://cashless_maint:s@127.0.0.1:1/c';
+// Vraie connexion `cashless_maint` : depuis OP-N95 (WP21), la garde vérifie le rôle en base au démarrage en
+// production (ni propriétaire, ni superutilisateur, ni BYPASSRLS, membre de cashless_maint).
+const MAINT = MAINT_URL;
 
 describe('processus maintenance : garde de production', () => {
   const saved = { ...process.env };

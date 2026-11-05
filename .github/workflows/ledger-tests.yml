@@ -195,6 +195,13 @@ jobs:
           npm test -w @cashless/api -- --runInBand
           end-to-end/offline-journey end-to-end/offline-minimal
 
+      # Rotation des clés de signature des snapshots (WP09) : les suites vident la table des clés, globale
+      # (au plus deux clés valides) ; une suite voisine qui publie un snapshot la référence. Lancées seules.
+      - name: Clés de signature des snapshots (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          snapshot-keys/rotation snapshot-keys/key-admin-worker
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 
