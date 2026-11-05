@@ -1,6 +1,6 @@
 # Fiche de contexte, mission 8 (passerelle-locale-01M6NM1S)
 
-Branche `feat/passerelle-locale`. Spec : `kitty-specs/passerelle-locale-01M6NM1S/spec.md` (FR-001 à FR-034, NFR-001 à NFR-012,
+Branche `feat/passerelle-locale`. Spec : `kitty-specs/passerelle-locale-01M6NM1S/spec.md` (FR-001 à FR-039, NFR-001 à NFR-013,
 C-001 à C-013). Sources normatives : `docs/SPECIFICATION.md` §9.7, §12.1, §13.1, §14.1 S12 S13 ; `docs/sync_protocol.md` §9, §13 ;
 `docs/DECISIONS_ADR.md` ADR-52 ; `packages/contracts/openapi.yaml` (tag Passerelle, `x-edge-available`) ; pile : `docs/08-pile-logicielle.md`.
 
