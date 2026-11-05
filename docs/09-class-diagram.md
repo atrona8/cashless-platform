@@ -3,7 +3,7 @@
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
 > `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
 > 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3).
-> Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
+> Complément du 05/11/2026 (plan de la mission 8, planifiée) : section 4 sexies, tables prévues des migrations `0058` à `0061` (rien n'est encore migré). Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
 > terminaux » (mergée, dans `main` par la PR #4 le 22/10/2026), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
@@ -565,7 +565,7 @@ classDiagram
   PspChargeback "0..1" --> "1" Transaction : CHARGEBACK
 ```
 
-## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », ✅ mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir)
+## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026)
 
 > **Recalée le 05/11/2026 sur les migrations réelles** `0043` à `0057` (`packages/ledger-sql/migrations`) : 10 tables
 > nouvelles (`0044` : 4, `0045` : 1, `0046` : 3, `0047` : 1, `0048` : 1). `0043`, `0049` à `0057` ne créent aucune table
@@ -593,6 +593,33 @@ classDiagram
   DeviceJournalImport "1" --> "1" ApprovalRequest : DEVICE_JOURNAL_IMPORT
   Anomaly "*" --> "0..1" OfflineBatch
   WalletStatusHistory "*" --> "1" Wallet
+```
+
+## 4 sexies. Passerelle locale : autorité, file, réplication (mission « Passerelle locale de site », 📋 planifiée, plan du 05/11/2026)
+
+> **Prévu, non migré** : tables et colonnes tirées de `kitty-specs/passerelle-locale-01M6NM1S/data-model.md` (migrations `0058` à
+> `0061`, à recaler sur le SQL réel à la review). Les tables `edge_gateway`, `debit_authority_handover` et `edge_sync_registry` existent
+> déjà dans le schéma de référence ; la mission leur ajoute des colonnes nullables et une valeur de résultat `VOID`, sans modifier un
+> `.sql` généré. La base **locale** de la passerelle (schéma réduit, série `edge-NNNN`) n'est pas une table du central : voir `data-model.md`, partie B.
+
+```mermaid
+classDiagram
+  class EdgeGateway { role PRIMARY/STANDBY ; statut ; cert_sha256 ; lan_url ; clé d'accord ; revoked_at ; role_changed_at }
+  class DebitAuthorityHandover { état GRANTED/ACTIVE/RELEASE_REQUESTED/RELEASING/COMPLETED/FAILED/FORCED ; époque ; filigrane }
+  class EdgeSyncBatch { batch_id ; edge_seq_from..to ; request_sha256 ; statut }
+  class EdgeSyncBatchResult { edge_seq ; résultat ; raison ; retryable }
+  class EdgeSyncRegistry { edge_seq ; chaîne ; résultat, dont VOID }
+  class EdgePwdPackKey { clé de contenu scellée pour la clé d'accord }
+  class EdgePwdPack { pwd_pack_enc par bracelet }
+  class EdgeReferenceChange { change_seq ; type d'entité ; entité }
+  class EdgeStaffTokenAudit { sujet ; émetteur ; secondes après expiration }
+  EdgeGateway "1" --> "*" DebitAuthorityHandover
+  EdgeGateway "1" --> "*" EdgeSyncBatch
+  EdgeSyncBatch "1" --> "*" EdgeSyncBatchResult
+  EdgeGateway "1" --> "*" EdgeSyncRegistry
+  EdgeGateway "1" --> "0..1" EdgePwdPackKey
+  EdgeGateway "1" --> "*" EdgePwdPack
+  EdgeGateway "1" --> "*" EdgeStaffTokenAudit
 ```
 
 ## 5. Description des tables
@@ -748,5 +775,5 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaine : mission 8, passerelle). Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : recalage de la section 4 sexies, mission 8 passerelle, à la review). Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.

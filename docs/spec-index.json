@@ -954,5 +954,99 @@
       "Dettes nommées OP-N89 à OP-N98"
     ],
     "source": "kitty-specs/hors-ligne-snapshots-lots-01M645RN/spec.md"
+  },
+  {
+    "mission": "passerelle-locale-01M6NM1S",
+    "titre_cas_usage": "Passerelle locale de site",
+    "statut": "planifiée",
+    "user_stories": [
+      {
+        "titre": "Basculer vers la passerelle",
+        "detail": "Un admin demande la bascule, avec le lien. Le central cesse aussitôt de débiter ; la passerelle rattrape tout jusqu'au filigrane, accuse réception, et ne débite qu'après la réponse 200. Une bascule qui échoue rend l'autorité au central par les seules fonctions du schéma."
+      },
+      {
+        "titre": "Vendre sur la passerelle",
+        "detail": "Un terminal rejoue vers la passerelle avec la même clé après un 409 DEBIT_AUTHORITY_EDGE ou son battement de cœur. La vente aboutit comme en ligne, sans plafond hors ligne ; une époque supérieure arrête les débits ; les opérations non servies sont refusées."
+      },
+      {
+        "titre": "Recharger sous session ouverte",
+        "detail": "Un caissier dont la session de caisse a été ouverte au central avant la bascule recharge en espèces, active sans frais sur solde et prend des cautions ; la passerelle les transmet ensuite au central. Aucune session ouverte, relevée ou fermée sur la passerelle."
+      },
+      {
+        "titre": "Rendre sans perte",
+        "detail": "Au retour du réseau, un admin demande le rendu : la passerelle persiste RELEASING, cesse de débiter, vide sa file dans l'ordre, puis le central vérifie la continuité et reprend l'autorité. Aucune vente perdue, aucune écrite deux fois."
+      },
+      {
+        "titre": "Répliquer tant que le lien existe",
+        "detail": "La passerelle reçoit soldes, statuts, nouveaux bracelets, sessions, terminaux, catalogue et mots de passe chiffrés ; un blocage déclaré au central s'applique sur le site dès réception, et la passerelle produit un snapshot signé par sa propre clé."
+      },
+      {
+        "titre": "Relayer les lots hors ligne",
+        "detail": "Un terminal isolé envoie un lot à la passerelle, qui le traite avec les règles de la mission 7 et le relaie au central avec sa signature d'origine ; le terminal lit l'accusé du central, jamais l'accusé provisoire."
+      },
+      {
+        "titre": "Reprendre la main à deux",
+        "detail": "Si la passerelle est perdue, une personne demande la reprise forcée après constat physique, une seconde l'approuve ; le central révoque le certificat, reprend l'autorité et traite le journal renvoyé par les terminaux sans double écriture."
+      },
+      {
+        "titre": "Passerelle de secours",
+        "detail": "Une seconde passerelle installée en STANDBY refuse tout débit ; on ne la promeut que par un handover normal."
+      },
+      {
+        "titre": "Installer et révoquer en confiance",
+        "detail": "Un opérateur inscrit une passerelle par un outil hors API publique (alerte immédiate, délai de 30 min avant les mots de passe) ; l'image ne contient aucune clé maître ; en production, un stockage de clés simulé fait refuser le démarrage ; les secrets du site sont purgés à la clôture ou à deux."
+      }
+    ],
+    "entites_cles": [
+      "Passerelle",
+      "Autorité de débit",
+      "Handover",
+      "File de la passerelle",
+      "État répliqué",
+      "Registre de la passerelle"
+    ],
+    "resultat_mesurable": "Bascule sous 100 débits par seconde : 0 débit de source autre que EDGE_SYNC au central après la bascule et 0 opération perdue ; rendu de 10 000 opérations sans perte ni double écriture ; paiement sur la passerelle p95 ≤ 200 ms et p99 ≤ 500 ms ; 0 différence du contrat hors /edge/*",
+    "hypotheses": [
+      "La passerelle tourne en configuration de développement jusqu'à la mission 12b (services réels simulés, faux refusés en production)",
+      "Une session vendeur ouverte au central avant la bascule reste valable sur la passerelle jusqu'à son expiration (12 h)",
+      "Les jetons de personne se vérifient hors réseau avec une copie des clés publiques d'identité ; un jeton expiré est toléré 12 h au plus après la bascule, audité",
+      "PostgreSQL local avec fsync actif ; disque chiffré, onduleur et Wi-Fi dédié relèvent d'une procédure de site",
+      "Les fonctions S12 et S13 du schéma sont correctes ; un défaut se corrige par migration"
+    ],
+    "contraintes": [
+      "Contrat openapi.yaml stable : ajouts facultatifs sous /edge/* seulement, aucune valeur d'énumération ajoutée",
+      "L'application n'appelle jamais set_debit_authority ; bascule demandée par un admin, jamais prise par la passerelle",
+      "Aucune ouverture, relève ni fermeture de session de caisse sur la passerelle ; TOPUP_CASH d'un lot de terminal toujours rejeté",
+      "Aucune clé maître sur la passerelle ; clés derrière un port de stockage matériel, faux refusé en production (adaptateur réel en 12b)",
+      "Les .sql générés de packages/ledger-sql ne se modifient pas",
+      "Aucune nouvelle dépendance hors pile (ADR-78)"
+    ],
+    "cas_limites": [
+      "Coupure sans bascule préalable : terminaux en hors ligne avec plafonds (mission 7)",
+      "Lien perdu entre l'accord et l'accusé : aucun débit nulle part",
+      "Passerelle zombie après reprise forcée : risque résiduel du protocole",
+      "Rejeu impossible d'une activation ou d'une caution : REJECTED EDGE_REPLAY_FAILED, espèces au compte d'attente",
+      "Époque forgée très supérieure : refus sans arrêt des débits",
+      "Horloge système reculée au redémarrage : l'heure servie ne recule jamais",
+      "Redémarrage en plein traitement : aucun numéro perdu, aucune réponse sans écriture persistée",
+      "Clôture de l'événement : purge des clés et des mots de passe du site"
+    ],
+    "fonctionnel": [
+      "Application passerelle avec base locale et règles partagées (FR-001)",
+      "Bascule, accusé, échec, rendu et reprise forcée (FR-003 à FR-007, FR-021 à FR-023, FR-028)",
+      "Réplication continue avec champs facultatifs sous /edge/* (FR-008, FR-009)",
+      "16 opérations servies et refus des autres (FR-010, FR-011)",
+      "Numérotation chaînée, vidage, rejeu EDGE_SYNC et bornes EDGE_ONLINE (FR-014, FR-017 à FR-020, FR-038)",
+      "Recharges espèces, activations, cautions sous session ouverte (FR-015, FR-016)",
+      "STANDBY, certificat et périmètre, port de stockage, purge, audit (FR-030 à FR-037, FR-039)"
+    ],
+    "non_fonctionnel": [
+      "Exclusion sous charge et rendu d'une grosse file (NFR-001, NFR-002)",
+      "0 double écriture, tenue aux arrêts brutaux (NFR-003, NFR-004)",
+      "Latence p95 ≤ 200 ms, vidage de 10 000 opérations en moins de 10 min (NFR-005, NFR-006)",
+      "Aucun faux en production, aucune clé maître, cloisonnement, purge (NFR-009 à NFR-011, NFR-013)",
+      "Contrat stable vérifié en CI (NFR-012)"
+    ],
+    "source": "kitty-specs/passerelle-locale-01M6NM1S/spec.md"
   }
 ]

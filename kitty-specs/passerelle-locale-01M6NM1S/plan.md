@@ -53,7 +53,7 @@ Décisions du porteur après la passe contradictoire (05/11/2026, `docs/passatio
 
 Pas de charte (`.kittify/charter/charter.yaml` absent) : contrôle sans objet. Les règles qui en tiennent lieu sont `CLAUDE.md` (écarts de sécurité, aucun faux en production, dette nommée, revue) et SPECIFICATION §0.3.
 
-Contrôle des écarts de sécurité : voir Complexity Tracking et `research.md`. Aucun écart n'est codé sans décision du porteur. Restent À SOUMETTRE AU PORTEUR (rien n'est codé sur eux avant sa réponse) : les valeurs des plafonds de rejeu `EDGE_ONLINE` (par vente, par terminal et par heure) et le délai avant l'envoi des mots de passe après inscription (`research.md`, « Écarts de sécurité », points 11 à 14).
+Contrôle des écarts de sécurité : voir Complexity Tracking et `research.md`. Aucun écart n'est codé sans décision du porteur. Valeurs fixées par le porteur le 05/11/2026 : plafonds de rejeu `EDGE_ONLINE` de 50 000 XOF par vente et 500 000 XOF par terminal et par heure, délai `EDGE_PACK_DELAY` de 30 minutes.
 
 ## Project Structure
 

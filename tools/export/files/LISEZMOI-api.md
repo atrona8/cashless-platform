@@ -1,8 +1,8 @@
 # API Cashless, version exécutable locale
 
 Commit `@SHA@`, export du @DATE@. Pour une équipe cliente ou un environnement d'intégration : **jamais pour la
-production**. L'API tourne ici en configuration de développement, avec des faux (serveur d'identité, KMS, PSP,
-attestation, SMS) que la configuration de production refuse au démarrage.
+production**. L'API tourne ici en configuration de développement, avec des faux (KMS, PSP, attestation, SMS) que la
+configuration de production refuse au démarrage. Aucun serveur d'identité n'est lancé : voir `ACCES-API.md` §3.
 
 ## Prérequis
 

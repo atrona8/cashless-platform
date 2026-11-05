@@ -140,8 +140,7 @@ de frais et de commission, validés par leur fonction (`purpose`) et leur règle
    `REJECTED` / `MALFORMED_OPERATION` (détail dans `detail`), anomalie `NON_COMPLIANT_OPERATION`.
 7. **Plafond par terminal et par heure (A07)** : somme des ventes `EDGE_ONLINE` d'un terminal par heure glissante inférieure ou égale au plafond
    horaire ; le dépassement n'est pas rejeté : la part au-delà va en `S-ATTENTE` (`INSUFFICIENT_FUNDS` en raison, `detail` = `EDGE_REPLAY_CEILING`)
-   avec une **alerte**. **Valeurs des plafonds : À SOUMETTRE AU PORTEUR** (la décision 13 ne les chiffre pas ; le plafond par vente ne peut pas
-   venir de `offline_policy.max_per_sale`, que la politique met à 0 par défaut alors que la passerelle sert sans plafond hors ligne).
+   avec une **alerte**. **Valeurs fixées par le porteur le 05/11/2026 : 50 000 XOF par vente, 500 000 XOF par terminal et par heure, réglables côté plateforme**.
 8. **`REVERSAL` (A08)** : mêmes contrôles que l'annulation en ligne (cible existante dans le même grand livre, même portefeuille, jamais déjà
    annulée) ; le crédit rendu au portefeuille est au plus le `charged_to_wallet` de la vente **telle qu'écrite au central** ; l'excédent
    annule la part de la vente d'origine restée en `S-ATTENTE` (`reduce_offline_shortfall`). Cible absente ou non écrite : `REJECTED` /
@@ -203,7 +202,7 @@ chiffré sous cette clé (`pwd_pack_enc`). Il n'existe pas de « colis scellé p
   clair), `pwd_pack_sha256`, `media_version`, `created_at`. Écrit par `deposit_edge_pwd_pack` (rôle des clés), lu par `edge_replication_page`
   seule. Un colis dont la clé de contenu n'est plus la courante n'est pas servi.
 - **Qui reçoit des colis (A16, décision 16)** : seulement une passerelle `PRIMARY` non `REVOKED` dont `role_changed_at` date de plus de
-  `EDGE_PACK_DELAY` (délai en configuration du central ; **valeur À SOUMETTRE AU PORTEUR**, proposition 30 minutes). Rien pour une `STANDBY` non
+  `EDGE_PACK_DELAY` (délai en configuration du central ; **30 minutes, porteur, 05/11/2026**). Rien pour une `STANDBY` non
   promue. À la promotion (`swap_edge_gateway_roles`), le délai repart et la passerelle reprend une copie complète (`after_posting_id = 0`,
   `after_change_seq = 0`) avant tout accord.
 

@@ -51,7 +51,7 @@ Variables (toutes **cibles** sauf mention) :
 | `GATEWAY_CENTRAL_URL` | `https://127.0.0.1:3201` (adresse du relais, pas du central) | cible ; passe par le relais pour pouvoir couper le lien |
 | `HARDWARE_KEYSTORE` | `fake` | cible ; faux du port de stockage matériel, **refusé en production** (C-007, NFR-009) ; même nom que `research.md` R-26 |
 | `GATEWAY_REQUEST_AUTHORITY` | `localhost:3200` | cible ; seule `@authority` acceptée par la passerelle, jamais de joker ; disjointe de celle du central |
-| `EDGE_PACK_DELAY` | `0` en développement | cible ; délai avant l'envoi des mots de passe après inscription ou promotion (valeur de production À SOUMETTRE AU PORTEUR) |
+| `EDGE_PACK_DELAY` | `0` en développement | cible ; délai avant l'envoi des mots de passe après inscription ou promotion (30 minutes hors développement, porteur, 05/11/2026) |
 | `GATEWAY_IDENTITY_JWKS_URL` | adresse du faux serveur d'identité d'essai | cible ; copie des clés publiques d'identité |
 | `EDGE_FAILPOINT`, `EDGE_ALLOW_FAILPOINTS` | vides | cible ; points d'arrêt brutal de NFR-004 (`before-local-write`, `after-local-write-before-reply`, `during-drain-after-send-before-result`, `after-releasing-persisted`, `kill-local-database`) ; actifs seulement avec `NODE_ENV` `development` ou `test` ET `EDGE_ALLOW_FAILPOINTS=1` ; **refusent le démarrage si `NODE_ENV=production`** |
 
