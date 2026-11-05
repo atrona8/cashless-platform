@@ -2,10 +2,9 @@
   "event_count": 198,
   "last_event_id": "01M6MKG9DKCBVAHC4TQSPKJ087",
   "materialized_at": "2026-11-05T00:59:51.604187+00:00",
-  "mission_number": "2",
+  "mission_number": "",
   "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,703 +20,359 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKE7X2KB0V4M3RYRP758FN",
       "last_transition_at": "2026-11-05T00:58:44.515111+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Contrat hors ligne: 9 operations, corrections, CL045-CL054, types TS/Dart regeneres; check/typecheck verts",
-        "Cycle 2: getDeviceJournalImport, pwd_pack_sha256 precise",
-        "Cycle 2: route getDeviceJournalImport et libelle pwd_pack_sha256 corriges; check/typecheck/jest errors verts"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP01-contrat-api-types/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP01-contrat-api-types/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 28937,
-      "shell_pid_created_at": "1793360550.017344",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
-      }
+      "shell_pid": 26836,
+      "shell_pid_created_at": "1793360402.581417"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEB687X18ZKFPFVPE4E7Y",
       "last_transition_at": "2026-11-05T00:58:47.881176+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Migration 0043 + tests_offline_policy.sql (82 tests verts sur cashless_wp02)",
-        "Relecteur distinct (sous-agent sonnet), verdict enregistré par l'orchestrateur : 82/82 pgTAP, sondes psql (portée, acteur, version, historique, espèces), concurrence à 2 connexions OK. Mineurs : suppression attribuée au dernier modificateur ; décimal -> 22P02 au lieu de CL001 ; test de migration sur copie."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP02-base-politique/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP02-base-politique/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 20064,
-      "shell_pid_created_at": "1793359806.906764",
-      "subtasks": {
-        "T005": "done",
-        "T006": "done",
-        "T007": "done",
-        "T008": "done"
-      }
+      "shell_pid": 16808,
+      "shell_pid_created_at": "1793359489.118147"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEEE2KS64YD5GDRE35Q8T",
       "last_transition_at": "2026-11-05T00:58:51.202973+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0044 + tests_offline_snapshots (96 ok)",
-        "Cycle 2 (ab3c396b) : B1-B3, M1 corrigés ; 116/116 pgTAP. Prompt WP17 réaligné sur feat par l'orchestrateur (artefact de la branche de coordination).",
-        "Review cycle 2 passed: B1-B3, M1 lifted; 116/116, search_path 14, grants 52; attacks replayed",
-        "Réouverture (décision du porteur du 02/11) : trous de 0044 trouvés par la relecture de WP11 (brouillon orphelin, empreinte d'état dépendante du chiffré, plafond max_snapshot_age).",
-        "Cycle 3 : B1 discard_open_offline_snapshot_drafts, B2 empreinte sans pwd_pack_sha256, B3 max_snapshot_age dans offline_snapshot_targets",
-        "Cycle 3 revu : B1 B2 B3 verts, 4 mutants tues, aucun constat bloquant"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP03-base-snapshots-publication/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP03-base-snapshots-publication/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 28504,
-      "shell_pid_created_at": "1793617276.584908",
-      "subtasks": {
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done",
-        "T013": "done"
-      }
+      "shell_pid": 25974,
+      "shell_pid_created_at": "1793616780.799626"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEMY9CNYT848NAGK6ZH5B",
       "last_transition_at": "2026-11-05T00:58:57.865980+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implementation 1638f20e : 135 assertions pgTAP (cashless_wp04), CL054 prouve a deux connexions. --force : lane realignee, restent seulement status.json, status.events.jsonl, acceptance-matrix.json (accord porteur 30/10)",
-        "Review passed: 0045 relue et attaquee (13 mutants, 3 survivants non bloquants), suites keys/snapshots/search_path/trigger_writers/execute_grants vertes sur cashless_wp04, concurrence CL054 verifiee"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP04-base-enveloppes-cles/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP04-base-enveloppes-cles/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 47107,
-      "shell_pid_created_at": "1793371738.841292",
-      "subtasks": {
-        "T014": "done",
-        "T015": "done",
-        "T016": "done",
-        "T017": "done",
-        "T018": "done"
-      }
+      "shell_pid": 40128,
+      "shell_pid_created_at": "1793371103.015857"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEHP5RVDW15QGQ7KF4C7T",
       "last_transition_at": "2026-11-05T00:58:54.533460+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0046 + tests_offline_batches.sql (167 assertions), pgTAP complet vert sur cashless_wp05",
-        "Review passed: 0046 relue, tests_offline_batches 167/167, media_roles/definer_trigger_writers/search_path/grand_livre 400/400 verts sur cashless_wp05, mutants de complete_offline_batch detectes. Mineurs consignes (casse du batch_id, approbateur hors prestataire non verifie, droits cashless_app sur les 3 tables a retirer en WP08)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP05-base-lots-import/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP05-base-lots-import/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 40144,
-      "shell_pid_created_at": "1793371104.132044",
-      "subtasks": {
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
-      }
+      "shell_pid": 23136,
+      "shell_pid_created_at": "1793360090.000643"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKER78S9YTD5R4HP1N095N",
       "last_transition_at": "2026-11-05T00:59:01.224686+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0047 : anomalies, alertes, wallet_status_history, offline_block_time ; 121 pgTAP verts",
-        "Review passed: 121/121 + 5 suites, concurrence prouvee a 2 connexions, 4 mutants tues, 3 survivants mineurs (cle tx d'idempotence, ligne de depart other_block, filtre operateur). Mineurs consignes."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP06-base-anomalies/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP06-base-anomalies/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 52351,
-      "shell_pid_created_at": "1793372236.739463",
-      "subtasks": {
-        "T024": "done",
-        "T025": "done",
-        "T026": "done",
-        "T027": "done"
-      }
+      "shell_pid": 44137,
+      "shell_pid_created_at": "1793371567.965409"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEVF3K6KVDNN7CSE95KNG",
       "last_transition_at": "2026-11-05T00:59:04.547816+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implementation a18c9599 : 109/109 pgTAP (cashless_wp07). --force : lane realignee, restent seulement status.json, status.events.jsonl, acceptance-matrix.json (accord porteur 30/10)",
-        "Review passed: 0048 verified on cashless_wp07 (109 pgTAP ok, with and without real 0045; 4 mutants caught; ack monotonic under replay/reverse/12 concurrent psql). Minors: exposure join jt.device_id; published_at backfill."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP07-base-terminal-vendeur/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP07-base-terminal-vendeur/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 52338,
-      "shell_pid_created_at": "1793372233.775603",
-      "subtasks": {
-        "T028": "done",
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done"
-      }
+      "shell_pid": 44132,
+      "shell_pid_created_at": "1793371565.911455"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKF209SQFAXARDC0P9MYBS",
       "last_transition_at": "2026-11-05T00:59:11.241860+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Droits de la base livrés (0049, post-roles §8) ; pgTAP 50 suites 4761 assertions, seuls échecs : 5 de tests_grand_livre_cashless (0044/0045 vs fichier généré, hors lot)",
-        "Cycle 2 : B1 lock_device DEFINER (0049 §3, EXECUTE cashless_app seul) + 5 appelants API + 3 specs (matchers d'attente); M1 garde de transaction; M2 bornes anomaly + tests_default_acl.sql; M3 env.test.example; M4 SELECT par colonne sans content_key_wrapped (decision porteur 02/11)",
-        "Review cycle 2 passed: lock_device, M4, M1/M2 verified"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP08-droits-base/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP08-droits-base/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 5355,
-      "shell_pid_created_at": "1793614729.42433",
-      "subtasks": {
-        "T033": "done",
-        "T034": "done",
-        "T035": "done",
-        "T036": "done",
-        "T037": "done"
-      }
+      "shell_pid": 2798,
+      "shell_pid_created_at": "1793614138.891828"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKF59ES65PPQXC3Y3B30ZR",
       "last_transition_at": "2026-11-05T00:59:14.606432+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implementation 0a876943 + b71e2a2a : 88/88 Jest (cashless_wp09), tsc propre ; decisions porteur 30/10 (publicKey sur KeyAdminPort, rotation --once avec acteur). --force : lane realignee, restent seulement status.json, status.events.jsonl, acceptance-matrix.json (accord porteur 30/10)",
-        "Review passed: 88/88, tsc ok, mutants killed; minors: actor existence unchecked, forged CREATED audit row, orphan key window"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP09-port-signature/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP09-port-signature/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 58365,
-      "shell_pid_created_at": "1793373032.242457",
-      "subtasks": {
-        "T038": "done",
-        "T039": "done",
-        "T040": "done",
-        "T041": "done"
-      }
+      "shell_pid": 49037,
+      "shell_pid_created_at": "1793372043.868406"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKF8HW8ZN05YG6FX7MPB8M",
       "last_transition_at": "2026-11-05T00:59:17.948915+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implémenté (824c5fb1) : processus maintenance sous cashless_maint, purges hors API publique, architecture.spec (SIGN_PORT), db.ts MAINT/SNAPCONTENT/SNAPSIGN_URL. --force par l'orchestrateur (accord du porteur, mission 7) : après réalignement sur feat (4d0e4fa0), seuls status.json, status.events.jsonl, acceptance-matrix.json diffèrent.",
-        "Review passed: tests du lot, tsc, 5 mutants tues"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP10-processus-maintenance/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP10-processus-maintenance/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 12390,
-      "shell_pid_created_at": "1793615532.350208",
-      "subtasks": {
-        "T042": "done",
-        "T043": "done",
-        "T044": "done"
-      }
+      "shell_pid": 7391,
+      "shell_pid_created_at": "1793615161.291168"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFBV61BBY39M1CY7DS8W5",
       "last_transition_at": "2026-11-05T00:59:21.318383+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Processus snapshot-content: cadence, construction, brouillon par paquets, purge, alarmes; chiffreur provisoire refusant les mots de passe",
-        "cycle 2 : réservation levée après délai, jet des orphelins (WP03 c3), plafond max_snapshot_age, backoff, tests",
-        "cycle 3 : verrou consultatif par grand livre, orphelin 10 min configurable, tests backoff/interval/deux instances",
-        "Review cycle 3 passed: instance lock, 600s orphan delay, mutants killed"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP11-snapshot-content-cadence/review-cycle-3.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP11-snapshot-content-cadence/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 2409,
-      "shell_pid_created_at": "1793704381.451116",
-      "subtasks": {
-        "T045": "done",
-        "T046": "done",
-        "T047": "done",
-        "T048": "done"
-      }
+      "shell_pid": 44560,
+      "shell_pid_created_at": "1793618870.919462"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFWANGRJMD4SF55K67871",
       "last_transition_at": "2026-11-05T00:59:38.197710+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Chiffrement sous K_v, enveloppes par terminal, tests de secret. 115/115 snapshots-content en maxWorkers=3 x2, tag-format 49.",
-        "Relu: 92/92 maxWorkers=3 x2, pgTAP droits 193+79, tag-format 49; 9 mutants dont 8 tues; (a) sans mot de passe = refus cote terminal (sync_protocol 6 #3), pas un affaiblissement"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP12-snapshot-content-chiffrement/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP12-snapshot-content-chiffrement/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 18317,
-      "shell_pid_created_at": "1793705701.278131",
-      "subtasks": {
-        "T049": "done",
-        "T050": "done",
-        "T051": "done",
-        "T052": "done"
-      }
+      "shell_pid": 8515,
+      "shell_pid_created_at": "1793704750.05875"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFF3Y69Z5N7XSHN1S3Z8P",
       "last_transition_at": "2026-11-05T00:59:24.670392+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Processus snapshot-signer: verification pure, signature DER verifiee, publication, seq-gap-age, garde de production; 75 tests verts sur cashless_wp13",
-        "Review passed: 7 mutants killed, pgTAP 191+79, Jest 99, tsc ok"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP13-snapshot-signer/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP13-snapshot-signer/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 29984,
-      "shell_pid_created_at": "1793617385.851118",
-      "subtasks": {
-        "T053": "done",
-        "T054": "done",
-        "T055": "done",
-        "T056": "done"
-      }
+      "shell_pid": 16858,
+      "shell_pid_created_at": "1793615735.160951"
     },
     "WP14": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFJC7BY60PY9AW9HNHKK4",
       "last_transition_at": "2026-11-05T00:59:28.007210+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Ready for review: API politique hors ligne (9 routes), audit, tests integration et isolation",
-        "Review passed: 19/19 x2 (maxWorkers=3), 7/7 mutants killed, contract 9 routes conforme"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP14-api-politique/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP14-api-politique/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 13721,
-      "shell_pid_created_at": "1793705336.934343",
-      "subtasks": {
-        "T057": "done",
-        "T058": "done",
-        "T059": "done"
-      }
+      "shell_pid": 7234,
+      "shell_pid_created_at": "1793704684.843827"
     },
     "WP15": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFNSNBQPV429F1WJ5QQ2M",
       "last_transition_at": "2026-11-05T00:59:31.510147+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Ready for review: API snapshots, config, battement",
-        "Cycle 2: tests isolés (clés propres), exactSeq, ETag, téléphone",
-        "Cycle 2 : constats 1-5 leves ; Jest offline+devices+signataire --maxWorkers=3 x2 vert, mutants tues"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP15-api-snapshots/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP15-api-snapshots/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 2452,
-      "shell_pid_created_at": "1793704383.362455",
-      "subtasks": {
-        "T060": "done",
-        "T061": "done",
-        "T062": "done",
-        "T063": "done"
-      }
+      "shell_pid": 34478,
+      "shell_pid_created_at": "1793617704.909248"
     },
     "WP16": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFS1E855V7AACKNRGTBZ3",
       "last_transition_at": "2026-11-05T00:59:34.830330+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Prêt : chainedContent, deviceKey, record/lookup, AnomalyWriter",
-        "Relecture WP16: unit 152 ok, integration 221 ok, tsc ok, 4 mutants tues; constats mineurs consignes"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP16-registre-empreintes/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP16-registre-empreintes/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 15354,
-      "shell_pid_created_at": "1793615648.875109",
-      "subtasks": {
-        "T064": "done",
-        "T065": "done",
-        "T066": "done",
-        "T067": "done"
-      }
+      "shell_pid": 7394,
+      "shell_pid_created_at": "1793615161.328793"
     },
     "WP17": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKEYQD6WQHCW5YYEBWKZR5",
       "last_transition_at": "2026-11-05T00:59:07.885856+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implementation b32e6592 (session interrompue) ; 136 tests unitaires verts, typecheck propre (orchestrateur). --force : lane realignee, restent seulement status.json, status.events.jsonl, acceptance-matrix.json (accord porteur 30/10)",
-        "Review passed (relecteur distinct, verdict enregistre par l'orchestrateur) : 136 tests, tsc propre, table 7.3 complete ; 4 mineurs (OFFLINE_DISABLED et statut inconnu -> DEVICE_REVOKED hors compliance.md ; choix prudents figes ; alias de types). --force : restent seulement status.json, status.events.jsonl, acceptance-matrix.json (accord porteur 30/10)"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP17-regles-pures/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP17-regles-pures/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 40136,
-      "shell_pid_created_at": "1793371103.637471",
-      "subtasks": {
-        "T068": "done",
-        "T069": "done",
-        "T070": "done",
-        "T071": "done"
-      }
+      "shell_pid": 30802,
+      "shell_pid_created_at": "1793360688.567463"
     },
     "WP18": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKFZMMJ2EK9F6G3SMPP6C7",
       "last_transition_at": "2026-11-05T00:59:41.589124+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Réception des lots: contrôles 1-10, boucle, reprise, GET, TestTerminal; 46 tests verts x2 maxWorkers=3",
-        "Relu : 46/46 tests (maxWorkers=3 et runInBand), architecture+processes 45/45, tsc propre ; 6 mutants tues ; 0 bloquant, mineurs consignes dans le compte rendu"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP18-reception-lots/review-cycle-1.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP18-reception-lots/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 47989,
-      "shell_pid_created_at": "1793619385.884285",
-      "subtasks": {
-        "T072": "done",
-        "T073": "done",
-        "T074": "done",
-        "T075": "done",
-        "T076": "done"
-      }
+      "shell_pid": 28491,
+      "shell_pid_created_at": "1793617275.736717"
     },
     "WP19": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKG2WYTP4THWRXGDC72K5Z",
       "last_transition_at": "2026-11-05T00:59:44.927073+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Traitement des opérations d'un lot implémenté ; 2010 tests verts (maxWorkers=3)",
-        "Rejet cycle 1 : B1 annulation selon le contrat ; inversions CLOCK_SKEW via WP18 (décision du porteur) ; tests M6, M7",
-        "Cycle 2: REVERSAL conforme au contrat (B1), inversions de dates via BatchContext, tests M6/M7",
-        "Cycle 2 approuve: B1 (annulation seq 88), inversions CLOCK_SKEW, M6/M7 tues; vendor_session_id absent de openapi a consigner"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP19-traitement-operations/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP19-traitement-operations/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 63521,
-      "shell_pid_created_at": "1793709633.382125",
-      "subtasks": {
-        "T077": "done",
-        "T078": "done",
-        "T079": "done",
-        "T080": "done",
-        "T081": "done",
-        "T082": "done"
-      }
+      "shell_pid": 55159,
+      "shell_pid_created_at": "1793708455.26192"
     },
     "WP20": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKG64G30TX60SXASMPPWKD",
       "last_transition_at": "2026-11-05T00:59:48.240544+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP20 implémenté (1b824251)",
-        "Rejet cycle 1 : 4 tests (mutants), import PENDING bloqué (0050, porteur), jeton avant lecture du corps (porteur)",
-        "Cycle 2 : 0050 cancel_device_journal_import, identité avant corps, tests des 4 mutants",
-        "Cycle 2 : 0050, filtre d'identite avant lecture du corps, 4 mutants du cycle 1 et 3 mutants de garde tues ; offline 130/130 x2, pgTAP verts"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP20-trous-import/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP20-trous-import/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 65279,
-      "shell_pid_created_at": "1793720714.090519",
-      "subtasks": {
-        "T083": "done",
-        "T084": "done",
-        "T085": "done",
-        "T086": "done"
-      }
+      "shell_pid": 8765,
+      "shell_pid_created_at": "1793717309.48112"
     },
     "WP21": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M6MKG9DKCBVAHC4TQSPKJ087",
       "last_transition_at": "2026-11-05T00:59:51.604187+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Parts A à J terminées ; NFR-003 p95 43,4/42,8 s ; NFR-005 max 4,1 s ; matrice mise à jour",
-        "Cycle 2 : 3 bloquants levés (isolation par prestataire, lint, garde prouvée A1/A2 tués), non bloquants traités",
-        "Review passed cycle 2: 3 bloquants leves, mutants A1 A2 isolation signataire tues"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP21-preuves-ci-consignation/review-cycle-2.md",
         "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP21-preuves-ci-consignation/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 52674,
-      "shell_pid_created_at": "1793836196.312719",
-      "subtasks": {
-        "T087": "done",
-        "T088": "done",
-        "T089": "done",
-        "T090": "done",
-        "T091": "done"
-      }
+      "shell_pid": 47581,
+      "shell_pid_created_at": "1793834898.90662"
     }
   }
 }
