@@ -39,3 +39,8 @@ Notes à transmettre aux lots suivants.
 - Orchestrateur : `apps/api/test/.../topup-cash-split.spec.ts` écrit en `EDGE_SYNC` : confirmer qu'il reste vert à la batterie.
 - Toute migration ultérieure qui remplace `post_transaction` doit partir de `0060`, pas du schéma.
 - Relecture humaine : `post_transaction` (garde), `edge_record_seq`, contrainte de registre remplacée.
+
+## Relecture de WP04 (approuvé)
+- **WP11, obligatoire** : `force_central_authority_approved` n'écrit pas `EXECUTED` et ne contrôle pas `expires_at`. Sûr seulement si elle est appelée par `definition.execute` du service d'approbation (`apps/api/src/approval/approval.service.ts:116-145`), qui contrôle l'expiration, exécute sous point de sauvegarde et passe à `EXECUTED`. L'enregistrer comme action `FORCE_CENTRAL_AUTHORITY` de ce service, aucun autre appelant, test de non-réutilisation sur un second cycle de bascule.
+- **WP08, obligatoire** : amorce du journal par grand livre, voir notes de WP04.
+- Mineurs consignés : `begin_cash_close` prend le verrou d'autorité partagé après le solde, alors que `post_transaction` prend l'autorité d'abord : cycle théorique, résolu par le détecteur (40P01, annulation propre), établi par lecture ; à regarder en relecture humaine. `begin_edge_release` rejoué avec une autre déclaration : `CL017` jusqu'à `fail_edge_release`. Accusé sur `TO_EDGE` `FAILED` ou `FORCED` : `CL013` plutôt que `CL015`.
