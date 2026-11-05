@@ -122,6 +122,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
+- Gestion des clients par une application cliente (décision du porteur du 05/11/2026, mission 10c) : l'application
+  s'authentifie de serveur à serveur, crée ou retrouve un client par son identifiant externe, liste, recherche,
+  désactive, et obtient un jeton court pour agir en son nom sur les routes `/me` ; ses utilisateurs ne voient pas le
+  cashless. Cloisonnement entre applications et entre prestataires. Risque à trancher au cadrage : l'application devient
+  garante de l'identité de comptes qui portent de l'argent ; identification du client à soumettre au juriste.
 
 ### 2.6 En ligne, hors ligne, passerelle locale (§9, `sync_protocol.md`)
 - Snapshot signé, plafonds hors ligne par politique (`offline_policy`), refus par défaut. (§9.1 à §9.4)

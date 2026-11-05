@@ -40,6 +40,7 @@ Deux principes, décidés le 29/10/2026 au lancement de la mission 7 :
 | 9 | Remboursements, versements et clôture | nous | après 7 |
 | 10a | Serveur de l'app festivalier (comptes par numéro, code à usage unique simulé, `/me`) | nous | après 9 |
 | 11a | Durcissements serveur hérités (back-office et terminaux) | nous | quand on veut |
+| 10c | Gestion des clients par une application cliente (décidée le 05/11/2026) | nous | après 10a |
 | 10b | App festivalier (Flutter) | **déléguée** | contrat simulé maintenant ; routes réelles après 10a |
 | 11 | Back-office web (Next.js) | **déléguée** | maintenant (routes des missions 1 à 6 servies) ; écrans 7 à 9 au fil de l'eau |
 | 12 | App terminal (Flutter) | **déléguée** | partie en ligne maintenant ; hors ligne après 7 et 8 ; NFC après les actions 1 et 2 |
@@ -425,6 +426,25 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.review --mission serveur-app-festivalier
 - [ ] /spec-kitty.accept --mission serveur-app-festivalier
 - [ ] spec-kitty merge --mission serveur-app-festivalier
+
+## Mission 10c — Gestion des clients par une application cliente
+
+> **Décidée par le porteur le 05/11/2026** : « une méthode de pouvoir gérer facilement les clients de l'app cliente de
+> cashless ». Une application cliente gère elle-même, de serveur à serveur, les comptes de ses utilisateurs sur le
+> cashless ; ces utilisateurs ne voient jamais le cashless. Après 10a, dont elle réutilise les comptes et les routes `/me`.
+> Le contrat partagé ne change pas : routes nouvelles seulement, soumises au porteur au plan.
+>
+> **À trancher au specify** : téléphone transmis ou comptes sans numéro ; qui porte le risque si l'application est
+> compromise ; avis du juriste sur l'identification du client (SPEC §4, plafonds) ; parcours de remboursement, de perte
+> et de rattachement d'un bracelet ; droits exacts de l'application.
+
+- [ ] /spec-kitty.specify Gestion des clients par une application cliente. Une application inscrite auprès d'un prestataire s'authentifie de serveur à serveur. Elle crée ou retrouve un client par son identifiant externe (idempotent : le même identifiant donne toujours le même compte), lit la liste et le détail de ses clients, les recherche par identifiant externe, les désactive et les réactive. Pour agir au nom d'un client, elle obtient un jeton de compte court, identique à celui de `exchangeCustomerOtp`, utilisable sur les routes `/me` existantes. Correspondance (application, identifiant externe) vers compte, sans fusion entre applications ni entre prestataires ; une application ne voit jamais les clients d'une autre. Révocation immédiate d'une application, rotation de ses secrets, audit de chaque action et de chaque jeton délivré, limites de débit.
+- [ ] /spec-kitty.plan Routes nouvelles seulement, rétrocompatibles, soumises au porteur avant d'être codées ; aucune route existante modifiée ; contrôle de stabilité du contrat (`passerelle-locale`, NFR-012) étendu. Secrets de l'application jamais en clair en base. Faux refusés en production. Reprendre si possible le schéma `posClient` (OAuth 2.0 client credentials) déclaré au contrat.
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty consolidate --mission [slug réel]
 
 ## Mission 10b — App festivalier (déléguée)
 
