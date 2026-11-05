@@ -77,6 +77,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N96 | Remontée des terminaux d'un événement : migration `0051` hors plan, enveloppe `event_device_sync_status_api` (DEFINER, lecture seule) ouverte à `cashless_app` ; les fonctions sous-jacentes restent fermées (ADR-148) | Non | Non | Mission 13 (recette V1) |
 | OP-N97 | Garde des noms secrets de l'API publique : `pwd_pack_enc` permis dans `offline-snapshots.service.ts` seul, les autres noms et `SELECT * FROM media` restent interdits (ADR-150) | Non | Non | Mission 13 (recette V1) |
 | OP-N98 | NFR-005 : un changement ordinaire (non bloquant) est visible en 60 s plus la boucle, soit 60,9 à 62,2 s mesurés (`DELTA_AFTER_MS` = 60 s gardé ; les changements bloquants tiennent 5 s ; ADR-151) | Non | Non | Mission 13 (recette V1) |
+| OP-N99 | FR-024 : le refus hors ligne `LEDGER_LOCKED` / `SYNC_DEADLINE_PASSED` est prouvé en unitaire (`period.spec.ts`) mais son câblage depuis le lecteur de conformité n'est pas prouvé en intégration (seul `PERIOD_CLOSED` l'est) ; la base refuse déjà un grand livre verrouillé (`CL003`) | Non | Non | Mission 13 (recette V1) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -1290,6 +1291,25 @@ Décision du porteur du 04/11/2026 ; consignée par WP21 (partie G) ; ADR-151. *
   documentée de 2,5 s) ; le cas strict « ≤ 60 s » est marqué `it.failing` (écart connu OP-N98) et fait échouer la suite
   dès que la mesure passe sous 60 s, pour que l'écart soit retiré avec la dette.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N96 et OP-N97.
+
+### OP-N99 — FR-024 : câblage de deux refus de période non prouvé en intégration (5 novembre 2026)
+
+Relevé par la relecture de WP21 (cycle 1) et la revue post-fusion de la mission 7. **Bloque la production : non.**
+
+- **Constat.** FR-024 refuse une opération hors ligne quand le grand livre est verrouillé (`LEDGER_LOCKED`) ou que la
+  date limite de synchronisation est passée (`SYNC_DEADLINE_PASSED`). La règle est prouvée par
+  `test/unit/offline/period.spec.ts` (fonction pure) ; en intégration, `processing.spec.ts` ne couvre que
+  `PERIOD_CLOSED`. Le passage de ces deux cas depuis `compliance-input.reader.ts` jusqu'au résultat de l'opération
+  n'est donc pas prouvé de bout en bout.
+- **Risque.** Faible : un défaut de câblage laisserait passer jusqu'à l'écriture une opération sur un grand livre
+  verrouillé, que la base refuse alors (`CL003`, l'opération est rejetée sans écriture). Pour une date limite passée,
+  la base ne vérifie pas la date à l'écriture (`event_sync_deadline` ne sert qu'aux transitions de cycle de vie,
+  `0008`, vérifié le 05/11) : l'opération serait écrite au lieu d'être refusée.
+- **Mission qui le lève.** Mission 13 (recette V1), ou plus tôt à la première retouche du traitement des lots.
+- **Condition de levée.** Deux cas d'intégration dans `test/integration/offline/processing*.spec.ts` (grand livre
+  verrouillé ; date limite passée), chacun refusé avec son code et sans écriture.
+- **Test de borne.** `period.spec.ts` (la règle) ; la matrice d'acceptation porte la réserve (FR-024).
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N98.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

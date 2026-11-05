@@ -573,6 +573,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > (OP-N93 a) partent en 12b (confirmé par le porteur le 04/11/2026).
 > OP-N98 (NFR-005 : changement ordinaire visible en 60 s plus la boucle de production, `DELTA_AFTER_MS` gardé à 60 s ;
 > à lever en ramenant le délai à 55 s au plus ou en reformulant NFR-005, ADR-151).
+> OP-N99 (FR-024 : câblage des refus `LEDGER_LOCKED` et `SYNC_DEADLINE_PASSED` depuis le lecteur de conformité à
+> prouver par deux cas d'intégration, refus et aucune écriture).
 
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,

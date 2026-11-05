@@ -136,7 +136,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   aucun secret de PIN sur le terminal (porteur, 29/10/2026). Plafonds jugés sur la configuration détenue ; exposition
   = ventes non acquittées (acquittement de moins de 120 s compté, porteur 30/10/2026).
 - Snapshots produits par un processus dédié (seul détenteur des clés), une version signée par pas ; signature par un
-  faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b.
+  faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b (OP-N89).
 - Passerelle locale qui prend l'autorité de débit pendant une coupure (bascule, époque, reprise forcée). (§9.7)
 
 ### 2.7 API (§10, `openapi.yaml`)
@@ -314,6 +314,7 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   `offline-snapshots.service.ts` (OP-N97, ADR-150) ;
   écart de NFR-005 sur les changements non bloquants (visibles en 60 s plus 2,5 s au plus, `DELTA_AFTER_MS` gardé à 60 s ;
   levée par un délai de 55 s au plus ou une reformulation, OP-N98, ADR-151) ;
+  câblage des refus `LEDGER_LOCKED` et `SYNC_DEADLINE_PASSED` (FR-024) à prouver en intégration (OP-N99) ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

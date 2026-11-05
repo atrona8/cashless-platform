@@ -2302,3 +2302,9 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   possible : `source-plan.spec.ts` et les tests « sans statistiques » échouent s'il perd sa forme. Ce ne sont pas des
   écarts de sécurité (aucun contrôle retiré). **Fichiers à faire relire par une personne** : migrations `0052`, `0054`,
   `0055`, `0057` (fonctions `SECURITY DEFINER`), `0056` (index).
+- **Complément (05/11/2026, revue post-fusion) : mémoire de référence d'un lot (partie J, `6a9f18f2`).** NFR-003 :
+  `ReferenceMemo`, limitée à l'exécution d'un lot, garde le contrat et le profil de législation (immuables par
+  déclencheur, `contract_immutable`, `jurisdiction_profile_immutable`) et la partie plateforme titulaire du compte
+  `PLT_REDEV`. Cette dernière n'est protégée par aucun déclencheur : aucun code ne la modifie et aucun refus n'en
+  dépend (elle n'oriente que l'attribution d'une écriture). Aucun statut, configuration datée, entrée de conformité ni
+  solde n'est mémorisé ; test `test/unit/offline/batch-reference.spec.ts`. À relire : `sql-config-resolver.ts`.
