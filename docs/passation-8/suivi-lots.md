@@ -32,3 +32,10 @@ Notes à transmettre aux lots suivants.
 - WP25 : concurrence réelle sur les verrous, livraison réelle du `NOTIFY`, consigner `begin_cash_close` (comportement nouveau hors `/edge/*`, décision 6).
 - Renforcements à consigner : `edge_complete_release` exige la même déclaration qu'au début du rendu ; accusé à position nulle refusé ; approbations inutilisables `42501`.
 - Relecture humaine : `begin_cash_close`, `edge_grant_authority`, `force_central_authority_approved`, `edge_ack_handover`, `edge_complete_release`.
+
+## Depuis WP05 (686dedae)
+- WP09 : accorder à `cashless_edge` `edge_record_seq`, `edge_sync_batch_begin`, `edge_sync_batch_result`, `edge_sync_batch_finish` ; internes `edge_assert_session_gateway`, `edge_ledger_of_gateway` jamais accordées ; `tests_offline_rights.sql` : `edge_reference_change`, `edge_sync_batch`, `edge_sync_batch_result` ; T040 prouve la garde à connexion réelle.
+- WP13 : `edge_sync_batch_finish('DONE')` exige un résultat par numéro, un lot partiel se clôt `ABANDONED` ; `begin` ne vérifie pas que `edge_seq_from` suit le registre : à contrôler en WP13.
+- Orchestrateur : `apps/api/test/.../topup-cash-split.spec.ts` écrit en `EDGE_SYNC` : confirmer qu'il reste vert à la batterie.
+- Toute migration ultérieure qui remplace `post_transaction` doit partir de `0060`, pas du schéma.
+- Relecture humaine : `post_transaction` (garde), `edge_record_seq`, contrainte de registre remplacée.
