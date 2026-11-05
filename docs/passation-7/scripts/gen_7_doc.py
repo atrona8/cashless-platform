@@ -152,8 +152,8 @@ table(['Élément', 'Valeur'], [
     ['Dépend de', 'Missions 1 (grand livre), 2 (identité, rôles), 3 (configuration), 4 (bracelets NFC), '
      '5a (identité des terminaux), 5b (encaissement en ligne), 6 (recharges, caisses, PSP)'],
     ['État au 5 novembre 2026', 'Acceptée (2865183c) et consolidée le 05/11/2026 sur feat/hors-ligne-snapshots-lots '
-     '(squash f3bef0c0) ; revue post-fusion : releasable avec réserves ; PR vers main pas encore ouverte (À faire, '
-     'avec l’accord du porteur) ; KMS simulé jusqu’à la mission 12b'],
+     '(squash f3bef0c0) ; revue post-fusion : releasable avec réserves ; dans main par la PR #10 le 05/11/2026 (d2a7c538), CI verte'
+     ' ; KMS simulé jusqu’à la mission 12b'],
 ], widths_from=EX['cover_tbl'])
 add(copy.deepcopy(EX['spacer']))
 add(copy.deepcopy(EX['blank']))
@@ -187,7 +187,7 @@ para('para', 'État au 5 novembre 2026 : les 21 lots sont approuvés par des rel
      '(avec SKIP_LATENCY=1) : Jest 3239 tests verts, pgTAP 4896 sur 4896 ; la revue ne les a pas relancés. Mesures '
      'faites par la mission sur le poste de développement : lot de 500 opérations p95 42,8 à 43,4 s (seuil 60 s), '
      'FULL de 50 000 bracelets en 27,6 s (seuil 30 s), DELTA servi p95 60 ms (seuil 2 s), blocage visible en 4,1 s au '
-     'plus (seuil 5 s). La PR vers main n’est pas encore ouverte.')
+     'plus (seuil 5 s). Elle est dans main par la PR #10 le 05/11/2026, CI verte.')
 para('h2', 'Ce que la mission doit prouver')
 for m in re.finditer(r'^- \*\*(SC-\d{3})\*\* : (.+)$', SPEC, re.M):
     txt = re.sub(r'\s+— \[build\].*$', '', m.group(2)).strip().replace('`', '')
@@ -524,12 +524,12 @@ table(['Étape', 'État', 'Remarque'], [
     ['Accept et consolidation', 'Faits', '05/11/2026 : accept 2865183c, squash f3bef0c0 sur feat/hors-ligne-snapshots-lots, rétrospective df5c229b'],
     ['Revue post-fusion', 'Faite', '05/11/2026 : releasable avec réserves, aucun constat bloquant'],
     ['Correctifs après fusion', 'Faits', '05/11/2026 : batterie complète (a7bbd1f8), Prettier 100 caractères (f578bcb1), Swagger UI hors production (a3104551)'],
-    ['PR vers main', 'À faire', 'Pas encore ouverte, avec l’accord du porteur'],
+    ['PR vers main', 'Fusionnée', 'PR #10 le 05/11/2026 (d2a7c538), CI verte (36 étapes, dont les latences en série)'],
     ['Relecture humaine des fichiers du 7.3', 'À faire', 'Clés, droits de la base, cryptographie'],
     ['Remesure des performances hors poste de développement', 'À faire', 'NFR-003, NFR-004, NFR-005, en recette'],
 ])
-para('para', 'Prochaines étapes : ouvrir la PR vers main quand le porteur le décide ; relecture humaine des fichiers '
-     'listés en 7.3 ; en CI, lancer en série les suites à état global ; remesurer les seuils de performance en recette. '
+para('para', 'Prochaines étapes : relecture humaine des fichiers '
+     'listés en 7.3 ; remesurer les seuils de performance en recette. '
      'Missions suivantes : mission 8 (passerelle locale), mission 9 (rapprochements, versements, clôture), mission 12b '
      '(adaptateurs AWS KMS réels, qui lèvent OP-N89), mission 13 (recette V1, qui revoit OP-N90 à OP-N99 et OP-N86). '
      'Suivi : docs/passation-7/suivi-lots.md et docs/passation-7/rapports/revue-post-fusion.md.')
