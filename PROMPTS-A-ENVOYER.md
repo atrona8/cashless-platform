@@ -341,6 +341,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > site (garde de caisse inchangée, aucune exemption). L'interdiction du 30/10/2026 (`cash_topup_offline`) vise les
 > terminaux sans réseau et reste entière pour eux ; `x-edge-available` garde les recharges espèces.
 >
+> **Contrat stable (porteur, 05/11/2026, vaut pour toutes les missions suivantes)** : les endpoints sont partagés avec
+> les équipes clientes. Éviter autant que possible de modifier `openapi.yaml` : servir ce qu'il déclare déjà ; aucun
+> renommage, retrait ni changement d'une route, d'un schéma ou d'un code d'erreur existant ; un ajout seulement s'il est
+> indispensable et rétrocompatible, soumis au porteur avant d'être codé.
+>
 > **Hérité de la mission 7 (plan du 30/10/2026)** : tests minimaux §13-4 et §13-5 de `sync_protocol.md` (bascules
 > CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.
 
