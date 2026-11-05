@@ -329,17 +329,17 @@ vendeurs et le catalogue : la mission les ajoute.
 
 - [x] /spec-kitty.specify Fonctionnement hors ligne côté serveur (SPECIFICATION §9.1 à §9.6, `docs/sync_protocol.md` normatif, §14.1 S4 à S11). Politique hors ligne (`offline_policy` par organisateur, événement, terminal ; plafonds du prestataire ; `effective_offline_policy` ; affichage du risque maximal). Snapshots signés (en-tête JCS, ECDSA P-256 par KMS, `FULL`/`DELTA`, version croissante, nouvelle version en 60 s si changement et en 5 s après un blocage, mots de passe chiffrés par une clé de contenu enveloppée ECDH-ES P-256 par terminal, aucun envoi à un terminal révoqué). Lots (`POST /offline-batches` : numéros continus, 500 opérations et 1 Mio maximum, un lot en vol, signé et chaîné, traitement opération par opération dans l'ordre des seq, statuts `ACCEPTED`, `DUPLICATE`, `ACCEPTED_WITH_SHORTFALL`, `REJECTED`), registre des numéros, trous `SEQ_GAP` et levée à deux (`waiveSeqGap`), borne `CL021`, lot abandonné après 15 min. Conflits (§9.6 : part non couverte en `S-ATTENTE`, anomalies `OFFLINE_SHORTFALL`, `NON_COMPLIANT_OPERATION` avec porteur de la perte selon `provided_by`, `CLOCK_SKEW`, `SIGNATURE_MISMATCH`), contrôles de conformité sur la configuration détenue (`policy_in_force`), synchronisations tardives (`SYNC_DEADLINE_PASSED`, `LATE_OFFLINE_SYNC`). Import du journal d'un terminal révoqué (à deux).
 - [x] /spec-kitty.plan Les fonctions S6 à S13 du schéma de référence existent avec leurs tests : les appeler, ne pas les réécrire, les compléter par migration sans affaiblir les contrôles. Algorithme de signature dans l'en-tête (OP-N13 : vérifier Ed25519 dans KMS, défaut ECDSA P-256). Tests minimaux de `sync_protocol.md` §13 côté serveur (rejeu de lots, panne au milieu d'un lot, horloges faussées, bracelet bloqué pendant un isolement).
-- [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission hors-ligne-snapshots-lots-01M645RN
-- [ ] /spec-kitty.review --mission hors-ligne-snapshots-lots-01M645RN
-- [ ] /spec-kitty.accept --mission hors-ligne-snapshots-lots-01M645RN
-- [ ] spec-kitty merge --mission hors-ligne-snapshots-lots-01M645RN
+- [x] /spec-kitty.tasks (30/10/2026 : 21 lots, 21 lanes)
+- [x] spec-kitty next --agent claude --mission hors-ligne-snapshots-lots-01M645RN (21 lots)
+- [x] /spec-kitty.review --mission hors-ligne-snapshots-lots-01M645RN (21 lots approuvés, relecteurs distincts)
+- [x] /spec-kitty.accept --mission hors-ligne-snapshots-lots-01M645RN (05/11/2026, `2865183c`)
+- [x] spec-kitty consolidate --mission hors-ligne-snapshots-lots-01M645RN (ex-`merge` ; 05/11/2026, squash `f3bef0c0` sur feat)
 
 ## Mission 8 — Passerelle locale
 
-> **Hérité de la mission 7 (porteur, 30/10/2026)** : aucune recharge espèces hors ligne. La liste `x-edge-available`
-> ci-dessous cite les recharges espèces par la passerelle : à confirmer avec le porteur au specify (la passerelle est
-> sur site, avec sessions de caisse ; la décision visait les terminaux sans réseau).
+> **Tranché le 05/11/2026 (porteur)** : la passerelle sert les recharges espèces, sous session de caisse ouverte sur
+> site (garde de caisse inchangée, aucune exemption). L'interdiction du 30/10/2026 (`cash_topup_offline`) vise les
+> terminaux sans réseau et reste entière pour eux ; `x-edge-available` garde les recharges espèces.
 >
 > **Hérité de la mission 7 (plan du 30/10/2026)** : tests minimaux §13-4 et §13-5 de `sync_protocol.md` (bascules
 > CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.

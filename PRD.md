@@ -130,8 +130,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - **Aucune recharge espèces hors ligne** (décision du porteur du 30/10/2026, mission 7) : `cash_topup_offline` est
   toujours faux ; un `TOPUP_CASH` porté par un lot est rejeté seul (`OFFLINE_NOT_ALLOWED`), rien n'est écrit et une
   anomalie `NON_COMPLIANT_OPERATION` porte le montant. Écart signalé à `sync_protocol.md` (§5.4, §7.5, §8, §11 cas 22
-  et 39) et à SPECIFICATION §9, à mettre en accord. La passerelle locale (mission 8) suit la même règle sauf décision
-  contraire.
+  et 39) et à SPECIFICATION §9, à mettre en accord. La passerelle locale (mission 8) n'est pas concernée (décision du
+  porteur du 05/11/2026) : elle sert les recharges espèces sous session de caisse ouverte sur site, garde de caisse
+  inchangée.
 - Vendeur hors ligne : session ouverte en ligne valable jusqu'à son expiration (12 h), aucune connexion hors ligne,
   aucun secret de PIN sur le terminal (porteur, 29/10/2026). Plafonds jugés sur la configuration détenue ; exposition
   = ventes non acquittées (acquittement de moins de 120 s compté, porteur 30/10/2026).

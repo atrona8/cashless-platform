@@ -1,5 +1,7 @@
 # Reprise — mission 7 (hors-ligne-snapshots-lots-01M645RN)
 
+> **Terminée le 05/11/2026** : acceptée (`2865183c`), consolidée (`f3bef0c0`), revue post-fusion faite. Ce qui suit décrit l'état du 30/10/2026 et ne sert plus qu'à l'historique. État courant : `docs/Mission-07-Hors-ligne-snapshots-lots.docx`.
+
 État au 30/10/2026 (fin de matinée) : **tâches finalisées et analysées** sur `feat/hors-ligne-snapshots-lots`
 (`0d22b8f6` tâches, `64377f6a` interfaces et décisions, `d7fe73ba` analyse : verdict `ready`, 0 critique, 0 élevé,
 7 moyens, 5 faibles). 21 lots, 21 lanes, 44/44 FR rattachées. Prochaine étape : traiter (ou non, au choix du
