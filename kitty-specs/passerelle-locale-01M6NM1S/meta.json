@@ -13,5 +13,7 @@
   "purpose_tldr": "Permettre à un site de continuer à débiter les bracelets pendant une coupure, grâce à une passerelle locale qui prend l'autorité de débit puis la rend sans perte.",
   "slug": "passerelle-locale-01M6NM1S",
   "target_branch": "feat/passerelle-locale",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-05T15:35:36.925145+00:00"
 }
