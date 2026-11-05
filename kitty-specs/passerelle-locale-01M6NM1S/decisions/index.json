@@ -451,6 +451,26 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-11-05T15:08:56.403634Z",
+      "decision_id": "01M6P4306KJNFEWZ5BAV4ETR1R",
+      "final_answer": "Deux cl\u00e9s nominatives de responsables du site, parties publiques sur la passerelle, ordre valable 10 minutes, usage unique, audit\u00e9.",
+      "input_key": "site_orders",
+      "mission_id": "01M6NM1S88C55T40W0TK506HVN",
+      "mission_slug": "passerelle-locale-01M6NM1S",
+      "opened_by": "cli",
+      "options": [],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Qui d\u00e9tient le moyen de prouver un ordre local \u00e0 deux personnes ?",
+      "rationale": null,
+      "resolved_at": "2026-11-05T15:09:03.905561Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.site-orders",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M6NM1S88C55T40W0TK506HVN",

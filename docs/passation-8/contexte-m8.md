@@ -35,3 +35,34 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 16. A16 : inscription par UNE personne (choix du porteur contre la recommandation), alerte immédiate et délai avant l'envoi des mots de passe ; rien pour une `STANDBY` non promue. Écart accepté, dette nommée, test.
 17. A21 : purge automatique à la clôture de l'événement et manuelle à deux personnes (clé d'accord, données répliquées), test ; limite consignée : mini-PC volé avant la purge.
 18. Audit de la tolérance des jetons de personne versé au central par un champ facultatif sous `/edge/*`.
+
+## Consigne des rédacteurs de prompts (WP), format allégé du porteur
+
+Un prompt `kitty-specs/passerelle-locale-01M6NM1S/tasks/WPnn-slug.md`, 150 à 250 lignes (nom de fichier dans `tasks.md`), français, sans tiret cadratin. Il renvoie aux sources au lieu de les reformuler : `contracts/interfaces.md` (noms figés), `data-model.md`, `research.md` R-xx, `contracts/*`, constats `A..` de `docs/passation-8/rapports/plan-adversarial.md`.
+
+Frontmatter (exemple réel : `kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP05*.md`) : `work_package_id`, `title`, `dependencies`, `requirement_refs: []` (l'orchestrateur les pose), `planning_base_branch` et `merge_target_branch` = `feat/passerelle-locale`, `branch_strategy`, `subtasks`, `phase`, `agent: claude`, `model: sonnet`, `history`, `agent_profile: implementer-ivan`, `role: implementer`, `execution_mode: code_change`, `owned_files`, `authoritative_surface`, `create_intent` (fichiers à créer, chemins littéraux), `tags: []`, `tracker_refs: []`.
+
+Corps : `## ⚡ Do This First: Load Agent Profile` en premier (`/ad-hoc-profile-load implementer-ivan`, puis liste de ce qu'il faut lire, précise, par sections) ; Objectif ; Branch Strategy (planification `feat/passerelle-locale`, cible `feat/passerelle-locale`, worktree alloué par lane selon `lanes.json`) ; Commande `spec-kitty agent action implement WPnn --agent claude --mission passerelle-locale-01M6NM1S` ; une section par sous-tâche (but, fichiers, arbitrages, cas limites) ; Tests attendus (noms de fichiers, cas, chaque test doit échouer sur une implémentation fausse) ; Sécurité ; Definition of Done ; « Ce que le relecteur doit casser ». Rappels : ne lance ni Jest, ni pgTAP, ni reset-db (l'orchestrateur le fait en série) sauf consigne contraire ; aucune migration sans `REVOKE ALL ... FROM PUBLIC` ; aucun `GRANT` hors WP09 ; aucun `.sql` généré touché ; un écart qui affaiblit la sécurité s'arrête et remonte au porteur.
+
+### Fichiers par lot (sans chevauchement)
+
+- WP01 `packages/contracts/openapi.yaml`, `packages/contracts/generated/**`, `packages/contracts/dart/**`, `tools/contract-stability/**`
+- WP02 `packages/shared-rules/**`, `apps/api/src/ledger/money/**`, `apps/api/src/payments/chained-content.ts`, `apps/api/src/offline/rules/**`, `apps/api/src/offline/batches/batch-chain.ts`, `apps/api/test/fixtures/edge-vectors/**`
+- WP03 à WP08 : leur migration (`interfaces.md` § 1) et `packages/ledger-sql/tests/tests_edge_*.sql` de leur sous-tâche
+- WP09 `packages/ledger-sql/roles.sql`, `post-roles.sql`, `tests/tests_execute_grants.sql`, `tests/tests_offline_rights.sql`, `tests/tests_edge_rights.sql`, `apps/api/test/integration/edge/edge-sync-guard.spec.ts`
+- WP10 `apps/api/src/main.edge.ts`, `apps/api/src/processes/edge.module.ts`, `apps/api/src/edge/ca/**`, `apps/api/src/edge/identity/**`, `apps/api/src/edge/control/**`, `apps/api/test/integration/edge/process/**`
+- WP11 `apps/api/src/debit-authority/**`, `apps/api/test/integration/debit-authority/**`
+- WP12 `apps/api/src/edge/handover/**`, `apps/api/src/edge/replication/**`, `apps/api/src/edge/maintenance/**`, `apps/api/test/integration/edge/routes/**`
+- WP13 `apps/api/src/edge/sync/**`, `apps/api/test/integration/edge/sync/**`
+- WP14 `apps/api/src/edge/journal/**`, `apps/api/src/offline/processing/online-ref-resolver.ts`, `apps/api/test/integration/edge/journal/**`
+- WP15 `tools/edge-admin/**`, `apps/api/src/edge/packs/**`, `apps/api/test/integration/edge/packs/**`
+- WP16 `apps/gateway/package.json`, `apps/gateway/tsconfig*.json`, `apps/gateway/jest.config.cjs`, `apps/gateway/migrations/**`, `apps/gateway/src/main.ts`, `apps/gateway/src/config/**`, `apps/gateway/src/db/**`, `apps/gateway/src/key-store/**`, `apps/gateway/src/clock/**`, `apps/gateway/src/processes/**`, `apps/gateway/src/testing/**`, `apps/gateway/test/startup/**`
+- WP17 `apps/gateway/src/central-client/**`, `apps/gateway/src/authority/**`, `apps/gateway/test/authority/**`
+- WP18 `apps/gateway/src/replication/**`, `apps/gateway/test/replication/**`
+- WP19 `apps/gateway/src/device-proofs/**`, `apps/gateway/src/device/**`, `apps/gateway/test/device/**`
+- WP20 `apps/gateway/src/queue/**`, `apps/gateway/test/queue/**`
+- WP21 `apps/gateway/src/operations/sales/**`, `apps/gateway/test/sales/**`
+- WP22 `apps/gateway/src/staff/**`, `apps/gateway/src/operations/counter/**`, `apps/gateway/test/counter/**`
+- WP23 `apps/gateway/src/operations/offline/**`, `apps/gateway/src/snapshots/**`, `apps/gateway/test/offline/**`
+- WP24 `apps/gateway/src/purge/**`, `apps/gateway/src/standby/**`, `apps/gateway/test/purge/**`, `apps/gateway/Dockerfile`, `apps/gateway/docker-compose.site.yml`, `docs/procedure-site-passerelle.md`
+- WP25 `apps/gateway/test/support/**`, `apps/gateway/test/e2e/**`, `.github/workflows/ledger-tests.yml`, `.github/CI.md`

@@ -2488,6 +2488,8 @@ Délai fixé par le porteur le 05/11/2026 : `EDGE_PACK_DELAY` = 30 minutes.
 
 ## ADR-165 — Mission 8 : `STALE` persisté seulement si confirmé ou plausible (OP-N110)
 
+Ordres locaux à deux personnes (levée de `STALE`, purge manuelle) : deux clés nominatives de responsables du site, ordre valable 10 minutes, usage unique, audité (porteur, 05/11/2026). Risque : une clé perdue bloque ces deux actions jusqu'à son remplacement, qui demande le lien avec le central.
+
 - **Statut** : Acceptée, 5 novembre 2026 (décision 15 du porteur, passe contradictoire A12).
 - **Contexte.** L'en-tête `X-Authority-Epoch` d'un terminal ne peut pas être vérifié hors du central ; un terminal défectueux ou volé pouvait arrêter tout le site avec une époque
   forgée.
