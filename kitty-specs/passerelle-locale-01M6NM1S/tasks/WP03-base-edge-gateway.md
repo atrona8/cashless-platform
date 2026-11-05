@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/passerelle-locale
 merge_target_branch: feat/passerelle-locale
 branch_strategy: Planning artifacts for this mission were generated on feat/passerelle-locale. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/passerelle-locale unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-passerelle-locale-01M6NM1S
+base_commit: d060f30a0f2e002c2909eac35c2b9a0a2d57ce2c
+created_at: '2026-11-05T15:35:51.654910+00:00'
 subtasks: [T010, T011, T012, T013]
 phase: Phase 2 - Base du central
 agent: claude
