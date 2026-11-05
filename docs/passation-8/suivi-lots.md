@@ -23,3 +23,12 @@ Notes à transmettre aux lots suivants.
 - WP25 : brancher `check:stability` et `check-baseline-decision.mjs` en CI. Consigner une ligne réelle `Décision du porteur : 05/11/2026 ADR-nnn` pour la référence, avant la fusion. Resserrer `check-baseline-decision.mjs` : exiger la ligne dans le dernier commit qui touche la référence, ou ajoutée au fichier d'ADR par rapport à `main` (aujourd'hui toute ligne ancienne suffit).
 - La liste blanche épingle le SHA-256 de chaque sous-arbre ajouté : toute retouche d'un schéma `Edge*` exige une décision du porteur sur `contract-baseline.json`.
 - Relecture humaine : `tools/contract-stability/contract-baseline.json`, `check.mjs`.
+
+## Depuis WP04 (f4896911)
+- **WP08** : un journal `edge_reference_change` vide pour un grand livre fait REFUSER l'accord (échec fermé). Prévoir une reprise de l'existant ou une ligne d'amorce par grand livre, sinon aucun premier accord ne passe. Test obligatoire.
+- WP09 : `fail_edge_grant`, `request_edge_release` du kit sans enveloppe : vérifier leurs droits ; `edge_grant_authority`, `fail_edge_release` à `cashless_app` ; `edge_stuck_handovers` au rôle de maintenance ; internes `edge_bind_gateway`, `edge_lock_handover` jamais accordées.
+- WP11 : l'audit `EDGE_AUTHORITY_*` est à l'API ; `force_central_authority_approved` ne contrôle pas `gateway_confirmed_offline` : la route l'exige. `begin_cash_close` lève `CL029` sous `EDGE` : la réponse doit être `409 CONFLICT_STATE` sans changer le sens de `CL029` pour les autres cas.
+- WP12 : handover étranger ou inconnu = `CL013`, message identique.
+- WP25 : concurrence réelle sur les verrous, livraison réelle du `NOTIFY`, consigner `begin_cash_close` (comportement nouveau hors `/edge/*`, décision 6).
+- Renforcements à consigner : `edge_complete_release` exige la même déclaration qu'au début du rendu ; accusé à position nulle refusé ; approbations inutilisables `42501`.
+- Relecture humaine : `begin_cash_close`, `edge_grant_authority`, `force_central_authority_approved`, `edge_ack_handover`, `edge_complete_release`.
