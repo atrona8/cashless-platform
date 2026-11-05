@@ -139,6 +139,13 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Snapshots produits par un processus dédié (seul détenteur des clés), une version signée par pas ; signature par un
   faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b (OP-N89).
 - Passerelle locale qui prend l'autorité de débit pendant une coupure (bascule, époque, reprise forcée). (§9.7)
+  Décisions du porteur du 05/11/2026 (mission 8) : bascule demandée par un admin par anticipation, jamais prise par la
+  passerelle ; recharges espèces sur sessions de caisse ouvertes au central avant la bascule, fermées au central après
+  le rendu ; aucune relève de guichet pendant la coupure ; promotion d'une passerelle de secours par handover normal ;
+  clés derrière un port de stockage matériel dont le faux est refusé en production : passerelle non utilisable en
+  production avant la mission 12b.
+- Contrat d'API stable depuis le 05/11/2026 : les routes sont partagées avec les équipes clientes ; aucun renommage,
+  retrait ni changement ; un ajout seulement s'il est indispensable et rétrocompatible.
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

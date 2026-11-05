@@ -346,16 +346,23 @@ vendeurs et le catalogue : la mission les ajoute.
 > renommage, retrait ni changement d'une route, d'un schéma ou d'un code d'erreur existant ; un ajout seulement s'il est
 > indispensable et rétrocompatible, soumis au porteur avant d'être codé.
 >
+> **Spécifiée le 05/11/2026** (slug réel `passerelle-locale-01M6NM1S`, branche `feat/passerelle-locale`). Décisions du
+> porteur : bascule anticipée par un admin (aucune prise d'autorité automatique) ; sessions de caisse ouvertes au central
+> et répliquées avant la bascule, fermées au central après le rendu ; clés de la passerelle derrière un port de stockage
+> matériel, faux refusé en production, **adaptateur réel en mission 12b** (la passerelle n'ira pas en production avant) ;
+> `STANDBY` promue par handover normal seulement ; ajouts au contrat limités à des champs facultatifs sous `/edge/*`,
+> inscription d'une passerelle par un outil d'administration hors API publique.
+>
 > **Hérité de la mission 7 (plan du 30/10/2026)** : tests minimaux §13-4 et §13-5 de `sync_protocol.md` (bascules
 > CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.
 
-- [ ] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
+- [x] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
 - [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker absent de la machine de développement actuelle). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission passerelle-locale
-- [ ] /spec-kitty.review --mission passerelle-locale
-- [ ] /spec-kitty.accept --mission passerelle-locale
-- [ ] spec-kitty merge --mission passerelle-locale
+- [ ] spec-kitty next --agent claude --mission passerelle-locale-01M6NM1S
+- [ ] /spec-kitty.review --mission passerelle-locale-01M6NM1S
+- [ ] /spec-kitty.accept --mission passerelle-locale-01M6NM1S
+- [ ] spec-kitty consolidate --mission passerelle-locale-01M6NM1S
 
 ## Mission 9 — Remboursements, versements et clôture
 
@@ -532,6 +539,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission app-terminal
 
 ## Mission 12b — Intégrations réelles (services externes)
+
+> **Hérité de la mission 8 (porteur, 05/11/2026 ; bloque la production de la passerelle)** : écrire l'adaptateur réel du port
+> de stockage matériel de la passerelle (TPM ou équivalent, clé de signature des snapshots et clé d'accord), choisir le
+> matériel du mini-PC, puis retirer le faux des processus de production.
 
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
 > avant la recette. Prérequis : accès de test PSP (action 11), devis et comptes OTP (action 10), compte AWS et région
