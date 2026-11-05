@@ -18,7 +18,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/operations/offline/offline-batches.service.ts
+authoritative_surface: apps/gateway/src/operations/offline/
 create_intent: [apps/gateway/src/operations/offline/offline-batches.service.ts, apps/gateway/src/operations/offline/offline-batches.controller.ts, apps/gateway/src/operations/offline/batch-verifier.ts, apps/gateway/src/operations/offline/offline-rules-runner.ts, apps/gateway/src/operations/offline/media-auth-key.service.ts, apps/gateway/src/operations/offline/offline.module.ts, apps/gateway/src/snapshots/snapshot-builder.ts, apps/gateway/src/snapshots/snapshot-signer.ts, apps/gateway/src/snapshots/snapshots.controller.ts, apps/gateway/src/snapshots/snapshot-worker.ts, apps/gateway/src/snapshots/snapshots.module.ts, apps/gateway/test/offline/batches.spec.ts, apps/gateway/test/offline/relay.spec.ts, apps/gateway/test/offline/snapshots.spec.ts, apps/gateway/test/offline/media-auth-key.spec.ts, apps/gateway/test/offline/canary.spec.ts, apps/gateway/test/offline/contract.spec.ts]
 execution_mode: code_change
 model: sonnet

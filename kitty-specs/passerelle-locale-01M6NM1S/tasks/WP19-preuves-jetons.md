@@ -17,7 +17,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/device-proofs/device-proofs.guard.ts
+authoritative_surface: apps/gateway/src/device-proofs/
 create_intent: [apps/gateway/src/device-proofs/device-proofs.guard.ts, apps/gateway/src/device-proofs/request-signature.ts, apps/gateway/src/device-proofs/nonce-store.ts, apps/gateway/src/device-proofs/device-proofs.module.ts, apps/gateway/src/device/device-token.service.ts, apps/gateway/src/device/device.controller.ts, apps/gateway/src/device/idempotency.service.ts, apps/gateway/src/device/device.module.ts, apps/gateway/test/device/proofs.spec.ts, apps/gateway/test/device/tokens.spec.ts, apps/gateway/test/device/refresh.spec.ts, apps/gateway/test/device/reads.spec.ts, apps/gateway/test/device/idempotency.spec.ts, apps/gateway/test/device/authority-separation.spec.ts, apps/gateway/test/device/contract.spec.ts]
 execution_mode: code_change
 model: sonnet

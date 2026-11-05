@@ -34,7 +34,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/test/e2e/sc-001-journey.spec.ts
+authoritative_surface: apps/gateway/test/e2e/
 create_intent: [apps/gateway/test/support/tcp-relay.ts, apps/gateway/test/support/two-process-bench.ts, apps/gateway/test/support/disposable-databases.ts, apps/gateway/test/support/canary.ts, apps/gateway/test/support/queue-generator.ts, apps/gateway/test/support/sql-probes.ts, apps/gateway/test/e2e/jest.e2e.config.cjs, apps/gateway/test/e2e/sc-001-journey.spec.ts, apps/gateway/test/e2e/exclusion-under-load.spec.ts, apps/gateway/test/e2e/release-10000.spec.ts, apps/gateway/test/e2e/replay-100.spec.ts, apps/gateway/test/e2e/crash-points.spec.ts, apps/gateway/test/e2e/latency-two-process.spec.ts, apps/gateway/test/e2e/handover-and-freshness.spec.ts, apps/gateway/test/e2e/forced-resume.spec.ts, apps/gateway/test/e2e/production-refusals.spec.ts, apps/gateway/test/e2e/canary-end-to-end.spec.ts, apps/gateway/test/e2e/scoping.spec.ts, apps/gateway/test/e2e/contract-stability.spec.ts, apps/gateway/test/e2e/purge-end-to-end.spec.ts, apps/gateway/test/e2e/acceptance-matrix.spec.ts, apps/gateway/test/e2e/consignation.spec.ts, apps/gateway/test/e2e/ci-workflow.spec.ts, .github/workflows/ledger-tests.yml, .github/CI.md]
 execution_mode: code_change
 model: sonnet

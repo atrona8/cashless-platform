@@ -20,7 +20,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/purge/purge.service.ts
+authoritative_surface: apps/gateway/src/purge/
 create_intent: [apps/gateway/src/purge/purge.service.ts, apps/gateway/src/purge/purge-trigger.ts, apps/gateway/src/purge/manual-purge.controller.ts, apps/gateway/src/purge/purge.module.ts, apps/gateway/src/standby/standby.service.ts, apps/gateway/src/standby/standby.module.ts, apps/gateway/test/purge/purge-auto.spec.ts, apps/gateway/test/purge/purge-manual.spec.ts, apps/gateway/test/purge/purge-canary.spec.ts, apps/gateway/test/purge/standby.spec.ts, apps/gateway/test/purge/image.spec.ts, apps/gateway/Dockerfile, apps/gateway/docker-compose.site.yml, docs/procedure-site-passerelle.md]
 execution_mode: code_change
 model: sonnet

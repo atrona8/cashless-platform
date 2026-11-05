@@ -1,7 +1,7 @@
 ---
 work_package_id: WP15
 title: Outil d inscription des passerelles et colis de mots de passe
-dependencies: [WP09]
+dependencies: [WP09, WP10]
 requirement_refs:
 - FR-002
 - FR-037

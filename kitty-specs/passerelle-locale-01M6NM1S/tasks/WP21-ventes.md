@@ -18,7 +18,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/operations/sales/payments.service.ts
+authoritative_surface: apps/gateway/src/operations/sales/
 create_intent: [apps/gateway/src/operations/sales/taps.service.ts, apps/gateway/src/operations/sales/payments.service.ts, apps/gateway/src/operations/sales/reversals.service.ts, apps/gateway/src/operations/sales/sales.controller.ts, apps/gateway/src/operations/sales/unavailable-operations.ts, apps/gateway/src/operations/sales/sales.module.ts, apps/gateway/test/sales/taps.spec.ts, apps/gateway/test/sales/payments.spec.ts, apps/gateway/test/sales/reversals.spec.ts, apps/gateway/test/sales/refusals.spec.ts, apps/gateway/test/sales/reference-scenarios.spec.ts, apps/gateway/test/sales/contract.spec.ts, apps/gateway/test/sales/latency.spec.ts]
 execution_mode: code_change
 model: sonnet

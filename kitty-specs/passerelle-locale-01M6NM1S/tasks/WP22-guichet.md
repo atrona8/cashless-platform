@@ -17,7 +17,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/staff/staff-token.guard.ts
+authoritative_surface: apps/gateway/src/staff/
 create_intent: [apps/gateway/src/staff/staff-token.guard.ts, apps/gateway/src/staff/identity-keys.service.ts, apps/gateway/src/staff/tolerance-audit.ts, apps/gateway/src/staff/staff.module.ts, apps/gateway/src/operations/counter/cash-topup.service.ts, apps/gateway/src/operations/counter/media-activation.service.ts, apps/gateway/src/operations/counter/deposit.service.ts, apps/gateway/src/operations/counter/counter.controller.ts, apps/gateway/src/operations/counter/counter.module.ts, apps/gateway/test/counter/staff-token.spec.ts, apps/gateway/test/counter/tolerance-bounds.spec.ts, apps/gateway/test/counter/cash-topup.spec.ts, apps/gateway/test/counter/activation.spec.ts, apps/gateway/test/counter/deposit.spec.ts, apps/gateway/test/counter/refusals.spec.ts, apps/gateway/test/counter/contract.spec.ts]
 execution_mode: code_change
 model: sonnet

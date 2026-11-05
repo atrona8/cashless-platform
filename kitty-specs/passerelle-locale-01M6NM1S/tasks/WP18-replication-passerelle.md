@@ -17,7 +17,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/replication/replication.service.ts
+authoritative_surface: apps/gateway/src/replication/
 create_intent: [apps/gateway/src/replication/replication.service.ts, apps/gateway/src/replication/page-applier.ts, apps/gateway/src/replication/reference-store.ts, apps/gateway/src/replication/pwd-pack-key.ts, apps/gateway/src/replication/delta-purge.ts, apps/gateway/src/replication/replication-loop.ts, apps/gateway/src/replication/replication.module.ts, apps/gateway/test/replication/page-apply.spec.ts, apps/gateway/test/replication/reference.spec.ts, apps/gateway/test/replication/effective-balance.spec.ts, apps/gateway/test/replication/delta-purge.spec.ts, apps/gateway/test/replication/freshness.spec.ts, apps/gateway/test/replication/pwd-pack-key.spec.ts]
 execution_mode: code_change
 model: sonnet

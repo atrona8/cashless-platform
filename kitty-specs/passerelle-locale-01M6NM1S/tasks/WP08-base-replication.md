@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: 'Base : réplication côté base (migration 0063)'
-dependencies: [WP03, WP04]
+dependencies: [WP03, WP04, WP05]
 requirement_refs:
 - FR-008
 - FR-009

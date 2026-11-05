@@ -18,7 +18,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/queue/edge-queue.ts
+authoritative_surface: apps/gateway/src/queue/
 create_intent: [apps/gateway/src/queue/edge-queue.ts, apps/gateway/src/queue/drain.service.ts, apps/gateway/src/queue/batch-builder.ts, apps/gateway/src/queue/result-applier.ts, apps/gateway/src/queue/staff-audit-feed.ts, apps/gateway/src/queue/queue.module.ts, apps/gateway/test/queue/append.spec.ts, apps/gateway/test/queue/drain.spec.ts, apps/gateway/test/queue/results.spec.ts, apps/gateway/test/queue/vectors.spec.ts, apps/gateway/test/queue/crash-points.spec.ts, apps/gateway/test/queue/abandoned.spec.ts]
 execution_mode: code_change
 model: sonnet

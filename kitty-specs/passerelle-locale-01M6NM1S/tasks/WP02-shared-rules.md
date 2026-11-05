@@ -15,7 +15,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: packages/shared-rules/src/index.ts
+authoritative_surface: packages/shared-rules/
 create_intent: [packages/shared-rules/package.json, packages/shared-rules/tsconfig.json, packages/shared-rules/jest.config.cjs, packages/shared-rules/src/index.ts, packages/shared-rules/src/edge-content.ts, packages/shared-rules/src/edge-chain.ts, packages/shared-rules/src/node-env.ts, packages/shared-rules/src/effective-balance.ts, packages/shared-rules/test/architecture.spec.ts, packages/shared-rules/test/edge-vectors.spec.ts, apps/api/test/fixtures/edge-vectors/gen_edge_vectors.py, apps/api/test/fixtures/edge-vectors/vectors.json]
 execution_mode: code_change
 model: sonnet

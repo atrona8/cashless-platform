@@ -19,7 +19,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/processes/startup-guard.ts
+authoritative_surface: apps/gateway/src/processes/
 create_intent: [apps/gateway/package.json, apps/gateway/tsconfig.json, apps/gateway/tsconfig.build.json, apps/gateway/jest.config.cjs, apps/gateway/migrations/edge-0001_schema.sql, apps/gateway/src/main.ts, apps/gateway/src/config/config.ts, apps/gateway/src/db/pool.ts, apps/gateway/src/db/gateway-tx.ts, apps/gateway/src/db/migrate.ts, apps/gateway/src/key-store/hardware-keystore.port.ts, apps/gateway/src/key-store/fake-hardware-keystore.ts, apps/gateway/src/clock/gateway-clock.ts, apps/gateway/src/processes/bootstrap.ts, apps/gateway/src/processes/gateway.module.ts, apps/gateway/src/processes/startup-guard.ts, apps/gateway/src/testing/failpoints.ts, apps/gateway/test/startup/architecture.spec.ts, apps/gateway/test/startup/config.spec.ts, apps/gateway/test/startup/startup-guard.spec.ts, apps/gateway/test/startup/failpoints.spec.ts, apps/gateway/test/startup/clock.spec.ts, apps/gateway/test/startup/schema.spec.ts, apps/gateway/test/startup/keystore.spec.ts]
 execution_mode: code_change
 model: sonnet

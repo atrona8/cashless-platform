@@ -19,7 +19,7 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-authoritative_surface: apps/gateway/src/authority/authority.service.ts
+authoritative_surface: apps/gateway/src/authority/
 create_intent: [apps/gateway/src/central-client/central-client.ts, apps/gateway/src/central-client/central-errors.ts, apps/gateway/src/central-client/central-client.module.ts, apps/gateway/src/authority/authority.service.ts, apps/gateway/src/authority/authority-transitions.ts, apps/gateway/src/authority/control-channel.ts, apps/gateway/src/authority/site-order.ts, apps/gateway/src/authority/authority.module.ts, apps/gateway/test/authority/authority-states.spec.ts, apps/gateway/test/authority/restart-cases.spec.ts, apps/gateway/test/authority/epochs.spec.ts, apps/gateway/test/authority/local-unstale.spec.ts, apps/gateway/test/authority/central-client.spec.ts]
 execution_mode: code_change
 model: sonnet
