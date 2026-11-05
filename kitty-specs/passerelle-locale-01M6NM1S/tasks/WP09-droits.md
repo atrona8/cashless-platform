@@ -29,6 +29,9 @@ tracker_refs: []
 
 # Work Package Prompt: WP09 : Droits de la base et non-régression du kit
 
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.5 : liste exacte des droits de `cashless_edgeadmin`, du rôle de maintenance et de `cashless_tagkeys` ; elle remplace les quatre fonctions citées plus bas.
+
+
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour les droits ajoutés (§ 12.3 à 12.5).
 
 

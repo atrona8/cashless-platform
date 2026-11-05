@@ -30,6 +30,9 @@ tracker_refs: []
 
 # Work Package Prompt: WP01 : Contrat, ajouts sous `/edge/*` et contrôle de stabilité
 
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.7 : tu crées `check-baseline-decision.mjs` et le script racine `check:stability` ; la CI et `CODEOWNERS` sont à WP25.
+
+
 ## ⚡ Do This First: Load Agent Profile
 
 Charge le profil : `/ad-hoc-profile-load implementer-ivan` (Profile : implementer-ivan / Role : implementer /

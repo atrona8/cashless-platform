@@ -28,6 +28,9 @@ tracker_refs: []
 
 # Work Package Prompt: WP06 : Base, enveloppe `edge_post_transaction` et bornes (migration 0061)
 
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.4 : `edge_platform_setting` remplace toute clé de configuration ; `tests_edge_post_transaction.sql` prouve le `CHECK value > 0`.
+
+
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour `edge_platform_setting` et `set_edge_setting` (plafonds lus en table, sans paramètre).
 
 

@@ -32,6 +32,9 @@ tracker_refs: []
 
 # Work Package Prompt: WP24 – Purge, secours, image et procédure
 
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.3 : pas de port propre, tu enregistres `PURGE` par `registerOrderHandler` (WP17). `ADR-161` et `OP-N106` existent déjà : complète-les seulement.
+
+
 ## ⚡ Do This First: Load Agent Profile
 
 Charge le profil : `/ad-hoc-profile-load implementer-ivan` (Profile : implementer-ivan / Role :

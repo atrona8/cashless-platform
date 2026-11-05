@@ -107,6 +107,7 @@
         "apps/gateway/src/clock/**",
         "apps/gateway/src/config/**",
         "apps/gateway/src/db/**",
+        "apps/gateway/src/enrollment/**",
         "apps/gateway/src/key-store/**",
         "apps/gateway/src/main.ts",
         "apps/gateway/src/processes/**",
@@ -145,31 +146,12 @@
       "parallel_group": 2
     },
     {
-      "lane_id": "lane-h",
-      "wp_ids": [
-        "WP08"
-      ],
-      "write_scope": [
-        "packages/ledger-sql/migrations/0063_edge_replication.sql",
-        "packages/ledger-sql/tests/tests_edge_replication.sql"
-      ],
-      "predicted_surfaces": [
-        "api",
-        "tracker-integration"
-      ],
-      "depends_on_lanes": [
-        "lane-c",
-        "lane-d",
-        "lane-e"
-      ],
-      "parallel_group": 2
-    },
-    {
       "lane_id": "lane-q",
       "wp_ids": [
         "WP17"
       ],
       "write_scope": [
+        "apps/gateway/src/admin/**",
         "apps/gateway/src/authority/**",
         "apps/gateway/src/central-client/**",
         "apps/gateway/test/authority/**"
@@ -197,6 +179,27 @@
         "tracker-integration"
       ],
       "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0063_edge_replication.sql",
+        "packages/ledger-sql/tests/tests_edge_replication.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d",
+        "lane-e",
         "lane-f"
       ],
       "parallel_group": 3
@@ -488,6 +491,7 @@
       ],
       "write_scope": [
         ".github/CI.md",
+        ".github/CODEOWNERS",
         ".github/workflows/ledger-tests.yml",
         "apps/gateway/test/e2e/**",
         "apps/gateway/test/support/**"
@@ -507,8 +511,8 @@
       "parallel_group": 8
     }
   ],
-  "computed_at": "2026-11-05T15:10:54.637986+00:00",
+  "computed_at": "2026-11-05T15:31:10.168144+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "23260481bb612a3a0f3a1a4e0d08e9e5cd05faaa"
+  "planning_commit_sha": "a22a279dd717c93088144d411e50cbbba6ba2a5a"
 }

@@ -17,7 +17,7 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: tools/edge-admin/
-create_intent: [tools/edge-admin/package.json, tools/edge-admin/tsconfig.json, tools/edge-admin/src/main.ts, tools/edge-admin/src/commands.ts, tools/edge-admin/src/enrollment-format.ts, tools/edge-admin/src/db.ts, tools/edge-admin/src/redact.ts, tools/edge-admin/test/register.spec.ts, tools/edge-admin/test/commands-other.spec.ts, tools/edge-admin/test/enrollment-file.spec.ts, tools/edge-admin/test/no-secret-in-logs.spec.ts, apps/api/src/edge/packs/edge-packs.worker.ts, apps/api/src/edge/packs/edge-packs.service.ts, apps/api/src/edge/packs/pack-sealing.ts, apps/api/src/edge/packs/edge-packs.module.ts, apps/api/test/integration/edge/packs/pack-delay.spec.ts, apps/api/test/integration/edge/packs/pack-standby.spec.ts, apps/api/test/integration/edge/packs/pack-canary.spec.ts, apps/api/test/integration/edge/packs/register-alert.spec.ts]
+create_intent: [tools/edge-admin/package.json, tools/edge-admin/tsconfig.json, tools/edge-admin/src/main.ts, tools/edge-admin/src/commands.ts, tools/edge-admin/src/enrollment-format.ts, tools/edge-admin/src/db.ts, tools/edge-admin/src/redact.ts, tools/edge-admin/test/register.spec.ts, tools/edge-admin/test/commands-other.spec.ts, tools/edge-admin/test/enrollment-file.spec.ts, tools/edge-admin/test/no-secret-in-logs.spec.ts, apps/api/src/edge/packs/edge-packs.worker.ts, apps/api/src/edge/packs/edge-packs.service.ts, apps/api/src/edge/packs/pack-sealing.ts, apps/api/src/edge/packs/edge-packs.module.ts, apps/api/test/integration/edge/packs/pack-delay.spec.ts, apps/api/test/integration/edge/packs/pack-standby.spec.ts, apps/api/test/integration/edge/packs/pack-canary.spec.ts, apps/api/test/integration/edge/packs/register-alert.spec.ts, tools/edge-admin/FORMATS.md]
 execution_mode: code_change
 model: sonnet
 owned_files: [tools/edge-admin/**, apps/api/src/edge/packs/**, apps/api/test/integration/edge/packs/**]
@@ -27,6 +27,9 @@ tracker_refs: []
 ---
 
 # Work Package Prompt: WP15 : Outil d'inscription des passerelles et colis
+
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.1 et § 13.4 : format figé, paramètres `--site-key-a` et `--site-key-b`, `FORMATS.md` n'est qu'un renvoi ; le délai vient de `edge_platform_setting`, pas de `EDGE_PACK_DELAY_SECONDS`. Mets `tools/edge-admin/FORMATS.md` dans tes fichiers créés.
+
 
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour la dépendance à WP10, `edge_gateways_awaiting_pack`, `edge_register_snapshot_key`, `set_edge_setting`, `tools/edge-admin/FORMATS.md`.
 

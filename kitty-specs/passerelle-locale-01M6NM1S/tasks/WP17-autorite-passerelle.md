@@ -11,7 +11,7 @@ requirement_refs:
 planning_base_branch: feat/passerelle-locale
 merge_target_branch: feat/passerelle-locale
 branch_strategy: Planning artifacts for this mission were generated on feat/passerelle-locale. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/passerelle-locale unless the human explicitly redirects the landing branch.
-subtasks: [T075, T076, T077, T078, T079]
+subtasks: [T075, T076, T077, T078, T079, T119]
 phase: Phase 4 - Passerelle
 agent: claude
 history:
@@ -20,16 +20,19 @@ history:
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: apps/gateway/src/authority/
-create_intent: [apps/gateway/src/central-client/central-client.ts, apps/gateway/src/central-client/central-errors.ts, apps/gateway/src/central-client/central-client.module.ts, apps/gateway/src/authority/authority.service.ts, apps/gateway/src/authority/authority-transitions.ts, apps/gateway/src/authority/control-channel.ts, apps/gateway/src/authority/site-order.ts, apps/gateway/src/authority/authority.module.ts, apps/gateway/test/authority/authority-states.spec.ts, apps/gateway/test/authority/restart-cases.spec.ts, apps/gateway/test/authority/epochs.spec.ts, apps/gateway/test/authority/local-unstale.spec.ts, apps/gateway/test/authority/central-client.spec.ts]
+create_intent: [apps/gateway/src/central-client/central-client.ts, apps/gateway/src/central-client/central-errors.ts, apps/gateway/src/central-client/central-client.module.ts, apps/gateway/src/authority/authority.service.ts, apps/gateway/src/authority/authority-transitions.ts, apps/gateway/src/authority/control-channel.ts, apps/gateway/src/authority/site-order.ts, apps/gateway/src/authority/authority.module.ts, apps/gateway/test/authority/authority-states.spec.ts, apps/gateway/test/authority/restart-cases.spec.ts, apps/gateway/test/authority/epochs.spec.ts, apps/gateway/test/authority/local-unstale.spec.ts, apps/gateway/test/authority/central-client.spec.ts, apps/gateway/src/admin/local-orders.controller.ts]
 execution_mode: code_change
 model: sonnet
-owned_files: [apps/gateway/src/central-client/**, apps/gateway/src/authority/**, apps/gateway/test/authority/**]
+owned_files: [apps/gateway/src/central-client/**, apps/gateway/src/authority/**, apps/gateway/test/authority/**, apps/gateway/src/admin/**]
 role: implementer
 tags: []
 tracker_refs: []
 ---
 
 # Work Package Prompt: WP17 – Autorité sur la passerelle
+
+> **Corrections après analyse** : `contracts/interfaces.md` § 12.13 et § 13.3 : le format de l'ordre à deux personnes EST fixé, ignore toute mention contraire. T119 : écouteur local et `registerOrderHandler`, tests (liaison hors boucle locale refusée, une signature refusée, deux fois la même clé refusée, ordre expiré, nonce rejoué, refus si le central a confirmé l'époque). § 13.9 pour le rattrapage.
+
 
 ## ⚡ Do This First: Load Agent Profile
 

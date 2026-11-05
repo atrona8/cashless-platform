@@ -125,10 +125,12 @@ par l'orchestrateur (base partagée) ; `GRANT` par WP09 seulement. Fichiers sans
 | T111 | `docs/procedure-site-passerelle.md` | WP24 | |
 | T112 | Relais TCP coupable, deux processus, deux bases | WP25 | |
 | T113 | Parcours SC-001 de bout en bout, soldes égaux | WP25 | |
-| T114 | NFR-001 (§13-4) et NFR-002 (§13-5), NFR-006, NFR-007 | WP25 | |
+| T114 | NFR-001 (§13-4), NFR-002 (§13-5), NFR-005, NFR-006, NFR-007 | WP25 | |
 | T115 | NFR-003, NFR-004 aux points d'arrêt, reprise forcée SC-005 | WP25 | |
-| T116 | NFR-009 à NFR-012 : démarrages réels, canari, cloisonnement, stabilité | WP25 | |
-| T117 | Étapes CI, contrôle de stabilité ; consignation finale | WP25 | |
+| T116 | NFR-009 à NFR-013 : démarrages réels, canari, cloisonnement, stabilité | WP25 | |
+| T117 | Étapes CI, contrôle de stabilité, `CODEOWNERS` ; consignation finale | WP25 | |
+| T118 | Enrôlement de la passerelle : demande, chargement, suppression du fichier | WP16 | |
+| T119 | Écouteur d'administration local, ordres signés, `LOCAL_UNSTALE` | WP17 | |
 
 ## Phase 1 : contrat et code partagé
 
@@ -201,7 +203,7 @@ T034 Journal des changements (WP08)
 T035 Page de flux (WP08)
 T036 Audit et silence (WP08)
 T037 Tests (WP08)
-Dependencies : WP03, WP04, WP05. Risks : déclencheurs sur des tables à fort trafic ; fuite entre événements.
+Dependencies : WP03, WP04, WP05, WP06. Risks : déclencheurs sur des tables à fort trafic ; fuite entre événements.
 
 ## Work Package WP09 : Droits de la base et non-régression du kit (Priority: P1)
 Prompt : `tasks/WP09-droits.md`. Goal : chaque rôle a exactement ses droits, et le kit passe sans modification. Independent test : listes figées, connexion réelle.
@@ -274,6 +276,7 @@ T071 Migrations (WP16)
 T072 Transaction et clés (WP16)
 T073 Horloge (WP16)
 T074 Garde et points d'arrêt (WP16)
+T118 Enrôlement (WP16)
 Dependencies : WP01, WP02. Risks : le défaut de démarrage de la mission 4 : prouver avec le vrai `NestFactory`.
 
 ## Work Package WP17 : Autorité sur la passerelle (Priority: P1)
@@ -283,6 +286,7 @@ T076 Machine à états (WP17)
 T077 Canal et accusé (WP17)
 T078 Époques (WP17)
 T079 Tests (WP17)
+T119 Administration locale (WP17)
 Dependencies : WP16. Risks : écart OP-N110.
 
 ## Work Package WP18 : Réplication sur la passerelle (Priority: P1)

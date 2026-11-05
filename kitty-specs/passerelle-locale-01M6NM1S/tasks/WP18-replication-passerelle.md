@@ -29,6 +29,9 @@ tracker_refs: []
 
 # Work Package Prompt: WP18 – Réplication sur la passerelle
 
+> **Corrections après analyse** : `contracts/interfaces.md` § 13.9 : tu fournis le jeton `REPLICATION_CATCH_UP`. § 13.8 : NFR-008 sur 50 blocages.
+
+
 ## ⚡ Do This First: Load Agent Profile
 
 Charge le profil : `/ad-hoc-profile-load implementer-ivan` (Profile : implementer-ivan / Role :

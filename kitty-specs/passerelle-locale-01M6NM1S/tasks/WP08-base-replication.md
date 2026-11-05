@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: 'Base : réplication côté base (migration 0063)'
-dependencies: [WP03, WP04, WP05]
+dependencies: [WP03, WP04, WP05, WP06]
 requirement_refs:
 - FR-008
 - FR-009
@@ -76,13 +76,8 @@ clair dans le flux.
 - **Numéros de migration** : `data-model.md` range ces objets en 0060/0061 ; `interfaces.md` § 1 donne 0063. 0063 fait foi. Signale.
 - **Dépendance manquante à signaler** : `tasks.md` donne WP08 → WP03, WP04. Mais `edge_record_staff_token_audit` doit lire
   l'intervalle du lot dans `edge_sync_batch` (0060, WP05), et le journal `edge_reference_change` est lu par WP04 (accord, filigrane).
-  Lis `edge_sync_batch` par SQL dynamique en échec fermé (table absente : refus), et crée dans tes tests une table temporaire de même
-  forme. La preuve de bout en bout est celle de l'orchestrateur et de WP25.
-- **Source du délai des colis (A16)** : `interfaces.md` § 8 le met en configuration du central (`EDGE_PACK_DELAY_SECONDS`, 1800,
-  jamais 0 en production), mais `edge_replication_page` n'a aucun paramètre de délai. Un réglage de session posé par le processus
-  `edge` serait modifiable par un processus compromis : le délai ne vaudrait rien. Retenu : une ligne de la table de réglage de
-  plateforme (celle de WP06 si elle est déjà dans ta lane, sinon une table à toi de même forme), valeur initiale 1800 s, lue par la
-  fonction. **Signale à l'orchestrateur** que la clé de configuration de WP10 ne peut pas l'écrire sans fonction dédiée : question au porteur.
+  Tu dépends de WP05 : lis `edge_sync_batch` directement.
+- **Source du délai des colis (A16)** : ligne `pack_delay_seconds` de `edge_platform_setting` (WP06), lue par la fonction sans paramètre (`interfaces.md` § 12.4 et § 13.4).
 - Les clés maîtres des bracelets ne sortent jamais du central (C-009). Ce lot ne CHIFFRE rien : le processus des clés produit
   les colis (`deposit_edge_pwd_pack`, `deposit_edge_pwd_pack_key` ; accordées à `cashless_tagkeys` par WP09) ; la fonction SQL ne lit que `edge_pwd_pack`.
 - Hors lot : routes HTTP (WP12), application côté passerelle (WP18), outil d'inscription (WP15), canari de bout en bout (WP25).
