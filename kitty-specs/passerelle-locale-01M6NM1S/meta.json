@@ -1,0 +1,17 @@
+{
+  "coordination_branch": "kitty/mission-passerelle-locale-01M6NM1S",
+  "created_at": "2026-11-05T10:28:39.393424+00:00",
+  "flattened": false,
+  "friendly_name": "Passerelle locale de site",
+  "mid8": "01M6NM1S",
+  "mission_id": "01M6NM1S88C55T40W0TK506HVN",
+  "mission_number": null,
+  "mission_slug": "passerelle-locale-01M6NM1S",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Les festivals perdent souvent leur liaison Internet. Le hors ligne de la mission 7 borne le risque par des plafonds. La passerelle locale, installée sur le site, devient la seule autorité de débit de l'événement pendant la coupure : les soldes restent exacts, puis tout est reversé au central au retour du réseau. Le contrat d'API déjà partagé avec les équipes clientes reste inchangé.",
+  "purpose_tldr": "Permettre à un site de continuer à débiter les bracelets pendant une coupure, grâce à une passerelle locale qui prend l'autorité de débit puis la rend sans perte.",
+  "slug": "passerelle-locale-01M6NM1S",
+  "target_branch": "feat/passerelle-locale",
+  "topology": "coord"
+}
