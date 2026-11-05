@@ -7,7 +7,8 @@
 > 26/10/2026 : mission 5b relue (14 lots approuvés). 27/10/2026 : mission 5b acceptée et mergée le 26/10/2026 sur `feat/terminaux-paiement-en-ligne`, dans `main` par la PR #6 le 27/10/2026 ; revue post-fusion faite (publiable avec réserves).
 > 27/10/2026 : plan de la mission 6 « Recharges, caisses et PSP » finalisé (`recharges-caisses-psp-01M5YEBA`).
 > 29/10/2026 : mission 6 relue (14 lots approuvés), acceptée et mergée sur `feat/recharges-caisses-psp`, dans `main` par la PR #8 le 29/10/2026.
-> 30/10/2026 : plan de la mission 7 « Hors ligne : snapshots et lots » finalisé (`hors-ligne-snapshots-lots-01M645RN`) ; rien n'est encore implémenté.
+> 30/10/2026 : plan de la mission 7 « Hors ligne : snapshots et lots » finalisé (`hors-ligne-snapshots-lots-01M645RN`).
+> 05/11/2026 : mission 7 implémentée et relue (21 lots sur 21 approuvés le 04/11/2026), en attente d'acceptation et de fusion.
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -34,7 +35,7 @@ Au 27/10/2026, six missions sont fusionnées dans `main` : 1 (grand livre), 2 (i
 (encaissement en ligne, PR #6 : contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par
 bracelet et par QR, annulation à deux voies, OP-N74 levé, preuves de bout en bout ; latence du paiement par bracelet
 en CI p95 ≈ 29 ms, p99 ≈ 32 ms). Revue post-fusion de la 5b : publiable avec réserves (mineurs de test et de
-consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et les missions 8 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) a son plan finalisé depuis le 30/10/2026 (rien n'est encore implémenté).
+consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et les missions 8 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) est implémentée, relue et approuvée (21 lots sur 21, le 04/11/2026), en attente d'acceptation et de fusion.
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
@@ -95,18 +96,23 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
 ### Hors ligne et passerelle locale
 - Description : snapshot signé, plafonds hors ligne, lots numérotés, conflits, passerelle locale qui prend
   l'autorité de débit pendant une coupure (§9, `sync_protocol.md`).
-- Statut : côté serveur, 📐 planifiée : plan finalisé le 30/10/2026 (mission 7), pas encore implémenté. Prévu par la
-  mission 7 : politique hors ligne à trois portées (organisateur, événement, terminal) plafonnée par le prestataire,
+- Statut : côté serveur, 🔎 implémentée, relue et approuvée le 04/11/2026 (mission 7, 21 lots sur 21), en attente
+  d'acceptation et de fusion. Livré par la mission 7 : politique hors ligne à trois portées (organisateur, événement, terminal) plafonnée par le prestataire,
   avec le risque maximal affiché ; snapshots signés `FULL` ou `DELTA` (60 s après un changement, 5 s après un blocage,
   mots de passe chiffrés pour le seul terminal) ; lots de 500 opérations au plus, une transaction par opération, sans
   double écriture ; conformité du terminal, part non couverte portée par le compte d'attente `S-ATTENTE` avec une
   anomalie ; trous de numéros levés à deux ; import à deux du journal d'un terminal révoqué ; vendeur hors ligne par sa
-  session ouverte en ligne (12 h), sans connexion hors ligne. **Aucune recharge espèces hors ligne** (décision du
+  session ouverte en ligne (12 h), sans connexion hors ligne ; le terminal consulte ses numéros
+  (`GET /device/seq-status`) et le back-office voit la remontée des terminaux d'un événement
+  (`GET /events/{event_id}/device-sync-status`). Un lot de 500 opérations se traite en 43 s environ (p95 mesuré sur le
+  poste de développement, seuil 60 s) et un `FULL` de 50 000 bracelets se produit en 28 s. **Aucune recharge espèces hors ligne** (décision du
   porteur du 30/10/2026) : un `TOPUP_CASH` porté par un lot est rejeté seul, avec une anomalie qui porte le montant.
   Limite nommée : la signature des snapshots reste en faux (KMS simulé) jusqu'à la mission 12b, refusée en production,
   donc aucun snapshot servi en production avant 12b (OP-N41, OP-N73 restent ouverts). Dettes de droits levées par la
-  mission : OP-N57, OP-N58, OP-N68, OP-N69, OP-N75. Passerelle locale : 📋 planifiée (mission 8).
-- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, planifiée, plan finalisé le 30/10/2026) ; passerelle : à définir (mission 8)
+  mission : OP-N57, OP-N58, OP-N68, OP-N69, OP-N75. Limites nommées ouvertes : OP-N89 à OP-N98, dont un changement
+  ordinaire de snapshot visible en 60 s plus la boucle (OP-N98). Réserve : le câblage des refus « grand livre verrouillé »
+  et « date limite de synchronisation dépassée » n'est prouvé qu'en test de fonction pure. Passerelle locale : 📋 planifiée (mission 8).
+- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, implémentée et relue le 04/11/2026, en attente d'acceptation) ; passerelle : à définir (mission 8)
 
 ### Argent réel : PSP, caisses, rapprochements, versements
 - Description : Wave, Orange Money, carte (PayDunya, Stripe) ; sessions de caisse ; rapprochements ; versements
@@ -172,17 +178,17 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
 | Passage (`tap_id`) | Lecture d'un bracelet enregistrée ; sert à une seule écriture |
 | Espèces dues | Espèces encaissées hors ligne au-delà d'un plafond, à rendre au client |
 | Passerelle | Serveur local d'un site qui peut prendre l'autorité de débit pendant une coupure |
-| Version (de snapshot) | Numéro strictement croissant d'un snapshot, par grand livre ; calculé par la base (prévu, mission 7) |
-| `FULL` / `DELTA` | Snapshot complet / changements depuis la version précédente (prévu, mission 7) |
-| Politique hors ligne | Réglage par organisateur, événement ou terminal : hors ligne permis, plafonds, âge maximal du snapshot ; la recharge espèces hors ligne est toujours interdite (prévu, mission 7) |
-| Plafonds du prestataire | Valeurs maximales que la politique d'un organisateur ne peut pas dépasser (prévu, mission 7) |
-| Politique effective | Politique calculée pour un terminal (héritage, plafonds du prestataire) ; `capped` si un plafond l'a réduite (prévu, mission 7) |
-| Risque maximal | Somme des plafonds par terminal des terminaux de l'événement (prévu, mission 7) |
-| Lot | Suite d'opérations de numéros continus envoyée par un terminal : 500 au plus, 1 Mio au plus (prévu, mission 7) |
-| Registre des numéros | Table serveur : un résultat final par numéro de terminal (prévu, mission 7) |
-| Trou | Numéro consommé, jamais reçu ; anomalie `SEQ_GAP`, levée par deux personnes (prévu, mission 7) |
-| Part non couverte | Part d'une vente que le solde ne couvre pas ; portée par le compte `S-ATTENTE` avec une anomalie (prévu, mission 7) |
-| Terminal conforme | Terminal dont l'opération respecte la politique en vigueur et le protocole ; le commerçant est alors garanti (prévu, mission 7) |
+| Version (de snapshot) | Numéro strictement croissant d'un snapshot, par grand livre ; calculé par la base (mission 7) |
+| `FULL` / `DELTA` | Snapshot complet / changements depuis la version précédente (mission 7) |
+| Politique hors ligne | Réglage par organisateur, événement ou terminal : hors ligne permis, plafonds, âge maximal du snapshot ; la recharge espèces hors ligne est toujours interdite (mission 7) |
+| Plafonds du prestataire | Valeurs maximales que la politique d'un organisateur ne peut pas dépasser (mission 7) |
+| Politique effective | Politique calculée pour un terminal (héritage, plafonds du prestataire) ; `capped` si un plafond l'a réduite (mission 7) |
+| Risque maximal | Somme des plafonds par terminal des terminaux de l'événement (mission 7) |
+| Lot | Suite d'opérations de numéros continus envoyée par un terminal : 500 au plus, 1 Mio au plus (mission 7) |
+| Registre des numéros | Table serveur : un résultat final par numéro de terminal (mission 7) |
+| Trou | Numéro consommé, jamais reçu ; anomalie `SEQ_GAP`, levée par deux personnes (mission 7) |
+| Part non couverte | Part d'une vente que le solde ne couvre pas ; portée par le compte `S-ATTENTE` avec une anomalie (mission 7) |
+| Terminal conforme | Terminal dont l'opération respecte la politique en vigueur et le protocole ; le commerçant est alors garanti (mission 7) |
 | Époque d'autorité | Entier incrémenté à chaque bascule de l'autorité de débit |
 | `seq` | Numéro d'opération d'un terminal, unique et croissant |
 | PSP | Prestataire de services de paiement (Wave, Orange Money, carte) |

@@ -90,24 +90,24 @@ files=[]
 P=lambda k,l,s='neutral':(k,l,s)
 files.append(usecase('usecase-backoffice','Hors ligne : politiques et reprises','Qui règle, qui voit le risque, qui lève un trou, qui importe un journal',
  ['Admin prestataire','Admin organisateur','Superviseur','Second superviseur'],
- [('Régler le plafond','primary'),('Régler la politique','primary'),('Voir le risque maximal','neutral'),('Couper un terminal','warn'),('Lever un trou (à deux)','accent'),('Importer un journal (à deux)','accent')],
- [('Admin prestataire','Régler le plafond'),('Admin prestataire','Couper un terminal'),('Admin prestataire','Voir le risque maximal'),
+ [('Régler le plafond','primary'),('Régler la politique','primary'),('Voir le risque maximal','neutral'),('Couper un terminal','warn'),('Lever un trou (à deux)','accent'),('Importer un journal (à deux)','accent'),('Voir la remontée des terminaux','neutral')],
+ [('Admin prestataire','Voir la remontée des terminaux'),('Admin organisateur','Voir la remontée des terminaux'),('Admin prestataire','Régler le plafond'),('Admin prestataire','Couper un terminal'),('Admin prestataire','Voir le risque maximal'),
   ('Admin organisateur','Régler la politique'),('Admin organisateur','Voir le risque maximal'),
   ('Superviseur','Lever un trou (à deux)'),('Superviseur','Importer un journal (à deux)'),
   ('Second superviseur','Lever un trou (à deux)'),('Second superviseur','Importer un journal (à deux)')],
- note="Politique à trois portées (organisateur, événement, terminal), plafonnée par le prestataire. Écriture et historique par la base.\nLe second superviseur approuve : jamais la personne qui a demandé. Trou de plus de 24 h : alerte seule.",H=760))
+ note="Politique à trois portées (organisateur, événement, terminal), plafonnée par le prestataire. Écriture et historique par la base.\nLe second superviseur approuve : jamais la personne qui a demandé. Trou de plus de 24 h : alerte seule.\nSans le rôle voulu, ou pour un objet d'un autre prestataire : 404 neutre, rien ne révèle que l'objet existe.",H=800))
 files.append(usecase('usecase-terminal','Hors ligne : le terminal','Configuration, snapshot, accusé, lot, résultat',
  ['Terminal','Vendeur (session en ligne)'],
- [('Lire sa configuration','neutral'),('Récupérer le snapshot','primary'),('Accuser réception','primary'),('Vendre hors ligne','accent'),('Envoyer un lot','primary'),('Lire le résultat','primary'),('Recharge espèces : refusée','warn')],
- [('Terminal','Lire sa configuration'),('Terminal','Récupérer le snapshot'),('Terminal','Accuser réception'),('Terminal','Envoyer un lot'),('Terminal','Lire le résultat'),('Terminal','Recharge espèces : refusée'),('Vendeur (session en ligne)','Vendre hors ligne')],
+ [('Lire sa configuration','neutral'),('Récupérer le snapshot','primary'),('Accuser réception','primary'),('Vendre hors ligne','accent'),('Envoyer un lot','primary'),('Lire le résultat','primary'),('Consulter ses numéros','neutral'),('Recharge espèces : refusée','warn')],
+ [('Terminal','Lire sa configuration'),('Terminal','Récupérer le snapshot'),('Terminal','Accuser réception'),('Terminal','Envoyer un lot'),('Terminal','Lire le résultat'),('Terminal','Consulter ses numéros'),('Terminal','Recharge espèces : refusée'),('Vendeur (session en ligne)','Vendre hors ligne')],
  includes=[('Envoyer un lot','Lire le résultat','puis')],
  note="Le vendeur ouvre sa session en ligne (valable 12 h) ; aucune connexion hors ligne. Aucune recharge espèces hors ligne (décision du 30/10/2026).\nUne recharge espèces dans un lot est rejetée seule, avec une anomalie portant le montant.",H=820))
 files.append(sequence('sequence-snapshot','Production et lecture d’un snapshot','Deux processus : l’un prépare, l’autre signe ; l’API publique ne détient aucun secret',
  [P('c','Snapshot-content','neutral'),P('k','KMS simulé','second'),P('b','Base centrale'),P('s','Snapshot-signer','neutral'),P('a','API publique','primary'),P('t','Terminal','data')],
  [('c','b','Lire les changements'),('c','k','Clé de version'),('k','c','Clé K_v','ret'),('c','c','Chiffrer les mots de passe','self'),('c','b','Brouillon prêt'),
-  ('s','b','Lire le brouillon'),('s','s','Recalculer l’empreinte','self'),('s','k','Signer l’en-tête'),('k','s','Signature','ret'),('s','b','Publier'),('b','b','Version = dernière + 1','self'),
+  ('s','b','Lire le brouillon'),('s','s','Recalculer l’empreinte','self'),('s','k','Signer l’en-tête'),('k','s','Signature','ret'),('s','b','Lire la clé publique'),('s','s','Vérifier la signature','self'),('s','b','Publier'),('b','b','Version = dernière + 1','self'),
   ('t','a','Demander le snapshot'),('a','b','Lire son enveloppe'),('a','t','Version signée','ret'),('t','t','Vérifier, appliquer','self'),('t','a','Accuser réception'),('a','b','Enregistrer l’accusé')],
- note="Cadence : 60 s après un changement, 5 s après un blocage. Aucune clé active ou échec de signature : rien de publié, alarme. Faux KMS refusé en production : aucun snapshot servi avant la mission 12b."))
+ note="Un signataire par grand livre : un FULL ne retarde plus le DELTA d'un autre. Cadence : 60 s, 5 s après un blocage. Échec de signature : rien de publié."))
 files.append(sequence('sequence-lot','Envoi d’un lot, opération par opération','Contrôles d’entrée, puis une transaction par opération, dans l’ordre des numéros',
  [P('t','Terminal','data'),P('a','API publique','primary'),P('e','Moteur d’écritures','accent'),P('b','Base centrale')],
  [('t','a','Envoyer le lot'),('a','a','Contrôles d’entrée','self'),('a','t','Refus : 400, 409, 413','bad'),('a','b','Ouvrir le lot'),('b','b','Borne, chaîne, trous','self'),

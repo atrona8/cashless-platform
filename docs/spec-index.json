@@ -824,15 +824,15 @@
   {
     "mission": "hors-ligne-snapshots-lots-01M645RN",
     "titre_cas_usage": "Hors ligne : snapshots et lots",
-    "statut": "planifiée",
+    "statut": "relue",
     "user_stories": [
       {
         "titre": "Fixer la politique et voir le risque",
-        "detail": "Un `ORGANIZER_ADMIN` règle la politique hors ligne de son organisation, d'un événement ou d'un terminal (hors ligne permis, plafonds, âge maximal du snapshot) ; un champ vide hérite du niveau au-dessus ; le prestataire fixe des plafonds à ne pas dépasser ; le risque maximal de l'événement est affiché. La recharge espèces hors ligne n'est jamais permise."
+        "detail": "Un `ORGANIZER_ADMIN` règle la politique hors ligne de son organisation, d'un événement ou d'un terminal (hors ligne permis, plafonds, âge maximal du snapshot) ; un champ vide hérite du niveau au-dessus ; le prestataire fixe des plafonds à ne pas dépasser ; le risque maximal de l'événement est affiché. La recharge espèces hors ligne n'est jamais permise. Le back-office voit aussi la remontée des terminaux de l'événement ; sans le rôle voulu, la réponse est un 404 neutre."
       },
       {
         "titre": "Recevoir un snapshot signé",
-        "detail": "Un terminal enrôlé dont la politique permet le hors ligne reçoit l'état des bracelets de son événement, `FULL` ou `DELTA`, signé, avec les mots de passe chiffrés pour lui seul. Nouvelle version en 60 s après un changement, 5 s après un blocage ; rien pour un terminal révoqué."
+        "detail": "Un terminal enrôlé dont la politique permet le hors ligne reçoit l'état des bracelets de son événement, `FULL` ou `DELTA`, signé, avec les mots de passe chiffrés pour lui seul. Nouvelle version en 60 s après un changement, 5 s après un blocage ; rien pour un terminal révoqué. Le signataire traite un grand livre à la fois et vérifie sa signature avant de publier ; un FULL d'un grand livre ne retarde pas le DELTA d'un autre."
       },
       {
         "titre": "Envoyer ses lots au retour",
@@ -856,7 +856,7 @@
       },
       {
         "titre": "Importer le journal d'un révoqué",
-        "detail": "Un superviseur exporte le journal d'un terminal révoqué (signé par sa clé) ; une personne du back-office l'importe, validée par une seconde ; les opérations non acquittées restent dues au commerçant."
+        "detail": "Un superviseur exporte le journal d'un terminal révoqué (signé par sa clé) ; une personne du back-office l'importe, validée par une seconde ; les opérations non acquittées restent dues au commerçant. Une demande rejetée ou expirée est annulée et libère le terminal."
       },
       {
         "titre": "Vendeur sans connexion hors ligne",
@@ -869,6 +869,10 @@
       {
         "titre": "Registre résistant aux faux numéros",
         "detail": "Les lots alimentent le registre des numéros avec la même forme d'empreinte que le chemin en ligne ; une sonde prouve qu'un numéro posé hors idempotence puis présenté avec un paiement falsifié est détecté et consigné en anomalie."
+      },
+      {
+        "titre": "Consulter ses numéros",
+        "detail": "Le terminal lit son plus petit numéro à envoyer et ses trous connus (`GET /device/seq-status`), y compris suspendu ; le back-office lit la remontée des terminaux d'un événement (`GET /events/{event_id}/device-sync-status`), sans fuite d'existence entre prestataires."
       }
     ],
     "entites_cles": [
@@ -883,16 +887,21 @@
       "Trou",
       "Anomalie hors ligne",
       "Import de journal",
-      "Rôle de maintenance"
+      "Rôle de maintenance",
+      "Remontée des terminaux",
+      "Brouillon de snapshot",
+      "Résultat par opération"
     ],
-    "resultat_mesurable": "un parcours complet (politique réglée et plafonnée, snapshot reçu, blocage suivi d'un delta en 5 s, ventes hors ligne dont une partiellement couverte, lot synchronisé, trou levé à deux, import du journal d'un terminal révoqué) se déroule par l'API sans intervention en base ; aucune double écriture sur 100 rejeux ; lot de 500 opérations en 60 s au plus (p95) ; FULL de 50 000 bracelets en 30 s au plus ; DELTA servi en 2 s au plus (p95) ; aucun secret en clair (balayage avec canari).",
+    "resultat_mesurable": "un parcours complet (politique réglée et plafonnée, snapshot reçu, blocage suivi d'un delta en 5 s, ventes hors ligne dont une partiellement couverte, lot synchronisé, trou levé à deux, import du journal d'un terminal révoqué) se déroule par l'API sans intervention en base ; aucune double écriture sur 100 rejeux ; lot de 500 opérations en 60 s au plus (p95) ; FULL de 50 000 bracelets en 30 s au plus ; DELTA servi en 2 s au plus (p95) ; aucun secret en clair (balayage avec canari). Mesuré à la review (poste de développement) : lot de 500 opérations p95 43,4 s et 42,8 s ; FULL de 50 000 bracelets en 27,6 s ; DELTA servi p95 60 ms ; blocage visible au plus 4,1 s (seuil 5 s) ; un changement ordinaire reste visible en 60 s plus la boucle (dette OP-N98).",
     "hypotheses": [
       "Signature des snapshots simulée (faux KMS) jusqu'à la mission 12b ; aucun snapshot servi en production avant",
       "Vérification de signature côté terminal hors périmètre (application déléguée)",
       "Terminal `SUSPENDED` : peut envoyer ses lots, opérations datées après la suspension rejetées ; `REVOKED` : import à deux",
       "Trou de plus de 24 h : alerte seule, pas de suspension automatique",
       "Tous les portefeuilles restent non identifiés (mission 10)",
-      "Garde de caisse inchangée : aucune transaction sur une caisse"
+      "Garde de caisse inchangée : aucune transaction sur une caisse",
+      "Un changement ordinaire de snapshot est visible en 60 s plus la boucle ; seuls les blocages tiennent 5 s (OP-N98, dette nommée)",
+      "Clés publiques de signature par prestataire : mission 12b (OP-N93)"
     ],
     "contraintes": [
       "Priorité des sources : SPECIFICATION §0.3, toute contradiction signalée",
@@ -902,7 +911,9 @@
       "Aucun nouveau secret sans ADR",
       "Clé d'opération `<série>:<numéro>`, unicité quel que soit le chemin",
       "Tolérance d'horloge 120 s, abandon d'un lot à 15 min, saut de numéro 10 000, session de vendeur 12 h : non réglables par l'organisateur",
-      "Hors périmètre : passerelle (mission 8), adaptateurs KMS réels (12b), rapprochements (9), écrans du back-office (11)"
+      "Hors périmètre : passerelle (mission 8), adaptateurs KMS réels (12b), rapprochements (9), écrans du back-office (11)",
+      "Sans le rôle voulu ou pour un autre prestataire : 404 neutre (aucune fuite d'existence)",
+      "Le processus de maintenance refuse en production une URL de base vers le propriétaire ou un superutilisateur"
     ],
     "cas_limites": [
       "Lot reçu alors que l'autorité de débit est `EDGE`",
@@ -915,7 +926,10 @@
       "Deux clés actives pendant une rotation",
       "Terminal `SUSPENDED` puis `REVOKED` avec des lots en cours",
       "Événement `LOCKED` : lot rejeté (`LEDGER_LOCKED`)",
-      "Même lecture citée par un lot sans `online_tap_id`"
+      "Même lecture citée par un lot sans `online_tap_id`",
+      "Import de journal resté en attente après un rejet ou une expiration : annulé, terminal libéré",
+      "Lot abandonné ou rejeté en cours de traitement : plus aucune écriture au-delà",
+      "Grand livre verrouillé ou date limite de synchronisation dépassée en intégration : câblage non prouvé (réserve FR-024)"
     ],
     "fonctionnel": [
       "Politique à trois portées plafonnée par le prestataire, historique écrit par la base",
@@ -924,7 +938,10 @@
       "Table de conflit, part non couverte en `S-ATTENTE`, anomalies",
       "Trous levés à deux, import du journal d'un révoqué",
       "Aucune recharge espèces hors ligne",
-      "Cinq dettes de droits levées (OP-N57, N58, N68, N69, N75)"
+      "Cinq dettes de droits levées (OP-N57, N58, N68, N69, N75)",
+      "Deux routes servies en plus : seq-status et device-sync-status",
+      "Signataire par grand livre, signature vérifiée avant publication",
+      "Quinze migrations (0043 à 0057), dont neuf hors plan"
     ],
     "non_fonctionnel": [
       "Aucune double écriture, tout ou rien par opération",
@@ -932,7 +949,9 @@
       "Lot de 500 opérations en 60 s p95 ; FULL 50 000 en 30 s ; DELTA 2 s p95",
       "Aucun secret exposé, aucun faux en production",
       "Cloisonnement par prestataire et organisateur",
-      "Un seul lot à la fois par terminal"
+      "Un seul lot à la fois par terminal",
+      "Seuils tenus sur le poste de développement : NFR-003, NFR-004, NFR-005 (blocage)",
+      "Dettes nommées OP-N89 à OP-N98"
     ],
     "source": "kitty-specs/hors-ligne-snapshots-lots-01M645RN/spec.md"
   }
