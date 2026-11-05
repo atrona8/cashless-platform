@@ -26,6 +26,7 @@ SnapshotEntry _$SnapshotEntryFromJson(Map<String, dynamic> json) =>
           : EncryptedBlob.fromJson(
               json['pwd_pack_enc'] as Map<String, dynamic>,
             ),
+      pwdPackSha256: json['pwd_pack_sha256'] as String?,
     );
 
 Map<String, dynamic> _$SnapshotEntryToJson(SnapshotEntry instance) =>
@@ -41,6 +42,7 @@ Map<String, dynamic> _$SnapshotEntryToJson(SnapshotEntry instance) =>
       'spendable': instance.spendable,
       'last_counter': instance.lastCounter,
       'pwd_pack_enc': instance.pwdPackEnc,
+      'pwd_pack_sha256': instance.pwdPackSha256,
     };
 
 const _$MediaStatusEnumMap = {

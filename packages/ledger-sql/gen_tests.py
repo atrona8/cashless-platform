@@ -31,7 +31,7 @@ INSERT INTO party (id, kind, operator_id, legal_name, country_code) VALUES
  ('{ORG}','ORGANIZER','{SN}','Organisateur','SN'), ('00000000-0000-0000-0000-000000000004','MERCHANT','{SN}','Food truck','SN'),
  ('{ORG2}','ORGANIZER','{SN}','Autre organisateur','SN');
 INSERT INTO ledger (id, operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id) VALUES
- ('{L}','{SN}','EVENT', gen_random_uuid(),'XOF','{ORG}','{ORG}');
+ ('{L}','{SN}','EVENT','{EV}','XOF','{ORG}','{ORG}');
 INSERT INTO account (id, operator_id, ledger_id, code, family, purpose, owner_party_id, normal_side, allow_negative) VALUES
  ('{A_WAVE}','{SN}','{L}','A-PSP-WAVE','ASSET','PSP',NULL,'D',false),
  ('{W1P}','{SN}','{L}','L-WAL-W01-P','CLAIM','WALLET_PAID',NULL,'C',false),
@@ -576,16 +576,20 @@ section("Snapshots signés, historique des politiques, configurations servies (S
 run("""INSERT INTO snapshot_signing_key (key_id, operator_id, owner, algorithm, public_key, kms_key_ref, status) VALUES
  ('central-2025-01', NULL, 'CENTRAL', 'ECDSA_P256_SHA256', '\\x04', 'arn:aws:kms:eu-west-3:111122223333:key/old', 'RETIRED'),
  ('central-2026-01', NULL, 'CENTRAL', 'ECDSA_P256_SHA256', '\\x04', 'arn:aws:kms:eu-west-3:111122223333:key/snap', 'ACTIVE')""")
-throws("INSERT INTO snapshot_signing_key (key_id, owner, algorithm, public_key, kms_key_ref) VALUES ('central-bis','CENTRAL','Ed25519','\\x00','arn:x')",
+# Migration 0045 : au plus deux clés valides (ACTIVE|RETIRED) par signataire (CL054). Le signataire du prestataire SN n'en a
+# aucune : une première ACTIVE passe, une seconde ACTIVE du même signataire est refusée par l'index d'unicité (l'assertion
+# garde son intention : une seule clé active par signataire ; la borne à deux clés est éprouvée par tests_offline_snapshot_keys).
+run(f"INSERT INTO snapshot_signing_key (key_id, operator_id, owner, algorithm, public_key, kms_key_ref, status) VALUES ('central-sn','{SN}','CENTRAL','ECDSA_P256_SHA256','\\x04','arn:sn','ACTIVE')")
+throws(f"INSERT INTO snapshot_signing_key (key_id, operator_id, owner, algorithm, public_key, kms_key_ref) VALUES ('central-bis','{SN}','CENTRAL','Ed25519','\\x00','arn:x')",
        "%snapshot_signing_key_one_active%", "une seule clé centrale active par signataire")
 def snap(version, kind="FULL", base="NULL", epoch=f"(SELECT authority_epoch FROM ledger WHERE id = '{L}')", key="central-2026-01", hdr_version=None):
     return (f"INSERT INTO offline_snapshot (operator_id, ledger_id, event_id, kind, version, base_version, generated_at, valid_until, entries, "
-            f"content_sha256, authority_epoch, key_id, header, signature) SELECT '{SN}', '{L}', '{EV}', '{kind}', {version}, {base}, "
+            f"content_sha256, authority_epoch, key_id, header, signature, content_key_wrapped) SELECT '{SN}', '{L}', '{EV}', '{kind}', {version}, {base}, "
             f"'2026-12-11T10:00:00Z', '2026-12-11T10:15:00Z', 2, sha256('c{version}'::bytea), e, '{key}', "
             f"jsonb_build_object('format','CASHLESS-SNAPSHOT/v1','kind','{kind}','operator_id','{SN}','ledger_id','{L}','event_id','{EV}',"
             f"'currency','XOF','version',{hdr_version or version},'base_version',{base},'generated_at','2026-12-11T10:00:00Z',"
             f"'valid_until','2026-12-11T10:15:00Z','entries',2,'content_sha256',encode(sha256('c{version}'::bytea),'hex'),"
-            f"'authority_epoch',e,'key_id','{key}'), '\\x01' FROM (SELECT {epoch} AS e) x")
+            f"'authority_epoch',e,'key_id','{key}'), '\\x01', '\\x0102' FROM (SELECT {epoch} AS e) x")
 lives(snap(1), "snapshot complet v1 signé par la clé active")
 throws(snap(1), "%non croissante%", "version non croissante refusée")
 lives(snap(2, "DELTA", "1"), "delta v2 sur la v1")
@@ -631,12 +635,17 @@ section("Bascule vers la passerelle et registre de la passerelle (S12, S13)")
 LE = "10000000-0000-0000-0000-00000000000e"
 G1, G2, G3 = ("e1000000-0000-0000-0000-000000000001", "e1000000-0000-0000-0000-000000000002", "e1000000-0000-0000-0000-000000000003")
 AE, WE, ME = "2e000000-0000-0000-0000-000000000001", "2e000000-0000-0000-0000-000000000002", "2e000000-0000-0000-0000-000000000003"
-run(f"""INSERT INTO ledger (id, operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id) VALUES ('{LE}','{SN}','EVENT','{EV}','XOF','{ORG}','{ORG}');
+# WP05 : L est désormais le grand livre de l'événement EV (open_offline_batch exige celui du terminal) ;
+# la passerelle et son grand livre LE passent sur un événement distinct EVL.
+EVL = "60000000-0000-0000-0000-0000000000e1"
+run(f"""INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, jurisdiction_id, funds_holder) VALUES
+ ('{EVL}','{SN}','{ORG}','Festival passerelle','XOF','Africa/Dakar','50000000-0000-0000-0000-000000000001','OPERATOR');
+INSERT INTO ledger (id, operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id) VALUES ('{LE}','{SN}','EVENT','{EVL}','XOF','{ORG}','{ORG}');
 INSERT INTO account (id, operator_id, ledger_id, code, family, purpose, owner_party_id, normal_side, allow_negative) VALUES
  ('{AE}','{SN}','{LE}','A-PSP-WAVE','ASSET','PSP',NULL,'D',false), ('{WE}','{SN}','{LE}','L-WAL-E1-P','CLAIM','WALLET_PAID',NULL,'C',false),
  ('{ME}','{SN}','{LE}','L-MCH-E1','CLAIM','MERCHANT','00000000-0000-0000-0000-000000000004','C',true);
-INSERT INTO edge_gateway (id, operator_id, event_id, serial, role) VALUES ('{G1}','{SN}','{EV}','GW-1','PRIMARY'), ('{G2}','{SN}','{EV}','GW-2','STANDBY'),
- ('{G3}','{SN}','{EV}','GW-3','PRIMARY');
+INSERT INTO edge_gateway (id, operator_id, event_id, serial, role) VALUES ('{G1}','{SN}','{EVL}','GW-1','PRIMARY'), ('{G2}','{SN}','{EVL}','GW-2','STANDBY'),
+ ('{G3}','{SN}','{EVL}','GW-3','PRIMARY');
 SELECT post_transaction('{LE}','TOPUP','e:topup:1',now(),'PSP_WEBHOOK','[{{"account_id":"{AE}","amount":5000}},{{"account_id":"{WE}","amount":-5000}}]')""")
 def pe(key): return f"SELECT post_transaction('{LE}','PURCHASE','{key}',now(),'ONLINE','[{{\"account_id\":\"{WE}\",\"amount\":100}},{{\"account_id\":\"{ME}\",\"amount\":-100}}]')"
 def hid(direction, status): return f"(SELECT id FROM debit_authority_handover WHERE ledger_id = '{LE}' AND direction = '{direction}' AND status = '{status}')"

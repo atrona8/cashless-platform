@@ -14,6 +14,11 @@ import 'package:json_annotation/json_annotation.dart';
 /// `EDGE_REPLAY_FAILED` : lot de passerelle seulement ; rejeu impossible d'une `ACTIVATION` ou d'un.
 /// `DEPOSIT_CASH` (`detail` donne le code de l'échec ; sync_protocol.md §9.6).
 /// `SEQ_OUT_OF_RANGE` n'est pas une raison par opération : le lot entier est refusé (`409`).
+/// `ONLINE_NOT_EXECUTED` : référence `ONLINE_REF` non exécutée en ligne, inscrite au registre comme numéro sans.
+/// effet (`ACCEPTED` / `NONE`) ; ce n'est pas un rejet.
+/// `OFFLINE_NOT_ALLOWED` : terminal ou opération interdit hors ligne ; la cause (`DEVICE_SUSPENDED`,.
+/// `DEVICE_REVOKED`, `VENDOR_SESSION`, ou `TOPUP_CASH` qui n'est jamais permis hors ligne) est donnée dans.
+/// `detail`, pas dans cette énumération. Autres raisons ajoutées ou changées : voir `batches.md` de la mission.
 ///
 @JsonEnum()
 enum OfflineRejectReason {
@@ -54,7 +59,9 @@ enum OfflineRejectReason {
   @JsonValue('SYNC_DEADLINE_PASSED')
   syncDeadlinePassed('SYNC_DEADLINE_PASSED'),
   @JsonValue('EDGE_REPLAY_FAILED')
-  edgeReplayFailed('EDGE_REPLAY_FAILED');
+  edgeReplayFailed('EDGE_REPLAY_FAILED'),
+  @JsonValue('ONLINE_NOT_EXECUTED')
+  onlineNotExecuted('ONLINE_NOT_EXECUTED');
 
   const OfflineRejectReason(this.json);
 

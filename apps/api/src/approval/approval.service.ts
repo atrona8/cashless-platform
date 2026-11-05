@@ -19,6 +19,7 @@ import {
   ApprovalActionRegistry,
   requiredRoles,
   type ApprovalActionDefinition,
+  type ApprovalClosure,
 } from './action-registry';
 import {
   approvalRequestDto,
@@ -121,7 +122,10 @@ export class ApprovalService {
     actor: ApprovalActor,
   ): Promise<ApprovalRequestDto> {
     const { before, definition, role } = await this.prepareDecision(client, id, actor);
-    const decided = await this.decide(client, id, actor.principal.userId, true, note);
+    const decided = await this.decide(client, id, actor.principal.userId, true, note, {
+      definition,
+      before,
+    });
     const payload = decided.payload as never;
 
     let after: ApprovalRequestRow;
@@ -152,6 +156,7 @@ export class ApprovalService {
         `status = 'FAILED', failure_code = $2, failure_reason = $3`,
         [problem.code, reason],
       );
+      await this.closed(client, definition, after, 'FAILED', actor.principal.userId);
     }
     const dto = approvalRequestDto(after);
     await this.audit.record(client, {
@@ -176,8 +181,12 @@ export class ApprovalService {
     note: string,
     actor: ApprovalActor,
   ): Promise<ApprovalRequestDto> {
-    const { before, role } = await this.prepareDecision(client, id, actor);
-    const after = await this.decide(client, id, actor.principal.userId, false, note);
+    const { before, definition, role } = await this.prepareDecision(client, id, actor);
+    const after = await this.decide(client, id, actor.principal.userId, false, note, {
+      definition,
+      before,
+    });
+    await this.closed(client, definition, after, 'REJECTED', actor.principal.userId);
     const dto = approvalRequestDto(after);
     await this.audit.record(client, {
       ...actor.audit,
@@ -288,6 +297,7 @@ export class ApprovalService {
     approver: string,
     approve: boolean,
     note: string | null,
+    open: { definition: ApprovalActionDefinition; before: ApprovalRequestRow },
   ): Promise<ApprovalRequestRow> {
     const { rows } = await client.query<ApprovalRequestRow>(
       'SELECT d.* FROM decide_approval_request($1, $2, $3, $4) d',
@@ -295,9 +305,23 @@ export class ApprovalService {
     );
     const decided = rows[0];
     if (!decided?.id) {
+      // Échue : la base l'a passée EXPIRED ; l'action libère ce qu'elle tenait (la réponse 409 est validée).
+      await this.closed(client, open.definition, open.before, 'EXPIRED', approver);
       throw new CommittedProblem('APPROVAL_INVALID', { status: 409, detail: 'Demande expirée.' });
     }
     return decided;
+  }
+
+  /** Rappel `onClosed` de l'action (refus, échéance, échec) ; les erreurs remontent et annulent la décision. */
+  private async closed(
+    client: TxClient,
+    definition: ApprovalActionDefinition,
+    request: ApprovalRequestRow,
+    outcome: ApprovalClosure,
+    actorId: string,
+  ): Promise<void> {
+    if (!definition.onClosed) return;
+    await definition.onClosed(client, { request, payload: request.payload, outcome, actorId });
   }
 
   private async finish(

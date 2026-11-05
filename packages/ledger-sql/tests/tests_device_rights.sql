@@ -11,6 +11,8 @@ BEGIN;
 SET LOCAL client_min_messages = warning;
 \ir ../roles.sql
 \ir ../post-roles.sql
+-- post-roles.sql referme le défaut des fonctions futures (OP-N68) : on le rouvre pour pgtap (WP08).
+\ir _grants_for_tests.sql
 RESET client_min_messages;
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
@@ -56,11 +58,12 @@ CREATE TEMP TABLE wp07_families AS
 -- 1. Catalogue : écritures de cashless_app sur les tables des terminaux ---------------------------
 SELECT ok(NOT has_any_column_privilege('cashless_app', 'device', 'INSERT'),
   'cashless_app : aucune insertion dans device');
-SELECT is((SELECT array_agg(attname::text ORDER BY attname) FROM pg_attribute
+SELECT is((SELECT coalesce(array_agg(attname::text ORDER BY attname), '{}') FROM pg_attribute
             WHERE attrelid = 'device'::regclass AND attnum > 0 AND NOT attisdropped
               AND has_column_privilege('cashless_app', 'device', attname, 'UPDATE')),
-  ARRAY['last_seen_at', 'last_snapshot_version', 'next_seq_floor', 'station_name'],
-  'cashless_app : colonnes de device modifiables, liste exacte (A12 : sans affectation ni mode)');
+  '{}'::text[],
+  'cashless_app : colonnes de device modifiables, liste VIDE (OP-N69 levée, WP08 ; avant : last_seen_at, '
+  'last_snapshot_version, next_seq_floor, station_name)');
 SELECT ok(has_column_privilege('cashless_app', 'device', c, 'SELECT'),
   'cashless_app : lecture de device.' || c || ' (garde des requêtes de terminal)')
   FROM unnest(ARRAY['public_key', 'cert_sha256', 'agreement_public_key', 'status']) c;
@@ -142,9 +145,10 @@ SELECT is((SELECT count(*)::int FROM pg_attribute
               AND attname IN ('app_mode', 'nfc_enabled', 'event_id', 'pos_id', 'personal_phone')
               AND NOT has_column_privilege('cashless_app', 'device', attname, 'UPDATE')), 5,
   'A12 : app_mode, nfc_enabled, event_id, pos_id, personal_phone dans la liste refusée');
-SELECT lives_ok(format('UPDATE device SET station_name = %L WHERE id = %L', 'Bar',
-                       pg_temp.id('07e001')),
-  'témoin : réglage d''exploitation (station_name) modifiable');
+-- OP-N69 levée (WP08) : plus aucun UPDATE direct, station_name compris (set_device_station_name, DEFINER).
+SELECT throws_ok(format('UPDATE device SET station_name = %L WHERE id = %L', 'Bar',
+                        pg_temp.id('07e001')), '42501', NULL,
+  'OP-N69 levée : station_name n''est plus modifiable en direct (set_device_station_name)');
 SELECT throws_ok($$INSERT INTO device (operator_id, kind, serial)
                    VALUES (pg_temp.id('07a001'), 'POS', 'WP07-3')$$, '42501', NULL,
   'cashless_app : insertion directe d''un terminal refusée (enroll_device seule)');

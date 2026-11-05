@@ -303,9 +303,11 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
     expect((await tap(ios)).status).toBe(200);
   });
 
-  it('purge des nonces expirés : travailleur device-purge de l’API publique, sous cashless_app', async () => {
+  // OP-N75 (WP10) : les purges sont au processus `maintenance` (test/integration/maintenance/purge.spec.ts) ;
+  // l'API publique n'a plus le travailleur, et ses nonces encore dans la fenêtre restent.
+  it('purge des nonces : plus de travailleur device-purge dans l’API publique (OP-N75)', async () => {
     const workers = api.app.get(WorkerRegistry, { strict: false });
-    expect(workers.names()).toContain('device-purge');
+    expect(workers.names()).not.toContain('device-purge');
     const stale = randomBytes(16);
     await withOwner((db) =>
       db.query(
@@ -315,8 +317,10 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
       ),
     );
     await workers.drain();
-    expect(await rows('SELECT 1 FROM device_request_nonce WHERE nonce = $1', [stale])).toEqual([]);
-    // Les nonces encore dans la fenêtre restent : le rejeu reste détecté.
+    // Rien ne purge côté API publique : le nonce expiré reste jusqu'au passage de `maintenance`.
+    expect(await rows('SELECT 1 FROM device_request_nonce WHERE nonce = $1', [stale])).toHaveLength(
+      1,
+    );
     expect(await nonces()).toBeGreaterThan(0);
   });
 

@@ -1,0 +1,490 @@
+{
+  "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 : couvert par WP02, WP14, WP21",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (9a4bd1fc) : tests_offline_policy.sql 82/82; WP14 approuv\u00e9 (01dc40c6) : jest integration/offline/policy.spec.ts 19/19 ; tests du FR : tests_offline_policy.sql, policy.spec.ts, policy-isolation.spec.ts (citent FR-001) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 : couvert par WP02, WP14, WP21",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (9a4bd1fc) : tests_offline_policy.sql 82/82; WP14 approuv\u00e9 (01dc40c6) : jest integration/offline/policy.spec.ts 19/19 ; tests du FR : batches-resume.spec.ts (cite FR-002) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 : couvert par WP07, WP14, WP21",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (a18c9599) : tests_offline_device_vendor.sql 109/109; WP14 approuv\u00e9 (01dc40c6) : jest integration/offline/policy.spec.ts 19/19 ; tests du FR : tests_offline_device_vendor.sql, tests_offline_exposure_bounded.sql, policy.spec.ts, batch-reference.spec.ts (citent FR-003) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 : couvert par WP02, WP11",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (9a4bd1fc) : tests_offline_policy.sql 82/82; WP11 approuv\u00e9 (dc7d041c, cycle 3) : jest snapshots-content (cadence.spec.ts, cadence-bounds.spec.ts, source-plan.spec.ts) 62/62 ; tests du FR : tests_offline_policy.sql (WP02) ; cadence-bounds.spec.ts, cadence.spec.ts (WP11, identifi\u00e9s par le contenu, ne citent pas FR-004)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 : couvert par WP07, WP11, WP15",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (a18c9599) : tests_offline_device_vendor.sql 109/109; WP11 approuv\u00e9 (dc7d041c, cycle 3) : jest snapshots-content (cadence.spec.ts, cadence-bounds.spec.ts, source-plan.spec.ts) 62/62; WP15 approuv\u00e9 (b4ca0427, cycle 2) : jest integration/offline/snapshots.spec.ts ; tests du FR : tests_offline_device_vendor.sql, cadence-bounds.spec.ts, source-plan.spec.ts, snapshot-signer.worker.spec.ts, snapshots.spec.ts (citent FR-005)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 : couvert par WP03",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (6500ff5c, cycle 3) : tests_offline_snapshots.sql 145/145 ; tests du FR : tests_offline_snapshots.sql (cite FR-006)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 : couvert par WP03, WP11, WP12",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (6500ff5c, cycle 3) : tests_offline_snapshots.sql 145/145; WP11 approuv\u00e9 (dc7d041c, cycle 3) : jest snapshots-content (cadence.spec.ts, cadence-bounds.spec.ts, source-plan.spec.ts) 62/62; WP12 approuv\u00e9 (3528e30d) : jest snapshots-content chiffrement (crypto-*.spec.ts, secrets-envelope.spec.ts) 92/92 ; tests du FR : tests_offline_snapshots.sql (WP03), cadence.spec.ts (WP11), crypto-encryptor.spec.ts (WP12) ; offline-isolation.spec.ts (WP21) cite FR-007",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 : couvert par WP09, WP11",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuv\u00e9 (b71e2a2a) : jest unit/kms, production-guard, integration/snapshot-keys 88/88; WP11 approuv\u00e9 (dc7d041c, cycle 3) : jest snapshots-content (cadence.spec.ts, cadence-bounds.spec.ts, source-plan.spec.ts) 62/62 ; tests du FR : offline-secrets.spec.ts, tests_offline_snapshot_keys.sql (citent FR-008) ; cadence-bounds.spec.ts (WP11)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 : couvert par WP08, WP13",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (c2ee1033, cycle 2) : tests_offline_rights.sql 188/188, tests_default_acl.sql 2/2, tests_execute_grants.sql 79/79; WP13 approuv\u00e9 (42828a6d) : jest snapshots-signer (snapshot-signer.worker.spec.ts, sign-publish.spec.ts, draft-verifier.spec.ts) ; tests du FR : tests_offline_rights.sql, tests_offline_snapshot_keys.sql (citent FR-009) ; snapshot-signer.worker.spec.ts, sign-publish.spec.ts (WP13, par le contenu)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 : couvert par WP04, WP12, WP21",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (1638f20e) : tests_offline_snapshot_keys.sql 135/135; WP12 approuv\u00e9 (3528e30d) : jest snapshots-content chiffrement (crypto-*.spec.ts, secrets-envelope.spec.ts) 92/92 ; tests du FR : tests_offline_snapshot_keys.sql, tests_offline_snapshots.sql, crypto-production.spec.ts, offline-production.spec.ts (citent FR-010) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 : couvert par WP04, WP07, WP15, WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (1638f20e) : tests_offline_snapshot_keys.sql 135/135; WP07 approuv\u00e9 (a18c9599) : tests_offline_device_vendor.sql 109/109; WP15 approuv\u00e9 (b4ca0427, cycle 2) : jest integration/offline/snapshots.spec.ts; WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_snapshot_keys.sql, tests_offline_device_vendor.sql, snapshots.spec.ts (citent FR-011) ; processing.spec.ts (WP19, par le contenu)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 : couvert par WP05, WP07",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (a09a117b) : tests_offline_batches.sql 167/167; WP07 approuv\u00e9 (a18c9599) : tests_offline_device_vendor.sql 109/109 ; tests du FR : tests_offline_batches.sql, tests_offline_device_vendor.sql (citent FR-012)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 : couvert par WP18",
+      "proof_type": "automated_test",
+      "evidence": "WP18 approuv\u00e9 (a5c19b68) : jest integration/offline/batches-*.spec.ts 46/46 ; tests du FR : batches-resume.spec.ts (cite FR-013) ; offline-concurrency.spec.ts (WP21)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 : couvert par WP02, WP18, WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (9a4bd1fc) : tests_offline_policy.sql 82/82; WP18 approuv\u00e9 (a5c19b68) : jest integration/offline/batches-*.spec.ts 46/46; WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_policy.sql (cite FR-014) ; batches-intake.spec.ts, batches-run.spec.ts (WP18), processing.spec.ts (WP19)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 : couvert par WP19, WP21",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_batches.sql (cite FR-015) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 : couvert par WP16",
+      "proof_type": "automated_test",
+      "evidence": "WP16 approuv\u00e9 (5b393ff5) : jest unit payments/idempotency/device-route 152/152, int\u00e9gration 221/221, vecteurs recalcul\u00e9s en Python ind\u00e9pendant ; tests du FR : tests_offline_batches.sql (cite FR-016)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 : couvert par WP16",
+      "proof_type": "automated_test",
+      "evidence": "WP16 approuv\u00e9 (5b393ff5) : jest unit payments/idempotency/device-route 152/152, int\u00e9gration 221/221, vecteurs recalcul\u00e9s en Python ind\u00e9pendant ; tests du FR : chained-content.spec.ts, batches-intake.spec.ts (vecteurs fixes offline-vectors, par le contenu ; ne citent pas FR-017)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : processing.spec.ts (VOID, ONLINE_CONFIRMED_MISSING, par le contenu) ; offline-bounds.spec.ts (WP21) cite FR-018",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_anomalies.sql (cite FR-019) ; processing.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 : couvert par WP06, WP17",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (37655778) : tests_offline_anomalies.sql 121/121; WP17 approuv\u00e9 (b32e6592) : jest test/unit/offline 136/136 ; tests du FR : tests_offline_anomalies.sql (WP06) ; test/unit/offline (conflict-outcome.spec.ts, loss-bearer.spec.ts, WP17) ; processing-conflicts.spec.ts (par le contenu, ne citent pas FR-020)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_anomalies.sql (cite FR-021) ; processing-conflicts.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 : couvert par WP17",
+      "proof_type": "automated_test",
+      "evidence": "WP17 approuv\u00e9 (b32e6592) : jest test/unit/offline 136/136 ; tests du FR : test/unit/offline (compliance.spec.ts, WP17, par le contenu ; ne cite pas FR-022)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : compliance.spec.ts, processing.spec.ts, tests_offline_anomalies.sql (NON_COMPLIANT_OPERATION, par le contenu ; ne citent pas FR-023)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : period.spec.ts (unitaire), processing.spec.ts (PERIOD_CLOSED), tests_offline_anomalies.sql (par le contenu ; ne citent pas FR-024)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR) ; r\u00e9serve : c\u00e2blage LEDGER_LOCKED / SYNC_DEADLINE_PASSED depuis le lecteur de conformit\u00e9 non prouv\u00e9 en int\u00e9gration (lot WP19)"
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025 : couvert par WP17",
+      "proof_type": "automated_test",
+      "evidence": "WP17 approuv\u00e9 (b32e6592) : jest test/unit/offline 136/136 ; tests du FR : test/unit/offline (offline-time.spec.ts, period.spec.ts, WP17) ; processing-reversal-clock.spec.ts (cite FR-025)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : tests_offline_anomalies.sql (cite FR-026)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "FR-027 : couvert par WP02",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (9a4bd1fc) : tests_offline_policy.sql 82/82 ; tests du FR : tests_offline_policy.sql (cite FR-027)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-028",
+      "description": "FR-028 : couvert par WP19",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (d65390e2, cycle 2) : jest integration/offline/processing*.spec.ts 139/139 ; tests du FR : compliance.spec.ts, processing.spec.ts, tests_offline_anomalies.sql (OFFLINE_NOT_ALLOWED, par le contenu ; ne citent pas FR-028)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-029",
+      "description": "FR-029 : couvert par WP05, WP18",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (a09a117b) : tests_offline_batches.sql 167/167; WP18 approuv\u00e9 (a5c19b68) : jest integration/offline/batches-*.spec.ts 46/46 ; tests du FR : tests_offline_batches.sql, batches-get.spec.ts (citent FR-029)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-030",
+      "description": "FR-030 : couvert par WP18",
+      "proof_type": "automated_test",
+      "evidence": "WP18 approuv\u00e9 (a5c19b68) : jest integration/offline/batches-*.spec.ts 46/46 ; tests du FR : tests_offline_batches.sql (assertion \u00ab lot en vol : ABANDONED \u00bb, par le contenu ; ne cite pas FR-030)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-031",
+      "description": "FR-031 : couvert par WP05",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (a09a117b) : tests_offline_batches.sql 167/167 ; tests du FR : tests_offline_anomalies.sql (cite FR-031) ; tests_offline_batches.sql (WP05)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-032",
+      "description": "FR-032 : couvert par WP20",
+      "proof_type": "automated_test",
+      "evidence": "WP20 approuv\u00e9 (8aabe5ae, cycle 2) : jest integration/offline/journal-import*.spec.ts, seq-waive.spec.ts 130/130 ; tests du FR : seq-waive.spec.ts (cite FR-032)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-033",
+      "description": "FR-033 : couvert par WP16",
+      "proof_type": "automated_test",
+      "evidence": "WP16 approuv\u00e9 (5b393ff5) : jest unit payments/idempotency/device-route 152/152, int\u00e9gration 221/221, vecteurs recalcul\u00e9s en Python ind\u00e9pendant ; tests du FR : seq-waive.spec.ts (cite FR-033, WP20)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-034",
+      "description": "FR-034 : couvert par WP06, WP13",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (37655778) : tests_offline_anomalies.sql 121/121; WP13 approuv\u00e9 (42828a6d) : jest snapshots-signer (snapshot-signer.worker.spec.ts, sign-publish.spec.ts, draft-verifier.spec.ts) ; tests du FR : tests_offline_anomalies.sql, journal-import.spec.ts, journal-import-worker.spec.ts (citent FR-034) ; snapshot-signer.worker.spec.ts (WP13)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-035",
+      "description": "FR-035 : couvert par WP05, WP20",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (a09a117b) : tests_offline_batches.sql 167/167; WP20 approuv\u00e9 (8aabe5ae, cycle 2) : jest integration/offline/journal-import*.spec.ts, seq-waive.spec.ts 130/130 ; tests du FR : tests_offline_batches.sql, journal-import.spec.ts, journal-import-worker.spec.ts (citent FR-035)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-036",
+      "description": "FR-036 : couvert par WP21",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/offline/processing.spec.ts : \u00ab FR-036 : m\u00eame num\u00e9ro, autre contenu : IDEMPOTENCY_KEY_REUSED + IDEMPOTENCY_CONFLICT, une seule transaction, premi\u00e8re ligne du registre \u00bb",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Preuve = ce test (cycle 2 de WP21) ; reste \u00e0 confirmer par la relecture. Sans lien avec le \u00ab FR-036 \u00bb d'ADR-103 (mission 4) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-037",
+      "description": "FR-037 : couvert par WP04, WP09",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (1638f20e) : tests_offline_snapshot_keys.sql 135/135; WP09 approuv\u00e9 (b71e2a2a) : jest unit/kms, production-guard, integration/snapshot-keys 88/88 ; tests du FR : tests_offline_snapshot_keys.sql (cite FR-037) ; unit/kms, production-guard, integration/snapshot-keys (WP09)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-038",
+      "description": "FR-038 : couvert par WP08",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (c2ee1033, cycle 2) : tests_offline_rights.sql 188/188, tests_default_acl.sql 2/2, tests_execute_grants.sql 79/79 ; tests du FR : tests_offline_rights.sql, tests_offline_snapshots.sql (citent FR-038) ; tests_execute_grants.sql, tests_default_acl.sql",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-039",
+      "description": "FR-039 : couvert par WP08",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (c2ee1033, cycle 2) : tests_offline_rights.sql 188/188, tests_default_acl.sql 2/2, tests_execute_grants.sql 79/79 ; tests du FR : tests_offline_rights.sql, tests_offline_device_vendor.sql, tests_offline_policy.sql (citent FR-039)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-040",
+      "description": "FR-040 : couvert par WP08, WP10",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (c2ee1033, cycle 2) : tests_offline_rights.sql 188/188, tests_default_acl.sql 2/2, tests_execute_grants.sql 79/79; WP10 approuv\u00e9 (824c5fb1) : jest maintenance (purge.spec.ts, process-guard.spec.ts), architecture, device-secrets 139/139 ; tests du FR : tests_offline_rights.sql ; purge.spec.ts, process-guard.spec.ts (maintenance, par le contenu ; ne citent pas FR-040)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s ; au moins un test identifi\u00e9 par son contenu (ne cite pas le num\u00e9ro du FR)"
+    },
+    {
+      "criterion_id": "FR-041",
+      "description": "FR-041 : couvert par WP08",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (c2ee1033, cycle 2) : tests_offline_rights.sql 188/188, tests_default_acl.sql 2/2, tests_execute_grants.sql 79/79 ; tests du FR : tests_offline_rights.sql (cite FR-041)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Tests de bornage pr\u00e9sents (tests_offline_rights.sql) mais la lev\u00e9e doit \u00eatre consign\u00e9e dans POINTS_OUVERTS/ADR : faite par WP21 part C (ADR-141 \u00e0 147, OP-N92 \u00e0 N95), en relecture ; reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-042",
+      "description": "FR-042 : couvert par WP01",
+      "proof_type": "command",
+      "evidence": "npm run check -w @cashless/contracts (types TS et Dart \u00e0 jour) + \u00e9tape CI \u00ab Types du contrat r\u00e9g\u00e9n\u00e9r\u00e9s sans \u00e9cart \u00bb + compl\u00e9tude des routes dans end-to-end/offline-isolation.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Preuve par commande (pas un test nomm\u00e9) ; contrat de WP01 compl\u00e9t\u00e9 par WP21 part D (vendor_session_id, 969dd3b5) ; \u00e0 confirmer par la relecture de WP21 ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    },
+    {
+      "criterion_id": "FR-043",
+      "description": "FR-043 : couvert par WP13, WP14",
+      "proof_type": "automated_test",
+      "evidence": "WP13 approuv\u00e9 (42828a6d) : jest snapshots-signer (snapshot-signer.worker.spec.ts, sign-publish.spec.ts, draft-verifier.spec.ts); WP14 approuv\u00e9 (01dc40c6) : jest integration/offline/policy.spec.ts 19/19 ; tests du FR : policy.spec.ts (cite FR-043) ; journal-import.spec.ts, seq-waive.spec.ts, batches-intake.spec.ts (audit)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-04",
+      "notes": "Tous les lots approuv\u00e9s ; tests nomm\u00e9s"
+    },
+    {
+      "criterion_id": "FR-044",
+      "description": "FR-044 : couvert par WP21",
+      "proof_type": "automated_test",
+      "evidence": " ; tests du FR : offline-journey.spec.ts, offline-minimal.spec.ts, offline-concurrency.spec.ts (citent FR-044) ; WP21 : en relecture (non compt\u00e9)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-05",
+      "notes": "Reste WP21 (relecture) ; WP21 approuv\u00e9 au cycle 2 le 04/11/2026 (relecture distincte)."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucune fuite entre prestataires ou organisateurs sur les nouvelles op\u00e9rations (SC-011) : balayage d'isolation des routes de politique, snapshots, lots, import de journal, lev\u00e9e de trou et \u00e9tat de synchronisation",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- end-to-end/offline-isolation offline/policy-isolation",
+      "result": "confirmed_absent",
+      "evidence": "offline-isolation.spec.ts et policy-isolation.spec.ts (WP21 part B : 61/61 sur cashless_wp21b, 04/11/2026 ; 404 neutre corrig\u00e9 en part E, 48747024). \u00c0 confirmer apr\u00e8s relecture de WP21. ; rejou\u00e9 par l'orchestrateur le 05/11/2026 sur la lane u (base remise \u00e0 neuf, --runInBand) : 76/76 verts pour NI-001 \u00e0 NI-003."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun mot de passe de bracelet, cl\u00e9 priv\u00e9e, PIN ou empreinte de PIN en clair dans la base, les journaux, les r\u00e9ponses ou les snapshots (SC-007)",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- end-to-end/offline-secrets snapshots-content/secrets-sweep snapshots-content/secrets-envelope",
+      "result": "confirmed_absent",
+      "evidence": "offline-secrets.spec.ts (canari, WP21 part B), secrets-sweep.spec.ts et secrets-envelope.spec.ts (WP11/WP12 approuv\u00e9s). \u00c0 confirmer apr\u00e8s relecture de WP21. ; rejou\u00e9 par l'orchestrateur le 05/11/2026 sur la lane u (base remise \u00e0 neuf, --runInBand) : 76/76 verts pour NI-001 \u00e0 NI-003."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun faux (KMS, signataire, chiffreur d'entr\u00e9es, processeur d'op\u00e9rations, identit\u00e9, terminal) accept\u00e9 en configuration de production ; d\u00e9marrage refus\u00e9 (SC-008)",
+      "verification_method": "custom_command",
+      "verification_command": "npm test -w @cashless/api -- unit/production-guard unit/snapshots-content/crypto-production end-to-end/offline-production snapshots-signer/production-start",
+      "result": "confirmed_absent",
+      "evidence": "production-guard.spec.ts (RefusingEntryEncryptor, FakeOperationProcessor), crypto-production.spec.ts, offline-production.spec.ts, production-start.spec.ts ; WP21 part B (61/61, 04/11/2026). \u00c0 confirmer apr\u00e8s relecture de WP21. ; rejou\u00e9 par l'orchestrateur le 05/11/2026 sur la lane u (base remise \u00e0 neuf, --runInBand) : 76/76 verts pour NI-001 \u00e0 NI-003."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucun .sql g\u00e9n\u00e9r\u00e9 de packages/ledger-sql modifi\u00e9 \u00e0 la main, ni migrations 0001-0042, ni roles.sql, gen_golden.py, scenario_reference.json, sch\u00e9ma de r\u00e9f\u00e9rence (migrations de la mission : ajouts 0043 \u00e0 0057)",
+      "verification_method": "custom_command",
+      "verification_command": "git diff --stat main...kitty/mission-hors-ligne-snapshots-lots-01M645RN-lane-u -- packages/ledger-sql/schema_grand_livre_cashless.sql packages/ledger-sql/scenario_reference_test.sql packages/ledger-sql/gen_golden.py packages/ledger-sql/scenario_reference.json packages/ledger-sql/roles.sql 'packages/ledger-sql/migrations/00[0-3]*.sql' 'packages/ledger-sql/migrations/004[0-2]*.sql' ; python3 -I gen_tests.py puis cmp tests_grand_livre_cashless.sql",
+      "result": "confirmed_absent",
+      "evidence": "Ex\u00e9cut\u00e9e le 2026-11-05 : seul gen_tests.py modifi\u00e9 (g\u00e9n\u00e9rateur, retouches WP05 et WP08) ; tests_grand_livre_cashless.sql identique \u00e0 la sortie du g\u00e9n\u00e9rateur (cmp, 400 assertions)."
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Aucune d\u00e9pendance ajout\u00e9e",
+      "verification_method": "custom_command",
+      "verification_command": "git diff main...kitty/mission-hors-ligne-snapshots-lots-01M645RN-lane-u -- package-lock.json 'apps/*/package.json' 'packages/*/package.json' package.json",
+      "result": "confirmed_absent",
+      "evidence": "Ex\u00e9cut\u00e9e le 2026-11-05 : seuls les scripts start:maintenance, start:snapshot-signer, start:snapshot-content dans apps/api/package.json ; package-lock.json inchang\u00e9."
+    }
+  ]
+}

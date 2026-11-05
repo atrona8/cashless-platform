@@ -19,6 +19,7 @@ import { Injectable } from '@nestjs/common';
 import { ProblemException } from '../errors/problem';
 import type { FeeRule } from '../ledger/money';
 import type { Queryable } from '../ledger/ports/account-resolver';
+import type { ReferenceMemo } from '../ledger/ports/reference-memo';
 import type { ConfigQuery, ConfigResolver } from '../ledger/ports/config-resolver';
 import type {
   BreakageDestination,
@@ -31,7 +32,7 @@ import type { TxClient } from '../db/tenant-tx';
 import { FEE_CHANNEL, type PspMethod } from '../psp-configurations/psp-configurations.dto';
 import { CascadeService } from './cascade.service';
 
-interface EventRow {
+interface EventRow extends Record<string, unknown> {
   id: string;
   operator_id: string;
   organizer_id: string;
@@ -83,13 +84,16 @@ export class SqlConfigResolver implements ConfigResolver {
     const event = await this.event(client, query);
     // Requêtes l'une après l'autre : le client `pg` de la transaction n'en exécute qu'une à la fois (lancées
     // ensemble, elles déclenchent `DeprecationWarning`, retiré dans pg@9).
-    const platformId = await this.platformParty(client, query.ledgerId);
-    const contract = await this.contract(client, event);
-    const jurisdiction = await this.jurisdiction(client, event.jurisdiction_id);
+    const platformId = await this.platformParty(client, query.ledgerId, query.memo);
+    const contract = await this.contract(client, event, query.memo);
+    const jurisdiction = await this.jurisdiction(client, event.jurisdiction_id, query.memo);
     const rules = await this.rules(client, event, at);
-    const pitchFees = await this.pitchFees(client, event.id);
+    // Droits de place : lus à chaque appel (modifiables en cours d'événement) ; seul `PITCH_FEE` les consulte, et le
+    // contexte de lot hors ligne le dit (`skipPitchFees`) : la lecture est alors remplacée par un accès qui lève.
+    const pitchFees = query.skipPitchFees ? undefined : await this.pitchFees(client, event.id);
     const configVersionId = await this.configVersion(client, event.id, at);
-    const cascade = await this.cascade.resolveForEvent(client, event.id, at);
+    // La ligne `event` lue ci-dessus (même transaction) sert aussi à la cascade : une seule lecture de l'événement.
+    const cascade = await this.cascade.resolveForEvent(client, event.id, at, undefined, event);
 
     const of = (scope: string, beneficiary: string, basis: string) =>
       rules.filter(
@@ -119,13 +123,22 @@ export class SqlConfigResolver implements ConfigResolver {
       pspFeeBearer: cascade.psp_fee_bearer!.value as PspFeeBearer,
       operatorFees,
       breakageOrganizerBps: BigInt(contract.breakage_organizer_bps),
-      pitchFees,
+      ...(pitchFees ? { pitchFees } : {}),
       spendOrder: cascade.spend_order!.value as ResolvedConfig['spendOrder'],
       chargebackBearer: contract.chargeback_bearer,
       cashDiffBearer: contract.cash_diff_bearer,
       offlineLossBearer: contract.offline_loss_bearer,
       breakageDestination: jurisdiction.breakageDestination,
     } as ResolvedConfig;
+    if (!pitchFees)
+      Object.defineProperty(config, 'pitchFees', {
+        enumerable: true,
+        get: () => {
+          throw new Error(
+            'droits de place non lus (skipPitchFees) : lecture interdite hors PITCH_FEE',
+          );
+        },
+      });
     // Une règle qu'un constructeur lit alors qu'elle n'existe pas : erreur explicite, jamais un frais nul silencieux.
     lazyRule(
       config,
@@ -152,7 +165,7 @@ export class SqlConfigResolver implements ConfigResolver {
 
   private async event(client: Queryable, query: ConfigQuery): Promise<EventRow> {
     const { rows } = await client.query<EventRow>(
-      `SELECT e.id, e.operator_id, e.organizer_id, e.contract_id, e.jurisdiction_id
+      `SELECT e.*
          FROM ledger l JOIN event e ON l.scope_type = 'EVENT' AND e.id = l.scope_id
         WHERE l.id = $1 AND ($2::uuid IS NULL OR e.id = $2)`,
       [query.ledgerId, query.eventId ?? null],
@@ -166,7 +179,18 @@ export class SqlConfigResolver implements ConfigResolver {
   }
 
   /** Partie plateforme du grand livre : la titulaire de ses comptes de redevance. */
-  private async platformParty(client: Queryable, ledgerId: string): Promise<string> {
+  private platformParty(
+    client: Queryable,
+    ledgerId: string,
+    memo?: ReferenceMemo,
+  ): Promise<string> {
+    // Mémorisable : la titulaire du compte `PLT_REDEV` est posée à l'ouverture du grand livre ; aucun chemin (API,
+    // migration) ne modifie `account.owner_party_id`, et ce n'est pas un contrôle (aucun refus n'en dépend).
+    const load = () => this.readPlatformParty(client, ledgerId);
+    return memo ? memo.remember(`platform-party:${ledgerId}`, load) : load();
+  }
+
+  private async readPlatformParty(client: Queryable, ledgerId: string): Promise<string> {
     const { rows } = await client.query<{ owner_party_id: string }>(
       `SELECT owner_party_id FROM account WHERE ledger_id = $1 AND purpose = 'PLT_REDEV' AND owner_party_id IS NOT NULL LIMIT 1`,
       [ledgerId],
@@ -180,7 +204,16 @@ export class SqlConfigResolver implements ConfigResolver {
   }
 
   /** Contrat prestataire–organisateur rattaché à l'événement (la version à laquelle il est rattaché fait foi). */
-  private async contract(client: Queryable, event: EventRow) {
+  private contract(client: Queryable, event: EventRow, memo?: ReferenceMemo) {
+    // Mémorisable par identifiant : `contract` est immuable (déclencheur `contract_immutable`, migration 0007), une
+    // nouvelle version est une autre ligne ; le rattachement de l'événement (`contract_id`) est relu à chaque appel.
+    const load = () => this.readContract(client, event);
+    return event.contract_id && memo
+      ? memo.remember(`contract:${event.contract_id}`, load)
+      : load();
+  }
+
+  private async readContract(client: Queryable, event: EventRow) {
     const { rows } = await client.query<{
       breakage_organizer_bps: number;
       chargeback_bearer: LossBearer;
@@ -200,7 +233,18 @@ export class SqlConfigResolver implements ConfigResolver {
   }
 
   /** Destination de la casse et taux de taxe du profil : la taxe unique du profil, ou `VAT` s'il en porte plusieurs. */
-  private async jurisdiction(
+  private jurisdiction(
+    client: Queryable,
+    jurisdictionId: string,
+    memo?: ReferenceMemo,
+  ): Promise<{ breakageDestination: BreakageDestination; taxBps: bigint }> {
+    // Mémorisable par identifiant : `jurisdiction_profile` est immuable (déclencheur `jurisdiction_profile_immutable`,
+    // migration 0007) ; l'événement garde son `jurisdiction_id`, relu à chaque appel.
+    const load = () => this.readJurisdiction(client, jurisdictionId);
+    return memo ? memo.remember(`jurisdiction:${jurisdictionId}`, load) : load();
+  }
+
+  private async readJurisdiction(
     client: Queryable,
     jurisdictionId: string,
   ): Promise<{ breakageDestination: BreakageDestination; taxBps: bigint }> {

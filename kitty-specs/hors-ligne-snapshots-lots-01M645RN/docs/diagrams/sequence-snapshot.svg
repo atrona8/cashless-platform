@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2031" height="1892" viewBox="0 0 2031 1892">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="370.0" y="160" width="250" height="76" rx="12" ry="12" fill="#06B6D4" stroke="#0E7490" stroke-width="2"/>
+<polyline points="495.0,236 495.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="680.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="805.0,236 805.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="990.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1115.0,236 1115.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1300.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1425.0,236 1425.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="1735.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1704" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 797.0,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="797.0,290.72 777.6931836384118,301.2673618492925 777.6931836384118,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="381.0" y="253.72000000000003" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,366.72 487.0,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="487.0,366.72 467.6931836384118,377.2673618492925 467.6931836384118,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="257.2" y="329.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="489.0,442.71999999999997 193.0,442.71999999999997" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,442.71999999999997 212.3068163615882,432.1726381507075 212.3068163615882,453.26736184929246" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="293.6" y="405.71999999999997" width="92.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="488.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="191.0,594.72 797.0,594.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="797.0,594.72 777.6931836384118,605.2673618492925 777.6931836384118,584.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="412.2" y="557.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1109.0,670.72 813.0,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="813.0,670.72 832.3068163615882,660.1726381507076 832.3068163615882,681.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="861.6" y="633.72" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="965.0" y="716.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1109.0,822.72 503.0,822.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="503.0,822.72 522.3068163615882,812.1726381507076 522.3068163615882,833.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="711.8" y="785.72" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="501.0,898.72 1107.0,898.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1107.0,898.72 1087.6931836384117,909.2673618492925 1087.6931836384117,888.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="748.2" y="861.72" width="113.60000000000001" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1109.0,974.72 813.0,974.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="813.0,974.72 832.3068163615882,964.1726381507076 832.3068163615882,985.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="846.0" y="937.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="965.0" y="1020.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1109.0,1126.72 813.0,1126.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="813.0,1126.72 832.3068163615882,1116.1726381507076 832.3068163615882,1137.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="913.6" y="1089.72" width="92.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="655.0" y="1172.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1729.0,1278.72 1433.0,1278.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1433.0,1278.72 1452.3068163615883,1268.1726381507076 1452.3068163615883,1289.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1466.0" y="1241.72" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1419.0,1354.72 813.0,1354.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="813.0,1354.72 832.3068163615882,1344.1726381507076 832.3068163615882,1365.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1011.4" y="1317.72" width="207.20000000000002" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1431.0,1430.72 1727.0,1430.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1727.0,1430.72 1707.6931836384117,1441.2673618492925 1707.6931836384117,1420.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="1497.2" y="1393.72" width="165.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1585.0" y="1476.7199999999998" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1729.0,1582.7199999999998 1433.0,1582.7199999999998" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1433.0,1582.7199999999998 1452.3068163615883,1572.1726381507074 1452.3068163615883,1593.2673618492922" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1481.6" y="1545.7199999999998" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1419.0,1658.7199999999998 813.0,1658.7199999999998" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="813.0,1658.7199999999998 832.3068163615882,1648.1726381507074 832.3068163615882,1669.2673618492922" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1001.0" y="1621.7199999999998" width="228.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Production et lecture d’un snapshot</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Deux processus : l’un prépare, l’autre signe ; l’API publique ne détient aucun secret</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Snapshot-content</text>
+<text x="495.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">KMS simulé</text>
+<text x="805.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="1115.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Snapshot-signer</text>
+<text x="1425.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API publique</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="495.0" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire les changements</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="340.0" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Clé de version</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="340.0" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Clé K_v</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="220.0" y="520.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Chiffrer les mots de passe</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="495.0" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Brouillon prêt</text>
+<text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire le brouillon</text>
+<text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1115.0" y="748.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Recalculer l’empreinte</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="805.0" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Signer l’en-tête</text>
+<text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="805.0" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Signature</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="960.0" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire la clé publique</text>
+<text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="1115.0" y="1052.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Vérifier la signature</text>
+<text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
+<text x="960.0" y="1107.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Publier</text>
+<text x="34.0" y="1129.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
+<text x="805.0" y="1204.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Version = dernière + 1</text>
+<text x="34.0" y="1205.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
+<text x="1580.0" y="1259.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demander le snapshot</text>
+<text x="34.0" y="1281.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">14</text>
+<text x="1115.0" y="1335.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire son enveloppe</text>
+<text x="34.0" y="1357.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">15</text>
+<text x="1580.0" y="1411.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Version signée</text>
+<text x="34.0" y="1433.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">16</text>
+<text x="1735.0" y="1508.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Vérifier, appliquer</text>
+<text x="34.0" y="1509.7699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">17</text>
+<text x="1580.0" y="1563.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Accuser réception</text>
+<text x="34.0" y="1585.7699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">18</text>
+<text x="1115.0" y="1639.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Enregistrer l’accusé</text>
+<text x="34.0" y="1661.7699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">19</text>
+<text x="60" y="1749.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Un signataire par grand livre : un FULL ne retarde plus le DELTA d&#x27;un autre. Cadence : 60 s, 5 s après un blocage. Échec de signature : rien de publié.</text>
+</g>
+</svg>

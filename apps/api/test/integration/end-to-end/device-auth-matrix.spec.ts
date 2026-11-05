@@ -78,7 +78,14 @@ jest.setTimeout(180_000);
 
 const THREE_PROOFS = ['deviceMtls', 'deviceToken', 'deviceSignature'];
 /** Routes servies à un terminal suspendu (R-14 : configuration, battement de cœur). */
-const ALLOW_SUSPENDED = new Set(['GET /device/config', 'POST /device/heartbeat']);
+const ALLOW_SUSPENDED = new Set([
+  'GET /device/config',
+  'POST /device/heartbeat',
+  // Partie D de WP21 : état des séquences, lu par un terminal suspendu qui reprend sa synchronisation.
+  'GET /device/seq-status',
+]);
+/** Lots hors ligne (mission 7) : `allowSuspended`, servis après la garde, sans `200` d'essai. */
+const ALLOW_SUSPENDED_NO_OK = new Set(['POST /offline-batches', 'GET /offline-batches/{}']);
 const REFRESH_ROUTE = 'POST /device-tokens/refresh';
 
 /** Contrôleurs des cas de base (mission 4 et 5a). */
@@ -607,7 +614,9 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       const res = await call(route, t);
       const ok = ALLOW_SUSPENDED.has(route)
         ? res.status === 200
-        : res.status === 403 && res.body.code === 'DEVICE_SUSPENDED';
+        : ALLOW_SUSPENDED_NO_OK.has(route)
+          ? res.status !== 401 && res.status !== 403 && res.status < 500
+          : res.status === 403 && res.body.code === 'DEVICE_SUSPENDED';
       if (!ok) wrong.push(`${route} : ${res.status} ${String(res.body.code)}`);
     }
     const res = await refresh(publicServer(), t);

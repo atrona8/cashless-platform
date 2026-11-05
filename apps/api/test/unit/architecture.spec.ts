@@ -103,26 +103,50 @@ describe('architecture', () => {
     return seen;
   }
 
-  const ROOTS = {
+  const BASE_ROOTS = {
     public: 'processes/public.module.ts',
     'tag-keys': 'processes/tag-keys.module.ts',
     personalization: 'processes/personalization.module.ts',
     'tag-check': 'processes/tag-check.module.ts',
     'key-admin': 'processes/key-admin.module.ts',
+    maintenance: 'processes/maintenance.module.ts',
+    'snapshot-content': 'processes/snapshot-content.module.ts',
+    'snapshot-signer': 'processes/snapshot-signer.module.ts',
   } as const;
-  /** Droits de chaque processus sur le service de clés (tableau de §3.2 ; décision du porteur n° 6 pour la commande). */
-  const CAPABILITIES: Record<keyof typeof ROOTS, string[]> = {
+  // Processus des lots WP11 (snapshot-content) et WP13 (snapshot-signer) : leurs lots ajoutent leur
+  // racine ici ; tant que le fichier n'existe pas, la liste ne les attend pas.
+  const LATER_ROOTS = {
+    'snapshot-content': 'processes/snapshot-content.module.ts',
+    'snapshot-signer': 'processes/snapshot-signer.module.ts',
+  } as const;
+  type ProcessName = keyof typeof BASE_ROOTS | keyof typeof LATER_ROOTS;
+  const ROOTS = {
+    ...BASE_ROOTS,
+    ...Object.fromEntries(
+      Object.entries(LATER_ROOTS).filter(([, path]) => files.some((file) => file.path === path)),
+    ),
+  } as Record<ProcessName, string>;
+  const PROCESS_NAMES = Object.keys(ROOTS) as ProcessName[];
+  /**
+   * Droits de chaque processus sur le service de clés (tableau de §3.2 ; décision du porteur n° 6 pour la commande ;
+   * décision du 30/10 : `sign` au seul snapshot-signer, `key-admin` ne reçoit jamais `sign`).
+   */
+  const CAPABILITIES: Record<ProcessName, string[]> = {
     public: [],
     'tag-keys': ['decrypt'],
     personalization: ['mac', 'dataKey'],
     'tag-check': ['mac', 'decrypt'],
     'key-admin': ['keyAdmin'],
+    maintenance: [],
+    'snapshot-content': ['dataKey', 'decrypt'],
+    'snapshot-signer': ['sign'],
   };
   const PORT_TOKEN: Record<string, string> = {
     mac: 'MAC_PORT',
     dataKey: 'DATA_KEY_PORT',
     decrypt: 'DECRYPT_PORT',
     keyAdmin: 'KEY_ADMIN_PORT',
+    sign: 'SIGN_PORT',
   };
   const code = (text: string): string =>
     text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
@@ -135,25 +159,22 @@ describe('architecture', () => {
     expect(forbidden.filter((path) => seen.has(path))).toEqual([]);
     expect(
       [...seen].filter((path) =>
-        /KmsModule|MAC_PORT|DATA_KEY_PORT|DECRYPT_PORT|KEY_ADMIN_PORT/.test(
+        /KmsModule|MAC_PORT|DATA_KEY_PORT|DECRYPT_PORT|KEY_ADMIN_PORT|SIGN_PORT/.test(
           code(files.find((f) => f.path === path)!.text),
         ),
       ),
     ).toEqual([]);
   });
 
-  it.each(Object.keys(ROOTS) as Array<keyof typeof ROOTS>)(
-    'processus %s : demande exactement ses droits de clé',
-    (name) => {
-      const text = code(files.find((file) => file.path === ROOTS[name])!.text);
-      const requested = /KmsModule\.forCapabilities\(\[([^\]]*)\]\)/.exec(text)?.[1];
-      const list =
-        requested === undefined ? [] : [...requested.matchAll(/'([^']+)'/g)].map((m) => m[1]!);
-      expect(list.sort()).toEqual([...CAPABILITIES[name]].sort());
-    },
-  );
+  it.each(PROCESS_NAMES)('processus %s : demande exactement ses droits de clé', (name) => {
+    const text = code(files.find((file) => file.path === ROOTS[name])!.text);
+    const requested = /KmsModule\.forCapabilities\(\[([^\]]*)\]\)/.exec(text)?.[1];
+    const list =
+      requested === undefined ? [] : [...requested.matchAll(/'([^']+)'/g)].map((m) => m[1]!);
+    expect(list.sort()).toEqual([...CAPABILITIES[name]].sort());
+  });
 
-  it.each(Object.keys(ROOTS) as Array<keyof typeof ROOTS>)(
+  it.each(PROCESS_NAMES)(
     'processus %s : aucun fichier atteignable n’injecte un port de clé hors de ses droits',
     (name) => {
       const allowed = CAPABILITIES[name].map((capability) => PORT_TOKEN[capability]!);
@@ -173,10 +194,21 @@ describe('architecture', () => {
     const users = files
       .filter((file) => !file.path.startsWith('kms/') && /\bKEY_ADMIN_PORT\b/.test(code(file.text)))
       .map((file) => file.path);
-    for (const name of ['public', 'tag-keys', 'personalization', 'tag-check'] as const) {
+    for (const name of PROCESS_NAMES.filter((n) => n !== 'key-admin')) {
       const seen = reachable(ROOTS[name]);
       expect(users.filter((path) => seen.has(path))).toEqual([]);
     }
+  });
+
+  it('le droit de signer n’est atteignable que depuis snapshot-signer, jamais depuis key-admin', () => {
+    const users = files
+      .filter((file) => !file.path.startsWith('kms/') && /\bSIGN_PORT\b/.test(code(file.text)))
+      .map((file) => file.path);
+    for (const name of PROCESS_NAMES.filter((n) => n !== 'snapshot-signer')) {
+      const seen = reachable(ROOTS[name]);
+      expect(users.filter((path) => seen.has(path))).toEqual([]);
+    }
+    expect(CAPABILITIES['key-admin']).not.toContain('sign');
   });
 
   it('chaque processus des clés n’ouvre que le pool de son rôle, jamais celui de l’API ni de la plateforme', () => {
@@ -194,24 +226,79 @@ describe('architecture', () => {
     );
   });
 
+  // Mission hors-ligne-snapshots-lots, WP10 (OP-N75) : les purges des terminaux sortent de l'API publique.
+  it('processus maintenance : le pool de son rôle seul, jamais DbModule ni platform-tx', () => {
+    const text = code(files.find((file) => file.path === ROOTS.maintenance)!.text);
+    expect(text).toContain('MaintenanceDbModule');
+    expect(text).not.toMatch(/\bDbModule\b(?!\.)/);
+    expect(text).not.toMatch(/\b(AuditModule|KmsModule)\b/);
+    const seen = reachable(ROOTS.maintenance);
+    expect([...seen].filter((path) => path.endsWith('/platform-tx.ts'))).toEqual([]);
+    expect(seen.has('db/db.module.ts')).toBe(false);
+    expect(seen.has('device-identity/device-maintenance.ts')).toBe(true);
+  });
+
+  it('les purges des terminaux (device-maintenance.ts) ne sont pas atteignables depuis l’API publique', () => {
+    expect(reachable(ROOTS.public).has('device-identity/device-maintenance.ts')).toBe(false);
+  });
+
+  it('maintenance-db.module.ts ne nomme ni le pool de la plateforme ni la chaîne de l’API', () => {
+    const module = code(files.find((file) => file.path === 'db/maintenance-db.module.ts')!.text);
+    expect(module).toContain('PG_POOL');
+    expect(module).toContain('maintenanceDatabaseUrl');
+    expect(module).not.toMatch(
+      /PG_PLATFORM_POOL|platform-tx|platformDatabaseUrl|config\.databaseUrl/,
+    );
+  });
+
+  // Exemption étroite (décision du porteur, 04/11/2026 ; ADR-150, OP-N97) : le service des snapshots met en forme
+  // l'enveloppe `pwd_pack_enc` (chiffrée sous K_v) que le contrat sert au terminal. Ce nom, et lui seul, est permis
+  // dans ce fichier, et nulle part ailleurs. Liste figée : l'agrandir exige une décision du porteur et un ADR.
+  const SECRET_NAME_EXEMPTIONS: ReadonlyArray<{ file: string; name: string }> = [
+    { file: 'offline/snapshots/offline-snapshots.service.ts', name: 'pwd_pack_enc' },
+  ];
+  const secretNames = (path: string, text: string): boolean => {
+    const allowed = SECRET_NAME_EXEMPTIONS.filter((e) => e.file === path).map((e) => e.name);
+    const stripped = allowed.reduce((t, name) => t.split(name).join(''), text);
+    return (
+      /pwd_pack_enc|pwd_pack_dek_id|encrypted_dek|offline_snapshot_rows/.test(stripped) ||
+      /SELECT\s+(m\.)?\*\s+FROM\s+media\b/i.test(stripped)
+    );
+  };
+
   it('l’API publique ne fait jamais SELECT * sur media ni ne nomme une colonne secrète', () => {
     const seen = reachable(ROOTS.public);
-    const offenders = [...seen].filter((path) => {
-      const text = code(files.find((file) => file.path === path)!.text);
-      return (
-        /pwd_pack_enc|pwd_pack_dek_id|encrypted_dek|offline_snapshot_rows/.test(text) ||
-        /SELECT\s+(m\.)?\*\s+FROM\s+media\b/i.test(text)
-      );
-    });
+    const offenders = [...seen].filter((path) =>
+      secretNames(path, code(files.find((file) => file.path === path)!.text)),
+    );
     expect(offenders).toEqual([]);
+  });
+
+  it('exemption des noms secrets : liste figée, un seul nom dans un seul fichier', () => {
+    expect(SECRET_NAME_EXEMPTIONS).toEqual([
+      { file: 'offline/snapshots/offline-snapshots.service.ts', name: 'pwd_pack_enc' },
+    ]);
+    expect(files.some((f) => f.path === SECRET_NAME_EXEMPTIONS[0]!.file)).toBe(true);
+  });
+
+  it('exemption des noms secrets (contrôle) : le même nom ailleurs, ou un autre nom, est attrapé', () => {
+    const exempt = SECRET_NAME_EXEMPTIONS[0]!.file;
+    expect(secretNames(exempt, 'const a = e.pwd_pack_enc;')).toBe(false);
+    expect(secretNames('offline/other.service.ts', 'const a = e.pwd_pack_enc;')).toBe(true);
+    for (const name of ['pwd_pack_dek_id', 'encrypted_dek', 'offline_snapshot_rows'])
+      expect(secretNames(exempt, `x.${name}`)).toBe(true);
+    expect(secretNames(exempt, 'SELECT * FROM media')).toBe(true);
   });
 
   it('chaque point d’entrée passe par le démarrage commun, qui applique la garde de production', () => {
     const mains = files.filter((file) => /^main(\.[a-z-]+)?\.ts$/.test(file.path));
     expect(mains.map((file) => file.path).sort()).toEqual([
       'main.key-admin.ts',
+      'main.maintenance.ts',
       'main.personalization.ts',
       'main.psp-poller.ts',
+      'main.snapshot-content.ts',
+      'main.snapshot-signer.ts',
       'main.tag-check.ts',
       'main.tag-keys.ts',
       'main.ts',

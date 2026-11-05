@@ -23,7 +23,7 @@ class OfflineBatch {
   final OfflineBatchHeader header;
   final List<OfflineOperation> operations;
 
-  /// ECDSA P-256 (clé Keystore) sur JCS(header).
+  /// Signature ECDSA P-256 / SHA-256 (clé Keystore) de `JCS(header)`, **DER**, base64 standard.
   final String signature;
 
   Map<String, Object?> toJson() => _$OfflineBatchToJson(this);

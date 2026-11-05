@@ -88,7 +88,9 @@ export const STEPS: ScenarioStep[] = [
   step(19, sale('W05', 'FOOD', 5000n)),
   step(20, sale('W06', 'BAR', 4000n)),
   step(21, sale('W06', 'FOOD', 1000n)),
-  step(22, sale('W04', 'FOOD', 9000n)), // hors ligne : la part non couverte va au compte d'attente
+  // Hors ligne : la part non couverte va au compte d'attente. `coveredCap` (WP19) = la part que la table de conflit
+  // laisse prélever (le solde de W04, 6 000) : mêmes lignes que sans plafond.
+  step(22, (fx) => ({ ...(sale('W04', 'FOOD', 9000n)(fx) as object), coveredCap: 6000n })),
   step(23, () => ({}), { media: 'W05' }), // refund_deposit, recrédité sur le portefeuille
   step(24, () => ({ cashDesk: 'C1', counted: 36_800n, expected: 37_000n }), {
     statusBefore: ['CLOSING'],

@@ -38,7 +38,12 @@ import type { DeviceTokenClaims } from '../device-tokens/device-token.service';
 import { p256Thumbprint } from '../device-tokens/device-token.service';
 import { ProblemException } from '../errors/problem';
 import { requestIdOf } from '../http/request-id.middleware';
-import type { DeviceClaims, DeviceDirectory, DeviceIdentityPort } from './device-identity.port';
+import type {
+  DeviceClaims,
+  DeviceDirectory,
+  DeviceIdentityPort,
+  DeviceRecord,
+} from './device-identity.port';
 import type { NonceStore } from './nonce-store';
 import {
   authorityAllowed,
@@ -64,6 +69,13 @@ export interface RealDeviceIdentityDeps {
 
 /** Étape de contracts/device-authentication.md où la requête est refusée (journal seulement). */
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | '6 bis' | 7;
+
+interface Proofs {
+  claims: DeviceTokenClaims;
+  device: DeviceRecord;
+  publicKey: KeyObject;
+  revoked: boolean;
+}
 
 const sameBytes = (a: Buffer, b: Buffer): boolean => a.length === b.length && timingSafeEqual(a, b);
 
@@ -111,32 +123,36 @@ export class RealDeviceIdentity implements DeviceIdentityPort {
     this.now = deps.now ?? (() => new Date());
   }
 
-  async identify(req: Request): Promise<DeviceClaims | null> {
+  /** Étapes 1 à 4, sans le corps : filtre préalable à sa lecture (rien n'est écrit ni journalisé). */
+  async preAuthenticate(req: Request): Promise<boolean> {
+    return (await this.proofs(req, true)) !== null;
+  }
+
+  /** Étapes 1 à 4 ; `quiet` : refus sans journal (filtre préalable, la garde refera et journalisera). */
+  private async proofs(req: Request, quiet: boolean): Promise<Proofs | null> {
+    const refused = (step: Step, reason: string, deviceId?: string): null =>
+      quiet ? null : this.refused(req, step, reason, deviceId);
     // 1. Certificat client de la connexion.
     const peer = peerCertificate(req, this.now());
-    if ('refused' in peer) return this.refused(req, 1, peer.refused);
+    if ('refused' in peer) return refused(1, peer.refused);
     const certSha256 = peer.sha256;
 
     // 2. Jeton d'appareil.
     const bearer = BEARER.exec(req.header('authorization') ?? '');
-    if (!bearer) return this.refused(req, 2, 'jeton d’appareil absent ou mal formé');
+    if (!bearer) return refused(2, 'jeton d’appareil absent ou mal formé');
     let claims: DeviceTokenClaims;
     try {
       claims = await this.deps.tokens.verify(bearer[1]!);
     } catch (error) {
       const cause = (error as { cause?: unknown }).cause;
-      return this.refused(
-        req,
-        2,
-        `jeton refusé (${cause instanceof Error ? cause.name : 'inconnu'})`,
-      );
+      return refused(2, `jeton refusé (${cause instanceof Error ? cause.name : 'inconnu'})`);
     }
     if (
       !UUID.test(claims.deviceId) ||
       !UUID.test(claims.operatorIdClaim) ||
       !UUID.test(claims.familyId)
     )
-      return this.refused(req, 2, 'jeton : identifiants mal formés', claims.deviceId);
+      return refused(2, 'jeton : identifiants mal formés', claims.deviceId);
 
     // 3. Terminal relu en base sous le prestataire annoncé, et famille de jetons.
     const found = await this.deps.directory.findForAuthentication(
@@ -144,35 +160,37 @@ export class RealDeviceIdentity implements DeviceIdentityPort {
       claims.deviceId.toLowerCase(),
       claims.familyId.toLowerCase(),
     );
-    if (!found)
-      return this.refused(req, 3, 'terminal inconnu du prestataire annoncé', claims.deviceId);
+    if (!found) return refused(3, 'terminal inconnu du prestataire annoncé', claims.deviceId);
     const { device } = found;
     // Famille révoquée : refus, sauf pour un terminal `REVOKED` (révoquée avec lui) qui doit d'abord
     // prouver qu'il est bien ce terminal (étapes 4 à 6) avant d'apprendre sa révocation (6 bis).
     const revoked = device.status === 'REVOKED';
     if (!found.familyActive && !revoked)
-      return this.refused(
-        req,
-        3,
-        'famille de jetons révoquée ou sans jeton vivant',
-        claims.deviceId,
-      );
+      return refused(3, 'famille de jetons révoquée ou sans jeton vivant', claims.deviceId);
     if (!device.publicKey || !device.certSha256)
-      return this.refused(req, 3, 'terminal sans clé ni certificat enrôlés', claims.deviceId);
+      return refused(3, 'terminal sans clé ni certificat enrôlés', claims.deviceId);
 
     // 4. Certificat et jeton liés à CE terminal.
     if (!sameBytes(device.certSha256, certSha256))
-      return this.refused(req, 4, 'certificat d’un autre terminal', claims.deviceId);
+      return refused(4, 'certificat d’un autre terminal', claims.deviceId);
     let publicKey: KeyObject;
     let jkt: string;
     try {
       publicKey = createPublicKey({ key: device.publicKey, format: 'der', type: 'spki' });
       jkt = await p256Thumbprint(device.publicKey);
     } catch {
-      return this.refused(req, 4, 'clé de signature enregistrée illisible', claims.deviceId);
+      return refused(4, 'clé de signature enregistrée illisible', claims.deviceId);
     }
     if (!sameBytes(Buffer.from(jkt), Buffer.from(claims.jkt)))
-      return this.refused(req, 4, 'jeton lié à une autre clé (cnf.jkt)', claims.deviceId);
+      return refused(4, 'jeton lié à une autre clé (cnf.jkt)', claims.deviceId);
+
+    return { claims, device, publicKey, revoked };
+  }
+
+  async identify(req: Request): Promise<DeviceClaims | null> {
+    const proofs = await this.proofs(req, false);
+    if (!proofs) return null;
+    const { device, publicKey, revoked } = proofs;
 
     // 5. Corps reçu (et parties couvertes de la requête). 6. Signature.
     const verified = this.signatureStep(

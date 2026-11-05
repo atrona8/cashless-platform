@@ -10,5 +10,5 @@ fi
 cd "$ROOT/packages/ledger-sql"
 suites=(tests_grand_livre_cashless.sql scenario_reference_test.sql)
 shopt -s nullglob
-suites+=(tests/*.sql)
+suites+=(tests/[!_]*.sql)
 pg_prove -d "${PGDATABASE:-cashless_test}" "${suites[@]}"

@@ -7,7 +7,18 @@
 // référence (HMAC d'une graine fixe), de sorte qu'une clé créée par la commande d'administration est utilisable par la
 // personnalisation, et qu'une clé de données ouverte par l'une se rouvre dans l'autre. La graine est dans le code :
 // c'est précisément ce qui en fait un faux.
-import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomUUID } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createECDH,
+  createHmac,
+  createPrivateKey,
+  createPublicKey,
+  randomBytes,
+  randomUUID,
+  sign as cryptoSign,
+  type KeyObject,
+} from 'node:crypto';
 import {
   KmsKeyError,
   KmsUnavailableError,
@@ -16,13 +27,17 @@ import {
   type KeyAdminPort,
   type KmsKeyKind,
   type MacPort,
+  type SignPort,
 } from './kms.ports';
 
 const SEED = Buffer.from('cashless-fake-kms-v1 : graine de test, sans valeur');
 const PREFIX: Record<KmsKeyKind, string> = {
   HMAC_256: 'fake-kms:hmac:',
   SYMMETRIC_DEFAULT: 'fake-kms:wrap:',
+  ECC_NIST_P256: 'fake-kms:ecc:',
 };
+/** Ordre du groupe de la courbe P-256 : le scalaire privé doit être dans [1, n-1]. */
+const P256_ORDER = BigInt('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
 
 /** Référence dont la clé de dérivation est celle du kit (`00 01 … 1f`) : rejoue `vecteurs_test_bracelet.py`. */
 export const KIT_VECTOR_HMAC_KEY_REF = 'fake-kms:hmac:kit-vector';
@@ -34,9 +49,11 @@ export type KmsOperation =
   | 'generateDataKey'
   | 'decrypt'
   | 'createKey'
-  | 'disableKey';
+  | 'disableKey'
+  | 'sign'
+  | 'publicKey';
 
-export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort {
+export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort, SignPort {
   /** Marqueur lu par la garde de production. */
   readonly isFake = true;
   readonly calls: Record<KmsOperation, number> = {
@@ -45,6 +62,8 @@ export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort 
     decrypt: 0,
     createKey: 0,
     disableKey: 0,
+    sign: 0,
+    publicKey: 0,
   };
   private readonly failures = new Map<KmsOperation, number>();
   private readonly disabled = new Set<string>();
@@ -105,6 +124,19 @@ export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort 
     }
   }
 
+  /** Signature ECDSA P-256 / SHA-256 au format DER (non déterministe, comme `kms:Sign`). */
+  async sign(kmsKeyRef: string, message: Uint8Array): Promise<Buffer> {
+    this.enter('sign');
+    const key = this.signingKey(kmsKeyRef);
+    return cryptoSign('sha256', message, { key, dsaEncoding: 'der' });
+  }
+
+  /** Clé publique SPKI DER (91 octets), identique d'une instance à l'autre pour une même référence. */
+  async publicKey(kmsKeyRef: string): Promise<Buffer> {
+    this.enter('publicKey');
+    return createPublicKey(this.signingKey(kmsKeyRef)).export({ type: 'spki', format: 'der' });
+  }
+
   async createKey(kind: KmsKeyKind): Promise<string> {
     this.enter('createKey');
     return `${PREFIX[kind]}${randomUUID()}`;
@@ -123,6 +155,37 @@ export class FakeKms implements MacPort, DataKeyPort, DecryptPort, KeyAdminPort 
     if (remaining > 0) {
       this.failures.set(operation, remaining - 1);
       throw new KmsUnavailableError(operation);
+    }
+  }
+
+  /**
+   * Clé P-256 dérivée de la référence (HMAC de la graine, compteur si le scalaire sort de [1, n-1]). Le scalaire
+   * et le JWK ne quittent pas cette méthode : tampons mis à zéro, rien n'est journalisé.
+   */
+  private signingKey(ref: string): KeyObject {
+    if (!ref.startsWith(PREFIX.ECC_NIST_P256))
+      throw new KmsKeyError('Référence de clé inconnue ou d’un autre type (ECC_NIST_P256 attendu)');
+    if (this.disabled.has(ref)) throw new KmsKeyError('Clé désactivée');
+    for (let counter = 0; ; counter += 1) {
+      const scalar = createHmac('sha256', SEED).update(`${ref}#${counter}`).digest();
+      try {
+        const value = BigInt(`0x${scalar.toString('hex')}`);
+        if (value < 1n || value >= P256_ORDER) continue;
+        // Le point public se calcule depuis le scalaire par ECDH (aucune bibliothèque de plus).
+        const ecdh = createECDH('prime256v1');
+        ecdh.setPrivateKey(scalar);
+        const point = ecdh.getPublicKey();
+        const jwk = {
+          kty: 'EC',
+          crv: 'P-256',
+          d: scalar.toString('base64url'),
+          x: point.subarray(1, 33).toString('base64url'),
+          y: point.subarray(33, 65).toString('base64url'),
+        };
+        return createPrivateKey({ key: jwk, format: 'jwk' });
+      } finally {
+        scalar.fill(0);
+      }
     }
   }
 

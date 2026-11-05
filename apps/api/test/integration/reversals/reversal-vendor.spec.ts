@@ -215,7 +215,7 @@ describe('reversePayment : le vendeur de la vente (WP12)', () => {
         sql: 'UPDATE device SET app_version = app_version WHERE id = $1',
         params: [term.t.deviceId],
       },
-      { role: 'cashless_app', statement: 'FOR UPDATE OF d' },
+      { role: 'cashless_app', statement: "lock_device($1, 'UPDATE')" },
       () => rw.reverse(term, sale.id),
     );
     expect(res.status).toBe(201);
@@ -229,7 +229,7 @@ describe('reversePayment : le vendeur de la vente (WP12)', () => {
         sql: `UPDATE device SET status = 'SUSPENDED' WHERE id = $1`,
         params: [term.t.deviceId],
       },
-      { role: 'cashless_app', statement: 'FOR UPDATE OF d' },
+      { role: 'cashless_app', statement: "lock_device($1, 'UPDATE')" },
       () => rw.reverse(term, sale.id),
     );
     expect(res.status).toBeGreaterThanOrEqual(400);

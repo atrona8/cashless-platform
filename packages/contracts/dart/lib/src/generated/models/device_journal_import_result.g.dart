@@ -10,8 +10,9 @@ DeviceJournalImportResult _$DeviceJournalImportResultFromJson(
   Map<String, dynamic> json,
 ) => DeviceJournalImportResult(
   deviceId: json['device_id'] as String,
-  results: (json['results'] as List<dynamic>)
-      .map((e) => OfflineBatchResult.fromJson(e as Map<String, dynamic>))
+  status: $enumDecode(_$DeviceJournalImportResultStatusEnumMap, json['status']),
+  results: (json['results'] as List<dynamic>?)
+      ?.map((e) => OfflineBatchResult.fromJson(e as Map<String, dynamic>))
       .toList(),
 );
 
@@ -19,5 +20,12 @@ Map<String, dynamic> _$DeviceJournalImportResultToJson(
   DeviceJournalImportResult instance,
 ) => <String, dynamic>{
   'device_id': instance.deviceId,
+  'status': instance.status,
   'results': instance.results,
+};
+
+const _$DeviceJournalImportResultStatusEnumMap = {
+  DeviceJournalImportResultStatus.processing: 'PROCESSING',
+  DeviceJournalImportResultStatus.applied: 'APPLIED',
+  DeviceJournalImportResultStatus.failed: 'FAILED',
 };

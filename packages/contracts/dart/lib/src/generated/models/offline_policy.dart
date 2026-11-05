@@ -36,10 +36,17 @@ class OfflinePolicy {
   ///
   @JsonKey(name: 'max_snapshot_age_seconds')
   final int maxSnapshotAgeSeconds;
+
+  /// Toujours `false` : aucune recharge en espèces hors ligne (décision du porteur, R-02). Le type reste.
+  /// `boolean` tant que `DeviceConfigService` (lot WP07) n'écrit pas le littéral `false` : un type littéral.
+  /// casserait `typecheck` de l'API, hors de ce lot.
+  ///
   @JsonKey(name: 'cash_topup_offline')
   final bool cashTopupOffline;
 
-  /// Vrai si le plafond prestataire a réduit une valeur demandée.
+  /// Vrai si le plafond prestataire a réduit l'un des trois montants (`max_per_sale`,.
+  /// `max_per_media_per_device`, `max_total_per_device`) ; ne concerne aucune autre valeur.
+  ///
   final bool capped;
 
   Map<String, Object?> toJson() => _$OfflinePolicyToJson(this);

@@ -10,8 +10,17 @@ import { requestDevice, type DeviceContext } from '../device-identity/device-ide
 import { ProblemException } from '../errors/problem';
 
 const DEVICE_KEY = /^(.+):([0-9]{4,})$/;
-/** Plus grand `seq` du registre (`bigint` de la base) : au-delà, `record_device_seq` lèverait `22003` (500). */
-export const MAX_DEVICE_SEQ = 9223372036854775807n;
+/**
+ * Plus grand `seq` accepté : 2^53 - 1 (R-14). JCS ne représente pas exactement un entier plus grand, et
+ * l'empreinte chaînée d'un numéro arrondi serait fausse ; la base (`bigint`) n'est donc jamais atteinte.
+ */
+export const MAX_DEVICE_SEQ = 2n ** 53n - 1n;
+
+/** Clé `<serial>:<seq>`, `seq` en décimal complété à gauche de zéros jusqu'à 4 chiffres, jamais tronqué. */
+export function deviceKey(serial: string, seq: bigint): string {
+  if (seq < 1n || seq > MAX_DEVICE_SEQ) throw new Error('deviceKey : seq hors de [1, 2^53 - 1]');
+  return `${serial}:${seq.toString().padStart(4, '0')}`;
+}
 
 /** Portée de la clé d'une route de terminal (même forme que `counterScope`). */
 export const deviceScope = (req: Request): string => `device:${requestDevice(req).deviceId}:`;

@@ -19,7 +19,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N13 | Algorithme de signature des snapshots | Non | Non | Agent (vérification technique) |
 | OP-N36 | Capture différée dans la cible V2 (reporté au cadrage V2) | Non | Non | Porteur du projet, avec le premier partenaire de caisse |
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
-| OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 7 (hors ligne), après OP-N11 (confirmé par le porteur le 15/10/2026) |
+| OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 12b (déplacée de la mission 7 le 29/10/2026, ADR-138), après OP-N11 |
 | OP-N42 | Identité du terminal — **levé** le 21/10/2026 par la mission 5a (jeton lié, mTLS et signature de chaque requête, ADR-107 ; `device-auth-matrix.spec.ts`, `production-guard.spec.ts`) | Non | Non | — |
 | OP-N43 | Identité du festivalier : faux seulement (routes de la mission 6 derrière le faux : `initiatePspTopup`, `getPspTopup`, `cancelPspTopup`) | Non | **Oui** | Mission 10 (app festivalier) |
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` — **levé** le 21/10/2026 par la mission 5a (droits rôle par rôle, `tests_execute_grants.sql`) | Non | Non | — |
@@ -35,8 +35,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N54 | Empreinte de requête sans clé au registre d'idempotence — **levé** le 21/10/2026 par la mission 5a (HMAC `IDEMPOTENCY_HMAC_KEY`, ADR-99 ; `request-hash.spec.ts`, `personalization.spec.ts`) ; consigne de déploiement à appliquer (purge des lignes antérieures) | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N55 | `replace_media` ne fait pas suivre les espèces dues au bracelet neuf (ADR-100) | Non | Non | Mission 9 |
 | OP-N56 | Décision d'une demande d'approbation : la base ne vérifie pas l'identité de la personne qui décide (limite résiduelle d'ADR-94) | Non | Non (limite acceptée, ADR-94) | Mission 11 (back-office), avec le serveur d'identité réel |
-| OP-N57 | `offline_snapshot` : une version très grande plantée par la connexion de l'API bloque les snapshots suivants du grand livre (déni de service hors ligne) ; limite du kit, antérieure à la mission 4 | Non | **Oui** | Mission 7 (hors ligne) |
-| OP-N58 | `offline_policy_history` : trace des politiques hors ligne écrite aux droits de l'appelant, donc falsifiable par la connexion de l'API (et version plantée en avance : déni de service sur la modification suivante) ; limite du kit, antérieure à la mission 4 | Non | **Oui** (décision du porteur du 15/10/2026) | Mission 7 (hors ligne) |
+| OP-N57 | `offline_snapshot` : une version très grande plantée par la connexion de l'API bloquait les snapshots suivants du grand livre — **levé** le 04/11/2026 par la mission 7 (migration `0044_offline_snapshots.sql`, `publish_offline_snapshot` calcule la version ; `post-roles.sql` ; `tests_offline_snapshots.sql`, `tests_offline_rights.sql`, `tests_definer_trigger_writers.sql` §3) | Non | Non | — |
+| OP-N58 | `offline_policy_history` : trace des politiques hors ligne falsifiable — **levé** le 04/11/2026 par la mission 7 (migration `0043_offline_policy.sql`, `log_offline_policy` en SECURITY DEFINER, écritures par `set_offline_policy` et `clear_offline_policy` ; `tests_offline_policy.sql`, `tests_definer_trigger_writers.sql` §3 inversé, `tests_offline_rights.sql`) | Non | Non | — |
 | OP-N59 | Fonctions SECURITY DEFINER sans `pg_temp` — **levé** le 21/10/2026 par la mission 5a (migration 0021 et `TEMPORARY` retiré ; `tests_definer_search_path.sql`, `tests_device_rights.sql` §5, `tests_definer_trigger_writers.sql` §4 à 0) | Non | Non | — |
 | OP-N60 | `cashless_app` écrit directement ce que des fonctions contrôlent : `INSERT` et `UPDATE` sur toutes les colonnes de `media_batch` (lot créé directement `ACTIVE` ou `CLOSED`, clôture sans `close_batch`, quantité, index de clé), `UPDATE (status)` de `media` sans motif ; antérieur au lot 20 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-97) | Mission 11 (back-office) |
 | OP-N61 | Traitements par tranches (NFR-008) : clôture, rattrapage du préchargement et rechiffrement non prouvés sur un lot de 5 000 bracelets (ADR-98) | Non | **Oui** (preuve attendue de la recette, avant la production) | Mission 13 (recette V1), décision du porteur du 15/10/2026 |
@@ -46,15 +46,15 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N66 | Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (> 5 s avec ~100 000 bracelets) ; antérieur à la mission 5a | Non | À évaluer | Porteur du projet (point ouvert du 19/10/2026, hors mission 5a) |
 | OP-N67 | Attestation Android : `attestationApplicationId` lu dans la liste logicielle de Key Attestation (seul champ ; écart accepté au plan, ADR-110) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
-| OP-N68 | Une fonction créée à la main, hors de `migrate.ts`, reste exécutable par `PUBLIC` jusqu'au prochain rejeu de `post-roles.sql` (ADR-111) | Non | À confirmer par le porteur (limite acceptée le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
-| OP-N69 | `cashless_app` modifie directement quatre colonnes de `device` (neuf jusqu'au 26/10/2026) : le plancher de numérotation (`next_seq_floor`), la dernière présence, le nom de station et la version de snapshot ; affectation et mode retirés par la mission 5b (WP07) ; antérieur à la mission 5a (ADR-112) | Non | À confirmer par le porteur (consigné le 20/10/2026) | Mission 7 (hors ligne), décision du porteur du 20/10/2026 |
+| OP-N68 | Fonction créée à la main, hors de `migrate.ts`, exécutable par `PUBLIC` — **levé** le 04/11/2026 par la mission 7 (`post-roles.sql` §8a : droit par défaut global, ADR-111 ; `tests_execute_grants.sql` §4 inversé, `migrate-rights.spec.ts`) | Non | Non | — |
+| OP-N69 | `cashless_app` modifiait directement des colonnes de `device` — **levé** le 04/11/2026 par la mission 7 (migration `0048_offline_device_vendor.sql` et `post-roles.sql` : liste des colonnes modifiables VIDE, écritures par fonctions ; ADR-112 ; `tests_device_rights.sql` §1) | Non | Non | — |
 | OP-N70 | Suites de la mission 4 sous le faux d'identité du terminal — **levé** le 21/10/2026 par WP18 de la mission 5a (chaque route de terminal en HTTPS réel, test de couverture : `device-auth-matrix.spec.ts`) | Non | Non | — |
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
-| OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 7 (hors ligne), avec OP-N41 : décision du porteur du 21/10/2026 |
+| OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 12b, avec OP-N41 (déplacée de la mission 7 le 29/10/2026, ADR-138) |
 | OP-N74 | Enrôlement sur un code lié à un événement clos ou à un point de vente supprimé — **levé** le 26/10/2026 par la mission 5b (migration `0035_enrollment_event_state.sql` : `create_device_enrollment_code` et `enroll_device` refusent `CLOSED` pour tout mode et, dès `CLOSING`, `CATALOG_POS`/`KEYPAD_TPE`, et un point de vente absent de l'événement du code ; `tests_enrollment_event_state.sql`, ADR-120) | Non | Non | — |
 | OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
-| OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` (droit plus large que le plan, borné par test ; ADR-114) | Non | Non (limite acceptée par le porteur le 20/10/2026) | Mission 7 (hors ligne), rôle de maintenance dédié : décision du porteur du 21/10/2026 |
+| OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` — **levé** le 04/11/2026 par la mission 7 (rôle `cashless_maint` et processus `maintenance`, `post-roles.sql` §8g ; ADR-114 ; `tests_device_purge_window.sql`, `tests_execute_grants.sql`) | Non | Non | — |
 | OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET` depuis le 26/10) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
 | OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
 | OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
@@ -67,6 +67,17 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N86 | Droits de `cashless_app` plus larges que nécessaire : `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les recharges et notifications de tous les prestataires ; le `psp-poller` tourne sous `cashless_app` sans rôle dédié ; INSERT direct sur `anomaly` gardé (5 sites de la mission 6) | Non | Non (limite connue, bornée par tests) | Mission 13 (recette V1) : rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` au profit d'une fonction de la base ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N87 | `posting_cash_desk_guard` (0036) lit `cash_desk` sous RLS forcée : la garde « aucune espèce sans session » ne vaut que si le propriétaire de la fonction contourne la RLS ; sinon elle laisse passer sans bruit | Non | Non (dépend du déploiement, borné par un test) | Mission 13 (déploiement) : rôle propriétaire contrôlé, ou garde qui refuse si la recherche est impossible ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N88 | Soldes lus sans verrou avant l'écriture : `CHARGEBACK` verrouille le solde payé en détournant `wallet_topup_headroom` (correctif de la PR #8) ; `PURCHASE` (mission 5b) lit encore les soldes promo et payé sans verrou | Non | Non (aucun argent créé : la base refuse le découvert ; refus à tort sous concurrence) | Mission 13 : fonction SQL dédiée qui verrouille les comptes de l'écriture dans l'ordre des identifiants avant la lecture, utilisée par `CHARGEBACK` et `PURCHASE` ; décision du porteur du 29/10/2026 |
+| OP-N89 | Signature des snapshots hors ligne et clés de contenu par un faux KMS (`SignPort`, `DataKeyPort` simulés) : aucun snapshot servi en production avant la mission 12b (plan de la mission 7, ADR-138) | Non | **Oui** (démarrage refusé en production) | Mission 12b |
+| OP-N90 | Rejet réessayable d'un lot (4e `CL007`) : un numéro sans résultat final admis à la clôture du lot sur une trace `offline_batch_retry` écrite par la base (écart à l'invariant I2, décision du porteur du 30/10/2026, ADR-139) | Non | Non (alerte à 24 h) | — (écart permanent, revu en mission 13) |
+| OP-N91 | Droits ajoutés au contrat de la mission 7 : `cashless_snapsign` exécute `discard_offline_snapshot_draft` et `mark_offline_retry_alerted` ; `cashless_snapcontent` jette ses brouillons ; `cashless_app` lit les identifiants des imports de journal en cours de tous les prestataires (`device_journal_imports_processing`) (décisions du porteur du 30/10/2026, ADR-140) | Non | Non | — (écart permanent, revu en mission 13) |
+| OP-N92 | Clés de signature des snapshots : `cashless_keyadmin` lit cinq colonnes de `snapshot_signing_key`, `cashless_snapsign` exécute `snapshot_public_keys`, rotation sans approbation à deux et acteur non vérifié (décisions du porteur des 30/10 et 02/11/2026, ADR-142 et ADR-143) | Non | Non (limite acceptée) | Mission 13 (recette V1), avec OP-N56 |
+| OP-N93 | Snapshots hors ligne : limites des processus de contenu et de signature (clés publiques par prestataire, entrée sans mot de passe, clé d'emballage sans référence, verrou et délai d'orphelin, référence de clé erronée ; ADR-144) | Non | Non | Mission 13 (recette V1) ; clés par prestataire : mission 12b (confirmé par le porteur le 04/11/2026) |
+| OP-N94 | Lots et import de journal : choix consignés (vente hors catalogue sans lignes, `config_id` inconnu, annulation du back-office sans réduction de l'anomalie, migration `0050`, acteurs non contrôlés par la base ; ADR-145 et ADR-146) | Non | Non | Mission 13 (recette V1) |
+| OP-N95 | Limites de corps et de démarrage : `500` au lieu de `413` au-delà de 100 ko, corps d'import jusqu'à 21 037 056 octets, `DATABASE_URL_MAINT` vers le propriétaire ou un superutilisateur : refusé au démarrage en production, point (3) levé le 04/11/2026 (ADR-147) | Non | Non | Mission 13 (recette V1) pour (1), (2), (4) |
+| OP-N96 | Remontée des terminaux d'un événement : migration `0051` hors plan, enveloppe `event_device_sync_status_api` (DEFINER, lecture seule) ouverte à `cashless_app` ; les fonctions sous-jacentes restent fermées (ADR-148) | Non | Non | Mission 13 (recette V1) |
+| OP-N97 | Garde des noms secrets de l'API publique : `pwd_pack_enc` permis dans `offline-snapshots.service.ts` seul, les autres noms et `SELECT * FROM media` restent interdits (ADR-150) | Non | Non | Mission 13 (recette V1) |
+| OP-N98 | NFR-005 : un changement ordinaire (non bloquant) est visible en 60 s plus la boucle, soit 60,9 à 62,2 s mesurés (`DELTA_AFTER_MS` = 60 s gardé ; les changements bloquants tiennent 5 s ; ADR-151) | Non | Non | Mission 13 (recette V1) |
+| OP-N99 | FR-024 : le refus hors ligne `LEDGER_LOCKED` / `SYNC_DEADLINE_PASSED` est prouvé en unitaire (`period.spec.ts`) mais son câblage depuis le lecteur de conformité n'est pas prouvé en intégration (seul `PERIOD_CLOSED` l'est) ; la base refuse déjà un grand livre verrouillé (`CL003`) | Non | Non | Mission 13 (recette V1) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -133,7 +144,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 
 | Point | Dette | Risque si elle atteint la production | Garde en place | Levée par | Condition de levée |
 |---|---|---|---|---|---|
-| OP-N41 | Le service de clés est un faux (`apps/api/src/kms/fake-kms.ts`) : ses clés se dérivent d'une graine écrite dans le code | Tous les mots de passe de bracelets calculables par quiconque lit le code | Le faux refuse de se construire en production et la garde de démarrage refuse un processus qui le porte (`production-guard.spec.ts`) | **Mission 7** (hors ligne) : adaptateur AWS KMS, une fois la région et les comptes arrêtés (OP-N11) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Les ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort` ont une implémentation AWS, avec un rôle IAM par processus (§3.2) |
+| OP-N41 | Le service de clés est un faux (`apps/api/src/kms/fake-kms.ts`) : ses clés se dérivent d'une graine écrite dans le code | Tous les mots de passe de bracelets calculables par quiconque lit le code | Le faux refuse de se construire en production et la garde de démarrage refuse un processus qui le porte (`production-guard.spec.ts`) | **Mission 12b** (déplacée de la mission 7 le 29/10/2026, ADR-138) : adaptateur AWS KMS, une fois la région et les comptes arrêtés (OP-N11) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Les ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort` ont une implémentation AWS, avec un rôle IAM par processus (§3.2) |
 | OP-N42 | L'identité du terminal est un faux qui croit des en-têtes ; aucune requête de terminal n'est signée | Quiconque se dit terminal obtient le mot de passe d'un bracelet et enregistre des lectures ; rejeu et falsification d'une lecture | Même garde de production ; le terminal annoncé est toujours relu en base (statut, prestataire) | Mission 5 (terminaux) | `DeviceIdentityPort` vérifie le jeton d'appareil, le mTLS et la signature de chaque requête ; le faux n'est plus câblé hors des tests |
 | OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests |
 | OP-N44 | Les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin` héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence (même limite que `cashless_platform`, ADR-80) | Un processus des clés compromis peut appeler ces fonctions pour un prestataire dont il pose l'identifiant — ni plus ni moins que le rôle de l'API publique | Aucun droit direct sur les tables du grand livre (`tests_media_roles.sql`) ; chaque fonction commence par `assert_tenant` | **Mission 5**, avec OP-N59 : modification du générateur de la suite de référence du kit (`gen_tests.py`) (confirmé par le porteur le 15/10/2026 ; ADR-101) | La suite de référence n'exige plus `EXECUTE` pour `PUBLIC` ; les droits d'exécution sont accordés rôle par rôle |
@@ -147,6 +158,9 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N86 | `psp_poll_candidates` et `psp_events_to_retry` (toutes les recharges et notifications, tous prestataires) exécutables par `cashless_app` ; `psp-poller` sous `cashless_app` ; INSERT direct sur `anomaly` | Le processus public, si compromis, lit les recharges et notifications de tous les prestataires et écrit des anomalies arbitraires | `tests_cash_psp_rights.sql` (liste exacte des rôles qui exécutent les deux fonctions ; liste exacte des rôles ayant INSERT sur `anomaly`) | Mission 13 | Rôle dédié au `psp-poller` ; les deux fonctions et l'INSERT sur `anomaly` retirés à `cashless_app`, remplacés par une fonction de la base ; tests de borne inversés |
 | OP-N87 | Garde « aucune espèce sans session » (`posting_cash_desk_guard`, 0036) : `IF NOT FOUND THEN RETURN NEW` si la lecture de `cash_desk` ne voit rien | Propriétaire de la fonction soumis à la RLS : la garde laisse passer une écriture en espèces sans session | `tests_cash_psp_rights.sql` (le propriétaire de la fonction est superutilisateur ou BYPASSRLS) | Mission 13 | Rôle propriétaire vérifié au déploiement, ou garde qui refuse quand la recherche est impossible ; fichier à faire relire par une personne |
 | OP-N88 | Lecture des soldes avant `post_transaction` : `PURCHASE` sans verrou ; `CHARGEBACK` verrouillé par `wallet_topup_headroom` | Paiement par bracelet refusé à tort (« Solde interdit ») quand une dépense simultanée du même portefeuille passe entre la lecture et l'écriture ; interblocage possible, faible, pour la contestation (RETRY) | `chargeback-concurrency.spec.ts` (cas déterministe : contestation aboutie malgré une dépense validée entre lecture et écriture) ; aucun test pour `PURCHASE` | Mission 13 | Fonction SQL dédiée de verrouillage ordonné, test déterministe pour `PURCHASE` |
+| OP-N89 | `SignPort` et `DataKeyPort` du processus des snapshots en faux (mission 7) | Snapshots signés par une clé dérivée d'une graine du code : faux snapshots acceptés par les terminaux | Faux refusé au démarrage en production (`createKms`, `assertProcessIsSafe`) ; `403 OFFLINE_NOT_ALLOWED` sans clé `ACTIVE` | Mission 12b | Adaptateur AWS KMS (`kms:Sign`, `GenerateDataKey`, `Decrypt`), rôle IAM par processus, garde levée pour ces ports seulement |
+| OP-N90 | Numéro de lot laissé sans résultat final (`offline_batch_retry`) | Numéro jamais renvoyé : vente non écrite sans trou `SEQ_GAP` | Trace écrite par la base dans la transaction de l'opération ; clôture du lot refusée sans elle ; alerte à 24 h | Mission 13 (revue) | Aucune trace ouverte de plus de 24 h en recette ; test de borne inchangé |
+| OP-N91 | Lecture inter-prestataires des imports en cours par `cashless_app` ; deux `EXECUTE` de plus pour le signataire | Fuite de l'existence d'un import d'un autre prestataire si l'API était compromise ; signataire qui jette un brouillon valide | Fonction qui ne rend que `(import_id, operator_id)` ; traitement ensuite sous RLS ; jeter n'efface rien de publié et le brouillon est reconstruit | Mission 13 (revue) | Listes d'`EXECUTE` figées inchangées ; colonnes rendues inchangées |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -346,6 +360,18 @@ cycle 6 sans changement de comportement (décision de l'orchestrateur : les tabl
   (liste exacte des droits d'écriture des rôles `cashless_*` sur `offline_snapshot` : `INSERT` et `UPDATE` de
   `cashless_app` seulement ; aucune suppression ; déclencheurs de contrôle et d'immuabilité présents).
 
+**Levé le 04/11/2026 par la mission 7 (lots WP03 et WP08 ; constaté par WP21).** Un snapshot ne
+s'inscrit plus que par `publish_offline_snapshot` (migration `0044`, SECURITY DEFINER, exécutée par
+`cashless_snapsign` seul) qui calcule elle-même la version (dernière + 1) ; `INSERT` direct retiré à
+`cashless_app` (`post-roles.sql`). Version plantée : refusée (`CL048`) et le snapshot suivant reste
+possible.
+
+Preuves, rejouées sur `cashless_wp21c` (`pg_prove`, PASS) : `tests_offline_snapshots.sql` (145
+assertions ; §5 « version plantée à 2^62 : la publication refuse »), `tests_offline_rights.sql` (197
+; « OP-N57 : première publication = version 1 (max + 1) », « version déjà publiée (plantée en
+avance) refusée (CL048) », `INSERT` direct refusé) et `tests_definer_trigger_writers.sql` §3 (aucun
+rôle `cashless_*` n'écrit `offline_snapshot` : la suite échoue si un droit d'écriture réapparaît).
+
 ### OP-N58 — `offline_policy_history` : trace falsifiable (15 octobre 2026)
 
 Même origine qu'OP-N57 (kit, antérieure à la mission 4 ; relecture du lot 20, cycle 5, remarque 1 ; consignée au
@@ -371,6 +397,18 @@ cycle 6 sans changement de comportement).
 - **Bloque la production : oui** (décision du porteur du 15/10/2026, relecture du lot 20, cycle 6, remarque 1). Comme
   OP-N57, une version plantée en avance est un déni de service (la modification légitime suivante de la politique
   échoue) ; il est levé avant la production, avec la mission 7.
+
+**Levé le 04/11/2026 par la mission 7 (lots WP02 et WP08 ; constaté par WP21).**
+`log_offline_policy` est SECURITY DEFINER (migration `0043`, `search_path` fixé), les politiques ne
+s'écrivent que par `set_offline_policy` et `clear_offline_policy`, et `cashless_app` n'a plus aucun
+droit d'écriture sur `offline_policy` ni sur `offline_policy_history`. Une modification de politique
+écrit toujours son historique.
+
+Preuves, rejouées sur `cashless_wp21c` (PASS) : `tests_offline_policy.sql` (82 assertions ;
+versions, ligne `deleted`, une ligne d'historique par modification),
+`tests_definer_trigger_writers.sql` (24 ; §3 inversé : « OP-N58 levée : log_offline_policy est
+SECURITY DEFINER », aucun rôle n'écrit l'historique) et `tests_offline_rights.sql` (197). La suite
+échoue si un droit d'écriture direct réapparaît.
 
 ### OP-N59 — Fonctions SECURITY DEFINER : tables masquées par une table temporaire de l'appelant (15 octobre 2026)
 
@@ -618,6 +656,16 @@ mission 7 ; décisions du porteur du 20/10/2026 (option « une seule transaction
   `apps/api/test/integration/transverse/migrate-rights.spec.ts` (série et droits dans une même transaction ; échoue si
   le rejeu sort de la transaction ou si `post-roles.sql` cesse de retirer `PUBLIC`).
 
+**Levé le 04/11/2026 par la mission 7 (lot WP08 ; constaté par WP21).** `post-roles.sql` §8a pose le
+droit par défaut global `ALTER DEFAULT PRIVILEGES FOR ROLE <propriétaire> REVOKE EXECUTE ON
+FUNCTIONS FROM PUBLIC` ; `_grants_for_tests.sql` le rouvre seulement le temps d'installer pgTAP. Une
+fonction créée à la main n'est plus exécutable ni par `PUBLIC` ni par un rôle.
+
+Preuves, rejouées sur `cashless_wp21c` (PASS) : `tests_execute_grants.sql` (79 assertions ; §4
+inversé : « OP-N68 levée : fonction créée à la main par le propriétaire, exécutable ni par PUBLIC ni
+par un rôle » et « défaut global (sans IN SCHEMA) posé pour le propriétaire courant ») ;
+`transverse/migrate-rights.spec.ts` (série et droits dans une même transaction).
+
 ### OP-N69 — Terminal : numérotation, présence et affectation écrites directement par l'API (20 octobre 2026)
 
 Relevé par la relecture indépendante de WP07 (mission 5a). **Défaut antérieur à la mission, ni créé ni aggravé par
@@ -643,6 +691,16 @@ WP07 ; consigné, levé par la mission 7 ; décision du porteur du 20/10/2026 ; 
   `UPDATE` directs correspondants sont retirés à `cashless_app`.
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_rights.sql` §1 (« cashless_app :
   colonnes de device modifiables, liste exacte »).
+
+**Levé le 04/11/2026 par la mission 7 (lots WP07 et WP08 ; constaté par WP21).** `cashless_app` n'a
+plus aucun `UPDATE` direct sur `device`, `station_name` compris : la présence, la version de
+snapshot acquittée, le nom de station et le plancher de numérotation passent par des fonctions de la
+base (`record_device_heartbeat`, `ack_offline_snapshot`, `set_device_station_name`, migrations
+`0022` et `0048`).
+
+Preuve, rejouée sur `cashless_wp21c` (PASS) : `tests_device_rights.sql` (89 assertions ; §1 «
+colonnes de device modifiables, liste VIDE (OP-N69 levée) » et §2 « OP-N69 levée : station_name
+n'est plus modifiable en direct »). La suite échoue si une colonne redevient modifiable.
 
 ### OP-N70 — Suites de la mission 4 encore sous le faux d'identité du terminal (20 octobre 2026)
 
@@ -715,8 +773,9 @@ mission 13 (recette V1).**
 ### OP-N73 — Autorité des terminaux et signataire des jetons d'appareil : faux seulement (21 octobre 2026)
 
 Signalé par la relecture de WP18 (mission 5a, constat M1) ; prévu par la contrainte C-004 de la mission (« pas
-d'adaptateur AWS »), jamais nommé en dette. **Bloque la production : oui ; levé par la mission 7, avec OP-N41 ;
-décision du porteur du 21/10/2026 ; ADR-119.**
+d'adaptateur AWS »), jamais nommé en dette. **Bloque la production : oui ; levé par la mission
+12b, avec OP-N41 (déplacé de la mission 7 le 29/10/2026, ADR-138) ; décision du porteur du
+21/10/2026 ; ADR-119.**
 
 - **Constat.** `DeviceCaPort` et `TokenSignerPort` n'ont que des faux (`apps/api/src/device-ca/fake-device-ca.ts`,
   `apps/api/src/device-tokens/fake-token-signer.ts`) ; l'adaptateur réel (KMS ou HSM) attend la région (OP-N11).
@@ -775,6 +834,17 @@ la mission 5a (SEC-1). **Bloque la production : non ; levée par la mission 7 ; 
 - **Test qui échoue si la limite s'élargit** : `packages/ledger-sql/tests/tests_device_purge_window.sql` (aucune purge
   ne retire un nonce encore dans sa fenêtre ni un essai de moins de 24 h) et les listes figées de
   `tests_execute_grants.sql`.
+
+**Levé le 04/11/2026 par la mission 7 (lots WP08 et WP10 ; constaté par WP21).** Le rôle
+`cashless_maint` et le processus `maintenance` (`DATABASE_URL_MAINT`) exécutent seuls
+`purge_device_request_nonces` et `purge_device_enrollment_attempts` (`post-roles.sql` §8g) ;
+`EXECUTE` retiré à `cashless_app` et refusé à `cashless_tagkeys`.
+
+Preuves, rejouées sur `cashless_wp21c` (PASS) : `tests_device_purge_window.sql` (9 assertions,
+appelée sous `cashless_maint` : « cashless_app n'exécute plus purge_device_request_nonces (OP-N75)
+», aucune purge ne retire une ligne encore dans sa fenêtre) et `tests_execute_grants.sql` (liste
+figée des fonctions de `cashless_maint`). Le refus d'un `DATABASE_URL_MAINT` propriétaire ou superutilisateur en production est
+levé (OP-N95 point 3, 04/11/2026).
 
 ### OP-N77 — Secrets de l'API exigés par tous les processus (23 octobre 2026)
 
@@ -934,6 +1004,14 @@ Constat 1 de la revue post-fusion de la mission 6 ; consigné sur décision du p
 - **Test qui échoue si la limite s'élargit.** `tests_cash_psp_rights.sql` : liste exacte des rôles `cashless_*` qui
   exécutent les deux fonctions, liste exacte de ceux qui ont INSERT sur `anomaly`.
 
+**Complément du 04/11/2026 (mission 7, WP08 ; ADR-141).** Le plan de la mission 7 retirait
+l'`INSERT` direct sur `anomaly` à `cashless_app` ; décision du porteur du 30/10/2026 : il est GARDÉ
+(sept appelants de l'API dont `psp-payment-processor.ts` ×2, `event-dispatcher.ts` ×2,
+`chargeback.service.ts`, `reversal.service.ts`), statu quo d'OP-N86, levé en mission 13. La mission
+7 ajoute `open_offline_anomaly` (écriture des anomalies hors ligne par fonction) sans rien retirer.
+Test de borne inchangé : `tests_cash_psp_rights.sql` (liste exacte des rôles `cashless_*` qui ont
+`INSERT` sur `anomaly`).
+
 ### OP-N87 — Garde « aucune espèce sans session » : dépend du propriétaire de la fonction (29 octobre 2026)
 
 Constat 2 (majeur) de la revue post-fusion de la mission 6 ; consigné sur décision du porteur du 29/10/2026
@@ -968,6 +1046,270 @@ Défaut trouvé par la CI de la PR #8 (mission 6) ; décision du porteur du 29/1
   l'ordre des identifiants avant la lecture des soldes, utilisée par `CHARGEBACK` et `PURCHASE` ; test déterministe
   pour `PURCHASE`.
 - **Test.** `chargeback-concurrency.spec.ts` (cas déterministe, mutation vérifiée) ; `PURCHASE` : aucun à ce jour.
+
+### OP-N89 — Snapshots hors ligne signés par un faux KMS (30 octobre 2026)
+
+Plan de la mission 7 ; décision du porteur du 29/10/2026 (services externes simulés jusqu'à la mission 12b) ; ADR-138.
+**Bloque la production : oui** (démarrage refusé, donc aucun hors ligne en production avant 12b).
+
+- **Constat.** Les processus `snapshot-content` (`DecryptPort`, `DataKeyPort`) et `snapshot-signer` (`SignPort`)
+  n'ont que le faux KMS (`apps/api/src/kms/fake-kms.ts`), dont les clés se dérivent d'une graine du code.
+- **Raison.** Aucun accès AWS avant la mission 12b (feuille de route révisée du 29/10/2026).
+- **Risque.** En production, de faux snapshots (bracelet bloqué présenté comme actif) seraient signés et acceptés.
+- **Mission qui lève.** Mission 12b (avec OP-N41 et OP-N73).
+- **Condition de levée.** Adaptateur AWS des trois ports, un rôle IAM par processus, garde de production levée pour ces
+  ports seulement, vérification d'Ed25519 (OP-N13).
+- **Test qui échoue si la limite s'élargit.** `test/unit/production-guard.spec.ts` : chacun des deux processus refuse
+  de démarrer en production avec le faux ; `GET /offline-snapshots/current` répond `403 OFFLINE_NOT_ALLOWED`
+  (`SNAPSHOTS_UNAVAILABLE`) sans clé `ACTIVE`.
+
+### OP-N90 — Rejet réessayable : numéro sans résultat final admis à la clôture (30 octobre 2026)
+
+Plan de la mission 7 (passe contradictoire A24) ; décision du porteur du 30/10/2026 (DM `01M664S4Y4FW6W6TMP76BQGWV7`) ;
+ADR-139. **Bloque la production : non.**
+
+- **Constat.** `sync_protocol.md` §7.1-9 : au quatrième `CL007`, rien n'est écrit au registre pour que le terminal
+  renvoie l'opération ; `complete_offline_batch` (schéma) refusait de clore un lot dont un numéro n'a pas de ligne.
+- **Décision.** `record_offline_retry` écrit `offline_batch_retry` dans la transaction de l'opération ;
+  `complete_offline_batch` (remplacée) n'admet un numéro sans ligne que sur cette trace ; trace close au résultat final.
+- **Risque.** Un numéro jamais renvoyé reste sans résultat final ni anomalie `SEQ_GAP` (le trou n'apparaît qu'au lot
+  suivant).
+- **Garde.** Alerte du travailleur `seq-gap-age` si une trace reste ouverte plus de 24 h.
+- **Test qui échoue si la limite s'élargit.** `tests_offline_batches.sql` : clôture refusée pour un numéro sans ligne
+  ni trace ; trace écrite par la seule fonction (`cashless_app` sans `INSERT`).
+
+### OP-N91 — Droits ajoutés au contrat de la mission 7 (30 octobre 2026)
+
+Tâches de la mission 7 (contradictions relevées par les rédacteurs des lots) ; décisions du porteur du 30/10/2026
+(DM `01M667XBV66NBKA5DEFFXY15HM`, `01M667Y1J4DT3HY96ZBCXXMXBT`) ; ADR-140. **Bloque la production : non.**
+
+- **Constat.** `contracts/database-rights.md` ne donnait au signataire ni le rejet d'un brouillon altéré ni la marque
+  d'alerte des numéros `RETRY`, et retirait à `cashless_app` toute lecture de `device_journal_import`, dont le
+  travailleur d'import a besoin pour trouver les imports en cours.
+- **Décision.** `cashless_snapsign` : `EXECUTE` de `discard_offline_snapshot_draft` et `mark_offline_retry_alerted`
+  (nouvelle). `cashless_snapcontent` : `append_…_entries`, `seal_…`, `discard_…` de ses brouillons. `cashless_app` :
+  `device_journal_imports_processing()` (DEFINER, identifiants seuls). L'audit `SNAPSHOT_PUBLISHED` est écrit par
+  `publish_offline_snapshot`, sans droit d'audit pour le signataire.
+- **Risque.** API compromise : elle apprend qu'un autre prestataire a un import en cours (identifiants seuls).
+  Signataire compromis : il jette des brouillons (déni de publication, rien de publié n'est touché).
+- **Test qui échoue si la limite s'élargit.** `tests_execute_grants.sql` (listes figées par rôle) ;
+  `tests_offline_batches.sql` : colonnes rendues par `device_journal_imports_processing` figées.
+
+### OP-N92 — Clés de signature des snapshots : lectures et rotation (4 novembre 2026)
+
+Décisions du porteur des 30/10 et 02/11/2026 (WP09, WP13) ; consignées par WP21 ; ADR-142 et
+ADR-143. **Bloque la production : non.**
+
+- **Constat.** (1) `cashless_keyadmin` lit cinq colonnes de `snapshot_signing_key` (`key_id`,
+  `kms_key_ref`, `operator_id`, `owner`, `status`), jamais `public_key`. (2) `cashless_snapsign`
+  exécute `snapshot_public_keys(uuid)` (décision du porteur du 02/11) : le signataire vérifie sa
+  signature contre la clé publique du `key_id` de l'en-tête et refuse de publier sinon. (3)
+  `KeyAdminPort` gagne `publicKey(ref)`, en lecture seule ; `key-admin` ne reçoit toujours pas
+  `sign` (30/10). (4) La rotation est un passage explicite `--once` avec
+  `SNAPSHOT_KEY_ROTATE_ACTOR=<uuid>`, sans approbation à deux personnes ; l'acteur est un uuid
+  valide non vérifié comme personne existante (aucune table de personnes) ; un arrêt entre la
+  création de la clé dans le KMS et la ligne d'audit laisse une clé orpheline (une seule est adoptée
+  à la reprise).
+- **Raison.** Vérifier avant de publier (défense en profondeur) ; reprendre une rotation sans table
+  de travaux ; pas de back-office d'approbation avant la mission 11.
+- **Risque.** `cashless_keyadmin` compromis : connaît les références KMS des clés de signature, sans
+  clé privée ni écriture. `cashless_snapsign` compromis : lit des clés publiques, sans droit de
+  table. Qui lance la rotation peut le faire sous un acteur arbitraire (audit trompeur) et retirer
+  la plus ancienne clé. Clé KMS orpheline : coût, aucune exposition.
+- **En place.** Les actions `SNAPSHOT_SIGNING_KEY_*` ne s'écrivent que sous `cashless_keyadmin`
+  (politique RESTRICTIVE de `0049`, renforcement) ; deux clés valides au plus (`CL054`) ; clé
+  publique validée P-256 SPKI par l'API ; aucune écriture directe sur la table.
+- **Mission qui le lève.** Mission 13 (recette V1) pour la rotation à deux personnes et l'acteur
+  vérifié (avec OP-N56) ; les deux lectures sont une limite acceptée.
+- **Condition de levée.** Rotation soumise à une demande approuvée à deux (modèle d'ADR-102), acteur
+  contrôlé comme membre, nettoyage des clés KMS orphelines.
+- **Tests qui bornent la limite** (ils échouent si elle s'élargit) : `tests_offline_rights.sql` («
+  cashless_keyadmin : colonnes lisibles de snapshot_signing_key », liste exacte ; aucune écriture
+  directe ; `cashless_snapsign` sans droit de table et `snapshot_public_keys` exécutable) ;
+  `snapshot-keys/rotation.spec.ts` (« une troisième clé valide insérée hors rotation : CL054 », «
+  audite l'acteur réel, sans clé privée », clé qui n'est pas P-256 SPKI refusée).
+
+### OP-N93 — Snapshots hors ligne : limites du contenu et de la signature (4 novembre 2026)
+
+Relevées aux relectures de WP04, WP11, WP12 et WP13 ; consignées par WP21 ; ADR-144. **Bloque la
+production : non.**
+
+- **Constat.** (a) `snapshot_public_keys` rend les clés du prestataire s'il a sa propre clé
+  `CENTRAL` `ACTIVE`, sinon celles de la plateforme : les snapshots déjà signés par la plateforme ne
+  sont plus vérifiables ensuite. (b) Une entrée est publiée SANS mot de passe quand son
+  `pwd_pack_enc` ne s'ouvre pas (`PWD_DEK_RETIRED`, `PWD_DEK_MISSING`, `PWD_OPEN_FAILED`,
+  `PWD_INCOMPLETE_ROW`) ; elle n'est pas rejouée par un `DELTA` (le `FULL` suivant, dans l'heure, la
+  corrige) ; seul un journal `ERROR` le signale. (c) `content_key_wrapped` ne porte pas la référence
+  de la clé d'emballage (sa rotation rend les anciennes versions inouvrables) ; une clé d'accord
+  invalide en tête de `offline_snapshot_keys_to_wrap`, au-delà de 500, affame les suivantes ;
+  `DekCache` garde les clés de données jusqu'à `tagDekCacheSeconds`. (d) Verrou consultatif de
+  session par grand livre (`apps/api/src/db/advisory-session.ts`) et délai d'orphelin
+  `SNAPSHOT_ORPHAN_DISCARD_SECONDS` = 600 s (la configuration refuse 300 s ou moins) ; au démarrage,
+  le balayage jette un brouillon `READY` tout juste scellé par l'instance précédente (le signataire
+  l'écarte par `DRAFT_NOT_READY`, le producteur le régénère). (e) Une `SNAPSHOT_SIGNING_KEY_REF`
+  erronée fait jeter chaque brouillon `READY` (alarme 3) ; `publish_offline_snapshot` ne recompare
+  que les comptes, l'immuabilité d'un brouillon `READY` repose sur `0044` et les droits de WP08.
+- **Raison.** (b) Échec fermé : le terminal refuse un bracelet dont le mot de passe est absent
+  (`sync_protocol.md` §6, contrôle 3), alors qu'échouer toute la version retarderait les blocages
+  (§4.2-1). Les autres : choix de simplicité des lots, sans droit de base ajouté.
+- **Risque.** Disponibilité du hors ligne (bracelet refusé jusqu'à une heure, snapshots retardés) ou
+  vérification impossible d'un ancien snapshot ; jamais un droit élargi ni un faux snapshot accepté.
+- **Mission qui le lève.** Mission 13 (recette V1) pour (b) à (e), avec alarme chiffrée sur les
+  entrées sautées ; (a) : mission des clés de signature par prestataire, 12b (confirmé par le
+  porteur le 04/11/2026).
+- **Condition de levée.** (a) Servir la clé plateforme tant qu'un snapshot qu'elle a signé est
+  servable ; (b) alarme et seuil sur les entrées sautées ; (c) référence de la clé d'emballage dans
+  l'enveloppe et pagination par terminal ; (d) reprise du brouillon scellé au démarrage ; (e)
+  comparaison du contenu à la publication.
+- **Tests qui bornent la limite.** `unit/snapshots-content/orphan-config.spec.ts` (600 s par défaut,
+  301 s accepté) ; `unit/snapshots-content/crypto-encryptor.spec.ts` (« clé de données RETIRED :
+  entrée sans mot de passe, erreur nommée, aucun clair ») ;
+  `integration/snapshots-signer/key-missing.spec.ts` et `draft-tamper.spec.ts` ;
+  `integration/snapshots-content/cadence.spec.ts`. Ajoutés par WP21 (part E), dans
+  `apps/api/test/integration/end-to-end/offline-bounds.spec.ts` : (a) « OP-N93(a) : clés publiques servies, celles du prestataire OU celles de la
+  plateforme » (cas « prestataire avec clé CENTRAL ACTIVE propre : aucune clé de la plateforme n'est
+  rendue ») ; famine de (c) « OP-N93(c) : famine au-delà de 500 enveloppes » (cas « 500 terminaux à
+  clé d'accord invalide en tête de file : le terminal valide suivant n'est pas servi »).
+
+### OP-N94 — Lots et import de journal : choix consignés (4 novembre 2026)
+
+Écarts relevés aux relectures de WP05, WP08, WP19 et WP20, classés par le porteur les 03/11/2026 ;
+consignés par WP21 ; ADR-145 et ADR-146. **Bloque la production : non.**
+
+- **Constat.** (1) Une vente hors catalogue (`CL034`) est écrite sans lignes (`lines_status =
+  CATALOG_MISMATCH`). (2) Un `config_id` inconnu donne `OFFLINE_NOT_ALLOWED` avec
+  `POLICY_LIMIT_EXCEEDED` en détail (`sync_protocol.md` §7.2 à mettre en accord). (3) L'annulation
+  faite depuis le back-office (`sale-reversal-action.ts`) n'appelle pas `reduce_offline_shortfall` :
+  la perte hors ligne reste surestimée. (4) Une annulation hors ligne se fait sans tap re-présenté,
+  en devise du grand livre, sur une vente du même terminal (exemple de `openapi.yaml`, décision du
+  porteur du 03/11). (5) Migration `0050` hors du plan (`0043` à `0049`) :
+  `cancel_device_journal_import` (DEFINER, `EXECUTE` à `cashless_app`) passe un import `PENDING` à
+  `REJECTED` (et non `FAILED` : garde de `0046` et contrainte `device_journal_import_approved`),
+  refuse tant que la demande est valable (`CL001`) ou si l'import n'est pas `PENDING` (`CL053`). (6)
+  La base ne vérifie pas que `p_actor` et `p_approver` sont membres du prestataire : l'API le fait
+  (même classe qu'OP-N56 et OP-N76). (7) `lock_device(uuid, text)` (DEFINER, `0049`) est appelée par
+  cinq services et n'est pas dans `interfaces.md`.
+- **Risque.** (1) à (3) : comptabilité des ventes hors ligne et perte mal estimée, jamais
+  sous-estimée. (5) API compromise : annule un import `PENDING` de son prestataire (déni, bornée par
+  `assert_tenant` et par la demande valable). (6) API compromise : désigne un approbateur d'un autre
+  prestataire.
+- **Mission qui le lève.** Mission 13 (recette V1) pour (3) et (6) ; (1), (2), (4), (5) et (7) sont
+  des choix permanents revus en mission 13.
+- **Condition de levée.** (3) `reduce_offline_shortfall` appelée par l'annulation du back-office ;
+  (6) contrôle d'appartenance en base ; (7) et (5) reportés au contrat.
+- **Tests qui bornent la limite.** `tests_device_journal_import_cancel.sql` (pgTAP) et
+  `tests_execute_grants.sql` (5) ; `integration/offline/journal-import-cycle2.spec.ts` (rejet
+  `REJECTED`, demande échue, `assertApprover`, SUPERVISOR d'un autre événement : 403) (5, 6) ;
+  `integration/offline/processing.spec.ts` (« configuration inconnue : refusée », 2). Ajoutés
+  par WP21 (part E), dans `apps/api/test/integration/end-to-end/offline-bounds.spec.ts` : (1) « OP-N94(1) : vente hors catalogue écrite sans lignes »
+  (cas « lignes hors catalogue : vente ACCEPTED, metadata.lines_status CATALOG_MISMATCH, aucune
+  ligne ») ; (3) « OP-N94(3) : annulation du back-office sans reduce_offline_shortfall » (cas « vente
+  hors ligne avec manque, annulée au back-office : soldes rendus, anomalie inchangée (3000, OPEN) »).
+  Sans test de borne : (7).
+
+### OP-N95 — Limites de corps et de démarrage des processus de la mission 7 (4 novembre 2026)
+
+Relevées aux relectures de WP10, WP18 et WP20 ; consignées par WP21 ; ADR-147. **Bloque la
+production : non** (le point 3, qui pouvait la bloquer, est levé le 04/11/2026).
+
+- **Constat.** (1) Hors `POST /offline-batches` et import de journal, un corps de plus de 100 ko
+  donne `500 INTERNAL_ERROR` au lieu de `413` (défaut antérieur à la mission). (2) Le corps de
+  l'import est lu jusqu'à 21 037 056 octets (20 lots de 1 Mio plus 64 Kio) puis `413`, seulement
+  avec un en-tête `Authorization` et après le jeton et le rôle (`body-gate.ts`). (3) LEVÉ le
+  04/11/2026 (décision du porteur) : en production, `assertMaintenanceRole`
+  (`apps/api/src/db/maintenance-role-guard.ts`, appelé par `maintenance-db.module.ts`) refuse de
+  démarrer si la connexion de `DATABASE_URL_MAINT` est superutilisateur, `BYPASSRLS`, propriétaire de
+  la base ou non membre de `cashless_maint`. (4) `gatedBody` lit sans filtre si
+  l'identité n'a pas de `preAuthenticate`.
+- **Risque.** (1) et (2) : consommation de mémoire par un porteur de jeton valide, `500` trompeur.
+  (3) Mauvaise configuration de déploiement qui élargit un droit sans alarme.
+- **Mission qui le lève.** Mission 13 (recette V1).
+- **Condition de levée.** (1) `413` sur la limite globale ; (4) filtre exigé (refus de démarrer sans
+  `preAuthenticate`).
+- **Tests qui bornent la limite.** (2) `integration/offline/journal-import-cycle2.spec.ts` (« corps
+  de 150 Kio avec jeton invalide 401, avec jeton de CASHIER 403 », « le corps n'est pas lu ») et
+  `batches-intake.spec.ts` (`413 BATCH_TOO_LARGE`). Ajoutés par
+  WP21 (part E), dans `apps/api/test/integration/end-to-end/offline-bounds.spec.ts` : (1) « OP-N95(1) : corps de plus de 100 ko hors lots et import »
+  (cas « refusé, jamais traité, aucune écriture ; le statut est 500 et non 413 (limite connue) ») ;
+  (3) « OP-N95(3) : DATABASE_URL_MAINT refusé en production s'il n'est pas cashless_maint » (cas
+  « production + propriétaire… : refus nommé », « production + cashless_maint : démarre »,
+  « MaintenanceDbModule : production + propriétaire ne compile pas… ») ; (4) « OP-N95(4) :
+  gatedBody sans preAuthenticate » (cas « sans filtre, le corps est lu sans contrôle d'identité
+  (limite figée) », « configuration réelle : le filtre des terminaux et celui des personnes sont
+  présents »).
+
+### OP-N96 — Remontée des terminaux d'un événement : enveloppe de lecture ouverte à l'API (4 novembre 2026)
+
+Décision du porteur du 04/11/2026 (option (a)) ; consignée par WP21 (partie D) ; ADR-148. **Bloque la production : non.**
+
+- **Constat.** `GET /events/{event_id}/device-sync-status` exigeait `event_device_sync_status` et `event_sync_deadline`,
+  fermées à `cashless_app` (R-30.12). Migration `0051` hors du plan (`0043` à `0049`) :
+  `event_device_sync_status_api(uuid)` (DEFINER, STABLE, lecture seule, bornée au prestataire de session,
+  mêmes colonnes que la réponse du contrat), `EXECUTE` à `cashless_app` sur elle seule.
+- **Risque.** Lecture, par une API compromise, de l'état de remontée des terminaux de son propre prestataire (déjà
+  lisible par RLS) ; aucune écriture ; aucun autre prestataire. Une faute dans la fonction DEFINER élargirait la
+  lecture.
+- **Mission qui le relit.** Mission 13 (recette V1). Droit permanent, pas de levée prévue.
+- **Condition de levée.** Sans objet ; à revoir si une seconde route a besoin de la même lecture ou si le contrat
+  change la réponse.
+- **Test de borne.** `tests_offline_rights.sql` (6 quater) et `tests_execute_grants.sql` (liste exacte) : échouent si le
+  droit ou les colonnes s'élargissent. `offline-sync-status.spec.ts` côté API.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, relecture des droits ajoutés (`0050`, `0051`).
+
+### OP-N97 — Garde des noms secrets de l'API publique : exemption de `pwd_pack_enc` (4 novembre 2026)
+
+Décision du porteur du 04/11/2026 ; consignée par WP21 (partie E) ; ADR-150. **Bloque la production : non.**
+
+- **Constat.** `architecture.spec.ts` interdit aux fichiers de l'API publique de nommer des colonnes secrètes.
+  `offline/snapshots/offline-snapshots.service.ts` nomme `pwd_pack_enc` pour mettre en forme l'enveloppe servie au
+  terminal. Exemption : ce nom, dans ce fichier, rien d'autre ; liste constante figée par un test.
+- **Risque.** Un usage abusif de `pwd_pack_enc` dans ce fichier ne serait plus détecté par la garde. Le blob est
+  chiffré sous K_v (l'API ne la détient pas) ; `pwd_pack_dek_id`, `encrypted_dek`, `offline_snapshot_rows` et
+  `SELECT * FROM media` restent interdits partout.
+- **Mission qui le relit.** Mission 13 (recette V1).
+- **Condition de levée.** Mettre en forme l'entrée sans nommer la colonne dans le service, puis retirer l'exemption.
+- **Test de borne.** `architecture.spec.ts` : « exemption des noms secrets : liste figée » et « (contrôle) » :
+  échouent si la liste grandit ou si le nom est toléré ailleurs.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N96.
+
+### OP-N98 — NFR-005 : un changement ordinaire est visible en un peu plus de 60 s (4 novembre 2026)
+
+Décision du porteur du 04/11/2026 ; consignée par WP21 (partie G) ; ADR-151. **Bloque la production : non.**
+
+- **Constat.** NFR-005 demande qu'un changement non bloquant (nouveau bracelet actif…) soit visible dans une version
+  publiée en 60 s au plus. La cadence R-30.5 attend `DELTA_AFTER_MS` = 60 s après la dernière version avant de produire
+  un DELTA ordinaire (`snapshot-cadence.ts`), puis il faut la boucle du travailleur (1 s), le chiffrement, l'écriture, la
+  signature et la publication. Mesuré par WP21 (partie A) : 60,9 à 62,2 s. Le porteur garde 60 s pour le délai.
+- **Risque.** Un changement non bloquant arrive au terminal environ 1 à 2 s plus tard que la cible. Aucun effet sur la
+  sécurité : les changements bloquants (blocage, retrait, lot non actif, portefeuille bloqué) partent sans attendre et
+  tiennent 5 s (corrigé par la partie G, tranches rendant la main à la boucle).
+- **Mission qui le lève.** Mission 13 (recette V1).
+- **Condition de levée.** Ramener `DELTA_AFTER_MS` à 55 s au plus (marge pour la production et la signature), ou faire
+  reformuler NFR-005 par le porteur (« 60 s après le délai de cadence »), puis retirer l'écart connu du test.
+- **Test de borne.** `test/unit/snapshots-content/cadence-bounds.spec.ts` : `DELTA_AFTER_MS` ne dépasse pas 60 000 ms.
+  `snapshot-latency.spec.ts` : le cas « autre changement … 60 s » échoue au-delà de 62,5 s (60 s plus la marge
+  documentée de 2,5 s) ; le cas strict « ≤ 60 s » est marqué `it.failing` (écart connu OP-N98) et fait échouer la suite
+  dès que la mesure passe sous 60 s, pour que l'écart soit retiré avec la dette.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N96 et OP-N97.
+
+### OP-N99 — FR-024 : câblage de deux refus de période non prouvé en intégration (5 novembre 2026)
+
+Relevé par la relecture de WP21 (cycle 1) et la revue post-fusion de la mission 7. **Bloque la production : non.**
+
+- **Constat.** FR-024 refuse une opération hors ligne quand le grand livre est verrouillé (`LEDGER_LOCKED`) ou que la
+  date limite de synchronisation est passée (`SYNC_DEADLINE_PASSED`). La règle est prouvée par
+  `test/unit/offline/period.spec.ts` (fonction pure) ; en intégration, `processing.spec.ts` ne couvre que
+  `PERIOD_CLOSED`. Le passage de ces deux cas depuis `compliance-input.reader.ts` jusqu'au résultat de l'opération
+  n'est donc pas prouvé de bout en bout.
+- **Risque.** Faible : un défaut de câblage laisserait passer jusqu'à l'écriture une opération sur un grand livre
+  verrouillé, que la base refuse alors (`CL003`, l'opération est rejetée sans écriture). Pour une date limite passée,
+  la base ne vérifie pas la date à l'écriture (`event_sync_deadline` ne sert qu'aux transitions de cycle de vie,
+  `0008`, vérifié le 05/11) : l'opération serait écrite au lieu d'être refusée.
+- **Mission qui le lève.** Mission 13 (recette V1), ou plus tôt à la première retouche du traitement des lots.
+- **Condition de levée.** Deux cas d'intégration dans `test/integration/offline/processing*.spec.ts` (grand livre
+  verrouillé ; date limite passée), chacun refusé avec son code et sans écriture.
+- **Test de borne.** `period.spec.ts` (la règle) ; la matrice d'acceptation porte la réserve (FR-024).
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N98.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
@@ -1060,6 +1402,11 @@ la mission 5a.**
 | OP-N63 Clé d'accord réécrite par l'API | Levé par la mission 5a : écrite à l'enrôlement seulement (`tests_device_rights.sql` §1, §2) | 21 octobre 2026 | ADR-105 |
 | OP-N70 Suites de la mission 4 sous le faux | Levé par WP18 de la mission 5a : chaque route de terminal en HTTPS réel, test de couverture (`device-auth-matrix.spec.ts`) | 21 octobre 2026 | ADR-113 |
 | OP-N71 Idempotence par chemin concret et appelant | Levé par WP18 de la mission 5a (`admin.spec.ts`, `idempotency.spec.ts`, `request-hash.spec.ts`) | 21 octobre 2026 | ADR-116 |
+| OP-N57 `offline_snapshot` : version plantée | Levé par la mission 7 : version calculée par `publish_offline_snapshot`, `INSERT` direct retiré (`tests_offline_snapshots.sql`, `tests_offline_rights.sql`, `tests_definer_trigger_writers.sql` §3) | 4 novembre 2026 | ADR-137 |
+| OP-N58 `offline_policy_history` falsifiable | Levé par la mission 7 : `log_offline_policy` en DEFINER, écritures par fonctions (`tests_offline_policy.sql`, `tests_definer_trigger_writers.sql` §3) | 4 novembre 2026 | ADR-137 |
+| OP-N68 Fonction créée à la main exécutable par `PUBLIC` | Levé par la mission 7 : droit par défaut global (`tests_execute_grants.sql` §4 inversé) | 4 novembre 2026 | ADR-111 |
+| OP-N69 Colonnes de `device` écrites par l'API | Levé par la mission 7 : liste vide, écritures par fonctions (`tests_device_rights.sql` §1) | 4 novembre 2026 | ADR-112 |
+| OP-N75 Purges exécutées par `cashless_app` | Levé par la mission 7 : rôle `cashless_maint` (`tests_device_purge_window.sql`, `tests_execute_grants.sql`) | 4 novembre 2026 | ADR-114 |
 | OP-N40 Conservation des clés d'idempotence | 30 jours par défaut (720 h, `IDEMPOTENCY_TTL_HOURS`), conforme au contrat ; terminaux : pour toujours (clé du grand livre) | 9 octobre 2026 | ADR-79 |
 | OP-N39 Pile logicielle | L'existant prime : PostgreSQL 17, RFC 9457, curseur, idempotence en base, sans ORM, Express, jose 6 ; le reste du document du porteur devient la cible (`08-pile-logicielle.md`) | 9 octobre 2026 | ADR-78 |
 | OP-N1 Catalogue | Option B : prix TTC fixe, catégories, un taux de taxe par article ; ni variantes, ni remises, ni stock en V1 | 30 septembre 2026 | ADR-35 |

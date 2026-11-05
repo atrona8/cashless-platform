@@ -11,8 +11,10 @@ import 'timestamp.dart';
 
 part 'snapshot_header.g.dart';
 
-/// Partie signée. Signature (algorithme de la clé `key_id`, `ECDSA_P256_SHA256` par défaut) sur la.
-/// sérialisation canonique JSON (RFC 8785, JCS) de cet objet entier (sync_protocol.md §4.1).
+/// Partie signée, de 15 champs, tous présents. Signature ECDSA P-256 / SHA-256 (clé `key_id`), **DER** en.
+/// base64 standard, sur la sérialisation canonique JSON (RFC 8785, JCS) de cet objet entier.
+/// (sync_protocol.md §4.1). `valid_until` = `generated_at` + `max_snapshot_age` du plafond du prestataire.
+/// (15 min par défaut).
 /// `content_sha256` = SHA-256 de la sérialisation JCS de `{entries, removed_token_hashes}` (sans les.
 /// champs chiffrés `pwd_pack_enc`, propres à chaque terminal). Un snapshot produit par la passerelle est.
 /// signé par une clé propre à la passerelle (hors KMS, stockage matériel), de `key_id` distinct.

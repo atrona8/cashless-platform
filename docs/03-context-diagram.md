@@ -4,6 +4,7 @@
 > supportée nativement par Mermaid (`C4Context`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
 > Dernière mise à jour : initialisation du 07/10/2026 (`SPECIFICATION.md` §1.2, §3, §11, §13 ; `PRD.md` §4).
 > Complément du 27/10/2026, confirmé à la review du 29/10/2026 : PSP et coffre des secrets, intégrations toujours en faux après la mission 6 (code relu : faux refusés au démarrage en production, processus public et `psp-poller` ; OP-N81, ADR-131).
+> Complément du 30/10/2026, confirmé à la review du 05/11/2026 (mission 7 mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir) : AWS KMS signe les snapshots hors ligne ; faux seulement, refusé au démarrage en production (test de preuve), jusqu'à la mission 12b (OP-N89).
 > Complément du 21/10/2026 : liste de révocation des attestations Android et racine Apple App Attest (mission
 > « Identité et enrôlement des terminaux », mergée le 21/10/2026).
 
@@ -50,7 +51,7 @@ C4Context
 | Administrateurs (`PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `MERCHANT_ADMIN`) | Personne | Configurent, supervisent, clôturent, versent, consultent les relevés |
 | PSP (Wave Business, Orange Money, PayDunya, Stripe) | Système externe | Encaissent les recharges ; webhooks signés ; relevés à rapprocher. **Mission 6 (relue le 29/10/2026) : interface commune et un faux par fournisseur seulement, refusés au démarrage en production ; adaptateurs réels dans une mission dédiée dès les accès de test (OP-N81, ADR-131)** |
 | Envoi des codes (WhatsApp, SMS principal, SMS de repli) | Système externe | Livrent les codes à usage unique (fournisseurs à choisir, ADR-66) |
-| AWS KMS | Système externe | Dérivation des mots de passe des bracelets, chiffrement enveloppe, signature des snapshots ; à venir : autorité des terminaux et signature des jetons d'appareil (faux seulement aujourd'hui, OP-N73, mission 7) |
+| AWS KMS | Système externe | Dérivation des mots de passe des bracelets, chiffrement enveloppe, signature des snapshots ; à venir : autorité des terminaux et signature des jetons d'appareil (faux seulement aujourd'hui, OP-N73). **Plan de la mission 7 (30/10/2026, prévu) : signature des snapshots hors ligne (port `Sign`) et clé de contenu des snapshots (ports `Decrypt` et `DataKey`), deux processus aux droits séparés ; faux seulement, refusé au démarrage en production, donc aucun snapshot servi en production avant l'adaptateur réel de la mission 12b (OP-N41, OP-N73 restent ouverts)** |
 | AWS Secrets Manager | Système externe | Identifiants PSP et secrets de webhooks, rattachés au détenteur des fonds. **Mission 6 (relue) : port `PspSecretStore` avec faux seulement, refusé en production ; adaptateur AWS reporté avec les adaptateurs PSP réels (OP-N81)** |
 | S3 Object Lock (compte AWS distinct) | Système externe | Copie en écriture unique des scellements du journal |
 | Serveur d'identité OIDC | Système externe | Jetons des personnes et jetons d'approbation sur place |

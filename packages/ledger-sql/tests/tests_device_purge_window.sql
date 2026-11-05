@@ -1,14 +1,15 @@
--- Purges des nonces et des essais d'enrôlement exécutées par l'API publique : bornes de fenêtre
+-- Purges des nonces et des essais d'enrôlement exécutées par cashless_maint : bornes de fenêtre
 -- (ADR-114 ; mission identite-enrolement-terminaux, lot WP18) — pgTAP, écrit à la main.
 -- Lancer : pg_prove -d <base> tests/tests_device_purge_window.sql (base créée par les migrations,
 -- roles.sql et post-roles.sql rejoués).
--- `cashless_app` exécute les deux purges (droit plus large accepté par ADR-114) : la suite échoue
--- si l'une d'elles peut retirer une ligne encore dans sa fenêtre, appelée sous ce rôle et sans
--- prestataire (travailleur device-purge). Seules les lignes de la suite sont regardées : d'autres
+-- OP-N75 levée (mission hors-ligne-snapshots-lots, WP08) : `cashless_maint` exécute seul les deux purges ;
+-- la suite échoue si l'une d'elles peut retirer une ligne encore dans sa fenêtre, appelée sous ce rôle et
+-- sans prestataire (travailleur device-purge). Seules les lignes de la suite sont regardées : d'autres
 -- lignes expirées peuvent exister en base.
 \set ON_ERROR_STOP 1
 \set QUIET 1
 BEGIN;
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 
@@ -49,25 +50,28 @@ SELECT pg_temp.h(a), a::inet, clock_timestamp() + d, 'CODE_INVALID'
                ('192.0.2.5', interval '-3 days')) AS v(a, d);
 
 -- 1. Droits (ADR-114) -----------------------------------------------------------------------------
-SELECT ok(has_function_privilege('cashless_app', 'purge_device_request_nonces(integer)', 'EXECUTE'),
-  'cashless_app exécute purge_device_request_nonces (ADR-114)');
-SELECT ok(has_function_privilege('cashless_app', 'purge_device_enrollment_attempts()', 'EXECUTE'),
-  'cashless_app exécute purge_device_enrollment_attempts (ADR-114)');
+SELECT ok(NOT has_function_privilege('cashless_app', 'purge_device_request_nonces(integer)', 'EXECUTE'),
+  'cashless_app n''exécute plus purge_device_request_nonces (OP-N75)');
+SELECT ok(NOT has_function_privilege('cashless_app', 'purge_device_enrollment_attempts()', 'EXECUTE'),
+  'cashless_app n''exécute plus purge_device_enrollment_attempts (OP-N75)');
+SELECT ok(has_function_privilege('cashless_maint', 'purge_device_request_nonces(integer)', 'EXECUTE')
+          AND has_function_privilege('cashless_maint', 'purge_device_enrollment_attempts()', 'EXECUTE'),
+  'cashless_maint exécute les deux purges');
 SELECT ok(NOT has_function_privilege('cashless_tagkeys', 'purge_device_request_nonces(integer)',
                                      'EXECUTE')
           AND NOT has_function_privilege('cashless_tagkeys', 'purge_device_enrollment_attempts()',
                                          'EXECUTE'),
   'cashless_tagkeys n''exécute aucune des deux purges');
 
--- 2. Purges sous cashless_app, sans prestataire ---------------------------------------------------
-SET LOCAL ROLE cashless_app;
+-- 2. Purges sous cashless_maint, sans prestataire ---------------------------------------------------
+SET LOCAL ROLE cashless_maint;
 SELECT set_config('app.operator_id', '', true);
 SELECT lives_ok($$SELECT purge_device_request_nonces(10000)$$,
-  'purge des nonces : exécutée par cashless_app');
+  'purge des nonces : exécutée par cashless_maint');
 SELECT lives_ok($$SELECT purge_device_request_nonces(10000)$$,
   'purge des nonces : seconde exécution');
 SELECT lives_ok($$SELECT purge_device_enrollment_attempts()$$,
-  'purge des essais : exécutée par cashless_app');
+  'purge des essais : exécutée par cashless_maint');
 RESET ROLE;
 
 -- 3. Bornes ---------------------------------------------------------------------------------------

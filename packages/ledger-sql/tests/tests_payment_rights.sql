@@ -13,6 +13,8 @@ BEGIN;
 SET LOCAL client_min_messages = warning;
 \ir ../roles.sql
 \ir ../post-roles.sql
+-- post-roles.sql referme le défaut des fonctions futures (OP-N68) : on le rouvre pour pgtap (WP08).
+\ir _grants_for_tests.sql
 RESET client_min_messages;
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();

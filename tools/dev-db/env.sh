@@ -39,6 +39,9 @@ export CASHLESS_TAGKEYS_PASSWORD="${CASHLESS_TAGKEYS_PASSWORD:-cashless_tagkeys_
 export CASHLESS_PERSO_PASSWORD="${CASHLESS_PERSO_PASSWORD:-cashless_perso_local}"
 export CASHLESS_TAGCHECK_PASSWORD="${CASHLESS_TAGCHECK_PASSWORD:-cashless_tagcheck_local}"
 export CASHLESS_KEYADMIN_PASSWORD="${CASHLESS_KEYADMIN_PASSWORD:-cashless_keyadmin_local}"
+export CASHLESS_SNAPCONTENT_PASSWORD="${CASHLESS_SNAPCONTENT_PASSWORD:-cashless_snapcontent_local}"
+export CASHLESS_SNAPSIGN_PASSWORD="${CASHLESS_SNAPSIGN_PASSWORD:-cashless_snapsign_local}"
+export CASHLESS_MAINT_PASSWORD="${CASHLESS_MAINT_PASSWORD:-cashless_maint_local}"
 export DATABASE_URL_OWNER="${DATABASE_URL_OWNER:-postgres://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_APP="${DATABASE_URL_APP:-postgres://cashless_app:$CASHLESS_APP_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_PLATFORM="${DATABASE_URL_PLATFORM:-postgres://cashless_platform:$CASHLESS_PLATFORM_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
@@ -47,6 +50,8 @@ export DATABASE_URL_TAGKEYS="${DATABASE_URL_TAGKEYS:-postgres://cashless_tagkeys
 export DATABASE_URL_PERSO="${DATABASE_URL_PERSO:-postgres://cashless_perso:$CASHLESS_PERSO_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_TAGCHECK="${DATABASE_URL_TAGCHECK:-postgres://cashless_tagcheck:$CASHLESS_TAGCHECK_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_KEYADMIN="${DATABASE_URL_KEYADMIN:-postgres://cashless_keyadmin:$CASHLESS_KEYADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+# Mission hors-ligne-snapshots-lots : processus de maintenance (WP10).
+export DATABASE_URL_MAINT="${DATABASE_URL_MAINT:-postgres://cashless_maint:$CASHLESS_MAINT_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 
 # Mission identite-enrolement-terminaux : VALEURS DE TEST seulement (publiques), identiques aux défauts hors
 # production de apps/api/src/config/config.ts ; refusées en production même posées (secrets de test). En production,

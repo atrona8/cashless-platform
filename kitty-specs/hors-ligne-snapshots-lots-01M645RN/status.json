@@ -1,0 +1,378 @@
+{
+  "event_count": 198,
+  "last_event_id": "01M6MKG9DKCBVAHC4TQSPKJ087",
+  "materialized_at": "2026-11-05T00:59:51.604187+00:00",
+  "mission_number": "",
+  "mission_slug": "hors-ligne-snapshots-lots-01M645RN",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 21,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKE7X2KB0V4M3RYRP758FN",
+      "last_transition_at": "2026-11-05T00:58:44.515111+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP01-contrat-api-types/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP01-contrat-api-types/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 26836,
+      "shell_pid_created_at": "1793360402.581417"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEB687X18ZKFPFVPE4E7Y",
+      "last_transition_at": "2026-11-05T00:58:47.881176+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP02-base-politique/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP02-base-politique/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16808,
+      "shell_pid_created_at": "1793359489.118147"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEEE2KS64YD5GDRE35Q8T",
+      "last_transition_at": "2026-11-05T00:58:51.202973+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP03-base-snapshots-publication/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP03-base-snapshots-publication/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 25974,
+      "shell_pid_created_at": "1793616780.799626"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEMY9CNYT848NAGK6ZH5B",
+      "last_transition_at": "2026-11-05T00:58:57.865980+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP04-base-enveloppes-cles/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP04-base-enveloppes-cles/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 40128,
+      "shell_pid_created_at": "1793371103.015857"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEHP5RVDW15QGQ7KF4C7T",
+      "last_transition_at": "2026-11-05T00:58:54.533460+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP05-base-lots-import/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP05-base-lots-import/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 23136,
+      "shell_pid_created_at": "1793360090.000643"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKER78S9YTD5R4HP1N095N",
+      "last_transition_at": "2026-11-05T00:59:01.224686+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP06-base-anomalies/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP06-base-anomalies/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44137,
+      "shell_pid_created_at": "1793371567.965409"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEVF3K6KVDNN7CSE95KNG",
+      "last_transition_at": "2026-11-05T00:59:04.547816+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP07-base-terminal-vendeur/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP07-base-terminal-vendeur/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44132,
+      "shell_pid_created_at": "1793371565.911455"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKF209SQFAXARDC0P9MYBS",
+      "last_transition_at": "2026-11-05T00:59:11.241860+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP08-droits-base/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP08-droits-base/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2798,
+      "shell_pid_created_at": "1793614138.891828"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKF59ES65PPQXC3Y3B30ZR",
+      "last_transition_at": "2026-11-05T00:59:14.606432+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP09-port-signature/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP09-port-signature/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 49037,
+      "shell_pid_created_at": "1793372043.868406"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKF8HW8ZN05YG6FX7MPB8M",
+      "last_transition_at": "2026-11-05T00:59:17.948915+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP10-processus-maintenance/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP10-processus-maintenance/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7391,
+      "shell_pid_created_at": "1793615161.291168"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFBV61BBY39M1CY7DS8W5",
+      "last_transition_at": "2026-11-05T00:59:21.318383+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP11-snapshot-content-cadence/review-cycle-3.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP11-snapshot-content-cadence/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44560,
+      "shell_pid_created_at": "1793618870.919462"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFWANGRJMD4SF55K67871",
+      "last_transition_at": "2026-11-05T00:59:38.197710+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP12-snapshot-content-chiffrement/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP12-snapshot-content-chiffrement/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 8515,
+      "shell_pid_created_at": "1793704750.05875"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFF3Y69Z5N7XSHN1S3Z8P",
+      "last_transition_at": "2026-11-05T00:59:24.670392+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP13-snapshot-signer/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP13-snapshot-signer/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16858,
+      "shell_pid_created_at": "1793615735.160951"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFJC7BY60PY9AW9HNHKK4",
+      "last_transition_at": "2026-11-05T00:59:28.007210+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP14-api-politique/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP14-api-politique/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7234,
+      "shell_pid_created_at": "1793704684.843827"
+    },
+    "WP15": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFNSNBQPV429F1WJ5QQ2M",
+      "last_transition_at": "2026-11-05T00:59:31.510147+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP15-api-snapshots/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP15-api-snapshots/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 34478,
+      "shell_pid_created_at": "1793617704.909248"
+    },
+    "WP16": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFS1E855V7AACKNRGTBZ3",
+      "last_transition_at": "2026-11-05T00:59:34.830330+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP16-registre-empreintes/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP16-registre-empreintes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7394,
+      "shell_pid_created_at": "1793615161.328793"
+    },
+    "WP17": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKEYQD6WQHCW5YYEBWKZR5",
+      "last_transition_at": "2026-11-05T00:59:07.885856+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP17-regles-pures/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP17-regles-pures/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 30802,
+      "shell_pid_created_at": "1793360688.567463"
+    },
+    "WP18": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKFZMMJ2EK9F6G3SMPP6C7",
+      "last_transition_at": "2026-11-05T00:59:41.589124+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP18-reception-lots/review-cycle-1.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP18-reception-lots/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 28491,
+      "shell_pid_created_at": "1793617275.736717"
+    },
+    "WP19": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKG2WYTP4THWRXGDC72K5Z",
+      "last_transition_at": "2026-11-05T00:59:44.927073+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP19-traitement-operations/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP19-traitement-operations/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 55159,
+      "shell_pid_created_at": "1793708455.26192"
+    },
+    "WP20": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKG64G30TX60SXASMPPWKD",
+      "last_transition_at": "2026-11-05T00:59:48.240544+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP20-trous-import/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP20-trous-import/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 8765,
+      "shell_pid_created_at": "1793717309.48112"
+    },
+    "WP21": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6MKG9DKCBVAHC4TQSPKJ087",
+      "last_transition_at": "2026-11-05T00:59:51.604187+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/hors-ligne-snapshots-lots-01M645RN-coord/kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP21-preuves-ci-consignation/review-cycle-2.md",
+        "reference": "review-cycle://hors-ligne-snapshots-lots-01M645RN/WP21-preuves-ci-consignation/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 47581,
+      "shell_pid_created_at": "1793834898.90662"
+    }
+  }
+}

@@ -29,7 +29,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 | Observabilité | pino / nestjs-pino | 9.14 / 4 | cible | remplace le journal JSON maison sans changer son contenu (`X-Request-Id`, une ligne par requête) |
 | Observabilité | @opentelemetry/sdk-node, auto-instrumentations-node | à fixer à l'introduction | cible | le document ne donnait pas de version exploitable pour la seconde |
 | Observabilité | AWS CloudWatch | service managé | cible | |
-| Documentation d'API | @nestjs/swagger | 11 | facultatif | le contrat `openapi.yaml` écrit à la main fait foi ; Swagger ne peut servir qu'à l'afficher |
+| Documentation d'API | Swagger UI (CDN) | 5.34.0 | en place (sans dépendance) | page `/docs` hors production seulement, qui affiche `openapi.yaml` tel quel ; Swagger UI chargé depuis le CDN jsDelivr, version épinglée, intégrité SRI ; `@nestjs/swagger` et `swagger-ui-dist` écartés (dépendance à `@scarf/scarf`, script d'installation qui envoie des statistiques) ; ADR-153 |
 
 ## 2. Back-office (mission 11)
 

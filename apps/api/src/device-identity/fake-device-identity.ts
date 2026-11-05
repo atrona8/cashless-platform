@@ -17,4 +17,8 @@ export class FakeDeviceIdentity implements DeviceIdentityPort {
     if (!deviceId || !operatorId || !UUID.test(deviceId) || !UUID.test(operatorId)) return null;
     return { deviceId: deviceId.toLowerCase(), operatorId: operatorId.toLowerCase() };
   }
+
+  async preAuthenticate(req: Request): Promise<boolean> {
+    return (await this.identify(req)) !== null;
+  }
 }

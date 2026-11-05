@@ -4,7 +4,8 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-/// PURCHASE (vente), REVERSAL (annulation d'une vente), TOPUP_CASH (si `cash_topup_offline`),.
+/// PURCHASE (vente), REVERSAL (annulation d'une vente), TOPUP_CASH (toujours rejeté : `REJECTED` /.
+/// `OFFLINE_NOT_ALLOWED`, aucune recharge en espèces hors ligne),.
 /// VOID (numéro consommé sans effet comptable : abandon, refus en ligne), ONLINE_REF (référence à une.
 /// opération exclusivement en ligne — activation, caution, restitution, QR… — identifiée par son.
 /// `online_operation` et son `content_sha256`). Le lot couvre TOUS les numéros, y compris ceux déjà.

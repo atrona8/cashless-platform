@@ -35,6 +35,7 @@ class EdgeSyncOperation {
     this.tap,
     this.snapshotVersion,
     this.configId,
+    this.vendorSessionId,
     this.localAvailableBefore,
     this.onlineStatus,
     this.onlineTapId,
@@ -75,6 +76,16 @@ class EdgeSyncOperation {
   ///
   @JsonKey(name: 'config_id')
   final int? configId;
+
+  /// Session de vendeur (`VendorSession`) ouverte sur le terminal au moment de l'opération. Champ d'ÉTAT.
+  /// (comme `snapshot_version`), non chaîné : il n'entre pas dans `content_sha256`. Obligatoire pour une.
+  /// `PURCHASE` ou une `REVERSAL` autorisée hors ligne : sans lui, ou si la session n'était pas ouverte.
+  /// sur ce terminal à l'heure de l'opération, l'opération est rejetée (`OFFLINE_NOT_ALLOWED`, détail.
+  /// `VENDOR_SESSION`). Absent pour `VOID`, `ONLINE_REF` et `TOPUP_CASH`. Le serveur ne fait pas échouer.
+  /// le lot pour une valeur mal formée : l'opération est alors traitée comme sans session.
+  ///
+  @JsonKey(name: 'vendor_session_id')
+  final String? vendorSessionId;
 
   /// Solde disponible calculé localement avant l'opération (contrôle).
   @JsonKey(name: 'local_available_before')

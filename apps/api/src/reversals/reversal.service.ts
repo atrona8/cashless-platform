@@ -27,6 +27,7 @@ import { ProblemException } from '../errors/problem';
 import { resolveProblem } from '../errors/problem.filter';
 import type { DeviceOnsiteState } from '../approval/onsite/device-onsite-approval';
 import type { IdempotentTx } from '../idempotency/idempotent.decorator';
+import { reduceShortfallOfReversedSale } from '../offline/processing/shortfall-reduction';
 import { conflict, requireUuid } from '../organization/platform/platform.dto';
 import { DeviceSeqRegistry, isRegistrable } from '../payments/device-seq-registry';
 import { assertAuthorityEpoch, resolveOperationTime } from '../payments/operation-time';
@@ -218,6 +219,9 @@ export class ReversalService {
       sessionId,
       approverId,
     ]);
+    // Vente hors ligne avec manque : la part en attente est rendue, l'anomalie OFFLINE_SHORTFALL est réduite d'autant
+    // (mission 7, WP19) avec la vraie transaction d'annulation.
+    await reduceShortfallOfReversedSale(client, transactionId, reversalId);
     // 8. Le numéro, dans la même transaction que l'écriture.
     const content = reversalContent(args.seq, args.transactionId, args.body);
     if (content === null) throw new Error('contenu du registre : corps non objet après validation');
@@ -234,14 +238,18 @@ export class ReversalService {
 
   /** `SELECT … FOR UPDATE OF d` : prend le terminal et lit son contexte en une seule instruction. */
   private async lockTerminal(client: TxClient, device: DeviceContext): Promise<TerminalRow> {
+    // Verrou par lock_device (DEFINER, cashless_app n'a aucun UPDATE sur device), puis lecture ordinaire.
+    const locked = await client.query<{ ok: boolean }>("SELECT lock_device($1, 'UPDATE') AS ok", [
+      device.deviceId,
+    ]);
+    if (!locked.rows[0]?.ok) throw new ProblemException('NOT_FOUND');
     const { rows } = await client.query<TerminalRow>(
       `SELECT d.event_id, l.id AS ledger_id, l.authority_epoch, clock_timestamp() AS db_now
          FROM device d
          LEFT JOIN event e ON e.id = d.event_id
          LEFT JOIN ledger l
                 ON l.scope_type = 'EVENT' AND l.scope_id = e.id AND l.currency = e.currency
-        WHERE d.id = $1 AND d.operator_id = $2
-          FOR UPDATE OF d`,
+        WHERE d.id = $1 AND d.operator_id = $2`,
       [device.deviceId, device.operatorId],
     );
     if (!rows[0]) throw new ProblemException('NOT_FOUND');

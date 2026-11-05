@@ -19,6 +19,12 @@ export interface DeviceIdentityPort {
   readonly isFake?: boolean;
   /** Rend l'identité prouvée par la requête, ou `null` si elle n'en porte aucune de valide. */
   identify(req: Request): Promise<DeviceClaims | null>;
+  /**
+   * Filtre PRÉALABLE à la lecture d'un gros corps (mission 7, WP20) : vrai si les preuves qui ne dépendent pas du
+   * corps (étapes 1 à 4 : certificat, jeton, terminal, liens) sont valides. Aucune écriture, aucun nonce, aucun
+   * journal (la garde refera l'identification complète et journalisera). Absent : on ne peut pas filtrer.
+   */
+  preAuthenticate?(req: Request): Promise<boolean>;
 }
 
 /** Terminal de la requête, tel que la base le connaît (jamais tel que la requête le déclare). */

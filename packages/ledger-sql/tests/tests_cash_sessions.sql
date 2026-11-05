@@ -9,6 +9,7 @@
 \set ON_ERROR_STOP 1
 \set QUIET 1
 BEGIN;
+\ir _grants_for_tests.sql
 SET LOCAL client_min_messages = warning;
 \ir ../roles.sql
 RESET client_min_messages;

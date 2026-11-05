@@ -19,6 +19,7 @@
 //   8. enregistrement du numéro (`ACCEPTED`) dans la même transaction.
 // Tout refus annule tout (NFR-006) ; le refus définitif 4xx est rangé au registre dans une transaction
 // séparée, validée, puis `TapService.settleRefusal` rend durables les effets d'une lecture suspecte.
+import { openAnomaly } from '../offline/anomalies/anomaly-writer';
 import { Injectable } from '@nestjs/common';
 import { LedgerEngineService } from '../ledger/ledger-engine.service';
 import type { TxClient } from '../db/tenant-tx';
@@ -183,11 +184,13 @@ export class PaymentsService {
 
     // 7. Anomalie d'heure, lignes (un seul jsonb), attribution, passage ou demande consommés.
     if (time.skewed)
-      await client.query(
-        `INSERT INTO anomaly (operator_id, ledger_id, kind, device_id, transaction_id, amount)
-         VALUES ($1, $2, 'CLOCK_SKEW', $3, $4, 0)`,
-        [device.operatorId, terminal.ledger_id, device.deviceId, transactionId],
-      );
+      await openAnomaly(client, {
+        ledgerId: terminal.ledger_id,
+        kind: 'CLOCK_SKEW',
+        deviceId: device.deviceId,
+        transactionId,
+        amount: 0n,
+      });
     if (input.lines)
       await client.query('SELECT record_sale_lines($1, $2, $3::jsonb)', [
         transactionId,
@@ -228,6 +231,11 @@ export class PaymentsService {
 
   /** `SELECT … FOR UPDATE OF d` : prend le terminal et lit son contexte en une seule instruction. */
   private async lockTerminal(client: TxClient, device: DeviceContext): Promise<TerminalRow> {
+    // Verrou par lock_device (DEFINER, cashless_app n'a aucun UPDATE sur device), puis lecture ordinaire.
+    const locked = await client.query<{ ok: boolean }>("SELECT lock_device($1, 'UPDATE') AS ok", [
+      device.deviceId,
+    ]);
+    if (!locked.rows[0]?.ok) throw new ProblemException('NOT_FOUND');
     const { rows } = await client.query<TerminalRow>(
       `SELECT d.app_mode, d.os, d.nfc_enabled, d.event_id, pos.participation_id,
               e.currency AS event_currency, l.id AS ledger_id, l.authority_epoch,
@@ -237,8 +245,7 @@ export class PaymentsService {
          LEFT JOIN event e ON e.id = d.event_id
          LEFT JOIN ledger l
                 ON l.scope_type = 'EVENT' AND l.scope_id = e.id AND l.currency = e.currency
-        WHERE d.id = $1 AND d.operator_id = $2
-          FOR UPDATE OF d`,
+        WHERE d.id = $1 AND d.operator_id = $2`,
       [device.deviceId, device.operatorId],
     );
     if (!rows[0]) throw new ProblemException('NOT_FOUND');

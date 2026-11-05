@@ -1,0 +1,343 @@
+schema_version: 1
+mission_id: 01M645RN3VGKZB9AD4NQ9GJJS6
+mission_slug: hors-ligne-snapshots-lots-01M645RN
+mission_number: 2
+friendly_name: 'Hors ligne : snapshots et lots'
+mission_type: software-dev
+target_branch: feat/hors-ligne-snapshots-lots
+created_at: '2026-11-05T01:00:18.784220+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-05T01:00:18.784220+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-002
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-003
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-004
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-005
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-006
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-007
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-008
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-009
+  category: implementation
+  summary: WP13 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-010
+  category: implementation
+  summary: WP14 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-011
+  category: implementation
+  summary: WP16 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-012
+  category: implementation
+  summary: WP17 completed without rejection cycles
+  evidence_refs:
+  - e-026
+- id: h-013
+  category: implementation
+  summary: WP18 completed without rejection cycles
+  evidence_refs:
+  - e-026
+not_helpful:
+- id: n-014
+  category: doc
+  summary: analysis-report.md records 12 finding(s)
+  evidence_refs:
+  - e-040
+  details: The analysis-report.md artifact for this mission records 12 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-009
+  category: process
+  summary: WP04 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-035
+  details: WP WP04 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-010
+  category: process
+  summary: WP07 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-036
+  details: WP WP07 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-011
+  category: process
+  summary: WP09 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-037
+  details: WP WP09 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-012
+  category: process
+  summary: WP10 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-038
+  details: WP WP10 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-013
+  category: process
+  summary: WP17 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-039
+  details: WP WP17 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP01 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-027
+  details: WP WP01 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP03 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-028
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP08 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-029
+  details: WP WP08 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP11 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-030
+  details: WP WP11 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP15 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-031
+  details: WP WP15 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-006
+  category: review_loop
+  summary: WP19 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-032
+  details: WP WP19 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-007
+  category: review_loop
+  summary: WP20 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-033
+  details: WP WP20 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-008
+  category: review_loop
+  summary: WP21 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-034
+  details: WP WP21 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP01-contrat-api-types.md
+- id: e-006
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP02-base-politique.md
+- id: e-007
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP03-base-snapshots-publication.md
+- id: e-008
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP04-base-enveloppes-cles.md
+- id: e-009
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP05-base-lots-import.md
+- id: e-010
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP06-base-anomalies.md
+- id: e-011
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP07-base-terminal-vendeur.md
+- id: e-012
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP08-droits-base.md
+- id: e-013
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP09-port-signature.md
+- id: e-014
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP10-processus-maintenance.md
+- id: e-015
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP11-snapshot-content-cadence.md
+- id: e-016
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP12-snapshot-content-chiffrement.md
+- id: e-017
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP13-snapshot-signer.md
+- id: e-018
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP14-api-politique.md
+- id: e-019
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP15-api-snapshots.md
+- id: e-020
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP16-registre-empreintes.md
+- id: e-021
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP17-regles-pures.md
+- id: e-022
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP18-reception-lots.md
+- id: e-023
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP19-traitement-operations.md
+- id: e-024
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP20-trous-import.md
+- id: e-025
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/tasks/WP21-preuves-ci-consignation.md
+- id: e-026
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+- id: e-027
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M669Q8Q5RQ6EMAZS90TQ4KHF
+- id: e-028
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M669Y8ZN4DAD4N7ZE2VD6SM2..01M6DY54AFSGTKTD7YF9SSEGC9
+- id: e-029
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M66RBD325Z4SBG87GMJQMYET
+- id: e-030
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6DY0MYYZ9WQ9FGRXYFPG6EZ..01M6E06212DXNZ7BJNKXJ21SNM
+- id: e-031
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6E0YGZQMZPK2138C1Q4VKKZ
+- id: e-032
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6GNNEXX265XV363R0C9QSP0
+- id: e-033
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6GY5695YDB9H4X02CC3JN25
+- id: e-034
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6ME67S8MTNCHSCKQN3QSS7H
+- id: e-035
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M66MHA5MNGN6KC1J8GH8WMAB
+- id: e-036
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M66MZYN4G2Y76GYST4RVE846
+- id: e-037
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M66NRJPCCD136W500MJAEBBJ
+- id: e-038
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M6DX149M11GG52204QE8FZAF
+- id: e-039
+  kind: event_range
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/status.events.jsonl
+  range: 01M66KW21B641TJ69GPTK2BNQR..01M66M3HTV80GWBAPSFQEEDFKQ
+- id: e-040
+  kind: file
+  path: kitty-specs/hors-ligne-snapshots-lots-01M645RN/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

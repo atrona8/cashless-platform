@@ -5,6 +5,7 @@
 \set ON_ERROR_STOP 1
 \set QUIET 1
 BEGIN;
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 
@@ -65,7 +66,7 @@ SELECT is((SELECT count(*)::int FROM unnest(ARRAY['cashless_tagkeys','cashless_p
                   unnest(ARRAY['post_transaction(uuid,text,text,timestamptz,text,jsonb,uuid,uuid,uuid,uuid,uuid,uuid,uuid,jsonb)',
                                'preload_media(uuid)', 'activate_media(uuid,uuid,text,uuid)', 'register_tap(uuid,bytea,bytea,bigint,timestamptz,uuid,text,uuid,bigint,bytea)',
                                'consume_tap(bigint,uuid)', 'grant_edge_authority(uuid,uuid,uuid)', 'set_event_status(uuid,event_status,uuid)',
-                               'open_offline_batch(uuid,uuid,uuid,bigint,bytea,bytea[],bytea,bytea,text)']) f
+                               'open_offline_batch(uuid,uuid,uuid,bigint,bytea,bytea[],bytea,bytea,text,integer)']) f
             WHERE has_function_privilege(r, f, 'EXECUTE')), 0,
   'OP-N44 : aucun rôle des clés n''exécute une fonction d''API du schéma de référence');
 SET LOCAL ROLE cashless_tagkeys;

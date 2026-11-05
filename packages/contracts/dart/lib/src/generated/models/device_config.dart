@@ -64,8 +64,8 @@ class DeviceConfig {
   final OfflinePolicy offlinePolicy;
 
   /// Clés publiques valides pour vérifier les snapshots (rotation par `key_id`), au plus deux par.
-  /// signataire : le central (clé dans le KMS/HSM) et chaque passerelle (clé propre, hors KMS, dans son.
-  /// stockage matériel, `key_id` distinct) — sync_protocol.md §4.1.
+  /// signataire (clés `ACTIVE` et `RETIRED` non révoquées) : le central (clé dans le KMS/HSM) et chaque.
+  /// passerelle (clé propre, hors KMS, dans son stockage matériel, `key_id` distinct) — sync_protocol.md §4.1.
   ///
   @JsonKey(name: 'snapshot_keys')
   final List<SnapshotKeys> snapshotKeys;

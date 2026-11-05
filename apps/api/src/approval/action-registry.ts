@@ -23,6 +23,17 @@ export interface ApprovalExecutionResult {
   executedTxId?: string;
 }
 
+/** Issue d'une demande qui ne sera jamais exécutée : refusée, échue, ou approuvée dont l'exécution a échoué. */
+export type ApprovalClosure = 'REJECTED' | 'EXPIRED' | 'FAILED';
+
+export interface ApprovalClosureContext<P> {
+  request: ApprovalRequestRow;
+  payload: P;
+  outcome: ApprovalClosure;
+  /** Personne qui a décidé (ou tenté de décider) la demande. */
+  actorId: string;
+}
+
 export interface ApprovalActionDefinition<P = unknown> {
   action: ApprovalAction;
   /**
@@ -43,6 +54,11 @@ export interface ApprovalActionDefinition<P = unknown> {
    * une erreur SQL traduisible fait passer la demande FAILED ; toute autre erreur annule tout.
    */
   execute(client: TxClient, ctx: ApprovalExecutionContext<P>): Promise<ApprovalExecutionResult>;
+  /**
+   * Optionnel : libère ce que la demande tenait en attente quand elle n'ira jamais à `EXECUTED` (refus, échéance,
+   * échec). Appelé dans la transaction de la décision, après le passage de la demande à son état final.
+   */
+  onClosed?(client: TxClient, ctx: ApprovalClosureContext<P>): Promise<void>;
 }
 
 /** Rôles admis par une action, sous forme de liste. */

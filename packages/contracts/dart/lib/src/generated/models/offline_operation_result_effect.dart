@@ -4,7 +4,9 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-/// NONE pour VOID, ONLINE_REF non exécuté, REJECTED.
+/// NONE pour VOID, ONLINE_REF non exécuté, REJECTED. Un `DUPLICATE` dont l'opération est déjà au journal.
+/// (en ligne, passerelle) vaut `LEDGER_WRITTEN` et porte le `transaction_id` d'origine.
+///
 @JsonEnum()
 enum OfflineOperationResultEffect {
   @JsonValue('LEDGER_WRITTEN')

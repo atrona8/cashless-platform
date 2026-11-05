@@ -72,7 +72,7 @@ describe('createPayment : verrous (WP11, cycle 2)', () => {
       await holder.query('SELECT 1 FROM device WHERE id = $1 FOR NO KEY UPDATE', [term.t.deviceId]);
       const pending = Promise.resolve(pw.pay(term, pw.keypadBody(term, { tap: pw.tap(m) }, 1000)));
       pending.catch(() => undefined);
-      await waitBlocked('FOR UPDATE OF d');
+      await waitBlocked("lock_device($1, 'UPDATE')");
       // La vente attend le terminal sans rien tenir : cette mise à jour de la session ne peut pas l'attendre.
       await holder.query('SET LOCAL lock_timeout = 5000');
       await holder.query(CLOSE_SESSION, [term.sessionId]);
@@ -95,7 +95,7 @@ describe('createPayment : verrous (WP11, cycle 2)', () => {
     const token = await pw.customerQr(m.walletId);
     const res = await commitWhileWaiting(
       { sql: `UPDATE device SET status = 'SUSPENDED' WHERE id = $1`, params: [term.t.deviceId] },
-      { role: 'cashless_app', statement: 'FOR UPDATE OF d' },
+      { role: 'cashless_app', statement: "lock_device($1, 'UPDATE')" },
       () => pw.pay(term, pw.keypadBody(term, { customer_qr_token: token }, 1000)),
     );
     expect([res.status, res.body.code]).toEqual([403, 'DEVICE_SUSPENDED']);

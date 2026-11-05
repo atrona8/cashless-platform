@@ -61,6 +61,27 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL043: { code: 'CONFLICT_STATE', status: 409 },
   // CL044 : contestation non permise (non SUCCEEDED, non carte, autre portefeuille...) -> 409 (0038).
   CL044: { code: 'CONFLICT_STATE', status: 409 },
+  // Mission 7 (lot WP01 ; interfaces.md § 1 ; migrations 0043 à 0046 et 0045 pour CL054, ADR-139/140).
+  // CL045 : portée de politique invalide (autre prestataire) -> 404 neutre, pas d'oracle d'existence (0043).
+  CL045: { code: 'NOT_FOUND', status: 404 },
+  // CL046 : version de politique attendue différente (0043).
+  CL046: { code: 'CONFLICT_STATE', status: 409 },
+  // CL047 : cash_topup_offline vrai refusé, jamais autorisé hors ligne (0043, R-02).
+  CL047: { code: 'VALIDATION_FAILED', status: 422 },
+  // CL048 : brouillon de snapshot invalide = bug du producteur, alarme ; 500 sans message métier (0044).
+  CL048: { code: 'INTERNAL_ERROR', status: 500 },
+  // CL049 : version de snapshot non servie à ce terminal ou empreinte différente, accusé (0045).
+  CL049: { code: 'SNAPSHOT_VERSION_UNKNOWN', status: 409 },
+  // CL050 : aucun snapshot disponible pour ce terminal (aucune version, enveloppe pas prête) (0045).
+  CL050: { code: 'CONFLICT_STATE', status: 409 },
+  // CL051 : terminal non éligible au snapshot (interdit, sans événement, téléphone, aucune clé) (0045).
+  CL051: { code: 'OFFLINE_NOT_ALLOWED', status: 403 },
+  // CL052 : import du journal, terminal non REVOKED (0046).
+  CL052: { code: 'CONFLICT_STATE', status: 409 },
+  // CL053 : import du journal, empreinte des lots différente de la demande ou déjà appliqué (0046).
+  CL053: { code: 'CONFLICT_STATE', status: 409 },
+  // CL054 : troisième clé de signature valide par signataire (0045).
+  CL054: { code: 'CONFLICT_STATE', status: 409 },
   P0002: { code: 'NOT_FOUND', status: 404 },
   // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
   // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus

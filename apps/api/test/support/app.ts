@@ -13,6 +13,7 @@ import {
 import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import type { Request } from 'express';
 import { AppModule } from '../../src/app.module';
+import { mountApiDocs } from '../../src/docs/api-docs';
 import { API_PREFIX, APP_CONFIG, type AppConfig } from '../../src/config/config';
 import { ProblemException } from '../../src/errors/problem';
 import { AuthenticationGuard } from '../../src/identity/authentication.guard';
@@ -31,6 +32,7 @@ import { TagKeysProcessModule } from '../../src/processes/tag-keys.module';
 import { applyTrustProxy, tlsServerOptions } from '../../src/processes/bootstrap';
 import { PublicProcessModule } from '../../src/processes/public.module';
 import { WorkerRegistry } from '../../src/processes/worker';
+import { applyBatchBody } from '../../src/offline/batches/batch-body';
 import { APP_URL, KEYADMIN_URL, PERSO_URL, PLATFORM_URL, TAGCHECK_URL, TAGKEYS_URL } from './db';
 import { useTestTls, type TestTls } from './tls';
 
@@ -80,6 +82,8 @@ export interface TestAppOptions {
   trustProxyHops?: number;
   /** Identité du terminal : le faux (défaut, application en clair) ou la réelle. */
   deviceIdentity?: 'fake' | 'real';
+  /** Documentation interactive montée comme `serve` (hors production seulement) avec cette configuration. */
+  apiDocs?: Pick<AppConfig, 'production'>;
 }
 
 export async function createTestApp(options: TestAppOptions = {}): Promise<INestApplication> {
@@ -107,7 +111,9 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
     app,
     options.trustProxyHops ?? app.get<AppConfig>(APP_CONFIG, { strict: false }).trustProxyHops,
   );
+  if (options.apiDocs) mountApiDocs(app, options.apiDocs);
   app.setGlobalPrefix(API_PREFIX);
+  applyBatchBody(app);
   await app.init();
   return app;
 }
@@ -215,6 +221,7 @@ export async function startHttpsApp(
   const app = moduleRef.createNestApplication({ logger: false, rawBody: true, httpsOptions });
   applyTrustProxy(app, options.trustProxyHops ?? config.trustProxyHops);
   app.setGlobalPrefix(API_PREFIX);
+  applyBatchBody(app);
   await app.listen(0, '127.0.0.1');
   const { port } = app.getHttpServer().address() as AddressInfo;
   return {

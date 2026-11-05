@@ -1,0 +1,19 @@
+# Base PostgreSQL locale pour l'API Cashless (développement seulement, jamais en production).
+# Écoute sur 127.0.0.1 uniquement ; authentification `trust` réservée à ce poste.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: cashless_dev
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - cashless-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  cashless-pg:

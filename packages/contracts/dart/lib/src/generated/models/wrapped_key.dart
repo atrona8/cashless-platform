@@ -6,14 +6,17 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'wrapped_key.g.dart';
 
-/// Clé de contenu AES-256 (propre au snapshot) enveloppée pour la clé d'accord ECDH P-256 du terminal.
-/// (ECDH-ES + HKDF-SHA256 + AES Key Wrap). Elle déchiffre les `pwd_pack_enc` des entrées.
+/// Clé de contenu AES-256 (propre au snapshot) scellée pour la clé d'accord ECDH P-256 du terminal par la.
+/// construction `sealForRecipient` de `@cashless/tag-format` (ECDH-ES P-256, HKDF-SHA256, AES-256-GCM ; plus.
+/// de key wrap AES). AAD = `CASHLESS/SNAPKEY/v1 ‖ ledger_id ‖ version ‖ device_id`. Elle déchiffre les.
+/// `pwd_pack_enc` des entrées.
 ///
 @JsonSerializable()
 class WrappedKey {
   const WrappedKey({
     required this.alg,
     required this.epk,
+    required this.iv,
     required this.wrappedKey,
   });
 
@@ -22,8 +25,13 @@ class WrappedKey {
 
   final String alg;
 
-  /// Clé publique éphémère (base64url).
+  /// Clé publique éphémère (point non compressé, base64url).
   final String epk;
+
+  /// Nonce AES-GCM de 12 octets (base64 standard).
+  final String iv;
+
+  /// Clé de contenu chiffrée suivie du tag AES-GCM (base64 standard).
   @JsonKey(name: 'wrapped_key')
   final String wrappedKey;
 

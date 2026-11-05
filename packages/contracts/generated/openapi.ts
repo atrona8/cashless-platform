@@ -188,7 +188,8 @@ export type paths = {
          * État des séquences du terminal vu par le serveur
          * @description Renvoie le plus grand numéro de séquence reçu sans trou (`contiguous_acked_seq`), le plus grand reçu
          *     (`max_seen_seq`) et la liste des trous connus. Utilisé à la reprise après coupure
-         *     (sync_protocol.md §6).
+         *     (sync_protocol.md §6). Servie aussi à un terminal `SUSPENDU` (il doit pouvoir reprendre sa synchronisation,
+         *     comme pour l'envoi des lots) ; un terminal `REVOKED` reçoit `403 DEVICE_REVOKED`.
          */
         get: operations["getDeviceSeqStatus"];
         put?: never;
@@ -214,7 +215,9 @@ export type paths = {
          *     (`409 CLOSING_CONDITION_NOT_MET`, `CL019`) tant qu'un terminal n'est pas à jour ; après, il est permis et
          *     les opérations arrivées ensuite suivent la règle des synchronisations tardives (ADR-49).
          *     Raisons : `NOT_SEEN_SINCE_CLOSING`, `SEQ_GAP`, `BATCH_IN_PROGRESS`. Exclus : terminaux révoqués et
-         *     téléphones personnels.
+         *     téléphones personnels. Rôles : `ORGANIZER_ADMIN` (de l'organisateur de l'événement) et `OPERATOR_ADMIN`
+         *     (comme `getEventOfflineRisk`). Aucun de ces rôles : `403` ; événement inexistant, d'un autre prestataire ou
+         *     d'un autre organisateur : `404` neutre.
          */
         get: operations["getEventDeviceSyncStatus"];
         put?: never;
@@ -398,10 +401,17 @@ export type paths = {
          *     Exige `SUPERVISOR`. Opération à deux personnes du back-office (ADR-74, SPECIFICATION §3.2) : l'appel crée une demande
          *     d'approbation (action `DEVICE_JOURNAL_IMPORT`) et répond `202` avec la demande `PENDING` ; rien n'est exécuté.
          *     Une seconde personne `SUPERVISOR` (≠ appelant) l'approuve par `approveApprovalRequest`, qui exécute
-         *     l'action une seule fois avec elle comme valideur et renvoie le `DeviceJournalImportResult` dans `result`.
-         *     Le serveur vérifie les signatures et la chaîne dès la création de la demande (refus immédiat), puis
-         *     traite les lots à l'exécution. Terminal non `REVOKED` : `409 CONFLICT_STATE` (il envoie ses
-         *     lots lui-même, sync_protocol.md §11 cas 33).
+         *     l'action une seule fois avec elle comme valideur. Le traitement des lots est asynchrone (travailleur
+         *     `journal-import`, une opération par transaction, reprise à la première sans résultat) : à l'exécution,
+         *     l'import passe `PROCESSING` et `result` (`DeviceJournalImportResult`) le dit, sans résultat par lot ; le
+         *     résultat final (`APPLIED` ou `FAILED`) se lit ensuite par `getDeviceJournalImport`.
+         *     La demande porte `sha256(batches)` et une synthèse (nombre d'opérations, total des ventes, plage de
+         *     numéros, opérations datées après la dernière présence serveur du terminal) que l'approbateur voit ;
+         *     empreinte, signatures et chaîne sont revérifiées à l'exécution.
+         *     Le serveur vérifie les signatures et la chaîne dès la création de la demande (refus immédiat `400`).
+         *     Terminal non `REVOKED` : `409 CONFLICT_STATE` (`CL052` ; il envoie ses lots lui-même,
+         *     sync_protocol.md §11 cas 33). Empreinte des lots différente de la demande, ou import déjà appliqué :
+         *     `409 CONFLICT_STATE` (`CL053`). Lot du terminal encore `PROCESSING` : `409 BATCH_IN_PROGRESS`.
          */
         post: operations["importDeviceJournal"];
         delete?: never;
@@ -1546,6 +1556,191 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/devices/{device_id}/journal-imports/{import_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire l'état et le résultat d'un import de journal
+         * @description État de l'import créé par `importDeviceJournal` (`PROCESSING`, `APPLIED` ou `FAILED`) et, une fois le
+         *     traitement terminé, les résultats par lot. Rôles : `SUPERVISOR` et `ORGANIZER_ADMIN`. Terminal ou import
+         *     d'un autre prestataire, ou import qui n'est pas celui de ce terminal : `404` neutre (jamais `403`).
+         *     Les lots importés ne sont pas rendus.
+         */
+        get: operations["getDeviceJournalImport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/offline-ceiling": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire le plafond hors ligne du prestataire
+         * @description Plafond posé par le prestataire (niveau `OPERATOR_CEILING`, `scope_id` = `operator_id`) : aucun niveau
+         *     inférieur (organisateur, événement, terminal) ne peut le dépasser. Rôles : `OPERATOR_ADMIN` ; lecture
+         *     aussi pour un `ORGANIZER_ADMIN` du prestataire. Prestataire autre que celui de la personne (hors
+         *     `PLATFORM_ADMIN`) : `404` neutre. Un plafond jamais posé est rendu avec `policy` nulle et `version` 0.
+         */
+        get: operations["getOfflineCeiling"];
+        /**
+         * Poser ou effacer le plafond hors ligne du prestataire
+         * @description Remplace le niveau `OPERATOR_CEILING`. Concurrence optimiste par `version` (`409 CONFLICT_STATE`,
+         *     `CL046`). Un corps sans valeur (seulement `version`) efface le plafond. `cash_topup_offline: true` est
+         *     refusé par le schéma (`422 VALIDATION_FAILED`, `CL047`). Rôle : `OPERATOR_ADMIN`. Prestataire autre que
+         *     celui de la personne (hors `PLATFORM_ADMIN`) : `404` neutre (`CL045`). Journalisé.
+         */
+        put: operations["setOfflineCeiling"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{organizer_id}/offline-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire la politique hors ligne d'un organisateur
+         * @description Niveau de politique hors ligne posé à ce niveau seulement (une valeur nulle hérite du niveau au-dessus ;
+         *     `ORGANIZER`).
+         *     Rôles : lecture `ORGANIZER_ADMIN` (de l'organisateur ou de l'événement) et `OPERATOR_ADMIN`. Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, pas d'oracle d'existence). Un niveau jamais posé est rendu avec `policy` entièrement nulle et
+         *     `version` 0.
+         */
+        get: operations["getOrganizerOfflinePolicy"];
+        /**
+         * Poser ou effacer la politique hors ligne d'un organisateur
+         * @description Remplace le niveau `ORGANIZER`. Concurrence optimiste : `version` est la version lue ; si elle diffère de la
+         *     version courante (ou si le niveau existe déjà alors que `version` est absente), `409 CONFLICT_STATE`
+         *     (SQLSTATE `CL046`). Un corps sans aucune valeur (seulement `version`) efface le niveau. Une valeur
+         *     nulle ou absente hérite. `cash_topup_offline: true` est refusé par le schéma lui-même
+         *     (`422 VALIDATION_FAILED`, `CL047`) : aucune recharge en espèces hors ligne (R-02). Le montant d'un niveau
+         *     plus bas est plafonné, à la lecture de la politique effective, par le niveau du dessus (`capped`, qui ne
+         *     concerne que les trois montants).
+         *     Rôles : écriture `ORGANIZER_ADMIN` de l'organisateur. Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, `CL045`). Journalisé (historique de la politique, auteur = la personne).
+         */
+        put: operations["setOrganizerOfflinePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/offline-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire la politique hors ligne d'un événement
+         * @description Niveau de politique hors ligne posé à ce niveau seulement (une valeur nulle hérite du niveau au-dessus ;
+         *     `EVENT`). La réponse porte aussi `risk` (exposition maximale de l'événement).
+         *     Rôles : lecture `ORGANIZER_ADMIN` (de l'organisateur ou de l'événement) et `OPERATOR_ADMIN`. Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, pas d'oracle d'existence). Un niveau jamais posé est rendu avec `policy` entièrement nulle et
+         *     `version` 0.
+         */
+        get: operations["getEventOfflinePolicy"];
+        /**
+         * Poser ou effacer la politique hors ligne d'un événement
+         * @description Remplace le niveau `EVENT`. Concurrence optimiste : `version` est la version lue ; si elle diffère de la
+         *     version courante (ou si le niveau existe déjà alors que `version` est absente), `409 CONFLICT_STATE`
+         *     (SQLSTATE `CL046`). Un corps sans aucune valeur (seulement `version`) efface le niveau. Une valeur
+         *     nulle ou absente hérite. `cash_topup_offline: true` est refusé par le schéma lui-même
+         *     (`422 VALIDATION_FAILED`, `CL047`) : aucune recharge en espèces hors ligne (R-02). Le montant d'un niveau
+         *     plus bas est plafonné, à la lecture de la politique effective, par le niveau du dessus (`capped`, qui ne
+         *     concerne que les trois montants). La réponse porte `risk`, recalculé après l'écriture.
+         *     Rôles : écriture `ORGANIZER_ADMIN` de l'événement. Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, `CL045`). Journalisé (historique de la politique, auteur = la personne).
+         */
+        put: operations["setEventOfflinePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/devices/{device_id}/offline-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lire la politique hors ligne d'un terminal
+         * @description Niveau de politique hors ligne posé à ce niveau seulement (une valeur nulle hérite du niveau au-dessus ;
+         *     `DEVICE`). La réponse porte aussi `effective` (politique effective du terminal, plafond prestataire appliqué).
+         *     Rôles : lecture `ORGANIZER_ADMIN` (de l'organisateur ou de l'événement) et `OPERATOR_ADMIN`. Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, pas d'oracle d'existence). Un niveau jamais posé est rendu avec `policy` entièrement nulle et
+         *     `version` 0.
+         */
+        get: operations["getDeviceOfflinePolicy"];
+        /**
+         * Poser ou effacer la politique hors ligne d'un terminal
+         * @description Remplace le niveau `DEVICE`. Concurrence optimiste : `version` est la version lue ; si elle diffère de la
+         *     version courante (ou si le niveau existe déjà alors que `version` est absente), `409 CONFLICT_STATE`
+         *     (SQLSTATE `CL046`). Un corps sans aucune valeur (seulement `version`) efface le niveau. Une valeur
+         *     nulle ou absente hérite. `cash_topup_offline: true` est refusé par le schéma lui-même
+         *     (`422 VALIDATION_FAILED`, `CL047`) : aucune recharge en espèces hors ligne (R-02). Le montant d'un niveau
+         *     plus bas est plafonné, à la lecture de la politique effective, par le niveau du dessus (`capped`, qui ne
+         *     concerne que les trois montants). La réponse porte `effective`, recalculée après l'écriture.
+         *     Rôles : écriture `ORGANIZER_ADMIN` ; `OPERATOR_ADMIN` peut aussi couper un terminal (`offline_enabled: false`). Objet d'un autre prestataire ou hors du périmètre de la personne : `404` neutre (jamais
+         *     `403`, `CL045`). Journalisé (historique de la politique, auteur = la personne).
+         */
+        put: operations["setDeviceOfflinePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/offline-risk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exposition maximale hors ligne d'un événement
+         * @description Somme, pour les terminaux de l'événement autorisés hors ligne, du plafond `max_total_per_device` de leur
+         *     politique effective : c'est le montant maximal que l'organisateur peut devoir supporter si tous les
+         *     terminaux vendent hors ligne sans jamais se synchroniser. `capped` signale un terminal dont un
+         *     montant a été réduit par le plafond du prestataire. Rôles : `ORGANIZER_ADMIN` et `OPERATOR_ADMIN`.
+         *     Événement d'un autre prestataire ou hors du périmètre de la personne : `404` neutre.
+         */
+        get: operations["getEventOfflineRisk"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/offline-snapshots/current": {
         parameters: {
             query?: never;
@@ -1556,14 +1751,26 @@ export type paths = {
         /**
          * Snapshot hors ligne signé (complet ou delta)
          * @description Liste `token_hash → solde disponible` (vue `offline_snapshot_rows`) du grand livre de l'événement du
-         *     terminal, signée par le serveur (ECDSA P-256 par défaut, `ECDSA_P256_SHA256` ; algorithme donné par `key_id`) (`offline_snapshot`). Chaque entrée porte en plus le PWD||PACK
-         *     chiffré pour CE terminal (enveloppe `pwd_pack_key`). Avec `since_version`, le serveur renvoie un
-         *     `DELTA` (entrées modifiées + retirées depuis cette version) s'il en dispose, sinon un `FULL`.
+         *     terminal, signée par le serveur (ECDSA P-256, `ECDSA_P256_SHA256` ; clé donnée par `key_id`, signature DER
+         *     en base64 standard) (`offline_snapshot`). Chaque entrée porte en plus le PWD||PACK
+         *     chiffré pour CE terminal (enveloppe `pwd_pack_key`, seule l'enveloppe du terminal appelant est rendue).
+         *     Chaîne de versions (règle de `snapshots.md`) : sans `since_version`, version inconnue, antérieure au plus
+         *     ancien contenu conservé, ou séparée de la dernière par plus de 5 pas, ou `FULL` plus récent que
+         *     `since_version` : dernier `FULL`. `since_version = b` conservée et inférieure à la dernière : l'artefact
+         *     de version suivant `b` (`DELTA` de `base_version = b`, ou `FULL`). `since_version` égale à la dernière :
+         *     dernier artefact. Le terminal redemande tant que la version reçue est inférieure à `X-Snapshot-Latest`.
          *     Le terminal DOIT vérifier la signature, la chaîne de version (`base_version`) et la fraîcheur
          *     (sync_protocol.md §4) avant usage, puis accuser réception (`ackOfflineSnapshot`).
-         *     Si `offline_enabled = false` pour ce terminal : `403 OFFLINE_NOT_ALLOWED`. Un tel terminal (dont tout
+         *     `ETag` = `"<grand livre>:<version>:<terminal>:<empreinte de la clé d'accord>"` ; `If-None-Match` égal à
+         *     l'`ETag` courant : `304`. `Cache-Control: private, no-store`.
+         *     Si la politique effective interdit le hors ligne pour ce terminal, si le terminal n'a pas d'événement, s'il
+         *     s'agit d'un téléphone personnel, ou si aucune clé de signature n'est `ACTIVE` : `403 OFFLINE_NOT_ALLOWED`
+         *     (dans ce dernier cas, `detail` = `SNAPSHOTS_UNAVAILABLE`). Un tel terminal (dont tout
          *     téléphone personnel) n'a pas besoin du snapshot : il obtient le PWD par `POST /media/auth-keys` et
-         *     travaille toujours en ligne. Chaque entrée porte `originality_sig_sha256` (ADR-59).
+         *     travaille toujours en ligne. Terminal `SUSPENDED` : `403 DEVICE_SUSPENDED` (ses lots restent traités).
+         *     Aucune version encore produite, ou enveloppe pas encore prête pour ce terminal : `409 CONFLICT_STATE` avec
+         *     `Retry-After: 2`. Chaque entrée porte `originality_sig_sha256` (ADR-59) et `pwd_pack_sha256`
+         *     (SHA-256 de nonce ‖ ciphertext ‖ tag de `pwd_pack_enc`, octets bruts concaténés).
          *     Après un blocage ou une déclaration de perte, le serveur DOIT publier un nouveau snapshot (delta) en
          *     5 s au plus (SPECIFICATION §8.5, sync_protocol.md §4.2).
          */
@@ -1587,7 +1794,10 @@ export type paths = {
         put?: never;
         /**
          * Accuser réception et application d'un snapshot
-         * @description Met à jour `device.last_snapshot_version` après vérification de signature et application.
+         * @description Met à jour `device.last_snapshot_version` après vérification de signature et application. La version doit
+         *     avoir été enveloppée pour ce terminal et `content_sha256` être celui de cette version, sinon
+         *     `409 SNAPSHOT_VERSION_UNKNOWN` (`CL049`). `last_snapshot_version` ne recule jamais. Idempotent : le même
+         *     accusé répété répond `204`.
          */
         post: operations["ackOfflineSnapshot"];
         delete?: never;
@@ -1608,7 +1818,10 @@ export type paths = {
         /**
          * Synchroniser un lot d'opérations hors ligne
          * @description Normatif : sync_protocol.md §6 et §7. Résumé :
-         *     - Un seul lot en vol par terminal (`409 BATCH_IN_PROGRESS` sinon). `Idempotency-Key` = `header.batch_id`
+         *     - Un seul lot en vol par terminal (`409 BATCH_IN_PROGRESS` sinon, avec `Retry-After: 2` : le renvoi d'un lot
+         *       en traitement, dont le verrou est tenu, reçoit la même réponse ; verrou libre : reprise à la première
+         *       opération sans résultat ; lot `COMPLETED` : `200` avec les résultats mémorisés et
+         *       `Idempotency-Replayed: true`). `Idempotency-Key` = `header.batch_id`
          *       (exception à la règle `<serial>:<seq>` : c'est la clé du lot ; chaque opération garde la sienne).
          *       Un lot resté en traitement plus de 15 min est abandonné à l'ouverture du lot suivant (sync_protocol.md
          *       §6.2-6).
@@ -1621,6 +1834,14 @@ export type paths = {
          *       l'appareil (ECDSA P-256). Signature invalide : `400 BATCH_SIGNATURE_INVALID`, lot non traité.
          *       `header.prev_chain_hash` différent du dernier `chain_hash` accepté : `409 CHAIN_BROKEN`, lot
          *       enregistré `REJECTED` avec une anomalie `CHAIN_BROKEN` (examen manuel).
+         *     - Contrôles d'entrée : `400 VALIDATION_FAILED` pour un lot vide, un type d'opération inconnu, un numéro
+         *       supérieur à 2^53−1, une série différente du jeton, un `ledger_id` différent du grand livre de
+         *       l'événement du terminal, ou une époque d'en-tête (`header.authority_epoch`) différente de
+         *       `X-Authority-Epoch` ; `409 STALE_AUTHORITY_EPOCH` si l'époque du lot est inférieure à l'époque courante.
+         *     - Aucune recharge en espèces hors ligne (décision du porteur) : une opération `TOPUP_CASH` d'un lot est
+         *       toujours `REJECTED` / `OFFLINE_NOT_ALLOWED`, avec l'anomalie `NON_COMPLIANT_OPERATION`.
+         *     - Une référence `ONLINE_REF` non exécutée est inscrite `ACCEPTED` / `NONE` avec la raison
+         *       `ONLINE_NOT_EXECUTED` (voir `OfflineRejectReason`).
          *     - Toute opération autorisée hors ligne (`OFFLINE_AUTHORIZED`) porte `config_id` et `snapshot_version`
          *       (champs d'état, hors `content_sha256`). Bracelet absent du snapshot : `REJECTED`,
          *       `reject_reason = MEDIA_NOT_IN_SNAPSHOT`.
@@ -1640,7 +1861,9 @@ export type paths = {
          *       Pendant une bascule (`RELEASING`), la passerelle refuse les nouveaux lots par
          *       `409 DEBIT_AUTHORITY_MOVING` : ce n'est pas un refus définitif, le terminal renvoie le même lot à
          *       l'autorité suivante (sync_protocol.md §9.3).
-         *     Taille max : 500 opérations ou 1 Mio.
+         *     Taille max : 500 opérations ou 1 Mio (au-delà : `413 BATCH_TOO_LARGE`).
+         *     Pool de verrous de lot plein : `503 SERVICE_UNAVAILABLE` avec `Retry-After: 5`, lot non ouvert ; renvoyer
+         *     le même lot.
          */
         post: operations["submitOfflineBatch"];
         delete?: never;
@@ -4773,8 +4996,95 @@ export type components = {
              * @default 900
              */
             max_snapshot_age_seconds: number;
+            /**
+             * @description Toujours `false` : aucune recharge en espèces hors ligne (décision du porteur, R-02). Le type reste
+             *     `boolean` tant que `DeviceConfigService` (lot WP07) n'écrit pas le littéral `false` : un type littéral
+             *     casserait `typecheck` de l'API, hors de ce lot.
+             */
             cash_topup_offline: boolean;
-            /** @description Vrai si le plafond prestataire a réduit une valeur demandée. */
+            /**
+             * @description Vrai si le plafond prestataire a réduit l'un des trois montants (`max_per_sale`,
+             *     `max_per_media_per_device`, `max_total_per_device`) ; ne concerne aucune autre valeur.
+             */
+            capped: boolean;
+        };
+        /**
+         * @description Valeurs posées à UN niveau de la hiérarchie (plafond prestataire, organisateur, événement, terminal). Une
+         *     valeur nulle ou absente hérite du niveau au-dessus. Montants en unités mineures, ≥ 0 ; 0 = interdit.
+         */
+        OfflinePolicyLevel: {
+            offline_enabled?: boolean | null;
+            /** Format: int64 */
+            max_per_sale?: number | null;
+            /** Format: int64 */
+            max_per_media_per_device?: number | null;
+            /** Format: int64 */
+            max_total_per_device?: number | null;
+            /** @description Âge maximal du snapshot, de 0 à 24 h. */
+            max_snapshot_age_seconds?: number | null;
+            /**
+             * @description Ne vaut jamais `true` : le schéma refuse `true` (`422 VALIDATION_FAILED`). Aucune recharge en espèces
+             *     hors ligne (décision du porteur, R-02). Absente = hérite (donc `false`) ; jamais `null`.
+             * @constant
+             */
+            cash_topup_offline?: false;
+        };
+        /**
+         * @description Corps de `PUT` d'un niveau : les valeurs du niveau plus la version attendue. Un corps sans aucune valeur
+         *     (seulement `version`) efface le niveau.
+         */
+        OfflinePolicyLevelUpdate: components["schemas"]["OfflinePolicyLevel"] & {
+            /**
+             * @description Version du niveau lue avant la modification. Absente ou nulle pour créer un niveau qui n'existe pas
+             *     encore ; sinon doit égaler la version courante (`409 CONFLICT_STATE`, `CL046`).
+             */
+            version?: number | null;
+        };
+        OfflinePolicyLevelView: {
+            /** @enum {string} */
+            level: "OPERATOR_CEILING" | "ORGANIZER" | "EVENT" | "DEVICE";
+            /**
+             * Format: uuid
+             * @description Prestataire, organisateur, événement ou terminal (le prestataire pour `OPERATOR_CEILING`).
+             */
+            scope_id: string;
+            policy: components["schemas"]["OfflinePolicyLevel"];
+            /** @description Version du niveau ; 0 pour un niveau jamais posé (ou effacé). */
+            version: number;
+            /** Format: date-time */
+            updated_at: string | null;
+            /**
+             * Format: uuid
+             * @description Personne auteur de la dernière modification.
+             */
+            updated_by: string | null;
+            /** @description Présent pour un terminal : politique effective, plafond prestataire appliqué. */
+            effective?: components["schemas"]["OfflinePolicy"];
+            /** @description Présent pour un événement : exposition maximale hors ligne. */
+            risk?: components["schemas"]["OfflineRisk"];
+        };
+        /**
+         * @description Exposition maximale hors ligne d'un événement : somme des plafonds `max_total_per_device` des terminaux
+         *     autorisés hors ligne.
+         */
+        OfflineRisk: {
+            /** Format: uuid */
+            event_id: string;
+            currency: components["schemas"]["Currency"];
+            /** Format: int64 */
+            max_total_risk: number;
+            /** @description Nombre de terminaux autorisés hors ligne. */
+            offline_devices: number;
+            devices: components["schemas"]["OfflineRiskDevice"][];
+            computed_at: components["schemas"]["Timestamp"];
+        };
+        OfflineRiskDevice: {
+            /** Format: uuid */
+            device_id: string;
+            serial: string;
+            /** Format: int64 */
+            max_total_per_device: number;
+            /** @description Vrai si le plafond prestataire a réduit l'un des trois montants de ce terminal. */
             capped: boolean;
         };
         DebitAuthority: {
@@ -4874,18 +5184,23 @@ export type components = {
             offline_policy: components["schemas"]["OfflinePolicy"];
             /**
              * @description Clés publiques valides pour vérifier les snapshots (rotation par `key_id`), au plus deux par
-             *     signataire : le central (clé dans le KMS/HSM) et chaque passerelle (clé propre, hors KMS, dans son
-             *     stockage matériel, `key_id` distinct) — sync_protocol.md §4.1.
+             *     signataire (clés `ACTIVE` et `RETIRED` non révoquées) : le central (clé dans le KMS/HSM) et chaque
+             *     passerelle (clé propre, hors KMS, dans son stockage matériel, `key_id` distinct) — sync_protocol.md §4.1.
              */
             snapshot_keys: {
                 key_id: string;
                 /**
-                 * @description `ECDSA_P256_SHA256` par défaut ; Ed25519 si le KMS le permet (POINTS_OUVERTS OP-N13).
+                 * @description `ECDSA_P256_SHA256` seulement.
                  * @enum {string}
                  */
-                algorithm: "ECDSA_P256_SHA256" | "Ed25519";
+                algorithm: "ECDSA_P256_SHA256";
+                /** @description Clé publique, SPKI DER en base64 standard. */
                 public_key: string;
-                not_after?: components["schemas"]["Timestamp"];
+                /**
+                 * Format: date-time
+                 * @description Fin de validité de la clé ; `null` pour une clé `ACTIVE` (aucune date de fin).
+                 */
+                not_after: string | null;
             }[];
             debit_authority: components["schemas"]["DebitAuthority"];
             seq: {
@@ -4982,14 +5297,19 @@ export type components = {
             tag: string;
         };
         /**
-         * @description Clé de contenu AES-256 (propre au snapshot) enveloppée pour la clé d'accord ECDH P-256 du terminal
-         *     (ECDH-ES + HKDF-SHA256 + AES Key Wrap). Elle déchiffre les `pwd_pack_enc` des entrées.
+         * @description Clé de contenu AES-256 (propre au snapshot) scellée pour la clé d'accord ECDH P-256 du terminal par la
+         *     construction `sealForRecipient` de `@cashless/tag-format` (ECDH-ES P-256, HKDF-SHA256, AES-256-GCM ; plus
+         *     de key wrap AES). AAD = `CASHLESS/SNAPKEY/v1 ‖ ledger_id ‖ version ‖ device_id`. Elle déchiffre les
+         *     `pwd_pack_enc` des entrées.
          */
         WrappedKey: {
             /** @constant */
-            alg: "ECDH-ES+HKDF-SHA256+A256KW";
-            /** @description Clé publique éphémère (base64url). */
+            alg: "ECDH-ES+HKDF-SHA256+A256GCM";
+            /** @description Clé publique éphémère (point non compressé, base64url). */
             epk: string;
+            /** @description Nonce AES-GCM de 12 octets (base64 standard). */
+            iv: string;
+            /** @description Clé de contenu chiffrée suivie du tag AES-GCM (base64 standard). */
             wrapped_key: string;
         };
         MediaAuthKey: {
@@ -5638,12 +5958,24 @@ export type components = {
             spendable: number;
             /** Format: int64 */
             last_counter: number | null;
-            /** @description PWD||PACK chiffré (AES-256-GCM, clé de contenu `pwd_pack_key`) ; null si le bracelet n'est pas utilisable. */
+            /**
+             * @description PWD||PACK chiffré (AES-256-GCM, clé de contenu `pwd_pack_key`) ; null si le bracelet n'est pas utilisable.
+             *     Objet `EncryptedBlob`, hors empreinte `content_sha256` ; lié au contenu signé par `pwd_pack_sha256` =
+             *     SHA-256 de nonce ‖ ciphertext ‖ tag (octets bruts décodés, concaténés).
+             */
             pwd_pack_enc: components["schemas"]["EncryptedBlob"] | null;
+            /**
+             * @description SHA-256 de nonce ‖ ciphertext ‖ tag de `pwd_pack_enc` (octets bruts décodés du base64, concaténés), soit 34 octets hachés ; inclus
+             *     dans le contenu signé (renforcement, R-30.9) : le terminal vérifie le chiffré reçu contre cette valeur.
+             *     Null si `pwd_pack_enc` est null.
+             */
+            pwd_pack_sha256: components["schemas"]["Hex32"] | null;
         };
         /**
-         * @description Partie signée. Signature (algorithme de la clé `key_id`, `ECDSA_P256_SHA256` par défaut) sur la
-         *     sérialisation canonique JSON (RFC 8785, JCS) de cet objet entier (sync_protocol.md §4.1).
+         * @description Partie signée, de 15 champs, tous présents. Signature ECDSA P-256 / SHA-256 (clé `key_id`), **DER** en
+         *     base64 standard, sur la sérialisation canonique JSON (RFC 8785, JCS) de cet objet entier
+         *     (sync_protocol.md §4.1). `valid_until` = `generated_at` + `max_snapshot_age` du plafond du prestataire
+         *     (15 min par défaut).
          *     `content_sha256` = SHA-256 de la sérialisation JCS de `{entries, removed_token_hashes}` (sans les
          *     champs chiffrés `pwd_pack_enc`, propres à chaque terminal). Un snapshot produit par la passerelle est
          *     signé par une clé propre à la passerelle (hors KMS, stockage matériel), de `key_id` distinct.
@@ -5680,13 +6012,20 @@ export type components = {
         };
         OfflineSnapshot: {
             header: components["schemas"]["SnapshotHeader"];
+            /** @description Signature ECDSA P-256 / SHA-256 de `JCS(header)`, **DER**, base64 standard. */
             signature: string;
+            /**
+             * @description Requise dès qu'une entrée porte un `pwd_pack_enc` (mot de passe) ; absente seulement si aucune
+             *     entrée n'en porte.
+             */
             pwd_pack_key?: components["schemas"]["WrappedKey"];
             entries: components["schemas"]["SnapshotEntry"][];
-            removed_token_hashes?: components["schemas"]["Hex32"][];
+            /** @description Toujours présent (vide pour un `FULL`), trié ; entre dans `content_sha256`. */
+            removed_token_hashes: components["schemas"]["Hex32"][];
         };
         /**
-         * @description PURCHASE (vente), REVERSAL (annulation d'une vente), TOPUP_CASH (si `cash_topup_offline`),
+         * @description PURCHASE (vente), REVERSAL (annulation d'une vente), TOPUP_CASH (toujours rejeté : `REJECTED` /
+         *     `OFFLINE_NOT_ALLOWED`, aucune recharge en espèces hors ligne),
          *     VOID (numéro consommé sans effet comptable : abandon, refus en ligne), ONLINE_REF (référence à une
          *     opération exclusivement en ligne — activation, caution, restitution, QR… — identifiée par son
          *     `online_operation` et son `content_sha256`). Le lot couvre TOUS les numéros, y compris ceux déjà
@@ -5719,6 +6058,16 @@ export type components = {
              *     `config_id` est exemptée des contrôles de conformité (sync_protocol.md §7.2, §7.3).
              */
             config_id?: number;
+            /**
+             * Format: uuid
+             * @description Session de vendeur (`VendorSession`) ouverte sur le terminal au moment de l'opération. Champ d'ÉTAT
+             *     (comme `snapshot_version`), non chaîné : il n'entre pas dans `content_sha256`. Obligatoire pour une
+             *     `PURCHASE` ou une `REVERSAL` autorisée hors ligne : sans lui, ou si la session n'était pas ouverte
+             *     sur ce terminal à l'heure de l'opération, l'opération est rejetée (`OFFLINE_NOT_ALLOWED`, détail
+             *     `VENDOR_SESSION`). Absent pour `VOID`, `ONLINE_REF` et `TOPUP_CASH`. Le serveur ne fait pas échouer
+             *     le lot pour une valeur mal formée : l'opération est alors traitée comme sans session.
+             */
+            vendor_session_id?: string;
             /**
              * Format: int64
              * @description Solde disponible calculé localement avant l'opération (contrôle).
@@ -5796,7 +6145,7 @@ export type components = {
         OfflineBatch: {
             header: components["schemas"]["OfflineBatchHeader"];
             operations: components["schemas"]["OfflineOperation"][];
-            /** @description ECDSA P-256 (clé Keystore) sur JCS(header). */
+            /** @description Signature ECDSA P-256 / SHA-256 (clé Keystore) de `JCS(header)`, **DER**, base64 standard. */
             signature: string;
         };
         /** @enum {string} */
@@ -5812,9 +6161,14 @@ export type components = {
          *     `EDGE_REPLAY_FAILED` : lot de passerelle seulement ; rejeu impossible d'une `ACTIVATION` ou d'un
          *     `DEPOSIT_CASH` (`detail` donne le code de l'échec ; sync_protocol.md §9.6).
          *     `SEQ_OUT_OF_RANGE` n'est pas une raison par opération : le lot entier est refusé (`409`).
+         *     `ONLINE_NOT_EXECUTED` : référence `ONLINE_REF` non exécutée en ligne, inscrite au registre comme numéro sans
+         *     effet (`ACCEPTED` / `NONE`) ; ce n'est pas un rejet.
+         *     `OFFLINE_NOT_ALLOWED` : terminal ou opération interdit hors ligne ; la cause (`DEVICE_SUSPENDED`,
+         *     `DEVICE_REVOKED`, `VENDOR_SESSION`, ou `TOPUP_CASH` qui n'est jamais permis hors ligne) est donnée dans
+         *     `detail`, pas dans cette énumération. Autres raisons ajoutées ou changées : voir `batches.md` de la mission.
          * @enum {string}
          */
-        OfflineRejectReason: "IDEMPOTENCY_KEY_REUSED" | "MALFORMED_OPERATION" | "CURRENCY_MISMATCH" | "OFFLINE_NOT_ALLOWED" | "POLICY_LIMIT_EXCEEDED" | "SNAPSHOT_TOO_OLD" | "SNAPSHOT_VERSION_UNKNOWN" | "MEDIA_NOT_IN_SNAPSHOT" | "MEDIA_BLOCKED_IN_SNAPSHOT" | "MEDIA_WRONG_EVENT" | "PACK_NOT_VERIFIED" | "REVERSAL_TARGET_NOT_FOUND" | "ALREADY_REVERSED" | "PERIOD_CLOSED" | "LEDGER_LOCKED" | "WALLET_LIMIT_EXCEEDED" | "INSUFFICIENT_FUNDS_RETRY" | "SYNC_DEADLINE_PASSED" | "EDGE_REPLAY_FAILED";
+        OfflineRejectReason: "IDEMPOTENCY_KEY_REUSED" | "MALFORMED_OPERATION" | "CURRENCY_MISMATCH" | "OFFLINE_NOT_ALLOWED" | "POLICY_LIMIT_EXCEEDED" | "SNAPSHOT_TOO_OLD" | "SNAPSHOT_VERSION_UNKNOWN" | "MEDIA_NOT_IN_SNAPSHOT" | "MEDIA_BLOCKED_IN_SNAPSHOT" | "MEDIA_WRONG_EVENT" | "PACK_NOT_VERIFIED" | "REVERSAL_TARGET_NOT_FOUND" | "ALREADY_REVERSED" | "PERIOD_CLOSED" | "LEDGER_LOCKED" | "WALLET_LIMIT_EXCEEDED" | "INSUFFICIENT_FUNDS_RETRY" | "SYNC_DEADLINE_PASSED" | "EDGE_REPLAY_FAILED" | "ONLINE_NOT_EXECUTED";
         /** @enum {string} */
         ShortfallReason: "INSUFFICIENT_FUNDS" | "MEDIA_BLOCKED_AFTER_SNAPSHOT" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_UID_MISMATCH" | "MEDIA_SIGNATURE_MISMATCH" | "WALLET_BLOCKED";
         OfflineOperationResult: {
@@ -5825,20 +6179,26 @@ export type components = {
             /** Format: uuid */
             transaction_id?: string | null;
             /**
-             * @description NONE pour VOID, ONLINE_REF non exécuté, REJECTED.
+             * @description NONE pour VOID, ONLINE_REF non exécuté, REJECTED. Un `DUPLICATE` dont l'opération est déjà au journal
+             *     (en ligne, passerelle) vaut `LEDGER_WRITTEN` et porte le `transaction_id` d'origine.
              * @enum {string}
              */
-            effect?: "LEDGER_WRITTEN" | "NONE";
+            effect: "LEDGER_WRITTEN" | "NONE";
             /** Format: int64 */
             charged_to_wallet?: number;
             /** Format: int64 */
             shortfall_amount?: number;
             shortfall_reason?: components["schemas"]["ShortfallReason"];
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description Identifiant (`anomaly.id`) de l'anomalie ouverte par l'opération, s'il y en a une.
+             */
             anomaly_id?: string;
             tap_result?: components["schemas"]["TapResultCode"];
             reject_reason?: components["schemas"]["OfflineRejectReason"];
-            retryable?: boolean;
+            /** @description Vrai seulement pour `INSUFFICIENT_FUNDS_RETRY` (le terminal renvoie l'opération dans un lot ultérieur). */
+            retryable: boolean;
+            /** @description Précision lisible, sans secret ni identifiant interne. */
             detail?: string;
         };
         OfflineBatchResult: {
@@ -6295,11 +6655,22 @@ export type components = {
             batches: components["schemas"]["OfflineBatch"][];
             reason: string;
         };
-        /** @description Résultat de `importDeviceJournal`, renvoyé dans `ApprovalRequest.result` à l'exécution. */
+        /**
+         * @description Résultat de `importDeviceJournal`, renvoyé dans `ApprovalRequest.result` à l'exécution de l'approbation.
+         *     Le traitement des lots est asynchrone (travailleur `journal-import`) : à l'exécution, `status` vaut
+         *     `PROCESSING` et `results` est absent ou vide. Le résultat final (`APPLIED` ou `FAILED`) ne figure pas
+         *     dans cette réponse : il se lit par `getDeviceJournalImport`.
+         */
         DeviceJournalImportResult: {
             /** Format: uuid */
             device_id: string;
-            results: components["schemas"]["OfflineBatchResult"][];
+            /**
+             * @description `PROCESSING` à l'exécution de l'approbation ; `APPLIED` ou `FAILED` une fois le traitement terminé.
+             * @enum {string}
+             */
+            status: "PROCESSING" | "APPLIED" | "FAILED";
+            /** @description Résultats par lot ; vide tant que `status = PROCESSING`. */
+            results?: components["schemas"]["OfflineBatchResult"][];
         };
         /**
          * @description Action d'une demande d'approbation (`approval_request.action`, liste fermée du schéma). Correspondance :
@@ -8651,6 +9022,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     getEventDeviceSyncStatus: {
@@ -8659,9 +9031,15 @@ export interface operations {
             header?: {
                 /** @description Identifiant de corrélation fourni par le client. */
                 "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                event_id: string;
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
             };
             cookie?: never;
         };
@@ -8707,6 +9085,8 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     listDevices: {
@@ -12172,6 +12552,499 @@ export interface operations {
             413: components["responses"]["PayloadTooLarge"];
         };
     };
+    getDeviceJournalImport: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description État de l'import. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceJournalImportResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getOfflineCeiling: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plafond du prestataire. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setOfflineCeiling: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 1,
+                 *       "offline_enabled": true,
+                 *       "max_per_sale": 50000,
+                 *       "max_per_media_per_device": 100000,
+                 *       "max_total_per_device": 500000,
+                 *       "max_snapshot_age_seconds": 900
+                 *     }
+                 */
+                "application/json": components["schemas"]["OfflinePolicyLevelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Plafond enregistré (ou effacé : `policy` nulle et `version` 0). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getOrganizerOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Niveau de politique. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setOrganizerOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Organisateur du prestataire du chemin (sinon `404`). */
+                organizer_id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 3,
+                 *       "offline_enabled": true,
+                 *       "max_per_sale": 20000,
+                 *       "max_total_per_device": 200000
+                 *     }
+                 */
+                "application/json": components["schemas"]["OfflinePolicyLevelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Niveau enregistré (ou effacé : `policy` nulle et `version` 0). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getEventOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Niveau de politique. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setEventOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 3,
+                 *       "offline_enabled": true,
+                 *       "max_per_sale": 20000,
+                 *       "max_total_per_device": 200000
+                 *     }
+                 */
+                "application/json": components["schemas"]["OfflinePolicyLevelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Niveau enregistré (ou effacé : `policy` nulle et `version` 0). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getDeviceOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Niveau de politique. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setDeviceOfflinePolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 3,
+                 *       "offline_enabled": true,
+                 *       "max_per_sale": 20000,
+                 *       "max_total_per_device": 200000
+                 *     }
+                 */
+                "application/json": components["schemas"]["OfflinePolicyLevelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Niveau enregistré (ou effacé : `policy` nulle et `version` 0). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfflinePolicyLevelView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getEventOfflineRisk: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exposition de l'événement. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "event_id": "7b1e4a52-8f0c-4c1d-9d3e-2a6b0f1c9e11",
+                     *       "currency": "XOF",
+                     *       "max_total_risk": 400000,
+                     *       "offline_devices": 2,
+                     *       "devices": [
+                     *         {
+                     *           "device_id": "3f1c9e11-7b1e-4a52-8f0c-4c1d9d3e2a6b",
+                     *           "serial": "TPE-FOOD-02",
+                     *           "max_total_per_device": 200000,
+                     *           "capped": false
+                     *         },
+                     *         {
+                     *           "device_id": "9d3e2a6b-3f1c-4c1d-8f0c-7b1e4a521c9e",
+                     *           "serial": "TPE-BAR-01",
+                     *           "max_total_per_device": 200000,
+                     *           "capped": true
+                     *         }
+                     *       ],
+                     *       "computed_at": "2026-12-13T20:59:30Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OfflineRisk"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     getOfflineSnapshot: {
         parameters: {
             query?: {
@@ -12179,6 +13052,8 @@ export interface operations {
                 since_version?: number;
             };
             header: {
+                /** @description `ETag` du dernier snapshot reçu ; égal à l'`ETag` courant : `304`. */
+                "If-None-Match"?: string;
                 "Accept-Encoding"?: string;
                 /**
                  * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
@@ -12217,6 +13092,11 @@ export interface operations {
             200: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
+                    /** @description Dernière version publiée pour le grand livre du terminal. */
+                    "X-Snapshot-Latest"?: number;
+                    ETag: components["headers"]["ETag"];
+                    /** @description Toujours `private, no-store`. */
+                    "Cache-Control"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -12239,11 +13119,12 @@ export interface operations {
                      *         "authority_epoch": 4,
                      *         "key_id": "snap-2026-01"
                      *       },
-                     *       "signature": "3q2+7w0AAAABAAAAq3n6k5Yl2m1Zc0vW7x8y9z0a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6",
+                     *       "signature": "MEUCIQDk3q2+7w0AAAABAAAAq3n6k5Yl2m1Zc0vW7x8y9z0AIgbC3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4=",
                      *       "pwd_pack_key": {
-                     *         "alg": "ECDH-ES+HKDF-SHA256+A256KW",
+                     *         "alg": "ECDH-ES+HKDF-SHA256+A256GCM",
                      *         "epk": "BGx1...base64url",
-                     *         "wrapped_key": "2b3c...base64url"
+                     *         "iv": "AAECAwQFBgcICQoL",
+                     *         "wrapped_key": "2b3c...base64"
                      *       },
                      *       "entries": [
                      *         {
@@ -12257,6 +13138,7 @@ export interface operations {
                      *           "wallet_status": "ACTIVE",
                      *           "spendable": 3000,
                      *           "last_counter": 415,
+                     *           "pwd_pack_sha256": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
                      *           "pwd_pack_enc": {
                      *             "nonce": "AAECAwQFBgcICQoL",
                      *             "ciphertext": "0Q9f3a",
@@ -12274,6 +13156,7 @@ export interface operations {
                      *           "wallet_status": "ACTIVE",
                      *           "spendable": 0,
                      *           "last_counter": 88,
+                     *           "pwd_pack_sha256": null,
                      *           "pwd_pack_enc": null
                      *         }
                      *       ],
@@ -12285,9 +13168,42 @@ export interface operations {
                     "application/json": components["schemas"]["OfflineSnapshot"];
                 };
             };
+            /** @description `If-None-Match` égal à l'`ETag` courant : rien à recevoir. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            409: components["responses"]["Conflict"];
+            /**
+             * @description `OFFLINE_NOT_ALLOWED` (hors ligne interdit, terminal sans événement ou téléphone personnel, ou aucune clé
+             *     de signature `ACTIVE` : `detail` = `SNAPSHOTS_UNAVAILABLE`, sans autre précision sur l'état des clés)
+             *     ou `DEVICE_SUSPENDED`.
+             */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /**
+             * @description `CONFLICT_STATE` : aucun snapshot disponible pour ce terminal (aucune version encore produite, ou
+             *     enveloppe pas encore prête) ; réessayer après `Retry-After` (2 s).
+             */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     ackOfflineSnapshot: {
@@ -12341,7 +13257,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Accusé enregistré. */
+            /** @description Accusé enregistré (ou déjà enregistré). */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -12349,7 +13265,16 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
-            409: components["responses"]["Conflict"];
+            /** @description `SNAPSHOT_VERSION_UNKNOWN` : version non servie à ce terminal, ou empreinte différente. */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     submitOfflineBatch: {
@@ -12442,6 +13367,7 @@ export interface operations {
                  *           "currency": "XOF",
                  *           "snapshot_version": 1532,
                  *           "config_id": 48213,
+                 *           "vendor_session_id": "3a9d5c1e-7b24-4f60-8e1a-2c4d6f8a0b13",
                  *           "online_status": "NOT_ATTEMPTED",
                  *           "tap": {
                  *             "nfc_uid": "04b1c2d3e4f5a6",
@@ -12472,6 +13398,7 @@ export interface operations {
                  *           "occurred_at": "2026-12-13T21:31:10Z",
                  *           "snapshot_version": 1532,
                  *           "config_id": 48213,
+                 *           "vendor_session_id": "3a9d5c1e-7b24-4f60-8e1a-2c4d6f8a0b13",
                  *           "online_status": "NOT_ATTEMPTED",
                  *           "reverses_seq": 85,
                  *           "reason": "INPUT_ERROR",
@@ -12503,7 +13430,8 @@ export interface operations {
                      *           "idempotency_key": "TPE-FOOD-02:0086",
                      *           "status": "ACCEPTED",
                      *           "transaction_id": null,
-                     *           "effect": "NONE"
+                     *           "effect": "NONE",
+                     *           "retryable": false
                      *         },
                      *         {
                      *           "seq": 87,
@@ -12515,7 +13443,8 @@ export interface operations {
                      *           "shortfall_amount": 3000,
                      *           "shortfall_reason": "INSUFFICIENT_FUNDS",
                      *           "anomaly_id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
-                     *           "tap_result": "OK"
+                     *           "tap_result": "OK",
+                     *           "retryable": false
                      *         },
                      *         {
                      *           "seq": 88,
@@ -12539,9 +13468,24 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
-            409: components["responses"]["Conflict"];
+            /**
+             * @description Conflit : `BATCH_IN_PROGRESS` (avec `Retry-After: 2`), `DEBIT_AUTHORITY_EDGE`,
+             *     `DEBIT_AUTHORITY_MOVING` (rejouer le même lot vers l'autorité indiquée ou suivante),
+             *     `STALE_AUTHORITY_EPOCH`, `SEQ_OUT_OF_RANGE`, `CHAIN_BROKEN`.
+             */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["Unprocessable"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     getOfflineBatchResult: {
@@ -12593,10 +13537,11 @@ export interface operations {
                     "application/json": components["schemas"]["OfflineBatchResult"];
                 };
             };
-            /** @description Lot encore en cours de traitement ; réessayer après `Retry-After`. */
+            /** @description Lot encore en cours de traitement ; réessayer après `Retry-After` (2 s). */
             202: {
                 headers: {
-                    "Retry-After"?: number;
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Retry-After": components["headers"]["Retry-After"];
                     [name: string]: unknown;
                 };
                 content?: never;

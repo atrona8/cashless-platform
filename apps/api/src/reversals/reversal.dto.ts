@@ -20,6 +20,7 @@ import {
   unprocessable,
 } from '../organization/platform/platform.dto';
 import { contentSha256 } from '../payments/device-seq-registry';
+import { chainedContent } from '../payments/chained-content';
 
 export type ReversalReason = components['schemas']['ReversalRequest']['reason'];
 
@@ -84,12 +85,14 @@ function parseBody(raw: unknown): ReversalInput {
 export function reversalContent(seq: bigint, transactionId: string, body: unknown): Buffer | null {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
   const raw = body as Record<string, unknown>;
-  return contentSha256({
-    seq: Number(seq),
-    type: 'REVERSAL',
-    occurred_at: raw.occurred_at,
-    reverses_transaction_id: transactionId,
-  });
+  return contentSha256(
+    chainedContent({
+      seq,
+      type: 'REVERSAL',
+      occurred_at: raw.occurred_at,
+      reverses_transaction_id: transactionId,
+    }),
+  );
 }
 
 /** Corps du chemin de la personne (demande `SALE_REVERSAL`) : motif et commentaire ; session et heure du terminal sans objet. */

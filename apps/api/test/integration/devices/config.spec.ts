@@ -1,7 +1,7 @@
 // Configuration servie aux terminaux en HTTPS (lot WP17, T079, T080, T082 ; FR-018, NFR-009 ;
 // contracts/device-lifecycle.md ; research R-10, R-14). Terminaux enrôlés en propriétaire
 // (`TestTerminal.enroll`), jamais par la route. Contenu conforme au schéma `DeviceConfig` relu dans
-// `openapi.yaml`, rien d'inventé (snapshot_keys vide, autorité CENTRAL d'époque 0, catalogue
+// `openapi.yaml`, rien d'inventé (snapshot_keys : au plus deux, autorité CENTRAL d'époque 0, catalogue
 // vide) ; `config_id` = ligne de `device_config_served` ; ETag stable sans changement réel,
 // `304` sur `If-None-Match` ; nouvel ETag après un changement de réglage de l'événement ;
 // téléphone personnel jamais hors ligne ; suspendu servi, révoqué refusé (`403 DEVICE_REVOKED`,
@@ -95,8 +95,8 @@ describe('configuration servie aux terminaux (T079, T080, T082)', () => {
     withOwner((db) =>
       db.query(
         `INSERT INTO offline_policy (operator_id, scope_type, scope_id, offline_enabled,
-           max_per_sale, max_per_media_per_device, max_total_per_device, cash_topup_offline)
-         VALUES ($1, 'DEVICE', $2, true, 5000, 20000, 300000, true)`,
+           max_per_sale, max_per_media_per_device, max_total_per_device)
+         VALUES ($1, 'DEVICE', $2, true, 5000, 20000, 300000)`,
         [operatorId, deviceId],
       ),
     );
@@ -194,7 +194,8 @@ describe('configuration servie aux terminaux (T079, T080, T082)', () => {
       tap_replay_window_seconds: 120,
     });
     // Parties des missions suivantes : forme minimale, rien d'inventé (R-10).
-    expect(body.snapshot_keys).toEqual([]);
+    // Clés de signature : couvertes par offline/snapshots-config.spec.ts (au plus deux).
+    expect(body.snapshot_keys.length).toBeLessThanOrEqual(2);
     expect(body.catalog).toEqual({ version: 0, items: [] }); // point de vente sans catalogue (WP10)
     expect(body.debit_authority).toEqual({
       ledger_id: w.ids.ledgerA,
@@ -269,19 +270,36 @@ describe('configuration servie aux terminaux (T079, T080, T082)', () => {
     const keypad = await enrolled({ mode: 'KEYPAD_TPE' });
     await offlinePolicy(w.ops.a, phone.deviceId);
     await offlinePolicy(w.ops.a, keypad.deviceId);
-    const own = (await getConfig(keypad)).body as unknown as DeviceConfig;
-    expect(own.offline_policy).toMatchObject({
-      offline_enabled: true,
-      max_per_sale: 5000,
-      cash_topup_offline: true,
-    });
-    const res = await getConfig(phone);
-    expect(res.status).toBe(200);
-    expect(contractViolations('DeviceConfig', res.body)).toEqual([]);
-    const body = res.body as unknown as DeviceConfig;
-    expect(body.offline_policy.offline_enabled).toBe(false);
-    expect(body.offline_policy.cash_topup_offline).toBe(false);
-    expect(body.catalog).toBeNull();
+    // Clé de signature ACTIVE propre au prestataire (retirée en fin de test) : sans elle,
+    // `offline_enabled` est faux pour tout le monde (R-30.9) et la preuve serait vide.
+    const keyId = `cfg-${randomUUID().slice(0, 8)}`;
+    await withOwner((db) =>
+      db.query(
+        `INSERT INTO snapshot_signing_key (key_id, operator_id, owner, algorithm, public_key,
+                                           kms_key_ref, status)
+         VALUES ($1, $2, 'CENTRAL', 'ECDSA_P256_SHA256', $3, $4, 'ACTIVE')`,
+        [keyId, w.ops.a, Buffer.alloc(91, 1), `test:${keyId}`],
+      ),
+    );
+    try {
+      const own = (await getConfig(keypad)).body as unknown as DeviceConfig;
+      expect(own.offline_policy).toMatchObject({
+        offline_enabled: true,
+        max_per_sale: 5000,
+        cash_topup_offline: false,
+      });
+      const res = await getConfig(phone);
+      expect(res.status).toBe(200);
+      expect(contractViolations('DeviceConfig', res.body)).toEqual([]);
+      const body = res.body as unknown as DeviceConfig;
+      expect(body.offline_policy.offline_enabled).toBe(false);
+      expect(body.offline_policy.cash_topup_offline).toBe(false);
+      expect(body.catalog).toBeNull();
+    } finally {
+      await withOwner((db) =>
+        db.query("UPDATE snapshot_signing_key SET status = 'REVOKED' WHERE key_id = $1", [keyId]),
+      );
+    }
   });
 
   it('terminal iOS : servi, sans NFC', async () => {
@@ -332,7 +350,7 @@ describe('configuration servie aux terminaux (T079, T080, T082)', () => {
     // ici de set_device_status, et verrou sans conflit avec la clé étrangère du nonce (KEY SHARE).
     const res = await commitWhileWaiting(
       { sql: "UPDATE device SET status = 'REVOKED' WHERE id = $1", params: [t.deviceId] },
-      { role: 'cashless_app', statement: 'FOR NO KEY UPDATE' },
+      { role: 'cashless_app', statement: "lock_device($1, 'NO KEY UPDATE')" },
       () => getConfig(t),
     );
     expect(res.status).toBe(403);

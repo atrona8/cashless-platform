@@ -47,10 +47,19 @@ jobs:
       CASHLESS_PERSO_PASSWORD: cashless_perso_ci
       CASHLESS_TAGCHECK_PASSWORD: cashless_tagcheck_ci
       CASHLESS_KEYADMIN_PASSWORD: cashless_keyadmin_ci
+      CASHLESS_SNAPCONTENT_PASSWORD: cashless_snapcontent_ci
+      CASHLESS_SNAPSIGN_PASSWORD: cashless_snapsign_ci
+      CASHLESS_MAINT_PASSWORD: cashless_maint_ci
       DATABASE_URL_TAGKEYS: postgres://cashless_tagkeys:cashless_tagkeys_ci@localhost:5432/cashless_test
       DATABASE_URL_PERSO: postgres://cashless_perso:cashless_perso_ci@localhost:5432/cashless_test
       DATABASE_URL_TAGCHECK: postgres://cashless_tagcheck:cashless_tagcheck_ci@localhost:5432/cashless_test
       DATABASE_URL_KEYADMIN: postgres://cashless_keyadmin:cashless_keyadmin_ci@localhost:5432/cashless_test
+      # Mission hors-ligne-snapshots-lots (WP21) : processus snapshot-content, snapshot-signer et
+      # maintenance. Sans ces trois adresses, config.ts retombe sur 127.0.0.1:5433 (cluster local)
+      # et les suites de processus ne se connectent pas.
+      DATABASE_URL_SNAPCONTENT: postgres://cashless_snapcontent:cashless_snapcontent_ci@localhost:5432/cashless_test
+      DATABASE_URL_SNAPSIGN: postgres://cashless_snapsign:cashless_snapsign_ci@localhost:5432/cashless_test
+      DATABASE_URL_MAINT: postgres://cashless_maint:cashless_maint_ci@localhost:5432/cashless_test
       # Clé d'empreinte des codes de rattachement : valeur de test (32 octets en hexadécimal), sans valeur ailleurs.
       CLAIM_CODE_HMAC_KEY: 636173686c6573732d63692d636c61696d2d636f64652d686d61632d74657374
       # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
@@ -173,6 +182,27 @@ jobs:
           npm test -w @cashless/api -- --runInBand
           end-to-end/topup-journey end-to-end/topup-secrets webhooks/receive webhooks/retry topups/poller-
 
+      # Mission hors-ligne-snapshots-lots (WP21, NFR-001, NFR-011, NFR-013) : 100 rejeux d'un même
+      # lot, 50 envois concurrents d'un terminal, pool de verrous des lots réduit ; écartée de la
+      # passe parallèle (SKIP_LATENCY=1), lancée seule, en série.
+      - name: Concurrence des lots hors ligne (suite seule, en série)
+        run: npm test -w @cashless/api -- --runInBand end-to-end/offline-concurrency
+
+      # Parcours complets de la mission hors-ligne-snapshots-lots (WP21) : ils lancent les travailleurs de
+      # snapshots, qui voient les grands livres de toutes les suites ; écartés de la passe parallèle, lancés seuls.
+      - name: Parcours hors ligne (suites seules, en série)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/offline-journey end-to-end/offline-minimal
+
+      # Rotation des clés de signature des snapshots (WP09) : les suites vident la table des clés, globale
+      # (au plus deux clés valides) ; une suite voisine qui publie un snapshot la référence. Lancées seules,
+      # sur base recréée : les snapshots laissés par les parcours ci-dessus référencent encore des clés.
+      - name: Clés de signature des snapshots (suites seules, en série, base recréée)
+        run: |
+          npm run reset-db -w @cashless/ledger-sql
+          npm test -w @cashless/api -- --runInBand snapshot-keys/rotation snapshot-keys/key-admin-worker
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 
@@ -200,3 +230,13 @@ jobs:
       # de la mission recharges-caisses-psp (WP14) : en série, serveur seul. Après la passe parallèle, SEULE.
       - name: Latence des recharges, NFR-006 et NFR-009 (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- --runInBand end-to-end/topup-latency
+
+      # NFR-003 (lot de 500 opérations, p95 <= 60 s), NFR-004 (FULL de 50 000 bracelets signé en
+      # 30 s, DELTA servi en 2 s pour 95 % des demandes) et NFR-005 (blocage publié en 5 s, autre
+      # changement en 60 s) de la mission hors-ligne-snapshots-lots (WP21) : en série, serveur seul,
+      # après la passe parallèle. SEULES : aucune autre suite ne tourne pendant la mesure, et les
+      # travailleurs de snapshots voient tous les grands livres.
+      - name: Latence des lots et des snapshots hors ligne, NFR-003 à NFR-005 (suites seules, sans nouvel essai)
+        run: >-
+          npm test -w @cashless/api -- --runInBand
+          end-to-end/offline-latency end-to-end/snapshot-latency

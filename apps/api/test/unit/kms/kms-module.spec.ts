@@ -10,6 +10,7 @@ import {
   DECRYPT_PORT,
   KEY_ADMIN_PORT,
   MAC_PORT,
+  SIGN_PORT,
   type KmsCapability,
 } from '../../../src/kms/kms.ports';
 import { withSecret, zeroize } from '../../../src/kms/zeroize';
@@ -28,6 +29,7 @@ const TOKENS = {
   dataKey: DATA_KEY_PORT,
   decrypt: DECRYPT_PORT,
   keyAdmin: KEY_ADMIN_PORT,
+  sign: SIGN_PORT,
 } as const;
 
 async function compile(capabilities: KmsCapability[], wanted: symbol) {
@@ -46,11 +48,17 @@ async function compile(capabilities: KmsCapability[], wanted: symbol) {
 
 describe('KmsModule.forCapabilities', () => {
   it.each([
-    ['clés de bracelet', ['decrypt'], ['decrypt'], ['mac', 'dataKey', 'keyAdmin']],
-    ['personnalisation', ['mac', 'dataKey'], ['mac', 'dataKey'], ['decrypt', 'keyAdmin']],
-    ['contrôle quotidien', ['mac', 'decrypt'], ['mac', 'decrypt'], ['dataKey', 'keyAdmin']],
-    ['commande d’administration', ['keyAdmin'], ['keyAdmin'], ['mac', 'dataKey', 'decrypt']],
-    ['API publique', [], [], ['mac', 'dataKey', 'decrypt', 'keyAdmin']],
+    ['clés de bracelet', ['decrypt'], ['decrypt'], ['mac', 'dataKey', 'keyAdmin', 'sign']],
+    ['personnalisation', ['mac', 'dataKey'], ['mac', 'dataKey'], ['decrypt', 'keyAdmin', 'sign']],
+    ['contrôle quotidien', ['mac', 'decrypt'], ['mac', 'decrypt'], ['dataKey', 'keyAdmin', 'sign']],
+    [
+      'commande d’administration',
+      ['keyAdmin'],
+      ['keyAdmin'],
+      ['mac', 'dataKey', 'decrypt', 'sign'],
+    ],
+    ['signature des snapshots', ['sign'], ['sign'], ['mac', 'dataKey', 'decrypt', 'keyAdmin']],
+    ['API publique', [], [], ['mac', 'dataKey', 'decrypt', 'keyAdmin', 'sign']],
   ] as Array<[string, KmsCapability[], KmsCapability[], KmsCapability[]]>)(
     '%s : ports demandés injectables, les autres non',
     async (_name, capabilities, allowed, refused) => {

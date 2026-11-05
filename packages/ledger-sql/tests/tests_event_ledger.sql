@@ -5,6 +5,7 @@
 \set QUIET 1
 \set scenario `cat scenario_reference.json`
 BEGIN;
+\ir _grants_for_tests.sql
 CREATE EXTENSION IF NOT EXISTS pgtap;
 SELECT no_plan();
 

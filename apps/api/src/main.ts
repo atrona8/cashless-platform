@@ -4,4 +4,4 @@ import { loadConfig } from './config/config';
 import { serve } from './processes/bootstrap';
 import { PublicProcessModule } from './processes/public.module';
 
-void serve(PublicProcessModule, loadConfig().port);
+void serve(PublicProcessModule, loadConfig().port, { apiDocs: true });

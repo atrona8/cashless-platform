@@ -1,0 +1,30 @@
+{
+  "_generator": "gen_snapshot_vectors.py (Python, biblioth\u00e8que cryptography), ind\u00e9pendant du code test\u00e9",
+  "ledger_id": "a0000000-0000-0000-0000-000000000001",
+  "device_id": "d0000000-0000-0000-0000-000000000002",
+  "version": "4294967298",
+  "token_hash": "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+  "nfc_uid": "04a1b2c3d4e5f6",
+  "snapkey_aad_hex": "434153484c4553532f534e41504b45592f7631a00000000000000000000000000000010000000100000002d0000000000000000000000000000002",
+  "snappwd_aad_hex": "434153484c4553532f534e41505057442f7631a00000000000000000000000000000010000000100000002404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f04a1b2c3d4e5f6",
+  "recipient_private_key_hex": "1b9d3f5a7c21e4086a5b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7081",
+  "recipient_public_key_hex": "04308f2daf79adcb468fb5ce3db053d666a4a60d539be80319bab66a5479c87c963b22fe26218dd92b37ccc2dc80c06d6ec508256e32d2c2164c8af39d38801484",
+  "k_v_hex": "808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f",
+  "nonce_hex": "101112131415161718191a1b",
+  "envelope": {
+    "alg": "ECDH-ES+HKDF-SHA256+A256GCM",
+    "epk": "BMRbD9RYW--H1B9jKD5fR80i1teEWH5TfXRtq3n0uJcKMAxNCrsVFyf6Cu7JNYg7idDgjNtZQhdbJURdKjoIqBI",
+    "nonce": "EBESExQVFhcYGRob",
+    "ciphertext": "oT0XImth8xqTbhlPSk9sSeLRLIHfbKlqXbBuIOtZlSA=",
+    "tag": "d4kH/Wf2JW3HVg6uz1s75w=="
+  },
+  "wrapped_key": {
+    "alg": "ECDH-ES+HKDF-SHA256+A256GCM",
+    "epk": "BMRbD9RYW--H1B9jKD5fR80i1teEWH5TfXRtq3n0uJcKMAxNCrsVFyf6Cu7JNYg7idDgjNtZQhdbJURdKjoIqBI",
+    "iv": "EBESExQVFhcYGRob",
+    "wrapped_key": "oT0XImth8xqTbhlPSk9sSeLRLIHfbKlqXbBuIOtZlSB3iQf9Z/YlbcdWDq7PWzvn"
+  },
+  "pwd_pack_hex": "c4a55e7f0199",
+  "pwd_pack_enc_hex": "101112131415161718191a1b749a0201ece0fb24318ede671093ecfef04451e72f21",
+  "pwd_pack_sha256_hex": "00616f895792e720309be210e6179586bd6b2a9afa334ffc5c03fcf395e53191"
+}

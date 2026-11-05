@@ -127,6 +127,17 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Snapshot signé, plafonds hors ligne par politique (`offline_policy`), refus par défaut. (§9.1 à §9.4)
 - Numérotation `seq` par terminal, lots de 500 opérations, registre des numéros, trous de séquence. (§9.5)
 - Conflits à la synchronisation : commerçant garanti, part non couverte en compte d'attente. (§9.6)
+- **Aucune recharge espèces hors ligne** (décision du porteur du 30/10/2026, mission 7) : `cash_topup_offline` est
+  toujours faux ; un `TOPUP_CASH` porté par un lot est rejeté seul (`OFFLINE_NOT_ALLOWED`), rien n'est écrit et une
+  anomalie `NON_COMPLIANT_OPERATION` porte le montant. Écart signalé à `sync_protocol.md` (§5.4, §7.5, §8, §11 cas 22
+  et 39) et à SPECIFICATION §9, à mettre en accord. La passerelle locale (mission 8) n'est pas concernée (décision du
+  porteur du 05/11/2026) : elle sert les recharges espèces sous session de caisse ouverte sur site, garde de caisse
+  inchangée.
+- Vendeur hors ligne : session ouverte en ligne valable jusqu'à son expiration (12 h), aucune connexion hors ligne,
+  aucun secret de PIN sur le terminal (porteur, 29/10/2026). Plafonds jugés sur la configuration détenue ; exposition
+  = ventes non acquittées (acquittement de moins de 120 s compté, porteur 30/10/2026).
+- Snapshots produits par un processus dédié (seul détenteur des clés), une version signée par pas ; signature par un
+  faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b (OP-N89).
 - Passerelle locale qui prend l'autorité de débit pendant une coupure (bascule, époque, reprise forcée). (§9.7)
 
 ### 2.7 API (§10, `openapi.yaml`)
@@ -241,14 +252,25 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    5a. Identité et enrôlement des terminaux (avec les dettes de sécurité héritées de la mission 4)
    5b. Terminaux et paiement en ligne (vendeurs, catalogue, paiement par bracelet et par QR, identification au guichet)
 6. Recharges, caisses et PSP
-   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026, décision du porteur ; dès les accès de test, action 11)
+   6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026 ; fondue dans la 12b le 29/10/2026)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
 9. Remboursements, versements et clôture
-10. App festivalier
-11. Back-office web
-12. App terminal (après la validation NFC sur vrais bracelets)
+10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
+11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
+12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
+12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1
+
+**Réorganisation du 29/10/2026 (décision du porteur, au lancement de la mission 7).** Les services externes sont
+simulés jusqu'à la mission 12b : chaque mission travaille derrière un port avec un faux refusé en production (AWS KMS
+et Secrets Manager, PSP réels, fournisseurs SMS et WhatsApp, serveur d'identité réel, signatures NXP réelles). Les
+applications clientes (10b, 11, 12) sont déléguées à d'autres équipes, qui codent contre `openapi.yaml` ; la partie
+serveur reste chez nous (10a, 11a, et missions 7 à 9). Conséquences sur les héritages ci-dessous : la mission 6b est
+fondue dans la 12b ; OP-N41 et OP-N73 (adaptateurs KMS) passent de la mission 7 à la 12b ; OP-N56 (preuve de la
+personne qui décide) et OP-N46 (signature NXP côté serveur) passent à la 12b ; OP-N60, OP-N79, OP-N76 et le côté
+serveur d'OP-N64 passent à la 11a ; les héritages de la mission 10 vont à la 10a. Détail et ordre de démarrage :
+`PROMPTS-A-ENVOYER.md`, section « Feuille de route révisée ».
 
 **Héritages de la mission 4 (bracelets NFC, 14/10/2026)** — besoin à reprendre par les missions suivantes, détail
 dans `docs/POINTS_OUVERTS.md` et `docs/DECISIONS_ADR.md` (ADR-83 à ADR-101 ; missions d'OP-N41, OP-N44, OP-N45,
@@ -267,7 +289,7 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 6 : compte de caisse ouvert avec la session ; sans lui, aucune espèce n'entre ni ne sort au guichet des
   bracelets (OP-N49) ;
 - héritages de la mission 6 (27/10/2026) : mission 7, session d'une recharge espèces hors ligne (la base refuse toute
-  écriture de caisse hors session) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
+  écriture de caisse hors session) — sans objet depuis le 30/10/2026 (recharge espèces hors ligne retirée) ; mission 9, rapprochement qui tient compte des paiements PSP non crédités (OP-N82)
   et passage à `RECONCILING` refusé tant qu'une session de caisse est ouverte ;
 - héritages de la mission 6 (29/10/2026, WP14) : cause du blocage d'un portefeuille portée par le portefeuille (OP-N83, corrigée en cycle 2 par
   la migration 0042, ADR-134) ; anciennes signatures de caisse retirées à `cashless_app` (OP-N84, levé en cycle 2,
@@ -277,6 +299,23 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   de `posting_cash_desk_guard` contrôlé au déploiement ou garde qui refuse (OP-N87) ; mission 13 ;
 - verrouillage ordonné des comptes avant la lecture des soldes par une fonction dédiée, pour `CHARGEBACK` et `PURCHASE`
   (refus à tort sous concurrence, OP-N88, porteur 29/10/2026) ; mission 13 ;
+- héritages de la mission 7 (tâches, 30/10/2026, ADR-139 et ADR-140) : trace `RETRY` d'un lot réexaminée (OP-N90) ;
+  droits ajoutés au signataire et au contenu des snapshots, et lecture des imports de journal en cours par
+  identifiants (OP-N91) revus ; mission 13 ;
+- héritages de la mission 7 (consignation de WP21, 04/11/2026, ADR-141 à ADR-147) : `INSERT` direct sur `anomaly` gardé
+  pour `cashless_app` (OP-N86 étendu, sept appelants) ; rotation de la clé de signature des snapshots à deux personnes
+  avec acteur vérifié, lectures de clés accordées à `cashless_keyadmin` et `cashless_snapsign` revues (OP-N92) ;
+  alarme sur les entrées de snapshot sans mot de passe, référence de la clé d'emballage, reprise du brouillon scellé
+  (OP-N93) ; annulation du back-office qui réduit l'anomalie de perte, contrôle d'appartenance en base de l'acteur
+  d'un import, migration `0050` (OP-N94) ; `413` au-delà de 100 ko (OP-N95) ; mission 13 ; clés de signature par prestataire (OP-N93 a) en 12b
+  (confirmé par le porteur le 04/11/2026) ; le refus d'un `DATABASE_URL_MAINT` propriétaire ou superutilisateur en
+  production est livré par WP21 (OP-N95 point 3, 04/11/2026) ;
+  relecture en mission 13 de l'enveloppe de lecture `event_device_sync_status_api` (migration `0051`, `EXECUTE` à
+  `cashless_app`, OP-N96, ADR-148) ; relecture de l'exemption de garde `pwd_pack_enc` dans
+  `offline-snapshots.service.ts` (OP-N97, ADR-150) ;
+  écart de NFR-005 sur les changements non bloquants (visibles en 60 s plus 2,5 s au plus, `DELTA_AFTER_MS` gardé à 60 s ;
+  levée par un délai de 55 s au plus ou une reformulation, OP-N98, ADR-151) ;
+  câblage des refus `LEDGER_LOCKED` et `SYNC_DEADLINE_PASSED` (FR-024) à prouver en intégration (OP-N99) ;
 - mission 7 : forme de `content_sha256` du registre des numéros reprise de la mission 5b, et trous laissés par un
   corps en ligne invalide levés par la procédure des trous (ADR-128, porteur 26/10/2026) ; snapshots hors ligne inscrits par une fonction qui calcule elle-même la version, pour qu'une version
   plantée ne bloque plus les snapshots suivants (OP-N57) ; historique des politiques hors ligne écrit par son seul

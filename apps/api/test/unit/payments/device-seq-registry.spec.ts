@@ -3,7 +3,10 @@
 // Python) : la forme exacte est celle que les lots hors ligne (mission 7) devront reproduire.
 import { createHash } from 'node:crypto';
 import { ProblemException } from '../../../src/errors/problem';
+import type { TxClient } from '../../../src/db/tenant-tx';
+import { AnomalyWriter, openAnomaly } from '../../../src/offline/anomalies/anomaly-writer';
 import {
+  DeviceSeqRegistry,
   isRegistrable,
   contentSha256,
   purchaseContent,
@@ -135,5 +138,164 @@ describe('qrTokenHash (NFR-008, réutilisée par WP13)', () => {
     expect(qrTokenHash('CQ7M2K9XQ4TP').toString('hex')).toBe(
       '4606403d0d1f0669bbed643ae79ce0d766893e8fbaac5b3bb0d4a882f7b70c86',
     );
+  });
+});
+
+describe('DeviceSeqRegistry.record / lookup (faux client)', () => {
+  type Call = { sql: string; params: unknown[] };
+  const fake = (rows: unknown[]) => {
+    const calls: Call[] = [];
+    const client = {
+      query: (sql: string, params: unknown[]) => {
+        calls.push({ sql, params });
+        return Promise.resolve({ rows });
+      },
+    } as unknown as TxClient;
+    return { client, calls };
+  };
+  const registry = new DeviceSeqRegistry(undefined as never);
+  const row = {
+    replayed: true,
+    outcome: 'ACCEPTED',
+    reason: null,
+    transaction_id: 't1',
+    contiguous_acked_seq: '41',
+  };
+  const content = Buffer.alloc(32, 1);
+
+  it('record : seq en texte, ordre des paramètres, replayed rendu sans exception', async () => {
+    const { client, calls } = fake([row]);
+    const out = await registry.record(
+      client,
+      {
+        deviceId: 'd',
+        seq: 9007199254740991n,
+        content,
+        outcome: 'ACCEPTED',
+        transactionId: 't1',
+        batchId: 'b',
+      },
+      'BATCH',
+    );
+    expect(calls[0]!.sql).toContain('record_device_seq($1, $2, $3, $4, $5, $6, $7, $8)');
+    expect(calls[0]!.params).toEqual([
+      'd',
+      '9007199254740991',
+      content,
+      'ACCEPTED',
+      'BATCH',
+      't1',
+      null,
+      'b',
+    ]);
+    expect(out).toEqual({
+      replayed: true,
+      outcome: 'ACCEPTED',
+      reason: null,
+      transactionId: 't1',
+      contiguousAckedSeq: 41n,
+    });
+  });
+
+  it('record : les erreurs de la base (CL002, CL021) remontent telles quelles', async () => {
+    const client = {
+      query: () => Promise.reject(Object.assign(new Error('x'), { code: 'CL002' })),
+    } as unknown as TxClient;
+    await expect(
+      registry.record(client, { deviceId: 'd', seq: 1n, content, outcome: 'ACCEPTED' }),
+    ).rejects.toMatchObject({ code: 'CL002' });
+  });
+
+  it('accept : lève si replayed, enveloppe de record (outcome ACCEPTED, canal ONLINE)', async () => {
+    const { client, calls } = fake([row]);
+    await expect(
+      registry.accept(client, { deviceId: 'd', seq: 3n, content, transactionId: 't1' }),
+    ).rejects.toBeInstanceOf(ProblemException);
+    expect(calls[0]!.params).toEqual(['d', '3', content, 'ACCEPTED', 'ONLINE', 't1', null, null]);
+    const ok = fake([{ ...row, replayed: false }]);
+    await registry.accept(ok.client, { deviceId: 'd', seq: 3n, content, transactionId: 't1' });
+  });
+
+  it('lookup : seq en texte, absent -> null, présent -> ligne', async () => {
+    const { client, calls } = fake([]);
+    expect(await registry.lookup(client, 'd', 5n)).toBeNull();
+    expect(calls[0]!.params).toEqual(['d', '5']);
+    expect(calls[0]!.sql).not.toMatch(/FOR (NO KEY )?(UPDATE|SHARE)/);
+    const found = fake([{ ...row, replayed: false }]);
+    expect(await registry.lookup(found.client, 'd', 5n)).toMatchObject({
+      replayed: false,
+      contiguousAckedSeq: 41n,
+    });
+  });
+});
+
+describe('AnomalyWriter (faux client)', () => {
+  const fakeClient = () => {
+    const calls: { sql: string; params: unknown[] }[] = [];
+    const client = {
+      query: (sql: string, params: unknown[]) => {
+        calls.push({ sql, params });
+        return Promise.resolve({ rows: [{ id: 'anom-uuid' }] });
+      },
+    } as unknown as TxClient;
+    return { client, calls };
+  };
+
+  it('openAnomaly : appelle open_offline_anomaly, seq et amount en texte, défauts NULL / 0', async () => {
+    const { client, calls } = fakeClient();
+    const id = await openAnomaly(client, {
+      ledgerId: 'l',
+      kind: 'CLOCK_SKEW',
+      deviceId: 'd',
+      transactionId: 't',
+    });
+    expect(id).toBe('anom-uuid');
+    expect(calls[0]!.sql).toContain('open_offline_anomaly(');
+    expect(calls[0]!.sql).not.toMatch(/INSERT/i);
+    expect(calls[0]!.params).toEqual([
+      'l',
+      'CLOCK_SKEW',
+      'd',
+      null,
+      null,
+      't',
+      '0',
+      null,
+      null,
+      null,
+    ]);
+    await openAnomaly(client, {
+      ledgerId: 'l',
+      kind: 'SEQ_GAP',
+      seq: 4294967296n,
+      amount: 250n,
+      detail: { a: 1 },
+      batchId: 'b',
+    });
+    expect(calls[1]!.params).toEqual([
+      'l',
+      'SEQ_GAP',
+      null,
+      null,
+      '4294967296',
+      null,
+      '250',
+      null,
+      '{"a":1}',
+      'b',
+    ]);
+  });
+
+  it('type libre refusé', async () => {
+    const { client, calls } = fakeClient();
+    await expect(openAnomaly(client, { ledgerId: 'l', kind: 'AUTRE' as never })).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+
+  it('reduceShortfall : appelle reduce_offline_shortfall avec la transaction d’annulation', async () => {
+    const { client, calls } = fakeClient();
+    await new AnomalyWriter().reduceShortfall(client, 'orig', 700n, 'rev');
+    expect(calls[0]!.sql).toContain('reduce_offline_shortfall($1, $2, $3)');
+    expect(calls[0]!.params).toEqual(['orig', '700', 'rev']);
   });
 });
