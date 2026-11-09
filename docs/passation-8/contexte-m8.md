@@ -70,7 +70,15 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     conditions de caution et frais d'activation (ADR-172) ; production et contrat par WP12 (correction), lecture par
     WP22 (correction, après WP12). Sans le champ, refus maintenu.
 37. Rendu bloqué : trace `EDGE_RELEASE_STUCK` en `audit_log` par une fonction `SECURITY DEFINER` dédiée, migration
-    `0065`, `EXECUTE` à `cashless_maint` seul (ADR-173), par WP12 (correction). Migration centrale suivante : `0066`.
+    `0065`, `EXECUTE` à `cashless_maint` seul (ADR-173), par WP12 (correction). Migration centrale suivante : `0066` (prise par la décision 39).
+38. `check_balanced()` en `SECURITY DEFINER SET search_path = public, pg_temp` (migration correctrice `0066`, WP13),
+    plutôt qu'un droit de lecture sur `posting` (ADR-174).
+39. Réception des lots (WP13) : fonctions `SECURITY DEFINER` étroites pour le curseur du registre, la clé publique
+    du terminal, les résultats mémorisés, la configuration des frais et l'audit ; `EXECUTE` à `cashless_edge` seul,
+    dans `0066` (ADR-174). Migration centrale suivante : `0067`.
+    Complément de la décision 36 (orchestrateur, pour tenir la décision 21) : le plafond par recharge réglable est
+    répliqué avec les conditions de caution (même ajout sous `/edge/*`, WP12) ; WP22 le lit au lieu de
+    `wallet_limits.max_cash_topup`, absent de tout contrat.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

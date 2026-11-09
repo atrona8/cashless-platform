@@ -2597,3 +2597,24 @@ Décision du porteur : 09/11/2026 ADR-173
   `EDGE_RELEASE_STUCK` dans `audit_log` pour un handover réellement bloqué (contrôle en base), `REVOKE ALL FROM
   PUBLIC`, `EXECUTE` à `cashless_maint` seul (test de droits). Portée par WP12 en correction.
 - **Test de borne.** Les autres rôles ne peuvent pas l'exécuter ; un handover non bloqué est refusé.
+
+## ADR-174 — Mission 8 : droits du rôle `cashless_edge` pour la réception des lots (WP13)
+
+Décision du porteur : 09/11/2026 ADR-174
+
+- **Statut** : Acceptée, 9 novembre 2026 (décisions 38 et 39 du porteur, compte rendu de WP13).
+- **Contexte.** Sous `cashless_edge`, aucune écriture `EDGE_SYNC` n'aboutit : le déclencheur différé
+  `posting_balanced` appelle `check_balanced()` avec les droits de l'appelant, sans droit sur `posting`. La réception
+  doit aussi lire le curseur du registre, la clé publique d'un terminal, les résultats mémorisés d'un lot, la
+  configuration des frais, et écrire l'audit (alertes, ordres locaux) ; `cashless_edge` n'a aucun droit de table.
+  Sans cela la route répond `503` sans rien écrire (échec fermé).
+- **Décision.** Migration correctrice `0066`, portée par WP13 en correction : (1) `ALTER FUNCTION check_balanced()
+  SECURITY DEFINER SET search_path = public, pg_temp` (schéma généré inchangé) ; (2) fonctions `SECURITY DEFINER`
+  étroites, chacune bornée à la passerelle authentifiée et à son prestataire, `REVOKE ALL FROM PUBLIC`, `EXECUTE` à
+  `cashless_edge` seul ; aucun droit de table nouveau.
+- **Rejeté.** `GRANT SELECT ON posting` (lecture directe plus large) ; connexion `cashless_app` dans le processus
+  edge (cloisonnement affaibli).
+- **Risque.** `check_balanced` lit, sous le propriétaire, les seules lignes de la transaction courante (aucune
+  donnée rendue). Fonctions : surface d'appel nouvelle, relecture humaine exigée.
+- **Test de borne.** Droits par `SET ROLE` réel : `cashless_edge` sans droit de table ; chaque fonction refuse une
+  autre passerelle ou un autre prestataire ; les autres rôles ne peuvent pas l'exécuter.

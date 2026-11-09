@@ -387,3 +387,31 @@ Notes à transmettre aux lots suivants.
 - **Incident** : deux Jest de l'implémenteur sur `cashless_test` (sans `env.sh`) ; base remise à zéro par
   l'orchestrateur (16 h 50). Consigne des agents : `source env.sh` et Jest dans la même commande.
 - Relecture humaine : `handover.service.ts`, `replication-feed.service.ts`.
+
+## Intégration WP18 × WP20 (orchestrateur, 09/11/2026)
+- Défaut des lots approuvés réunis : cycle d'injection réplication -> autorité -> file -> réplication par
+  `DELTA_PURGE` ; `NestFactory.create` ne rend jamais la main, sortie 0 sans message (8 à 15 échecs des démarrages
+  réels dans les lanes u, v, w ; les lanes r, s, t seules passent).
+- Correctif : `DeltaPurge` fournisseur sans dépendance partagé (`replication.module.ts`, `replication.service.ts`),
+  aucun câblage dans `queue.module.ts`, `child-main.ts` ne simule plus que l'absence ; `production-guard.spec.ts` :
+  faux `DrainService` et `centralClientKeyFile: null` (assertion stricte gardée, la version affaiblie de WP21 est
+  remplacée). Commits `af95d855` (u), `c5916da8` (v), `53c7c709` (w), contenus identiques. Preuves : u et w
+  260/260, v 180/180 (`test/startup`, `test/queue`, `production-guard`).
+- **WP24, WP25** : à la fusion des dépendances, garder ces contenus.
+
+## Relectures du 09/11, après-midi
+- WP23 **approuvé** (192/192 ; mutants survivants mineurs : `last_chain_hash` de l'en-tête, `device_serial`,
+  revérification de signature du snapshot ; `sealedKeyAad` choisi par le lot, à aligner avec WP12, WP25).
+  Relecture humaine : `media-auth-key.service.ts`, `pack-crypto.ts`, `snapshot-signer.ts`, `batch-verifier.ts`,
+  `snapshot-builder.ts`.
+- WP12 **rejeté** (cycle 1) : test direct de `exposeWhileEdge` absent (mutation hors `EDGE` survit). Mineurs : rejeu
+  `40001`/`23505` non prouvé, canari dans `claim_code_hash` sans portée. Constats :
+  `rapports/feedback/wp12-cycle1.md`. Correction : constats + décisions 36 (avec plafond de recharge), 37.
+- WP22 **rejeté** (cycle 1) : 5 mutants survivants sur `staff-token.guard.ts` (terminal, `OPEN`, `closed_at`, HS256,
+  garde de route) ; plafond lu dans `wallet_limits.max_cash_topup` absent de tout contrat. Constats :
+  `rapports/feedback/wp22-cycle1.md`. Correction après WP12 (lecture des conditions et du plafond répliqués).
+- WP13 en relecture (032aa34f) : 2 blocages de droits tranchés (décisions 38, 39) ; route en 503 sans écriture
+  d'ici là. Hors carte : `bootstrap.ts`, `edge.module.ts`, `edge-gateway.ts`, `edge-identity.service.ts`,
+  `audit.service.ts`, `contract-baseline.json`, `check.test.mjs`.
+- WP21 en relecture (e9b7189a + correctif d'intégration). Renforcement : `X-Approval-Token` refusé (403). `Problem`
+  sans `available_balance`/`currency` alors que le central les émet (écart du contrat existant, signalé).
