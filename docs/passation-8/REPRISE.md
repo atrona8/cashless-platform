@@ -1,21 +1,27 @@
 # Reprise, mission 8 (passerelle-locale-01M6NM1S)
 
-État au 05/11/2026 : spécification et plan finis, sur `feat/passerelle-locale`. 39 FR, 13 NFR, 13 contraintes, 16 concerns. Passe
-contradictoire : 29 constats traités (`research-adversarial.md`). Écarts : OP-N100 à OP-N110, ADR-155 à ADR-165. Aucun code.
+État au 09/11/2026, 11 h 30 UTC. Implémentation en cours sur `feat/passerelle-locale`. Méthode : un implémenteur et un
+relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
+`suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 31). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-Prochaine étape : `/spec-kitty.tasks` (lancé par le porteur), analyse, puis `spec-kitty next --agent claude --mission
-passerelle-locale-01M6NM1S`. Un implémenteur et un relecteur distincts par lot, sous-agents en `sonnet`, tests en série par
-l'orchestrateur. Commandes spec-kitty avec `LC_ALL=C LANG=C`.
+## Lots
 
-## Où lire
-
-- `contexte-m8.md` : décisions 1 à 18 du porteur (attention : FR à 039 et NFR à 013, pas 034 et 012).
-- `kitty-specs/passerelle-locale-01M6NM1S/` : `research.md` (R-01 à R-30, fait foi), `data-model.md`, `contracts/`.
-- `rapports/` : recherches et passe contradictoire. `docs/Mission-08-Passerelle-locale.docx` : document du porteur (`scripts/gen_8_doc.py`).
+- Approuvés (11) : WP01 à WP08, WP16, WP17, WP18.
+- Interrompus par la limite d'usage (reprise à 14 h 40 UTC, reprendre les mêmes agents ou relancer un implémenteur
+  sur la lane, travail sur disque) :
+  - WP09 (lane-i) : commit 95462f42 (droits, `0064`, tests) fait ; restait la batterie complète, `mark-status`,
+    `align-lane.sh i`, `move-task --to for_review`.
+  - WP19 (lane-s) : travail non commité (`device-proofs/`, `device/`, tests, `edge-0005_device_state.sql`,
+    déclaration de `structured-headers` et `yaml` dans `apps/gateway/package.json` : déjà dépendances de `apps/api`,
+    à vérifier en relecture). `edge-0005` pris sans attribution : à entériner (WP20 a `edge-0004`).
+  - WP20 (lane-t) : travail non commité (`queue/`, tests, `edge-0004_queue_hardening.sql`, horloge, faux du port) ;
+    « deux échecs à examiner » au moment de l'arrêt. Décision 22 (mTLS signé par le port) : compte rendu attendu.
+- Ensuite : WP10, WP11 (après WP09) ; WP21 à WP23 (après WP19, WP20) ; WP12 à WP15 ; WP24 ; WP25.
 
 ## À ne pas oublier
 
-- Contrat stable, base `d2a7c538` : ajouts seulement sous `/edge/*`. Migrations à partir de `0058`.
-- Valeurs : 50 000 XOF par vente, 500 000 XOF par terminal et par heure, `EDGE_PACK_DELAY` 30 min.
-- À confirmer avec l'équipe terminal : un `401` sur un jeton du central déclenche bien un rafraîchissement ; `409 CONFLICT_STATE` pour `ARMED` et `STANDBY`.
-- Au juriste : OP-N108 (dépassement temporaire d'un plafond au rejeu), et l'identification du client pour la mission 10c.
+- Relecture humaine : liste par lot dans `suivi-lots.md` (lignes « Relecture humaine »).
+- Contrat stable, base `d2a7c538` : ajouts seulement sous `/edge/*` (WP01 seul).
+- Au juriste : OP-N108 ; identification du client pour la mission 10c.
+- Garde `kitty-specs` à `move-task` : `align-lane.sh <lettre>` d'abord ; `--force` seulement si seuls les artefacts du
+  runtime restent.
