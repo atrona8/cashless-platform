@@ -2524,3 +2524,27 @@ Ordres locaux à deux personnes (levée de `STALE`, purge manuelle) : deux clés
 - **Test de borne.** Enrôlement refusé pour deux titulaires identiques ou deux clés identiques.
 - **Report.** `PRD.md` §2.6.
 
+## ADR-168 — Mission 8 : clé TLS client de la passerelle en fichier jusqu'à la mission 12b (OP-N113)
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 32 du porteur, WP20).
+- **Contexte.** La décision 22 voulait une poignée de main mTLS signée par le composant matériel. Node (`tls`) exige une clé privée en mémoire ; signer par une clé
+  externe demande un module natif (fournisseur OpenSSL, PKCS#11) ou un proxy mTLS, hors du périmètre sans nouvelle dépendance.
+- **Décision.** Clé TLS client en fichier jusqu'à la mission 12b, durcie : démarrage refusé si le fichier ou son répertoire sont plus larges que 0600 ou si c'est un lien
+  symbolique, clé distincte de la clé `batch`, jamais journalisée. Les lots restent signés par la clé `batch` non exportable.
+- **Risque.** Une copie du disque permet d'usurper la connexion de la passerelle jusqu'à la révocation de son certificat ; elle ne suffit pas à faire accepter un lot.
+- **Mission qui le lève.** Mission 12b. **Condition de levée.** Poignée de main signée par le composant matériel ; fichier refusé en production.
+- **Test de borne.** Refus au démarrage (droits, lien symbolique, clé égale à `batch`) ; canari absent des journaux.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 12b) et `PRD.md` §2.6.
+
+## ADR-169 — Mission 8 : ordres locaux à deux personnes versés à l'audit du central
+
+Décision du porteur : 09/11/2026 ADR-169
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 33 du porteur, WP20).
+- **Contexte.** Les ordres locaux à deux personnes (levée de `STALE`, purge manuelle) doivent être versés à l'audit du central au retour du lien (B.8) ; le contrat
+  (`EdgeStaffTokenAudit`) n'a pas de champ pour eux et il est stable depuis le 05/11/2026.
+- **Décision.** Ajout d'un champ facultatif rétrocompatible sous `/edge/*` pour ces ordres (même principe que la décision 18), avec mise à jour de
+  `tools/contract-stability/contract-baseline.json` ; contrat et réception par WP13, envoi par la passerelle en WP24.
+- **Risque.** Aucun pour les clients existants (champ facultatif, route réservée aux passerelles).
+- **Test de borne.** Contrôle de stabilité du contrat : seul ce sous-arbre change ; un lot sans le champ reste accepté.
+

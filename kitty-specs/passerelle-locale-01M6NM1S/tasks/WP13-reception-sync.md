@@ -182,6 +182,11 @@ Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes ad
 - Décision 26 : les frais d'une vente reçue sont recalculés par le moteur central (règle active, bonne portée, bonne
   période, bon payeur) et passés en `p_fee_lines` ; les frais annoncés par la passerelle sont ignorés. Test hostile : la
   passerelle cite la règle la plus généreuse de l'opérateur, le central applique la bonne.
+- Décision 33 (ADR-169, accord du porteur pour toucher le contrat) : retouche hors carte de `packages/contracts/openapi.yaml`,
+  `generated/**`, `dart/**` et `tools/contract-stability/contract-baseline.json` : champ facultatif sous `/edge/*` (dans
+  le corps du lot ou à côté de `staff_token_audit`) pour les ordres locaux à deux personnes (`LOCAL_UNSTALE`, purge
+  manuelle : type, gateway_id, détenteurs, horodatage, empreinte de l'ordre signé) ; le central les verse à son audit ;
+  un lot sans le champ reste accepté ; `npm run check:stability` vert avec la ligne de décision de l'ADR-169.
 - Relecture de WP08 : rejouer sur `40001` (`reference_applied_seq`) et `23505` (REPEATABLE READ). Relecture de WP07
   (M2) : clé d'origine déjà au registre sous un autre numéro (`23505` après écriture) : la passerelle ne doit pas rester
   bloquée sur ce numéro.

@@ -182,6 +182,18 @@ cadratin.
   `ACTIVE`, promotion par handover seulement.
 - `image.spec.ts` : comme ci-dessus.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 33, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md`.
+
+- Décision 33 : la passerelle verse ses ordres locaux à deux personnes (`LOCAL_UNSTALE`, purge manuelle) au central
+  au retour du lien, par le champ facultatif ajouté par WP13 (forme dans `openapi.yaml`) ; une ligne invalide n'est
+  pas envoyée et déclenche une alerte, comme `STAFF_AUDIT_UNSENDABLE` (WP20).
+- WP18 : réutiliser `purgeKeyMaterial(tx)` (`src/replication/pwd-pack-key.ts`) pour la purge ; aligner
+  `src/testing/apply-hook.ts` sur `nodeEnv()` de shared-rules.
+- WP15/décision 27 : deux titulaires distincts des clés de site (procédure de site à documenter).
+
 ## Sécurité
 
 - Destruction irréversible : la purge ne se déclenche jamais sur un ordre à une signature, sur une

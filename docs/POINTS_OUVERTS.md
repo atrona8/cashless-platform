@@ -91,6 +91,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N110 | `STALE` persisté seulement si l'époque est confirmée ou plausible (au plus +2) ; levée locale à deux (mission 8, décision 15, ADR-165) | Non | Non | Porteur |
 | OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit (mission 8, décision 19, ADR-166) | Non | **Oui** | Mission 13 |
 | OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable (mission 8, décision 27, ADR-167) | Non | Non | Porteur |
+| OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b (mission 8, décision 32, ADR-168) | Non | **Oui** | Mission 12b |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -187,6 +188,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N110 | `STALE` persisté seulement si l'époque est confirmée ou plausible (au plus +2) ; levée locale à deux | Une époque forgée à `epoch + 1` ou `+ 2` arrête les débits jusqu'à la levée locale (disponibilité) | En-tête forgé à 9999 sans arrêt ; levée à deux personnes distinctes auditée | Mission 13 (recette V1) | Époque signée par le central dans la requête, ou canal de contrôle toujours disponible |
 | OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit | Un code compromis ou un accès au rôle sur le mini-PC efface l'audit ou fausse l'époque d'autorité sans trace locale | Déclencheur `BEFORE TRUNCATE` (TRUNCATE refusé, testé) ; test qui liste les droits DDL d'`edge_app` et échoue si un autre rôle les reçoit | Mission 13 (recette V1) | Propriétaire des migrations distinct du rôle d'exécution, sans droit DDL |
 | OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable | Levée locale de `STALE` ou purge faite par une seule personne | Outil d'enrôlement : deux titulaires nominatifs distincts exigés ; procédure d'exploitation | Porteur | Clés sur supports personnels avec identification forte, hors mission 8 |
+| OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b | Une copie du disque du mini-PC permet d'usurper la passerelle auprès du central jusqu'à la révocation de son certificat | Démarrage refusé si le fichier ou son répertoire sont plus larges que 0600 ou si c'est un lien symbolique ; clé distincte de la clé `batch` ; jamais journalisée | Mission 12b | Poignée de main signée par le composant matériel (fournisseur OpenSSL/PKCS#11 ou proxy mTLS) ; fichier refusé |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1479,6 +1481,17 @@ Mission 8 (passerelle locale), Décision 27 du porteur (relecture de WP17) ; ADR
 - **Condition de levée.** Clés sur supports personnels avec identification forte, ou procédure d'exploitation vérifiée en recette.
 - **Test de borne.** Outil d'enrôlement : deux titulaires identiques ou deux clés identiques refusés.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N113 — Clé TLS client de la passerelle en fichier jusqu'à la mission 12b (9 novembre 2026)
+
+Mission 8 (passerelle locale), Décision 32 du porteur (WP20) ; ADR-168. **Bloque la production : oui (avec OP-N100).**
+
+- **Constat.** Node ne permet pas de signer la poignée de main TLS par une clé non exportable sans module natif ; la connexion mTLS vers le central utilise une clé privée en fichier (`GATEWAY_CENTRAL_CLIENT_KEY_FILE`).
+- **Risque.** Une copie du disque du mini-PC permet d'usurper la passerelle auprès du central jusqu'à la révocation de son certificat ; les lots restent signés par la clé `batch` du port, donc une usurpation ne suffit pas à faire accepter des ventes.
+- **Mission qui le lève.** Mission 12b (adaptateurs matériels réels).
+- **Condition de levée.** Poignée de main signée par le composant matériel (fournisseur OpenSSL/PKCS#11 ou proxy mTLS local) ; fichier refusé au démarrage en production.
+- **Test de borne.** Démarrage refusé si le fichier ou son répertoire sont plus larges que 0600, si c'est un lien symbolique, ou si la clé égale la clé `batch` ; canari de clé absent des journaux.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 12b) et `PRD.md` §2.6.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

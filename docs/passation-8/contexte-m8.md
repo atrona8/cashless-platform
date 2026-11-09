@@ -57,6 +57,11 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 29. `edge-0003` (WP18) accepté sous réserve de la relecture ; numéros suivants attribués par l'orchestrateur.
 30. Corrections de lots approuvés sans les rouvrir : migration correctrice `0064` portée par WP09 (fenêtre horaire,
     plafond par recharge au rejeu) ; passerelle (TRUNCATE, horloge, fichier de clés) portée par WP20.
+32. Décision 22 non faisable sans dépendance native : clé TLS client en fichier jusqu'à la mission 12b, durcie dans
+    WP20 (démarrage refusé si fichier ou répertoire plus larges que 0600 ou lien symbolique, clé distincte de `batch`,
+    jamais journalisée) ; OP-N113, ADR-168. La 12b choisit fournisseur OpenSSL/PKCS#11 ou proxy mTLS.
+33. Ordres locaux à deux personnes (`LOCAL_UNSTALE`, purge manuelle) versés à l'audit du central : champ facultatif
+    rétrocompatible sous `/edge/*` (accord du porteur, ADR-169) ; contrat et réception par WP13, envoi par WP24.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

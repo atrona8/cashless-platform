@@ -625,7 +625,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > hostile, ou relayer la signature du terminal) ; OP-N107 (procédure de rétablissement après passerelle perdue) ; OP-N108 (avis écrit du
 > juriste sur le dépassement temporaire d'un plafond réglementaire à la recharge espèces) ; OP-N109 (aligner §9 de `SPECIFICATION.md` :
 > « mêmes modules ») ; OP-N110 (`STALE` d'une époque forgée à `epoch + 1` ou `+ 2`) ; OP-N111 (propriétaire des migrations de la base
-> locale distinct du rôle d'exécution, ADR-166) ; OP-N112 (procédure de détention des clés de site vérifiée en recette, ADR-167).
+> locale distinct du rôle d'exécution, ADR-166) ; OP-N112 (procédure de détention des clés de site vérifiée en recette, ADR-167) ; OP-N113 (mission 12b : poignée de main mTLS
+> de la passerelle signée par le composant matériel, fournisseur OpenSSL/PKCS#11 ou proxy, ADR-168).
 
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,
