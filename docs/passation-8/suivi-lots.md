@@ -168,16 +168,12 @@ Notes à transmettre aux lots suivants.
 - Bouchon `unavailableCatchUp` retiré ; `REPLICATION_CATCH_UP` fourni par `ReplicationModule` ; la garde de démarrage
   refuse en production un fournisseur absent ou bouchon (`production-guard.spec.ts`).
 - **Migrations de la passerelle** : `edge-0002` (WP17), `edge-0003_replication_columns` (WP18, colonnes reçues du flux,
-  `edge_media.media_id` nullable) : accord de l'orchestrateur sous réserve de la relecture. Prochain numéro : `edge-0004`,
+  `edge_media.media_id` nullable) : acceptée sous réserve de la relecture (décision 29). Prochain numéro : `edge-0004`,
   à demander à l'orchestrateur (aucun lot ne le prend d'office).
 - Contradictions signalées : `media_id` NOT NULL (data-model B.3) absent du flux ; champs du flux sans colonne
   d'`edge-0001` ; `usable_on_edge` dérivé (session OPEN ouverte avant `activated_at`, R-24, restrictif).
 - **WP23** : `pwd_pack_key` en une ligne `current` ; colis et clé en JSON UTF-8 dans des `bytea`.
 - `GATEWAY_REPLICATION_INTERVAL_MS` (200-2000, défaut 1000) : complément de `interfaces.md` § 12.9.
-- Relecture humaine : `page-applier.ts`, `delta-purge.ts`, `pwd-pack-key.ts`, `edge-0003_replication_columns.sql`.
-- `GATEWAY_REPLICATION_INTERVAL_MS` (200-2000, défaut 1000) : complément de `interfaces.md` § 12.9.
-- **Migrations de la passerelle** : `edge-0003` acceptée sous réserve de la relecture (décision 29) ; suivante `edge-0004`
-  sur accord de l'orchestrateur.
 - Relecture humaine : `page-applier.ts`, `delta-purge.ts`, `pwd-pack-key.ts`, `edge-0003_replication_columns.sql`.
 
 ## Relecture de WP07 (approuvé au cycle 2, 09/11/2026)
