@@ -277,3 +277,13 @@ Notes à transmettre aux lots suivants.
 - Verrou du faux port à jeton (`pid:jeton`, reprise sérialisée par `.break`).
 - Retouches hors carte confirmées par l'orchestrateur : `bootstrap.ts`, `startup-guard.ts`, `fake-hardware-keystore.ts`.
 - Limite de la décision 20 (central en avance relève `time_floor`) : consignée ici, à reprendre en WP25.
+
+## Relecture de WP09 (approuvé, 09/11/2026)
+- 62/62 pgTAP, Jest 7/7 et 9/9 ; ACL identiques après deux `migrate` ; droits vérifiés par `SET ROLE` réel ;
+  mutations de droits et d'`assert_tenant` tuées. Garde levé par `align-lane.sh i`, sans `--force`.
+- Mineurs, **WP25** : borne haute (+3 600 s) de la fenêtre non testée ; échec fermé si le réglage de plafond de recharge
+  est absent non testé ; repli `ceiling_epoch` de 0061 non testé.
+- **WP10, obligatoire** : `migrate.ts` pose `CASHLESS_EDGE_PASSWORD`, `CASHLESS_EDGEADMIN_PASSWORD` (sinon rôles `LOGIN`
+  sans mot de passe en production : refus au démarrage si absents en production, test) ; `DATABASE_URL_EDGE`,
+  `DATABASE_URL_EDGEADMIN` dans `test/support/db.ts`. CI : WP25.
+- Relecture humaine : `post-roles.sql` §9, `0064_edge_fixes.sql`.
