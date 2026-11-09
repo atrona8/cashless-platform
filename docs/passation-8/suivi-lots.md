@@ -254,3 +254,9 @@ Notes à transmettre aux lots suivants.
 - `LOCAL_UNSTALE` non versable au central (aucun champ dans `EdgeStaffTokenAudit`) : **soumis au porteur**.
 - WP18 doit fournir `DELTA_PURGE` à l'intégration (repli : n'annule que REJECTED/VOID). **WP22** : forme de `detail`
   de `STAFF_TOKEN_TOLERATED` (`staff-audit-feed.ts`).
+
+## Relecture de WP20 (rejet n° 1, 09/11/2026) — constats : `rapports/feedback/wp20-cycle1.md`
+- 306/306, `tsc` propre ; file, vidage, résultats, points d'arrêt, `edge-0004`, décisions 19, 20, 24 : sans défaut.
+- Bloquant : durcissement de la clé TLS (décision 32) absent de `config.ts`/`central-client.ts`.
+- Mineurs : `withLock` (verrou périmé repris deux fois) ; `DELTA_PURGE` facultatif, oubli silencieux à l'intégration ;
+  décision 20 : un central en avance (< 24 h) relève `time_floor`, le central juste est ensuite refusé (limite).
