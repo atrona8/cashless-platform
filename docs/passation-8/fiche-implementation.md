@@ -47,7 +47,10 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   **puis** `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`. `PGDATABASE` seul ne suffit pas :
   `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test`. Ne lance pas la batterie
   complète : l'orchestrateur la passe en série.
-- **L'API du porteur tourne sur le port 80 (base `cashless_dev`, tunnel ngrok) : n'y touche jamais**, ne l'arrête pas, n'utilise pas ce port.
+- **L'API du porteur tourne sur le port 80 (tunnel ngrok), avec sa propre base Docker `cashless-api-db-1` en
+  `127.0.0.1:5434` (base `cashless_dev`) : n'y touche jamais**, ne l'arrête pas, n'utilise ni le port 80 ni le 5434.
+  Le serveur de test des lots est `cashless-platform-pg17` en 5433 : avant tout test, vérifier avec `docker ps` que
+  5433 est bien `cashless-platform-pg17`, sinon s'arrêter et le signaler.
 - Mémoire du poste (16 Go, VM Docker comprise) : Jest **toujours** en `--runInBand` dans les lots ; la batterie
   complète de l'orchestrateur en `--maxWorkers=2`. Jamais de Jest sans l'une de ces options.
 - Horloge Docker en avance/recul de ~100 ms : aucun test ne compare l'horloge de Node à une date posée par la base.

@@ -44,3 +44,90 @@ Notes à transmettre aux lots suivants.
 - **WP11, obligatoire** : `force_central_authority_approved` n'écrit pas `EXECUTED` et ne contrôle pas `expires_at`. Sûr seulement si elle est appelée par `definition.execute` du service d'approbation (`apps/api/src/approval/approval.service.ts:116-145`), qui contrôle l'expiration, exécute sous point de sauvegarde et passe à `EXECUTED`. L'enregistrer comme action `FORCE_CENTRAL_AUTHORITY` de ce service, aucun autre appelant, test de non-réutilisation sur un second cycle de bascule.
 - **WP08, obligatoire** : amorce du journal par grand livre, voir notes de WP04.
 - Mineurs consignés : `begin_cash_close` prend le verrou d'autorité partagé après le solde, alors que `post_transaction` prend l'autorité d'abord : cycle théorique, résolu par le détecteur (40P01, annulation propre), établi par lecture ; à regarder en relecture humaine. `begin_edge_release` rejoué avec une autre déclaration : `CL017` jusqu'à `fail_edge_release`. Accusé sur `TO_EDGE` `FAILED` ou `FORCED` : `CL013` plutôt que `CL015`.
+
+## Relecture de WP16 (rejet n° 1, 06/11/2026)
+- Bloquant : faux du port matériel sans persistance entre processus (`request` puis `enroll` : `KEY_MISMATCH` ; reprise
+  après `SIGKILL` impossible). Correction : fichier de clés de développement (T072, `0600`, refusé en production).
+- Renforcements demandés : contrôles du serveur et `evaluateProviderRules` aussi pour `request`/`enroll` en production ;
+  secret de test : mot de passe vide ou trivial refusé.
+- **À consigner (porteur)** : `edge_app`, propriétaire unique, peut `DISABLE TRIGGER`/`DROP` sur `edge_op`,
+  `edge_audit`, `edge_authority` (plan : rôle unique) ; aucune entrée `POINTS_OUVERTS`/ADR.
+- **WP20** : `enroll` exige que `client_cert_pem` porte la clé `batch` non exportable, alors que
+  `GATEWAY_CENTRAL_CLIENT_KEY_FILE` (§ 8) suppose une clé privée en fichier : signer le handshake par le port, ou
+  certificat distinct. Contradiction à soumettre au porteur.
+- **WP17** : borner `observeCentral` (une date centrale lointaine fige `time_floor`) ; `epoch` et `highest_epoch_seen`
+  peuvent reculer en `UPDATE` ; écouteur d'administration en boucle locale seulement en production.
+- **WP15** : formats attendus par WP16 (pas de `FORMATS.md`) : clés en SPKI DER base64url, `agreement_public_key` en
+  point brut de 65 octets, `site_order_keys` en PEM SPKI ou SPKI base64, P-256.
+- **WP25** : bancs de reprise dépendants du fichier de clés de développement.
+
+## Relecture de WP16 (approuvé au cycle 2, 06/11/2026, commits e8b31c8a, bc53b1ab)
+- 134/134 Jest réels sur `cashless-platform-pg17` (5433). Les tests du cycle 2 de l'implémenteur avaient tourné sur la
+  base de l'API du porteur (conflit de port, réglé : API du porteur sur 5434).
+- Mineurs du fichier de clés de développement (`GATEWAY_DEV_KEY_FILE`, faux refusé en production), **soumis au
+  porteur (consigner ou corriger)** : (1) `.tmp` à nom fixe, mode non forcé s'il existe, lien symbolique suivi →
+  nom unique, `wx`, `fchmod 0600` ; (2) écritures concurrentes de deux processus : mise à jour perdue (pas de verrou) ;
+  (3) `insideGitRepository` sans `realpath`.
+- WP25 : fichier de clés dans un répertoire privé, jamais deux processus en parallèle sur le même fichier.
+- WP20 : contradiction clé TLS client / clé `batch` toujours à soumettre au porteur.
+- Nouveau réglage `GATEWAY_DEV_KEY_FILE` : complément de `interfaces.md` § 12.9 (non modifié).
+
+## Relecture de WP06 (rejet n° 1, 06/11/2026, commit 64f88a9d)
+- pgTAP réel (5433) : `tests_edge_post_transaction` 157/157 et suites voisines vertes ; la suite du grand livre complète
+  reste à passer par l'orchestrateur.
+- B1 (argent) : plafond horaire contourné par des `occurred_at` décroissants (4 000 000 perdus pour P_max 1 500 000).
+- B2 (droits) : `edge_platform_setting` écrivable par `cashless_app` (droits par défaut + drapeau local posable).
+- Renforcements demandés : `REVERSAL`/`VOID` bornés au cycle de la passerelle ; borne des montants de `p_fee_lines`.
+- WP07 : réutiliser `edge_record_rejection` ; ordre des verrous événement, autorité, lignes, soldes.
+- WP08 : `pack_delay_seconds` par `edge_setting_value`.
+- WP09 : `edge_post_transaction` à `cashless_edge`, `set_edge_setting` à `cashless_edgeadmin` seul ; aucune aide, aucun
+  droit sur la table.
+- WP13 : l'API pose `tap.signature_verified`, `tap.pack_verified`, `device_batch_verified` (en écrasant le reçu) et
+  fournit `p_fee_lines` du moteur central ; ordre des verrous avec `consume_tap`.
+- WP25 : garder le test hostile décroissant comme test de borne.
+
+## Correction de WP06 (cycle 2, commit a0ec9f2a)
+- B1 : fenêtre horaire symétrique ]h−1 h ; h+1 h[ ; tests décroissant et mélangé ≤ P_max avec alerte.
+- B2 : `REVOKE ALL` sur `edge_platform_setting`, mais `roles.sql`/`post-roles.sql` redonnent `arw` à `cashless_app`
+  après les migrations ; parade : déclencheur qui refuse toute écriture hors propriétaire. **WP09 : retirer ce droit
+  dans `post-roles.sql`**, avec un test.
+- M1 : `REVERSAL` borné aux ventes `EDGE_SYNC` de la passerelle dans le cycle courant. M2 : frais bornés par les règles
+  référencées ; recalcul exact à WP13.
+- Relecture humaine : tout `0061`, surtout le déclencheur de B2 et la fenêtre de B1.
+
+## Relecture de WP06 (approuvé au cycle 2, 06/11/2026)
+- pgTAP réel : lot 177/177 ; batterie complète `packages/ledger-sql/tests` 56/57 fichiers, 4 897 tests. Seul échec :
+  `tests_offline_rights` test 1 (liste figée des tables de `public`) : `edge_platform_setting`, `edge_reference_change`,
+  `edge_sync_batch`, `edge_sync_batch_result` → **WP09** met la liste à jour.
+- **WP09** : retirer `arw` de `cashless_app` sur `edge_platform_setting` dans `post-roles.sql` (test) ; vérifier l'ordre
+  `roles.sql` (EXECUTE ON ALL FUNCTIONS à `cashless_app`) contre les `REVOKE` des lots de base.
+- **Soumis au porteur (consigner ou corriger)** : (1) `ceiling_epoch` tronqué à la seconde, bornes ouvertes : deux ventes
+  à 3 599,x s peuvent ne pas se voir ; (2) règle de frais citée contrôlée sur l'opérateur et le bénéficiaire seulement
+  (ni portée, ni période, ni payeur) : une passerelle hostile cite la règle la plus généreuse de l'opérateur, perte
+  bornée par cette règle ; taxe en sus refusée à tort.
+- WP13 : `p_fee_lines` du moteur central (règle active, bonne portée, bonne période).
+- WP25 : tests hostiles décroissant et mélangé ; cas de la seconde de bordure.
+
+## Relecture de WP17 (approuvé, 06/11/2026, commit bfc7aa90)
+- Jest réel : `test/authority` 94/94, `test/startup` 134/134. Aucune fenêtre de double autorité trouvée.
+- **Renforcement à faire (WP25 ou lot suivant de la passerelle)** : déclencheur `BEFORE TRUNCATE` sur `edge_authority`
+  (TRUNCATE puis INSERT remet `epoch` à 0 sous `edge_app`) ; même classe que `DISABLE TRIGGER` : **à consigner**, avec la
+  limite STALE → GRANTED_PENDING → ACTIVE en UPDATE directs (la base ne prouve pas l'accusé).
+- **Soumis au porteur** : (1) borne d'horloge de 24 h jugée trop large (un central à −23 h fige l'horloge, ordres de
+  10 min valables des heures) : recommandation, n'adopter un recul que de quelques minutes ; (2) `REPLICATION_CATCH_UP`
+  bouchon en échec fermé, non refusé au démarrage en production : recommandation, le refuser explicitement jusqu'à
+  WP18, avec test ; (3) format des ordres à deux personnes (JSON plat, JCS, ES256 `r||s`, 10 min + 60 s, nonce
+  unique) et détention des clés de site ; une même personne détenant deux clés n'est pas détectable.
+- Mineurs : `s` haut accepté (ES256 malléable, sans effet, commentaire trompeur) ; contrôle `gateway_id` dans
+  `localUnstale` et non dans `verifyTwoPersonOrder` (**WP24** doit le refaire) ; écouteur d'administration sans limite
+  de débit sur les refus audités ; réponse du central non recoupée (mTLS suffit).
+- Écarts à signaler aux contrats : `edge-0002`, `central_confirmed_epoch`, audits `SITE_ORDER_*`,
+  `CLOCK_CENTRAL_OUT_OF_BOUNDS`, `REVOKED_SEEN`, `ACK_REFUSED_CLOCK` ; `assertCanDebit(requestEpoch, tx?)`.
+- **WP18** : remplacer `unavailableCatchUp` par le service de réplication ; le curseur atteint le filigrane avant
+  l'accusé.
+- **WP20** : fournir `DRAIN_SIGNAL`, appeler `notifyQueueDrained` ; verser l'ordre local à l'audit du central au retour
+  du lien (B.8).
+- **WP21/WP22** : `assertCanDebit` avec le `tx` de l'opération ; `recover` avant `listen` ou refus tant qu'il n'a pas
+  rendu la main.
+- **WP16/WP25** : refuser en production l'absence de `centralUrl` ou du certificat (sinon `link_state` reste ISOLATED et
+  la levée locale reste possible lien sain).
