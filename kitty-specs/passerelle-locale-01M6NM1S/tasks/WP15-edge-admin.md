@@ -140,6 +140,14 @@ Clé d'accord de la passerelle changée (rotation) : la clé de contenu est recr
 
 Chaque test doit échouer sur une implémentation fausse : un travailleur qui ignore le délai, qui sert la `STANDBY`, ou un outil qui journalise l'URL de connexion rend sa suite rouge.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- Décision 27 : à l'enrôlement, deux titulaires nominatifs distincts et deux clés de site distinctes sont exigés
+  (`--site-key-a`, `--site-key-b` avec leur titulaire) ; refus sinon, avec test (OP-N112, ADR-167).
+
 ## Sécurité
 
 - **Écart accepté (OP-N105, ADR-160)** : inscription par une seule personne. Ne l'aggrave pas : pas de contournement du délai, pas de colis immédiat « pour les tests », pas d'inscription sans alerte. L'étiquette `--by` n'authentifie pas la personne : à consigner dans le rapport comme limite connue.

@@ -171,6 +171,15 @@ est un écart qui s'arrête et remonte au porteur**.
 - `refusals.spec.ts` : un test par ligne du tableau « Opérations refusées » qui concerne ce lot ;
   `contract.spec.ts` : schémas.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- Décision 21 : plafond par recharge en espèces à la saisie, réglable (500 000 XOF par défaut, même réglage que la
+  base, répliqué) ; au-delà, refus sans écriture ni mise en file, avec un code d'erreur déjà au contrat (sinon le
+  signaler, ne rien ajouter à `openapi.yaml`) ; test à la borne et juste au-dessus.
+
 ## Sécurité
 
 - Écart accepté `OP-N103` : un compte révoqué ou désactivé pendant la coupure peut agir jusqu'à 12

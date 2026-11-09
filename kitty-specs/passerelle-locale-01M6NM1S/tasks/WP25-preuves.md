@@ -233,6 +233,17 @@ Liste dans le rapport les **fichiers à faire relire par une personne** (règle 
 clés et cryptographie (`key-store`, jetons, `site-order`, `media-auth-key`), droits de la base
 (WP09), purge, `edge-0001`, bornes de rejeu (WP06).
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- OP-N111 (ADR-166) : test de borne, `TRUNCATE` refusé sur `edge_authority`, `edge_op`, `edge_audit`, et liste figée des
+  rôles disposant de droits DDL sur la base locale.
+- OP-N112 (ADR-167) : test de borne de l'outil d'enrôlement (titulaires ou clés identiques refusés).
+- Preuves à deux connexions réelles demandées par les relectures (WP04, WP05, WP08) : concurrence des verrous, livraison
+  du `NOTIFY`, mode différé du journal de réplication, horizon non sûr ; seconde de bordure du plafond horaire.
+
 ## Sécurité
 
 - Les points d'arrêt et le faux du port matériel ne vivent que dans les processus du banc, hors production ; un test (production-refusals)

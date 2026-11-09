@@ -168,6 +168,22 @@ la passerelle est lancé en enfant quand un test tue le processus.
   `append` commite seul.
 - `EDGE_NOT_CAUGHT_UP` reprend depuis `missing_edge_seqs` ; `CHAIN_BROKEN` arrête sans réécrire.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- Décision 22 : la poignée de main TLS vers le central est signée par le port matériel (`HARDWARE_KEYSTORE`, clé
+  non exportable) ; aucune clé privée en fichier ; `GATEWAY_CENTRAL_CLIENT_KEY_FILE` abandonné (refusé s'il est posé).
+  Test : aucune clé privée lisible sur le disque ; connexion mTLS réelle au faux central.
+- Décision 24 (retouche hors carte de `apps/gateway/src/key-store/**`) : fichier de clés de développement à nom
+  temporaire unique, création exclusive (`wx`), `fchmod 0600` forcé, verrou entre processus, chemin résolu par
+  `realpath` ; tests (lien symbolique refusé, deux processus sans perte).
+- Décision 19 : migration de la passerelle `edge-0004` (numéro attribué à ce lot) : déclencheur `BEFORE TRUNCATE`
+  qui refuse sur `edge_authority`, `edge_op`, `edge_audit` ; test.
+- Décision 20 (retouche hors carte de `apps/gateway/src/clock/**` ou `authority/**`) : recul accepté de l'heure du
+  central ramené à 5 min (au lieu de 24 h) ; au-delà, refus et `CLOCK_CENTRAL_OUT_OF_BOUNDS` ; test à −6 min et −23 h.
+
 ## Sécurité
 
 - Une perte silencieuse est un défaut bloquant : aucune réponse 2xx sans entrée de file (NFR-004),

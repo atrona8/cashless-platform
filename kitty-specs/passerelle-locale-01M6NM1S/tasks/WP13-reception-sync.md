@@ -174,6 +174,18 @@ Dans `apps/api/test/integration/edge/sync/` (l'orchestrateur les lance) :
 
 Chaque test doit échouer sur une implémentation fausse (une fonction qui fait confiance au `last_chain_hash` du lot, qui lit un compte de caisse du corps, ou qui n'a qu'un `INSERT ... ON CONFLICT` sans registre doit être rouge).
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- Décision 26 : les frais d'une vente reçue sont recalculés par le moteur central (règle active, bonne portée, bonne
+  période, bon payeur) et passés en `p_fee_lines` ; les frais annoncés par la passerelle sont ignorés. Test hostile : la
+  passerelle cite la règle la plus généreuse de l'opérateur, le central applique la bonne.
+- Relecture de WP08 : rejouer sur `40001` (`reference_applied_seq`) et `23505` (REPEATABLE READ). Relecture de WP07
+  (M2) : clé d'origine déjà au registre sous un autre numéro (`23505` après écriture) : la passerelle ne doit pas rester
+  bloquée sur ce numéro.
+
 ## Sécurité
 
 - Fichiers à faire relire par une personne : `edge-sync.service.ts`, `edge-sync-signature.ts`, `edge-sync.writer.ts`, `tap-proof.port.ts` (s'il existe). L'agent qui écrit n'est pas une relecture indépendante.

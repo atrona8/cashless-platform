@@ -160,6 +160,20 @@ un défaut de ce lot, pas du kit.
 - Tu ne lances ni Jest, ni pgTAP, ni `reset-db`. L'orchestrateur relance : suites ci-dessus, `tests_grand_livre_cashless.sql`,
   `tests_definer_search_path.sql`, `tests_offline_snapshots.sql`, puis l'intégration `edge/`.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md` (à lire en entier pour ce lot).
+
+- **Migration correctrice `0064_edge_fixes.sql`** (fichier ajouté à ce lot, avec `tests/tests_edge_fixes.sql`) :
+  - décision 25 : fenêtre du plafond horaire par terminal de `0061` en microsecondes, bornes fermées ; test de bordure
+    (deux ventes à 3 599,9 s se comptent ensemble) qui échoue sur la fenêtre de `0061` ;
+  - décision 21 : plafond par recharge en espèces au rejeu (`0062`), réglage `edge_setting_value` (500 000 XOF par
+    défaut, posé par `set_edge_setting`) ; au-delà, jamais `REJECTED` : écriture comme une recharge hors marge et
+    anomalie résolue à deux (même mécanisme que la décision 14, OP-N108) ; test.
+  Partir des définitions de `0061`/`0062` (pas du schéma) ; `REVOKE ALL … FROM PUBLIC`, droits dans ce même lot.
+- Notes de droits des relectures (WP03 à WP08) : sections « WP09 » de `suivi-lots.md`, toutes obligatoires.
+
 ## Sécurité
 
 - **À faire relire par une personne** : `post-roles.sql` (toutes les sections ajoutées) et `roles.sql`. C'est la frontière de privilèges de
