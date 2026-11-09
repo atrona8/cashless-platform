@@ -363,3 +363,27 @@ Notes à transmettre aux lots suivants.
   Attribution : `edge-0006` WP21 (`sales_support`), `edge-0007` WP22 (si besoin), `edge-0008` WP23
   (`offline_snapshots`, renommée). Prochain numéro libre : `edge-0009`.
 - `gateway.module.ts` retouché par WP21, WP22 et WP23 : conflit attendu à la fusion des lanes.
+
+## Depuis WP22 (9706e17d, en relecture)
+- 95/95 `test/counter`, `tsc` propre ; aucune migration (`edge-0007` libre, prochain libre inchangé : `edge-0009`).
+- Hors carte : `config.ts` (`GATEWAY_IDENTITY_ISSUER`, `GATEWAY_IDENTITY_AUDIENCE`, échec fermé) ; `gateway.module.ts`.
+- **Porteur** : le flux de réplication ne porte ni montant ni état de caution, ni frais d'activation ; port
+  `DEPOSIT_TERMS` fourni par aucun lot : caution et activation refusées (`409 DEPOSIT_TERMS_UNKNOWN`, échec fermé).
+  Ajout facultatif sous `/edge/*` à décider.
+- Notes : `TOPUP_CASH` en file `EDGE_ONLINE` contre `OfflineOperationType` ; `X-Authority-Epoch` non déclaré sur
+  `activateMedia`/`takeDeposit` ; `customer_id` à l'activation refusé (422, `DESK` seul) ; jeton expiré sans `jti`
+  refusé (renforcement).
+- Échecs signalés hors lot : `startup-guard.spec` (8) et `replication/production-guard.spec` (1) sur la lane v :
+  à expliquer en relecture (état de la lane après fusions de WP18/WP20).
+- Relecture humaine : `staff-token.guard.ts`, `identity-keys.service.ts`.
+
+## Depuis WP12 (a29d0aa7, en relecture)
+- 34/34 `edge/routes`, 231 larges, `tsc` propre. Nouvelles routes couvertes par `edge-routes-auth.spec.ts`.
+- Hors carte : `debit-authority.service.ts` (exposition des familles de jetons à l'octroi, décision 23),
+  `refresh.service.ts` (ré-exposition sous `EDGE`, sans test direct), un import dans `edge.module.ts` et
+  `maintenance.module.ts`.
+- **Porteur** : `EDGE_RELEASE_STUCK` en journal et code d'alarme seulement (`cashless_maint` sans droit d'audit) ;
+  trace en base = fonction de WP09 ou d'un lot de base.
+- **Incident** : deux Jest de l'implémenteur sur `cashless_test` (sans `env.sh`) ; base remise à zéro par
+  l'orchestrateur (16 h 50). Consigne des agents : `source env.sh` et Jest dans la même commande.
+- Relecture humaine : `handover.service.ts`, `replication-feed.service.ts`.
