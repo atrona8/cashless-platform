@@ -143,3 +143,16 @@ Notes à transmettre aux lots suivants.
 - WP12/WP13 : DUPLICATE/VOID/REJECTED+EDGE_REPLAY_FAILED ; seule la caution écrit en attente (S-ATTENTE).
 - WP22/WP25 : la fermeture de caisse explique l'excédent par les anomalies `EDGE_REPLAY_FAILED`.
 - Relecture humaine : `0062_edge_counter_ops.sql` en entier. Constats : `rapports/feedback/wp07-cycle1.md`.
+
+## Depuis WP08 (9c1220f6, en relecture)
+- Amorce : déclencheur `edge_ref_ledger` (grand livre neuf) et `edge_ref_backfill` (existant), testés.
+- Garde « propriétaire seul » passée en déclencheur d'instruction (renforcement).
+- **Casse 10 suites voisines** : (a) « pending trigger events » (déclencheurs du journal différés) dans `tests_catalog`,
+  `tests_configuration`, `tests_enrollment_event_state`, `tests_offline_anomalies` ; (b) `tests_edge_gateway` 73 et
+  `tests_edge_handover` supposent un journal vide (contredit par l'amorce) ; (c) inventaires
+  `tests_definer_trigger_writers` 16, `tests_offline_rights` 1, `tests_payment_rights` 56, `tests_payments` 6.
+- `devices[].token_family` à null : pas de colonne `edge_exposed` sur `device_refresh_token` (OP-N102, décision 11) :
+  **à confirmer par le porteur**.
+- WP09 : `deposit_edge_pwd_pack_key` à `cashless_tagkeys` ; liste des droits dans l'en-tête de 0063.
+- WP25 : horizon non sûr (écriture en vol), refus hors REPEATABLE READ, concurrence du journal : deux connexions réelles.
+- Relecture humaine : `edge_replication_page`, `deposit_edge_pwd_pack*`, `edge_ref_trigger`, déclencheurs des tables chaudes.
