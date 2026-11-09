@@ -232,3 +232,25 @@ Notes à transmettre aux lots suivants.
   (**WP24** : aligner) ; B1 suppose l'horizon `to_posting_id` complet (M5, **WP25**) ; delta ACCEPTED tardif sous-estimé
   jusqu'à la page finale suivante.
 - Relecture humaine : `delta-purge.ts`, `pwd-pack-key.ts`, `startup-guard.ts`, `bootstrap.ts`, déclencheur d'`edge-0003`.
+
+## Depuis WP09 (95462f42, en relecture)
+- §9 de `post-roles.sql` : `cashless_edge` (17 fonctions, vue), `cashless_edgeadmin` (6), retraits de `cashless_app`,
+  internes jamais accordées (test figé) ; `0064` (décisions 21, 23, 25) accepté par le garde de périmètre.
+- `topup-cash-split.spec.ts` (cas `EDGE_SYNC` sous `cashless_app`, refusé par la garde de 0060) : adaptation confiée à
+  WP09 (T041), en cours.
+- Droits au-delà de data-model A.1 : `deposit_edge_pwd_pack_key`, `edge_sync_batch_finish`, `edge_gateways_awaiting_pack`.
+- **WP10** : `DATABASE_URL_EDGE`, `DATABASE_URL_EDGEADMIN` dans `test/support/db.ts` ; `migrate.ts` :
+  `CASHLESS_EDGE_PASSWORD`, `CASHLESS_EDGEADMIN_PASSWORD` (CI : WP25).
+
+## Depuis WP19 (d7038235, en relecture)
+- `request-signature.ts` : adaptateur propre à la passerelle, parité prouvée avec le central. `edge-0005` entérinée.
+- Contradictions : `IDEMPOTENCY_KEY_REUSED` 409 (contrat) contre 422 (prompt) ; `TokenResponse.refresh_token` = jeton
+  présenté à l'identique (décision 11). `structured-headers`, `yaml` déclarés (déjà au lockfile).
+- **WP23** : jetons facultatifs `LOCAL_SNAPSHOT_STATE`, `GATEWAY_SNAPSHOT_KEYS` (sinon `offline_enabled` false).
+
+## Depuis WP20 (6d6077d8, en relecture)
+- Décisions 19 (TRUNCATE refusé, plus `edge_chain_head`, `edge_outgoing_batch`), 20, 24 faites.
+- **Décision 22 non faisable sans dépendance** : `GATEWAY_CENTRAL_CLIENT_KEY_FILE` reste : **soumis au porteur**.
+- `LOCAL_UNSTALE` non versable au central (aucun champ dans `EdgeStaffTokenAudit`) : **soumis au porteur**.
+- WP18 doit fournir `DELTA_PURGE` à l'intégration (repli : n'annule que REJECTED/VOID). **WP22** : forme de `detail`
+  de `STAFF_TOKEN_TOLERATED` (`staff-audit-feed.ts`).
