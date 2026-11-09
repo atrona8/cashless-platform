@@ -268,3 +268,12 @@ Notes à transmettre aux lots suivants.
 - Mineurs : plancher de 60 ms des refus (oracle de temps sous charge) ; lignes > 100 car. (Prettier à la fusion).
 - **WP21, WP22, WP23** : appeler `consumeOrThrow` (mode `operation`) pour le contrôle d'horloge de `created`.
 - Relecture humaine : `device-proofs.guard.ts`, `request-signature.ts`, `device-token.service.ts`, `refresh.service.ts`.
+
+## Correction de WP20 (cycle 2, commit 88b008d0)
+- Décision 32 : `src/config/client-key-file.ts` (droits, propriétaire, lien symbolique, répertoire ; clé publique comparée
+  aux 4 usages du port ; canari) ; contrôle refait dans `loadTrust`.
+- `DELTA_PURGE` obligatoire en production (`deltaPurgeProvided`) ; `child-main.ts` simule WP18 par `defineProperty` :
+  **à retirer à l'intégration de WP18**.
+- Verrou du faux port à jeton (`pid:jeton`, reprise sérialisée par `.break`).
+- Retouches hors carte confirmées par l'orchestrateur : `bootstrap.ts`, `startup-guard.ts`, `fake-hardware-keystore.ts`.
+- Limite de la décision 20 (central en avance relève `time_floor`) : consignée ici, à reprendre en WP25.
