@@ -295,3 +295,14 @@ Notes à transmettre aux lots suivants.
   `fstat` et lecture sur le même descripteur).
 - Mineurs : mutants survivants (propriétaire du fichier et du répertoire, `isFile`, contrôle de `loadTrust`) ;
   `withLockForTest` exporté sans condition.
+
+## Depuis WP10 (91dbf7dd, en relecture)
+- `EdgeMtlsGuard`, `@EdgeAuth()`, `assertOwnGateway` ; `getCurrentEdgeHandover` (attente longue, NFR-007 < 1,5 s) ;
+  lecture `edgeMtls` de `getDebitAuthority` (T045 bis, `edge/control/`). `migrate.ts` pose les mots de passe
+  `cashless_edge`/`cashless_edgeadmin` (refus en production s'ils manquent) ; `db.ts` : `EDGE_URL`, `EDGEADMIN_URL`.
+- Hors carte non demandées : `tools/dev-db/env.sh`, `db/notify-listener.ts` (LISTEN unique), `architecture.spec.ts`.
+- **WP17 (côté passerelle), à confirmer** : `wait > 0` compare à l'état lu à l'entrée (premier appel non immédiat ;
+  `wait=0` l'est) ; fin d'attente = `200` avec l'état courant, jamais `204`.
+- Faux `EDGE_CA` en mémoire seulement, refusé par `assertProcessIsSafe` (OP-N100).
+- Relecture humaine : `main.edge.ts`, `edge-mtls.guard.ts`, `edge-identity.service.ts`, `edge-gateway.ts`, `bootstrap.ts`
+  (écouteur `edge`), `migrate.ts` (mots de passe).
