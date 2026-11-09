@@ -355,3 +355,11 @@ Notes à transmettre aux lots suivants.
 - Mineur consigné : socket détruite et `close` de la réponse avant l'armement → `release` jamais appelée (objets perdus,
   fuite négligeable).
 - **WP12 et suivants** : `edge-routes-auth.spec.ts` vérifie automatiquement toute nouvelle route du processus edge.
+
+## Reprise de 16 h 25 UTC (09/11/2026)
+- WP12, WP13, WP21, WP22, WP23 interrompus vers 15 h 16 (travail non commité sur disque) : implémenteurs relancés en
+  reprise sur leur lane.
+- **Numéros des migrations de la passerelle (décision 29)** : WP21 et WP23 avaient tous deux pris `edge-0006`.
+  Attribution : `edge-0006` WP21 (`sales_support`), `edge-0007` WP22 (si besoin), `edge-0008` WP23
+  (`offline_snapshots`, renommée). Prochain numéro libre : `edge-0009`.
+- `gateway.module.ts` retouché par WP21, WP22 et WP23 : conflit attendu à la fusion des lanes.
