@@ -163,3 +163,33 @@ Notes à transmettre aux lots suivants.
 - M1 : tests d'autorité ; `TO_CENTRAL` `RELEASING` accepté par le contrôle d'autorité (vidange) : à confirmer en relecture.
 - M3 : `api_idempotency` filtré sur `scope` ; caution par clé exacte.
 - M2 (WP13/WP14) et M4 (porteur) non traités.
+
+## Depuis WP18 (af36ea41, en relecture)
+- Bouchon `unavailableCatchUp` retiré ; `REPLICATION_CATCH_UP` fourni par `ReplicationModule` ; la garde de démarrage
+  refuse en production un fournisseur absent ou bouchon (`production-guard.spec.ts`).
+- **Migrations de la passerelle** : `edge-0002` (WP17), `edge-0003_replication_columns` (WP18, colonnes reçues du flux,
+  `edge_media.media_id` nullable) : accord de l'orchestrateur sous réserve de la relecture. Prochain numéro : `edge-0004`,
+  à demander à l'orchestrateur (aucun lot ne le prend d'office).
+- Contradictions signalées : `media_id` NOT NULL (data-model B.3) absent du flux ; champs du flux sans colonne
+  d'`edge-0001` ; `usable_on_edge` dérivé (session OPEN ouverte avant `activated_at`, R-24, restrictif).
+- **WP23** : `pwd_pack_key` en une ligne `current` ; colis et clé en JSON UTF-8 dans des `bytea`.
+- `GATEWAY_REPLICATION_INTERVAL_MS` (200-2000, défaut 1000) : complément de `interfaces.md` § 12.9.
+- Relecture humaine : `page-applier.ts`, `delta-purge.ts`, `pwd-pack-key.ts`, `edge-0003_replication_columns.sql`.
+- `GATEWAY_REPLICATION_INTERVAL_MS` (200-2000, défaut 1000) : complément de `interfaces.md` § 12.9.
+- **Migrations de la passerelle** : `edge-0003` acceptée sous réserve de la relecture (décision 29) ; suivante `edge-0004`
+  sur accord de l'orchestrateur.
+- Relecture humaine : `page-applier.ts`, `delta-purge.ts`, `pwd-pack-key.ts`, `edge-0003_replication_columns.sql`.
+
+## Relecture de WP07 (approuvé au cycle 2, 09/11/2026)
+- 127/127 ; voisines vertes ; mutation de la borne : 106-111 en échec. `RELEASING` accepté : conforme (vidange, FR-022/023).
+- Mineurs consignés : pas de test au bord exact des 15 min ; cycle à cheval sur deux mois (identique à 0061).
+
+## Relecture de WP08 (rejet n° 1, 09/11/2026) — constats : `rapports/feedback/wp08-cycle1.md`
+- 48/58 suites vertes. Bloquant : 7 suites cassées à corriger par WP08 (hors carte) ; `tests_offline_rights` à WP09.
+- Majeur : mode différé de production non testé (toute la suite en IMMEDIATE) : test à deux connexions (dblink).
+- `migrate.ts` passe toutes les migrations en une transaction : règle DDL de la décision 28.
+- WP09 : `roles.sql` redonne `arw` à `cashless_app` sur les 5 tables et la vue `edge_device_seq_acked` ; retirer le
+  SELECT sur `edge_pwd_pack`, `edge_pwd_pack_key`, `edge_staff_token_audit` ; `deposit_edge_pwd_pack_key` à
+  `cashless_tagkeys`.
+- WP13 : rejeu sur 40001 (`reference_applied_seq`) et 23505 (REPEATABLE READ).
+- Relecture humaine : `edge_ref_ctx_enter` (modifie `app.operator_id`), drapeau `app.edge_journal_write`.

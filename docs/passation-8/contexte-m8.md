@@ -36,6 +36,29 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 17. A21 : purge automatique à la clôture de l'événement et manuelle à deux personnes (clé d'accord, données répliquées), test ; limite consignée : mini-PC volé avant la purge.
 18. Audit de la tolérance des jetons de personne versé au central par un champ facultatif sous `/edge/*`.
 
+## Décisions en cours d'implémentation (porteur, 09/11/2026)
+
+19. `edge_app` : déclencheur `BEFORE TRUNCATE` sur `edge_authority`, `edge_op`, `edge_audit` (corrigé) ; le rôle unique peut
+    toujours `DISABLE TRIGGER`/`DROP` : consigné (POINTS_OUVERTS + ADR), levée par WP25 ou une mission ultérieure.
+20. Horloge de la passerelle : recul accepté de l'heure du central ramené à quelques minutes (5 min) ; au-delà, refus et
+    `CLOCK_CENTRAL_OUT_OF_BOUNDS`. Correction dans un lot de la passerelle après WP17.
+21. Recharge au guichet : plafond par opération réglable, 500 000 XOF par défaut. Conciliation avec la décision 14 :
+    refus à la saisie sur la passerelle (WP22) ; au rejeu (0062), jamais rejetée, anomalie résolue à deux (WP09, 0064).
+22. Certificat client vers le central (WP20) : poignée de main TLS signée par le composant matériel, aucune clé privée en
+    fichier ; `GATEWAY_CENTRAL_CLIENT_KEY_FILE` abandonné.
+23. `edge_exposed` sur `device_refresh_token` et rendu de `token_family` : WP08 au cycle 2 ; WP18 le lit ensuite.
+24. Fichier de clés de développement : corrigé (nom unique, création exclusive, 0600 forcé, verrou, `realpath`), en WP20.
+25. Plafond horaire par terminal : fenêtre en microsecondes, bornes fermées, migration correctrice et test de bordure.
+26. Frais : recalcul par le moteur central à la réception (WP13), frais de la passerelle ignorés ; test hostile.
+27. Clés de site : deux titulaires nominatifs distincts exigés par l'outil d'enrôlement, procédure d'exploitation ;
+    limite résiduelle consignée.
+28. Journal de réplication : déclencheurs différés gardés ; règle « SET CONSTRAINTS ALL IMMEDIATE avant tout DDL après
+    écriture » dans l'en-tête de 0063 et le guide des migrations ; test à deux connexions réelles.
+29. `edge-0003` (WP18) accepté sous réserve de la relecture ; numéros suivants attribués par l'orchestrateur.
+30. Corrections de lots approuvés sans les rouvrir : migration correctrice `0064` portée par WP09 (fenêtre horaire,
+    plafond par recharge au rejeu) ; passerelle (TRUNCATE, horloge, fichier de clés) portée par WP20.
+31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
+
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
 
 Un prompt `kitty-specs/passerelle-locale-01M6NM1S/tasks/WPnn-slug.md`, 150 à 250 lignes (nom de fichier dans `tasks.md`), français, sans tiret cadratin. Il renvoie aux sources au lieu de les reformuler : `contracts/interfaces.md` (noms figés), `data-model.md`, `research.md` R-xx, `contracts/*`, constats `A..` de `docs/passation-8/rapports/plan-adversarial.md`.
