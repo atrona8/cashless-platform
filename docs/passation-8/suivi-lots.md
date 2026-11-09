@@ -312,3 +312,15 @@ Notes à transmettre aux lots suivants.
 - Bloquant : attente abandonnée avant l'armement de `close` non détectée (1 à 5 écouteurs résiduels sur 50).
 - Mineurs : attentes simultanées non bornées par passerelle ; aucun test n'énumère les routes du processus edge
   (**WP12 et suivants** : à couvrir) ; `/v1/health` publique sur l'écouteur edge (info).
+
+## Depuis WP11 (2c815c68, en relecture)
+- 81 suites, 1 577 tests. `FORCE_CENTRAL_AUTHORITY` au service d'approbation, un seul appelant (test), non-réutilisation,
+  expiration, concurrence ; `gateway_confirmed_offline` exigé ; `CL029` sous EDGE → 409 déjà par `SQLSTATE_MAP`.
+- **Incident** : deux Jest de l'implémenteur ont tourné sur `cashless_test` (sans `env.sh`) : base remise à zéro par
+  l'orchestrateur le 09/11. Rappeler dans chaque consigne : `source env.sh` AVANT tout Jest.
+- Hors carte : `app.module.ts`, `audit.service.ts` (`EDGE_AUTHORITY_RELEASE_REQUESTED`, `_ABANDONED` absents de
+  `interfaces.md` § 7), `problem.filter.ts` (asynchrone, accroche du 409).
+- Lecture directe de `debit_authority_handover` sous RLS (droit existant), faute de fonction : à valider en relecture.
+- Contrat : `Problem` sans `edge_base_url` alors que l'exemple `edge` le porte ; `claimMedia` (`claims.service.ts:193`)
+  rend l'ancienne forme du 409 (hors carte) ; double demande de retour à deux clés = abandon du retour.
+- Relecture humaine : `debit-authority.service.ts`, `force-central.approval.ts`, `problem.filter.ts`, `edge-conflict.ts`.
