@@ -349,3 +349,9 @@ Notes à transmettre aux lots suivants.
 - Constats du cycle 1 levés (3 passes 16/16, borne tenue, énumération des routes prouvée par mutation) ; 302/302.
 - Bloquant nouveau : `client-gone.ts` ne retire jamais ses écouteurs `close` : fuite sur socket keep-alive (15 requêtes,
   17 écouteurs, `MaxListenersExceededWarning`).
+
+## Relecture de WP10 (approuvé au cycle 3, 09/11/2026)
+- Fuite d'écouteurs levée (`release()` unique), mutation tuée, 3 × 17/17, 303/303, `tsc` propre.
+- Mineur consigné : socket détruite et `close` de la réponse avant l'armement → `release` jamais appelée (objets perdus,
+  fuite négligeable).
+- **WP12 et suivants** : `edge-routes-auth.spec.ts` vérifie automatiquement toute nouvelle route du processus edge.
