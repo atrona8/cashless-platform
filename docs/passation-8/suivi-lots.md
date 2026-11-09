@@ -287,3 +287,11 @@ Notes à transmettre aux lots suivants.
   sans mot de passe en production : refus au démarrage si absents en production, test) ; `DATABASE_URL_EDGE`,
   `DATABASE_URL_EDGEADMIN` dans `test/support/db.ts`. CI : WP25.
 - Relecture humaine : `post-roles.sql` §9, `0064_edge_fixes.sql`.
+
+## Relecture de WP20 (rejet n° 2, 09/11/2026) — constats : `rapports/feedback/wp20-cycle2.md`
+- 338/338, `tsc` propre ; contrôles de la décision 32 et règle `DELTA_PURGE` : mutations tuées sur les fonctions pures.
+- Bloquants : (1) câblage de `bootstrap.ts` non prouvé (`child-main.ts` force `hasDeltaPurge`, aucun processus réel avec
+  clé client égale à une clé du port) ; (2) TOCTOU : contrôle par `lstat`, lecture par chemin (attendu : `O_NOFOLLOW`,
+  `fstat` et lecture sur le même descripteur).
+- Mineurs : mutants survivants (propriétaire du fichier et du répertoire, `isFile`, contrôle de `loadTrust`) ;
+  `withLockForTest` exporté sans condition.
