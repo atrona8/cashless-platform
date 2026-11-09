@@ -189,3 +189,13 @@ Notes à transmettre aux lots suivants.
   `cashless_tagkeys`.
 - WP13 : rejeu sur 40001 (`reference_applied_seq`) et 23505 (REPEATABLE READ).
 - Relecture humaine : `edge_ref_ctx_enter` (modifie `app.operator_id`), drapeau `app.edge_journal_write`.
+
+## Relecture de WP18 (rejet n° 1, 09/11/2026) — constats : `rapports/feedback/wp18-cycle1.md`
+- Jest réel 264/264, `tsc` propre. Atomicité page + curseurs, `catchUpTo` et filigrane : sans défaut.
+- B1 (argent) : `delta-purge.ts` purge sur le curseur global, une page non finale surestime un solde (1000 lu, 600 vrai) ;
+  même défaut dans `onOpResult`. B2 (aucun faux en production) : garde muette si `catchUp` est absent de l'appel.
+- Mineurs : canari tautologique (M1) ; colis et clé scellée gardés après PRIMARY → STANDBY (M2, purge au cycle 2,
+  renforcement) ; `usable_on_edge` vrai si `activated_at` NULL (M3) ; `media_id` NULL (M4) ; horizon qui saute devant (M5) ;
+  `kyc_verified` absent (M6) ; `applyHook` public (M7).
+- WP20 : `onOpResult` corrigé avant appel. WP21 : `media_id NULL` non utilisable. WP24 : réutiliser la purge au
+  changement de rôle de WP18.
