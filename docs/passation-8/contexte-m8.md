@@ -66,6 +66,11 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     back-office (hors mission) demande une confirmation explicite avant d'abandonner un rendu.
 35. Schéma `Problem` : ajout facultatif rétrocompatible de `edge_base_url` et `authority_epoch` (accord du porteur, hors
     `/edge/*`, ADR-171), porté par WP13 avec l'ajout de la décision 33.
+36. Caution et activation en `EDGE` : ajout facultatif rétrocompatible sous `/edge/*` (page de réplication) des
+    conditions de caution et frais d'activation (ADR-172) ; production et contrat par WP12 (correction), lecture par
+    WP22 (correction, après WP12). Sans le champ, refus maintenu.
+37. Rendu bloqué : trace `EDGE_RELEASE_STUCK` en `audit_log` par une fonction `SECURITY DEFINER` dédiée, migration
+    `0065`, `EXECUTE` à `cashless_maint` seul (ADR-173), par WP12 (correction). Migration centrale suivante : `0066`.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

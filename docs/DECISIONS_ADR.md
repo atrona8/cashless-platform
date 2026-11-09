@@ -2569,3 +2569,31 @@ Décision du porteur : 09/11/2026 ADR-171
 - **Risque.** Aucun pour les clients existants (propriétés facultatives).
 - **Test de borne.** Contrôle de stabilité : seul ce sous-arbre change ; corps d'erreur existants inchangés.
 
+
+## ADR-172 — Mission 8 : conditions de caution et d'activation répliquées vers la passerelle
+
+Décision du porteur : 09/11/2026 ADR-172
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 36 du porteur, compte rendu de WP22).
+- **Contexte.** Le flux `/edge/replication-feed` ne porte ni le montant ni l'état de la caution, ni les frais
+  d'activation sur solde. La passerelle refuse donc caution et activation pendant `EDGE` (`409 CONFLICT_STATE`,
+  `DEPOSIT_TERMS_UNKNOWN`), échec fermé.
+- **Décision.** Ajout facultatif rétrocompatible sous `/edge/*` (page de réplication) des conditions de caution et
+  d'activation, avec mise à jour de `tools/contract-stability/contract-baseline.json`. Production par le central :
+  correction de WP12 ; lecture par la passerelle (port `DEPOSIT_TERMS`) : correction de WP22, après WP12.
+- **Risque.** Aucun pour les clients existants (propriétés facultatives, route réservée aux passerelles). Absence du
+  champ : la passerelle garde le refus (échec fermé).
+- **Test de borne.** Contrôle de stabilité : seul ce sous-arbre de `/edge/*` change ; la passerelle refuse toujours si
+  le champ manque.
+
+## ADR-173 — Mission 8 : trace en base d'un rendu d'autorité bloqué
+
+Décision du porteur : 09/11/2026 ADR-173
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 37 du porteur, compte rendu de WP12). Renforcement.
+- **Contexte.** Le travailleur de maintenance détecte un rendu bloqué (`edge_stuck_handovers`) mais `cashless_maint`
+  n'a aucun droit d'audit : l'alerte `EDGE_RELEASE_STUCK` n'existait qu'au journal applicatif.
+- **Décision.** Fonction `SECURITY DEFINER` dédiée, migration correctrice `0065`, qui écrit l'entrée
+  `EDGE_RELEASE_STUCK` dans `audit_log` pour un handover réellement bloqué (contrôle en base), `REVOKE ALL FROM
+  PUBLIC`, `EXECUTE` à `cashless_maint` seul (test de droits). Portée par WP12 en correction.
+- **Test de borne.** Les autres rôles ne peuvent pas l'exécuter ; un handover non bloqué est refusé.
