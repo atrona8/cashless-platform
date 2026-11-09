@@ -131,3 +131,15 @@ Notes à transmettre aux lots suivants.
   rendu la main.
 - **WP16/WP25** : refuser en production l'absence de `centralUrl` ou du certificat (sinon `link_state` reste ISOLATED et
   la levée locale reste possible lien sain).
+
+## Relecture de WP07 (rejet n° 1, 09/11/2026, commit 038f1d69)
+- pgTAP réel (`cashless_wp07`) : lot 116/116, suites `tests_edge_*` et `tests_cash_sessions` vertes.
+- B1 (argent, réglementaire) : `occurred_at` non borné dans 0062 ; `wallet_topup_headroom` dépend de la date :
+  plafond mensuel contourné (4 × 5 000 → 15 000 crédités), dates 1999/2099 écrites au journal. Borner comme 0061.
+- Mineurs : M1 aucun test d'autorité (non EDGE, sans handover, TO_CENTRAL RELEASING) ; M2 clé d'origine déjà au
+  registre → 23505 après écriture (WP13/WP14) ; M3 `api_idempotency` sans filtre `scope`, `LIKE 'deposit:…'` ambigu ;
+  M4 recharge sans plafond unitaire (9e11 accepté) : **soumis au porteur**.
+- WP09 : n'accorder que les 3 fonctions `edge_*` publiques (jamais `edge_counter_op`, `edge_open_replay_failed`).
+- WP12/WP13 : DUPLICATE/VOID/REJECTED+EDGE_REPLAY_FAILED ; seule la caution écrit en attente (S-ATTENTE).
+- WP22/WP25 : la fermeture de caisse explique l'excédent par les anomalies `EDGE_REPLAY_FAILED`.
+- Relecture humaine : `0062_edge_counter_ops.sql` en entier. Constats : `rapports/feedback/wp07-cycle1.md`.
