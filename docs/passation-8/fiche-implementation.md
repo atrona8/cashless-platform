@@ -45,7 +45,8 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   y lance `pg_prove`). Après un Jest, refaire `reset-db`.
 - Jest ciblé depuis `apps/api` de la lane : `export PGDATABASE=cashless_wpXX; source ../../tools/dev-db/env.sh`
   **puis** `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`. `PGDATABASE` seul ne suffit pas :
-  `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test`. Ne lance pas la batterie
+  `test/support/db.ts` lit `DATABASE_URL_*` et retombe sinon sur `cashless_test`. **Avant le premier Jest, vérifie
+  `env | grep DATABASE_URL` : toutes les URL visent ta base** (incident du 09/11 : Jest lancé sans `env.sh`). Ne lance pas la batterie
   complète : l'orchestrateur la passe en série.
 - **L'API du porteur tourne sur le port 80 (tunnel ngrok), avec sa propre base Docker `cashless-api-db-1` en
   `127.0.0.1:5434` (base `cashless_dev`) : n'y touche jamais**, ne l'arrête pas, n'utilise ni le port 80 ni le 5434.

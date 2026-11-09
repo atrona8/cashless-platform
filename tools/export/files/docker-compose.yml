@@ -7,7 +7,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: cashless_dev
     ports:
-      - '127.0.0.1:5433:5432'
+      - '127.0.0.1:5434:5432'
     volumes:
       - cashless-pg:/var/lib/postgresql/data
     healthcheck:
