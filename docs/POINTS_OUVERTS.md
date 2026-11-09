@@ -92,6 +92,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit (mission 8, décision 19, ADR-166) | Non | **Oui** | Mission 13 |
 | OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable (mission 8, décision 27, ADR-167) | Non | Non | Porteur |
 | OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b (mission 8, décision 32, ADR-168) | Non | **Oui** | Mission 12b |
+| OP-N114 | Retour de l'autorité au central : une seconde demande `CENTRAL` à autre clé abandonne le rendu en cours (mission 8, décision 34, ADR-170) | Non | Non | Porteur |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -189,6 +190,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit | Un code compromis ou un accès au rôle sur le mini-PC efface l'audit ou fausse l'époque d'autorité sans trace locale | Déclencheur `BEFORE TRUNCATE` (TRUNCATE refusé, testé) ; test qui liste les droits DDL d'`edge_app` et échoue si un autre rôle les reçoit | Mission 13 (recette V1) | Propriétaire des migrations distinct du rôle d'exécution, sans droit DDL |
 | OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable | Levée locale de `STALE` ou purge faite par une seule personne | Outil d'enrôlement : deux titulaires nominatifs distincts exigés ; procédure d'exploitation | Porteur | Clés sur supports personnels avec identification forte, hors mission 8 |
 | OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b | Une copie du disque du mini-PC permet d'usurper la passerelle auprès du central jusqu'à la révocation de son certificat | Démarrage refusé si le fichier ou son répertoire sont plus larges que 0600 ou si c'est un lien symbolique ; clé distincte de la clé `batch` ; jamais journalisée | Mission 12b | Poignée de main signée par le composant matériel (fournisseur OpenSSL/PKCS#11 ou proxy mTLS) ; fichier refusé |
+| OP-N114 | Retour de l'autorité au central : une seconde demande `CENTRAL` à autre clé abandonne le rendu en cours | Un double clic ou un `OPERATOR_ADMIN` malveillant arrête le retour (disponibilité ; le grand livre reste `EDGE`, aucune double dépense) | Abandon audité ; réservé à `OPERATOR_ADMIN` ; test du comportement | Back-office (hors mission) | Confirmation explicite côté interface, ou champ dédié au contrat |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1492,6 +1494,17 @@ Mission 8 (passerelle locale), Décision 32 du porteur (WP20) ; ADR-168. **Bloqu
 - **Condition de levée.** Poignée de main signée par le composant matériel (fournisseur OpenSSL/PKCS#11 ou proxy mTLS local) ; fichier refusé au démarrage en production.
 - **Test de borne.** Démarrage refusé si le fichier ou son répertoire sont plus larges que 0600, si c'est un lien symbolique, ou si la clé égale la clé `batch` ; canari de clé absent des journaux.
 - **Report.** `PROMPTS-A-ENVOYER.md` (mission 12b) et `PRD.md` §2.6.
+
+### OP-N114 — Abandon du retour de l'autorité par une seconde demande (9 novembre 2026)
+
+Mission 8 (passerelle locale), Décision 34 du porteur (relecture de WP11) ; ADR-170. **Bloque la production : non.**
+
+- **Constat.** Une seconde demande `CENTRAL` envoyée avec une autre clé d'idempotence abandonne le rendu en cours (`fail_edge_release`), y compris en `RELEASING`.
+- **Risque.** Un double clic ou un acte malveillant d'un `OPERATOR_ADMIN` arrête le retour au central ; le grand livre reste `EDGE`, aucune double dépense ; l'abandon est audité.
+- **Mission qui le lève.** Back-office (hors mission 8).
+- **Condition de levée.** Confirmation explicite avant l'abandon côté interface, ou champ dédié au contrat.
+- **Test de borne.** Seconde demande à autre clé : rendu abandonné, audit `EDGE_AUTHORITY_ABANDONED`, autorité inchangée.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

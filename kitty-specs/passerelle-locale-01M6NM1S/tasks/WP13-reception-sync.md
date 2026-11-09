@@ -187,6 +187,9 @@ Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes ad
   le corps du lot ou à côté de `staff_token_audit`) pour les ordres locaux à deux personnes (`LOCAL_UNSTALE`, purge
   manuelle : type, gateway_id, détenteurs, horodatage, empreinte de l'ordre signé) ; le central les verse à son audit ;
   un lot sans le champ reste accepté ; `npm run check:stability` vert avec la ligne de décision de l'ADR-169.
+- Décision 35 (ADR-171, accord du porteur) : même retouche du contrat, ajouter au schéma `Problem` les propriétés
+  facultatives `edge_base_url` (uri) et `authority_epoch` (entier) ; ligne de décision de l'ADR-171 pour le contrôle
+  de stabilité ; aucun corps d'erreur existant ne change.
 - Relecture de WP08 : rejouer sur `40001` (`reference_applied_seq`) et `23505` (REPEATABLE READ). Relecture de WP07
   (M2) : clé d'origine déjà au registre sous un autre numéro (`23505` après écriture) : la passerelle ne doit pas rester
   bloquée sur ce numéro.

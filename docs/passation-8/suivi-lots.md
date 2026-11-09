@@ -339,3 +339,13 @@ Notes à transmettre aux lots suivants.
   carte) ; M2 seconde demande `CENTRAL` à autre clé = abandon du rendu (audité, `OPERATOR_ADMIN` seul) : **porteur** ;
   M3 `Problem` sans `edge_base_url` au schéma : **porteur** ; M4 `edge_gateway_id` figé à la demande (cosmétique).
 - Relecture humaine : `debit-authority.service.ts`, `force-central.approval.ts`, `problem.filter.ts`, `edge-conflict.ts`.
+
+## Relecture de WP20 (approuvé au cycle 3, 09/11/2026)
+- 347/347, `tsc` propre ; lecture unique de la clé client sur descripteur (`O_NOFOLLOW`, `fstat`) ; mutations du câblage
+  (1 et 36 échecs) et des mutants du cycle 2 tuées. `withLockForTest` exporté mais refusé en production (cosmétique).
+- Relecture humaine : `client-key-file.ts`, `edge-queue.ts`, `drain.service.ts`, `edge-0004`, verrou du faux port.
+
+## Relecture de WP10 (rejet n° 2, 09/11/2026) — constats : `rapports/feedback/wp10-cycle2.md`
+- Constats du cycle 1 levés (3 passes 16/16, borne tenue, énumération des routes prouvée par mutation) ; 302/302.
+- Bloquant nouveau : `client-gone.ts` ne retire jamais ses écouteurs `close` : fuite sur socket keep-alive (15 requêtes,
+  17 écouteurs, `MaxListenersExceededWarning`).

@@ -62,6 +62,10 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     jamais journalisée) ; OP-N113, ADR-168. La 12b choisit fournisseur OpenSSL/PKCS#11 ou proxy mTLS.
 33. Ordres locaux à deux personnes (`LOCAL_UNSTALE`, purge manuelle) versés à l'audit du central : champ facultatif
     rétrocompatible sous `/edge/*` (accord du porteur, ADR-169) ; contrat et réception par WP13, envoi par WP24.
+34. Seconde demande `CENTRAL` à autre clé = abandon du rendu en cours (WP11) : consigné (OP-N114, ADR-170) ; le
+    back-office (hors mission) demande une confirmation explicite avant d'abandonner un rendu.
+35. Schéma `Problem` : ajout facultatif rétrocompatible de `edge_base_url` et `authority_epoch` (accord du porteur, hors
+    `/edge/*`, ADR-171), porté par WP13 avec l'ajout de la décision 33.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

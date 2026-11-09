@@ -159,7 +159,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Écarts de la mission 8 décidés en cours d'implémentation (09/11/2026, `OP-N111`, `OP-N112`, `ADR-166`, `ADR-167`) : rôle unique propriétaire de la
   base locale de la passerelle (`TRUNCATE` refusé, le reste consigné) ; détention des deux clés de site par une seule personne non détectable ;
   clé TLS client de la passerelle en fichier durci jusqu'à la mission 12b (`OP-N113`, `ADR-168`). Ordres locaux à deux personnes versés à l'audit
-  du central par un champ facultatif sous `/edge/*` (`ADR-169`).
+  du central par un champ facultatif sous `/edge/*` (`ADR-169`). Abandon du retour de l'autorité par une seconde demande consigné
+  (`OP-N114`, `ADR-170`) ; `edge_base_url` et `authority_epoch` facultatifs au schéma `Problem` (`ADR-171`).
   Renforcements décidés le même jour : recul d'horloge du central borné à quelques minutes ; plafond par recharge au guichet (500 000 XOF par défaut,
   réglable) ; certificat client de la passerelle signé par le composant matériel ; frais recalculés par le central à la réception.
 

@@ -2548,3 +2548,24 @@ Décision du porteur : 09/11/2026 ADR-169
 - **Risque.** Aucun pour les clients existants (champ facultatif, route réservée aux passerelles).
 - **Test de borne.** Contrôle de stabilité du contrat : seul ce sous-arbre change ; un lot sans le champ reste accepté.
 
+## ADR-170 — Mission 8 : abandon du retour de l'autorité par une seconde demande (OP-N114)
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 34 du porteur, relecture de WP11).
+- **Contexte.** Le contrat ne distingue pas une demande de retour répétée d'une demande d'abandon ; une seconde demande `CENTRAL` à autre clé abandonne le rendu.
+- **Décision.** Comportement gardé et consigné ; le back-office demande une confirmation explicite avant d'abandonner un rendu en cours.
+- **Risque.** Disponibilité seulement (retour arrêté) ; aucune double dépense ; abandon audité, réservé à `OPERATOR_ADMIN`.
+- **Mission qui le lève.** Back-office. **Condition de levée.** Confirmation côté interface ou champ dédié au contrat.
+- **Test de borne.** Seconde demande à autre clé : abandon audité, autorité inchangée.
+- **Report.** `PRD.md` §2.6.
+
+## ADR-171 — Mission 8 : `edge_base_url` et `authority_epoch` facultatifs au schéma `Problem`
+
+Décision du porteur : 09/11/2026 ADR-171
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 35 du porteur, relecture de WP11).
+- **Contexte.** L'exemple `edge` du contrat et la réponse `409 DEBIT_AUTHORITY_EDGE` portent `edge_base_url` et `authority_epoch`, absents du schéma `Problem` partagé.
+- **Décision.** Ajout rétrocompatible de ces deux propriétés facultatives au schéma `Problem` (hors `/edge/*`, accord du porteur malgré le contrat stable du 05/11), avec
+  mise à jour de `tools/contract-stability/contract-baseline.json` ; porté par WP13.
+- **Risque.** Aucun pour les clients existants (propriétés facultatives).
+- **Test de borne.** Contrôle de stabilité : seul ce sous-arbre change ; corps d'erreur existants inchangés.
+
