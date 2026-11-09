@@ -156,6 +156,10 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   ventes `EDGE_ONLINE` bornées au rejeu avec perte maximale chiffrée ; inscription par une personne avec alerte et délai ; purge des secrets (limite du
   mini-PC volé) ; passerelle perdue sans rejeu automatique ; dépassement temporaire d'un plafond réglementaire à la recharge espèces (à signaler au
   juriste) ; `STALE` seulement si confirmé ou plausible ; « même moteur » devient « mêmes modules ».
+- Écarts de la mission 8 décidés en cours d'implémentation (09/11/2026, `OP-N111`, `OP-N112`, `ADR-166`, `ADR-167`) : rôle unique propriétaire de la
+  base locale de la passerelle (`TRUNCATE` refusé, le reste consigné) ; détention des deux clés de site par une seule personne non détectable.
+  Renforcements décidés le même jour : recul d'horloge du central borné à quelques minutes ; plafond par recharge au guichet (500 000 XOF par défaut,
+  réglable) ; certificat client de la passerelle signé par le composant matériel ; frais recalculés par le central à la réception.
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

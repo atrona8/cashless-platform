@@ -2499,3 +2499,28 @@ Ordres locaux à deux personnes (levée de `STALE`, purge manuelle) : deux clés
 - **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Époque signée par le central dans la requête, ou canal de contrôle toujours disponible.
 - **Test de borne.** En-tête forgé à 9999 : aucun arrêt ; à `epoch + 1` : arrêt, levée à deux personnes distinctes, audit `LOCAL_UNSTALE`, refus de la levée si le central a confirmé.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-166 — Mission 8 : rôle unique propriétaire de la base locale de la passerelle (OP-N111)
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 19 du porteur, relectures de WP16 et WP17).
+- **Contexte.** Le plan prévoit un rôle unique `edge_app` pour la base locale. Propriétaire des tables, il peut couper les déclencheurs, vider ou supprimer `edge_op`,
+  `edge_audit`, `edge_authority` ; un `TRUNCATE` puis `INSERT` remettait l'époque d'autorité à 0.
+- **Décision.** Déclencheur `BEFORE TRUNCATE` sur les trois tables (correction, WP20). Le rôle unique est gardé ; la possibilité de `DISABLE TRIGGER`/`DROP` est consignée.
+- **Risque.** Un code compromis ou un accès au rôle sur le mini-PC efface l'audit local ou fausse l'époque sans trace locale ; le central garde son propre audit et sa propre
+  époque.
+- **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Propriétaire des migrations distinct du rôle d'exécution, sans droit DDL ni `TRIGGER`.
+- **Test de borne.** `TRUNCATE` refusé sur les trois tables ; liste des rôles à droits DDL figée.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+## ADR-167 — Mission 8 : détention des clés de site des ordres à deux personnes (OP-N112)
+
+- **Statut** : Acceptée, 9 novembre 2026 (décision 27 du porteur, relecture de WP17).
+- **Contexte.** Les ordres locaux à deux personnes (levée de `STALE`, purge manuelle) exigent deux signatures de clés de site ; la plateforme ne voit pas qui détient
+  physiquement une clé.
+- **Décision.** L'outil d'enrôlement exige deux titulaires nominatifs distincts et deux clés distinctes ; une procédure d'exploitation interdit à une personne de détenir les
+  deux. La limite résiduelle est consignée.
+- **Risque.** Une personne qui obtient les deux clés agit seule.
+- **Mission qui le lève.** Hors mission 8 (porteur). **Condition de levée.** Supports personnels avec identification forte, ou procédure vérifiée en recette.
+- **Test de borne.** Enrôlement refusé pour deux titulaires identiques ou deux clés identiques.
+- **Report.** `PRD.md` §2.6.
+

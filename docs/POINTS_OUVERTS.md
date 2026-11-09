@@ -89,6 +89,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N108 | Recharge espèces au rejeu : dépassement temporaire d'un plafond réglementaire, à signaler au juriste (mission 8, décision 14, ADR-163) | Non | **Oui** (avis du juriste) | Juriste |
 | OP-N109 | « Même moteur » (SPECIFICATION §9) devient « mêmes modules » : base locale à schéma réduit (mission 8, décision 1, ADR-164) | Non | Non | Porteur |
 | OP-N110 | `STALE` persisté seulement si l'époque est confirmée ou plausible (au plus +2) ; levée locale à deux (mission 8, décision 15, ADR-165) | Non | Non | Porteur |
+| OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit (mission 8, décision 19, ADR-166) | Non | **Oui** | Mission 13 |
+| OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable (mission 8, décision 27, ADR-167) | Non | Non | Porteur |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -183,6 +185,8 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N108 | Recharge espèces au rejeu : dépassement temporaire d'un plafond réglementaire, à signaler au juriste | Solde local au-dessus d'un plafond réglementaire entre la recharge locale et son rejeu | Jamais de rejet pour un plafond : deux parts, anomalie `CASH_TOPUP_OVER_LIMIT` | Mission 13 (recette V1) | Avis écrit du juriste |
 | OP-N109 | « Même moteur » (SPECIFICATION §9) devient « mêmes modules » : base locale à schéma réduit | Deux implémentations de calcul si le paquet partagé est contourné ; texte de la spécification en retard | Test d'architecture de `shared-rules` ; mêmes scénarios de référence | Mission 13 (recette V1) | Texte de §9 aligné |
 | OP-N110 | `STALE` persisté seulement si l'époque est confirmée ou plausible (au plus +2) ; levée locale à deux | Une époque forgée à `epoch + 1` ou `+ 2` arrête les débits jusqu'à la levée locale (disponibilité) | En-tête forgé à 9999 sans arrêt ; levée à deux personnes distinctes auditée | Mission 13 (recette V1) | Époque signée par le central dans la requête, ou canal de contrôle toujours disponible |
+| OP-N111 | Base locale de la passerelle : le rôle unique `edge_app` peut couper les déclencheurs ou supprimer les tables d'autorité, de file et d'audit | Un code compromis ou un accès au rôle sur le mini-PC efface l'audit ou fausse l'époque d'autorité sans trace locale | Déclencheur `BEFORE TRUNCATE` (TRUNCATE refusé, testé) ; test qui liste les droits DDL d'`edge_app` et échoue si un autre rôle les reçoit | Mission 13 (recette V1) | Propriétaire des migrations distinct du rôle d'exécution, sans droit DDL |
+| OP-N112 | Ordres à deux personnes : une même personne détenant les deux clés de site n'est pas détectable | Levée locale de `STALE` ou purge faite par une seule personne | Outil d'enrôlement : deux titulaires nominatifs distincts exigés ; procédure d'exploitation | Porteur | Clés sur supports personnels avec identification forte, hors mission 8 |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1452,6 +1456,28 @@ Mission 8 (passerelle locale), Décision 15 du porteur (passe contradictoire A12
 - **Mission qui le lève.** Mission 13 (recette V1).
 - **Condition de levée.** Époque signée par le central dans la requête, ou canal de contrôle toujours disponible.
 - **Test de borne.** En-tête forgé à 9999 sans arrêt ; à `epoch + 1` arrêt puis levée à deux personnes distinctes.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N111 — Base locale de la passerelle : rôle unique propriétaire des tables (9 novembre 2026)
+
+Mission 8 (passerelle locale), Décision 19 du porteur (relectures de WP16 et WP17) ; ADR-166. **Bloque la production : oui.**
+
+- **Constat.** `edge_app` possède toutes les tables locales (plan : rôle unique). Il peut `DISABLE TRIGGER` ou `DROP` sur `edge_op`, `edge_audit`, `edge_authority`. `TRUNCATE` est refusé par un déclencheur (correction de la décision 19, WP20).
+- **Risque.** Un code compromis ou un accès au rôle sur le mini-PC efface l'audit local ou remet l'époque d'autorité à zéro sans trace locale ; les transitions `STALE` → `GRANTED_PENDING` → `ACTIVE` restent des `UPDATE` directs (la base ne prouve pas l'accusé).
+- **Mission qui le lève.** Mission 13 (recette V1), ou WP25 si le temps le permet.
+- **Condition de levée.** Propriétaire des migrations distinct du rôle d'exécution, sans droit DDL ni `TRIGGER`.
+- **Test de borne.** `TRUNCATE` refusé sur les trois tables ; test qui liste les rôles disposant de droits DDL et échoue si un autre rôle qu'`edge_app` les reçoit.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N112 — Ordres à deux personnes : détention des deux clés par une seule personne (9 novembre 2026)
+
+Mission 8 (passerelle locale), Décision 27 du porteur (relecture de WP17) ; ADR-167. **Bloque la production : non.**
+
+- **Constat.** Les deux clés de site sont enregistrées au nom de deux titulaires distincts (exigé par l'outil d'enrôlement) ; rien ne détecte qu'une même personne les détient.
+- **Risque.** Levée locale de `STALE` ou purge manuelle décidée par une seule personne.
+- **Mission qui le lève.** Hors mission 8 (porteur).
+- **Condition de levée.** Clés sur supports personnels avec identification forte, ou procédure d'exploitation vérifiée en recette.
+- **Test de borne.** Outil d'enrôlement : deux titulaires identiques ou deux clés identiques refusés.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
