@@ -171,6 +171,9 @@ Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes ad
   - décision 21 : plafond par recharge en espèces au rejeu (`0062`), réglage `edge_setting_value` (500 000 XOF par
     défaut, posé par `set_edge_setting`) ; au-delà, jamais `REJECTED` : écriture comme une recharge hors marge et
     anomalie résolue à deux (même mécanisme que la décision 14, OP-N108) ; test.
+  - décision 23 : fonction `edge_expose_device_token_families(p_event_id)` (SECURITY DEFINER, `assert_tenant`) qui
+    pose `device_refresh_token.edge_exposed = true` sur les familles actives des terminaux de l'événement ; jamais
+    d'autre colonne ; `EXECUTE` à `cashless_app` seul ; tests (autre prestataire refusé, familles révoquées ignorées).
   Partir des définitions de `0061`/`0062` (pas du schéma) ; `REVOKE ALL … FROM PUBLIC`, droits dans ce même lot.
 - Notes de droits des relectures (WP03 à WP08) : sections « WP09 » de `suivi-lots.md`, toutes obligatoires.
 

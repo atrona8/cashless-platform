@@ -199,3 +199,14 @@ Notes à transmettre aux lots suivants.
   `kyc_verified` absent (M6) ; `applyHook` public (M7).
 - WP20 : `onOpResult` corrigé avant appel. WP21 : `media_id NULL` non utilisable. WP24 : réutiliser la purge au
   changement de rôle de WP18.
+
+## Correction de WP08 (cycle 2, commit 0ba00816)
+- 58/59 suites vertes sur `cashless_wp08` (seule `tests_offline_rights`, WP09) ; `tests_psp_configurations` instable
+  (horloge) une fois. Nouveau `tests_edge_replication_deferred.sql` : mode différé prouvé à trois connexions réelles.
+- Retouches hors carte de tests : `SET CONSTRAINTS ALL IMMEDIATE` (4 suites), amorce dans `tests_edge_gateway` et
+  `tests_edge_handover` (`session_replication_role=replica`), listes `tests_definer_trigger_writers`, `tests_payments`,
+  `tests_payment_rights`.
+- Décision 23 : `edge_exposed` ajouté, `token_family` rendu aux PRIMARY seulement. Rien ne le pose à true :
+  **fonction confiée à WP09 (`0064`), appel par l'API confié à WP12** (prompts mis à jour).
+- WP09 : `cashless_app` garde `arw` sur la vue `edge_device_seq_acked` (à fermer).
+- Relecture humaine : branche `device_refresh_token` d'`edge_ref_trigger`, rendu `token_family`.

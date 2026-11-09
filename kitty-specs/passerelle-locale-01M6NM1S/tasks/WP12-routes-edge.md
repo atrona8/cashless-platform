@@ -144,6 +144,17 @@ Dans `apps/api/test/integration/edge/routes/` :
 
 Chaque test doit échouer sur une implémentation fausse : celle qui fait `begin` et `complete` dans une seule transaction doit être rouge ; celle qui recopie le compte au lieu de laisser la fonction SQL le contrôler, aussi.
 
+## Décisions du porteur du 09/11/2026 (font foi sur ce prompt)
+
+Source : `docs/passation-8/contexte-m8.md`, décisions 19 à 31, et les notes adressées à ce lot dans
+`docs/passation-8/suivi-lots.md`.
+
+- Décision 23 (OP-N102, décision 11) : rien ne pose encore `device_refresh_token.edge_exposed`. L'API appelle
+  `edge_expose_device_token_families(event_id)` (WP09, `0064`) à l'octroi de l'autorité à la passerelle, avant la
+  première page servie, puis à chaque renouvellement de jeton d'appareil sur le central pendant que l'événement est
+  `EDGE`. Test : après l'octroi, la page de réplication porte `token_family` ; un terminal d'un autre événement non.
+- WP07 : DUPLICATE/VOID/REJECTED + `EDGE_REPLAY_FAILED` à mapper si les routes les exposent (voir suivi).
+
 ## Sécurité
 
 - Fichiers à faire relire par une personne : `handover.service.ts` (séquence `RELEASING` puis vérification), `replication-feed.service.ts` (aucun secret en clair).
