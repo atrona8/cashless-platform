@@ -330,3 +330,12 @@ Notes à transmettre aux lots suivants.
   200 immédiat) ; `edge-routes-auth.spec.ts` énumère la table de routes Express (**couvre WP12 et suivants**).
 - Attente : 5 passes à 16/16 ; edge 67/67 ; non-régression 235/235.
 - `/v1/health` publique sur l'écouteur edge : comme les autres processus, gardé (aucun contenu sensible).
+
+## Relecture de WP11 (approuvé, 09/11/2026)
+- 53/53 debit-authority, 593/593 suites larges (filtre asynchrone sans régression), `tsc` propre.
+- Chemins de débit : filet `CL006` de `post_transaction` (0060) pour tout débit de portefeuille hors `EDGE_SYNC` ;
+  `refundDeposit`, `refundCashDue`, `reversePayment`, `createCashTopup` : crédits ou comptes hors portefeuille.
+- Mineurs : M1 `claimMedia` 409 sans `edge_base_url`/`authority_epoch` (corriger quand `claims.service.ts` sera dans une
+  carte) ; M2 seconde demande `CENTRAL` à autre clé = abandon du rendu (audité, `OPERATOR_ADMIN` seul) : **porteur** ;
+  M3 `Problem` sans `edge_base_url` au schéma : **porteur** ; M4 `edge_gateway_id` figé à la demande (cosmétique).
+- Relecture humaine : `debit-authority.service.ts`, `force-central.approval.ts`, `problem.filter.ts`, `edge-conflict.ts`.
