@@ -156,3 +156,10 @@ Notes à transmettre aux lots suivants.
 - WP09 : `deposit_edge_pwd_pack_key` à `cashless_tagkeys` ; liste des droits dans l'en-tête de 0063.
 - WP25 : horizon non sûr (écriture en vol), refus hors REPEATABLE READ, concurrence du journal : deux connexions réelles.
 - Relecture humaine : `edge_replication_page`, `deposit_edge_pwd_pack*`, `edge_ref_trigger`, déclencheurs des tables chaudes.
+
+## Correction de WP07 (cycle 2, commit d72762ec)
+- B1 : date bornée [début du cycle − 15 min ; maintenant + 15 min] pour la marge ET l'écriture (renforcement par rapport
+  à 0061, qui écrit la date brute) ; date brute en métadonnée `origin_occurred_at` ; mutation vérifiée (106-111).
+- M1 : tests d'autorité ; `TO_CENTRAL` `RELEASING` accepté par le contrôle d'autorité (vidange) : à confirmer en relecture.
+- M3 : `api_idempotency` filtré sur `scope` ; caution par clé exacte.
+- M2 (WP13/WP14) et M4 (porteur) non traités.
