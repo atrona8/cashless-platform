@@ -260,3 +260,11 @@ Notes à transmettre aux lots suivants.
 - Bloquant : durcissement de la clé TLS (décision 32) absent de `config.ts`/`central-client.ts`.
 - Mineurs : `withLock` (verrou périmé repris deux fois) ; `DELTA_PURGE` facultatif, oubli silencieux à l'intégration ;
   décision 20 : un central en avance (< 24 h) relève `time_floor`, le central juste est ensuite refusé (limite).
+
+## Relecture de WP19 (approuvé, 09/11/2026)
+- 306/306, `tsc` propre ; mutations des preuves et des jetons tuées (deux survivants équivalents). Garde `kitty-specs`
+  levé par `align-lane.sh s`, sans `--force`.
+- ETag = SHA-256 JCS hors `server_time` (comme le central, au lieu de `config_id` du prompt) : écart signalé, accepté.
+- Mineurs : plancher de 60 ms des refus (oracle de temps sous charge) ; lignes > 100 car. (Prettier à la fusion).
+- **WP21, WP22, WP23** : appeler `consumeOrThrow` (mode `operation`) pour le contrôle d'horloge de `created`.
+- Relecture humaine : `device-proofs.guard.ts`, `request-signature.ts`, `device-token.service.ts`, `refresh.service.ts`.
