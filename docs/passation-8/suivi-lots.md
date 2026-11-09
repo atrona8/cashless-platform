@@ -225,3 +225,10 @@ Notes à transmettre aux lots suivants.
   batterie rejouée après la suite identique. Garde `kitty-specs` levé par `align-lane.sh h`, sans `--force`.
 - Détails : en-tête de 0063, deux lignes > 100 car. ; `tests_payments` 6 exclut `edge_ref_trigger` partout (borné par
   `tests_definer_trigger_writers`).
+
+## Relecture de WP18 (approuvé au cycle 2, 09/11/2026)
+- Jest 276/276, `tsc` propre ; trois mutations (purge globale, `onOpResult` global, `catchUp` retiré) échouent.
+- Mineurs consignés : `apply-hook.ts` compare `NODE_ENV === 'production'` au lieu de `nodeEnv()` de shared-rules
+  (**WP24** : aligner) ; B1 suppose l'horizon `to_posting_id` complet (M5, **WP25**) ; delta ACCEPTED tardif sous-estimé
+  jusqu'à la page finale suivante.
+- Relecture humaine : `delta-purge.ts`, `pwd-pack-key.ts`, `startup-guard.ts`, `bootstrap.ts`, déclencheur d'`edge-0003`.
