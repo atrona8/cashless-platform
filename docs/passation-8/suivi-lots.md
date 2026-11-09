@@ -210,3 +210,12 @@ Notes à transmettre aux lots suivants.
   **fonction confiée à WP09 (`0064`), appel par l'API confié à WP12** (prompts mis à jour).
 - WP09 : `cashless_app` garde `arw` sur la vue `edge_device_seq_acked` (à fermer).
 - Relecture humaine : branche `device_refresh_token` d'`edge_ref_trigger`, rendu `token_family`.
+
+## Correction de WP18 (cycle 2, commit 1ee50af4)
+- Jest 276/276, `tsc` propre. B1 : purge par portefeuille, globale seulement à la page finale (sous-estimation
+  possible pendant une passe, jamais surestimation) ; mutation : 2 échecs. B2 : `catchUp` obligatoire, test par
+  `assertRuntimeSafe`, mutation : 1 échec.
+- M2 : `purgeKeyMaterial(tx)` (`src/replication/pwd-pack-key.ts`) à la perte de PRIMARY : **WP24 la réutilise**.
+- M3 : déclencheur `edge_cash_session_activation` (edge-0003). M4 : CHECK `media_id`. M6 : `kyc_verified` absent = faux.
+  M7 : point d'arrêt dans `src/testing/apply-hook.ts`, inerte en production. M5 : signalé (WP25).
+- WP21 : `media_id IS NULL` non utilisable.
