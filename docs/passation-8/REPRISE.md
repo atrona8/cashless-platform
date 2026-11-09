@@ -1,17 +1,19 @@
 # Reprise, mission 8 (passerelle-locale-01M6NM1S)
 
-État au 09/11/2026, 16 h 25 UTC. Implémentation en cours sur `feat/passerelle-locale`. Méthode : un implémenteur et un
+État au 09/11/2026, 17 h 15 UTC. Implémentation en cours sur `feat/passerelle-locale`. Méthode : un implémenteur et un
 relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
-`suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 35). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
+`suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 39). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-## Lots
+## Lots (17 h 15 UTC)
 
-- Approuvés (16) : WP01 à WP11, WP16 à WP20.
-- En cours (implémenteurs relancés à 16 h 25 après une interruption vers 15 h 16 ; travail sur disque, non commité si
-  l'interruption se répète : relancer un implémenteur « en reprise » sur la lane) :
-  WP12 (lane-l), WP13 (lane-m), WP21 (lane-u), WP22 (lane-v), WP23 (lane-w).
-- Migrations de la passerelle : `edge-0006` WP21, `edge-0007` WP22, `edge-0008` WP23 ; prochain libre `edge-0009`.
-- Ensuite : relecture de chacun ; WP14, WP15 ; WP24 ; WP25.
+- Approuvés (17) : WP01 à WP11, WP16 à WP20, WP23.
+- En relecture : WP21 (lane-u), WP13 (lane-m ; sera renvoyé pour la migration `0066`, décisions 38-39).
+- En correction : WP12 cycle 2 (lane-l : constats, décisions 36 + plafond, 37, migration `0065`).
+- Rejeté, à corriger APRÈS WP12 : WP22 (constats `rapports/feedback/wp22-cycle1.md` + lecture des conditions de
+  caution et du plafond répliqués).
+- Correctif d'intégration WP18 × WP20 dans u, v, w (voir `suivi-lots.md`) : à garder à la fusion de WP24, WP25.
+- Numéros : passerelle `edge-0009` libre ; central `0065` WP12, `0066` WP13, `0067` libre.
+- Ensuite : WP14, WP15 ; WP24 ; WP25.
 
 ## À ne pas oublier
 
