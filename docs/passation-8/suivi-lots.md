@@ -219,3 +219,9 @@ Notes à transmettre aux lots suivants.
 - M3 : déclencheur `edge_cash_session_activation` (edge-0003). M4 : CHECK `media_id`. M6 : `kyc_verified` absent = faux.
   M7 : point d'arrêt dans `src/testing/apply-hook.ts`, inerte en production. M5 : signalé (WP25).
 - WP21 : `media_id IS NULL` non utilisable.
+
+## Relecture de WP08 (approuvé au cycle 2, 09/11/2026)
+- 58/59 suites (seule `tests_offline_rights`, WP09) ; mode différé prouvé (8 tests, 3 connexions) ; nettoyage vérifié,
+  batterie rejouée après la suite identique. Garde `kitty-specs` levé par `align-lane.sh h`, sans `--force`.
+- Détails : en-tête de 0063, deux lignes > 100 car. ; `tests_payments` 6 exclut `edge_ref_trigger` partout (borné par
+  `tests_definer_trigger_writers`).
