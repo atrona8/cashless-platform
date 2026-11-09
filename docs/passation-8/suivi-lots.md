@@ -324,3 +324,9 @@ Notes à transmettre aux lots suivants.
 - Contrat : `Problem` sans `edge_base_url` alors que l'exemple `edge` le porte ; `claimMedia` (`claims.service.ts:193`)
   rend l'ancienne forme du 409 (hors carte) ; double demande de retour à deux clés = abandon du retour.
 - Relecture humaine : `debit-authority.service.ts`, `force-central.approval.ts`, `problem.filter.ts`, `edge-conflict.ts`.
+
+## Correction de WP10 (cycle 2, commit c3147dad)
+- `client-gone.ts` (`trackClientGone` dès la garde, avant tout SQL) ; borne `MAX_LONG_WAITS_PER_GATEWAY = 4` (au-delà :
+  200 immédiat) ; `edge-routes-auth.spec.ts` énumère la table de routes Express (**couvre WP12 et suivants**).
+- Attente : 5 passes à 16/16 ; edge 67/67 ; non-régression 235/235.
+- `/v1/health` publique sur l'écouteur edge : comme les autres processus, gardé (aucun contenu sensible).
