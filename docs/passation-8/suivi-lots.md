@@ -306,3 +306,9 @@ Notes à transmettre aux lots suivants.
 - Faux `EDGE_CA` en mémoire seulement, refusé par `assertProcessIsSafe` (OP-N100).
 - Relecture humaine : `main.edge.ts`, `edge-mtls.guard.ts`, `edge-identity.service.ts`, `edge-gateway.ts`, `bootstrap.ts`
   (écouteur `edge`), `migrate.ts` (mots de passe).
+
+## Relecture de WP10 (rejet n° 1, 09/11/2026) — constats : `rapports/feedback/wp10-cycle1.md`
+- 62/63 edge, 235/235 non-régression, `tsc` propre ; mTLS, isolation, faux `EDGE_CA`, `migrate.ts` : sans défaut.
+- Bloquant : attente abandonnée avant l'armement de `close` non détectée (1 à 5 écouteurs résiduels sur 50).
+- Mineurs : attentes simultanées non bornées par passerelle ; aucun test n'énumère les routes du processus edge
+  (**WP12 et suivants** : à couvrir) ; `/v1/health` publique sur l'écouteur edge (info).
