@@ -484,3 +484,7 @@ Notes à transmettre aux lots suivants.
   (refus, décision 21) non prouvé (mutant survivant). Constats : `rapports/feedback/wp22-cycle2.md`. Le reste tient
   (mutants de la garde et d'`edge_terms` tués). Relecture humaine : `edge-0007_edge_terms.sql`,
   `staff-token.guard.ts`, `deposit-terms.ts`, `page-schema.ts`, `page-applier.ts`.
+- WP15 **rejeté** (cycle 1, 10/11) : code correct, trois preuves manquantes (source de dérivation non figée au
+  niveau du travailleur, AAD de scellement non épinglée par un vecteur en dur, « sans liste, rien » non prouvé sur le
+  travailleur). Constats : `rapports/feedback/wp15-cycle1.md`. ADR-184 corrigée (le central recalcule la clé de
+  contenu). Sous-tâches T066-T069 à re-marquer au cycle 2.

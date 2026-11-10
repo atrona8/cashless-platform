@@ -2650,8 +2650,10 @@ Décision du porteur : 10/11/2026 ADR-183
 
 Décision du porteur : 10/11/2026 ADR-184
 
-- **Contexte.** Le central ne peut pas rouvrir la clé de contenu d'un colis une fois scellée pour la clé d'accord de
-  la passerelle, et `deposit_edge_pwd_pack_key` refuse une seconde clé pour la même clé d'accord.
+- **Contexte.** Le central ne garde pas la clé de contenu d'un colis une fois scellée pour la clé d'accord de la
+  passerelle (il ne la rouvre pas : il la recalcule, puisqu'il détient la clé de données du prestataire), et
+  `deposit_edge_pwd_pack_key` refuse une seconde clé pour la même clé d'accord. Correction du 10/11/2026 après la
+  relecture de WP15 : la première rédaction disait à tort que le central ne pouvait pas la rouvrir.
 - **Décision.** La clé de contenu est dérivée par HKDF de la plus ancienne clé de données du prestataire, de
   l'empreinte de la clé d'accord et de l'identifiant de la passerelle ; rien n'est stocké. Les prestataires servis
   par le travailleur sont désignés par une liste en configuration du processus des clés (aucun droit nouveau en base).
