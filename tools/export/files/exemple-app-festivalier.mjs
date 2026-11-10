@@ -7,22 +7,26 @@
 //   MERCHANT_QR='https://…/r/<id>#t=<jeton>' node …           consulte puis paie une demande QR d'un commerçant
 //   API=http://localhost/v1 node …                          autre serveur
 //
-// AUTHENTIFICATION. Le contrat prévoit OTP → jeton (`/customer-auth/*`, `humanBearer`), mais ces routes ne sont pas
-// encore servies. Sur l'API de développement, le festivalier est identifié par trois en-têtes de test (faux refusé en
-// production). La classe `Session` cache cette différence : le jour où `/customer-auth/*` répond, passer
-// `AUTH=bearer` sans toucher au reste du code.
+// AUTHENTIFICATION. Connexion réelle : `POST /customer-auth/otp` puis `/customer-auth/token`, jeton court (900 s) et
+// renouvellement (`/customer-auth/refresh`, usage unique). Sur l'API de développement, le faux envoyeur de codes ne
+// part nulle part : il rend le code dans l'en-tête de réponse `X-Test-Otp-Code` (jamais en production, où l'envoi
+// réel par SMS/WhatsApp arrive avec la mission 12b). Les en-têtes `X-Test-*` restent admis en développement tant
+// qu'aucun `Authorization` n'est envoyé.
 /* global fetch */
 import { randomUUID } from 'node:crypto';
 
 const API = process.env.API ?? 'https://removable-thimble-uptight.ngrok-free.dev/v1';
 const OPERATOR_A = 'ec04692a-229e-482b-8542-7492544766c8';
+const OPERATOR_CODE_A = 'demo-a'; // code public du prestataire A (operator_code)
 const DEMO = {
   awa: {
+    phone: '+221770000001',
     customerId: 'c10e0ac3-f0ca-43fc-9b1a-8fcf53cd07ae',
     walletId: '44f1a187-a49c-4152-8f5d-8f4991cdb6c8',
   },
-  fatou: { customerId: '96a58580-81a1-4d4d-b3ea-cfd78f010075' },
+  fatou: { phone: '+221770000003', customerId: '96a58580-81a1-4d4d-b3ea-cfd78f010075' },
   ibrahima: {
+    phone: '+221770000004',
     customerId: 'd22ffa2b-71ab-4b4b-929d-dbc8f80f1795',
     walletId: '3437eecc-da19-42a5-9abe-01fc864a9455',
   },
@@ -43,20 +47,21 @@ export class ApiError extends Error {
 }
 
 /**
- * Routes déclarées au contrat mais pas encore servies (mission de l'app festivalier). Le serveur répond alors le même
+ * Routes déclarées au contrat mais pas encore servies (remboursements, mission 9). Le serveur répond alors le même
  * `404 NOT_FOUND` qu'un objet inconnu : impossible de les distinguer à la réponse, d'où cette liste.
  */
 export const NOT_SERVED_YET = [
-  'POST /customer-auth/otp',
-  'POST /customer-auth/token',
-  'POST /customer-auth/refresh',
-  'POST /me/media/{id}/report-lost',
   'POST /me/refund-requests',
   'GET /me/refund-requests',
   'POST /refund-requests/{id}/holder-decision',
 ];
 
-async function call(method, path, { body, headers = {}, idempotencyKey } = {}) {
+async function call(method, path, options) {
+  return (await callRaw(method, path, options)).data;
+}
+
+/** Comme `call`, mais rend aussi la réponse (en-têtes : `X-Test-Otp-Code`, `Retry-After`). */
+async function callRaw(method, path, { body, headers = {}, idempotencyKey } = {}) {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: {
@@ -73,8 +78,12 @@ async function call(method, path, { body, headers = {}, idempotencyKey } = {}) {
   });
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
-  if (!res.ok) throw new ApiError(res.status, data);
-  return data;
+  if (!res.ok) {
+    const error = new ApiError(res.status, data);
+    error.retryAfter = Number(res.headers.get('retry-after')) || undefined; // secondes (429)
+    throw error;
+  }
+  return { data, response: res };
 }
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -94,20 +103,22 @@ export class Session {
   }
 
   /**
-   * Cible du contrat (pas encore servie : 404) : OTP par SMS, jeton court, rafraîchissement. `askCode` demande le code
-   * reçu à l'utilisateur.
+   * Connexion réelle : OTP, jeton court, renouvellement automatique. `askCode(response)` rend le code à 6 chiffres :
+   * l'utilisateur le saisit (SMS reçu) ; sur l'API de développement, `response.headers.get('x-test-otp-code')`
+   * le fournit. Les erreurs 429 portent `Retry-After` (secondes), le code faux `422 OTP_INVALID`.
    */
   static async otp(phone, operatorCode, askCode) {
-    const { otp_request_id } = await call('POST', '/customer-auth/otp', {
+    const sent = await callRaw('POST', '/customer-auth/otp', {
       body: { phone, operator_code: operatorCode, channel: 'SMS' },
     });
     let tokens = await call('POST', '/customer-auth/token', {
-      body: { otp_request_id, code: await askCode() },
+      body: { otp_request_id: sent.data.otp_request_id, code: await askCode(sent.response) },
     });
     let expiresAt = Date.now() + tokens.expires_in * 1000;
     const s = new Session();
     s.authHeaders = async () => {
       if (Date.now() > expiresAt - 30_000) {
+        // Usage unique : le jeton de renouvellement est remplacé à chaque appel (le réemployer révoque la session).
         tokens = await call('POST', '/customer-auth/refresh', {
           body: { refresh_token: tokens.refresh_token },
         });
@@ -116,6 +127,15 @@ export class Session {
       return { Authorization: `Bearer ${tokens.access_token}` };
     };
     return s;
+  }
+
+  /** Développement : connexion complète en lisant le code dans `X-Test-Otp-Code`. */
+  static devLogin(phone, operatorCode = OPERATOR_CODE_A) {
+    return Session.otp(phone, operatorCode, async (response) => {
+      const code = response.headers.get('x-test-otp-code');
+      if (!code) throw new Error('pas de X-Test-Otp-Code : ce serveur envoie le code par SMS');
+      return code;
+    });
   }
 
   async get(path, extra = {}) {
@@ -135,7 +155,7 @@ export class Session {
 // ----------------------------------------------------------------------------------------------------------------
 
 export const app = {
-  // 2. Profil et portefeuilles : servis (phone vide, refund.eligible faux jusqu'aux missions 10a et 9).
+  // 2. Profil et portefeuilles : servis (`phone` = numéro vérifié ; refund.eligible faux jusqu'à la mission 9).
   profile: (s) => s.get('/me'),
   wallets: (s) => s.get('/me/wallets'),
   transactions: (s, walletId, cursor) =>
@@ -151,7 +171,8 @@ export const app = {
   myMedia: (s) => s.get('/me/media'),
   /** Servi. 201 → bracelet actif ; 202 → bracelet déjà crédité : `confirmation_code` à montrer au guichet (24 h). */
   claimMedia: (s, claimCode) => s.post('/me/media', { claim_code: claimCode }),
-  reportLost: (s, mediaId) => s.post(`/me/media/${mediaId}/report-lost`, {}), // pas encore servi
+  /** Servi : bracelet → SUSPENDED ; déjà suspendu → état courant ; bracelet d'un autre compte → 404 ; autre état → 409. */
+  reportLost: (s, mediaId) => s.post(`/me/media/${mediaId}/report-lost`, {}),
 
   // 5. Recharge en ligne : servie, mais `provider` ∈ WAVE | ORANGE_MONEY | CARD (PayDunya ou Stripe derrière CARD).
   startTopup: (s, walletId, amount, provider, msisdn) =>
@@ -218,14 +239,13 @@ async function main() {
   const ibrahima = Session.testHeaders(DEMO.ibrahima.customerId);
 
   console.log(`API : ${API}\n`);
-  await step(
-    '1. Connexion OTP (contrat)',
-    () =>
-      call('POST', '/customer-auth/otp', {
-        body: { phone: '+221770000001', operator_code: 'demo' },
-      }),
-    pending,
-  );
+  // 1. Connexion réelle par code (en développement, le code est lu dans X-Test-Otp-Code). Si elle échoue, les
+  // en-têtes de test restent utilisables pour la suite.
+  const login = await step('1. Connexion OTP (Awa) : demande, échange, jeton', async () => {
+    const session = await Session.devLogin(DEMO.awa.phone);
+    return { moi: await app.profile(session) };
+  });
+  if (login) console.log('  → les écrans suivants utilisent les en-têtes de test ; remplacer par cette session');
   await step('2. Profil', () => app.profile(awa));
   await step('2. Portefeuilles', () => app.wallets(awa));
   await step('2. Historique', () => app.transactions(awa, DEMO.awa.walletId));

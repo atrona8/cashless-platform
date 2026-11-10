@@ -35,6 +35,7 @@ import {
 import { FakeInProductionError } from '../../../src/kms/production-guard';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
 import { PublicProcessModule } from '../../../src/processes/public.module';
+import { OTP_SENDER } from '../../../src/customer-auth/otp-sender';
 import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../../../src/security/port-tokens';
 import { startHttpsApp, type HttpsTestApp } from '../../support/app';
 import {
@@ -832,6 +833,8 @@ describe('aucun faux d’attestation en production (relecture WP10)', () => {
       publicJwk: () => ({}),
     },
     [CUSTOMER_IDENTITY]: { verify: () => Promise.reject(new Error('non appelé')) },
+    // Envoyeur de codes des festivaliers : sans adaptateur réel avant la mission 12b, fournisseur « réel » neutre.
+    [OTP_SENDER]: { send: () => Promise.reject(new Error('non appelé')) },
   };
   const compile = (attestation?: object) => {
     const config: AppConfig = { ...loadConfig(), production: true, androidAttestationRoots: null };
@@ -843,7 +846,9 @@ describe('aucun faux d’attestation en production (relecture WP10)', () => {
       .overrideProvider(TOKEN_SIGNER)
       .useValue(realLike[TOKEN_SIGNER])
       .overrideProvider(CUSTOMER_IDENTITY)
-      .useValue(realLike[CUSTOMER_IDENTITY] as unknown as CustomerIdentityPort);
+      .useValue(realLike[CUSTOMER_IDENTITY] as unknown as CustomerIdentityPort)
+      .overrideProvider(OTP_SENDER)
+      .useValue(realLike[OTP_SENDER]);
     if (attestation) builder.overrideProvider(ATTESTATION_VERIFIER).useValue(attestation);
     return builder.compile();
   };

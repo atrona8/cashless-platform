@@ -2,14 +2,15 @@
 import { Global, Injectable, Module } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config';
 import { TenantTx } from '../db/tenant-tx';
-import { FakeInProductionError } from '../kms/production-guard';
 import { CustomerGuard } from './customer.guard';
 import {
   CUSTOMER_DIRECTORY,
   CUSTOMER_IDENTITY,
   type CustomerDirectory,
 } from './customer-identity.port';
+import { CustomerAccessTokens } from './customer-access-token';
 import { FakeCustomerIdentity } from './fake-customer-identity';
+import { TokenCustomerIdentity } from './token-customer-identity';
 
 @Injectable()
 export class TenantCustomerDirectory implements CustomerDirectory {
@@ -26,11 +27,18 @@ export class TenantCustomerDirectory implements CustomerDirectory {
   }
 }
 
+/**
+ * Identité du festivalier : le jeton d'accès, toujours. Hors production, les en-têtes de test sont en plus admis
+ * quand aucun `Authorization` n'est présent (OP-N43, décision du porteur du 10/11/2026) ; en production, ils sont
+ * ignorés. Ce n'est pas un faux : c'est le faux `OtpSender` qui refuse encore le démarrage en production.
+ */
 export function createCustomerIdentity(
-  config: Pick<AppConfig, 'production'>,
-): FakeCustomerIdentity {
-  if (config.production) throw new FakeInProductionError(['l’identité du festivalier']);
-  return new FakeCustomerIdentity();
+  config: Pick<AppConfig, 'production' | 'customerAuthHmacKey'>,
+): TokenCustomerIdentity {
+  return new TokenCustomerIdentity(
+    new CustomerAccessTokens(config),
+    config.production ? null : new FakeCustomerIdentity(),
+  );
 }
 
 @Global()
@@ -38,8 +46,9 @@ export function createCustomerIdentity(
   providers: [
     { provide: CUSTOMER_IDENTITY, inject: [APP_CONFIG], useFactory: createCustomerIdentity },
     { provide: CUSTOMER_DIRECTORY, useClass: TenantCustomerDirectory },
+    CustomerAccessTokens,
     CustomerGuard,
   ],
-  exports: [CUSTOMER_IDENTITY, CUSTOMER_DIRECTORY, CustomerGuard],
+  exports: [CUSTOMER_IDENTITY, CUSTOMER_DIRECTORY, CustomerGuard, CustomerAccessTokens],
 })
 export class CustomerIdentityModule {}

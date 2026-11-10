@@ -2333,3 +2333,27 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   sécurité : rien n'est affaibli en production.
 - **Test de borne.** `test/integration/docs/api-docs.spec.ts` : 404 des trois routes en configuration de production,
   absence de CSP posée sur les autres routes, `main.ts` seul point d'entrée qui monte la documentation.
+
+## ADR-180 — Authentification des festivaliers par code, servie avant la mission 10a ; code rendu en en-tête par le faux envoyeur (OP-N120)
+
+- **Statut** : Acceptée, 10 novembre 2026 (décision du porteur, hors Spec Kitty). Complète ADR-66 ; met à jour OP-N43.
+- **Contexte.** L'équipe de l'app festivalier a besoin d'une connexion réelle (`requestCustomerOtp`,
+  `exchangeCustomerOtp`, `refreshCustomerToken`, contrat inchangé) avant le vrai fournisseur d'envoi (mission 12b).
+- **Décision.** (1) Comptes par numéro (migration `0080`) : code à 6 chiffres (`randomInt`), empreinte HMAC liée au défi
+  (sous-clé de `CUSTOMER_AUTH_HMAC_KEY`), 300 s, 5 essais, au 5ᵉ faux le défi est invalidé et le numéro bloqué 30 min ;
+  3 envois par numéro sur 15 min glissantes, `CUSTOMER_OTP_IP_HOURLY_MAX` (10) par adresse et par heure ; jeton d'accès
+  JWT HS256 de 900 s (`iss` `cashless-api`, `aud` `cashless-customer`), jeton de renouvellement `crt_…` gardé en SHA-256,
+  30 jours, usage unique, famille révoquée au réemploi. (2) L'identité par jeton n'est pas un faux : en production seul le
+  jeton est cru ; hors production les en-têtes `X-Test-*` restent admis sans `Authorization` (un Bearer invalide : 401).
+  (3) **Écart accepté** : tant que l'envoyeur est le faux (jamais en production : il refuse le démarrage), la réponse de
+  `POST /customer-auth/otp` porte `X-Test-Otp-Code`.
+- **Risque (écart de sécurité, règle du porteur du 13/10/2026).** Sur une API de développement, quiconque connaît l'URL et
+  le code public d'un prestataire se connecte sur n'importe quel numéro. Aucun effet en production.
+- **Conséquences.** Limite par adresse comptée par prestataire (la RLS ne permet pas de compter entre prestataires) : un
+  appelant qui change de `operator_code` multiplie son quota. Un jeton d'accès reste valable jusqu'à son expiration même
+  si sa famille est révoquée (900 s). Les trois fonctions DEFINER de `0080` supposent, comme `0019` à `0022`, un
+  propriétaire qui ignore la RLS. Sous-clés distinctes par usage (signature, empreinte du code, référence d'adresse).
+- **Mission qui le lève.** Mission 12b ; condition : vrai `OtpSender`, retrait du faux et de l'en-tête du code de production.
+- **Test de borne.** `production-guard.spec.ts` (envoyeur refusé en production, identité par jeton sans repli sur les
+  en-têtes) ; `otp.spec.ts` (aucun en-tête avec un envoyeur réel) ; `tests_customer_auth.sql` (droits exacts, RLS,
+  fonctions DEFINER) ; `attempts.spec.ts` et `tokens.spec.ts` (blocage, rotation, réemploi).

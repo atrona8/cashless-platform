@@ -1,12 +1,19 @@
-// Routes de lecture de l'app festivalier : `GET /me`, `/me/wallets`, `/me/wallets/{wallet_id}/transactions`,
-// `/me/media` (contrat `openapi.yaml`, inchangé). Derrière le port d'identité du festivalier (`@CustomerAuth()`),
-// comme `claimMedia` : faux par en-têtes hors production (OP-N43), refusé au démarrage en production ; le contrat
-// déclare `humanBearer`, écart déjà signalé (R-08), levé par la mission 10a avec le jeton de compte.
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+// Routes de l'app festivalier : `GET /me`, `/me/wallets`, `/me/wallets/{wallet_id}/transactions`, `/me/media` et
+// `POST /me/media/{media_id}/report-lost` (contrat `openapi.yaml`, inchangé). Derrière le port d'identité du festivalier (`@CustomerAuth()`),
+// comme `claimMedia` : jeton d'accès Bearer, et en-têtes de test hors production seulement (OP-N43) ; le contrat
+// déclare `humanBearer` : le jeton de compte est émis par `/customer-auth/*`.
+import { Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { CustomerAuth } from '../customer-identity/customer.guard';
 import { requestCustomer } from '../customer-identity/customer-identity.port';
+import { requestIdOf } from '../http/request-id.middleware';
+import {
+  Idempotent,
+  IdempotentTransaction,
+  type IdempotentTx,
+} from '../idempotency/idempotent.decorator';
 import { ProblemException } from '../errors/problem';
+import { LostMediaService } from './lost-media.service';
 import { MeService, type MovementCursor } from './me.service';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -46,7 +53,10 @@ export function parseMovementCursor(raw: string | undefined): MovementCursor | n
 
 @Controller('me')
 export class MeController {
-  constructor(private readonly me: MeService) {}
+  constructor(
+    private readonly me: MeService,
+    private readonly lostMedia: LostMediaService,
+  ) {}
 
   @Get()
   @CustomerAuth()
@@ -80,5 +90,26 @@ export class MeController {
   @CustomerAuth()
   media(@Req() req: Request) {
     return this.me.media(requestCustomer(req));
+  }
+
+  @Post('media/:media_id/report-lost')
+  @HttpCode(200)
+  @CustomerAuth()
+  @Idempotent({ scope: (req: Request) => `app:${requestCustomer(req).customerId}:` })
+  reportLost(
+    @Req() req: Request,
+    @Param('media_id') mediaId: string,
+    @IdempotentTransaction() tx: IdempotentTx,
+  ) {
+    const customer = requestCustomer(req);
+    // Identifiant mal formé : même réponse qu'un bracelet inconnu ou d'un autre compte.
+    if (!UUID.test(mediaId)) throw new ProblemException('NOT_FOUND');
+    const context = {
+      actorId: customer.customerId,
+      actorRole: 'CUSTOMER',
+      origin: `app:${customer.deviceRef}`,
+      requestId: requestIdOf(req) || null,
+    };
+    return tx.run((client) => this.lostMedia.reportLost(client, customer, mediaId, context));
   }
 }

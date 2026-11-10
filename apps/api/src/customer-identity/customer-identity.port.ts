@@ -1,7 +1,7 @@
 // Identité du festivalier (mission bracelets-nfc, research R-07, contracts/identity-ports.md).
-// Les routes de l'app festivalier reçoivent le compte d'un fournisseur remplaçable. Cette mission ne livre qu'un FAUX
-// (en-têtes de test) : les comptes, l'authentification par téléphone et les jetons arrivent avec la mission de l'app
-// festivalier. Dette consignée dans docs/POINTS_OUVERTS.md ; jamais de faux en production (NFR-010).
+// Les routes de l'app festivalier reçoivent le compte d'un fournisseur remplaçable : le jeton d'accès (`Authorization:
+// Bearer`, token-customer-identity.ts) et, hors production seulement, le faux par en-têtes de test (OP-N43).
+// Jamais de faux en production (NFR-010).
 import type { Request } from 'express';
 import { ProblemException } from '../errors/problem';
 

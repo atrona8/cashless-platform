@@ -3,7 +3,8 @@
 // du compte (`TenantTx`) et filtré sur le compte : un festivalier ne voit jamais le portefeuille d'un autre.
 //
 // Limites connues jusqu'à la mission 10a (comptes par numéro) et la mission 9 (remboursements) :
-//   - `phone` : aucun numéro vérifié n'est encore gardé pour un festivalier ; chaîne vide ;
+//   - `phone` : numéro de `customer_identity` ; chaîne vide pour un compte sans numéro vérifié (comptes de démo
+//     anciens, créés avant l'authentification par code) ;
 //   - `refund.eligible` : toujours faux (aucun remboursement servi) ; `deadline` = `event.refund_deadline` ;
 //   - `pending_offline_notice` : absent (facultatif au contrat).
 import { Injectable } from '@nestjs/common';
@@ -61,8 +62,13 @@ export class MeService {
 
   profile(customer: CustomerContext) {
     return this.run(customer, async (client) => {
-      const { rows } = await client.query<{ name: string | null; verified: boolean }>(
+      const { rows } = await client.query<{
+        name: string | null;
+        phone: string | null;
+        verified: boolean;
+      }>(
         `SELECT p.legal_name AS name,
+                (SELECT i.phone FROM customer_identity i WHERE i.customer_id = p.id) AS phone,
                 EXISTS (SELECT 1 FROM kyc_verification k
                          WHERE k.customer_id = p.id AND k.status = 'VERIFIED'
                            AND (k.id_expires_on IS NULL OR k.id_expires_on >= current_date)) AS verified
@@ -73,7 +79,7 @@ export class MeService {
       if (!row) throw new ProblemException('UNAUTHENTICATED');
       return {
         customer_id: customer.customerId,
-        phone: '',
+        phone: row.phone ?? '',
         display_name: row.name,
         kyc_level: row.verified ? 'VERIFIED' : 'NONE',
       };

@@ -426,6 +426,37 @@ describe('loadConfig', () => {
     }
   });
 
+  it('CUSTOMER_AUTH_HMAC_KEY : obligatoire en production, distinct des autres, secret de test refusé', () => {
+    const { CUSTOMER_AUTH_HMAC_KEY: _omitted, ...without } = PRODUCTION;
+    expect(() => loadConfig(without)).toThrow(/CUSTOMER_AUTH_HMAC_KEY manquant/);
+    expect(() => loadConfig({ ...PRODUCTION, CUSTOMER_AUTH_HMAC_KEY: 'abcd' })).toThrow(
+      /32 octets/,
+    );
+    expect(() =>
+      loadConfig({ ...PRODUCTION, CUSTOMER_AUTH_HMAC_KEY: PRODUCTION.CLAIM_CODE_HMAC_KEY }),
+    ).toThrow(/CUSTOMER_AUTH_HMAC_KEY et CLAIM_CODE_HMAC_KEY : secrets distincts/);
+    const local = loadConfig(LOCAL);
+    expect(local.customerAuthHmacKey.toString('utf8')).toMatch(/de-test-uniquement/);
+    expect(() =>
+      loadConfig({
+        ...PRODUCTION,
+        CUSTOMER_AUTH_HMAC_KEY: local.customerAuthHmacKey.toString('hex'),
+      }),
+    ).toThrow(/CUSTOMER_AUTH_HMAC_KEY : secret de test refusé en production/);
+  });
+
+  it('CUSTOMER_OTP_IP_HOURLY_MAX : 10 par défaut, entier ≥ 1 sinon refusé', () => {
+    expect(loadConfig(LOCAL).customerOtpIpHourlyMax).toBe(10);
+    expect(loadConfig(PRODUCTION).customerOtpIpHourlyMax).toBe(10);
+    expect(loadConfig({ ...LOCAL, CUSTOMER_OTP_IP_HOURLY_MAX: '3' }).customerOtpIpHourlyMax).toBe(
+      3,
+    );
+    for (const bad of ['0', '-1', 'abc', '1.5'])
+      expect(() => loadConfig({ ...LOCAL, CUSTOMER_OTP_IP_HOURLY_MAX: bad })).toThrow(
+        /CUSTOMER_OTP_IP_HOURLY_MAX/,
+      );
+  });
+
   it('iOS : IOS_APP_ATTEST_ENVIRONMENT = development refusé en production, permis hors production', () => {
     expect(() => loadConfig({ ...PRODUCTION, IOS_APP_ATTEST_ENVIRONMENT: 'development' })).toThrow(
       /« production » exigé en production/,

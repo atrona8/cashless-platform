@@ -56,6 +56,8 @@ const EVENT_B = demoId('event:B');
 interface DemoCustomer {
   key: string;
   name: string;
+  /** Numéro vérifié (connexion par code, `POST /customer-auth/otp`). */
+  phone: string;
   operator: 'A' | 'B';
   /** Solde payé crédité (en XOF, par recharges successives) ; `null` : aucun portefeuille. */
   topups: number[] | null;
@@ -68,6 +70,7 @@ interface DemoCustomer {
 export const CUSTOMERS: DemoCustomer[] = [
   {
     key: 'awa',
+    phone: '+221770000001',
     name: 'Awa Diop',
     operator: 'A',
     topups: [10_000, 10_000, 5_000],
@@ -76,6 +79,7 @@ export const CUSTOMERS: DemoCustomer[] = [
   },
   {
     key: 'moussa',
+    phone: '+221770000002',
     name: 'Moussa Ndiaye',
     operator: 'A',
     topups: [3_000, 5_000],
@@ -84,6 +88,7 @@ export const CUSTOMERS: DemoCustomer[] = [
   },
   {
     key: 'fatou',
+    phone: '+221770000003',
     name: 'Fatou Sarr',
     operator: 'A',
     topups: null,
@@ -92,6 +97,7 @@ export const CUSTOMERS: DemoCustomer[] = [
   },
   {
     key: 'ibrahima',
+    phone: '+221770000004',
     name: 'Ibrahima Fall',
     operator: 'A',
     topups: [5_000],
@@ -101,6 +107,7 @@ export const CUSTOMERS: DemoCustomer[] = [
   },
   {
     key: 'khady',
+    phone: '+221770000005',
     name: 'Khady Ba',
     operator: 'B',
     topups: [7_000],
@@ -108,6 +115,9 @@ export const CUSTOMERS: DemoCustomer[] = [
     note: 'Autre prestataire (B) : ne voit rien de A (cloisonnement, réponses 404).',
   },
 ];
+
+/** Codes publics des prestataires (`operator_code` de l'app multi-prestataires). */
+export const OPERATOR_CODES = { A: 'demo-a', B: 'demo-b' } as const;
 
 /** Bracelets libres (jamais activés) : un code chacun, pour `POST /me/media` (SELF_APP). Usage unique. */
 export const FREE_BRACELETS = 20;
@@ -417,15 +427,47 @@ async function seed(): Promise<void> {
   });
 }
 
+/**
+ * Codes publics et numéros vérifiés des festivaliers de démo. Idempotent (ON CONFLICT DO NOTHING), et rejoué à chaque
+ * lancement : une base de démo déjà amorcée avant l'authentification par code reçoit ainsi ses numéros.
+ */
+async function seedAuthentication(): Promise<void> {
+  await withOwner(async (db) => {
+    await db.query('BEGIN');
+    try {
+      for (const [side, code] of Object.entries(OPERATOR_CODES))
+        await db.query(
+          `INSERT INTO operator_public_code (operator_id, code) VALUES ($1, $2)
+           ON CONFLICT DO NOTHING`,
+          [side === 'A' ? OP : OP_B, code],
+        );
+      for (const c of CUSTOMERS)
+        await db.query(
+          `INSERT INTO customer_identity (customer_id, operator_id, phone)
+           SELECT $1, $2, $3 WHERE EXISTS (SELECT 1 FROM party WHERE id = $1)
+           ON CONFLICT DO NOTHING`,
+          [customerId(c), opOf(c), c.phone],
+        );
+      await db.query('COMMIT');
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  });
+}
+
 function summary(): string {
+  const codes = `codes publics des prestataires (operator_code) : A = ${OPERATOR_CODES.A}, B = ${OPERATOR_CODES.B}`;
   const lines = [
     `Prestataire A : ${OP}   (événement ${EVENT})`,
     `Prestataire B : ${OP_B}   (événement ${EVENT_B})`,
     '',
-    'Festivaliers (en-têtes X-Test-Customer-Id / X-Test-Operator-Id) :',
+    codes,
+    '',
+    'Festivaliers (connexion par code, ou en-têtes X-Test-Customer-Id / X-Test-Operator-Id) :',
     ...CUSTOMERS.map(
       (c) =>
-        `  ${c.name.padEnd(14)} client ${customerId(c)}  prestataire ${c.operator}` +
+        `  ${c.name.padEnd(14)} ${c.phone}  client ${customerId(c)}  prestataire ${c.operator}` +
         (c.topups ? `  portefeuille ${walletId(c)}` : '') +
         (c.bracelet ? `  bracelet ${demoClaimCode(`bracelet:${c.key}`)}` : ''),
     ),
@@ -455,6 +497,7 @@ async function main(): Promise<void> {
     await seed();
     console.log('Données de démo écrites.');
   }
+  await seedAuthentication();
   console.log(summary());
 }
 
