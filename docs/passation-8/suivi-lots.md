@@ -496,3 +496,6 @@ Notes à transmettre aux lots suivants.
 - WP15 **rejeté** (cycle 2, 10/11) : constats 1 à 3 levés (mutations tuées) ; seul reste à consigner la limite des 200
   bracelets illisibles : faite par l'orchestrateur (OP-N115, ADR-184). L'implémenteur ajoute le message « page
   entièrement illisible » et le renvoi en commentaire. `register --ledger` non vérifié : à consigner (mineur).
+- WP15 **approuvé** (cycle 3, 10/11) : message « page entièrement illisible » (OP-N115) prouvé par mutation ;
+  `test/integration/edge/packs` 19/19. Relecture humaine : `pack-sealing.ts`, `edge-packs.service.ts`, `0067`,
+  `tools/edge-admin/src/commands.ts`, `db.ts`, `enrollment-format.ts`, rôle `cashless_edgeadmin`.
