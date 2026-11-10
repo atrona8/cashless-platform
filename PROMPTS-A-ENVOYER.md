@@ -408,6 +408,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > `pending_offline_notice` et `printed_number`, envoi réel par WhatsApp puis repli SMS (mission 12b), relecture par une
 > personne de `0080_customer_auth.sql`, de la section 10 de `post-roles.sql` et de `customer-auth.service.ts`.
 >
+> **Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : recharge PSP testable sur l'API de développement.**
+> Configurations PSP de démo (`demo-wave|demo-om|demo-card`, événements A et B), secrets de démo du faux coffre et route
+> `POST /v1/__dev/psp-topups/{topup_id}/outcome` hors contrat (**écart accepté : OP-N121, ADR-181, levé par la 12b** :
+> adaptateurs réels, retrait du module de simulation et des secrets de démo).
+>
 > **Hérité aussi de la mission 4, OP-N47 (ADR-87, ADR-104 ; mission proposée par l'agent le
 > 16/10/2026, à confirmer par le porteur)** : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY`
 > ; changer le secret invalide toutes les empreintes des codes imprimés et des codes de

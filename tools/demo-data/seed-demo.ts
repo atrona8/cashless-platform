@@ -456,6 +456,93 @@ async function seedAuthentication(): Promise<void> {
   });
 }
 
+/** Configurations PSP de démo : une `ACTIVE` par moyen et par événement (références du faux coffre `demo-*`). */
+export const PSP_DEMO = [
+  { method: 'WAVE', provider: 'WAVE', name: 'demo-wave' },
+  { method: 'ORANGE_MONEY', provider: 'ORANGE_MONEY', name: 'demo-om' },
+  { method: 'CARD', provider: 'STRIPE', name: 'demo-card' },
+] as const;
+
+/**
+ * Configurations PSP (recharge PSP testable avec les faux PSP, OP-N121). Idempotent, et rejoué à chaque lancement
+ * comme `seedAuthentication` : une base déjà amorcée les reçoit. Ne réécrit rien si la configuration existe.
+ * Titulaire = détenteur des fonds du grand livre ; règle de frais comme les tests d'intégration.
+ */
+async function seedPspConfigurations(idp: FakeIdp): Promise<number> {
+  let written = 0;
+  await withOwner(async (db) => {
+    await db.query('BEGIN');
+    try {
+      const sides = [
+        { operatorId: OP, organizerId: ORG, eventId: EVENT },
+        { operatorId: OP_B, organizerId: ORG_B, eventId: EVENT_B },
+      ];
+      for (const side of sides) {
+        const ledger = await db.query<{ holder: string }>(
+          `SELECT funds_holder_id AS holder FROM ledger
+            WHERE scope_type = 'EVENT' AND scope_id = $1`,
+          [side.eventId],
+        );
+        const holder = ledger.rows[0]?.holder;
+        if (holder === undefined) continue;
+        let authors: [string, string] | null = null;
+        for (const psp of PSP_DEMO) {
+          const ref = `psp/${holder}/${psp.name}`;
+          const exists = await db.query(
+            'SELECT 1 FROM psp_configuration WHERE operator_id = $1 AND secret_ref = $2',
+            [side.operatorId, ref],
+          );
+          if (exists.rowCount === 1) continue;
+          // Deux personnes distinctes (créateur et valideur), créées une fois par événement au besoin.
+          if (authors === null) {
+            const roles = [
+              { role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: side.operatorId },
+            ];
+            authors = [
+              (await idp.createPerson(db, { operatorId: side.operatorId, roles })).userId,
+              (await idp.createPerson(db, { operatorId: side.operatorId, roles })).userId,
+            ];
+          }
+          const row = await db.query<{ id: string }>(
+            `INSERT INTO psp_configuration (operator_id, organizer_id, method, provider, holder_party_id,
+                    secret_ref, compliance_ref, status, is_default, valid_from, created_by, approved_by,
+                    activated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, 'KYB-DEMO', 'ACTIVE', true, '2026-01-01', $7, $8, now())
+             ON CONFLICT DO NOTHING
+             RETURNING psp_configuration_id AS id`,
+            [
+              side.operatorId,
+              side.organizerId,
+              psp.method,
+              psp.provider,
+              holder,
+              ref,
+              authors[0],
+              authors[1],
+            ],
+          );
+          // Un défaut actif existe déjà pour ce moyen (configuration posée à la main) : on n'y touche pas.
+          const id = row.rows[0]?.id;
+          if (id === undefined) continue;
+          await db.query(
+            `INSERT INTO fee_rule (operator_id, scope_type, scope_id, payer_purpose, beneficiary_purpose,
+                                   basis, rate_bps, trigger, valid_from)
+             VALUES ($1, 'PSP_CONFIGURATION', $2, 'ORG_FPSP', 'PSP_FRAIS', 'TOPUP_AMOUNT', 150,
+                     'REALTIME', '2026-01-01')`,
+            [side.operatorId, id],
+          );
+          written += 1;
+        }
+      }
+      await db.query('COMMIT');
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  });
+  return written;
+}
+
 function summary(): string {
   const codes = `codes publics des prestataires (operator_code) : A = ${OPERATOR_CODES.A}, B = ${OPERATOR_CODES.B}`;
   const lines = [
@@ -471,6 +558,10 @@ function summary(): string {
         (c.topups ? `  portefeuille ${walletId(c)}` : '') +
         (c.bracelet ? `  bracelet ${demoClaimCode(`bracelet:${c.key}`)}` : ''),
     ),
+    '',
+    `Recharge PSP : configurations ACTIVE par moyen (WAVE, ORANGE_MONEY, CARD) pour les événements A et B ; ` +
+      `références psp/<titulaire>/${PSP_DEMO.map((p) => p.name).join('|')} ; paiement simulé par ` +
+      `POST /v1/__dev/psp-topups/{topup_id}/outcome`,
     '',
     `Bracelets libres (POST /me/media) : ${Array.from({ length: FREE_BRACELETS }, (_, i) => demoClaimCode(`free:${i + 1}`)).join(' ')}`,
     `Bracelets anonymes : ${ANONYMOUS.map((a) => `${demoClaimCode(a.key)} (${a.balance} XOF)`).join(', ')}`,
@@ -498,6 +589,13 @@ async function main(): Promise<void> {
     console.log('Données de démo écrites.');
   }
   await seedAuthentication();
+  const idp = await FakeIdp.create(loadConfig().oidc);
+  const pspWritten = await seedPspConfigurations(idp);
+  console.log(
+    pspWritten > 0
+      ? `Configurations PSP de démo écrites : ${pspWritten}.`
+      : 'Configurations PSP de démo déjà présentes : rien d’écrit.',
+  );
   console.log(summary());
 }
 

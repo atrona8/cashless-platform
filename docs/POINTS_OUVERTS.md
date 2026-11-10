@@ -1337,6 +1337,35 @@ ADR-180. **Bloque la production : oui (le faux envoyeur refuse le démarrage en 
 - **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a et 12b) et `PRD.md`. Fichiers à faire relire par une personne :
   `0080_customer_auth.sql`, section 10 de `post-roles.sql`, `customer-auth.service.ts` (empreintes, blocage, rotation).
 
+### OP-N121 — Secrets PSP de démo et route de simulation du paiement, hors production (10 novembre 2026)
+
+Décision du porteur du 10/11/2026 (recharge PSP testable de bout en bout sur l'API de développement, hors Spec Kitty) ;
+ADR-181. **Bloque la production : non (module absent en production, aucun faux n'y est construit).**
+
+- **Constat.** Sans configuration PSP pour l'événement de démo, `POST /topups/psp` répondait `409 PSP_NOT_CONFIGURED`, et
+  le faux coffre était vide dans un processus réel. Deux ajouts, hors production seulement : (1) le faux coffre
+  (`FakePspSecretStore`) sert, pour les seules références `psp/<titulaire>/demo-wave|demo-om|demo-card`, des secrets
+  dérivés (HMAC-SHA256) d'un secret de test PUBLIC du dépôt ; le contrôle titulaire / référence reste en place, toute
+  autre référence reste `NOT_FOUND` ; (2) la route `POST /v1/__dev/psp-topups/{topup_id}/outcome`
+  (`{ "outcome": "SUCCEEDED" | "FAILED" }`, hors contrat) fabrique la notification du PSP, signée, et la remet au vrai
+  chemin de réception (`WebhookIntake`). Pour `FAILED`, la notification est sans effet (R-20) : la route appelle ensuite
+  `settleUnpaid`, la finalisation de l'interrogation planifiée. Aucune écriture directe au grand livre.
+- **Risque.** Quiconque connaît l'URL d'une API de développement et possède un compte de démo (ou en crée un par
+  OP-N120) crédite SON portefeuille de démo sans payer, dans les plafonds de la juridiction. Les secrets de démo sont
+  publics : une notification signée avec eux est acceptée pour une configuration `demo-*`. Sans effet en production.
+- **Garde en place.** `devPspSimulationImports` ne charge le module que pour `NODE_ENV` = `development` ou `test` ;
+  `createDevNotificationFabricator` lève `FakeInProductionError` en production ; le faux coffre reste refusé par la garde
+  de démarrage. Seul le festivalier titulaire (`@CustomerAuth()`) peut simuler sa recharge (404 identique sinon),
+  recharge `PENDING` seulement, idempotent (identifiant d'événement déterministe).
+- **Mission qui le lève.** Mission 12b (adaptateurs PSP réels et vrai coffre, ex-6b).
+- **Condition de levée.** Adaptateurs réels branchés ; `DevPspSimulationModule`, les secrets `demo-*` du faux coffre et
+  les configurations `demo-*` du script de démo retirés du code livré.
+- **Test de borne.** `test/unit/psp-dev-simulation.spec.ts` (coffre : `demo-*` seulement, titulaire contrôlé ; fabricant
+  refusé en production ; module absent d'`AppModule` en production ; route 404) et
+  `test/integration/topups/dev-simulation.spec.ts` (parcours, titulaire, idempotence, plafond).
+- **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a et 12b) et `PRD.md`. Fichiers à faire relire par une personne :
+  `fake-psp-secret-store.ts` (dérivation), `psp-simulation.service.ts` et `psp-simulation.module.ts` (gardes).
+
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;

@@ -115,4 +115,17 @@ GET  /me/wallets/{wallet_id}/transactions?limit=&cursor=  historique, du plus r�
 GET  /me/media                                            bracelets rattachés
 
 Pas encore servies (réponse 404) : remboursements.
-Recharge PSP : réponse 409 PSP_NOT_CONFIGURED.
+
+=====================================================================
+RECHARGE PSP (faux PSP, développement seulement) — servie depuis le 10/11/2026
+=====================================================================
+POST /topups/psp  {"wallet_id": "...", "amount": 5000, "currency": "XOF", "provider": "WAVE",
+                   "payer_msisdn": "+221770000001", "return_url": "https://xaamga.example/cashless/topup/callback"}
+  provider : WAVE | ORANGE_MONEY | CARD. return_url en https: ou cashless: (xaamga:// refusé, 422).
+  -> 201 {topup_id, status PENDING, checkout_url "https://fake-psp.invalid/..." (ne s'ouvre pas)}
+POST /__dev/psp-topups/{topup_id}/outcome  {"outcome": "SUCCEEDED" | "FAILED"}
+  À APPELER À LA PLACE DU PAIEMENT. Hors contrat, absente en production. Seul le festivalier de la recharge (404
+  sinon) ; recharge PENDING seulement ; répétable (un seul crédit). 200 -> état de la recharge.
+GET  /topups/psp/{topup_id}   PENDING -> SUCCEEDED (avec transaction_id) ou FAILED
+POST /topups/psp/{topup_id}/cancel
+Après SUCCEEDED : /me/wallets montre le solde augmenté, l'historique une ligne TOPUP positive.

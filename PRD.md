@@ -123,6 +123,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
   Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : connexion par numéro et code à usage unique, jetons d'accès et de renouvellement, déclaration de perte ; l'envoi réel du code (12b) et l'identification au guichet restent à faire (OP-N120, ADR-180).
+  Recharge PSP testable de bout en bout en développement (10/11/2026) : configurations de démo, secrets de démo du faux coffre, route de simulation du paiement hors contrat, absente en production ; levée par la 12b (OP-N121, ADR-181).
 
 ### 2.6 En ligne, hors ligne, passerelle locale (§9, `sync_protocol.md`)
 - Snapshot signé, plafonds hors ligne par politique (`offline_policy`), refus par défaut. (§9.1 à §9.4)

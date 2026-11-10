@@ -93,6 +93,34 @@ Client d'exemple, sans dépendance : `node exemple-app-festivalier.mjs` (un appe
 diffère de la spécification xaamga en commentaire). Pour `POST /topups/psp`, `return_url` doit être en `https:` ou
 `cashless:` : un schéma propre à l'app (`xaamga://`) est refusé (`422`).
 
+## 3 bis. Recharge PSP de bout en bout (faux PSP, développement seulement)
+
+Les événements A et B ont une configuration PSP `ACTIVE` par moyen (`WAVE`, `ORANGE_MONEY`, `CARD`), ajoutée à chaque
+lancement si elle manque. Il n'y a pas de vrai PSP : `checkout_url` vaut `https://fake-psp.invalid/...` et **ne s'ouvre
+pas**. L'app appelle à la place du paiement la route de simulation, qui envoie la notification que le PSP enverrait
+(signée, même traitement que la vraie : un seul crédit par recharge, plafonds appliqués).
+
+```bash
+# 1. initier (Awa, portefeuille ACTIVE) : 201, status PENDING
+curl -X POST "$API/v1/topups/psp" -H 'ngrok-skip-browser-warning: 1' -H 'content-type: application/json' \
+  -H "Idempotency-Key: $(uuidgen)" -H "Authorization: Bearer $TOKEN" \
+  -d '{"wallet_id":"44f1a187-a49c-4152-8f5d-8f4991cdb6c8","amount":5000,"currency":"XOF","provider":"WAVE",
+       "payer_msisdn":"+221770000001","return_url":"https://xaamga.example/cashless/topup/callback"}'
+# 2. simuler le paiement (à la place de checkout_url) : {"outcome":"SUCCEEDED"} ou {"outcome":"FAILED"}
+curl -X POST "$API/v1/__dev/psp-topups/$TOPUP_ID/outcome" -H 'ngrok-skip-browser-warning: 1' \
+  -H 'content-type: application/json' -H "Authorization: Bearer $TOKEN" -d '{"outcome":"SUCCEEDED"}'
+# 3. interroger : GET /v1/topups/psp/$TOPUP_ID -> SUCCEEDED + transaction_id ; /me/wallets : solde augmenté,
+#    historique avec une ligne TOPUP positive
+```
+
+`provider` : `WAVE`, `ORANGE_MONEY` ou `CARD`. `return_url` : `https:` ou `cashless:` seulement (un schéma propre
+`xaamga://` donne `422`). `payer_msisdn` : `+` et 7 à 15 chiffres. Règles de la route de simulation (hors contrat, absente
+en production) : seul le festivalier de la recharge peut la simuler (autre compte ou identifiant inconnu : `404`) ;
+recharge `PENDING` seulement (déjà dans l'état demandé : état courant ; autre état final : `409`) ; la répéter ne
+crédite qu'une fois. `FAILED` laisse la recharge en `FAILED` sans écriture comptable. Un montant qui dépasse le plafond
+de la juridiction est refusé dès l'initiation (`422`). Ces routes passent avec l'identité par jeton comme avec les
+en-têtes de test.
+
 ## 4. Pas encore possible sur cette instance
 
 - **Remboursements** `refund-requests` : déclarés au contrat, **pas encore servis** (`404`), mission 9. Utilisez le
@@ -102,8 +130,6 @@ diffère de la spécification xaamga en commentaire). Pour `POST /topups/psp`, `
 - Lectures servies avec le jeton (ou les en-têtes de test) : `GET /me` (`phone` = numéro vérifié ; vide pour un compte
   créé sans numéro), `GET /me/wallets`, `GET /me/wallets/{id}/transactions` (curseur, `limit` 1 à 200, défaut 50 ;
   portefeuille d'un autre compte : `404`), `GET /me/media`.
-- **Recharge PSP** `POST /topups/psp` : `409 PSP_NOT_CONFIGURED` (aucun moyen de paiement configuré ; le faux PSP n'a
-  pas de secrets dans le processus qui tourne).
 - **Payer une demande QR d'un commerçant** `POST /payment-requests/{id}/pay` : la demande est créée par un terminal
   enrôlé (certificat client), qui ne passe pas par ngrok. Demander au référent une demande fraîche (elle expire vite).
 - Routes du personnel (jeton OIDC) et des terminaux (mTLS) : non joignables par ngrok, voir `ACCES-API.md` §3.

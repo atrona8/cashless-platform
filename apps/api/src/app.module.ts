@@ -8,6 +8,7 @@ import { ConfigResolverModule } from './configuration/config-resolver.module';
 import { ConfigurationCoreModule } from './configuration/configuration-core.module';
 import { CustomerAuthModule } from './customer-auth/customer-auth.module';
 import { CustomerIdentityModule } from './customer-identity/customer-identity.module';
+import { devPspSimulationImports } from './dev/psp-simulation.module';
 import { DbModule } from './db/db.module';
 import { PublicDeviceIdentityModule } from './device-identity/device-identity.module';
 import { DevicesModule } from './devices/devices.module';
@@ -88,6 +89,8 @@ import { WorkerRegistry } from './processes/worker';
     // Mission 7 (lot WP20) : levée de trou de séquence et import du journal d'un terminal révoqué.
     OfflineSeqModule,
     OfflineJournalModule,
+    // Simulation du paiement PSP : développement seulement, absente en production (OP-N121).
+    ...devPspSimulationImports(),
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

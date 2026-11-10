@@ -185,6 +185,13 @@ export const app = {
       // `https:` (lien universel de l'app) ou `cashless:` seulement : un schéma propre (`xaamga://`) est refusé (422).
       return_url: 'https://xaamga.example/cashless/topup/callback',
     }),
+  /**
+   * Développement SEULEMENT (hors contrat, absente en production) : le faux PSP n'a pas de page de paiement, l'app
+   * appelle cette route à la place de `checkout_url`. `outcome` : SUCCEEDED | FAILED. Seul le festivalier de la
+   * recharge (404 sinon) ; répétable (un seul crédit).
+   */
+  simulateTopupPayment: (s, topupId, outcome) =>
+    s.post(`/__dev/psp-topups/${topupId}/outcome`, { outcome }),
   topupStatus: (s, topupId) => s.get(`/topups/psp/${topupId}`), // PENDING | SUCCEEDED | FAILED | EXPIRED | CANCELLED
   cancelTopup: (s, topupId) => s.post(`/topups/psp/${topupId}/cancel`, {}),
 
@@ -245,7 +252,10 @@ async function main() {
     const session = await Session.devLogin(DEMO.awa.phone);
     return { moi: await app.profile(session) };
   });
-  if (login) console.log('  → les écrans suivants utilisent les en-têtes de test ; remplacer par cette session');
+  if (login)
+    console.log(
+      '  → les écrans suivants utilisent les en-têtes de test ; remplacer par cette session',
+    );
   await step('2. Profil', () => app.profile(awa));
   await step('2. Portefeuilles', () => app.wallets(awa));
   await step('2. Historique', () => app.transactions(awa, DEMO.awa.walletId));
@@ -255,9 +265,17 @@ async function main() {
     await step(`4. Rattacher ${process.env.CLAIM_CODE} (Fatou)`, () =>
       app.claimMedia(fatou, process.env.CLAIM_CODE),
     );
-  await step('5. Recharge Wave', () =>
+  // 5. Recharge en ligne : initiation, simulation du paiement (à la place de `checkout_url`, qui est fictif), statut.
+  // Chaque exécution crédite 5 000 XOF au portefeuille d'Awa.
+  const topup = await step('5. Recharge Wave : initiation', () =>
     app.startTopup(awa, DEMO.awa.walletId, 5000, 'WAVE', '+221770000001'),
   );
+  if (topup) {
+    await step('5. Recharge : paiement simulé (SUCCEEDED)', () =>
+      app.simulateTopupPayment(awa, topup.topup_id, 'SUCCEEDED'),
+    );
+    await step('5. Recharge : statut', () => app.topupStatus(awa, topup.topup_id));
+  }
   const qr = await step('6. QR client (Awa)', () => app.customerQr(awa, DEMO.awa.walletId));
   if (qr) console.log(`  → afficher « ${qr.qr_payload} » en QR jusqu’à ${qr.expires_at}`);
   await step('6. QR client, portefeuille bloqué (Ibrahima) : refus attendu', () =>

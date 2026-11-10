@@ -2362,3 +2362,21 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 - **Test de borne.** `production-guard.spec.ts` (envoyeur refusé en production, identité par jeton sans repli sur les
   en-têtes) ; `otp.spec.ts` (aucun en-tête avec un envoyeur réel) ; `tests_customer_auth.sql` (droits exacts, RLS,
   fonctions DEFINER) ; `attempts.spec.ts` et `tokens.spec.ts` (blocage, rotation, réemploi).
+
+## ADR-181 — Secrets PSP de démo et simulation du paiement par le festivalier, hors production (OP-N121)
+
+- **Statut** : Acceptée, 10 novembre 2026 (décision du porteur, hors Spec Kitty).
+- **Contexte.** L'équipe de l'app festivalier doit tester la recharge PSP (`POST /topups/psp`, suivi, annulation) sur
+  l'API de développement partagée avec les faux PSP, sans PSP réel ni outil de test.
+- **Décision.** (1) Le seed de démo pose, pour les événements A et B, une configuration `ACTIVE` par moyen (références
+  `psp/<titulaire>/demo-wave|demo-om|demo-card`, règle de frais 1,5 %), rejouée à chaque lancement. (2) Le faux coffre
+  dérive les secrets de ces seules références d'un secret de test public. (3) `POST /v1/__dev/psp-topups/{id}/outcome`,
+  hors contrat, passe par `WebhookIntake` (signature, idempotence, écriture `TOPUP`, plafonds) ; `FAILED` ajoute la
+  finalisation `settleUnpaid`. (4) Module chargé seulement pour `NODE_ENV` `development` ou `test`.
+- **Risque (écart de sécurité, règle du porteur du 13/10/2026).** Crédit de son propre portefeuille de démo sans paiement,
+  par quiconque a l'URL et un compte de démo ; secrets de démo publics. Aucun effet en production.
+- **Conséquences.** Le `checkout_url` du faux reste `https://fake-psp.invalid/...` : l'app appelle la route de simulation
+  à la place du paiement. Le contrat `openapi.yaml` n'est pas modifié.
+- **Mission qui le lève.** Mission 12b ; condition : adaptateurs réels, retrait du module, des secrets `demo-*` et des
+  configurations de démo.
+- **Test de borne.** `psp-dev-simulation.spec.ts` (unitaire) et `dev-simulation.spec.ts` (intégration).
