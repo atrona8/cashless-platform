@@ -5,3 +5,6 @@ export const PSP_ADAPTERS = Symbol('PSP_ADAPTERS');
 
 /** Coffre des secrets PSP du processus (indisponible en production, OP-N81). */
 export const PSP_SECRET_STORE = Symbol('PSP_SECRET_STORE');
+
+/** Fabricant de notifications signées de la route de simulation de développement (absent en production). */
+export const DEV_NOTIFICATION_FABRICATOR = Symbol('DEV_NOTIFICATION_FABRICATOR');

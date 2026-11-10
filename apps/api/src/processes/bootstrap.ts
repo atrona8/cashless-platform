@@ -17,6 +17,7 @@ import { DEVICE_IDENTITY } from '../device-identity/device-identity.port';
 import { OFFLINE_OPERATION_PROCESSOR } from '../offline/batches/batch.types';
 import { applyBatchBody } from '../offline/batches/batch-body';
 import { PSP_ADAPTERS, PSP_SECRET_STORE } from '../psp/psp.tokens';
+import { OTP_SENDER } from '../customer-auth/otp-sender';
 import { KMS_PROVIDER } from '../kms/kms.module';
 import { SIGN_PORT } from '../kms/kms.ports';
 import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
@@ -39,6 +40,7 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'le signataire de snapshots': optional(app, SIGN_PORT),
     'l’identité du terminal': optional(app, DEVICE_IDENTITY),
     'l’identité du festivalier': optional(app, CUSTOMER_IDENTITY),
+    'l’envoi des codes à usage unique': optional(app, OTP_SENDER),
     'l’autorité des terminaux': optional(app, DEVICE_CA),
     'le signataire des jetons d’appareil': optional(app, TOKEN_SIGNER),
     'le vérificateur d’attestation': optional(app, ATTESTATION_VERIFIER),

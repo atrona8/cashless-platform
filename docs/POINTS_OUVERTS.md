@@ -21,7 +21,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
 | OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 12b (déplacée de la mission 7 le 29/10/2026, ADR-138), après OP-N11 |
 | OP-N42 | Identité du terminal — **levé** le 21/10/2026 par la mission 5a (jeton lié, mTLS et signature de chaque requête, ADR-107 ; `device-auth-matrix.spec.ts`, `production-guard.spec.ts`) | Non | Non | — |
-| OP-N43 | Identité du festivalier : faux seulement (routes de la mission 6 derrière le faux : `initiatePspTopup`, `getPspTopup`, `cancelPspTopup`) | Non | **Oui** | Mission 10 (app festivalier) |
+| OP-N43 | Identité du festivalier : **jeton d'accès réel disponible depuis le 10/11/2026** (`/customer-auth/*`, `TokenCustomerIdentity`, hors Spec Kitty, ADR-180) ; en production le jeton seul est cru (en-têtes `X-Test-*` ignorés), hors production les en-têtes restent admis en l'absence d'`Authorization`. Reste : KYC au guichet, OP-N47, envoi réel du code (OP-N120, mission 12b) | Non | **Oui** (tant qu'OP-N120 n'est pas levé : le faux envoyeur refuse le démarrage en production) | Mission 10a (reste) et mission 12b |
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` — **levé** le 21/10/2026 par la mission 5a (droits rôle par rôle, `tests_execute_grants.sql`) | Non | Non | — |
 | OP-N45 | Aiguillage par chemin devant les processus de l'API | Non | **Oui** | Mission 13 (recette V1) (confirmé par le porteur le 15/10/2026) |
 | OP-N46 | Signature d'originalité NXP vérifiée par le poste seulement | Non | Non | Mission 12 (app terminal), avec l'auditeur sécurité (confirmé par le porteur le 15/10/2026) |
@@ -146,7 +146,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 |---|---|---|---|---|---|
 | OP-N41 | Le service de clés est un faux (`apps/api/src/kms/fake-kms.ts`) : ses clés se dérivent d'une graine écrite dans le code | Tous les mots de passe de bracelets calculables par quiconque lit le code | Le faux refuse de se construire en production et la garde de démarrage refuse un processus qui le porte (`production-guard.spec.ts`) | **Mission 12b** (déplacée de la mission 7 le 29/10/2026, ADR-138) : adaptateur AWS KMS, une fois la région et les comptes arrêtés (OP-N11) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Les ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort` ont une implémentation AWS, avec un rôle IAM par processus (§3.2) |
 | OP-N42 | L'identité du terminal est un faux qui croit des en-têtes ; aucune requête de terminal n'est signée | Quiconque se dit terminal obtient le mot de passe d'un bracelet et enregistre des lectures ; rejeu et falsification d'une lecture | Même garde de production ; le terminal annoncé est toujours relu en base (statut, prestataire) | Mission 5 (terminaux) | `DeviceIdentityPort` vérifie le jeton d'appareil, le mTLS et la signature de chaque requête ; le faux n'est plus câblé hors des tests |
-| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests |
+| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken` ; 10/11/2026 : lectures `getMe`, `listMyWallets`, `listMyWalletTransactions`, `listMyMedia`, test `customer-app/me.spec.ts`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests | **Mise à jour du 10/11/2026 :** le jeton de compte est livré (`TokenCustomerIdentity`, ADR-180). En production l'identité par jeton ne croit plus les en-têtes (`production-guard.spec.ts`) ; hors production, les en-têtes ne sont admis que sans `Authorization` (un Bearer invalide donne 401, jamais de repli). Le démarrage en production reste refusé par le faux envoyeur de codes (OP-N120).
 | OP-N44 | Les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin` héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence (même limite que `cashless_platform`, ADR-80) | Un processus des clés compromis peut appeler ces fonctions pour un prestataire dont il pose l'identifiant — ni plus ni moins que le rôle de l'API publique | Aucun droit direct sur les tables du grand livre (`tests_media_roles.sql`) ; chaque fonction commence par `assert_tenant` | **Mission 5**, avec OP-N59 : modification du générateur de la suite de référence du kit (`gen_tests.py`) (confirmé par le porteur le 15/10/2026 ; ADR-101) | La suite de référence n'exige plus `EXECUTE` pour `PUBLIC` ; les droits d'exécution sont accordés rôle par rôle |
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
@@ -1310,6 +1310,61 @@ Relevé par la relecture de WP21 (cycle 1) et la revue post-fusion de la mission
   verrouillé ; date limite passée), chacun refusé avec son code et sans écriture.
 - **Test de borne.** `period.spec.ts` (la règle) ; la matrice d'acceptation porte la réserve (FR-024).
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` : mission 13, à côté d'OP-N98.
+
+### OP-N120 — Code à usage unique rendu en en-tête de réponse par le faux envoyeur (10 novembre 2026)
+
+Décision du porteur du 10/11/2026 (authentification des festivaliers servie en avance sur la mission 10a, hors Spec Kitty) ;
+ADR-180. **Bloque la production : oui (le faux envoyeur refuse le démarrage en production).**
+
+- **Constat.** Le vrai envoi du code (SMS, WhatsApp, repli) arrive avec la mission 12b. D'ici là, l'envoyeur est un faux
+  (`apps/api/src/customer-auth/otp-sender.ts`) : il n'envoie rien, n'écrit jamais le code dans les journaux, et la route
+  `POST /customer-auth/otp` rend le code dans l'en-tête de réponse `X-Test-Otp-Code` tant que l'envoyeur est un faux.
+- **Renforcement fait (10/11/2026, revue).** Essais faux cumulés par numéro sur 30 min glissantes, tous défis confondus :
+  le 5ᵉ faux cumulé bloque le numéro 30 min (ADR-180). Limite restante, inhérente : un tiers peut bloquer un numéro
+  qu'il connaît en échouant volontairement.
+- **Risque.** Quiconque connaît l'URL d'une API de développement ou d'intégration, et le `operator_code` du prestataire,
+  se connecte sur n'importe quel numéro (la vérification du numéro est inopérante) : lecture des soldes et de
+  l'historique, déclaration de perte de bracelet. Sans effet en production, où le démarrage est refusé.
+- **Garde en place.** `createOtpSender` lève `FakeInProductionError` en production et la garde de démarrage nomme
+  « l'envoi des codes à usage unique » ; l'en-tête n'est posé que si `isFake` (jamais avec un envoyeur réel). Les limites
+  (3 envois par numéro sur 15 min, 10 par adresse et par heure, 5 essais puis blocage 30 min) s'appliquent aussi au faux.
+- **Mission qui le lève.** Mission 12b (vrai fournisseur d'envoi, avec le service de clés réel).
+- **Condition de levée.** `OtpSender` réel branché ; `FakeOtpSender` et l'en-tête `X-Test-Otp-Code` retirés du code de
+  production (le faux ne reste que dans les tests).
+- **Test de borne.** `test/unit/production-guard.spec.ts` (envoyeur refusé en production, garde de démarrage) et
+  `test/integration/customer-auth/otp.spec.ts` (aucun en-tête avec un envoyeur qui n'est pas un faux) : échouent si
+  l'en-tête peut sortir en production.
+- **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a et 12b) et `PRD.md`. Fichiers à faire relire par une personne :
+  `0080_customer_auth.sql`, section 10 de `post-roles.sql`, `customer-auth.service.ts` (empreintes, blocage, rotation).
+
+### OP-N121 — Secrets PSP de démo et route de simulation du paiement, hors production (10 novembre 2026)
+
+Décision du porteur du 10/11/2026 (recharge PSP testable de bout en bout sur l'API de développement, hors Spec Kitty) ;
+ADR-181. **Bloque la production : non (module absent en production, aucun faux n'y est construit).**
+
+- **Constat.** Sans configuration PSP pour l'événement de démo, `POST /topups/psp` répondait `409 PSP_NOT_CONFIGURED`, et
+  le faux coffre était vide dans un processus réel. Deux ajouts, hors production seulement : (1) le faux coffre
+  (`FakePspSecretStore`) sert, pour les seules références `psp/<titulaire>/demo-wave|demo-om|demo-card`, des secrets
+  dérivés (HMAC-SHA256) d'un secret de test PUBLIC du dépôt ; le contrôle titulaire / référence reste en place, toute
+  autre référence reste `NOT_FOUND` ; (2) la route `POST /v1/__dev/psp-topups/{topup_id}/outcome`
+  (`{ "outcome": "SUCCEEDED" | "FAILED" }`, hors contrat) fabrique la notification du PSP, signée, et la remet au vrai
+  chemin de réception (`WebhookIntake`). Pour `FAILED`, la notification est sans effet (R-20) : la route appelle ensuite
+  `settleUnpaid`, la finalisation de l'interrogation planifiée. Aucune écriture directe au grand livre.
+- **Risque.** Quiconque connaît l'URL d'une API de développement et possède un compte de démo (ou en crée un par
+  OP-N120) crédite SON portefeuille de démo sans payer, dans les plafonds de la juridiction. Les secrets de démo sont
+  publics : une notification signée avec eux est acceptée pour une configuration `demo-*`. Sans effet en production.
+- **Garde en place.** `devPspSimulationImports` ne charge le module que pour `NODE_ENV` = `development` ou `test` ;
+  `createDevNotificationFabricator` lève `FakeInProductionError` en production ; le faux coffre reste refusé par la garde
+  de démarrage. Seul le festivalier titulaire (`@CustomerAuth()`) peut simuler sa recharge (404 identique sinon),
+  recharge `PENDING` seulement, idempotent (identifiant d'événement déterministe).
+- **Mission qui le lève.** Mission 12b (adaptateurs PSP réels et vrai coffre, ex-6b).
+- **Condition de levée.** Adaptateurs réels branchés ; `DevPspSimulationModule`, les secrets `demo-*` du faux coffre et
+  les configurations `demo-*` du script de démo retirés du code livré.
+- **Test de borne.** `test/unit/psp-dev-simulation.spec.ts` (coffre : `demo-*` seulement, titulaire contrôlé ; fabricant
+  refusé en production ; module absent d'`AppModule` en production ; route 404) et
+  `test/integration/topups/dev-simulation.spec.ts` (parcours, titulaire, idempotence, plafond).
+- **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a et 12b) et `PRD.md`. Fichiers à faire relire par une personne :
+  `fake-psp-secret-store.ts` (dérivation), `psp-simulation.service.ts` et `psp-simulation.module.ts` (gardes).
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 

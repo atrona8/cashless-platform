@@ -63,6 +63,9 @@ for f in snapshots batches compliance openapi-additions; do
 done
 sed -e "s/@SHA@/$SHA/g" -e "s/@DATE@/$DATE/g" "$HERE/files/LISEZMOI-kit-client.md" >"$KIT/LISEZMOI.md"
 cp "$HERE/files/ACCES-API.md" "$KIT/ACCES-API.md"
+cp "$HERE/files/DONNEES-DEMO.md" "$KIT/DONNEES-DEMO.md"
+cp "$HERE/files/IDENTIFIANTS-DEMO.txt" "$KIT/IDENTIFIANTS-DEMO.txt"
+cp "$HERE/files/exemple-app-festivalier.mjs" "$KIT/exemple-app-festivalier.mjs"
 
 # ---------------------------------------------------------------------------------------------------------------
 # 2. API exécutable nettoyée
@@ -72,6 +75,7 @@ extract "$API" \
   apps/api \
   packages \
   tools/dev-db \
+  tools/demo-data \
   package.json \
   package-lock.json \
   tsconfig.base.json \
@@ -88,7 +92,9 @@ extract "$API" \
 sed -e "s/@SHA@/$SHA/g" -e "s/@DATE@/$DATE/g" "$HERE/files/LISEZMOI-api.md" >"$API/LISEZMOI.md"
 cp "$HERE/files/docker-compose.yml" "$API/docker-compose.yml"
 cp "$HERE/files/demarrer-local.sh" "$API/demarrer-local.sh"
+cp "$HERE/files/arreter-local.sh" "$API/arreter-local.sh"
 cp "$HERE/files/ACCES-API.md" "$API/ACCES-API.md"
+cp "$HERE/files/DONNEES-DEMO.md" "$API/DONNEES-DEMO.md"
 
 # ---------------------------------------------------------------------------------------------------------------
 # Contrôles : un constat arrête tout, aucune archive n'est écrite.

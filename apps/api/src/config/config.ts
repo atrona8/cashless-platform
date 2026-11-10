@@ -114,6 +114,13 @@ export interface AppConfig {
    */
   vendorPinIdempotencySecret: Buffer;
   /**
+   * Secret des jetons et empreintes de l'authentification des festivalier (`CUSTOMER_AUTH_HMAC_KEY`, 32 octets au
+   * moins) : on n'en tire que des sous-clés (`customer-auth/customer-keys.ts`), jamais d'usage direct.
+   */
+  customerAuthHmacKey: Buffer;
+  /** Demandes de code par adresse et par heure (`CUSTOMER_OTP_IP_HOURLY_MAX`, entier ≥ 1, défaut 10). */
+  customerOtpIpHourlyMax: number;
+  /**
    * Tolérance d'horloge par défaut des terminaux (`CLOCK_TOLERANCE_SECONDS`, 0 à 300 ; 120 en test, défaut du
    * contrat) : la valeur de la configuration de l'événement, lue à l'exécution, prime.
    */
@@ -222,6 +229,10 @@ const TEST_VENDOR_PIN_IDEMPOTENCY_SECRET = Buffer.from(
   'cashless-vendor-pin-idempotency-secret-de-test-uniquement',
   'utf8',
 );
+const TEST_CUSTOMER_AUTH_HMAC_KEY = Buffer.from(
+  'cashless-customer-auth-hmac-key-de-test-uniquement-0',
+  'utf8',
+);
 
 /** Les secrets de test : refusés en production même posés explicitement (ex. `env.sh` sourcé par erreur). */
 const TEST_HMAC_KEYS = [
@@ -230,6 +241,7 @@ const TEST_HMAC_KEYS = [
   TEST_ENROLLMENT_CODE_HMAC_KEY,
   TEST_VENDOR_PIN_SECRET,
   TEST_VENDOR_PIN_IDEMPOTENCY_SECRET,
+  TEST_CUSTOMER_AUTH_HMAC_KEY,
 ];
 
 /**
@@ -427,6 +439,16 @@ function boundedInt(
   return Number(value);
 }
 
+/** `CUSTOMER_OTP_IP_HOURLY_MAX` : entier ≥ 1, 10 par défaut (valeur du contrat), en production comme ailleurs. */
+function customerOtpIpHourlyMax(value: string | undefined): number {
+  if (value === undefined || value === '') return 10;
+  if (!/^[0-9]+$/.test(value) || Number(value) < 1 || Number(value) > 100_000)
+    throw new Error(
+      `CUSTOMER_OTP_IP_HOURLY_MAX : entier de 1 à 100000 attendu (reçu « ${value} »)`,
+    );
+  return Number(value);
+}
+
 /**
  * Transport HTTPS (R-03) : certificat et clé du serveur ensemble ou pas du tout ; l'autorité des terminaux dès que
  * TLS est configuré ; la clé de l'autorité de test jamais en production.
@@ -601,6 +623,8 @@ type DeviceSettings = Pick<
   | 'enrollmentCodeHmacKey'
   | 'vendorPinSecret'
   | 'vendorPinIdempotencySecret'
+  | 'customerAuthHmacKey'
+  | 'customerOtpIpHourlyMax'
   | 'clockToleranceSeconds'
   | 'deviceRequestAuthorities'
 >;
@@ -640,7 +664,15 @@ function deviceSettings(
     production,
     TEST_VENDOR_PIN_IDEMPOTENCY_SECRET,
   );
+  const customerAuthHmacKey = hmacKey(
+    env,
+    'CUSTOMER_AUTH_HMAC_KEY',
+    'des jetons et des codes des festivaliers',
+    production,
+    TEST_CUSTOMER_AUTH_HMAC_KEY,
+  );
   assertDistinctHmacKeys({
+    CUSTOMER_AUTH_HMAC_KEY: customerAuthHmacKey,
     CLAIM_CODE_HMAC_KEY: claimKey,
     IDEMPOTENCY_HMAC_KEY: idempotencyHmacKey,
     ENROLLMENT_CODE_HMAC_KEY: enrollmentCodeHmacKey,
@@ -680,6 +712,8 @@ function deviceSettings(
     enrollmentCodeHmacKey,
     vendorPinSecret,
     vendorPinIdempotencySecret,
+    customerAuthHmacKey,
+    customerOtpIpHourlyMax: customerOtpIpHourlyMax(env.CUSTOMER_OTP_IP_HOURLY_MAX),
     clockToleranceSeconds: boundedInt(
       env,
       'CLOCK_TOLERANCE_SECONDS',

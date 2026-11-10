@@ -392,6 +392,27 @@ vendeurs et le catalogue : la mission les ajoute.
 > code, la demande en attente, l'activation depuis l'app (`SELF_APP`) et la consultation anonyme réduite sont déjà
 > servis côté serveur (ADR-90).
 >
+> **Servi en avance le 10/11/2026 (demande du porteur, branche `feat/me-lectures`)** : `getMe`, `listMyWallets`,
+> `listMyWalletTransactions`, `listMyMedia`, en lecture seule derrière le faux d'identité du festivalier (OP-N43). La 10a
+> les reprend : jeton de compte au lieu des en-têtes, `phone` réel (aujourd'hui vide), `refund` réel (après la mission 9),
+> `pending_offline_notice`, `printed_number`.
+>
+> **Servi en avance le 10/11/2026 (demande du porteur, branche `feat/me-lectures`, hors Spec Kitty) : authentification
+> des festivaliers et déclaration de perte.** Livré : `POST /customer-auth/otp`, `/token`, `/refresh` (migration `0080`,
+> code à 6 chiffres, 5 essais, blocage 30 min, 3 envois par numéro sur 15 min, `CUSTOMER_OTP_IP_HOURLY_MAX` par adresse,
+> jeton d'accès HS256 de 900 s, renouvellement à usage unique avec révocation de la famille), `TokenCustomerIdentity`
+> (jeton seul en production, en-têtes `X-Test-*` admis hors production sans `Authorization`), `GET /me` avec `phone`
+> réel, `POST /me/media/{media_id}/report-lost`, port `OtpSender` avec faux (**écart accepté : code rendu en en-tête
+> `X-Test-Otp-Code` par le faux, OP-N120, ADR-180, levé par la 12b**). **Reste pour la 10a** : identification au guichet
+> (KYC, ci-dessous), OP-N47 (rotation du secret des codes de rattachement), remboursements (mission 9),
+> `pending_offline_notice` et `printed_number`, envoi réel par WhatsApp puis repli SMS (mission 12b), relecture par une
+> personne de `0080_customer_auth.sql`, de la section 10 de `post-roles.sql` et de `customer-auth.service.ts`.
+>
+> **Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : recharge PSP testable sur l'API de développement.**
+> Configurations PSP de démo (`demo-wave|demo-om|demo-card`, événements A et B), secrets de démo du faux coffre et route
+> `POST /v1/__dev/psp-topups/{topup_id}/outcome` hors contrat (**écart accepté : OP-N121, ADR-181, levé par la 12b** :
+> adaptateurs réels, retrait du module de simulation et des secrets de démo).
+>
 > **Hérité aussi de la mission 4, OP-N47 (ADR-87, ADR-104 ; mission proposée par l'agent le
 > 16/10/2026, à confirmer par le porteur)** : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY`
 > ; changer le secret invalide toutes les empreintes des codes imprimés et des codes de
