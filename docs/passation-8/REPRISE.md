@@ -4,20 +4,21 @@
 relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
 `suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 39). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-## Lots (10/11, 13 h 30 UTC)
+## Lots (10/11, fin de session : quota atteint)
 
-- Approuvés (19) : WP01 à WP13, WP16 à WP20, WP23.
-- Reprise après la pause (serveur de l'app festivalier livré, PR #11 fusionnée dans `main`, `7584f714`). Décisions
-  40 à 42 (ADR-182, ADR-183). Lancés le 10/11 vers 13 h 20 :
-  - WP15 fin de lot (lane-o) : T068, migration `0067` (ADR-183) ;
-  - WP21 correction cycle 2 (lane-u), sans NFR-005 (décision 42, reportée à WP25) ;
-  - WP22 correction cycle 2 (lane-v), lecture d'`edge_terms` (fusion de la lane-l si besoin) ;
-  - WP14 implémentation (lane-n).
-- Ensuite : relectures de ces lots ; WP24 (après WP21, WP22) ; WP25 ; revue de mission, docs, accept, merge.
-- Numéros : central `0065` WP12, `0066` WP13, `0067` WP15, `0068` libre (WP14 si besoin) ; `0080` pris par `main`
-  (serveur festivalier) ; passerelle `edge-0009` libre. ADR suivant libre : ADR-184 (ADR-180, ADR-181 sur `main`).
-- Fusion avec `main` à prévoir avant le merge de la mission (0080, ADR-180/181, OP-N120/121).
-- API partagée : `exports/cashless-api`, lancée en fond (`demarrer-local.sh --fond`), arrêt par `arreter-local.sh`.
+- Approuvés (22) : WP01 à WP13, WP15 à WP23.
+- WP14 : cycle 2 corrigé (lane-n, cfe029a4), en `for_review` ; relecture du cycle 2 INTERROMPUE : à relancer
+  (vérifier la mutation du second appel `resolveOnlineRef`).
+- WP24 : implémenté (lane-x, 06136608, après fusion d'intégration u+v+w par l'orchestrateur, 60b79447), en
+  `for_review` ; relecture INTERROMPUE. Avant relecture, correction pour les décisions 47 (TLS du port
+  d'administration) et 48 (purge manuelle versée au central avant destruction). Autres points du compte rendu à
+  consigner : WAL et blocs libres non effacés (disque chiffré seul), tables d'ajout seul non vidées, purge non
+  transactionnelle avec la file, ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106, balayage de vulnérabilités.
+- Puis WP25 (preuves de bout en bout, décision 45 `spend_order`, NFR-005, OP-N115 à OP-N117, isolation entre
+  passerelles de WP13, `cash-topup.spec.ts`), revue de mission, `spec-kitty-docs-maintain`, accept, merge.
+- Numéros libres : central `0069`, passerelle `edge-0009`, ADR-186, OP-N118. Fusion avec `main` (0080, ADR-180/181,
+  OP-N120/121) avant le merge de la mission.
+- API partagée : `exports/cashless-api`, en fond (`demarrer-local.sh --fond`, arrêt `arreter-local.sh`).
 
 ## À ne pas oublier
 
