@@ -480,3 +480,7 @@ Notes à transmettre aux lots suivants.
   déjà `NON_COMPLIANT_OPERATION` (mission 7) ; aucune route de résolution d'anomalie à deux dans le dépôt.
 - WP15 **adapté** (d9f6437b) aux décisions 43 (`EDGE_PACK_OPERATORS`) et 44 (`pack-derivation.spec.ts` fige la clé),
   en relecture.
+- WP22 **rejeté** (cycle 2, 10/11) : un test manquant, plafond de recharge d'une devise autre que XOF sans réglage
+  (refus, décision 21) non prouvé (mutant survivant). Constats : `rapports/feedback/wp22-cycle2.md`. Le reste tient
+  (mutants de la garde et d'`edge_terms` tués). Relecture humaine : `edge-0007_edge_terms.sql`,
+  `staff-token.guard.ts`, `deposit-terms.ts`, `page-schema.ts`, `page-applier.ts`.
