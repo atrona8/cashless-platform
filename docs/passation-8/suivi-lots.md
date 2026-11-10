@@ -468,3 +468,8 @@ Notes à transmettre aux lots suivants.
 - WP21 **approuvé** (cycle 2, 10/11) : mutations des constats 1 à 4 refaites, chacune tue un test ; points 6 et 7 jugés
   non dangereux par le relecteur (`PROMO_FIRST` : en attente du porteur). Relecture humaine : `payments.service.ts`,
   `reversals.service.ts`, `unavailable-operations.ts`.
+- WP15 **terminé** (lane-o, f2e8149c ; T068 : `0067_edge_media_to_pack.sql`, travailleur, `pack-sealing.ts`,
+  `pack-canary.spec.ts`), renvoyé à l'implémenteur pour les décisions 43 et 44 avant relecture. `media_version`
+  dérivée (`personalized_at` ms × 65536 + `key_index`). AAD de scellement de la clé repris de WP23 (non figé au
+  contrat, signalé). **WP25** : décision 45 (`spend_order`). Relecture humaine : `pack-sealing.ts`,
+  `edge-packs.service.ts`, `0067`, `tools/edge-admin/src/commands.ts`, `db.ts`, `enrollment-format.ts`.

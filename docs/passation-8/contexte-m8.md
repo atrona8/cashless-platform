@@ -85,6 +85,13 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     centrale suivante : `0068`.
 42. NFR-005 non tenue à concurrence 10 (p95 362 ms contre 200, relecture de WP21) : reportée à WP25 (mesure et
     optimisation), WP21 ne la corrige pas.
+43. WP15 : prestataires servis par le travailleur de colis désignés par une liste en configuration du processus
+    des clés (aucune fonction de plus en base) ; sans liste, rien (échec fermé, journalisé).
+44. WP15 : clé de contenu des colis dérivée (HKDF : plus ancienne clé de données, empreinte de la clé d'accord,
+    passerelle), sans état ; risque consigné (ADR-184), levée en 12b.
+45. Ordre de dépense (`spend_order`) répliqué vers la passerelle : ajout facultatif rétrocompatible sous `/edge/*`
+    (ADR-185) ; sans le champ, refus des ventes qui mêlent payé et offert. Porté par WP25 (central, contrat,
+    passerelle).
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

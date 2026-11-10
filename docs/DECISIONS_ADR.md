@@ -2645,3 +2645,29 @@ Décision du porteur : 10/11/2026 ADR-183
   qu'il faut pour sceller les colis d'une passerelle (jamais de secret), plutôt qu'un balayage sans droit nouveau.
 - **Risque.** Surface d'appel nouvelle pour le processus des clés ; bornée à la passerelle désignée et au prestataire.
 - **Test de borne.** pgTAP : seul `cashless_tagkeys` l'exécute ; autre prestataire ou autre événement : rien rendu.
+
+## ADR-184 — Mission 8 : clé de contenu des colis de mots de passe dérivée, sans état (WP15)
+
+Décision du porteur : 10/11/2026 ADR-184
+
+- **Contexte.** Le central ne peut pas rouvrir la clé de contenu d'un colis une fois scellée pour la clé d'accord de
+  la passerelle, et `deposit_edge_pwd_pack_key` refuse une seconde clé pour la même clé d'accord.
+- **Décision.** La clé de contenu est dérivée par HKDF de la plus ancienne clé de données du prestataire, de
+  l'empreinte de la clé d'accord et de l'identifiant de la passerelle ; rien n'est stocké. Les prestataires servis
+  par le travailleur sont désignés par une liste en configuration du processus des clés (aucun droit nouveau en base).
+- **Risque.** Si la plus ancienne clé de données du prestataire disparaissait, la clé de contenu changerait et les
+  colis déjà envoyés seraient à refaire. Une liste de prestataires oubliée : aucun colis (échec fermé, journalisé).
+- **Levée.** Mission 12b (KMS réel) : graine dédiée par passerelle, emballée par le service de clés.
+- **Test de borne.** Test qui échoue si la source de dérivation change ; travailleur sans liste : aucun dépôt.
+
+## ADR-185 — Mission 8 : ordre de dépense répliqué vers la passerelle
+
+Décision du porteur : 10/11/2026 ADR-185
+
+- **Contexte.** Le central règle `spend_order` (`PROMO_FIRST` ou `PAID_FIRST`) par événement ; la passerelle applique
+  `PROMO_FIRST` en dur, faute de champ au contrat : la répartition payé/offert d'un événement `PAID_FIRST` diverge au
+  rejeu.
+- **Décision.** Ajout facultatif rétrocompatible de l'ordre de dépense dans la page de réplication, sous `/edge/*` ;
+  la passerelle l'applique ; sans le champ, elle refuse les ventes qui mêlent crédit payé et crédit offert.
+- **Test de borne.** Événement `PAID_FIRST` : même répartition sur la passerelle et au rejeu central ; champ absent :
+  refus.
