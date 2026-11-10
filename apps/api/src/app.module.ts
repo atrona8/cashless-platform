@@ -33,6 +33,7 @@ import { ChargebacksModule } from './chargebacks/chargebacks.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { VendorPinModule } from './vendor-pin/vendor-pin.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { MeModule } from './customer-app/me.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 import { PlatformModule } from './organization/platform/platform.module';
 import { TenantModule } from './organization/tenant/tenant.module';
@@ -59,6 +60,8 @@ import { WorkerRegistry } from './processes/worker';
     PublicDeviceIdentityModule,
     CustomerIdentityModule,
     MediaPublicModule,
+    // Lectures de l'app festivalier (/me), servies avant la mission 10a (porteur, 10/11/2026).
+    MeModule,
     // Mission identite-enrolement-terminaux : routes des terminaux (enrôlement, jetons, configuration, back-office).
     DevicesModule,
     // Mission 5b : PIN des vendeurs (argon2 éprouvé au démarrage, sinon démarrage refusé).

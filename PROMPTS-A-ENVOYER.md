@@ -392,6 +392,11 @@ vendeurs et le catalogue : la mission les ajoute.
 > code, la demande en attente, l'activation depuis l'app (`SELF_APP`) et la consultation anonyme réduite sont déjà
 > servis côté serveur (ADR-90).
 >
+> **Servi en avance le 10/11/2026 (demande du porteur, branche `feat/me-lectures`)** : `getMe`, `listMyWallets`,
+> `listMyWalletTransactions`, `listMyMedia`, en lecture seule derrière le faux d'identité du festivalier (OP-N43). La 10a
+> les reprend : jeton de compte au lieu des en-têtes, `phone` réel (aujourd'hui vide), `refund` réel (après la mission 9),
+> `pending_offline_notice`, `printed_number`.
+>
 > **Hérité aussi de la mission 4, OP-N47 (ADR-87, ADR-104 ; mission proposée par l'agent le
 > 16/10/2026, à confirmer par le porteur)** : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY`
 > ; changer le secret invalide toutes les empreintes des codes imprimés et des codes de
