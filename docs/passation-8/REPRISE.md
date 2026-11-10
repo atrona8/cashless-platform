@@ -1,24 +1,23 @@
 # Reprise, mission 8 (passerelle-locale-01M6NM1S)
 
-État au 10/11/2026, 11 h 15 UTC. Implémentation en cours sur `feat/passerelle-locale`. Méthode : un implémenteur et un
+État au 10/11/2026, 13 h 30 UTC. Implémentation en cours sur `feat/passerelle-locale`. Méthode : un implémenteur et un
 relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
 `suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 39). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-## Lots (10/11, 11 h 15 UTC)
+## Lots (10/11, 13 h 30 UTC)
 
-- Approuvés (17) : WP01 à WP11, WP16 à WP20, WP23.
-- Session du 09/11 interrompue : aucun travail en vol commité (lanes l, m, o, u propres). Relancés le 10/11 :
-  - WP12 correction cycle 2 (lane-l) : constats `wp12-cycle1.md`, décisions 36 (+ plafond par recharge), 37, `0065` ;
-  - WP13 renvoyé par l'orchestrateur (`wp13-cycle1.md`) : décisions 38-39, migration `0066` ;
-  - WP15 implémentation (lane-o) ;
-  - WP21 relecture (lane-u).
-- Rejeté, à corriger APRÈS WP12 : WP22 (constats `rapports/feedback/wp22-cycle1.md` + lecture des conditions de
-  caution et du plafond répliqués).
-- Correctif d'intégration WP18 × WP20 dans u, v, w (voir `suivi-lots.md`) : à garder à la fusion de WP24, WP25.
-- Numéros : passerelle `edge-0009` libre ; central `0065` WP12, `0066` WP13, `0067` libre.
-- Ensuite : WP22 (après WP12) ; WP14 ; WP24 ; WP25.
-- API partagée du porteur (ngrok) : `exports/cashless-api`, base `cashless_dev` en 5434 ; ne jamais faire
-  `pkill -f dist/main.js` (incident du 10/11).
+- Approuvés (19) : WP01 à WP13, WP16 à WP20, WP23.
+- Reprise après la pause (serveur de l'app festivalier livré, PR #11 fusionnée dans `main`, `7584f714`). Décisions
+  40 à 42 (ADR-182, ADR-183). Lancés le 10/11 vers 13 h 20 :
+  - WP15 fin de lot (lane-o) : T068, migration `0067` (ADR-183) ;
+  - WP21 correction cycle 2 (lane-u), sans NFR-005 (décision 42, reportée à WP25) ;
+  - WP22 correction cycle 2 (lane-v), lecture d'`edge_terms` (fusion de la lane-l si besoin) ;
+  - WP14 implémentation (lane-n).
+- Ensuite : relectures de ces lots ; WP24 (après WP21, WP22) ; WP25 ; revue de mission, docs, accept, merge.
+- Numéros : central `0065` WP12, `0066` WP13, `0067` WP15, `0068` libre (WP14 si besoin) ; `0080` pris par `main`
+  (serveur festivalier) ; passerelle `edge-0009` libre. ADR suivant libre : ADR-184 (ADR-180, ADR-181 sur `main`).
+- Fusion avec `main` à prévoir avant le merge de la mission (0080, ADR-180/181, OP-N120/121).
+- API partagée : `exports/cashless-api`, lancée en fond (`demarrer-local.sh --fond`), arrêt par `arreter-local.sh`.
 
 ## À ne pas oublier
 
