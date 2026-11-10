@@ -465,3 +465,6 @@ Notes à transmettre aux lots suivants.
   flux par le central) ; `takeDeposit` d'un bracelet actif refusé (`DUE`/`HELD` non répliqué) ; `FROM_BALANCE` et frais
   d'activation > 0 refusés en `EDGE`. Prochain numéro passerelle : `edge-0009` (edge-0008 pris par WP23). Relecture
   humaine : `edge-0007_edge_terms.sql`, `identity-keys.service.ts`.
+- WP21 **approuvé** (cycle 2, 10/11) : mutations des constats 1 à 4 refaites, chacune tue un test ; points 6 et 7 jugés
+  non dangereux par le relecteur (`PROMO_FIRST` : en attente du porteur). Relecture humaine : `payments.service.ts`,
+  `reversals.service.ts`, `unavailable-operations.ts`.
