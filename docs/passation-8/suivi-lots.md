@@ -415,3 +415,19 @@ Notes à transmettre aux lots suivants.
   `audit.service.ts`, `contract-baseline.json`, `check.test.mjs`.
 - WP21 en relecture (e9b7189a + correctif d'intégration). Renforcement : `X-Approval-Token` refusé (403). `Problem`
   sans `available_balance`/`currency` alors que le central les émet (écart du contrat existant, signalé).
+
+## Reprise du 10/11 (matin)
+- WP15 **partiel** (lane-o, 4b531eeb) : T066, T067, T069 faits ; **T068 bloqué** : `cashless_tagkeys` ne peut lister les
+  bracelets d'un événement (aucun droit sur `media_batch`, `media_assignment`, `wallet` ; aucune source de
+  `media_version`). **Porteur** : (a) fonction de lecture étroite `edge_media_to_pack(gateway, limit)` en `0067`
+  (SECURITY DEFINER, `cashless_tagkeys` seul) ou (b) balayage de `media` du prestataire sans droit nouveau. Format de
+  scellement du colis non figé pour WP18. Hors carte : `package.json`, `package-lock.json` (workspace
+  `tools/edge-admin`, conflit probable avec `apps/gateway` à la fusion). `--ledger` passé à la main ; `--by`
+  n'authentifie pas la personne (à consigner). Relecture humaine : `tools/edge-admin/src/commands.ts`, `db.ts`,
+  `enrollment-format.ts`.
+- WP13 **corrigé** (lane-m, 73edbb15), en relecture : `0066` (`check_balanced` DEFINER, 6 fonctions étroites à
+  `cashless_edge`, plus de 503), `sync-real-role.spec.ts` sous le vrai rôle. **Porteur** : `edge_tap_proof` est une
+  6e fonction hors décision 39 (rend un booléen ; sans elle aucune vente avec bracelet). Limite : `pack_verified`
+  cru de la passerelle (le central n'a pas la clé du colis), à consigner. Signalé : choix de version des règles de
+  commission différent de `SqlConfigResolver` en ligne (possible défaut côté en ligne). Fusion : 0065 (WP12) avant
+  0066. Relecture humaine : `0066` entière, `post-roles.sql` §9d.
