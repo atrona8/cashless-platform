@@ -79,6 +79,12 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     Complément de la décision 36 (orchestrateur, pour tenir la décision 21) : le plafond par recharge réglable est
     répliqué avec les conditions de caution (même ajout sous `/edge/*`, WP12) ; WP22 le lit au lieu de
     `wallet_limits.max_cash_topup`, absent de tout contrat.
+40. `edge_tap_proof` (6e fonction de `0066`, hors décision 39) gardée (ADR-182) ; isolation entre passerelles à tester
+    en WP25.
+41. WP15, T068 : option (a), fonction de lecture étroite en `0067` à `cashless_tagkeys` seul (ADR-183). Migration
+    centrale suivante : `0068`.
+42. NFR-005 non tenue à concurrence 10 (p95 362 ms contre 200, relecture de WP21) : reportée à WP25 (mesure et
+    optimisation), WP21 ne la corrige pas.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

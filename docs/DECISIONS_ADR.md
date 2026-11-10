@@ -2618,3 +2618,30 @@ Décision du porteur : 09/11/2026 ADR-174
   donnée rendue). Fonctions : surface d'appel nouvelle, relecture humaine exigée.
 - **Test de borne.** Droits par `SET ROLE` réel : `cashless_edge` sans droit de table ; chaque fonction refuse une
   autre passerelle ou un autre prestataire ; les autres rôles ne peuvent pas l'exécuter.
+
+## ADR-182 — Mission 8 : preuve du bracelet au central, `edge_tap_proof` (WP13)
+
+Décision du porteur : 10/11/2026 ADR-182
+
+- **Contexte.** La liste de la décision 39 (ADR-174) ne prévoyait pas de lecture de l'empreinte de signature
+  d'originalité du bracelet : sans elle, le central ne peut pas poser `tap.signature_verified` à la réception d'un lot
+  de la passerelle, et toute vente par bracelet faite sur la passerelle reste inutilisable.
+- **Décision.** Sixième fonction `SECURITY DEFINER` de `0066`, `edge_tap_proof(uuid, bytea, bytea, bytea)`, `EXECUTE`
+  à `cashless_edge` seul : rend un booléen (empreinte SHA-256 de la signature égale à `media.originality_sig_sha256`),
+  pour un bracelet désigné par son empreinte de jeton ET son UID, du prestataire et du grand livre de la passerelle.
+- **Risque.** Oracle d'un bit sur un bracelet déjà connu de la passerelle ; signature NTAG non devinable. Relecture
+  humaine exigée (`0066`).
+- **Test de borne.** `sync-real-role.spec.ts` (fonction toujours vraie : échec) ; isolation entre passerelles d'un même
+  prestataire à ajouter en WP25 (mutation du filtre survivante, relecture de WP13).
+
+## ADR-183 — Mission 8 : lecture des bracelets à sceller pour le travailleur de colis (WP15)
+
+Décision du porteur : 10/11/2026 ADR-183
+
+- **Contexte.** Le travailleur de colis de mots de passe (T068) tourne sous `cashless_tagkeys`, qui n'a aucun droit sur
+  `media_batch`, `media_assignment` ni `wallet` : il ne peut pas lister les bracelets d'un événement.
+- **Décision.** Option (a) : une fonction de lecture étroite en migration `0067` (`SECURITY DEFINER`,
+  `search_path = public, pg_temp`, `REVOKE ALL FROM PUBLIC`, `EXECUTE` à `cashless_tagkeys` seul), qui ne rend que ce
+  qu'il faut pour sceller les colis d'une passerelle (jamais de secret), plutôt qu'un balayage sans droit nouveau.
+- **Risque.** Surface d'appel nouvelle pour le processus des clés ; bornée à la passerelle désignée et au prestataire.
+- **Test de borne.** pgTAP : seul `cashless_tagkeys` l'exécute ; autre prestataire ou autre événement : rien rendu.
