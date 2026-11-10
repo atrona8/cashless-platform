@@ -92,6 +92,9 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 45. Ordre de dépense (`spend_order`) répliqué vers la passerelle : ajout facultatif rétrocompatible sous `/edge/*`
     (ADR-185) ; sans le champ, refus des ventes qui mêlent payé et offert. Porté par WP25 (central, contrat,
     passerelle).
+46. WP14 : anomalie `EDGE_REPLAY_FAILED` ouverte par la fonction de base (migration correctrice `0068` : la fonction
+    d'ouverture des anomalies l'accepte), jamais par `INSERT` direct dans `anomaly` (le droit de `cashless_app`, dette
+    OP-N86, ne sert pas de nouveau chemin). Migration centrale suivante : `0069`.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

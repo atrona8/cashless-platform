@@ -473,3 +473,10 @@ Notes à transmettre aux lots suivants.
   dérivée (`personalized_at` ms × 65536 + `key_index`). AAD de scellement de la clé repris de WP23 (non figé au
   contrat, signalé). **WP25** : décision 45 (`spend_order`). Relecture humaine : `pack-sealing.ts`,
   `edge-packs.service.ts`, `0067`, `tools/edge-admin/src/commands.ts`, `db.ts`, `enrollment-format.ts`.
+- WP14 **implémenté** (lane-n, 45a10018), renvoyé avant relecture pour la décision 46 (`0068`). Lane préparée à la
+  main : fusion des lanes m et k (conflit `AuditAction` résolu en gardant les deux séries) — **à surveiller à la
+  consolidation**. Hors carte : `offline-operation.processor.ts` (3 appels + import), à relire. Renforcement : borne 3
+  de R-23 sur toute bascule forcée accusée, tolérance 2 min. Contradictions du prompt : `TOPUP_CASH` hors reprise ouvre
+  déjà `NON_COMPLIANT_OPERATION` (mission 7) ; aucune route de résolution d'anomalie à deux dans le dépôt.
+- WP15 **adapté** (d9f6437b) aux décisions 43 (`EDGE_PACK_OPERATORS`) et 44 (`pack-derivation.spec.ts` fige la clé),
+  en relecture.
