@@ -445,3 +445,10 @@ Notes à transmettre aux lots suivants.
   362 ms contre 200), à reporter à WP25. Sous-tâches T093-T097 à re-marquer au cycle 2.
 - **10/11, midi : mission 8 en pause** (choix du porteur : priorité au serveur de l'app festivalier, hors Spec Kitty,
   branche `feat/me-lectures`). Relectures de WP12 et WP13 en cours, laissées finir ; aucun nouveau lot lancé.
+- WP12 **approuvé** (cycle 2, 10/11) : mutations refaites, diff 0063/0065 limité à l'appel d'`edge_replication_terms`.
+  Fusion : `tools/contract-stability/check.test.mjs` attend 23 entrées admises, 24 avec `edge_terms` (plus celles de
+  WP13) : à corriger à la fusion.
+- WP13 **approuvé** (cycle 2, 10/11) : 0066 relue (DEFINER, `edge_bind_gateway`, `cashless_edge` seul) ;
+  `edge_tap_proof` jugée sûre par le relecteur, **décision du porteur en attente**. Mineur : isolation entre
+  passerelles d'un même prestataire non testée pour `edge_sync_results`, `edge_fee_config`, `edge_tap_proof`
+  (mutation du filtre `gateway_id` survivante) : à reprendre en WP25.
