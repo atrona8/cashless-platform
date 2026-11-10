@@ -458,3 +458,10 @@ Notes à transmettre aux lots suivants.
   absent de `terminal_settings` (contrat figé) : un événement en `PAID_FIRST` diverge au rejeu ; options : ajout
   rétrocompatible sous `/edge/*` ou dette nommée pour WP25 ; (2) `ReleaseMediaRefusal` répond avant toute garde (route
   non servie, refus nommé du contrat, n'expose que l'époque).
+- WP22 **corrigé** (cycle 2, lane-v : fusion de la lane-l 92a61cf1, correction 1bb130bb), en relecture : mutants de
+  `staff-token.guard.ts` tués ; plafond par recharge lu dans `edge_terms.max_cash_topup` ; `edge-0007_edge_terms.sql`
+  (colonne `edge_terms`, NULL si la dernière page ne le porte pas). Refus gardés, **porteur** : lien bracelet → lot
+  non répliqué (conditions servies seulement si tous les lots de l'événement sont identiques ; levée : ajout du lot au
+  flux par le central) ; `takeDeposit` d'un bracelet actif refusé (`DUE`/`HELD` non répliqué) ; `FROM_BALANCE` et frais
+  d'activation > 0 refusés en `EDGE`. Prochain numéro passerelle : `edge-0009` (edge-0008 pris par WP23). Relecture
+  humaine : `edge-0007_edge_terms.sql`, `identity-keys.service.ts`.
