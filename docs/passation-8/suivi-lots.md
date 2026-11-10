@@ -439,3 +439,9 @@ Notes à transmettre aux lots suivants.
   frais d'activation = montant fixe borné (taux ignoré). Fusion : `check-baseline-decision.mjs` exige la ligne
   ADR-172 (présente sur `feat/passerelle-locale`). Relecture humaine : `0065`, `post-roles.sql` §9f,
   `contract-baseline.json`.
+- WP21 **rejeté** (cycle 1, 10/11) : constats `rapports/feedback/wp21-cycle1.md` ; aucun défaut de code, preuves
+  absentes : plafonds `EDGE_SALE_CEILING`/`EDGE_HOURLY_CEILING` non testés, recul d'horloge des annulations prouvé par
+  un autre refus, expiration de session vendeur non testée. **Porteur** : NFR-005 à concurrence 10 non tenue (p95
+  362 ms contre 200), à reporter à WP25. Sous-tâches T093-T097 à re-marquer au cycle 2.
+- **10/11, midi : mission 8 en pause** (choix du porteur : priorité au serveur de l'app festivalier, hors Spec Kitty,
+  branche `feat/me-lectures`). Relectures de WP12 et WP13 en cours, laissées finir ; aucun nouveau lot lancé.
