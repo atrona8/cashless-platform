@@ -499,3 +499,6 @@ Notes à transmettre aux lots suivants.
 - WP15 **approuvé** (cycle 3, 10/11) : message « page entièrement illisible » (OP-N115) prouvé par mutation ;
   `test/integration/edge/packs` 19/19. Relecture humaine : `pack-sealing.ts`, `edge-packs.service.ts`, `0067`,
   `tools/edge-admin/src/commands.ts`, `db.ts`, `enrollment-format.ts`, rôle `cashless_edgeadmin`.
+- WP14 **rejeté** (cycle 1, 10/11) : second appel `resolveOnlineRef` du processeur (cas `CONFIRMED` introuvable, R-30.1)
+  sans preuve (mutant survivant). Mineur consigné : OP-N117. `0068` conforme (seul ajout d'`EDGE_REPLAY_FAILED`).
+  Constats : `rapports/feedback/wp14-cycle1.md`. T063-T065 à re-marquer.
