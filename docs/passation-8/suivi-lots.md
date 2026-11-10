@@ -452,3 +452,9 @@ Notes à transmettre aux lots suivants.
   `edge_tap_proof` jugée sûre par le relecteur, **décision du porteur en attente**. Mineur : isolation entre
   passerelles d'un même prestataire non testée pour `edge_sync_results`, `edge_fee_config`, `edge_tap_proof`
   (mutation du filtre `gateway_id` survivante) : à reprendre en WP25.
+- WP21 **corrigé** (cycle 2, lane-u, de1bd176, tests seulement), en relecture : plafonds par vente et horaire,
+  recul d'horloge (`elapsedMs < 0`), session vendeur expirée, annulation depuis un autre terminal : chacun prouvé
+  par mutation. **Porteur** : (1) `PROMO_FIRST` en dur sur la passerelle, `spend_order` réglable au central mais
+  absent de `terminal_settings` (contrat figé) : un événement en `PAID_FIRST` diverge au rejeu ; options : ajout
+  rétrocompatible sous `/edge/*` ou dette nommée pour WP25 ; (2) `ReleaseMediaRefusal` répond avant toute garde (route
+  non servie, refus nommé du contrat, n'expose que l'époque).
