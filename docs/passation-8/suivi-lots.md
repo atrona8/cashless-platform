@@ -493,3 +493,6 @@ Notes à transmettre aux lots suivants.
 - WP24 lancé (10/11) : dépendances WP21, WP22, WP23 approuvées. À garder : correctif d'intégration WP18 × WP20 ;
   réutiliser `purgeKeyMaterial(tx)` (WP18) ; aligner `apply-hook.ts` sur `nodeEnv()` de shared-rules ; décisions 17
   (purge) et 33 (ordres locaux versés à l'audit du central).
+- WP15 **rejeté** (cycle 2, 10/11) : constats 1 à 3 levés (mutations tuées) ; seul reste à consigner la limite des 200
+  bracelets illisibles : faite par l'orchestrateur (OP-N115, ADR-184). L'implémenteur ajoute le message « page
+  entièrement illisible » et le renvoi en commentaire. `register --ledger` non vérifié : à consigner (mineur).

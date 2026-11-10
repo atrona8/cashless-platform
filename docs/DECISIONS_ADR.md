@@ -2661,6 +2661,8 @@ Décision du porteur : 10/11/2026 ADR-184
   colis déjà envoyés seraient à refaire. Une liste de prestataires oubliée : aucun colis (échec fermé, journalisé).
 - **Levée.** Mission 12b (KMS réel) : graine dédiée par passerelle, emballée par le service de clés.
 - **Test de borne.** Test qui échoue si la source de dérivation change ; travailleur sans liste : aucun dépôt.
+- **Limite connue (OP-N115).** `edge_media_to_pack` sans curseur : une page de 200 bracelets illisibles arrête le
+  service de la passerelle ; levée par un curseur et une alerte (WP25 ou 12b).
 
 ## ADR-185 — Mission 8 : ordre de dépense répliqué vers la passerelle
 
