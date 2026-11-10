@@ -488,3 +488,8 @@ Notes à transmettre aux lots suivants.
   niveau du travailleur, AAD de scellement non épinglée par un vecteur en dur, « sans liste, rien » non prouvé sur le
   travailleur). Constats : `rapports/feedback/wp15-cycle1.md`. ADR-184 corrigée (le central recalcule la clé de
   contenu). Sous-tâches T066-T069 à re-marquer au cycle 2.
+- WP22 **approuvé** (cycle 3, 10/11, test 30d26dcc). **WP25** : isolation de `cash-topup.spec.ts` (le test EUR remet
+  l'état par défaut à sa dernière ligne seulement : `afterEach`/`finally`).
+- WP24 lancé (10/11) : dépendances WP21, WP22, WP23 approuvées. À garder : correctif d'intégration WP18 × WP20 ;
+  réutiliser `purgeKeyMaterial(tx)` (WP18) ; aligner `apply-hook.ts` sur `nodeEnv()` de shared-rules ; décisions 17
+  (purge) et 33 (ordres locaux versés à l'audit du central).
