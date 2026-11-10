@@ -86,6 +86,26 @@ describe('authentification des festivaliers : essais, blocage, expiration', () =
     await ask();
   });
 
+  it('essais cumulés : 4 faux sur un code, nouveau code, 1 faux : 429 et numéro bloqué', async () => {
+    const phone = freshPhone();
+    const first = await ask(phone);
+    for (let i = 0; i < 4; i += 1)
+      expect(
+        (await exchange(app, { otp_request_id: first.id, code: wrong(first.otp) })).status,
+      ).toBe(422);
+    const second = await ask(phone);
+    const res = await exchange(app, { otp_request_id: second.id, code: wrong(second.otp) });
+    expect(res.status).toBe(429);
+    expect(res.body.code).toBe('OTP_RATE_LIMITED');
+    expect(Number(res.headers['retry-after'])).toBeGreaterThan(1700);
+    expect((await requestOtp(app, { phone, operator_code: code })).status).toBe(429);
+    const [block] = await rows<{ n: number }>(
+      'SELECT count(*)::int AS n FROM otp_phone_block WHERE operator_id = $1 AND phone = $2',
+      [w.ops.a, phone],
+    );
+    expect(block!.n).toBe(1);
+  });
+
   it('le blocage d’un numéro chez A ne touche pas le même numéro chez B', async () => {
     const codeB = await createPublicCode(w.ops.b);
     const phone = freshPhone();

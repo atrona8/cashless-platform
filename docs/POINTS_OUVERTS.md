@@ -1319,6 +1319,9 @@ ADR-180. **Bloque la production : oui (le faux envoyeur refuse le démarrage en 
 - **Constat.** Le vrai envoi du code (SMS, WhatsApp, repli) arrive avec la mission 12b. D'ici là, l'envoyeur est un faux
   (`apps/api/src/customer-auth/otp-sender.ts`) : il n'envoie rien, n'écrit jamais le code dans les journaux, et la route
   `POST /customer-auth/otp` rend le code dans l'en-tête de réponse `X-Test-Otp-Code` tant que l'envoyeur est un faux.
+- **Renforcement fait (10/11/2026, revue).** Essais faux cumulés par numéro sur 30 min glissantes, tous défis confondus :
+  le 5ᵉ faux cumulé bloque le numéro 30 min (ADR-180). Limite restante, inhérente : un tiers peut bloquer un numéro
+  qu'il connaît en échouant volontairement.
 - **Risque.** Quiconque connaît l'URL d'une API de développement ou d'intégration, et le `operator_code` du prestataire,
   se connecte sur n'importe quel numéro (la vérification du numéro est inopérante) : lecture des soldes et de
   l'historique, déclaration de perte de bracelet. Sans effet en production, où le démarrage est refusé.

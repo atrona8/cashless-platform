@@ -235,17 +235,23 @@ export class CustomerAuthService {
     // Comparaison en temps constant des deux empreintes (32 octets chacune).
     if (!timingSafeEqual(expected, challenge.code_hash)) {
       const attempts = challenge.attempts + 1;
-      if (attempts < OTP_MAX_ATTEMPTS) {
-        await client.query('UPDATE otp_challenge SET attempts = $2 WHERE id = $1', [
-          challengeId,
-          attempts,
-        ]);
+      await client.query('UPDATE otp_challenge SET attempts = $2 WHERE id = $1', [
+        challengeId,
+        attempts,
+      ]);
+      // Essais faux CUMULÉS du numéro sur la fenêtre glissante, tous défis confondus : demander un nouveau code
+      // ne remet pas le compte à zéro (ADR-180).
+      const total = await client.query<{ n: number }>(
+        `SELECT coalesce(sum(attempts), 0)::int AS n FROM otp_challenge
+          WHERE operator_id = $1 AND phone = $2 AND created_at > clock_timestamp() - make_interval(mins => $3)`,
+        [operatorId, phone, OTP_BLOCK_MINUTES],
+      );
+      if (total.rows[0]!.n < OTP_MAX_ATTEMPTS && attempts < OTP_MAX_ATTEMPTS)
         return { kind: 'INVALID' };
-      }
-      // 5e essai faux : défi invalidé, numéro bloqué.
+      // 5e essai faux cumulé : défi invalidé, numéro bloqué.
       await client.query(
-        'UPDATE otp_challenge SET attempts = $2, invalidated_at = clock_timestamp() WHERE id = $1',
-        [challengeId, attempts],
+        'UPDATE otp_challenge SET invalidated_at = clock_timestamp() WHERE id = $1',
+        [challengeId],
       );
       await client.query(
         `INSERT INTO otp_phone_block (operator_id, phone, blocked_until)

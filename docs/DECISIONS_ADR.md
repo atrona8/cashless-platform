@@ -2353,6 +2353,11 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   appelant qui change de `operator_code` multiplie son quota. Un jeton d'accès reste valable jusqu'à son expiration même
   si sa famille est révoquée (900 s). Les trois fonctions DEFINER de `0080` supposent, comme `0019` à `0022`, un
   propriétaire qui ignore la RLS. Sous-clés distinctes par usage (signature, empreinte du code, référence d'adresse).
+- **Renforcement du 10/11/2026 (revue).** Les essais faux sont cumulés par numéro et prestataire sur 30 min glissantes,
+  tous défis confondus (somme de `otp_challenge.attempts`, sans migration) : au 5ᵉ essai faux cumulé le numéro est bloqué
+  30 min (429 + `Retry-After`). Un nouveau code ne remet plus les essais à zéro (avant : ~12 devinettes par 15 min).
+  Limite restante, inhérente : un tiers qui connaît un numéro peut le bloquer en échouant volontairement. Test :
+  `attempts.spec.ts` (4 faux, nouveau code, 1 faux : 429).
 - **Mission qui le lève.** Mission 12b ; condition : vrai `OtpSender`, retrait du faux et de l'en-tête du code de production.
 - **Test de borne.** `production-guard.spec.ts` (envoyeur refusé en production, identité par jeton sans repli sur les
   en-têtes) ; `otp.spec.ts` (aucun en-tête avec un envoyeur réel) ; `tests_customer_auth.sql` (droits exacts, RLS,

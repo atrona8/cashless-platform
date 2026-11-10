@@ -67,6 +67,26 @@ describe('jetons du festivalier : renouvellement et Bearer', () => {
       expect(state!.live).toBe(0);
     });
 
+    it('course : 8 renouvellements simultanés du même jeton, un seul 200, les autres 401, famille révoquée', async () => {
+      const t = await login(app, { operatorCode: codeA, phone: freshPhone() });
+      const results = await Promise.all(
+        Array.from({ length: 8 }, () => refresh(app, t.refresh_token)),
+      );
+      expect(results.filter((r) => r.status === 200)).toHaveLength(1);
+      expect(results.filter((r) => r.status === 401)).toHaveLength(7);
+      // Le perdant de la course voit le jeton usé : la famille entière est révoquée, jeton neuf compris.
+      const winner = results.find((r) => r.status === 200)!;
+      expect((await refresh(app, winner.body.refresh_token)).status).toBe(401);
+      const [state] = await rows<{ live: number }>(
+        `SELECT count(*)::int AS live FROM customer_refresh_token
+          WHERE family_id = (SELECT family_id FROM customer_refresh_token
+                              WHERE token_hash = sha256(convert_to($1, 'UTF8')))
+            AND revoked_at IS NULL`,
+        [t.refresh_token],
+      );
+      expect(state!.live).toBe(0);
+    });
+
     it('la révocation d’une famille ne touche pas les autres appareils du même compte', async () => {
       const phone = freshPhone();
       const device1 = await login(app, { operatorCode: codeA, phone });
@@ -193,6 +213,53 @@ describe('jetons du festivalier : renouvellement et Bearer', () => {
     it('jeton valide dont le compte n’existe pas (ou plus) : 401', async () => {
       const ghost = await forge({ sub: randomUUID() });
       expect((await me(bearer(ghost.token))).status).toBe(401);
+    });
+
+    it('garde : jeton valide d’un compte absent ou d’un autre prestataire, sur des routes qui ne relisent pas le compte : 401', async () => {
+      const a = await login(app, { operatorCode: codeA, phone: freshPhone() });
+      const customerId = (await me(bearer(a.access_token))).body.customer_id as string;
+      const sign = (op: string, sub: string) =>
+        new SignJWT({ op, dev: randomUUID() })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuer('cashless-api')
+          .setAudience('cashless-customer')
+          .setSubject(sub)
+          .setJti(randomUUID())
+          .setIssuedAt()
+          .setExpirationTime('10m')
+          .sign(key());
+      const ghost = await sign(w.ops.a, randomUUID());
+      const otherOperator = await sign(w.ops.b, customerId);
+      for (const token of [ghost, otherOperator]) {
+        const media = await request(app.getHttpServer()).get('/v1/me/media').set(bearer(token));
+        expect(media.status).toBe(401);
+        const qr = await request(app.getHttpServer())
+          .post('/v1/me/customer-qr-tokens')
+          .set(bearer(token))
+          .send({});
+        expect(qr.status).toBe(401);
+      }
+      // Témoin : le vrai jeton passe la garde sur la même route de lecture.
+      const ok = await request(app.getHttpServer()).get('/v1/me/media').set(bearer(a.access_token));
+      expect(ok.status).toBe(200);
+    });
+
+    it('confusion de jetons : jeton de personne (faux serveur d’identité) ou HS256 d’une autre clé de l’API : 401 sur /me', async () => {
+      const person = await withOwner((db) => w.idp.createPerson(db, { operatorId: w.ops.a }));
+      expect((await me(bearer(person.token))).status).toBe(401);
+      const a = await login(app, { operatorCode: codeA, phone: freshPhone() });
+      const profile = await me(bearer(a.access_token));
+      const otherKey = deriveCustomerKey(loadConfig().customerAuthHmacKey, 'otpCode');
+      const confused = await new SignJWT({ op: w.ops.a, dev: randomUUID() })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer('cashless-api')
+        .setAudience('cashless-customer')
+        .setSubject(profile.body.customer_id as string)
+        .setJti(randomUUID())
+        .setIssuedAt()
+        .setExpirationTime('10m')
+        .sign(otherKey);
+      expect((await me(bearer(confused))).status).toBe(401);
     });
 
     it('un festivalier de A ne lit rien de B ; un jeton de A ne vaut pas dans B', async () => {
