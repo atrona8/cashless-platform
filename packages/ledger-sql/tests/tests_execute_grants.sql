@@ -124,6 +124,8 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'create_merchant_payment_request(uuid,uuid,bigint,character,integer,bytea,text,jsonb,integer)',
   'lock_customer_qr_token(bytea,uuid)', 'lock_payment_request_for_pay(uuid,bytea,uuid,uuid)',
   'payment_request_for_token(uuid,bytea)',
+  -- Authentification des festivaliers (0080, post-roles.sql §10)
+  'operator_by_public_code(text)', 'otp_challenge_operator(uuid)', 'customer_refresh_operator(bytea)',
   -- Mission 6, lot WP05 : sessions de caisse (0036)
   'open_cash_session(uuid,uuid)', 'count_cash_session(uuid,bigint,uuid,uuid,text)',
   'begin_cash_close(uuid,uuid)', 'finish_cash_close(uuid,uuid,uuid)', 'attach_cash_tx(uuid,uuid)',
