@@ -431,3 +431,11 @@ Notes à transmettre aux lots suivants.
   cru de la passerelle (le central n'a pas la clé du colis), à consigner. Signalé : choix de version des règles de
   commission différent de `SqlConfigResolver` en ligne (possible défaut côté en ligne). Fusion : 0065 (WP12) avant
   0066. Relecture humaine : `0066` entière, `post-roles.sql` §9d.
+- WP12 **corrigé** (lane-l, 5087e250), en relecture : constats 1-4 levés (mutations vérifiées) ; décision 36 :
+  `edge_terms` facultatif sur `ReplicationPage` (plafond `replay_max_per_cash_topup`, frais d'activation
+  EVENT/ORG_FFEST/PER_MEDIA, conditions de caution par lot), dernière page seulement ; décision 37 :
+  `edge_log_release_stuck` (`cashless_maint` seul). `0065` redéfinit `edge_replication_page` (identique à 0063 +
+  appel interne). **WP22** : `batch_id` absent d'`EdgeUnassignedMedia`, lien bracelet → lot à déduire ou à demander ;
+  frais d'activation = montant fixe borné (taux ignoré). Fusion : `check-baseline-decision.mjs` exige la ligne
+  ADR-172 (présente sur `feat/passerelle-locale`). Relecture humaine : `0065`, `post-roles.sql` §9f,
+  `contract-baseline.json`.
