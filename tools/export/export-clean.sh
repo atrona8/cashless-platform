@@ -92,6 +92,7 @@ extract "$API" \
 sed -e "s/@SHA@/$SHA/g" -e "s/@DATE@/$DATE/g" "$HERE/files/LISEZMOI-api.md" >"$API/LISEZMOI.md"
 cp "$HERE/files/docker-compose.yml" "$API/docker-compose.yml"
 cp "$HERE/files/demarrer-local.sh" "$API/demarrer-local.sh"
+cp "$HERE/files/arreter-local.sh" "$API/arreter-local.sh"
 cp "$HERE/files/ACCES-API.md" "$API/ACCES-API.md"
 cp "$HERE/files/DONNEES-DEMO.md" "$API/DONNEES-DEMO.md"
 
