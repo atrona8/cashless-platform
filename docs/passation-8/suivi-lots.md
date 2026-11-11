@@ -502,3 +502,6 @@ Notes à transmettre aux lots suivants.
 - WP14 **rejeté** (cycle 1, 10/11) : second appel `resolveOnlineRef` du processeur (cas `CONFIRMED` introuvable, R-30.1)
   sans preuve (mutant survivant). Mineur consigné : OP-N117. `0068` conforme (seul ajout d'`EDGE_REPLAY_FAILED`).
   Constats : `rapports/feedback/wp14-cycle1.md`. T063-T065 à re-marquer.
+- **11/11, reprise** : conteneur `cashless-platform-pg17` redémarré. Relancés : relecture de WP14 cycle 2 (lane-n,
+  mutation du second appel `resolveOnlineRef`) ; correction de WP24 (lane-x) pour les décisions 47 (TLS du port
+  d'administration) et 48 (purge manuelle versée au central avant destruction), relecture ensuite.
