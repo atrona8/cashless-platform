@@ -518,3 +518,8 @@ Notes à transmettre aux lots suivants.
   `src/admin/admin-listener.ts`, `config.ts`, `local-unstale.spec.ts`, `startup-guard.spec.ts`,
   `dev-key-file.spec.ts`. `test/purge` 44/44. Relecture humaine : `admin-tls.ts`, `admin-listener.ts`,
   `manual-purge.controller.ts`. Nonce consommé si arrêt pendant l'attente (ré-émettre l'ordre).
+- WP24 **rejeté** (cycle 1, 11/11) : HEALTHCHECK du `Dockerfile` en `node:http` sur le port d'administration passé en
+  HTTPS (décision 47) : conteneur `unhealthy` en production ; `image.spec.ts` ne teste que le mot. Mineurs : contrôle
+  positif du canari par réinsertion ; lignes > 100 car. Mutations (canari, destructions, `awaitCentral`, trace,
+  recontrôle de la file, TLS) toutes tuées ; `purgeKeyMaterial` redondant non détecté. 18 suites, 236 tests verts.
+  Constats : `rapports/feedback/wp24-cycle1.md`. T108-T111 à re-marquer.
