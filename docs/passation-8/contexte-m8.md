@@ -114,6 +114,12 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     résultats par terminal et numéro.
 53. WP25 (11/11) : NFR-001 exigée à 100 débits/s (pas de plancher abaissé) : le banc fait tourner le central dans un
     processus à part ; `M8_MIN_DEBIT_RATE` à 100 par défaut ; fait en session B6, avant T117.
+54. NFR-001 (11/11) : plancher de 100 débits/s exigé dans le job CI `gateway-e2e` (Linux, PostgreSQL natif), preuve
+    de référence en CI ou en recette ; en local, cadence affichée (66/s, saturation de PostgreSQL dans colima), plancher
+    réglable par `M8_MIN_DEBIT_RATE`.
+55. WP25 (11/11, orchestrateur, correctifs) : défaut B (opérations hors ligne relayées par la passerelle sans
+    `edge_decision`, toutes refusées au central) et défaut C (fin du délai de garde des colis sans émission dans le
+    flux) corrigés dans WP25 (session B7), délai de garde inchangé (décision 16).
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
