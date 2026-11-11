@@ -100,6 +100,10 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     accusé attendu, puis purge ; sans lien, attente ou purge locale avec trace consignée (décision 33 tenue).
 49. WP24 (11/11) : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la
     file : consignés (OP-N118, ADR-186), levée en 12b avec OP-N106.
+50. WP24 (11/11) : décision 48 impossible en l'état (`operations` `minItems: 1` à `/edge/sync-batches`, file vide exigée
+    par la purge). Ajout rétrocompatible sous `/edge/*` porté par WP25 : lot sans opération accepté s'il porte des
+    `local_orders` (`edge_seq` et chaîne inchangés). D'ici là, purge forcée après 30 s avec trace `CENTRAL_UNCONFIRMED`
+    (OP-N119, ADR-187). Retouches hors carte de WP24 pour le TLS (`admin-listener.ts`, tests de démarrage) ratifiées.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

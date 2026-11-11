@@ -510,3 +510,11 @@ Notes à transmettre aux lots suivants.
   Premier Jest juste après le redémarrage du serveur : 20 échecs `edge_seq_at_activation` absente, verts à la relance
   (état de la base au redémarrage). Relecture humaine : `0068_open_offline_anomaly_edge_replay.sql`,
   `offline-operation.processor.ts`.
+- WP24 **corrigé** (11/11, lane-x, 80d6f26d) : décision 47 (TLS 1.3 du port d'administration, paire
+  `GATEWAY_ADMIN_TLS_CERT_FILE`/`_KEY_FILE`, démarrage refusé en production sans elle, `admin-tls.spec.ts`) ;
+  décision 48 (audit `AWAITING_CENTRAL`, accusé puis purge, file revérifiée après l'attente ; mutation de
+  `awaitCentral` : 4 échecs) ; test de borne `purge-bound.spec.ts` (12 tables non vidées, décision 49). Décision 48
+  impossible en l'état (`minItems: 1`) : décision 50, OP-N119, ADR-187, levée par WP25. Hors carte ratifié :
+  `src/admin/admin-listener.ts`, `config.ts`, `local-unstale.spec.ts`, `startup-guard.spec.ts`,
+  `dev-key-file.spec.ts`. `test/purge` 44/44. Relecture humaine : `admin-tls.ts`, `admin-listener.ts`,
+  `manual-purge.controller.ts`. Nonce consommé si arrêt pendant l'attente (ré-émettre l'ordre).

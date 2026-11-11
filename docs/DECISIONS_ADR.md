@@ -2688,3 +2688,14 @@ Décision du porteur : 11/11/2026 ADR-186
   partielle après un arrêt.
 - **Levée.** Mission 12b : chiffrement au repos sous clé matérielle détruite à la révocation (avec OP-N106).
 - **Test de borne.** Canari de purge ; liste des tables non vidées figée par un test.
+
+## ADR-187 — Mission 8 : lot de la passerelle sans opération pour verser un ordre de purge
+
+Décision du porteur : 11/11/2026 ADR-187
+
+- **Contexte.** La décision 48 veut l'ordre de purge manuelle versé au central avant la destruction. Or
+  `/edge/sync-batches` exige au moins une opération et la purge exige une file vide : aucun lot ne peut porter l'ordre.
+- **Décision.** Ajout rétrocompatible sous `/edge/*` (WP25) : un lot sans opération est accepté s'il porte des
+  `local_orders` ; `edge_seq` et la chaîne ne bougent pas. D'ici là, la passerelle purge après 30 s sans accusé, avec
+  la trace `CENTRAL_UNCONFIRMED` (OP-N119).
+- **Test de borne.** Avec lien, rien n'est détruit avant l'accusé ; lot vide sans `local_orders` refusé.

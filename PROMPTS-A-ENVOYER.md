@@ -571,7 +571,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > par le central pour remplacer la tolérance des jetons de personne expirés, mission à fixer par le porteur, proposition : exploitation
 > de la 12b) ; OP-N105 (approbation à deux à l'inscription d'une passerelle) ; OP-N106 (tables de la passerelle chiffrées sous une clé
 > matérielle détruite à la révocation, limite du mini-PC volé avant la purge). OP-N118 (purge de la passerelle : WAL, blocs libres et
-> tables d'ajout seul non effacés, purge hors de la transaction de la file ; même levée qu'OP-N106, ADR-186). À soumettre au porteur avant le codage de la mission 8 :
+> tables d'ajout seul non effacés, purge hors de la transaction de la file ; même levée qu'OP-N106, ADR-186). OP-N119 (purge manuelle forcée sans accusé :
+> levée par WP25 de la mission 8, ADR-187 ; à vérifier avant la 12b). À soumettre au porteur avant le codage de la mission 8 :
 > valeurs des plafonds de rejeu `EDGE_ONLINE` (OP-N104) et délai avant l'envoi des mots de passe (OP-N105).
 
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
