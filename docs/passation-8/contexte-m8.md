@@ -104,6 +104,8 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     par la purge). Ajout rétrocompatible sous `/edge/*` porté par WP25 : lot sans opération accepté s'il porte des
     `local_orders` (`edge_seq` et chaîne inchangés). D'ici là, purge forcée après 30 s avec trace `CENTRAL_UNCONFIRMED`
     (OP-N119, ADR-187). Retouches hors carte de WP24 pour le TLS (`admin-listener.ts`, tests de démarrage) ratifiées.
+51. WP25 (11/11) : lot vide refusé aussi en base : `edge_sync_batch_begin` reçoit le nombre d'ordres locaux et refuse un
+    intervalle vide sans ordre (pgTAP, mutation) ; correction de la partie A, faite après la partie B, avant la relecture.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
