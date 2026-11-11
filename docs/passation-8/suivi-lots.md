@@ -523,3 +523,8 @@ Notes à transmettre aux lots suivants.
   positif du canari par réinsertion ; lignes > 100 car. Mutations (canari, destructions, `awaitCentral`, trace,
   recontrôle de la file, TLS) toutes tuées ; `purgeKeyMaterial` redondant non détecté. 18 suites, 236 tests verts.
   Constats : `rapports/feedback/wp24-cycle1.md`. T108-T111 à re-marquer.
+- WP24 **corrigé** (cycle 2, 11/11, lane-x, 28a10ff2) : sonde de vie en `node:https`, certificat d'administration
+  épinglé en `ca` (nom d'hôte non contrôlé, boucle locale), `node:http` sans la variable ; `image.spec.ts` lance la
+  sonde contre l'écouteur réel (ancienne commande : 2 échecs) ; canari muté par `PROTECTED_TABLES` ; lignes coupées
+  (restent CMD, `FROM` épinglés, un volume du compose). Limite : certificat signé par une autre autorité non testé.
+  En relecture.
