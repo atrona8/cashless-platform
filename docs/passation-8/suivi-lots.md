@@ -547,3 +547,9 @@ Notes à transmettre aux lots suivants.
   de l'autorité, purge manuelle forcée (époque périmée). Docs (levée OP-N117, OP-N119) à faire par l'orchestrateur.
   Relecture humaine : `0069`, `check.mjs`, `contract-baseline.json`, `drain.service.ts`, `batch-builder.ts`,
   `manual-purge.controller.ts`.
+- WP25 **partie B, session 1** (11/11) : T112 à moitié (relais TCP, bases jetables `cashless_m8_*` avec refus de
+  `cashless_test`/80/5434, configuration e2e, banc à deux processus réel : inscription, bascule, accusé < 30 s).
+  Défaut trouvé par le banc : `replication.service.ts` `pageLimit` 500 alors que le central refuse > 200 (corrigé hors
+  carte, WP18, ratifié). Points : certificat TLS client du banc substitué par SQL propriétaire (OP-N113, hors
+  production) ; `central_url` d'enrôlement doit finir par `/v1` (à documenter) ; `startup-guard.ts` n'exporte pas ses
+  règles. Reste : `sql-probes`, `canary`, `queue-generator`, T113 à T117, décision 51 ; découpé en sessions B2 à B4.
