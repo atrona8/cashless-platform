@@ -579,3 +579,10 @@ Notes à transmettre aux lots suivants.
   notification) ; NFR-008 p95 1,09 s ; NFR-001 0 violation à 66 débits/s (100 visés : central et générateur dans un
   même processus ; plancher `M8_MIN_DEBIT_RATE` 50). Suite complète de la passerelle à relancer. Relecture humaine :
   `edge-queue.ts`, `payments.service.ts`.
+- WP25 **session B5** (11/11, e15d172c à ee6ac304) : T115 et T116 faites. NFR-003 `replay-100` (manque : lot relayé
+  par la passerelle puis rejeu direct), NFR-004 `crash-points` 7/7 (conteneur jetable), SC-005 `forced-resume`,
+  NFR-009 `production-refusals` 35/35 (`productionRuleNames()` exporté de `startup-guard.ts`), NFR-010 canari de bout
+  en bout (flux, dump, journal PG, image), NFR-011 `scoping` 7/7, NFR-013 purge de bout en bout (lot d'ordres seuls),
+  OP-N111/112 bornes, NFR-012 stabilité 12/12. Suite passerelle 849 verts. **À diagnostiquer** : colis déposé au
+  central après la première copie du flux non revu par une passerelle en marche (180 s). Banc : garde
+  `event_status_guard` levée sur base jetable pour clore l'événement. Image `cashless_m8_gateway_image` restante.
