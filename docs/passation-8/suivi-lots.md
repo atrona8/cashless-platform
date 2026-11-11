@@ -563,3 +563,11 @@ Notes à transmettre aux lots suivants.
   grave** : clé d'origine non complétée sur la voie passerelle (TS et SQL) : doublons entre voies non reconnus
   (décision 52, `0070`). `activated_at` local arrondi à la seconde (session de caisse ouverte < 3 s avant la bascule
   non utilisable). Six bases `cashless_m8_edge_*` résiduelles (suppression bloquée pour l'agent).
+- WP25 **session B3** (11/11, bf97df01 à b8ab0ca4) : décision 52 faite (`0070_edge_origin_key_padding.sql`,
+  `edge_seq_text` sans troncature, `edge_post_transaction`/`edge_counter_op` redéfinies, `originKeyOf` = `deviceKey`,
+  passerelle canonique, rapprochement exact ; mutations 10 et 2 échecs). Deux défauts trouvés par SC-001 : `#deposit`
+  absent d'`originKeyOf` (caution rangée sous la clé de l'activation, lot renvoyé en boucle) ; déclencheur
+  `edge_cash_session_activation` seulement NULL → date (second cycle inutilisable, `edge-0010`). T112 et T113 faites
+  (SC-001 13/13). Passerelle 851 tests, pgTAP `tests_edge_*` verts. **Régression à traiter** : `journal/online-ref-
+  unknown.spec.ts` et `journal/no-silent-loss.spec.ts` rouges dans la lane-y (verts sur lane-n), avec ou sans 0070.
+  Relecture humaine : `0070`, `edge-sync.writer.ts`, `edge-0010`, `device-key.ts`.
