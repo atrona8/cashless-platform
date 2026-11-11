@@ -586,3 +586,11 @@ Notes à transmettre aux lots suivants.
   OP-N111/112 bornes, NFR-012 stabilité 12/12. Suite passerelle 849 verts. **À diagnostiquer** : colis déposé au
   central après la première copie du flux non revu par une passerelle en marche (180 s). Banc : garde
   `event_status_guard` levée sur base jetable pour clore l'événement. Image `cashless_m8_gateway_image` restante.
+- WP25 **session B6** (11/11, 37dd1c9e à 647b2f64) : NFR-001 plancher 100 par défaut, mesuré 66 débits/s (0 violation,
+  sensibilité passée) : saturation de PostgreSQL dans la VM colima (2,2 cœurs, ~34 ms CPU base par requête), pas de
+  Node ; test rouge sur le seul plancher. Défaut corrigé : dépôt de colis sans émission dans `edge_reference_change`
+  (`0071_edge_pack_deposit_emits_change.sql`, `pack-after-start.spec.ts`). Défaut corrigé : `max_snapshot_age`
+  (intervalle) lu comme `max_snapshot_age_seconds` par la passerelle (toute vente hors ligne refusée,
+  `reference-store.ts`). NFR-003 chemin 4 ajouté. **Défauts ouverts** : B, opérations hors ligne relayées par la
+  passerelle sans `edge_decision` (`offline-batches.service.ts` l.265), toutes refusées au central ; C, fin du délai
+  de garde de 30 min des colis sans émission. Relecture humaine : `0071`, `reference-store.ts`.
