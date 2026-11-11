@@ -54,6 +54,29 @@ tracker_refs: []
 > **Arbitrages de l'orchestrateur** : `contracts/interfaces.md` § 12 fait foi sur ce prompt, notamment pour § 12.8 et le rôle de référence de NFR-005.
 
 
+> **Ajouts de l'orchestrateur du 11/11/2026 (font foi ; décisions 42, 45, 50 de `docs/passation-8/contexte-m8.md`)**.
+> Partie A, faite AVANT T112-T117 (session d'implémentation distincte, même lane), retouches hors carte nommées ici :
+> - A1, décision 45 (ADR-185) : `spend_order` facultatif dans la page de réplication sous `/edge/*`
+>   (`packages/contracts/openapi.yaml`, `generated/**`, `dart/**`, `tools/contract-stability/**` ; fonction de page
+>   centrale par migration correctrice `0069` si besoin ; `apps/api/src/edge/replication/**` ;
+>   `apps/gateway/src/replication/**` dont `edge-0009` si une colonne locale est nécessaire ;
+>   `apps/gateway/src/operations/sales/**`). La passerelle applique l'ordre reçu ; champ absent : refus des ventes qui
+>   mêlent crédit payé et offert. Test : événement `PAID_FIRST`, même répartition sur la passerelle et au rejeu.
+> - A2, décision 50 (ADR-187, OP-N119) : `POST /edge/sync-batches` accepte un lot sans opération s'il porte des
+>   `local_orders` (ajout rétrocompatible : `operations` peut être vide dans ce seul cas, refus nommé sinon) ;
+>   `edge_seq` et la chaîne ne bougent pas ; signature, époque et idempotence inchangées. Central :
+>   `apps/api/src/edge/sync/**` ; passerelle : `apps/gateway/src/queue/**` (lot d'ordres seuls) et
+>   `apps/gateway/src/purge/manual-purge.controller.ts` (avec lien : purge seulement après l'accusé). Tests : lot vide
+>   sans `local_orders` refusé ; ordre de purge accusé avant la destruction ; la purge forcée sans lien reste tracée.
+> - A3 : OP-N117 (borne haute de la reprise, `apps/api/src/edge/journal/**`) ; isolation entre passerelles d'un même
+>   prestataire pour `edge_sync_results`, `edge_fee_config`, `edge_tap_proof` (mutation du filtre `gateway_id`, tests
+>   dans `apps/api/test/integration/edge/sync/**`) ; isolation de `apps/gateway/test/counter/cash-topup.spec.ts`
+>   (`afterEach`/`finally`).
+> - Restent consignés, hors WP25 : OP-N115 (mission 12b), OP-N116 (back-office).
+> Partie B : T112 à T117 ci-dessous, dont NFR-005 à deux processus (décision 42 : mesure et optimisation ; si la cible
+> de 200 ms n'est pas tenue, chiffrer et remonter au porteur, ne pas l'abaisser). `consignation.spec.ts` couvre aussi
+> OP-N118 et OP-N119.
+
 ## ⚡ Do This First: Load Agent Profile
 
 Charge le profil : `/ad-hoc-profile-load implementer-ivan` (Profile : implementer-ivan / Role :
