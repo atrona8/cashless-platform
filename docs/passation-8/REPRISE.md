@@ -11,12 +11,11 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
   (vérifier la mutation du second appel `resolveOnlineRef`).
 - WP24 : implémenté (lane-x, 06136608, après fusion d'intégration u+v+w par l'orchestrateur, 60b79447), en
   `for_review` ; relecture INTERROMPUE. Avant relecture, correction pour les décisions 47 (TLS du port
-  d'administration) et 48 (purge manuelle versée au central avant destruction). Autres points du compte rendu à
-  consigner : WAL et blocs libres non effacés (disque chiffré seul), tables d'ajout seul non vidées, purge non
-  transactionnelle avec la file, ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106, balayage de vulnérabilités.
+  d'administration) et 48 (purge manuelle versée au central avant destruction). Limites de la purge consignées le 11/11
+  (décision 49, OP-N118, ADR-186). Reste à consigner : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106, balayage de vulnérabilités.
 - Puis WP25 (preuves de bout en bout, décision 45 `spend_order`, NFR-005, OP-N115 à OP-N117, isolation entre
   passerelles de WP13, `cash-topup.spec.ts`), revue de mission, `spec-kitty-docs-maintain`, accept, merge.
-- Numéros libres : central `0069`, passerelle `edge-0009`, ADR-186, OP-N118. Fusion avec `main` (0080, ADR-180/181,
+- Numéros libres : central `0069`, passerelle `edge-0009`, ADR-187, OP-N119 (puis OP-N122 : 120 et 121 pris sur `main`). Fusion avec `main` (0080, ADR-180/181,
   OP-N120/121) avant le merge de la mission.
 - API partagée : `exports/cashless-api`, en fond (`demarrer-local.sh --fond`, arrêt `arreter-local.sh`).
 

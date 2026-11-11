@@ -505,3 +505,8 @@ Notes à transmettre aux lots suivants.
 - **11/11, reprise** : conteneur `cashless-platform-pg17` redémarré. Relancés : relecture de WP14 cycle 2 (lane-n,
   mutation du second appel `resolveOnlineRef`) ; correction de WP24 (lane-x) pour les décisions 47 (TLS du port
   d'administration) et 48 (purge manuelle versée au central avant destruction), relecture ensuite.
+- WP14 **approuvé** (cycle 2, 11/11) : mutation du second appel `resolveOnlineRef` (ligne 244 du processeur) tuée par
+  le test ajouté (1/21 en échec) ; `test/integration/edge/journal` 21/21, `tests_edge_replay_anomaly.sql` 20/20.
+  Premier Jest juste après le redémarrage du serveur : 20 échecs `edge_seq_at_activation` absente, verts à la relance
+  (état de la base au redémarrage). Relecture humaine : `0068_open_offline_anomaly_edge_replay.sql`,
+  `offline-operation.processor.ts`.
