@@ -528,3 +528,7 @@ Notes à transmettre aux lots suivants.
   sonde contre l'écouteur réel (ancienne commande : 2 échecs) ; canari muté par `PROTECTED_TABLES` ; lignes coupées
   (restent CMD, `FROM` épinglés, un volume du compose). Limite : certificat signé par une autre autorité non testé.
   En relecture.
+- WP24 **approuvé** (cycle 2, 11/11) : sonde HTTPS prouvée par mutation ; 18 suites, 239 tests verts. Mineur :
+  lignes > 100 car. d'`admin-listener.ts` et `authority.service.ts` non revérifiées. Relecture humaine : `admin-tls.ts`,
+  `admin-listener.ts`, `Dockerfile` (sonde, `checkServerIdentity` neutralisé), `purge.service.ts`,
+  `manual-purge.controller.ts`, `docker-compose.site.yml`.
