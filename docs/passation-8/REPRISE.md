@@ -4,19 +4,17 @@
 relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
 `suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 39). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-## Lots (10/11, fin de session : quota atteint)
+## Lots (11/11, après-midi)
 
-- Approuvés (22) : WP01 à WP13, WP15 à WP23.
-- WP14 : cycle 2 corrigé (lane-n, cfe029a4), en `for_review` ; relecture du cycle 2 INTERROMPUE : à relancer
-  (vérifier la mutation du second appel `resolveOnlineRef`).
-- WP24 : implémenté (lane-x, 06136608, après fusion d'intégration u+v+w par l'orchestrateur, 60b79447), en
-  `for_review` ; relecture INTERROMPUE. Avant relecture, correction pour les décisions 47 (TLS du port
-  d'administration) et 48 (purge manuelle versée au central avant destruction). Limites de la purge consignées le 11/11
-  (décision 49, OP-N118, ADR-186). Reste à consigner : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106, balayage de vulnérabilités.
-- Puis WP25 (preuves de bout en bout, décision 45 `spend_order`, décision 50 (lot sans opération, OP-N119), NFR-005, OP-N115 à OP-N117, isolation entre
-  passerelles de WP13, `cash-topup.spec.ts`), revue de mission, `spec-kitty-docs-maintain`, accept, merge.
-- Numéros libres : central `0069`, passerelle `edge-0009`, ADR-188, OP-N122 (120 et 121 pris sur `main`). Fusion avec `main` (0080, ADR-180/181,
-  OP-N120/121) avant le merge de la mission.
+- Approuvés (24) : WP01 à WP24. Décisions du 11/11 : 49 à 52 (OP-N118, OP-N119, ADR-186, ADR-187).
+- WP25 (lane-y, `in_progress`) : partie A faite (décisions 45, 50, 51, OP-N117, isolation WP13) ; T112 faite ; session
+  B3 en cours : décision 52 (clé d'origine complétée à 4 chiffres, migration `0070`), puis fin de T113. Restent :
+  T114 (charge, NFR-005 à deux processus), T115-T116 (pannes, sécurité), T117 (CI, consignation) puis
+  `move-task --to for_review` et relecture. Une session par bloc, jamais deux dans la lane-y en même temps.
+- Ensuite : levée d'OP-N117 et OP-N119 dans les docs, revue de mission, `spec-kitty-docs-maintain`, fusion avec
+  `main`, accept, merge. Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
+  balayage de vulnérabilités ; documenter que `central_url` d'enrôlement finit par `/v1`.
+- Numéros libres : central `0071`, passerelle `edge-0010`, ADR-188, OP-N122 (OP-N120/121 et `0080` pris sur `main`).
 - API partagée : `exports/cashless-api`, en fond (`demarrer-local.sh --fond`, arrêt `arreter-local.sh`).
 
 ## À ne pas oublier
