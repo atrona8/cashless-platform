@@ -163,6 +163,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   (`OP-N114`, `ADR-170`) ; `edge_base_url` et `authority_epoch` facultatifs au schéma `Problem` (`ADR-171`).
   Renforcements décidés le même jour : recul d'horloge du central borné à quelques minutes ; plafond par recharge au guichet (500 000 XOF par défaut,
   réglable) ; certificat client de la passerelle signé par le composant matériel ; frais recalculés par le central à la réception.
+- Purge des secrets de la passerelle (11/11/2026, `OP-N118`, `ADR-186`) : WAL et blocs libres non effacés, tables d'ajout seul non
+  vidées, purge hors de la transaction de la file, consignés jusqu'à la mission 12b ; TLS du port d'administration et purge
+  manuelle versée au central avant destruction faits dans la mission 8.
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

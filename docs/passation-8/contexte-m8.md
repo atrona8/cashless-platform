@@ -98,6 +98,8 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 47. WP24 : TLS sur le port d'administration local de la passerelle, comme prévu au plan (correction de WP24).
 48. WP24 : purge manuelle versée au central AVANT la destruction : dernier lot avec l'ordre dans `local_orders`,
     accusé attendu, puis purge ; sans lien, attente ou purge locale avec trace consignée (décision 33 tenue).
+49. WP24 (11/11) : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la
+    file : consignés (OP-N118, ADR-186), levée en 12b avec OP-N106.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur

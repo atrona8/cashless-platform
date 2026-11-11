@@ -2675,3 +2675,16 @@ Décision du porteur : 10/11/2026 ADR-185
   la passerelle l'applique ; sans le champ, elle refuse les ventes qui mêlent crédit payé et crédit offert.
 - **Test de borne.** Événement `PAID_FIRST` : même répartition sur la passerelle et au rejeu central ; champ absent :
   refus.
+
+## ADR-186 — Mission 8 : purge des secrets de la passerelle, effacement incomplet consigné (WP24)
+
+Décision du porteur : 11/11/2026 ADR-186
+
+- **Contexte.** Le compte rendu de WP24 laisse trois limites à la purge : WAL et blocs libres non effacés (seul le
+  chiffrement du disque protège), tables d'ajout seul non vidées, purge hors de la transaction de la file.
+- **Décision.** Les trois limites sont consignées (OP-N118), sans correction dans la mission 8. Corrigés dans WP24 :
+  TLS du port d'administration (décision 47) ; purge manuelle versée au central avant la destruction (décision 48).
+- **Risque.** Copie du disque après la purge sur un mini-PC sans chiffrement du disque ; audit local lisible ; purge
+  partielle après un arrêt.
+- **Levée.** Mission 12b : chiffrement au repos sous clé matérielle détruite à la révocation (avec OP-N106).
+- **Test de borne.** Canari de purge ; liste des tables non vidées figée par un test.

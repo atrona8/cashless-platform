@@ -96,6 +96,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N115 | Colis de mots de passe : une page de 200 bracelets illisibles arrête le service de la passerelle (mission 8, WP15, ADR-184) | Non | Non | WP25 ou mission 12b |
 | OP-N116 | Inscription des passerelles : grand livre passé à la main non vérifié (mission 8, WP15) | Non | Non | WP25 ou back-office |
 | OP-N117 | Reprise forcée : anomalies en trop après la fin de la reprise (mission 8, WP14) | Non | Non | WP25 |
+| OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -197,6 +198,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N115 | Travailleur des colis de mots de passe (WP15) : `edge_media_to_pack` rend au plus 200 bracelets par page, sans curseur ; les bracelets illisibles sont écartés et journalisés une fois, mais une page de 200 illisibles arrête le service de la passerelle | Bracelets lisibles au-delà de ces 200 jamais servis à la passerelle (disponibilité : ventes refusées sur ces bracelets en mode `EDGE`), sans alerte du colis manqué | Message de journal « page entièrement illisible » ; bracelet illisible = défaut de personnalisation, rare | WP25 ou mission 12b | Curseur dans `edge_media_to_pack` (migration correctrice) et alerte au central ; test d'une page de 200 illisibles suivie de bracelets lisibles |
 | OP-N116 | Outil d'inscription des passerelles (WP15) : `register --ledger` n'est pas vérifié contre l'événement (aucune fonction de lecture pour `cashless_edgeadmin`) | Grand livre erroné écrit dans le fichier d'enrôlement : la passerelle ne se synchronise pas (disponibilité, aucune fuite) | Échec visible à la première synchronisation ; procédure de site | WP25 ou back-office | Contrôle du grand livre par l'outil (lecture étroite) ou grand livre rendu par l'inscription |
 | OP-N117 | Reprise forcée (WP14, R-23) : seule la borne basse de la période de reprise est contrôlée ; une `ONLINE_REF` inconnue postérieure à la fin de la reprise ouvre aussi une anomalie `EDGE_REPLAY_FAILED` | Bruit d'anomalies à résoudre à deux (aucune perte, aucune écriture comptable) | Anomalies idempotentes par clé d'origine | WP25 | Borne haute (fin de la reprise accusée) contrôlée, test |
+| OP-N118 | Purge des secrets de la passerelle (WP24) : (1) le WAL de PostgreSQL et les blocs libres du disque ne sont pas effacés ; (2) les tables d'ajout seul (audit local, ordres locaux) ne sont pas vidées ; (3) la purge n'est pas dans la même transaction que la file des décisions | Copie du disque après la purge : secrets ou données lisibles dans le WAL ou les blocs libres si le disque n'est pas chiffré ; données d'audit locales conservées ; arrêt entre la file et la purge : purge partielle à reprendre | Disque chiffré exigé par la procédure de site ; canari de purge sur les tables ; purge manuelle versée au central avant destruction (décision 48) | Mission 12b | Données au repos chiffrées sous une clé matérielle détruite à la révocation (même levée qu'OP-N106) ; purge reprise au démarrage si interrompue |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1511,6 +1513,23 @@ Mission 8 (passerelle locale), Décision 34 du porteur (relecture de WP11) ; ADR
 - **Condition de levée.** Confirmation explicite avant l'abandon côté interface, ou champ dédié au contrat.
 - **Test de borne.** Seconde demande à autre clé : rendu abandonné, audit `EDGE_AUTHORITY_ABANDONED`, autorité inchangée.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N118 — Purge des secrets de la passerelle : effacement incomplet (11 novembre 2026)
+
+Mission 8 (passerelle locale), WP24, décision 49 du porteur ; ADR-186. **Bloque la production : oui** (avec OP-N106).
+
+- **Constat.** La purge détruit les clés et vide les tables répliquées, mais (1) le WAL de PostgreSQL et les blocs
+  libres du disque ne sont pas effacés ; (2) les tables d'ajout seul (audit local, ordres locaux) ne sont pas vidées ;
+  (3) la purge ne s'exécute pas dans la même transaction que la file des décisions.
+- **Risque.** Une copie du disque faite après la purge peut contenir des secrets ou des données dans le WAL ou les
+  blocs libres si le disque n'est pas chiffré ; l'audit local reste lisible ; un arrêt entre la file et la purge
+  laisse une purge partielle.
+- **Mission qui le lève.** Mission 12b (chiffrement au repos sous clé matérielle, levée commune avec OP-N106).
+- **Condition de levée.** Données au repos chiffrées sous une clé matérielle détruite à la révocation ; purge
+  interrompue reprise au démarrage.
+- **Test de borne.** Canari de purge (`apps/gateway/test/purge/purge-canary.spec.ts`) ; test qui liste les tables
+  non vidées par la purge et échoue si la liste s'allonge (à ajouter en WP24 ou WP25).
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 12b) et `PRD.md` §2.6.
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
