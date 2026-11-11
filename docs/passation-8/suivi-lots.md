@@ -532,3 +532,8 @@ Notes à transmettre aux lots suivants.
   lignes > 100 car. d'`admin-listener.ts` et `authority.service.ts` non revérifiées. Relecture humaine : `admin-tls.ts`,
   `admin-listener.ts`, `Dockerfile` (sonde, `checkServerIdentity` neutralisé), `purge.service.ts`,
   `manual-purge.controller.ts`, `docker-compose.site.yml`.
+- WP25 **lancé** (11/11) : lane-y préparée par l'orchestrateur (fusion de x puis n, conflit d'imports
+  `apps/api/src/processes/edge.module.ts` résolu en gardant les deux côtés ; k à x tous fusionnés ; typecheck API et
+  passerelle propres ; `check.test.mjs` à 27 ajouts admis, bb7b2c7e). Prompt complété (ajouts du 11/11 : A1 décision
+  45, A2 décision 50, A3 OP-N117, isolation WP13, `cash-topup.spec.ts`). OP-N115 reste en 12b, OP-N116 en back-office.
+  Partie A en cours (session distincte), puis partie B (T112-T117), puis relecture.
