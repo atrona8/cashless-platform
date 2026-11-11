@@ -537,3 +537,13 @@ Notes à transmettre aux lots suivants.
   passerelle propres ; `check.test.mjs` à 27 ajouts admis, bb7b2c7e). Prompt complété (ajouts du 11/11 : A1 décision
   45, A2 décision 50, A3 OP-N117, isolation WP13, `cash-topup.spec.ts`). OP-N115 reste en 12b, OP-N116 en back-office.
   Partie A en cours (session distincte), puis partie B (T112-T117), puis relecture.
+- WP25 **partie A faite** (11/11, lane-y, 22ee5ff5 à fde16e0b) : `edge_terms.spend_order`, `operations.minItems` 0
+  (entrée `relaxation` étroite dans `check.mjs`, 29 ajouts admis), lot vide (`edge_seq_to = from - 1`, chaîne
+  inchangée, `EMPTY_BATCH_WITHOUT_LOCAL_ORDERS`), `0069_edge_spend_order_empty_batch.sql`, `edge-0009_orders_only_batch.sql`,
+  OP-N117 (borne haute par `completed_at` + 120 s), isolation `edge_sync_results`/`edge_fee_config`/`edge_tap_proof`,
+  `cash-topup.spec.ts`. Mutations toutes tuées. Passerelle 551 tests, API edge 258, pgTAP 419. Hors carte :
+  `offline-rules-runner.ts` (lisait une clé jamais envoyée), `db-ports.ts`, `drain.service.ts`, harnais. Points : lot
+  vide exigé avec ordre par l'API seule (la base l'accepte pour `cashless_edge`, sans effet comptable) ; après retour
+  de l'autorité, purge manuelle forcée (époque périmée). Docs (levée OP-N117, OP-N119) à faire par l'orchestrateur.
+  Relecture humaine : `0069`, `check.mjs`, `contract-baseline.json`, `drain.service.ts`, `batch-builder.ts`,
+  `manual-purge.controller.ts`.
