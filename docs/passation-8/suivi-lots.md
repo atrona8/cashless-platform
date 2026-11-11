@@ -571,3 +571,11 @@ Notes à transmettre aux lots suivants.
   (SC-001 13/13). Passerelle 851 tests, pgTAP `tests_edge_*` verts. **Régression à traiter** : `journal/online-ref-
   unknown.spec.ts` et `journal/no-silent-loss.spec.ts` rouges dans la lane-y (verts sur lane-n), avec ou sans 0070.
   Relecture humaine : `0070`, `edge-sync.writer.ts`, `edge-0010`, `device-key.ts`.
+- WP25 **session B4** (11/11, c966ab16 à 1149db06) : régression du journal = horloge de la VM Docker en avance de
+  ~2,1 s (le code de lane-n échoue pareil) ; tests datés à l'heure de la base (`calibrateDbClock`), edge 262/262.
+  T114 faite : NFR-005 p95 à concurrence 10 de 409 à 176 ms (verrou `edge_chain_head` raccourci : écriture de la
+  file et de la chaîne en une instruction, `edge-queue.ts`, `payments.service.ts`, `idempotency.service.ts`) ;
+  NFR-002/006 10 000 opérations vidées en 6,6 min avec `kill -9` ; NFR-007 accusé 0,2-0,3 s (2,1 s sans
+  notification) ; NFR-008 p95 1,09 s ; NFR-001 0 violation à 66 débits/s (100 visés : central et générateur dans un
+  même processus ; plancher `M8_MIN_DEBIT_RATE` 50). Suite complète de la passerelle à relancer. Relecture humaine :
+  `edge-queue.ts`, `payments.service.ts`.
