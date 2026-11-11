@@ -112,6 +112,8 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     opération reçue du terminal et de la passerelle (seq < 1000) n'est pas reconnue comme doublon (NFR-003). Correctifs
     de jonction de WP25 ratifiés : signature des lots en DER, `originality_signature` en hexadécimal, rapprochement des
     résultats par terminal et numéro.
+53. WP25 (11/11) : NFR-001 exigée à 100 débits/s (pas de plancher abaissé) : le banc fait tourner le central dans un
+    processus à part ; `M8_MIN_DEBIT_RATE` à 100 par défaut ; fait en session B6, avant T117.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
