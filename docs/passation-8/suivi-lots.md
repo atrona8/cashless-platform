@@ -553,3 +553,13 @@ Notes à transmettre aux lots suivants.
   carte, WP18, ratifié). Points : certificat TLS client du banc substitué par SQL propriétaire (OP-N113, hors
   production) ; `central_url` d'enrôlement doit finir par `/v1` (à documenter) ; `startup-guard.ts` n'exporte pas ses
   règles. Reste : `sql-probes`, `canary`, `queue-generator`, T113 à T117, décision 51 ; découpé en sessions B2 à B4.
+- WP25 **session B2** (11/11) : décision 51 faite (aaf7c960, `p_local_orders`, CL001, mutation 4 échecs, pgTAP 205) ;
+  T112 faite (cdb9f410, dbcd6c72 : sondes SQL, canari 14 représentations, générateur par `EdgeQueue.append`) ; T113
+  en cours (59750556, étapes 1 à 7 vertes ; restent étape 8 422 au lieu de 409, étape 9 blocage par la fonction du
+  schéma, étapes 10-14 lien non rétabli après `relay.pause/resume` : défaut possible, fermeture de caisse, second
+  cycle, purge, comparaison finale). T114 non commencée. Trois défauts de jonction trouvés par le banc, corrigés hors
+  carte : signature des lots P1363 au lieu de DER (`drain.service.ts`), `originality_signature` hexadécimale décodée
+  en base64 (`edge-sync.writer.ts`), `serial:1`/`serial:0001` (`result-applier.ts`, boucle de renvois). **Défaut
+  grave** : clé d'origine non complétée sur la voie passerelle (TS et SQL) : doublons entre voies non reconnus
+  (décision 52, `0070`). `activated_at` local arrondi à la seconde (session de caisse ouverte < 3 s avant la bascule
+  non utilisable). Six bases `cashless_m8_edge_*` résiduelles (suppression bloquée pour l'agent).

@@ -106,6 +106,12 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
     (OP-N119, ADR-187). Retouches hors carte de WP24 pour le TLS (`admin-listener.ts`, tests de démarrage) ratifiées.
 51. WP25 (11/11) : lot vide refusé aussi en base : `edge_sync_batch_begin` reçoit le nombre d'ordres locaux et refuse un
     intervalle vide sans ordre (pgTAP, mutation) ; correction de la partie A, faite après la partie B, avant la relecture.
+52. WP25 (11/11, orchestrateur, renforcement) : clé d'origine de la voie passerelle alignée sur `deviceKey`
+    (`<serial>:<seq>` complété à 4 chiffres, comme les voies en ligne et hors ligne) : `originKeyOf` et fonctions SQL
+    de la passerelle (0061, 0062, 0064 : `v_serial || ':' || v_tseq`) par migration correctrice `0070`. Sans cela, une
+    opération reçue du terminal et de la passerelle (seq < 1000) n'est pas reconnue comme doublon (NFR-003). Correctifs
+    de jonction de WP25 ratifiés : signature des lots en DER, `originality_signature` en hexadécimal, rapprochement des
+    résultats par terminal et numéro.
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
