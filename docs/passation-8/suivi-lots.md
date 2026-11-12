@@ -603,3 +603,12 @@ Notes à transmettre aux lots suivants.
   `sc-001-journey` 18/18. Horloge colima resynchronisée (redémarrage). Relecture humaine : `0072`,
   `offline-batches.service.ts` (`edgeDecisionOf`). Reste en ouvert (consigné par 0072) : PRIMARY promue de nouveau,
   délai qui repart sans émission.
+- WP25 **T117** (12/11, bb6f61ff) : étape de stabilité du contrat bloquante, migrations et `gateway-integration` dans
+  `ledger`, job `gateway-e2e` (`M8_MIN_DEBIT_RATE` 100, Trivy épinglé par condensat, bloquant sur CRITICAL corrigeable),
+  `CI.md`, `CODEOWNERS` (propriétaire générique `@cashless/securite` à remplacer), `ci-workflow`, `acceptance-matrix`,
+  `consignation` (29 verts, mutations tuées ; `M8_DOCS_ROOT=<R>` tant que la lane n'est pas fusionnée). Hors carte :
+  actions existantes épinglées par SHA, `PGPASSWORD` dans `disposable-databases.ts`. Non éprouvé sur runner : rename du
+  conteneur, `pg_dump` par `docker exec`, durée, base Trivy. Manques de docs à traiter avant la revue de mission :
+  OP-N115 à OP-N117 (lignes de tableau seules, absentes de PROMPTS/PRD ; OP-N117 à lever), ADR-187 sans risque ni
+  levée. À soumettre au porteur : seuil HIGH du balayage. Batterie e2e complète (orchestrateur) : 150/151, seul rouge
+  le plancher NFR-001 local (58 débits/s, 0 violation, décision 54). WP25 `for_review`, relecture lancée.
