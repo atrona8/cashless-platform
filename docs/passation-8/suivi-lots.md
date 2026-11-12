@@ -627,3 +627,13 @@ Notes à transmettre aux lots suivants.
   règle contre `if:` au niveau du job `ledger`, formes `; exit 0` et `| tee` (pas de pipefail) sur le jest e2e, test
   du retrait de la `edge_decision` du terminal sur une opération sans montant (code correct, central refuse). Batterie
   e2e après correction : 183/184 (plancher local NFR-001, 63/s, 0 violation). **Les 25 lots sont approuvés.**
+- **Acceptation (12/11)** : addendum post-review fait (9e8a8b01) ; matrice sur la coordination (8aa80fac) : 58/59
+  `pass`, NI-001 à NI-005 rejoués verts ; NFR-001 `pending` (seul blocage d'`accept`, contrôle à blanc). **Diagnostic
+  NFR-001** : colima passée à 6 processeurs : aucun gain (59/s). Le banc est en boucle fermée (20 terminaux, une vente
+  toutes les 200 ms au mieux, latence p50 333 ms : plafond 60/s) ; `M8_LOAD_WORKERS=40` : 71-73/s, p50 441 ms,
+  0 violation. Pas d'attente de verrou (échantillons : CPU 70 %, WalSync 12 %). `pg_stat_statements` (activé puis
+  retiré) : sur ~1 500 requêtes, 117 débits ; les refus 409 passent d'abord par nonce, idempotence, session vendeur,
+  `register_tap` (12 ms moy., 701 appels), `record_device_seq` (5,7 ms) : un refus coûte > 20 ms de base, le refus
+  d'autorité arrive au moteur (`payments.service.ts:160`, garde SQL CL006). Risque : 100/s non tenu en CI non plus
+  (exécuteur à 4 vCPU). Pistes au porteur : refus d'autorité avant tap et séquence (ordre à vérifier contre
+  `sync_protocol.md`), banc en boucle ouverte, ou preuve CI.
