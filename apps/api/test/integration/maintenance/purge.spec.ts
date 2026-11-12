@@ -80,9 +80,10 @@ describe('processus maintenance : purges des terminaux sous cashless_maint', () 
       expect(await workers.drain()).toBeGreaterThanOrEqual(1);
       expect(await present(stale)).toBe(0);
       expect(await present(fresh)).toBe(1);
-      // L'alarme du registre agrège aussi les travailleurs de passerelle (mission 8), qui lisent des
-      // remises laissées par d'autres suites dans la base partagée : on prouve celle de la purge seule.
-      expect((role as { alarm?: () => number }).alarm?.() ?? 0).toBe(0);
+      // Pas d'assertion d'alarme ici : la purge des terminaux n'a pas d'alarme propre, et l'alarme du
+      // registre agrège aussi les travailleurs de passerelle (mission 8), qui lisent des remises laissées
+      // par d'autres suites dans la base partagée. Leur alarme est prouvée par
+      // test/integration/edge/routes/edge-maintenance.spec.ts (edge-silence, edge-release-stuck).
     } finally {
       await moduleRef.close();
     }
