@@ -167,7 +167,10 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   vidées, purge hors de la transaction de la file, consignés jusqu'à la mission 12b ; TLS du port d'administration et purge
   manuelle versée au central avant destruction faits dans la mission 8.
 - Purge manuelle forcée sans accusé tant qu'un lot sans opération ne peut pas porter l'ordre (`OP-N119`, `ADR-187`) ;
-  levée par WP25 : lot de la passerelle sans opération accepté s'il porte des ordres locaux.
+  levé le 11/11/2026 par WP25 : lot de la passerelle sans opération accepté s'il porte des ordres locaux. Reprise forcée
+  bornée en haut (`OP-N117`, levé par WP25). Restent consignés : page de 200 bracelets illisibles qui arrête le service
+  des colis (`OP-N115`, `ADR-184`, mission 12b) ; grand livre passé à la main non vérifié par l'outil d'inscription
+  (`OP-N116`, mission 11a).
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

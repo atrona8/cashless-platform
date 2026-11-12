@@ -486,6 +486,10 @@ vendeurs et le catalogue : la mission les ajoute.
 > schéma refuse une vente attribuée à un autre vendeur que celui de sa session ; test pgTAP d'une attribution
 > incohérente refusée, puis lever le point.
 >
+> **Hérité de la mission 8, OP-N116** : l'outil d'inscription des passerelles (`tools/edge-admin`, `register --ledger`)
+> ne vérifie pas le grand livre passé à la main contre l'événement ; ajouter une lecture étroite pour
+> `cashless_edgeadmin` ou faire rendre le grand livre par l'inscription (disponibilité seulement, aucune fuite).
+>
 > **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
 > toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,
 > quantité, index de clé) et `UPDATE (status)` de `media` sans motif. La création passe aujourd'hui par un `INSERT`
@@ -572,7 +576,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > de la 12b) ; OP-N105 (approbation à deux à l'inscription d'une passerelle) ; OP-N106 (tables de la passerelle chiffrées sous une clé
 > matérielle détruite à la révocation, limite du mini-PC volé avant la purge). OP-N118 (purge de la passerelle : WAL, blocs libres et
 > tables d'ajout seul non effacés, purge hors de la transaction de la file ; même levée qu'OP-N106, ADR-186). OP-N119 (purge manuelle forcée sans accusé :
-> levée par WP25 de la mission 8, ADR-187 ; à vérifier avant la 12b). À soumettre au porteur avant le codage de la mission 8 :
+> levé le 11/11/2026 par WP25 de la mission 8, ADR-187). OP-N115 (curseur dans `edge_media_to_pack` et alerte au
+> central : une page de 200 bracelets illisibles arrête le service des colis, ADR-184). À soumettre au porteur avant le codage de la mission 8 :
 > valeurs des plafonds de rejeu `EDGE_ONLINE` (OP-N104) et délai avant l'envoi des mots de passe (OP-N105).
 
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées

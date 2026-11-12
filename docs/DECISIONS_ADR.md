@@ -2698,4 +2698,10 @@ Décision du porteur : 11/11/2026 ADR-187
 - **Décision.** Ajout rétrocompatible sous `/edge/*` (WP25) : un lot sans opération est accepté s'il porte des
   `local_orders` ; `edge_seq` et la chaîne ne bougent pas. D'ici là, la passerelle purge après 30 s sans accusé, avec
   la trace `CENTRAL_UNCONFIRMED` (OP-N119).
+- **Risque.** Tant que l'ajout n'est pas fait : ordre de purge jamais vu du central si l'audit local est perdu avec
+  le disque. Après l'ajout : sans lien, l'ordre n'est versé qu'avec le premier lot suivant.
+- **Raison.** Décision 48 (ordre versé avant la destruction) impossible avec `operations` `minItems: 1`.
+- **Mission qui lève.** WP25 de la mission 8. **Condition de levée.** Lot sans opération accepté s'il porte des
+  `local_orders` ; avec lien, purge seulement après l'accusé.
 - **Test de borne.** Avec lien, rien n'est détruit avant l'accusé ; lot vide sans `local_orders` refusé.
+- **État.** Levé le 11/11/2026 par WP25 (partie A, `0069`, `edge-0009`), OP-N119 levé.
