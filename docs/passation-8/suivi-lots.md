@@ -645,3 +645,10 @@ Notes à transmettre aux lots suivants.
   `ip-address` 10.1.0 (→ 10.3.1), `picomatch` 4.0.3 (→ 4.0.4), et dans le npm embarqué de l'image Node
   (`pacote`, `sigstore`, `brace-expansion`) ; Debian : HIGH sans correctif. **Lot de correction à faire** (lockfile,
   npm retiré de l'image d'exécution). (3) Branche de mesure seulement : e2e avant le balayage (930675e4).
+- **Lot de correction du balayage (préparé le 12/11, sur feat après la consolidation, implémenteur + relecteur)** :
+  (a) `body-parser` 2.3.0 → 2.4.0 et `multer` 2.4.0 → 2.5.0 dans `package-lock.json` (dépendances de production
+  d'Express/Nest, API et passerelle ; mêmes majeures, aucune dépendance nouvelle) ; (b) étage `run` du
+  `apps/gateway/Dockerfile` : retirer npm, npx, corepack et yarn de l'image Node (source de `pacote`, `sigstore`,
+  `ip-address`, `picomatch` 4.0.3, `brace-expansion` 2.0.2 ; le lockfile a déjà des versions corrigées) ; preuve :
+  balayage Trivy du job `gateway-e2e` vert (HIGH et CRITICAL corrigeables). Avec : lint (142 erreurs), workflow
+  (`M8_PG_CONTAINER` par étape), non bloquants du cycle 2 de WP25.
