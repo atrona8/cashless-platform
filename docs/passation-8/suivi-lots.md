@@ -673,3 +673,12 @@ Notes à transmettre aux lots suivants.
   `for_review` puis `approved` sans `--force`. Matrice : 59/59 `pass`, NI-001 à NI-005, verdict `pass` (coordination
   465b8ae3). **`spec-kitty accept` : 311af360** (15 h 05 UTC). Branche temporaire `ci/m8-gateway-e2e` encore sur
   GitHub (tête de la lane-y + 2 correctifs de mesure) : à supprimer après le report sur feat.
+- **Consolidation faite (12/11)** : squash 9d5e4592 sur feat (puis d750d3f6 transitions `done`, 41f4562e
+  rétrospective) ; code de feat identique à la tête testée en CI 516b4af4 (+ `tools/export` de feat). Obstacles, dans
+  l'ordre : lane-h périmée → chaînage h..y (`git merge` de la lane précédente ; conflits : code = lane-y testée,
+  docs = feat) ; lane-l « déjà intégrée » (fast-forward sur w, aussi x et y) → fusions refaites en `--no-ff` ;
+  `tokens.spec.ts` non attribuable (contenu d'une fusion 31a2eb97 de la lane-v) → commit 182e2efd dans la lane-s
+  (formatage + `deltaPurgeProvided: true`, mal décrit « formatage seul » : 1re relecture refusée, 2de approuvée) →
+  `LANE_MOVED_AFTER_APPROVAL` → WP10, WP11, WP19 réapprouvés sans `--force` ; « projected coordination bookkeeping
+  content did not land » → comptes rendus de relecture recopiés sur feat (aba2ea98) et `kitty-specs` de la lane-y
+  alignés sur la coordination (25f57d3f, chemins de suivi exemptés). Branches et worktrees des lanes gardés.

@@ -8,8 +8,7 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 
 - **Mission acceptée le 12/11** (311af360). 25 lots approuvés (WP25 réapprouvé après l'option 1 de NFR-001).
   NFR-001 prouvé en CI (run 43241115603, 108/s). Matrice 59/59 sur la coordination.
-- Ensuite : consolidation (`spec-kitty consolidate`, pièges : mémoire `consolidate-and-ci-pitfalls`), puis sur feat
-  un lot de correction (implémenteur + relecteur) : lint (142 erreurs), workflow (`M8_PG_CONTAINER` posé par une
+- **Consolidée le 12/11** (9d5e4592, code = tête testée 516b4af4). Ensuite, sur feat, un lot de correction (implémenteur + relecteur) : lint (142 erreurs), workflow (`M8_PG_CONTAINER` posé par une
   étape, cf. branche `ci/m8-gateway-e2e` b002176d), dépendances (`body-parser`, `multer`, npm retiré de l'image),
   `production-refusals` (mot de passe en CI), non bloquants des relectures (`suivi-lots.md`) ; puis revue de
   mission, CI verte, PR vers main (règle `main protege` : contournement admin ou second relecteur). Reste à
