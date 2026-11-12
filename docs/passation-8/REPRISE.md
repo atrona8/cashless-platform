@@ -11,7 +11,7 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 - Ensuite : revue de mission, `spec-kitty-docs-maintain`, fusion avec
   `main`, accept, consolidation (pièges : mémoire `consolidate-and-ci-pitfalls`). Sur feat après la consolidation
   (jamais dans une lane approuvée) : `npm run lint` (142 erreurs), `env-setup.cjs` formaté, non bloquants du cycle 2
-  de WP25 (`suivi-lots.md`). Protection de branche « revue des propriétaires » à activer par le porteur. Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
+  de WP25 (`suivi-lots.md`). Règle « main protege » active (12/11, revue des propriétaires, 1 approbation, liste de contournement vide : PR du porteur bloquée tant que l'admin n'y est pas ajouté). Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
   balayage de vulnérabilités ; documenter `central_url` d'enrôlement finissant par `/v1`. Horloge de colima
   resynchronisée le 12/11 (redémarrage).
 - Numéros libres : central `0073`, passerelle `edge-0011`, ADR-188, OP-N122 (OP-N120/121 et `0080` pris sur `main`).
