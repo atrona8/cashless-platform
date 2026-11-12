@@ -120,6 +120,10 @@ commitent pas. Une API tourne sur le port 80 : ne pas y toucher.
 55. WP25 (11/11, orchestrateur, correctifs) : défaut B (opérations hors ligne relayées par la passerelle sans
     `edge_decision`, toutes refusées au central) et défaut C (fin du délai de garde des colis sans émission dans le
     flux) corrigés dans WP25 (session B7), délai de garde inchangé (décision 16).
+56. WP25 (12/11, renforcement) : le balayage de l'image dans `gateway-e2e` bloque sur HIGH et CRITICAL corrigeables
+    (Trivy `--severity HIGH,CRITICAL --ignore-unfixed --exit-code 1`), règle dans `ci-workflow.spec.ts`.
+57. WP25 (12/11) : propriétaire de `CODEOWNERS` = le porteur (compte propriétaire du dépôt), seul.
+58. API partagée (12/11) : relancée seulement si besoin (arrêtée avec colima le 11/11).
 31. `REPLICATION_CATCH_UP` : refus au démarrage en production du bouchon, fait par WP18 (`production-guard.spec.ts`).
 
 ## Consigne des rédacteurs de prompts (WP), format allégé du porteur
