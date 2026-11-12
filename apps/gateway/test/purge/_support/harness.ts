@@ -54,12 +54,12 @@ export async function scanDatabase(dbName: string): Promise<Buffer> {
   const dump = '/Library/PostgreSQL/18/bin/pg_dump';
   if (existsSync(dump)) {
     parts.push(
-      execFileSync(dump, ['--inserts', '--dbname', adminUrl('5433', dbName)], {
+      execFileSync(dump, ['--inserts', '--dbname', adminUrl(undefined, dbName)], {
         maxBuffer: 256 * 1024 * 1024,
       }),
     );
   }
-  const client = new Client({ connectionString: adminUrl('5433', dbName) });
+  const client = new Client({ connectionString: adminUrl(undefined, dbName) });
   await client.connect();
   try {
     // Les pages sales ne sont pas sur disque : CHECKPOINT avant de lire les fichiers.

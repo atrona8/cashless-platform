@@ -6,7 +6,13 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chmodSync } from 'node:fs';
 import { FakeHardwareKeystore } from '../../src/key-store/fake-hardware-keystore';
-import { admin, createTestDb, ensureRole, type TestDb } from './_support/db';
+import {
+  admin,
+  createTestDb,
+  ensureRole,
+  withDisposableSuperuser,
+  type TestDb,
+} from './_support/db';
 import { CHILD_MAIN, freePort, runGateway } from './_support/child';
 import { enrolledFixture, tempDir } from './_support/fixture';
 import { makeCa } from './_support/pki';
@@ -224,10 +230,11 @@ describe('réglages du serveur PostgreSQL local', () => {
   }, 60_000);
 
   it('rôle superutilisateur : refusé', async () => {
-    const url = `postgres://${process.env.PGUSER ?? 'postgres'}:${STRONG}@127.0.0.1:${process.env.PGPORT ?? '5433'}/${db.name}`;
-    const r = await start({ ...healthy, GATEWAY_DATABASE_URL: url });
-    expect(r.code).toBe(1);
-    expect(r.stderr).toMatch(/superutilisateur/);
+    await withDisposableSuperuser(db.name, async (url) => {
+      const r = await start({ ...healthy, GATEWAY_DATABASE_URL: url });
+      expect(r.code).toBe(1);
+      expect(r.stderr).toMatch(/superutilisateur/);
+    });
   }, 60_000);
 
   describe('conteneur PostgreSQL 17 jetable', () => {

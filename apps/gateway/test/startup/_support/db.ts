@@ -72,3 +72,23 @@ export async function createTestDb(
     },
   };
 }
+
+/**
+ * Superutilisateur jetable au mot de passe fort de test, supprimé en `finally` : le mot de passe
+ * du superutilisateur du serveur de test peut être absent (CI) ou trivial, refusé avant la règle
+ * du rôle ; un rôle jetable isole la seule règle « rôle superutilisateur refusé ». Rend l'URL de
+ * connexion à la base `dbName` sous ce rôle.
+ */
+export async function withDisposableSuperuser<T>(
+  dbName: string,
+  fn: (url: string) => Promise<T>,
+): Promise<T> {
+  const password = 'Zk9-Longue-Phrase-8hQw3';
+  const role = `edge_su_${randomBytes(4).toString('hex')}`;
+  await admin((c) => c.query(`CREATE ROLE ${role} LOGIN SUPERUSER PASSWORD '${password}'`));
+  try {
+    return await fn(`postgres://${role}:${password}@${HOST}:${PORT}/${dbName}`);
+  } finally {
+    await admin((c) => c.query(`DROP ROLE IF EXISTS ${role}`));
+  }
+}

@@ -8,7 +8,7 @@ import { StartupRefusedError } from '../../src/processes/startup-guard';
 import { assertRuntimeSafe } from '../../src/processes/bootstrap';
 import { FakeHardwareKeystore } from '../../src/key-store/fake-hardware-keystore';
 import { createHardwareKeystore } from '../../src/key-store/hardware-keystore.factory';
-import { admin, createTestDb, type TestDb } from './_support/db';
+import { admin, createTestDb, withDisposableSuperuser, type TestDb } from './_support/db';
 import { CHILD_MAIN, freePort, runGateway } from './_support/child';
 import { tempDir } from './_support/fixture';
 import { makeCa, makeEnrollmentFile } from './_support/pki';
@@ -211,12 +211,11 @@ describe('request et enroll appliquent les contrôles du serveur en production',
   }, 120_000);
 
   it('rôle superutilisateur : enroll refusé', async () => {
-    const url = `postgres://${process.env.PGUSER ?? 'postgres'}:${STRONG}@127.0.0.1:${
-      process.env.PGPORT ?? '5433'
-    }/${db.name}`;
-    const r = await run({ ...healthy, GATEWAY_DATABASE_URL: url }, ['enroll', '/absent.json']);
-    expect(r.code).toBe(1);
-    expect(r.stderr).toMatch(/superutilisateur/);
+    await withDisposableSuperuser(db.name, async (url) => {
+      const r = await run({ ...healthy, GATEWAY_DATABASE_URL: url }, ['enroll', '/absent.json']);
+      expect(r.code).toBe(1);
+      expect(r.stderr).toMatch(/superutilisateur/);
+    });
   }, 60_000);
 
   it('un faux instancié est refusé par le contrôle commun, avant toute connexion', async () => {
