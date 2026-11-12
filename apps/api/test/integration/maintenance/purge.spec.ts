@@ -60,10 +60,11 @@ describe('processus maintenance : purges des terminaux sous cashless_maint', () 
     const { stale } = await seed();
     const { moduleRef, workers } = await start();
     try {
-      expect(workers.names()).toEqual(['device-purge']);
+      // Mission 8 (WP12) : deux travailleurs de passerelle s'ajoutent à la purge des terminaux.
+      expect(workers.names()).toEqual(['edge-silence', 'edge-release-stuck', 'device-purge']);
       const lines = await workers.describe();
-      expect(lines).toHaveLength(1);
-      expect(lines[0]).toMatch(/device-purge|nonces expirés/);
+      expect(lines).toHaveLength(3);
+      expect(lines.filter((l) => /device-purge|nonces expirés/.test(l))).toHaveLength(1);
       expect(await present(stale)).toBe(1);
     } finally {
       await moduleRef.close();
