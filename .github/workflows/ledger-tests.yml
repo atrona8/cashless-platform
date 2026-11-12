@@ -181,9 +181,9 @@ jobs:
       # sa base locale) ; mot de passe de test, public.
       - name: Migrations de la passerelle (base locale edge_app)
         env:
-          GATEWAY_DATABASE_URL: postgres://edge_app:edge_app_ci@localhost:5432/cashless_gateway_ci
+          GATEWAY_DATABASE_URL: postgres://edge_app:edge_app_local@localhost:5432/cashless_gateway_ci
         run: |
-          psql -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE edge_app LOGIN PASSWORD 'edge_app_ci' NOSUPERUSER CREATEDB"
+          psql -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE edge_app LOGIN PASSWORD 'edge_app_local' NOSUPERUSER CREATEDB"
           createdb -O edge_app cashless_gateway_ci
           npm run migrate -w @cashless/gateway
 
