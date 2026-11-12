@@ -11,6 +11,7 @@ import {
   type Bench,
   type TestDevice,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let bench: Bench;
 let device: TestDevice;
@@ -35,7 +36,7 @@ const maxSeq = async () =>
     (await bench.q<{ n: string }>('SELECT coalesce(max(edge_seq),0) AS n FROM edge_op'))[0]!.n,
   );
 
-async function expectEdgeRefusal(r: { status: number; json: any }, before: [number, number]) {
+async function expectEdgeRefusal(r: { status: number; json: Loose }, before: [number, number]) {
   expect(r.status).toBe(409);
   expect(r.json).toMatchObject({ code: 'DEBIT_AUTHORITY_EDGE', retryable: false });
   expect(r.json.edge_base_url).toBeUndefined();
@@ -147,7 +148,7 @@ describe('autorité hors ACTIVE : aucun guichet servi', () => {
       },
     });
     expect(r.status).toBe(409);
-    expect((r.json as any).code).toMatch(/^DEBIT_AUTHORITY_|^STALE_AUTHORITY/);
+    expect((r.json as Loose).code).toMatch(/^DEBIT_AUTHORITY_|^STALE_AUTHORITY/);
     expect(await snapshot()).toEqual(before);
     await bench.q(`UPDATE edge_authority SET state = 'ACTIVE'`);
   });

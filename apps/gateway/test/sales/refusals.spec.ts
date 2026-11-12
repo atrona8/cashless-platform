@@ -7,6 +7,7 @@ import {
 } from '../../src/operations/sales/unavailable-operations';
 import { makeBench, type Bench } from './_support/harness';
 import { newTill, pay, queueState, type Till } from './_support/helpers';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let till: Till;
@@ -17,7 +18,7 @@ beforeAll(async () => {
 afterAll(async () => b.close());
 afterEach(async () => b.setAuthority({ state: 'ACTIVE', epoch: 3, highest_epoch_seen: 3 }));
 
-async function nothingWritten(run: () => Promise<{ status: number; json: any }>) {
+async function nothingWritten(run: () => Promise<{ status: number; json: Loose }>) {
   const before = await queueState(b);
   const res = await run();
   const after = await queueState(b);

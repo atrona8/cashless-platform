@@ -2,6 +2,7 @@
 // locale. `ETag`, `304`, `edge_base_url`, accusé jamais provisoire, terminal suspendu servi.
 import { randomUUID } from 'node:crypto';
 import { makeBench, type Bench, type TestDevice } from './_support/harness';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let d: TestDevice;
@@ -28,7 +29,7 @@ describe('getDeviceConfig', () => {
   it('200 depuis la copie : config_id du central, blocs device, event, pos, politique', async () => {
     const r = await config(d);
     expect(r.status).toBe(200);
-    const body = r.json as Record<string, any>;
+    const body = r.json as Record<string, Loose>;
     expect(body.config_id).toBe(7);
     expect(body.device).toMatchObject({
       device_id: d.deviceId,
@@ -50,7 +51,7 @@ describe('getDeviceConfig', () => {
   });
 
   it('hors ligne refusé par défaut tant que la passerelle n’a pas sa clé de snapshot', async () => {
-    expect(((await config(d)).json as any).offline_policy.offline_enabled).toBe(false);
+    expect(((await config(d)).json as Loose).offline_policy.offline_enabled).toBe(false);
     b.snapshotKeys.push({
       key_id: 'edge-snap-1',
       algorithm: 'ECDSA_P256_SHA256',
@@ -58,7 +59,7 @@ describe('getDeviceConfig', () => {
       not_after: null,
     });
     try {
-      const r = (await config(d)).json as any;
+      const r = (await config(d)).json as Loose;
       expect(r.offline_policy.offline_enabled).toBe(true);
       expect(r.snapshot_keys).toHaveLength(1);
     } finally {
@@ -67,7 +68,7 @@ describe('getDeviceConfig', () => {
   });
 
   it('edge_base_url = adresse de la passerelle quand elle est ACTIVE ; sinon CENTRAL sans adresse', async () => {
-    const active = (await config(d)).json as any;
+    const active = (await config(d)).json as Loose;
     expect(active.debit_authority).toEqual({
       ledger_id: b.ids.ledger,
       authority: 'EDGE',
@@ -77,7 +78,7 @@ describe('getDeviceConfig', () => {
     });
     b.authorityState.state = 'RELEASING';
     try {
-      const moving = (await config(d)).json as any;
+      const moving = (await config(d)).json as Loose;
       expect(moving.debit_authority).toMatchObject({
         authority: 'CENTRAL',
         edge_gateway_id: null,
@@ -109,30 +110,58 @@ describe('getDeviceConfig', () => {
 
   it('catalogue du point de vente, dans la langue demandée', async () => {
     const dev = await b.newDevice();
-    const pos = (await b.q<{ pos_id: string }>('SELECT pos_id FROM edge_device WHERE device_id = $1', [dev.deviceId]))[0]!.pos_id;
+    const pos = (
+      await b.q<{ pos_id: string }>('SELECT pos_id FROM edge_device WHERE device_id = $1', [
+        dev.deviceId,
+      ])
+    )[0]!.pos_id;
     const product = randomUUID();
-    await b.q('INSERT INTO edge_catalog_item (pos_id, item_id, version, price, lines) VALUES ($1, $2, 4, 1500, $3)', [
-      pos,
-      product,
-      JSON.stringify({ name_fr: 'Bière', name_en: 'Beer', category_fr: 'Boissons', category_en: 'Drinks', vat_rate_bps: 1800 }),
-    ]);
-    const fr = (await config(dev)).json as any;
+    await b.q(
+      'INSERT INTO edge_catalog_item (pos_id, item_id, version, price, lines) VALUES ($1, $2, 4, 1500, $3)',
+      [
+        pos,
+        product,
+        JSON.stringify({
+          name_fr: 'Bière',
+          name_en: 'Beer',
+          category_fr: 'Boissons',
+          category_en: 'Drinks',
+          vat_rate_bps: 1800,
+        }),
+      ],
+    );
+    const fr = (await config(dev)).json as Loose;
     expect(fr.catalog).toEqual({
       version: 4,
-      items: [{ product_id: product, name: 'Bière', unit_price: 1500, category: 'Boissons', vat_rate_bps: 1800 }],
+      items: [
+        {
+          product_id: product,
+          name: 'Bière',
+          unit_price: 1500,
+          category: 'Boissons',
+          vat_rate_bps: 1800,
+        },
+      ],
     });
-    const en = (await b.request(dev, { path: '/v1/device/config', headers: { 'accept-language': 'en' } })).json as any;
+    const en = (
+      await b.request(dev, { path: '/v1/device/config', headers: { 'accept-language': 'en' } })
+    ).json as Loose;
     expect(en.catalog.items[0].name).toBe('Beer');
-    expect((await config(dev)).headers.etag).not.toBe((await b.request(dev, { path: '/v1/device/config', headers: { 'accept-language': 'en' } })).headers.etag);
+    expect((await config(dev)).headers.etag).not.toBe(
+      (await b.request(dev, { path: '/v1/device/config', headers: { 'accept-language': 'en' } }))
+        .headers.etag,
+    );
   });
 
   it('heure servie = horloge de la passerelle (server_time et en-tête Date)', async () => {
     b.clock.advance(3_600_000);
     try {
       const r = await config(d);
-      const served = Date.parse((r.json as any).server_time);
+      const served = Date.parse((r.json as Loose).server_time);
       expect(Math.abs(served - b.clock.now().getTime())).toBeLessThan(2000);
-      expect(Math.abs(Date.parse(r.headers.date as string) - b.clock.now().getTime())).toBeLessThan(2500);
+      expect(Math.abs(Date.parse(r.headers.date as string) - b.clock.now().getTime())).toBeLessThan(
+        2500,
+      );
       expect(served - Date.now()).toBeGreaterThan(3_000_000);
     } finally {
       b.clock.advance(-3_600_000);
@@ -150,7 +179,7 @@ describe('getDeviceConfig', () => {
     const dev = await b.newDevice({ status: 'SUSPENDED' });
     const r = await config(dev);
     expect(r.status).toBe(200);
-    expect((r.json as any).device.status).toBe('SUSPENDED');
+    expect((r.json as Loose).device.status).toBe('SUSPENDED');
   });
 });
 
@@ -158,7 +187,7 @@ describe('postDeviceHeartbeat', () => {
   it('200 : état local du terminal mis à jour, ETag de la configuration, autorité', async () => {
     const r = await beat(d, goodBeat);
     expect(r.status).toBe(200);
-    const body = r.json as Record<string, any>;
+    const body = r.json as Record<string, Loose>;
     expect(Object.keys(body).sort()).toEqual([
       'config_etag',
       'debit_authority',
@@ -170,7 +199,9 @@ describe('postDeviceHeartbeat', () => {
     expect(body.debit_authority.authority).toBe('EDGE');
     expect(body.latest_snapshot_version).toBeNull();
     expect(body.sync_requested).toBe(false);
-    const row = (await b.q<any>('SELECT * FROM edge_device WHERE device_id = $1', [d.deviceId]))[0];
+    const row = (
+      await b.q<Loose>('SELECT * FROM edge_device WHERE device_id = $1', [d.deviceId])
+    )[0];
     expect(row.app_version).toBe('1.4.2');
     expect(Number(row.reported_snapshot_version)).toBe(9);
     expect(Number(row.reported_local_seq)).toBe(4);
@@ -182,7 +213,7 @@ describe('postDeviceHeartbeat', () => {
     b.snapshotVersion.value = 12;
     await b.q("UPDATE edge_event_setting SET status = 'CLOSING'");
     try {
-      const body = (await beat(d, goodBeat)).json as any;
+      const body = (await beat(d, goodBeat)).json as Loose;
       expect(body.latest_snapshot_version).toBe(12);
       expect(body.sync_requested).toBe(true);
     } finally {
@@ -208,7 +239,11 @@ describe('postDeviceHeartbeat', () => {
         code: 'VALIDATION_FAILED',
       });
     }
-    const row = (await b.q<any>('SELECT last_heartbeat_at FROM edge_device WHERE device_id = $1', [dev.deviceId]))[0];
+    const row = (
+      await b.q<Loose>('SELECT last_heartbeat_at FROM edge_device WHERE device_id = $1', [
+        dev.deviceId,
+      ])
+    )[0];
     expect(row.last_heartbeat_at).toBeNull();
   });
 
@@ -232,7 +267,7 @@ describe('getDeviceSeqStatus', () => {
   it('aucune passe : accusé 0 (inconnu), jamais un accusé local', async () => {
     const dev = await b.newDevice();
     await setSeq(dev, 12, 0, false);
-    const r = (await status(dev)).json as any;
+    const r = (await status(dev)).json as Loose;
     expect(r).toEqual({
       device_serial: dev.serial,
       contiguous_acked_seq: 0,
@@ -245,17 +280,17 @@ describe('getDeviceSeqStatus', () => {
   it('accusé connu : la dernière valeur du central, même périmée, jamais le numéro local', async () => {
     const dev = await b.newDevice();
     await setSeq(dev, 12, 7, true);
-    const r = (await status(dev)).json as any;
+    const r = (await status(dev)).json as Loose;
     expect(r.contiguous_acked_seq).toBe(7);
     expect(r.max_seen_seq).toBe(12);
     // Le numéro local avance (nouvelles écritures), l'accusé du central ne bouge pas.
     await setSeq(dev, 20, 7, true);
-    expect(((await status(dev)).json as any).contiguous_acked_seq).toBe(7);
+    expect(((await status(dev)).json as Loose).contiguous_acked_seq).toBe(7);
   });
 
   it('terminal sans ligne de séquence : zéros, plancher 1', async () => {
     const dev = await b.newDevice();
-    const r = (await status(dev)).json as any;
+    const r = (await status(dev)).json as Loose;
     expect([r.contiguous_acked_seq, r.max_seen_seq, r.next_seq_floor]).toEqual([0, 0, 1]);
   });
 
@@ -268,7 +303,7 @@ describe('getDeviceSeqStatus', () => {
   it('un terminal ne lit que ses propres numéros', async () => {
     const other = await b.newDevice();
     await setSeq(other, 99, 98, true);
-    const mine = (await status(d)).json as any;
+    const mine = (await status(d)).json as Loose;
     expect(mine.device_serial).toBe(d.serial);
     expect(mine.max_seen_seq).not.toBe(99);
   });

@@ -22,14 +22,24 @@ if ((process.env.PGDATABASE || '').startsWith('cashless_test')) {
   );
 }
 const name = `cashless_m8_central_${id}`;
-const pw = (role) => process.env[`CASHLESS_${role.toUpperCase()}_PASSWORD`] || `cashless_${role}_local`;
+const pw = (role) =>
+  process.env[`CASHLESS_${role.toUpperCase()}_PASSWORD`] || `cashless_${role}_local`;
 const url = (role) => `postgres://cashless_${role}:${pw(role)}@${host}:${port}/${name}`;
 process.env.M8_CENTRAL_DB = name;
 process.env.PGDATABASE = name;
 process.env.DATABASE_URL_OWNER = `postgres://${user}@${host}:${port}/${name}`;
 for (const role of [
-  'app', 'platform', 'tagkeys', 'perso', 'tagcheck', 'keyadmin', 'snapcontent', 'snapsign', 'maint',
-  'edge', 'edgeadmin',
+  'app',
+  'platform',
+  'tagkeys',
+  'perso',
+  'tagcheck',
+  'keyadmin',
+  'snapcontent',
+  'snapsign',
+  'maint',
+  'edge',
+  'edgeadmin',
 ]) {
   process.env[`DATABASE_URL_${role.toUpperCase()}`] = url(role);
   process.env[`CASHLESS_${role.toUpperCase()}_PASSWORD`] = pw(role);

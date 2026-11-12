@@ -23,7 +23,8 @@ function objectBody(raw: unknown): Record<string, unknown> {
 function textField(body: Record<string, unknown>, name: string, pattern: RegExp): string {
   const value = body[name];
   if (value === undefined) throw invalid(`Champ obligatoire : ${name}.`);
-  if (typeof value !== 'string' || !pattern.test(value)) throw invalid(`${name} : format invalide.`);
+  if (typeof value !== 'string' || !pattern.test(value))
+    throw invalid(`${name} : format invalide.`);
   return value;
 }
 
@@ -57,7 +58,8 @@ export function parseRefresh(raw: unknown): RefreshRequest {
   const refreshToken = textField(body, 'refresh_token', REFRESH_TOKEN);
   const nonce = textField(body, 'nonce', NONCE);
   const signature = textField(body, 'signature', BASE64);
-  if (signature.length === 0 || signature.length > 256) throw invalid('signature : base64 attendu.');
+  if (signature.length === 0 || signature.length > 256)
+    throw invalid('signature : base64 attendu.');
   return { serial, refreshToken, nonce, signature: Buffer.from(signature, 'base64') };
 }
 

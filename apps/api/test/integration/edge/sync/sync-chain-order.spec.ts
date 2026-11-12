@@ -21,6 +21,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(120_000);
 
@@ -138,7 +139,7 @@ describe('réception des lots EDGE_SYNC : ordre et chaîne', () => {
   it('chaîne altérée sur une opération : 409 CHAIN_BROKEN, alerte, rien d’écrit', async () => {
     const site = await seedSite(owner, world);
     const batch = makeBatch(site, purchases(site, 2), { keepState: true });
-    ((batch.operations as any[])[0] as any).chain_hash = 'ab'.repeat(32);
+    ((batch.operations as Loose[])[0] as Loose).chain_hash = 'ab'.repeat(32);
     resign(site, batch);
     const reply = await post(site, batch);
     expect(reply.status).toBe(409);

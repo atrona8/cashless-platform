@@ -14,6 +14,7 @@ import {
   type Bench,
   type TestDevice,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 interface Operation {
   operationId: string;
@@ -86,7 +87,7 @@ describe('corps et réponses conformes au schéma', () => {
     });
     expect(r.status).toBe(201);
     expect(contractViolations('MediaActivationResponse', r.json)).toEqual([]);
-    expect(contractViolations('DepositState', (r.json as any).deposit)).toEqual([]);
+    expect(contractViolations('DepositState', (r.json as Loose).deposit)).toEqual([]);
   });
 
   it('caution : requête, réponse 200 conforme à DepositState', async () => {

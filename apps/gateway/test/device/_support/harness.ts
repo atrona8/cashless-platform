@@ -55,7 +55,10 @@ import { DeviceTokenService } from '../../../src/device/device-token.service';
 import { DeviceModule } from '../../../src/device/device.module';
 import { GATEWAY_SNAPSHOT_KEYS, LOCAL_SNAPSHOT_STATE } from '../../../src/device/ports';
 import { FakeHardwareKeystore } from '../../../src/key-store/fake-hardware-keystore';
-import { HARDWARE_KEYSTORE, type HardwareKeystore } from '../../../src/key-store/hardware-keystore.port';
+import {
+  HARDWARE_KEYSTORE,
+  type HardwareKeystore,
+} from '../../../src/key-store/hardware-keystore.port';
 import { ServedOperationGuard } from '../../../src/processes/served-operations';
 import { tlsServerOptions } from '../../../src/processes/bootstrap';
 import { createTestDb, type TestDb } from '../../startup/_support/db';
@@ -146,7 +149,9 @@ export interface Bench {
   snapshotKeys: Array<Record<string, unknown>>;
   snapshotVersion: { value: number | null };
   authorityState: { state: string; epoch: number; highestEpochSeen: number };
-  newDevice(options?: Partial<{ status: string; os: string | null; revokeFamily: boolean }>): Promise<TestDevice>;
+  newDevice(
+    options?: Partial<{ status: string; os: string | null; revokeFamily: boolean }>,
+  ): Promise<TestDevice>;
   tokenFor(device: TestDevice): Promise<string>;
   request(device: TestDevice, options: RequestOptions): Promise<Response>;
   /** Requête sans terminal (corps libre), certificat facultatif. */
@@ -259,11 +264,17 @@ export async function makeBench(
         useValue: { state: async () => ({ ...authorityState }) },
       },
       { provide: APP_GUARD, useClass: ServedOperationGuard },
-      { provide: DEVICE_PROOFS_OPTIONS, useValue: { failureFloorMs: options.failureFloorMs ?? 60 } },
+      {
+        provide: DEVICE_PROOFS_OPTIONS,
+        useValue: { failureFloorMs: options.failureFloorMs ?? 60 },
+      },
       ...(options.withKeys
         ? [
             { provide: GATEWAY_SNAPSHOT_KEYS, useValue: { list: async () => snapshotKeys } },
-            { provide: LOCAL_SNAPSHOT_STATE, useValue: { latestVersion: async () => snapshotVersion.value } },
+            {
+              provide: LOCAL_SNAPSHOT_STATE,
+              useValue: { latestVersion: async () => snapshotVersion.value },
+            },
           ]
         : []),
     ],
@@ -289,8 +300,9 @@ export async function makeBench(
   config.requestAuthority = authority;
   void fx;
 
-  const meta = (await db.pool.query('SELECT gateway_id, event_id, ledger_id, operator_id FROM edge_meta'))
-    .rows[0] as { gateway_id: string; event_id: string; ledger_id: string; operator_id: string };
+  const meta = (
+    await db.pool.query('SELECT gateway_id, event_id, ledger_id, operator_id FROM edge_meta')
+  ).rows[0] as { gateway_id: string; event_id: string; ledger_id: string; operator_id: string };
   await db.pool.query(
     `INSERT INTO edge_event_setting (id, status, currency, minor_units, timezone, activation_modes,
         terminal_settings, name, wallet_limits, offline_policy)
@@ -353,7 +365,12 @@ export async function makeBench(
       await db.pool.query(
         `INSERT INTO edge_device_token_family (fid, device_id, status, refresh_token_sha256_current)
          VALUES ($1, $2, $3, $4)`,
-        [fid, deviceId, opts.revokeFamily ? 'REVOKED' : 'ACTIVE', createHash('sha256').update(refreshToken).digest()],
+        [
+          fid,
+          deviceId,
+          opts.revokeFamily ? 'REVOKED' : 'ACTIVE',
+          createHash('sha256').update(refreshToken).digest(),
+        ],
       );
       await db.pool.query(
         `UPDATE edge_event_setting SET offline_policy = offline_policy || $1::jsonb`,
@@ -421,11 +438,10 @@ export async function makeBench(
             keyid: opts.device.deviceId,
           },
         );
-        const signature = nodeSign(
-          'sha256',
-          Buffer.from(signatureBase(parts, list), 'utf8'),
-          { key: opts.signer ?? opts.device.signing.privateKey, dsaEncoding: 'ieee-p1363' },
-        );
+        const signature = nodeSign('sha256', Buffer.from(signatureBase(parts, list), 'utf8'), {
+          key: opts.signer ?? opts.device.signing.privateKey,
+          dsaEncoding: 'ieee-p1363',
+        });
         headers['signature-input'] = serializeDictionary(new Map([['dev', list]]));
         headers.signature = serializeDictionary(new Map([['dev', [signature, new Map()] as Item]]));
       }

@@ -3,7 +3,6 @@
 // passerelle), DEUX bases et le relais coupable, sans autre intervention que les demandes
 // d'administration.
 // À la fin : soldes du central égaux à ceux de la passerelle, aucune anomalie inattendue.
-import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {

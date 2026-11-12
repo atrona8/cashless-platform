@@ -19,7 +19,11 @@ beforeAll(async () => {
 afterAll(async () => b.close());
 
 /** 401 sans cause : seuls les membres du contrat, aucun `detail`, aucun nom de preuve. */
-function expectOpaque401(r: { status: number; json: Record<string, unknown> | null; text: string }) {
+function expectOpaque401(r: {
+  status: number;
+  json: Record<string, unknown> | null;
+  text: string;
+}) {
   expect(r.status).toBe(401);
   expect(['UNAUTHENTICATED', 'DEVICE_SIGNATURE_INVALID']).toContain(r.json?.code);
   expect(Object.keys(r.json!).sort()).toEqual(['code', 'request_id', 'status', 'title', 'type']);
@@ -32,7 +36,9 @@ async function forgedToken(
   kid?: string,
 ): Promise<string> {
   await b.tokenFor(device); // garantit une clé active
-  const active = (await b.q<{ kid: string }>("SELECT kid FROM edge_token_key WHERE status = 'ACTIVE'"))[0]!;
+  const active = (
+    await b.q<{ kid: string }>("SELECT kid FROM edge_token_key WHERE status = 'ACTIVE'")
+  )[0]!;
   const iat = Math.floor(b.clock.now().getTime() / 1000);
   const claims = {
     iss: b.gatewayId,
@@ -59,7 +65,10 @@ describe('référence : une requête entièrement valide passe', () => {
     const r = await b.request(d, READ);
     expect(r.status).toBe(200);
     expect(r.json).toEqual({ ok: true, device: d.deviceId });
-    const rows = await b.q('SELECT count(*)::int AS n FROM edge_device_nonce WHERE device_id = $1', [d.deviceId]);
+    const rows = await b.q(
+      'SELECT count(*)::int AS n FROM edge_device_nonce WHERE device_id = $1',
+      [d.deviceId],
+    );
     expect(rows[0]!.n).toBeGreaterThanOrEqual(1);
   });
 });
@@ -96,10 +105,14 @@ describe('preuve 1 : certificat, chacune des autres preuves valides', () => {
 
   it('certificat expiré : 401', async () => {
     const { publicKey, privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
-    const certPem = await b.deviceCa.sign('CN=vieux', publicKey.export({ type: 'spki', format: 'der' }), {
-      notBefore: new Date(Date.now() - 7_200_000),
-      notAfter: new Date(Date.now() - 3_600_000),
-    });
+    const certPem = await b.deviceCa.sign(
+      'CN=vieux',
+      publicKey.export({ type: 'spki', format: 'der' }),
+      {
+        notBefore: new Date(Date.now() - 7_200_000),
+        notAfter: new Date(Date.now() - 3_600_000),
+      },
+    );
     const keyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
     expectOpaque401(await b.request(d, { ...READ, cert: { certPem, keyPem } }));
   });
@@ -111,7 +124,15 @@ describe('preuve 1 : certificat, chacune des autres preuves valides', () => {
   it('autorité des terminaux dont la validité est échue au regard de l’horloge de la passerelle : 401', async () => {
     b.clock.advance(3 * 86_400_000);
     try {
-      expectOpaque401(await b.request(d, { ...READ, token: await forgedToken(d, { iat: Math.floor(b.clock.now().getTime() / 1000), exp: Math.floor(b.clock.now().getTime() / 1000) + 900 }) }));
+      expectOpaque401(
+        await b.request(d, {
+          ...READ,
+          token: await forgedToken(d, {
+            iat: Math.floor(b.clock.now().getTime() / 1000),
+            exp: Math.floor(b.clock.now().getTime() / 1000) + 900,
+          }),
+        }),
+      );
     } finally {
       b.clock.advance(-3 * 86_400_000);
     }
@@ -134,7 +155,9 @@ describe('preuve 2 : jeton d’appareil, certificat et signature valides', () =>
 
   it('jeton expiré : 401', async () => {
     const iat = Math.floor(b.clock.now().getTime() / 1000) - 2000;
-    expectOpaque401(await b.request(d, { ...READ, token: await forgedToken(d, { iat, exp: iat + 900 }) }));
+    expectOpaque401(
+      await b.request(d, { ...READ, token: await forgedToken(d, { iat, exp: iat + 900 }) }),
+    );
   });
 
   it('jeton émis par la passerelle pour une autre audience : 401', async () => {
@@ -161,7 +184,9 @@ describe('preuve 2 : jeton d’appareil, certificat et signature valides', () =>
 
   it('durée de vie au-delà de 900 s : 401', async () => {
     const iat = Math.floor(b.clock.now().getTime() / 1000);
-    expectOpaque401(await b.request(d, { ...READ, token: await forgedToken(d, { iat, exp: iat + 3600 }) }));
+    expectOpaque401(
+      await b.request(d, { ...READ, token: await forgedToken(d, { iat, exp: iat + 3600 }) }),
+    );
   });
 
   it('jeton du central (autre kid, aud du central) : 401, avant toute cryptographie', async () => {
@@ -225,7 +250,13 @@ describe('preuve 3 : signature de requête, certificat et jeton valides', () => 
   it('@authority différente d’un caractère : 401', async () => {
     const forged = `${b.authority}0`;
     expectOpaque401(await b.request(d, { ...READ, authority: forged, hostHeader: forged }));
-    expectOpaque401(await b.request(d, { ...READ, authority: 'api.cashless.test', hostHeader: 'api.cashless.test' }));
+    expectOpaque401(
+      await b.request(d, {
+        ...READ,
+        authority: 'api.cashless.test',
+        hostHeader: 'api.cashless.test',
+      }),
+    );
   });
 
   it('signé pour une autre @authority que celle de l’en-tête Host : 401', async () => {
@@ -247,7 +278,13 @@ describe('preuve 3 : signature de requête, certificat et jeton valides', () => 
   it('corps modifié après signature (digest signé, corps changé) : 401', async () => {
     const token = await b.tokenFor(d);
     // Le digest couvert est celui de `{"a":1}` ; le corps envoyé est autre.
-    const ok = await b.raw({ device: d, token, method: 'POST', path: '/v1/probe/operation', body: { a: 1 } });
+    const ok = await b.raw({
+      device: d,
+      token,
+      method: 'POST',
+      path: '/v1/probe/operation',
+      body: { a: 1 },
+    });
     expect(ok.status).toBe(201);
     const { contentDigest } = await import('../../src/device-proofs/request-signature');
     const r = await b.raw({
@@ -271,7 +308,12 @@ describe('preuve 3 : signature de requête, certificat et jeton valides', () => 
     const other = await b.newDevice();
     // Signature faite pour le keyid d'un autre terminal, avec la clé de celui-ci.
     const token = await b.tokenFor(d);
-    const r = await b.raw({ device: { ...d, deviceId: other.deviceId } as TestDevice, token, cert: d.cert, ...READ });
+    const r = await b.raw({
+      device: { ...d, deviceId: other.deviceId } as TestDevice,
+      token,
+      cert: d.cert,
+      ...READ,
+    });
     expectOpaque401(r);
   });
 });
@@ -341,19 +383,46 @@ describe('nonce : persistant et transactionnel', () => {
       created,
     });
     expect(failing.status).toBe(500);
-    const before = await b.q('SELECT 1 FROM edge_device_nonce WHERE device_id = $1 AND nonce = $2', [d.deviceId, nonce]);
+    const before = await b.q(
+      'SELECT 1 FROM edge_device_nonce WHERE device_id = $1 AND nonce = $2',
+      [d.deviceId, nonce],
+    );
     expect(before).toHaveLength(0); // annulé avec l'opération
-    const ok = await b.raw({ device: d, token, method: 'POST', path: '/v1/probe/operation', query: 'fail=1', nonce, created });
+    const ok = await b.raw({
+      device: d,
+      token,
+      method: 'POST',
+      path: '/v1/probe/operation',
+      query: 'fail=1',
+      nonce,
+      created,
+    });
     expect(ok.status).toBe(500); // rejouable : rien n'avait été consommé
-    const good = await b.raw({ device: d, token, method: 'POST', path: '/v1/probe/operation', nonce, created });
+    const good = await b.raw({
+      device: d,
+      token,
+      method: 'POST',
+      path: '/v1/probe/operation',
+      nonce,
+      created,
+    });
     expect(good.status).toBe(201);
-    const replay = await b.raw({ device: d, token, method: 'POST', path: '/v1/probe/operation', nonce, created });
+    const replay = await b.raw({
+      device: d,
+      token,
+      method: 'POST',
+      path: '/v1/probe/operation',
+      nonce,
+      created,
+    });
     expectOpaque401(replay);
   });
 
   it('les nonces échus sont purgés, jamais ceux de la fenêtre', async () => {
     const store = new NonceStore(new GatewayTx(b.db.pool), b.clock);
-    await b.q("INSERT INTO edge_device_nonce VALUES ($1, 'vieux', now() - interval '1 hour')", [d.deviceId]);
+    await b.q("INSERT INTO edge_device_nonce VALUES ($1, 'vieux', now() - interval '1 hour')", [
+      d.deviceId,
+    ]);
     b.clock.advance(120_000); // franchit l'intervalle de purge
     await store.consumeAlone(d.deviceId, randomBytes(16), b.clock.now());
     b.clock.advance(-120_000);
@@ -362,7 +431,9 @@ describe('nonce : persistant et transactionnel', () => {
 });
 
 describe('le temps de réponse d’un 401 ne révèle pas la preuve en cause', () => {
-  async function median(make: () => Promise<{ elapsedMs: number; status: number }>): Promise<number> {
+  async function median(
+    make: () => Promise<{ elapsedMs: number; status: number }>,
+  ): Promise<number> {
     const samples: number[] = [];
     for (let i = 0; i < 9; i += 1) {
       const r = await make();

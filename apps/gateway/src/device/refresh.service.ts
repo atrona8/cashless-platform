@@ -16,7 +16,13 @@
 //
 // Refus : `401 REFRESH_TOKEN_INVALID` sans dire quelle preuve a échoué, après un plancher de durée
 // fixe ; `403 DEVICE_SUSPENDED` / `DEVICE_REVOKED` seulement APRÈS preuve de possession.
-import { createHash, createPublicKey, timingSafeEqual, verify, type X509Certificate } from 'node:crypto';
+import {
+  createHash,
+  createPublicKey,
+  timingSafeEqual,
+  verify,
+  type X509Certificate,
+} from 'node:crypto';
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import type { Request } from 'express';
 import { GATEWAY_CLOCK, type GatewayClock } from '../clock/gateway-clock';
@@ -141,12 +147,19 @@ export class DeviceRefreshService {
       for (const family of families) {
         const current = family.refreshTokenSha256Current;
         const equal =
-          current !== null && current.length === presented.length && timingSafeEqual(current, presented);
+          current !== null &&
+          current.length === presented.length &&
+          timingSafeEqual(current, presented);
         if (equal && matched === null) matched = family.fid;
       }
       if (matched === null) throw new Refused(5, 'empreinte différente de l’empreinte courante');
       // 6. Rejeu de la même demande signée : refusé (le nonce reste en table).
-      const outcome = await this.nonces.consume(tx, device.deviceId, `refresh:${input.nonce}`, null);
+      const outcome = await this.nonces.consume(
+        tx,
+        device.deviceId,
+        `refresh:${input.nonce}`,
+        null,
+      );
       if (outcome !== 'OK') throw new Refused(6, 'nonce déjà vu');
       const token = await this.tokens.issue(tx, {
         deviceId: device.deviceId,
@@ -157,7 +170,15 @@ export class DeviceRefreshService {
       // Audit local : ni jeton, ni empreinte, ni clé.
       await tx.query(
         `INSERT INTO edge_audit (kind, actor, device_id, detail) VALUES ('DEVICE_TOKEN_ISSUED', 'gateway', $1, $2)`,
-        [device.deviceId, JSON.stringify({ fid: matched, kid: token.kid, jti: token.jti, exp: token.expiresAt.toISOString() })],
+        [
+          device.deviceId,
+          JSON.stringify({
+            fid: matched,
+            kid: token.kid,
+            jti: token.jti,
+            exp: token.expiresAt.toISOString(),
+          }),
+        ],
       );
       return {
         access_token: token.token,

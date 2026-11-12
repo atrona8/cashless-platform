@@ -58,7 +58,7 @@ describe('réception des lots EDGE_SYNC : entrée', () => {
     const reply = await post(site, batch);
     expect(reply.status).toBe(200);
     expect(reply.json?.results).toHaveLength(3);
-    expect(reply.json?.results.map((r: any) => r.status)).toEqual([
+    expect(reply.json?.results.map((r: Loose) => r.status)).toEqual([
       'ACCEPTED',
       'ACCEPTED',
       'ACCEPTED',
@@ -126,7 +126,7 @@ describe('réception des lots EDGE_SYNC : entrée', () => {
   it('opération altérée après signature : 400', async () => {
     const site = await seedSite(owner, world);
     const batch = makeBatch(site, purchases(site, 1), { keepState: true });
-    ((batch.operations as any[])[0] as any).amount = 999_999;
+    ((batch.operations as Loose[])[0] as Loose).amount = 999_999;
     const reply = await post(site, batch);
     expect(reply.status).toBe(400);
     expect(reply.json?.code).toBe('BATCH_SIGNATURE_INVALID');
@@ -234,6 +234,7 @@ describe('réception des lots EDGE_SYNC : entrée', () => {
 });
 
 import { edgeChainGenesis } from '@cashless/shared-rules';
+import type { Loose } from '../../../support/loose';
 function edgeGenesis(site: Site): Buffer {
   return edgeChainGenesis(site.gatewayId);
 }

@@ -14,6 +14,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(300_000);
 
@@ -40,7 +41,7 @@ describe('rejeux d’un même lot', () => {
         [site.ledgerId],
       )
     ).rows[0].n;
-  const answer = (reply: { json: Record<string, any> | null }) =>
+  const answer = (reply: { json: Record<string, Loose> | null }) =>
     JSON.stringify({ results: reply.json?.results, acked: reply.json?.contiguous_acked_seq });
 
   it('100 rejeux en série : une écriture par opération, mêmes réponses', async () => {

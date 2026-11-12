@@ -14,6 +14,7 @@ import {
   type SeedMedia,
   type TestDevice,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let bench: Bench;
 let device: TestDevice;
@@ -46,7 +47,7 @@ async function activate(media: SeedMedia, o: Record<string, unknown> = {}, who =
   });
 }
 const ops = () =>
-  bench.q<{ edge_seq: string; type: string; origin_key: string; operation: any }>(
+  bench.q<{ edge_seq: string; type: string; origin_key: string; operation: Loose }>(
     'SELECT edge_seq, type, origin_key, operation FROM edge_op ORDER BY edge_seq',
   );
 
@@ -56,10 +57,10 @@ describe('activation anonyme sans caution', () => {
     const media = await seedMedia(bench, { wallet: false });
     const r = await activate(media);
     expect(r.status).toBe(201);
-    const walletId = (r.json as any).wallet.wallet_id as string;
+    const walletId = (r.json as Loose).wallet.wallet_id as string;
     expect(walletId).toMatch(/^[0-9a-f-]{36}$/);
     expect(r.json).toMatchObject({ media_id: media.mediaId, media_status: 'ACTIVE' });
-    expect((r.json as any).deposit).toMatchObject({ status: 'NONE', amount: 0 });
+    expect((r.json as Loose).deposit).toMatchObject({ status: 'NONE', amount: 0 });
     const m = await bench.q('SELECT wallet_id, status FROM edge_media WHERE media_id = $1', [
       media.mediaId,
     ]);
@@ -83,7 +84,7 @@ describe('activation anonyme sans caution', () => {
     const walletId = randomUUID();
     const r = await activate(media, { wallet_id: walletId });
     expect(r.status).toBe(201);
-    expect((r.json as any).wallet.wallet_id).toBe(walletId);
+    expect((r.json as Loose).wallet.wallet_id).toBe(walletId);
   });
 
   it('activation nominative par customer_id : non servie, rien d’écrit', async () => {
@@ -140,7 +141,7 @@ describe('caution en espèces à l’activation', () => {
     const media = await seedMedia(bench, { wallet: false });
     const r = await activate(media, { deposit_payment: { method: 'CASH', amount: 2000 } });
     expect(r.status).toBe(201);
-    expect((r.json as any).deposit).toMatchObject({ status: 'HELD', amount: 2000 });
+    expect((r.json as Loose).deposit).toMatchObject({ status: 'HELD', amount: 2000 });
     const rows = (await ops()).slice(-2);
     expect(rows.map((o) => o.type)).toEqual(['ACTIVATION', 'DEPOSIT_CASH']);
     expect(Number(rows[1]!.edge_seq)).toBe(Number(rows[0]!.edge_seq) + 1);
@@ -193,7 +194,7 @@ describe('frais ou caution sur solde : refusés pendant EDGE, aucun numéro cons
     const r = await activate(media, o);
     expect(r.status).toBe(409);
     expect(r.json).toMatchObject({ code: 'DEBIT_AUTHORITY_EDGE', retryable: false });
-    expect((r.json as any).edge_base_url).toBeUndefined();
+    expect((r.json as Loose).edge_base_url).toBeUndefined();
     expect(await opCount(bench)).toBe(before);
     expect(await bench.q('SELECT coalesce(max(edge_seq),0) AS n FROM edge_op')).toEqual(lastSeq);
   }

@@ -21,6 +21,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(120_000);
 
@@ -114,7 +115,7 @@ describe('lots de terminal relayés', () => {
     const site = await seedSite(owner, world, [[1, 10_000]]);
     const reply = await send(site, relayed(site, [{}, { amount: 300 }]));
     expect(reply.status).toBe(200);
-    expect(reply.json?.results.map((r: any) => r.status)).toEqual(['ACCEPTED', 'ACCEPTED']);
+    expect(reply.json?.results.map((r: Loose) => r.status)).toEqual(['ACCEPTED', 'ACCEPTED']);
     expect(await written(site)).toBe(2);
   });
 

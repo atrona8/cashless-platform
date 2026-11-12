@@ -11,10 +11,11 @@ import {
   ops,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 interface Vectors {
   genesis: { gateway_id: string; chain_hash_0: string }[];
-  ops: { name: string; op: Record<string, any>; content_sha256: string }[];
+  ops: { name: string; op: Record<string, Loose>; content_sha256: string }[];
   chain: {
     gateway_id: string;
     chain_hash_0: string;
@@ -24,10 +25,10 @@ interface Vectors {
   decision_pair: {
     sha_with: string;
     sha_without: string;
-    with_decision: any;
-    without_decision: any;
+    with_decision: Loose;
+    without_decision: Loose;
   };
-  rejected: { name: string; op: Record<string, any> }[];
+  rejected: { name: string; op: Record<string, Loose> }[];
 }
 const vectors: Vectors = JSON.parse(
   readFileSync(
@@ -37,7 +38,7 @@ const vectors: Vectors = JSON.parse(
 );
 const byName = (name: string): Vectors['ops'][number] => vectors.ops.find((o) => o.name === name)!;
 
-function input(op: Record<string, any>, originSuffix: string): EdgeOpInput {
+function input(op: Record<string, Loose>, originSuffix: string): EdgeOpInput {
   const { edge_seq: _s, device_serial, authorized_mode, device_batch_id, ...rest } = op;
   return {
     originKey: `${device_serial}:${originSuffix}`,

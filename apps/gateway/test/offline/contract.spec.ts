@@ -7,6 +7,7 @@ import { SERVED_OPERATION_IDS } from '../../src/processes/served-operations';
 import { contractViolations } from '../device/_support/contract-schema';
 import { buildDeviceBatch, makeBench, readySnapshot, submit, type Bench } from './_support/bench';
 import type { OfflineDevice, SeedMediaResult } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 const openapi = parse(
   readFileSync(join(__dirname, '../../../../packages/contracts/openapi.yaml'), 'utf8'),
@@ -59,7 +60,7 @@ describe('réponses conformes aux schémas', () => {
     const res = await b.request(dev, { path: '/v1/offline-snapshots/current' });
     expect(res.status).toBe(200);
     expect(contractViolations('OfflineSnapshot', res.json)).toEqual([]);
-    const sha = (res.json as any).header.content_sha256;
+    const sha = (res.json as Loose).header.content_sha256;
     const ack = await b.request(dev, {
       method: 'POST',
       path: '/v1/offline-snapshots/ack',

@@ -47,8 +47,7 @@ const map = (row: DeviceRow): DeviceRecord => ({
   certSha256: row.cert_sha256,
 });
 
-const COLUMNS =
-  'device_id, serial, kind, app_mode, status, pos_id, public_key, cert_sha256';
+const COLUMNS = 'device_id, serial, kind, app_mode, status, pos_id, public_key, cert_sha256';
 
 @Injectable()
 export class DeviceDirectory {

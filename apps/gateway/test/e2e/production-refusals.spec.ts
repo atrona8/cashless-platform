@@ -65,11 +65,6 @@ let db: TestDb;
 const unreachable = (password = STRONG): string =>
   `postgres://${ROLE}:${password}@127.0.0.1:1/none`;
 const start = (env: Record<string, string>) => runGateway(env, { entry: CHILD_MAIN });
-const without = (...names: string[]): Record<string, string> => {
-  const copy = { ...healthy };
-  for (const name of names) delete copy[name];
-  return copy;
-};
 
 beforeAll(async () => {
   dir = tempDir();

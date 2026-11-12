@@ -52,6 +52,7 @@ import {
   type EdgeWorld,
   type RunningEdge,
 } from '../../../support/edge-fixtures';
+import type { Loose } from '../../../support/loose';
 
 export interface Signer {
   spki: Buffer;
@@ -491,7 +492,7 @@ export async function startSyncEdge(
 
 export interface PostReply {
   status: number;
-  json: Record<string, any> | null;
+  json: Record<string, Loose> | null;
   headers: Record<string, string | string[] | undefined>;
   body: string;
 }
@@ -530,7 +531,7 @@ export async function edgePost(
         res.on('data', (c: Buffer) => chunks.push(c));
         res.on('end', () => {
           const text = Buffer.concat(chunks).toString('utf8');
-          let json: Record<string, any> | null = null;
+          let json: Record<string, Loose> | null = null;
           try {
             json = JSON.parse(text);
           } catch {

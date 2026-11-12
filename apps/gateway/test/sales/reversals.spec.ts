@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { makeBench, type Bench } from './_support/harness';
 import { balanceOf, newTill, queueState, reverse, tapAndPay, type Till } from './_support/helpers';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 beforeAll(async () => {
@@ -38,7 +39,7 @@ describe('annulation par le vendeur', () => {
     const [op] = await b.q<{
       type: string;
       authorized_mode: string;
-      operation: Record<string, any>;
+      operation: Record<string, Loose>;
     }>('SELECT type, authorized_mode, operation FROM edge_op WHERE edge_seq = $1', [
       after.head.last_edge_seq,
     ]);

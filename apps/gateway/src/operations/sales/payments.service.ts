@@ -226,7 +226,7 @@ export class PaymentsService {
       language: 'fr' | 'en';
     },
   ): Promise<{ response: SaleResponse } | { refusal: ProblemException }> {
-    const { input, key, seq } = ctx;
+    const { input, key } = ctx;
     // 1. Preuves : le nonce est consommé dans la transaction de l'opération.
     await this.nonces.consumeOrThrow(tx, device.deviceId, device.proof);
     // 2. Idempotence (avant l'autorité : un rejeu d'une vente déjà validée rend sa réponse).

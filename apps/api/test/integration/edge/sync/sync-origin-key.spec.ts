@@ -17,6 +17,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(120_000);
 
@@ -104,7 +105,7 @@ describe('clé d’origine de la voie passerelle alignée sur deviceKey (décisi
     const reply = await post(site, makeBatch(site, [activation, deposit]));
     expect(reply.status).toBe(200);
     const base = deviceKey(site.deviceSerial, BigInt(activation.seq as number));
-    expect(reply.json?.results.map((r: any) => r.idempotency_key)).toEqual([
+    expect(reply.json?.results.map((r: Loose) => r.idempotency_key)).toEqual([
       base,
       `${base}#deposit`,
     ]);

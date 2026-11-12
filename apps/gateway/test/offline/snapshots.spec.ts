@@ -16,6 +16,7 @@ import {
   type OfflineDevice,
   type SeedMediaResult,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let dev: OfflineDevice;
@@ -33,12 +34,12 @@ afterEach(async () => {
 const get = (query?: string, headers?: Record<string, string>) =>
   b.request(dev, { path: '/v1/offline-snapshots/current', query, headers });
 const config = async () =>
-  (await b.request(dev, { path: '/v1/device/config' })).json as Record<string, any>;
+  (await b.request(dev, { path: '/v1/device/config' })).json as Record<string, Loose>;
 
 describe('signature par la clé propre', () => {
   it('la signature se vérifie avec la clé publique du port et le key_id est celui de la passerelle', async () => {
     await readySnapshot(b);
-    const body = (await get()).json as Record<string, any>;
+    const body = (await get()).json as Record<string, Loose>;
     const spki = await b.keystore.publicKey('snapshot');
     const ok = verify(
       'sha256',
@@ -93,7 +94,7 @@ describe('signature par la clé propre', () => {
         )[0]!.n,
       ),
     ).toBe(1);
-    const keys = (await config()).snapshot_keys as Array<Record<string, any>>;
+    const keys = (await config()).snapshot_keys as Array<Record<string, Loose>>;
     expect(keys).toHaveLength(2);
     expect(keys[0]!.not_after).toBeNull();
     expect(keys[1]!.not_after).not.toBeNull();
@@ -115,8 +116,8 @@ describe('contenu au format de la mission 7', () => {
   it('empreinte de contenu recalculée, mots de passe jamais en clair, K_v enveloppée pour le terminal', async () => {
     const v = await readySnapshot(b);
     const res = await get();
-    const body = res.json as Record<string, any>;
-    const entries = body.entries as Array<Record<string, any>>;
+    const body = res.json as Record<string, Loose>;
+    const entries = body.entries as Array<Record<string, Loose>>;
     expect(entries).toHaveLength(1);
     const stripped = entries.map(
       ({ pwd_pack_enc: _p, ...rest }) => rest,
@@ -154,7 +155,7 @@ describe('contenu au format de la mission 7', () => {
     b.clock.advance(61_000);
     const out = await b.worker.tick();
     expect(out).toMatchObject({ kind: 'DELTA', version: v1 + 1 });
-    const delta = (await get(`since_version=${v1}`)).json as Record<string, any>;
+    const delta = (await get(`since_version=${v1}`)).json as Record<string, Loose>;
     expect(delta.header).toMatchObject({ kind: 'DELTA', base_version: v1 });
     expect(delta.entries).toHaveLength(1);
     expect(delta.entries[0].spendable).toBe(9000);
@@ -170,7 +171,7 @@ describe('contenu au format de la mission 7', () => {
     ]);
     const out = await b.worker.tick();
     expect(out).toMatchObject({ kind: 'DELTA', version: v1 + 1 });
-    const delta = (await get(`since_version=${v1}`)).json as Record<string, any>;
+    const delta = (await get(`since_version=${v1}`)).json as Record<string, Loose>;
     expect(delta.entries[0].status).toBe('SUSPENDED');
   });
 });
@@ -196,16 +197,16 @@ describe('service au terminal', () => {
     const off = await b.newDevice({ policy: { offline_enabled: false } });
     const r1 = await b.request(off, { path: '/v1/offline-snapshots/current' });
     expect(r1.status).toBe(403);
-    expect((r1.json as any).code).toBe('OFFLINE_NOT_ALLOWED');
+    expect((r1.json as Loose).code).toBe('OFFLINE_NOT_ALLOWED');
     await b.q("UPDATE edge_device SET status = 'SUSPENDED' WHERE device_id = $1", [dev.deviceId]);
     const r2 = await get();
     expect(r2.status).toBe(403);
-    expect((r2.json as any).code).toBe('DEVICE_SUSPENDED');
+    expect((r2.json as Loose).code).toBe('DEVICE_SUSPENDED');
   });
 
   it('accusé : 204 idempotent ; version inconnue ou empreinte fausse : 409 SNAPSHOT_VERSION_UNKNOWN', async () => {
     const v = await readySnapshot(b);
-    const body = (await get()).json as Record<string, any>;
+    const body = (await get()).json as Record<string, Loose>;
     const ack = (version: number, sha: string) =>
       b.request(dev, {
         method: 'POST',
@@ -218,7 +219,7 @@ describe('service au terminal', () => {
     expect(Number((await b.q('SELECT count(*) AS n FROM edge_snapshot_ack'))[0]!.n)).toBe(1);
     const unknown = await ack(v + 50, body.header.content_sha256);
     expect(unknown.status).toBe(409);
-    expect((unknown.json as any).code).toBe('SNAPSHOT_VERSION_UNKNOWN');
+    expect((unknown.json as Loose).code).toBe('SNAPSHOT_VERSION_UNKNOWN');
     expect((await ack(v, 'ab'.repeat(32))).status).toBe(409);
   });
 });

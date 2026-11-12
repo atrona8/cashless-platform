@@ -10,6 +10,7 @@ import {
   verifyBatchSignature,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 jest.setTimeout(30_000);
 
@@ -21,8 +22,8 @@ afterEach(async () => {
   await h.close();
 });
 
-const submissions = (): Array<Record<string, any>> =>
-  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as any);
+const submissions = (): Array<Record<string, Loose>> =>
+  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as Loose);
 
 async function forceAuthority(patch: string): Promise<void> {
   const c = await h.db.pool.connect();
@@ -63,10 +64,11 @@ describe('un seul lot en vol', () => {
     await h.add(3);
     h.central.script = (request) => acceptAll(request);
     const { DrainService } = await import('../../src/queue/drain.service');
-    const { CentralClient } = await import('../../src/central-client/central-client');
     const other = new DrainService(
       h.tx,
-      (h.drain as any).client as InstanceType<typeof CentralClient>,
+      (h.drain as Loose).client as InstanceType<
+        typeof import('../../src/central-client/central-client').CentralClient
+      >,
       h.keystore,
       h.clock,
     );

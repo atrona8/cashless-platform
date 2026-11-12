@@ -24,7 +24,6 @@ export const DEFAULT_REVERSAL_WINDOW_MINUTES = 15;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HEX32 = /^[0-9a-f]{64}$/;
 const NFC_UID = /^[0-9a-f]{14}$/;
-const CURRENCY = /^[A-Z]{3}$/;
 const DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9._:-]{8,128}$/;
 const EPOCH = /^[0-9]{1,15}$/;

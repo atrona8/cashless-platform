@@ -8,6 +8,7 @@ import {
   ops,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 let h: QueueHarness;
 beforeEach(async () => {
@@ -17,12 +18,12 @@ afterEach(async () => {
   await h.close();
 });
 
-const sent = (): Array<Record<string, any>> =>
-  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as any);
+const sent = (): Array<Record<string, Loose>> =>
+  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as Loose);
 
 function partial(request: Parameters<typeof acceptAll>[0], keep: number) {
   const reply = acceptAll(request, {}, { abandoned: true });
-  (reply.body as any).results = (reply.body as any).results.slice(0, keep);
+  (reply.body as Loose).results = (reply.body as Loose).results.slice(0, keep);
   return reply;
 }
 

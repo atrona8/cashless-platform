@@ -1,6 +1,7 @@
 // getMediaAuthKey sur la passerelle (WP23, T106/T107) : colis rescellé pour le terminal.
 import { deviceAad, fromWrappedKey, openForRecipient } from '@cashless/tag-format';
 import { makeBench, type Bench, type OfflineDevice, type SeedMediaResult } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let dev: OfflineDevice;
@@ -23,7 +24,7 @@ const ask = (d: OfflineDevice, uid: Buffer, keyIndex = 0) =>
     body: { nfc_uid: uid.toString('hex'), key_index: keyIndex },
     idempotencyKey: undefined,
   });
-const open = (d: OfflineDevice, enc: any, uid: Buffer): Buffer =>
+const open = (d: OfflineDevice, enc: Loose, uid: Buffer): Buffer =>
   openForRecipient({
     recipientPrivateKey: d.agreement.privateScalar,
     blob: enc.alg === undefined ? fromWrappedKey(enc) : enc,
@@ -35,7 +36,7 @@ describe('getMediaAuthKey', () => {
     await setup();
     const res = await ask(dev, media.uid);
     expect(res.status).toBe(200);
-    const body = res.json as Record<string, any>;
+    const body = res.json as Record<string, Loose>;
     expect(body).toMatchObject({
       nfc_uid: media.uid.toString('hex'),
       key_index: 0,
@@ -49,7 +50,7 @@ describe('getMediaAuthKey', () => {
   it('un autre terminal (mauvaise clé d’accord) ne peut pas ouvrir le colis', async () => {
     await setup();
     const other = await b.newDevice();
-    const body = (await ask(dev, media.uid)).json as Record<string, any>;
+    const body = (await ask(dev, media.uid)).json as Record<string, Loose>;
     expect(() => open(other, body.enc, media.uid)).toThrow();
   });
 
@@ -59,11 +60,11 @@ describe('getMediaAuthKey', () => {
     const unknown = await ask(dev, Buffer.alloc(7, 9));
     const wrongIndex = await ask(dev, media.uid, 5);
     expect(unknown.status).toBe(404);
-    expect((unknown.json as any).code).toBe('MEDIA_UNKNOWN');
+    expect((unknown.json as Loose).code).toBe('MEDIA_UNKNOWN');
     expect(Math.abs(unknown.elapsedMs - ok.elapsedMs)).toBeLessThan(80);
     expect(unknown.elapsedMs).toBeGreaterThanOrEqual(140);
     expect(ok.elapsedMs).toBeGreaterThanOrEqual(140);
-    expect((wrongIndex.json as any).code).toBe('MEDIA_UNKNOWN');
+    expect((wrongIndex.json as Loose).code).toBe('MEDIA_UNKNOWN');
   });
 
   it('429 au-delà de la limite par terminal ; un autre terminal n’est pas touché', async () => {
@@ -81,7 +82,7 @@ describe('getMediaAuthKey', () => {
     await b.q('DELETE FROM edge_pwd_pack_key');
     const res = await ask(dev, media.uid);
     expect(res.status).toBe(404);
-    expect((res.json as any).code).toBe('MEDIA_UNKNOWN');
+    expect((res.json as Loose).code).toBe('MEDIA_UNKNOWN');
     await b.setPackKey();
     await b.q('UPDATE edge_media SET pwd_pack_enc = NULL');
     expect((await ask(dev, media.uid)).status).toBe(404);
@@ -92,7 +93,7 @@ describe('getMediaAuthKey', () => {
     await b.keystore.destroy('agreement');
     const res = await ask(dev, media.uid);
     expect(res.status).toBe(404);
-    expect((res.json as any).code).toBe('MEDIA_UNKNOWN');
+    expect((res.json as Loose).code).toBe('MEDIA_UNKNOWN');
     expect(res.text).not.toMatch(/PWD1PK|stack|Error/);
   });
 

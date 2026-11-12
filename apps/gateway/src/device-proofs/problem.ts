@@ -102,6 +102,9 @@ export class ProblemFilter implements ExceptionFilter {
       );
     }
     for (const [name, value] of Object.entries(problem.headers ?? {})) res.setHeader(name, value);
-    res.status(problem.status).type(PROBLEM_CONTENT_TYPE).send(JSON.stringify(problemBody(problem, req)));
+    res
+      .status(problem.status)
+      .type(PROBLEM_CONTENT_TYPE)
+      .send(JSON.stringify(problemBody(problem, req)));
   }
 }

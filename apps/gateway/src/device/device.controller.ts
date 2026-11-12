@@ -74,7 +74,11 @@ export class DeviceController {
   @UseGuards(DeviceProofsGuard)
   @DeviceProofs({ allowSuspended: true })
   @ServedOperation('postDeviceHeartbeat')
-  async heartbeat(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() body: unknown) {
+  async heartbeat(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: unknown,
+  ) {
     const device = requestDevice(req);
     const input = parseHeartbeat(body);
     res.setHeader('Date', this.clock.now().toUTCString());
@@ -92,7 +96,11 @@ export class DeviceController {
           input.pendingOperations,
         ],
       );
-      const served = await this.configs.build(tx, device, pickLanguage(req.header('Accept-Language')));
+      const served = await this.configs.build(
+        tx,
+        device,
+        pickLanguage(req.header('Accept-Language')),
+      );
       const state = await this.configs.heartbeatState(tx, device.deviceId);
       return {
         server_time: served.body.server_time,

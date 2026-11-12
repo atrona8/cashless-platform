@@ -60,7 +60,9 @@ describe('lookup / record', () => {
   it('même clé, autre empreinte : IDEMPOTENCY_KEY_REUSED (409 du contrat), réponse d’origine intacte', async () => {
     const device = randomUUID();
     await perform(device, 'T-2:1', { amount: 100 }, { id: 'A' });
-    const failure = await perform(device, 'T-2:1', { amount: 999 }, { id: 'B' }).catch((e: unknown) => e);
+    const failure = await perform(device, 'T-2:1', { amount: 999 }, { id: 'B' }).catch(
+      (e: unknown) => e,
+    );
     expect(failure).toBeInstanceOf(ProblemException);
     expect((failure as ProblemException).code).toBe('IDEMPOTENCY_KEY_REUSED');
     expect((failure as ProblemException).status).toBe(409);
@@ -92,7 +94,9 @@ describe('lookup / record', () => {
         throw new Error('échec de l’effet');
       })
       .catch(() => undefined);
-    expect(await b.q('SELECT 1 FROM edge_idempotency WHERE device_id = $1', [device])).toHaveLength(0);
+    expect(await b.q('SELECT 1 FROM edge_idempotency WHERE device_id = $1', [device])).toHaveLength(
+      0,
+    );
   });
 
   it('deux requêtes simultanées de même clé : une seule exécution, l’autre rend la réponse', async () => {
@@ -132,7 +136,14 @@ describe('lookup / record', () => {
         at: b.clock.now(),
       });
     });
-    const found = await tx.run((client) => service.lookup(client, device, 'T-6:1', fp({ a: 1 }, device)));
-    expect(found).toEqual({ hit: true, statusCode: 422, response: { code: 'INSUFFICIENT_FUNDS' }, edgeSeq: null });
+    const found = await tx.run((client) =>
+      service.lookup(client, device, 'T-6:1', fp({ a: 1 }, device)),
+    );
+    expect(found).toEqual({
+      hit: true,
+      statusCode: 422,
+      response: { code: 'INSUFFICIENT_FUNDS' },
+      edgeSeq: null,
+    });
   });
 });

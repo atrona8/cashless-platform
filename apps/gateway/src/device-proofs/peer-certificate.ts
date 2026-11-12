@@ -10,7 +10,9 @@ import { readFileSync } from 'node:fs';
 import type { TLSSocket } from 'node:tls';
 import type { Request } from 'express';
 
-export type PeerCertificate = { certificate: X509Certificate; sha256: Buffer } | { refused: string };
+export type PeerCertificate =
+  | { certificate: X509Certificate; sha256: Buffer }
+  | { refused: string };
 
 /** Autorités de `GATEWAY_DEVICE_CA_FILE` (PEM, une ou plusieurs) ; illisible ou vide : aucune. */
 export function loadDeviceCas(file: string | null): X509Certificate[] {
@@ -24,7 +26,11 @@ export function loadDeviceCas(file: string | null): X509Certificate[] {
   }
 }
 
-function chainsTo(certificate: X509Certificate, cas: readonly X509Certificate[], at: number): boolean {
+function chainsTo(
+  certificate: X509Certificate,
+  cas: readonly X509Certificate[],
+  at: number,
+): boolean {
   return cas.some((ca) => {
     try {
       return (

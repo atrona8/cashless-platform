@@ -33,15 +33,7 @@ import { GATEWAY_CLOCK, type GatewayClock } from '../../../src/clock/gateway-clo
 import { GATEWAY_CONFIG, type GatewayConfig } from '../../../src/config/config';
 import { GatewayTx } from '../../../src/db/gateway-tx';
 import { GATEWAY_POOL } from '../../../src/db/pool';
-import {
-  DEVICE_PROOFS_OPTIONS,
-  DeviceProofs,
-  DeviceProofsGuard,
-  requestDevice,
-} from '../../../src/device-proofs/device-proofs.guard';
-import { NonceStore } from '../../../src/device-proofs/nonce-store';
-import { ProblemFilter } from '../../../src/device-proofs/problem';
-import { ServedOperation } from '../../../src/processes/served-operations';
+import { DEVICE_PROOFS_OPTIONS } from '../../../src/device-proofs/device-proofs.guard';
 import {
   contentDigest,
   signatureBase,

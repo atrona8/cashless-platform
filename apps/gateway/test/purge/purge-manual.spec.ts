@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { appendAckedOps, signOrder } from '../authority/_support/harness';
 import { ORDER_VALIDITY_MS, type OrderPayload } from '../../src/authority/site-order';
 import { count, makePurgeRig, readMarker, seedCanary, type PurgeRig } from './_support/harness';
@@ -41,7 +42,7 @@ describe('purge manuelle à deux personnes', () => {
     expect(await send(o, both(o))).toMatchObject({ status: 200, body: { kind: 'PURGE' } });
     expect(readMarker(rig)?.state).toBe('DONE');
     expect(await count(rig, 'edge_media')).toBe(0);
-    const marker = JSON.parse(require('node:fs').readFileSync(rig.marker.path, 'utf8'));
+    const marker = JSON.parse(readFileSync(rig.marker.path, 'utf8'));
     expect(marker.holders).toEqual(['Responsable A', 'Responsable B']);
     const rows = (
       await rig.h.db.pool.query(`SELECT detail FROM edge_audit WHERE kind = 'PURGE' ORDER BY id`)

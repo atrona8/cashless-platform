@@ -16,6 +16,7 @@ import {
 import { selfSigned } from '../authority/_support/central';
 import { tempDir } from '../startup/_support/fixture';
 import { FakeHardwareKeystore } from '../../src/key-store/fake-hardware-keystore';
+import type { Loose } from '../support/loose';
 
 const CHILD = join(__dirname, '_support', 'queue-child.ts');
 const GATEWAY = join(__dirname, '..', '..');
@@ -136,9 +137,9 @@ describe('kill-local-database', () => {
 describe('during-drain-after-send-before-result', () => {
   it('au redémarrage le MÊME lot est renvoyé ; le central répond DUPLICATE ; état final cohérent', async () => {
     await h.add(3);
-    const seen: Array<Record<string, any>> = [];
+    const seen: Array<Record<string, Loose>> = [];
     h.central.script = (request) => {
-      seen.push(request.body as any);
+      seen.push(request.body as Loose);
       return seen.length === 1
         ? acceptAll(request)
         : acceptAll(

@@ -20,6 +20,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(120_000);
 
@@ -119,7 +120,7 @@ describe('réception des lots EDGE_SYNC : écrivain', () => {
     ];
     const reply = await post(site, makeBatch(site, ops));
     expect(reply.status).toBe(200);
-    const results = reply.json?.results as Array<Record<string, any>>;
+    const results = reply.json?.results as Array<Record<string, Loose>>;
     expect(results[0]).toMatchObject({ status: 'ACCEPTED', effect: 'NONE', transaction_id: null });
     expect(results[1]).toMatchObject({ status: 'REJECTED', reject_reason: 'MALFORMED_OPERATION' });
     for (const r of results.slice(2, 5)) expect(r.status).toBe('REJECTED');
@@ -157,7 +158,7 @@ describe('réception des lots EDGE_SYNC : écrivain', () => {
     });
     const reply = await post(site, makeBatch(site, [noDecision, inconsistent, negative]));
     expect(reply.status).toBe(200);
-    for (const r of reply.json?.results)
+    for (const r of reply.json?.results ?? [])
       expect(r).toMatchObject({ status: 'REJECTED', reject_reason: 'MALFORMED_OPERATION' });
     expect(await available(site, 1)).toBe(10_000n);
   });

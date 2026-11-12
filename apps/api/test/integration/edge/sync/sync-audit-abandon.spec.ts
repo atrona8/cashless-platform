@@ -19,6 +19,7 @@ import {
   type Site,
   type SyncEdge,
 } from './sync-support';
+import type { Loose } from '../../../support/loose';
 
 jest.setTimeout(120_000);
 
@@ -162,7 +163,7 @@ describe('audit toléré, ordres locaux, lot abandonné', () => {
     disarm();
     const resumed = await post(site, batch);
     expect(resumed.status).toBe(200);
-    expect(resumed.json?.results.map((r: any) => r.status)).toEqual([
+    expect(resumed.json?.results.map((r: Loose) => r.status)).toEqual([
       'ACCEPTED',
       'ACCEPTED',
       'ACCEPTED',

@@ -6,6 +6,7 @@ import { GatewayTx } from '../../src/db/gateway-tx';
 import { buildBatch } from '../../src/queue/batch-builder';
 import { buildDeviceBatch, makeBench, readySnapshot, submit, type Bench } from './_support/bench';
 import type { OfflineDevice, SeedMediaResult } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let dev: OfflineDevice;
@@ -22,7 +23,7 @@ afterEach(async () => {
   await b.close();
 });
 
-const relayBody = async (): Promise<any> =>
+const relayBody = async (): Promise<Loose> =>
   new GatewayTx(b.db.pool).run((tx) =>
     buildBatch(
       tx,
@@ -40,7 +41,7 @@ const relayBody = async (): Promise<any> =>
 /** Central simulé : un seul effet par jeton d'idempotence, quel que soit le chemin d'arrivée. */
 class FakeCentral {
   readonly effects = new Map<string, number>();
-  apply(ops: Array<Record<string, any>>): void {
+  apply(ops: Array<Record<string, Loose>>): void {
     for (const op of ops) {
       const key = String(op.idempotency_key ?? op.origin_key ?? `${op.device_serial}:${op.seq}`);
       if (!this.effects.has(key)) this.effects.set(key, Number(op.amount ?? 0));
@@ -114,7 +115,7 @@ describe('rejeu direct du même lot au central après la passerelle', () => {
     central.apply(body.operations);
     // Le terminal rejoue ensuite son lot directement : mêmes jetons d'idempotence.
     central.apply(
-      (built.body.operations as Array<Record<string, any>>).map((o) => ({
+      (built.body.operations as Array<Record<string, Loose>>).map((o) => ({
         ...o,
         idempotency_key: `${dev.serial}:${o.seq}`,
       })),

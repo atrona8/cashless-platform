@@ -20,7 +20,8 @@ import { requestDevice, type AuthenticatedDevice } from '../../device-proofs/dev
 import type { NonceStore } from '../../device-proofs/nonce-store';
 import { ProblemException } from '../../device-proofs/problem';
 import { requestFingerprint, type IdempotencyService } from '../../device/idempotency.service';
-import { deviceKey } from '../../device/device-key';import type { EdgeQueue } from '../../queue/edge-queue';
+import { deviceKey } from '../../device/device-key';
+import type { EdgeQueue } from '../../queue/edge-queue';
 import {
   requestStaff,
   type CashSessionRow,

@@ -78,7 +78,11 @@ export class NonceStore {
   }
 
   /** Lecture : le nonce est consommé dans sa propre transaction courte. */
-  consumeAlone(deviceId: string, nonce: Buffer | string, created: Date | null): Promise<NonceOutcome> {
+  consumeAlone(
+    deviceId: string,
+    nonce: Buffer | string,
+    created: Date | null,
+  ): Promise<NonceOutcome> {
     return this.gatewayTx.run((tx) => this.consume(tx, deviceId, nonce, created));
   }
 }

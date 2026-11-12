@@ -6,6 +6,7 @@ import type { OrderPayload } from '../../src/authority/site-order';
 import { DrainService } from '../../src/queue/drain.service';
 import { acceptAll } from '../queue/_support/queue-harness';
 import { count, makePurgeRig, readMarker, seedCanary, type PurgeRig } from './_support/harness';
+import type { Loose } from '../support/loose';
 
 jest.setTimeout(30_000);
 
@@ -65,7 +66,7 @@ describe('purge manuelle avec lien', () => {
     expect(await submit()).toMatchObject({ status: 200 });
     // Un seul lot, d'ordres seuls : intervalle vide après le dernier numéro, un ordre PURGE.
     expect(batchRequests()).toHaveLength(1);
-    const body = batchRequests()[0]!.body as Record<string, any>;
+    const body = batchRequests()[0]!.body as Record<string, Loose>;
     expect(body).toMatchObject({ edge_seq_from: 2, edge_seq_to: 1, operations: [] });
     expect(body.local_orders).toHaveLength(1);
     expect(body.local_orders[0]).toMatchObject({ type: 'PURGE' });

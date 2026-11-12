@@ -65,12 +65,6 @@ async function waitReleased(): Promise<void> {
   );
 }
 
-/** Redémarre la passerelle sans point d'arrêt (le précédent processus est mort ou à tuer). */
-async function restart(): Promise<void> {
-  await bench.gateway?.kill('SIGKILL');
-  await bench.startGateway();
-}
-
 describe('NFR-004 : points d’arrêt de la passerelle', () => {
   let till: PayTerminal;
   let media: PayMedia[];

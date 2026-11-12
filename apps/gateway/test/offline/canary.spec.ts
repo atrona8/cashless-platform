@@ -5,6 +5,7 @@
 import { spawnSync } from 'node:child_process';
 import { Client } from 'pg';
 import { buildDeviceBatch, makeBench, readySnapshot, submit, type Bench } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 const CANARY = Buffer.from('k"Z\'9q', 'utf8'); // 6 octets : PWD (4) + PACK (2), avec « " » et « ' »
 const PG_CONTAINER = 'cashless-platform-pg17';
@@ -51,7 +52,7 @@ let restoreSql: () => void;
 // en `\x…`). Le journal du serveur est lu en plus quand le conteneur le restitue (voir `serverLog`).
 const realQuery = Client.prototype.query;
 function captureSql(): () => void {
-  (Client.prototype as any).query = function (this: Client, ...args: any[]) {
+  (Client.prototype as Loose).query = function (this: Client, ...args: Loose[]) {
     const first = args[0];
     const text = typeof first === 'string' ? first : (first?.text ?? '');
     const values = (typeof first === 'string' ? args[1] : first?.values) as unknown[] | undefined;
@@ -65,7 +66,7 @@ function captureSql(): () => void {
         )
       : [];
     sqlLog += `statement: ${text} parameters: ${shown.join(' | ')}\n`;
-    return (realQuery as any).apply(this, args);
+    return (realQuery as Loose).apply(this, args);
   };
   return () => {
     Client.prototype.query = realQuery;
@@ -75,11 +76,11 @@ function captureSql(): () => void {
 function captureOutput(): void {
   const out = process.stdout.write.bind(process.stdout);
   const err = process.stderr.write.bind(process.stderr);
-  process.stdout.write = ((chunk: any, ...rest: any[]) => {
+  process.stdout.write = ((chunk: Loose, ...rest: Loose[]) => {
     output += String(chunk);
     return out(chunk, ...rest);
   }) as typeof process.stdout.write;
-  process.stderr.write = ((chunk: any, ...rest: any[]) => {
+  process.stderr.write = ((chunk: Loose, ...rest: Loose[]) => {
     output += String(chunk);
     return err(chunk, ...rest);
   }) as typeof process.stderr.write;

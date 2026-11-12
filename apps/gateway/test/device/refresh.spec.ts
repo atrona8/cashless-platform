@@ -31,13 +31,16 @@ function body(
   return { serial, refresh_token: token, nonce, signature: signature.toString('base64') };
 }
 
-const post = (device: TestDevice, payload: unknown, cert: TestDevice['cert'] | null = device.cert) =>
-  b.raw({ method: 'POST', path: ROUTE, body: payload, cert });
+const post = (
+  device: TestDevice,
+  payload: unknown,
+  cert: TestDevice['cert'] | null = device.cert,
+) => b.raw({ method: 'POST', path: ROUTE, body: payload, cert });
 
 const fingerprint = async (device: TestDevice): Promise<string> =>
   (
     await b.q<{ h: string }>(
-      'SELECT encode(refresh_token_sha256_current, \'hex\') AS h FROM edge_device_token_family WHERE fid = $1',
+      "SELECT encode(refresh_token_sha256_current, 'hex') AS h FROM edge_device_token_family WHERE fid = $1",
       [device.fid],
     )
   )[0]!.h;
@@ -46,25 +49,43 @@ describe('émission', () => {
   it('200 : jeton d’accès court de la passerelle, forme exacte de TokenResponse', async () => {
     const r = await post(d, body(d));
     expect(r.status).toBe(200);
-    expect(Object.keys(r.json!).sort()).toEqual(['access_token', 'expires_in', 'refresh_token', 'token_type']);
+    expect(Object.keys(r.json!).sort()).toEqual([
+      'access_token',
+      'expires_in',
+      'refresh_token',
+      'token_type',
+    ]);
     expect(r.json!.token_type).toBe('Bearer');
     expect(r.json!.expires_in).toBeLessThanOrEqual(900);
     const claims = decodeJwt(r.json!.access_token as string);
     expect(claims.aud).toBe(`cashless-edge/${b.gatewayId}`);
     expect(claims.fid).toBe(d.fid);
     // Le jeton émis ouvre une route de terminal.
-    const next = await b.request(d, { path: '/v1/device/seq-status', token: r.json!.access_token as string });
+    const next = await b.request(d, {
+      path: '/v1/device/seq-status',
+      token: r.json!.access_token as string,
+    });
     expect(next.status).toBe(200);
   });
 
   it('émission auditée (edge_audit) sans jeton ni empreinte', async () => {
-    const before = await b.q<{ n: string }>("SELECT count(*) AS n FROM edge_audit WHERE kind = 'DEVICE_TOKEN_ISSUED'");
+    const before = await b.q<{ n: string }>(
+      "SELECT count(*) AS n FROM edge_audit WHERE kind = 'DEVICE_TOKEN_ISSUED'",
+    );
     const r = await post(d, body(d));
     expect(r.status).toBe(200);
     const rows = await b.q<{ detail: Record<string, unknown> }>(
       "SELECT detail FROM edge_audit WHERE kind = 'DEVICE_TOKEN_ISSUED' ORDER BY id DESC LIMIT 1",
     );
-    expect(Number((await b.q<{ n: string }>("SELECT count(*) AS n FROM edge_audit WHERE kind = 'DEVICE_TOKEN_ISSUED'"))[0]!.n)).toBe(Number(before[0]!.n) + 1);
+    expect(
+      Number(
+        (
+          await b.q<{ n: string }>(
+            "SELECT count(*) AS n FROM edge_audit WHERE kind = 'DEVICE_TOKEN_ISSUED'",
+          )
+        )[0]!.n,
+      ),
+    ).toBe(Number(before[0]!.n) + 1);
     const text = JSON.stringify(rows[0]!.detail);
     expect(text).not.toContain(r.json!.access_token as string);
     expect(text).not.toContain(d.refreshToken);
@@ -120,7 +141,9 @@ describe('(ii) empreinte courante', () => {
 describe('(iii) sans rotation', () => {
   it('rejoué 100 fois : toujours valable, jamais un autre jeton de rafraîchissement, empreinte intacte', async () => {
     const before = await fingerprint(d);
-    const families = await b.q('SELECT fid FROM edge_device_token_family WHERE device_id = $1', [d.deviceId]);
+    const families = await b.q('SELECT fid FROM edge_device_token_family WHERE device_id = $1', [
+      d.deviceId,
+    ]);
     for (let i = 0; i < 100; i += 1) {
       const r = await post(d, body(d));
       expect(r.status).toBe(200);
@@ -129,7 +152,9 @@ describe('(iii) sans rotation', () => {
     }
     expect(await fingerprint(d)).toBe(before);
     expect(before).toBe(createHash('sha256').update(d.refreshToken).digest('hex'));
-    expect(await b.q('SELECT fid FROM edge_device_token_family WHERE device_id = $1', [d.deviceId])).toEqual(families);
+    expect(
+      await b.q('SELECT fid FROM edge_device_token_family WHERE device_id = $1', [d.deviceId]),
+    ).toEqual(families);
   });
 
   it('la réponse ne porte aucun jeton de rafraîchissement différent du présenté', async () => {
@@ -154,7 +179,10 @@ describe('(iii) sans rotation', () => {
 
   it('une empreinte absente (NULL) ne correspond à rien', async () => {
     const dev = await b.newDevice();
-    await b.q('UPDATE edge_device_token_family SET refresh_token_sha256_current = NULL WHERE fid = $1', [dev.fid]);
+    await b.q(
+      'UPDATE edge_device_token_family SET refresh_token_sha256_current = NULL WHERE fid = $1',
+      [dev.fid],
+    );
     expect((await post(dev, body(dev))).status).toBe(401);
   });
 });

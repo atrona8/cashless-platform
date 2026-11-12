@@ -56,6 +56,7 @@ import type { Response, TestDevice } from '../../device/_support/harness';
 import { makeRealCa } from '../../device/_support/pki';
 import { admin, createTestDb, type TestDb } from '../../startup/_support/db';
 import { enrolledFixture, tempDir } from '../../startup/_support/fixture';
+import type { Loose } from '../../support/loose';
 
 export type { Response };
 
@@ -94,7 +95,7 @@ export interface Bench {
       signer?: KeyObject;
     },
   ): Promise<Response>;
-  q<T = Record<string, any>>(sql: string, params?: unknown[]): Promise<T[]>;
+  q<T = Record<string, Loose>>(sql: string, params?: unknown[]): Promise<T[]>;
   close(): Promise<void>;
 }
 

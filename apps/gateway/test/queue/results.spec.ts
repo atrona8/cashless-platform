@@ -12,6 +12,7 @@ import {
   SERIAL,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 const W1 = 'a0000000-0000-4000-8000-000000000001';
 const W2 = 'a0000000-0000-4000-8000-000000000002';
@@ -136,7 +137,7 @@ describe('issues du central et leur effet', () => {
     await h.add(2);
     h.central.script = (request) => {
       const reply = acceptAll(request);
-      (reply.body as any).results.push({
+      (reply.body as Loose).results.push({
         seq: 77,
         idempotency_key: 'TPE-INCONNU:77',
         status: 'ACCEPTED',
@@ -181,7 +182,7 @@ describe('issues du central et leur effet', () => {
     await h.add(2);
     h.central.script = (request) => {
       const reply = acceptAll(request);
-      (reply.body as any).batch_id = randomUUID();
+      (reply.body as Loose).batch_id = randomUUID();
       return reply;
     };
     await h.drain.runOnce();
@@ -217,7 +218,7 @@ describe('accusés des terminaux', () => {
     // Le central répond pour les opérations 1 et 2 seulement (lot abandonné) : accusé 2.
     h.central.script = (request) => {
       const reply = acceptAll(request, {}, { abandoned: true });
-      (reply.body as any).results = (reply.body as any).results.slice(0, 2);
+      (reply.body as Loose).results = (reply.body as Loose).results.slice(0, 2);
       return reply;
     };
     await h.drain.runOnce();
@@ -260,7 +261,7 @@ describe('staff_token_audit', () => {
     await tolerated(2, 'jti-2');
     h.central.script = () => ({ destroy: true });
     await h.drain.runOnce();
-    const sent = h.central.requests[0]!.body as any;
+    const sent = h.central.requests[0]!.body as Loose;
     expect(sent.staff_token_audit).toHaveLength(1);
     expect(sent.staff_token_audit[0]).toMatchObject({
       edge_seq: 2,
@@ -284,7 +285,7 @@ describe('staff_token_audit', () => {
     // Le lot suivant ne le porte plus.
     await h.add(1);
     await h.drain.runOnce();
-    expect((h.central.requests.at(-1)!.body as any).staff_token_audit).toBeUndefined();
+    expect((h.central.requests.at(-1)!.body as Loose).staff_token_audit).toBeUndefined();
   });
 
   it('une ligne sans forme valide n’est pas versée (le lot serait refusé) : alerte, la ligne locale reste', async () => {
@@ -292,7 +293,7 @@ describe('staff_token_audit', () => {
     await tolerated(1, 'jti-1', { route: 'autre' });
     h.central.script = (request) => acceptAll(request);
     await h.drain.runOnce();
-    expect((h.central.requests[0]!.body as any).staff_token_audit).toBeUndefined();
+    expect((h.central.requests[0]!.body as Loose).staff_token_audit).toBeUndefined();
     expect(await auditKinds(h.db)).toContain('STAFF_AUDIT_UNSENDABLE');
     expect(
       (
@@ -309,7 +310,7 @@ describe('staff_token_audit', () => {
     await tolerated(3, 'jti-3');
     h.central.script = (request) => {
       const reply = acceptAll(request, {}, { abandoned: true });
-      (reply.body as any).results = (reply.body as any).results.slice(0, 2);
+      (reply.body as Loose).results = (reply.body as Loose).results.slice(0, 2);
       return reply;
     };
     await h.drain.runOnce();

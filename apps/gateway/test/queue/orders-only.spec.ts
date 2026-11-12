@@ -11,6 +11,7 @@ import {
   verifyBatchSignature,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 jest.setTimeout(30_000);
 
@@ -23,8 +24,8 @@ afterEach(async () => {
 });
 
 const SHA = 'ab'.repeat(32);
-const submissions = (): Array<Record<string, any>> =>
-  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as any);
+const submissions = (): Array<Record<string, Loose>> =>
+  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as Loose);
 const addOrder = (sha = SHA, kind = 'PURGE') =>
   h.db.pool.query(
     `INSERT INTO edge_audit (kind, actor, detail) VALUES ('SITE_ORDER_ACCEPTED', 'gateway', $1)`,

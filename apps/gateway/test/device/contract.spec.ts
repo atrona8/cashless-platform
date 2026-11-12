@@ -43,7 +43,9 @@ describe('mêmes chemins, mêmes méthodes, mêmes preuves que le contrat', () =
   });
 
   it('les preuves du contrat : refresh = deviceMtls seul ; lectures = les trois', () => {
-    expect(Object.keys(openapi.paths['/device-tokens/refresh']!.post!.security![0]!)).toEqual(['deviceMtls']);
+    expect(Object.keys(openapi.paths['/device-tokens/refresh']!.post!.security![0]!)).toEqual([
+      'deviceMtls',
+    ]);
     for (const [, method, path] of OURS.slice(1))
       expect(Object.keys(openapi.paths[path]![method]!.security![0]!).sort()).toEqual([
         'deviceMtls',
@@ -69,11 +71,24 @@ describe('chaque réponse valide le schéma du contrat', () => {
 
   it('200 avec catalogue et clé de snapshot : DeviceConfig', async () => {
     const dev = await b.newDevice();
-    const pos = (await b.q<{ pos_id: string }>('SELECT pos_id FROM edge_device WHERE device_id = $1', [dev.deviceId]))[0]!.pos_id;
-    await b.q('INSERT INTO edge_catalog_item (pos_id, item_id, version, price, lines) VALUES ($1, gen_random_uuid(), 2, 500, $2)', [
-      pos,
-      JSON.stringify({ name_fr: 'Eau', name_en: 'Water', category_fr: null, category_en: null, vat_rate_bps: 0 }),
-    ]);
+    const pos = (
+      await b.q<{ pos_id: string }>('SELECT pos_id FROM edge_device WHERE device_id = $1', [
+        dev.deviceId,
+      ])
+    )[0]!.pos_id;
+    await b.q(
+      'INSERT INTO edge_catalog_item (pos_id, item_id, version, price, lines) VALUES ($1, gen_random_uuid(), 2, 500, $2)',
+      [
+        pos,
+        JSON.stringify({
+          name_fr: 'Eau',
+          name_en: 'Water',
+          category_fr: null,
+          category_en: null,
+          vat_rate_bps: 0,
+        }),
+      ],
+    );
     b.snapshotKeys.push({
       key_id: 'edge-snap-1',
       algorithm: 'ECDSA_P256_SHA256',
@@ -127,7 +142,12 @@ describe('chaque réponse valide le schéma du contrat', () => {
       method: 'POST',
       path: `${BASE}/device-tokens/refresh`,
       cert: d.cert,
-      body: { serial: d.serial, refresh_token: d.refreshToken, nonce, signature: signature.toString('base64') },
+      body: {
+        serial: d.serial,
+        refresh_token: d.refreshToken,
+        nonce,
+        signature: signature.toString('base64'),
+      },
     });
     expect(r.status).toBe(200);
     expect(contractViolations('TokenResponse', r.json)).toEqual([]);
@@ -144,8 +164,17 @@ describe('chaque réponse valide le schéma du contrat', () => {
     const bad = [
       await b.request(d, { path: `${BASE}/device/seq-status`, token: null }),
       await b.request(d, { path: `${BASE}/device/seq-status`, signer: newKeyPair().privateKey }),
-      await b.raw({ method: 'POST', path: `${BASE}/device-tokens/refresh`, cert: null, body: {
-        serial: d.serial, refresh_token: 'drt_aaaaaaaaaaaaaaaaaaaa', nonce: 'aaaaaaaaaaaaaaaa', signature: Buffer.alloc(64).toString('base64') } }),
+      await b.raw({
+        method: 'POST',
+        path: `${BASE}/device-tokens/refresh`,
+        cert: null,
+        body: {
+          serial: d.serial,
+          refresh_token: 'drt_aaaaaaaaaaaaaaaaaaaa',
+          nonce: 'aaaaaaaaaaaaaaaa',
+          signature: Buffer.alloc(64).toString('base64'),
+        },
+      }),
     ];
     for (const r of bad) {
       expect(r.status).toBe(401);

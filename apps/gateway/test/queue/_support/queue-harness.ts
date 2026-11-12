@@ -21,6 +21,7 @@ import {
 import { TestClock } from '../../authority/_support/harness';
 import { createTestDb, type TestDb } from '../../startup/_support/db';
 import { enrolledFixture, tempDir } from '../../startup/_support/fixture';
+import type { Loose } from '../../support/loose';
 
 export const DEVICE_ID = '99999999-9999-4999-8999-999999999999';
 export const SERIAL = 'TPE-BAR-01';
@@ -181,13 +182,13 @@ export function verifyBatchSignature(
     .verify({ key, dsaEncoding: 'der' }, Buffer.from(String(signature), 'base64'));
 }
 
-export async function ops(db: TestDb): Promise<Array<Record<string, any>>> {
+export async function ops(db: TestDb): Promise<Array<Record<string, Loose>>> {
   return (await db.pool.query('SELECT * FROM edge_op ORDER BY edge_seq')).rows;
 }
-export async function head(db: TestDb): Promise<Record<string, any>> {
+export async function head(db: TestDb): Promise<Record<string, Loose>> {
   return (await db.pool.query('SELECT * FROM edge_chain_head')).rows[0];
 }
-export async function batches(db: TestDb): Promise<Array<Record<string, any>>> {
+export async function batches(db: TestDb): Promise<Array<Record<string, Loose>>> {
   return (await db.pool.query('SELECT * FROM edge_outgoing_batch ORDER BY sent_at NULLS LAST'))
     .rows;
 }

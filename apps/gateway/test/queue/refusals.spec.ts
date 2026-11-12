@@ -7,6 +7,7 @@ import {
   ops,
   type QueueHarness,
 } from './_support/queue-harness';
+import type { Loose } from '../support/loose';
 
 let h: QueueHarness;
 beforeEach(async () => {
@@ -16,8 +17,8 @@ afterEach(async () => {
   await h.close();
 });
 
-const sent = (): Array<Record<string, any>> =>
-  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as any);
+const sent = (): Array<Record<string, Loose>> =>
+  h.central.requests.filter((r) => r.path === '/edge/sync-batches').map((r) => r.body as Loose);
 
 describe('refus du central', () => {
   it('EDGE_NOT_CAUGHT_UP reprend depuis missing_edge_seqs, dans un nouveau lot', async () => {
@@ -86,7 +87,7 @@ describe('refus du central', () => {
     ).toBe(snapshot);
     // Après un redémarrage (nouvelle instance), l'arrêt persiste.
     const { DrainService } = await import('../../src/queue/drain.service');
-    const fresh = new DrainService(h.tx, (h.drain as any).client, h.keystore, h.clock);
+    const fresh = new DrainService(h.tx, (h.drain as Loose).client, h.keystore, h.clock);
     await fresh.runOnce();
     expect(sent().length).toBe(count);
   });

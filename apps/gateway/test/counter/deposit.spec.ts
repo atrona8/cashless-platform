@@ -13,6 +13,7 @@ import {
   type SeedMedia,
   type TestDevice,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let bench: Bench;
 let device: TestDevice;
@@ -60,7 +61,7 @@ describe('caution en espèces', () => {
     expect(r.status).toBe(200);
     expect(r.json).toMatchObject({ status: 'HELD', amount: 2000, mode: 'SEPARATE' });
     const row = (
-      await bench.q<{ type: string; operation: any }>(
+      await bench.q<{ type: string; operation: Loose }>(
         'SELECT type, operation FROM edge_op ORDER BY edge_seq DESC LIMIT 1',
       )
     )[0]!;
@@ -158,7 +159,7 @@ describe('FROM_BALANCE et autres moyens : DEBIT_AUTHORITY_EDGE, aucun numéro co
     const r = await deposit(media, body as Record<string, unknown>);
     expect(r.status).toBe(409);
     expect(r.json).toMatchObject({ code: 'DEBIT_AUTHORITY_EDGE', retryable: false });
-    expect((r.json as any).edge_base_url).toBeUndefined();
+    expect((r.json as Loose).edge_base_url).toBeUndefined();
     expect(await opCount(bench)).toBe(before);
     expect(await lastSeq()).toBe(seqBefore);
   });

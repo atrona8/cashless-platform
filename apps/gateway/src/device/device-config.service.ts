@@ -159,7 +159,13 @@ export class DeviceConfigService {
         item_id: string;
         version: string;
         price: string;
-        lines: { name_fr: string; name_en: string; category_fr: string | null; category_en: string | null; vat_rate_bps: number };
+        lines: {
+          name_fr: string;
+          name_en: string;
+          category_fr: string | null;
+          category_en: string | null;
+          vat_rate_bps: number;
+        };
       }>(
         'SELECT item_id, version, price, lines FROM edge_catalog_item WHERE pos_id = $1 ORDER BY item_id',
         [d.pos_id],
