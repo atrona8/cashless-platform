@@ -612,3 +612,12 @@ Notes à transmettre aux lots suivants.
   OP-N115 à OP-N117 (lignes de tableau seules, absentes de PROMPTS/PRD ; OP-N117 à lever), ADR-187 sans risque ni
   levée. À soumettre au porteur : seuil HIGH du balayage. Batterie e2e complète (orchestrateur) : 150/151, seul rouge
   le plancher NFR-001 local (58 débits/s, 0 violation, décision 54). WP25 `for_review`, relecture lancée.
+- WP25 **relecture cycle 1** (12/11, `rapports/feedback/wp25-cycle1.md`) : refus, `M8_E2E_LONG` absent du job
+  `gateway-e2e` (3 bascules au lieu de 20, 2 000 opérations au lieu de 10 000). **Correction cycle 1** (34b7e9e6) :
+  mode long en CI (local : 20 bascules, 0 violation, 67/s ; 10 000 opérations vidées en 397 s avec kill), règles de
+  `ci-workflow.spec.ts` contre `|| true`, `if:`, `--passWithNoTests` (32 verts), Trivy bloquant HIGH et CRITICAL
+  (décision 56), `CODEOWNERS` au porteur (décision 57), refus explicite de `cashless_test`, ports jugés en nombre,
+  générateurs arrêtés en `afterAll`, canari de la clé de jeton (PKCS#8 et scalaire), `edge-decision.spec.ts` (hors
+  carte, 8 tests). Docs faites par l'orchestrateur (cdbc913a). **Avant la fusion** : `npm run lint` rouge sur la lane
+  (142 erreurs : 127 `apps/gateway/test`, 13 `apps/api/test`, 2 `apps/gateway/src`, accumulées sur la mission) ;
+  `env-setup.cjs` non formaté. Protection de branche « revue des propriétaires » à activer côté GitHub.
