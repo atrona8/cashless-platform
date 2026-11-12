@@ -3,24 +3,39 @@
 // à la main : une route ajoutée par WP12 ou après est couverte sans toucher ce test.
 import 'reflect-metadata';
 import { request } from 'node:https';
+import { RequestMethod } from '@nestjs/common';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
+import { ModulesContainer } from '@nestjs/core';
+import { API_PREFIX } from '../../../../src/config/config';
 import { edgeTls, startEdge, type RunningEdge } from '../../../support/edge-fixtures';
 
-interface RouteLayer {
-  route?: { path: string; methods: Record<string, boolean> };
-  handle?: { stack?: RouteLayer[] };
-}
-
-function registeredRoutes(edge: RunningEdge): { method: string; path: string }[] {
-  const express = edge.app.getHttpAdapter().getInstance() as {
-    router?: { stack: RouteLayer[] };
-    _router?: { stack: RouteLayer[] };
-  };
-  const stack = express.router?.stack ?? express._router?.stack ?? [];
+/**
+ * Routes réelles : méthode HTTP + chemin déclarés par les contrôleurs de l'application (métadonnées Nest),
+ * préfixées par le préfixe global. Le routeur Express n'est pas une source fiable : depuis
+ * `@nestjs/platform-express` 11.2.9, le montage d'un middleware à chemin exact (préfixe global `/v1`) y est
+ * enregistré par `router.all('/v1')`, soit 36 « routes » qui ne sont pas des routes de contrôleur.
+ */
+function controllerRoutes(edge: RunningEdge): { method: string; path: string }[] {
+  const modules = edge.app.get(ModulesContainer, { strict: false });
+  const join = (...parts: string[]): string =>
+    '/' + parts.map((p) => p.replace(/^\/+|\/+$/g, '')).filter(Boolean).join('/');
+  const asList = (v: unknown): string[] => (Array.isArray(v) ? (v as string[]) : [String(v ?? '')]);
   const found: { method: string; path: string }[] = [];
-  for (const layer of stack) {
-    if (!layer.route) continue;
-    for (const method of Object.keys(layer.route.methods))
-      found.push({ method: method.toUpperCase(), path: layer.route.path });
+  for (const mod of modules.values()) {
+    for (const { metatype } of mod.controllers.values()) {
+      if (!metatype) continue;
+      const base = asList(Reflect.getMetadata(PATH_METADATA, metatype));
+      const proto = metatype.prototype as Record<string, unknown>;
+      for (const name of Object.getOwnPropertyNames(proto)) {
+        const handler = proto[name];
+        if (typeof handler !== 'function') continue;
+        const verb = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
+        if (verb === undefined) continue;
+        const own = asList(Reflect.getMetadata(PATH_METADATA, handler));
+        const method = verb === RequestMethod.ALL ? 'POST' : RequestMethod[verb]!;
+        for (const b of base) for (const o of own) found.push({ method, path: join(API_PREFIX, b, o) });
+      }
+    }
   }
   return found;
 }
@@ -59,15 +74,16 @@ describe('processus edge : aucune route sans certificat de passerelle', () => {
   };
 
   it('la table de routes n’est pas vide et contient les routes connues', () => {
-    const paths = registeredRoutes(edge).map((r) => r.path);
+    const paths = controllerRoutes(edge).map((r) => r.path);
     expect(paths.some((p) => p.endsWith('/edge/handovers/current'))).toBe(true);
     expect(paths.some((p) => p.includes('/debit-authority'))).toBe(true);
     expect(paths.some((p) => p.endsWith('/health'))).toBe(true);
   });
 
   it('chaque route enregistrée hors /health répond 401 (ou refus TLS) sans certificat', async () => {
-    const routes = registeredRoutes(edge).filter((r) => !r.path.endsWith('/v1/health'));
-    expect(routes.length).toBeGreaterThanOrEqual(2);
+    const routes = controllerRoutes(edge).filter((r) => !r.path.endsWith('/v1/health'));
+    // Garde contre un test à vide : des routes `/edge/*` sont bien vues.
+    expect(routes.filter((r) => r.path.includes('/edge/')).length).toBeGreaterThanOrEqual(2);
     const offenders: string[] = [];
     for (const { method, path } of routes) {
       const outcome = await call(method, path);
