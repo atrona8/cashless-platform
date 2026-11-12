@@ -97,8 +97,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N116 | Inscription des passerelles : grand livre passé à la main non vérifié (mission 8, WP15) | Non | Non | Mission 11a |
 | OP-N117 | LEVÉ le 11/11/2026 (WP25 partie A, borne haute `completed_at` + 120 s) : reprise forcée, anomalies en trop après la fin de la reprise (mission 8, WP14) | Non | Non | Levé |
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
-| OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mi| OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Porteur |
-ssion 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
+| OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
+| OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Mission 12b |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
