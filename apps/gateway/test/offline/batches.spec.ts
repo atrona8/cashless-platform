@@ -11,6 +11,7 @@ import {
   type OfflineDevice,
   type SeedMediaResult,
 } from './_support/bench';
+import type { Loose } from '../support/loose';
 
 let b: Bench;
 let dev: OfflineDevice;
@@ -53,8 +54,8 @@ describe('lot valide', () => {
     );
     const res = await submit(b, dev, built);
     expect(res.status).toBe(200);
-    const results = (res.json as any).results;
-    expect(results.map((r: any) => [r.seq, r.status, r.charged_to_wallet])).toEqual([
+    const results = (res.json as Loose).results;
+    expect(results.map((r: Loose) => [r.seq, r.status, r.charged_to_wallet])).toEqual([
       [1, 'ACCEPTED', 500],
       [2, 'ACCEPTED', 700],
     ]);
@@ -71,7 +72,7 @@ describe('lot valide', () => {
       chain = chainStep(chain, edgeContentSha256(o.operation));
       expect(o.chain_hash.equals(chain)).toBe(true);
     }
-    expect(ops[0]!.operation.chain_hash).toBe((built.body.operations[0] as any).chain_hash);
+    expect(ops[0]!.operation.chain_hash).toBe((built.body.operations[0] as Loose).chain_hash);
     const stored = (await b.q('SELECT * FROM edge_device_batch'))[0]!;
     expect(stored.header).toEqual(built.header);
     expect(stored.signature.toString('base64')).toBe(built.body.signature);
@@ -96,7 +97,7 @@ describe('lot valide', () => {
     });
     const res = await submit(b, dev, other);
     expect(res.status).toBe(409);
-    expect((res.json as any).code).toBe('IDEMPOTENCY_KEY_REUSED');
+    expect((res.json as Loose).code).toBe('IDEMPOTENCY_KEY_REUSED');
     expect(await count('edge_op')).toBe(1);
   });
 });
@@ -162,6 +163,21 @@ describe('décision locale jointe (edge_decision, défaut B)', () => {
     expect((await submit(b, dev, built)).status).toBe(200);
     expect((await decisions())[0]![1].charged_to_wallet).toBe(500);
   });
+
+  it('opération sans montant : la décision du terminal est retirée, aucune n’est posée', async () => {
+    const forged = { status: 'ACCEPTED', charged_to_wallet: 1, shortfall_amount: 0 };
+    const built = buildDeviceBatch(
+      b,
+      dev,
+      [{ type: 'VOID', extra: { edge_decision: forged } }],
+      opts(),
+    );
+    expect((built.body.operations[0] as Loose).amount).toBeUndefined();
+    expect((await submit(b, dev, built)).status).toBe(200);
+    const queued = await b.q('SELECT type, operation FROM edge_op ORDER BY edge_seq');
+    expect(queued.map((o) => o.type)).toEqual(['VOID']);
+    expect(queued[0]!.operation).not.toHaveProperty('edge_decision');
+  });
 });
 
 describe('contrôles d’entrée : rien n’est écrit', () => {
@@ -182,7 +198,7 @@ describe('contrôles d’entrée : rien n’est écrit', () => {
       buildDeviceBatch(b, dev, [{ media }], { ...opts(), signer: other }),
     );
     expect(res.status).toBe(400);
-    expect((res.json as any).code).toBe('BATCH_SIGNATURE_INVALID');
+    expect((res.json as Loose).code).toBe('BATCH_SIGNATURE_INVALID');
     await nothing();
   });
 
@@ -190,7 +206,7 @@ describe('contrôles d’entrée : rien n’est écrit', () => {
     const built = buildDeviceBatch(b, dev, [{ media }], opts());
     built.body.signature = Buffer.alloc(64, 7).toString('base64');
     const res = await submit(b, dev, built);
-    expect((res.json as any).code).toBe('BATCH_SIGNATURE_INVALID');
+    expect((res.json as Loose).code).toBe('BATCH_SIGNATURE_INVALID');
     await nothing();
   });
 
@@ -206,7 +222,7 @@ describe('contrôles d’entrée : rien n’est écrit', () => {
       ),
     );
     expect(res.status).toBe(409);
-    expect((res.json as any).code).toBe('CHAIN_BROKEN');
+    expect((res.json as Loose).code).toBe('CHAIN_BROKEN');
     await nothing();
   });
 
@@ -232,13 +248,13 @@ describe('contrôles d’entrée : rien n’est écrit', () => {
     const specs = Array.from({ length: 501 }, () => ({ type: 'VOID' as const }));
     const res = await submit(b, dev, buildDeviceBatch(b, dev, specs, opts()));
     expect(res.status).toBe(413);
-    expect((res.json as any).code).toBe('BATCH_TOO_LARGE');
+    expect((res.json as Loose).code).toBe('BATCH_TOO_LARGE');
     await nothing();
   });
 
   it('numéros non continus : 400 SEQ_OUT_OF_ORDER', async () => {
     const built = buildDeviceBatch(b, dev, [{ media }, { media }], opts());
-    (built.body.operations[1] as any).seq = 9;
+    (built.body.operations[1] as Loose).seq = 9;
     const res = await submit(b, dev, built);
     expect(res.status).toBe(400);
     await nothing();
@@ -255,8 +271,8 @@ describe('autorité de débit : règle inversée', () => {
     await b.setAuthority(state as string);
     const res = await submit(b, dev, buildDeviceBatch(b, dev, [{ media }], opts()));
     expect(res.status).toBe(status);
-    expect((res.json as any).code).toBe(code);
-    if (state === 'ARMED') expect((res.json as any).detail).toBe('GATEWAY_NOT_AUTHORITY');
+    expect((res.json as Loose).code).toBe(code);
+    if (state === 'ARMED') expect((res.json as Loose).detail).toBe('GATEWAY_NOT_AUTHORITY');
     expect(await count('edge_op')).toBe(0);
     expect(Number((await b.q('SELECT last_edge_seq FROM edge_chain_head'))[0]!.last_edge_seq)).toBe(
       0,
@@ -275,16 +291,16 @@ describe('autorité de débit : règle inversée', () => {
       buildDeviceBatch(b, dev, [{ media }], { ...opts(), epoch: 2 }),
     );
     expect(res.status).toBe(409);
-    expect((res.json as any).code).toBe('STALE_AUTHORITY_EPOCH');
+    expect((res.json as Loose).code).toBe('STALE_AUTHORITY_EPOCH');
     expect(await count('edge_op')).toBe(0);
   });
 });
 
 describe('règles de la mission 7 (code partagé)', () => {
-  const only = async (specs: any[], extra = {}) => {
+  const only = async (specs: Loose[], extra = {}) => {
     const res = await submit(b, dev, buildDeviceBatch(b, dev, specs, { ...opts(), ...extra }));
     expect(res.status).toBe(200);
-    return (res.json as any).results as any[];
+    return (res.json as Loose).results as Loose[];
   };
 
   it('plafond par vente dépassé : REJECTED POLICY_LIMIT_EXCEEDED, sans delta, mais mise en file', async () => {
@@ -393,11 +409,11 @@ describe('règles de la mission 7 (code partagé)', () => {
     };
     const built = buildDeviceBatch(b, dev, [rev], { ...opts(), seqFrom: 2 });
     const res = await submit(b, dev, built);
-    expect((res.json as any).results[0].status).toBe('ACCEPTED');
+    expect((res.json as Loose).results[0].status).toBe('ACCEPTED');
     expect(await balance()).toBe(10000);
     const built2 = buildDeviceBatch(b, dev, [rev], { ...opts(), seqFrom: 3 });
     const res2 = await submit(b, dev, built2);
-    expect((res2.json as any).results[0]).toMatchObject({
+    expect((res2.json as Loose).results[0]).toMatchObject({
       status: 'REJECTED',
       reject_reason: 'ALREADY_REVERSED',
     });
@@ -413,7 +429,7 @@ describe('règles de la mission 7 (code partagé)', () => {
       seqFrom: 10,
     });
     const res = await submit(b, other, built);
-    expect((res.json as any).results[0].reject_reason).toBe('REVERSAL_TARGET_NOT_FOUND');
+    expect((res.json as Loose).results[0].reject_reason).toBe('REVERSAL_TARGET_NOT_FOUND');
   });
 
   it('numéro déjà pris par une décision de la passerelle (en ligne) : DUPLICATE, rien de nouveau en file', async () => {
@@ -433,7 +449,7 @@ describe('TOPUP_CASH (C-006)', () => {
       dev,
       buildDeviceBatch(b, dev, [{ type: 'TOPUP_CASH', amount: 2000 }, { media }], opts()),
     );
-    const results = (res.json as any).results;
+    const results = (res.json as Loose).results;
     expect(results[0]).toMatchObject({ status: 'REJECTED', reject_reason: 'OFFLINE_NOT_ALLOWED' });
     expect(results[0].detail).toBe('TOPUP_CASH');
     expect(results[1].status).toBe('ACCEPTED');
@@ -466,7 +482,7 @@ describe('TOPUP_CASH (C-006)', () => {
     );
     expect(await balance()).toBe(11000);
     const res = await submit(b, dev, buildDeviceBatch(b, dev, [{ type: 'TOPUP_CASH' }], opts()));
-    expect((res.json as any).results[0].reject_reason).toBe('OFFLINE_NOT_ALLOWED');
+    expect((res.json as Loose).results[0].reject_reason).toBe('OFFLINE_NOT_ALLOWED');
     expect(await balance()).toBe(11000);
   });
 });
@@ -488,7 +504,7 @@ describe('getOfflineBatchResult', () => {
     await submit(b, dev, built);
     const local = await get(built.batchId);
     expect(local.status).toBe(200);
-    expect((local.json as any).results[0].status).toBe('ACCEPTED');
+    expect((local.json as Loose).results[0].status).toBe('ACCEPTED');
     const txId = randomUUID();
     await b.q(
       `UPDATE edge_op SET central_status = 'ACCEPTED_WITH_SHORTFALL', central_transaction_id = $1,
@@ -496,7 +512,7 @@ describe('getOfflineBatchResult', () => {
         WHERE edge_seq = 1`,
       [txId],
     );
-    const merged = (await get(built.batchId)).json as any;
+    const merged = (await get(built.batchId)).json as Loose;
     expect(merged.results[0]).toMatchObject({
       status: 'ACCEPTED_WITH_SHORTFALL',
       effect: 'LEDGER_WRITTEN',
