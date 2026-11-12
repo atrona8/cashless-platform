@@ -297,8 +297,6 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
       NODE_ENV: test
-      # Conteneur PostgreSQL lu par le canari (`pg_dump`, journal du serveur) : celui du service.
-      M8_PG_CONTAINER: ${{ job.services.postgres.id }}
       # NFR-001 : 100 débits/s exigés (décision 54). Ne jamais abaisser dans ce job (ci-workflow.spec.ts).
       M8_MIN_DEBIT_RATE: "100"
       # Volumes de la recette (DoD de T114) : 20 bascules sous charge (SC-002) et 10 000 opérations rendues
@@ -309,6 +307,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+      # Conteneur PostgreSQL lu par le canari (`pg_dump`, journal du serveur) : celui du service. Le contexte
+      # `job` n'existe pas dans l'`env` d'un job : la variable est posée par une étape.
+      - name: Conteneur du service PostgreSQL
+        run: echo "M8_PG_CONTAINER=${{ job.services.postgres.id }}" >> "$GITHUB_ENV"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22

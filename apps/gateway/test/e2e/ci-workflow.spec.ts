@@ -50,6 +50,8 @@ const WEAKENING: Array<[RegExp, string]> = [
   [/\|\|\s*(true|:|exit\s+0)\b/, '`|| true` (ou `|| :`, `|| exit 0`)'],
   [/\|\|\s*:(\s|$)/, '`|| :`'],
   [/;\s*(true|:)\s*($|\n|;)/, '`; true`'],
+  [/;\s*exit\s+0\b/, '`; exit 0`'],
+  [/\|\s*tee\b/, '`| tee` (pas de pipefail par défaut : le code de sortie est celui de tee)'],
   [/\bset\s+\+[a-z]*e/, '`set +e`'],
   [/--passWithNoTests/, '`--passWithNoTests`'],
   [/--exit-code[ =]0\b/, '`--exit-code 0`'],
@@ -161,6 +163,33 @@ export function violations(doc: Workflow): string[] {
     const sev = /--severity[ =]([A-Z,]+)/.exec(call)?.[1]?.split(',') ?? [];
     if (!sev.includes('HIGH') || !sev.includes('CRITICAL'))
       out.push('gateway-e2e : l’appel bloquant de Trivy doit exiger HIGH et CRITICAL');
+  }
+
+  // Le contexte `job` n'existe pas dans l'`env` d'un job : GitHub rejette alors tout le fichier.
+  for (const [jobName, job] of Object.entries(jobs))
+    for (const [k, v] of Object.entries(job.env ?? {}))
+      if (/\$\{\{[^}]*\bjob\./.test(String(v)))
+        out.push(`${jobName} : contexte \`job\` dans l'env du job (${k})`);
+  // Le job `ledger` s'exécute toujours.
+  if (ledger && ledger.if !== undefined) out.push('ledger : `if:` sur le job');
+  // Réglages locaux de charge : jamais dans la CI, sauf un débit offert d'au moins 100.
+  {
+    const all = JSON.stringify(doc);
+    if (/M8_LOAD_WORKERS/.test(all)) out.push('M8_LOAD_WORKERS présent dans le workflow');
+    if (/M8_OFFERED_RATE/.test(all)) {
+      const vals: unknown[] = [];
+      for (const job of Object.values(jobs)) {
+        vals.push(job.env?.['M8_OFFERED_RATE']);
+        for (const s of steps(job)) vals.push(s.env?.['M8_OFFERED_RATE']);
+      }
+      const inRuns = Object.values(jobs).flatMap((j) =>
+        steps(j).flatMap((s) =>
+          [...(s.run ?? '').matchAll(/M8_OFFERED_RATE\s*=\s*"?([^\s"]*)/g)].map((m) => m[1]),
+        ),
+      );
+      for (const v of [...vals.filter((x) => x !== undefined), ...inRuns])
+        if (!(Number(v) >= 100)) out.push(`M8_OFFERED_RATE=${String(v)} < 100 dans le workflow`);
+    }
   }
 
   // Aucune tolérance d'échec, aucune action non épinglée, aucune écoute sur le port 80.
@@ -447,6 +476,70 @@ describe('T117 : le workflow de CI (ledger-tests.yml)', () => {
             if ((s.run ?? '').includes('docker save')) s.run = `set +e\n${s.run!}`;
         },
         /set \+e/,
+      ],
+      [
+        'contexte job dans l’env du job gateway-e2e',
+        (d) => {
+          d.jobs!['gateway-e2e']!.env!['M8_PG_CONTAINER'] = '${{ job.services.postgres.id }}';
+        },
+        /contexte `job` dans l'env du job/,
+      ],
+      [
+        'if: sur le job ledger',
+        (d) => {
+          d.jobs!['ledger']!.if = "github.ref == 'refs/heads/none'";
+        },
+        /ledger : `if:` sur le job/,
+      ],
+      [
+        '; exit 0 sur le jest e2e',
+        (d) => {
+          for (const s of d.jobs!['gateway-e2e']!.steps!)
+            if ((s.run ?? '').includes('jest.e2e.config.cjs')) s.run = `${s.run!}; exit 0`;
+        },
+        /; exit 0/,
+      ],
+      [
+        '| tee sur le jest e2e',
+        (d) => {
+          for (const s of d.jobs!['gateway-e2e']!.steps!)
+            if ((s.run ?? '').includes('jest.e2e.config.cjs')) s.run = `${s.run!} | tee e2e.log`;
+        },
+        /\| tee/,
+      ],
+      [
+        '; exit 0 sur gateway-integration',
+        (d) => {
+          const st = d.jobs!['ledger']!.steps!.find((s) =>
+            (s.name ?? '').includes('gateway-integration'),
+          )!;
+          st.run = `${st.run!}; exit 0`;
+        },
+        /; exit 0/,
+      ],
+      [
+        '| tee sur gateway-integration',
+        (d) => {
+          const st = d.jobs!['ledger']!.steps!.find((s) =>
+            (s.name ?? '').includes('gateway-integration'),
+          )!;
+          st.run = `${st.run!} | tee gw.log`;
+        },
+        /\| tee/,
+      ],
+      [
+        'M8_LOAD_WORKERS posé dans le job gateway-e2e',
+        (d) => {
+          d.jobs!['gateway-e2e']!.env!['M8_LOAD_WORKERS'] = '1';
+        },
+        /M8_LOAD_WORKERS/,
+      ],
+      [
+        'M8_OFFERED_RATE à 50 dans le job gateway-e2e',
+        (d) => {
+          d.jobs!['gateway-e2e']!.env!['M8_OFFERED_RATE'] = '50';
+        },
+        /M8_OFFERED_RATE=50/,
       ],
       [
         'écoute sur le port 80',
