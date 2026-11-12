@@ -666,3 +666,10 @@ Notes à transmettre aux lots suivants.
   sensibilité refusée en 422, clé invalide). Relecture courte distincte : **approuvé**
   (`rapports/feedback/wp25-apres-approbation.md`) ; non bloquants pour feat : lignes citées dans `debit-paths.ts`
   (124 et 166), en-tête du test. Mesure CI : run 43238401917.
+- **NFR-001 prouvé en CI et mission acceptée (12/11)** : charge offerte 110/s (cd5d25aa), cadence comptée sur la
+  fenêtre (516b4af4), chacun relu par un agent distinct ; run 43241115603 : **108 débits/s, 20 bascules,
+  0 violation**, p50 53 ms. Rouges restants de la CI (lot sur feat) : `consignation` (docs de la lane), 
+  `production-refusals` (URL sans mot de passe), lint du job `ledger`, balayage (12 HIGH npm). WP25 repassé
+  `for_review` puis `approved` sans `--force`. Matrice : 59/59 `pass`, NI-001 à NI-005, verdict `pass` (coordination
+  465b8ae3). **`spec-kitty accept` : 311af360** (15 h 05 UTC). Branche temporaire `ci/m8-gateway-e2e` encore sur
+  GitHub (tête de la lane-y + 2 correctifs de mesure) : à supprimer après le report sur feat.

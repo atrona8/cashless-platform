@@ -6,14 +6,14 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 
 ## Lots (reprise le 12/11)
 
-- Approuvés (25) : WP01 à WP25 (WP25 au cycle 2, 12/11). Décisions 49 à 58 (`contexte-m8.md`).
-- Docs : OP-N117 et OP-N119 levés, ADR-187 complété, OP-N115 (12b) et OP-N116 (11a) reportés (cdbc913a).
-- Ensuite : revue de mission, `spec-kitty-docs-maintain`, fusion avec
-  `main`, accept, consolidation (pièges : mémoire `consolidate-and-ci-pitfalls`). Sur feat après la consolidation
-  (jamais dans une lane approuvée) : `npm run lint` (142 erreurs), `env-setup.cjs` formaté, non bloquants du cycle 2
-  de WP25 (`suivi-lots.md`). Règle « main protege » active (12/11, revue des propriétaires, 1 approbation, liste de contournement vide : PR du porteur bloquée tant que l'admin n'y est pas ajouté). Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
-  balayage de vulnérabilités ; documenter `central_url` d'enrôlement finissant par `/v1`. Horloge de colima
-  resynchronisée le 12/11 (redémarrage).
+- **Mission acceptée le 12/11** (311af360). 25 lots approuvés (WP25 réapprouvé après l'option 1 de NFR-001).
+  NFR-001 prouvé en CI (run 43241115603, 108/s). Matrice 59/59 sur la coordination.
+- Ensuite : consolidation (`spec-kitty consolidate`, pièges : mémoire `consolidate-and-ci-pitfalls`), puis sur feat
+  un lot de correction (implémenteur + relecteur) : lint (142 erreurs), workflow (`M8_PG_CONTAINER` posé par une
+  étape, cf. branche `ci/m8-gateway-e2e` b002176d), dépendances (`body-parser`, `multer`, npm retiré de l'image),
+  `production-refusals` (mot de passe en CI), non bloquants des relectures (`suivi-lots.md`) ; puis revue de
+  mission, CI verte, PR vers main (règle `main protege` : contournement admin ou second relecteur). Reste à
+  consigner pour WP24 : ADR-161/OP-N106. Supprimer la branche `ci/m8-gateway-e2e` après le report.
 - Numéros libres : central `0073`, passerelle `edge-0011`, ADR-188, OP-N122 (OP-N120/121 et `0080` pris sur `main`).
 - API partagée : `exports/cashless-api`, en fond (`demarrer-local.sh --fond`, arrêt `arreter-local.sh`).
 
