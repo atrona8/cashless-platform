@@ -621,3 +621,9 @@ Notes à transmettre aux lots suivants.
   carte, 8 tests). Docs faites par l'orchestrateur (cdbc913a). **Avant la fusion** : `npm run lint` rouge sur la lane
   (142 erreurs : 127 `apps/gateway/test`, 13 `apps/api/test`, 2 `apps/gateway/src`, accumulées sur la mission) ;
   `env-setup.cjs` non formaté. Protection de branche « revue des propriétaires » à activer côté GitHub.
+- WP25 **approuvé au cycle 2** (12/11, sans `--force`, sans garde) : constats 1 à 9 et décisions 56-57 vérifiés,
+  mutations du workflow toutes détectées (dont `|| true` en ligne intermédiaire, `continue-on-error` de job, plancher
+  99, CRITICAL seule). Non bloquants, à reprendre sur feat après la consolidation (jamais dans une lane approuvée) :
+  règle contre `if:` au niveau du job `ledger`, formes `; exit 0` et `| tee` (pas de pipefail) sur le jest e2e, test
+  du retrait de la `edge_decision` du terminal sur une opération sans montant (code correct, central refuse). Batterie
+  e2e après correction : 183/184 (plancher local NFR-001, 63/s, 0 violation). **Les 25 lots sont approuvés.**

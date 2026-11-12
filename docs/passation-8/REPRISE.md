@@ -6,14 +6,12 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 
 ## Lots (reprise le 12/11)
 
-- Approuvés (24) : WP01 à WP24. Décisions du 11/11 : 49 à 55 (`contexte-m8.md`).
-- WP25 (lane-y, `in_progress`) : T112 à T116 faites (`done`), sessions B1 à B6 (détail dans `suivi-lots.md`).
-  Session B7 (défauts B et C) vérifiée le 12/11 par l'orchestrateur, tout vert (`suivi-lots.md`, 552ccfae).
-- Puis T117 (CI : job `gateway-e2e` avec NFR-001 à 100 débits/s, décision 54 ; contrôle de stabilité ; `CI.md`,
-  `CODEOWNERS` ; `consignation.spec.ts` avec OP-N111 à OP-N119), `align-lane.sh y`, `move-task WP25 --to
-  for_review`, relecture par un agent distinct. Une session à la fois dans la lane-y.
-- Ensuite : levée d'OP-N117 et OP-N119 dans les docs, revue de mission, `spec-kitty-docs-maintain`, fusion avec
-  `main`, accept, merge. Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
+- Approuvés (25) : WP01 à WP25 (WP25 au cycle 2, 12/11). Décisions 49 à 58 (`contexte-m8.md`).
+- Docs : OP-N117 et OP-N119 levés, ADR-187 complété, OP-N115 (12b) et OP-N116 (11a) reportés (cdbc913a).
+- Ensuite : revue de mission, `spec-kitty-docs-maintain`, fusion avec
+  `main`, accept, consolidation (pièges : mémoire `consolidate-and-ci-pitfalls`). Sur feat après la consolidation
+  (jamais dans une lane approuvée) : `npm run lint` (142 erreurs), `env-setup.cjs` formaté, non bloquants du cycle 2
+  de WP25 (`suivi-lots.md`). Protection de branche « revue des propriétaires » à activer par le porteur. Reste à consigner pour WP24 : ligne de `docs/08-pile-logicielle.md`, ADR-161/OP-N106,
   balayage de vulnérabilités ; documenter `central_url` d'enrôlement finissant par `/v1`. Horloge de colima
   resynchronisée le 12/11 (redémarrage).
 - Numéros libres : central `0073`, passerelle `edge-0011`, ADR-188, OP-N122 (OP-N120/121 et `0080` pris sur `main`).
