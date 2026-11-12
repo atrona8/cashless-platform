@@ -652,3 +652,11 @@ Notes à transmettre aux lots suivants.
   `ip-address`, `picomatch` 4.0.3, `brace-expansion` 2.0.2 ; le lockfile a déjà des versions corrigées) ; preuve :
   balayage Trivy du job `gateway-e2e` vert (HIGH et CRITICAL corrigeables). Avec : lint (142 erreurs), workflow
   (`M8_PG_CONTAINER` par étape), non bloquants du cycle 2 de WP25.
+- **CI, run 43232785666 (12/11)** : NFR-001 **96 débits/s**, 20 bascules, 0 violation, p50 83 ms, p95 266 ms (boucle
+  fermée de 20 terminaux à 200 ms : les pointes au-delà de 200 ms coûtent les 4 % manquants) ; 409 = 72 %. Autres
+  mesures en mode long : NFR-002/006 10 000 opérations vidées en 115 s avec kill, NFR-005 p95 13 ms (série) et 57 ms
+  (concurrence 10, 244/s), NFR-007 p50 68 ms, NFR-008 p95 1,03 s, SC-005 15 ms. Échecs hors NFR-001 (lot après la
+  consolidation) : `production-refusals` « rôle superutilisateur » (URL sans mot de passe en CI : `password
+  authentication failed`), `consignation` (docs de la lane en retard, attendu avant fusion). Option 1 lancée dans la
+  lane-y : refus `DEBIT_AUTHORITY_EDGE` avant le travail de la vente dans `createPayment` (garde CL006 inchangée) ;
+  puis relecture courte distincte, réapprobation de WP25, nouvelle mesure CI.
