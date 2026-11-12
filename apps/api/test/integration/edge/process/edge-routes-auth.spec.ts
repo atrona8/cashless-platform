@@ -18,7 +18,11 @@ import { edgeTls, startEdge, type RunningEdge } from '../../../support/edge-fixt
 function controllerRoutes(edge: RunningEdge): { method: string; path: string }[] {
   const modules = edge.app.get(ModulesContainer, { strict: false });
   const join = (...parts: string[]): string =>
-    '/' + parts.map((p) => p.replace(/^\/+|\/+$/g, '')).filter(Boolean).join('/');
+    '/' +
+    parts
+      .map((p) => p.replace(/^\/+|\/+$/g, ''))
+      .filter(Boolean)
+      .join('/');
   const asList = (v: unknown): string[] => (Array.isArray(v) ? (v as string[]) : [String(v ?? '')]);
   const found: { method: string; path: string }[] = [];
   for (const mod of modules.values()) {
@@ -33,7 +37,8 @@ function controllerRoutes(edge: RunningEdge): { method: string; path: string }[]
         if (verb === undefined) continue;
         const own = asList(Reflect.getMetadata(PATH_METADATA, handler));
         const method = verb === RequestMethod.ALL ? 'POST' : RequestMethod[verb]!;
-        for (const b of base) for (const o of own) found.push({ method, path: join(API_PREFIX, b, o) });
+        for (const b of base)
+          for (const o of own) found.push({ method, path: join(API_PREFIX, b, o) });
       }
     }
   }

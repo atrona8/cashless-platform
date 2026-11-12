@@ -2,8 +2,9 @@
 // lit l'autorité du grand livre avec le terminal (étape 1) et refuse `409 DEBIT_AUTHORITY_EDGE` juste après
 // l'étape 3 (terminal actif, session de vendeur) : ni lecture du bracelet, ni `register_tap`, ni écriture.
 // La garde SQL `CL006` reste le dernier recours.
-// La transaction refusée est annulée : les lignes de passage n'en disent rien ; la preuve de l'absence de
-// `register_tap` est la séquence `media_tap_id_seq` (une séquence n'est jamais annulée).
+// Preuve de l'absence de l'étape 4 (lecture du bracelet, `register_tap`) : une lecture que cette étape refuse
+// (bracelet inconnu) rend sous CENTRAL l'erreur de l'étape 4, et sous EDGE le 409 EDGE ; la séquence globale
+// `media_tap_id_seq` n'est pas lue (d'autres suites la font avancer en parallèle).
 import 'reflect-metadata';
 import { ownerRows } from '../../support/media-fixtures';
 import type { PayMedia } from '../payments/payments-fixtures';
@@ -27,13 +28,11 @@ describe('POST /payments : refus EDGE avant le travail de la vente (NFR-001)', (
     await dw.reset();
   });
 
-  /** Prochain numéro de passage que la base attribuerait : bouge à chaque `register_tap`, même annulé. */
-  const tapSeq = async (): Promise<string> =>
-    (
-      await ownerRows<{ v: string }>(
-        'SELECT last_value::text || is_called::text AS v FROM media_tap_id_seq',
-      )
-    )[0]!.v;
+  /** Lecture que l'étape 4 refuse : bracelet inconnu de la base. */
+  const unknownTap = (pw: DebitWorld['pw'], m: PayMedia): Record<string, unknown> => ({
+    ...pw.tap(m),
+    nfc_uid: '04deadbeefcafe',
+  });
 
   const registry = async (): Promise<number> =>
     (
@@ -43,18 +42,20 @@ describe('POST /payments : refus EDGE avant le travail de la vente (NFR-001)', (
       )
     )[0]!.n;
 
-  it('sous EDGE : même 409 et même corps, aucun register_tap, aucune écriture, aucun numéro', async () => {
+  it('sous EDGE : même 409 et même corps, étape 4 non atteinte, aucune écriture, aucun numéro', async () => {
     const { pw } = dw;
     const [m] = (await pw.media(1)) as [PayMedia];
+    const body = pw.keypadBody(cases.keypad, { tap: unknownTap(pw, m) }, 1000);
+    // Contrôle sous CENTRAL : la lecture du bracelet inconnu est refusée par l'étape 4, autrement que par le 409 EDGE.
+    const central = (await dw.authority()).authority_epoch;
+    const control = await pw.pay(cases.keypad, body, { epoch: String(central) });
+    expect([control.status, control.body.code]).toEqual([422, 'MEDIA_UID_MISMATCH']);
+
     const { gateway } = await dw.edgeActive();
     const { authority_epoch: epoch } = await dw.authority();
-    const taps = await tapSeq();
     const numbers = await registry();
     const footprint = await cases.footprint();
-
-    const res = await pw.pay(cases.keypad, pw.keypadBody(cases.keypad, { tap: pw.tap(m) }, 1000), {
-      epoch: String(epoch),
-    });
+    const res = await pw.pay(cases.keypad, body, { epoch: String(epoch) });
 
     expect([res.status, res.body.code]).toEqual([409, 'DEBIT_AUTHORITY_EDGE']);
     expect(res.body).toMatchObject({
@@ -63,8 +64,8 @@ describe('POST /payments : refus EDGE avant le travail de la vente (NFR-001)', (
       retryable: true,
     });
     expect(res.headers['content-type']).toContain('application/problem+json');
-    // (b) aucun register_tap, aucune écriture, aucun numéro consommé.
-    expect(await tapSeq()).toBe(taps);
+    // L'étape 4 n'a pas été atteinte (sinon l'erreur de la lecture inconnue l'aurait emporté) ; aucune écriture,
+    // aucun numéro consommé.
     expect(await registry()).toBe(numbers);
     expect(await cases.footprint()).toEqual(footprint);
   });
