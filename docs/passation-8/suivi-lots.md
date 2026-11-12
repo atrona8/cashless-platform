@@ -637,3 +637,11 @@ Notes à transmettre aux lots suivants.
   d'autorité arrive au moteur (`payments.service.ts:160`, garde SQL CL006). Risque : 100/s non tenu en CI non plus
   (exécuteur à 4 vCPU). Pistes au porteur : refus d'autorité avant tap et séquence (ordre à vérifier contre
   `sync_protocol.md`), banc en boucle ouverte, ou preuve CI.
+- **Preuve CI de NFR-001 (12/11, décision du porteur : branche de mesure puis option 1)** : branche temporaire
+  `ci/m8-gateway-e2e` (tête de la lane-y 34b7e9e6 + correctifs de mesure). (1) Workflow refusé par GitHub sans aucun
+  job : `M8_PG_CONTAINER: ${{ job.services.postgres.id }}` dans l'`env` du job (contexte `job` absent à ce niveau) ;
+  posé par une étape via `$GITHUB_ENV` (b002176d) : **à reporter sur feat**. (2) `gateway-e2e` arrêté au balayage
+  (décision 56) : 12 HIGH corrigeables, toutes npm : `body-parser` 2.3.0 (→ 2.4.0), `multer` 2.4.0 (→ 2.5.0),
+  `ip-address` 10.1.0 (→ 10.3.1), `picomatch` 4.0.3 (→ 4.0.4), et dans le npm embarqué de l'image Node
+  (`pacote`, `sigstore`, `brace-expansion`) ; Debian : HIGH sans correctif. **Lot de correction à faire** (lockfile,
+  npm retiré de l'image d'exécution). (3) Branche de mesure seulement : e2e avant le balayage (930675e4).
