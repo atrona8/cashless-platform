@@ -51,14 +51,16 @@ export function found(haystack: Buffer): number[] {
 /** Dump logique (`pg_dump`) + fichiers de la base (tas et TOAST) lus par un superutilisateur. */
 export async function scanDatabase(dbName: string): Promise<Buffer> {
   const parts: Buffer[] = [];
-  const dump = '/Library/PostgreSQL/18/bin/pg_dump';
-  if (existsSync(dump)) {
-    parts.push(
-      execFileSync(dump, ['--inserts', '--dbname', adminUrl(undefined, dbName)], {
-        maxBuffer: 256 * 1024 * 1024,
-      }),
-    );
-  }
+  // Le dump logique est OBLIGATOIRE (formes texte et encodées du canari) : `pg_dump` du poste macOS
+  // s'il existe, sinon celui du PATH (en CI, enveloppe vers le conteneur du service). Introuvable :
+  // execFileSync lève et le test échoue, jamais de preuve affaiblie en silence (CI du 12/11).
+  const local = '/Library/PostgreSQL/18/bin/pg_dump';
+  const dump = existsSync(local) ? local : 'pg_dump';
+  parts.push(
+    execFileSync(dump, ['--inserts', '--dbname', adminUrl(undefined, dbName)], {
+      maxBuffer: 256 * 1024 * 1024,
+    }),
+  );
   const client = new Client({ connectionString: adminUrl(undefined, dbName) });
   await client.connect();
   try {
