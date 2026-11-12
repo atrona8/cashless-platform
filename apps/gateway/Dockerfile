@@ -32,6 +32,12 @@ COPY --chown=node:node apps/gateway ./apps/gateway
 # Le volume de la passerelle (marqueur de purge, fichiers montés) appartient à l'utilisateur
 # non-root.
 RUN mkdir -p /var/lib/gateway && chown node:node /var/lib/gateway
+# Ni npm, ni npx, ni corepack, ni yarn dans l'image d'exécution : la passerelle ne lance que `node` ;
+# leurs paquets embarqués (pacote, sigstore, ip-address, picomatch, brace-expansion) portaient des
+# vulnérabilités sans usage ici (balayage bloquant, décision 56).
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-*
 USER node
 WORKDIR /app/apps/gateway
 # Santé : l'écouteur d'administration (boucle locale du conteneur) répond 405 à un GET sur sa seule
