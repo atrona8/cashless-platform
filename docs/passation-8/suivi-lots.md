@@ -660,3 +660,9 @@ Notes à transmettre aux lots suivants.
   authentication failed`), `consignation` (docs de la lane en retard, attendu avant fusion). Option 1 lancée dans la
   lane-y : refus `DEBIT_AUTHORITY_EDGE` avant le travail de la vente dans `createPayment` (garde CL006 inchangée) ;
   puis relecture courte distincte, réapprobation de WP25, nouvelle mesure CI.
+- **Option 1, lane-y après l'approbation (12/11)** : 0672717d puis 82b25713 (garde déplacée après l'étape 3 à la
+  demande de l'orchestrateur : un terminal suspendu recevait `edge_base_url`) ; `payments.service.ts:124` ; test
+  `payments-edge-early-refusal.spec.ts` ; défaut de test corrigé dans `exclusion-under-load.spec.ts` (vente de
+  sensibilité refusée en 422, clé invalide). Relecture courte distincte : **approuvé**
+  (`rapports/feedback/wp25-apres-approbation.md`) ; non bloquants pour feat : lignes citées dans `debit-paths.ts`
+  (124 et 166), en-tête du test. Mesure CI : run 43238401917.
