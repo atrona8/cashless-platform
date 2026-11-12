@@ -629,7 +629,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > prouver par deux cas d'intégration, refus et aucune écriture).
 >
 > **Hérité de la mission 8 (05/11/2026, ADR-159, ADR-162 à ADR-165)** : OP-N104 (perte maximale `EDGE_ONLINE` : mesurer sur une passerelle
-> hostile, ou relayer la signature du terminal) ; OP-N107 (procédure de rétablissement après passerelle perdue) ; OP-N108 (avis écrit du
+> hostile, ou relayer la signature du terminal) ; OP-N122 (le central croit `pack_verified` des ventes relayées sans pouvoir le vérifier : même
+> levée qu'OP-N104, preuve signée du terminal relayée et vérifiée, ADR-188) ; OP-N107 (procédure de rétablissement après passerelle perdue) ; OP-N108 (avis écrit du
 > juriste sur le dépassement temporaire d'un plafond réglementaire à la recharge espèces) ; OP-N109 (aligner §9 de `SPECIFICATION.md` :
 > « mêmes modules ») ; OP-N110 (`STALE` d'une époque forgée à `epoch + 1` ou `+ 2`) ; OP-N111 (propriétaire des migrations de la base
 > locale distinct du rôle d'exécution, ADR-166) ; OP-N112 (procédure de détention des clés de site vérifiée en recette, ADR-167) ; OP-N113 (mission 12b : poignée de main mTLS

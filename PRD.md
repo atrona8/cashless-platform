@@ -166,6 +166,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Purge des secrets de la passerelle (11/11/2026, `OP-N118`, `ADR-186`) : WAL et blocs libres non effacés, tables d'ajout seul non
   vidées, purge hors de la transaction de la file, consignés jusqu'à la mission 12b ; TLS du port d'administration et purge
   manuelle versée au central avant destruction faits dans la mission 8.
+- Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des
+  colis (`OP-N122`, `ADR-188`, décision du 12/11/2026, revue post-fusion C1) ; perte bornée par les plafonds de rejeu (`OP-N104`) ; levée
+  par la mission 12b (preuve signée du terminal relayée et vérifiée).
 - Purge manuelle forcée sans accusé tant qu'un lot sans opération ne peut pas porter l'ordre (`OP-N119`, `ADR-187`) ;
   levé le 11/11/2026 par WP25 : lot de la passerelle sans opération accepté s'il porte des ordres locaux. Reprise forcée
   bornée en haut (`OP-N117`, levé par WP25). Restent consignés : page de 200 bracelets illisibles qui arrête le service

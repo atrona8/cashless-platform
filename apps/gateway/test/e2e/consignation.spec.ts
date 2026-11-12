@@ -1,12 +1,12 @@
 // T117 : consignation finale des écarts de la mission 8 (règle du porteur du 13/10/2026,
 //   CLAUDE.md).
 // Vérifie, sur les textes et sur le code :
-//   - `docs/POINTS_OUVERTS.md` : OP-N100 à OP-N119, chaque écart de sécurité avec constat, risque,
+//   - `docs/POINTS_OUVERTS.md` : OP-N100 à OP-N119 et OP-N122, chaque écart de sécurité avec constat, risque,
 //     mission
 //     qui le lève, condition de levée, test de borne, report ; OP-N115 à OP-N117 (hors sécurité) en
 //       ligne
 //     de tableau avec mission et levée ;
-//   - `docs/DECISIONS_ADR.md` : ADR-155 à ADR-187 (hors ADR-175 à 181 : inexistants ou autre
+//   - `docs/DECISIONS_ADR.md` : ADR-155 à ADR-188 (hors ADR-175 à 181 : inexistants ou autre
 //     chantier) ; chaque ADR a sa
 //     décision et son test de borne ; un ADR qui consigne un écart porte risque et levée (ou, à
 //       défaut, les
@@ -28,13 +28,13 @@ const A = 'apps/api/test/integration/';
 
 const nums = (from: number, to: number): number[] =>
   Array.from({ length: to - from + 1 }, (_, i) => from + i);
-const SECURITY_OPS = [...nums(100, 114), 118, 119];
+const SECURITY_OPS = [...nums(100, 114), 118, 119, 122];
 const TABLE_OPS = [115, 116, 117];
-const OPS = [...nums(100, 119)];
+const OPS = [...nums(100, 119), 122];
 // ADR-175 à 179 n'existent nulle part (saut de numérotation constaté le 12/11/2026) ; ADR-180 et
 //   181 :
 // autre chantier (main), hors de la mission.
-const ADRS = nums(155, 187).filter((n) => n < 175 || n > 181);
+const ADRS = nums(155, 188).filter((n) => n < 175 || n > 181);
 // OP -> ADR qui le consigne.
 const OP_ADR: Record<number, number> = {
   100: 155,
@@ -54,6 +54,7 @@ const OP_ADR: Record<number, number> = {
   114: 170,
   118: 186,
   119: 187,
+  122: 188,
 };
 
 /** Test de borne nommé : fichier (depuis la racine du dépôt) et motif d'un titre qu'il contient. */
@@ -96,6 +97,12 @@ export const BOUNDS: Record<number, Bound[]> = {
     },
   ],
   119: [{ file: `${G}purge/purge-manual.spec.ts`, title: /CENTRAL_UNCONFIRMED|accusé/ }],
+  122: [
+    {
+      file: `${A}edge/sync/sync-pack-verified-bound.spec.ts`,
+      title: /pack_verified n’est cru que s’il vaut le booléen true/,
+    },
+  ],
 };
 
 const TEST_CALL = /(^|\s)(it|test)(\.each\([^)]*\))?\s*\(/m;
@@ -233,7 +240,7 @@ function load(): Docs {
   };
 }
 
-describe('T117 : consignation finale (OP-N100 à OP-N119, ADR-155 à ADR-187)', () => {
+describe('T117 : consignation finale (OP-N100 à OP-N119 et OP-N122, ADR-155 à ADR-188)', () => {
   it('toutes les consignations sont complètes et leurs tests de borne existent', () => {
     expect(defects(load())).toEqual([]);
   });

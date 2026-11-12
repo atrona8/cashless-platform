@@ -2705,3 +2705,22 @@ Décision du porteur : 11/11/2026 ADR-187
   `local_orders` ; avec lien, purge seulement après l'accusé.
 - **Test de borne.** Avec lien, rien n'est détruit avant l'accusé ; lot vide sans `local_orders` refusé.
 - **État.** Levé le 11/11/2026 par WP25 (partie A, `0069`, `edge-0009`), OP-N119 levé.
+
+## ADR-188 — Mission 8 : `pack_verified` des ventes relayées cru par le central, sans preuve vérifiable
+
+Décision du porteur : 12/11/2026 ADR-188
+
+- **Contexte.** Revue post-fusion de la mission 8 (constat C1). Le central reprend `tap.pack_verified` d'une vente relayée par la
+  passerelle (« colis de mots de passe du bracelet lu ») sans pouvoir le vérifier : seule la passerelle détient la clé des
+  colis, par conception. Gardes SQL `0070`, `0061`, `0064` ; reprise dans `edge-sync.writer.ts`.
+- **Décision.** Le porteur décide le 12/11/2026 de consigner l'écart en dette (OP-N122) : le central reprend `pack_verified`
+  uniquement s'il vaut le booléen `true` dans une opération reçue d'une passerelle authentifiée sur `/edge/*`, et la vente
+  reste soumise aux plafonds de rejeu d'ADR-159.
+- **Risque.** Une passerelle compromise affirme `pack_verified: true` sans avoir lu le bracelet ; perte bornée par les plafonds
+  de rejeu (OP-N104), sans perte supplémentaire.
+- **Raison.** La vérification par le central exige la preuve signée du terminal, hors périmètre de la mission 8.
+- **Mission qui lève.** Mission 12b. **Condition de levée.** Preuve signée du terminal relayée et vérifiée par le central
+  (même levée qu'OP-N104).
+- **Test de borne.** `apps/api/test/integration/edge/sync/sync-pack-verified-bound.spec.ts` : toute valeur autre que `true`
+  refusée (`TAP_PACK_NOT_VERIFIED`), appel sans certificat de passerelle refusé, ventes crues sous les plafonds d'ADR-159.
+- **État.** Ouvert (OP-N122, bloque la production).

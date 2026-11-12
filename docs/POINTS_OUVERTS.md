@@ -97,7 +97,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N116 | Inscription des passerelles : grand livre passé à la main non vérifié (mission 8, WP15) | Non | Non | Mission 11a |
 | OP-N117 | LEVÉ le 11/11/2026 (WP25 partie A, borne haute `completed_at` + 120 s) : reprise forcée, anomalies en trop après la fin de la reprise (mission 8, WP14) | Non | Non | Levé |
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
-| OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
+| OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mi| OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Porteur |
+ssion 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -201,6 +202,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N117 | LEVÉ le 11/11/2026 (WP25 partie A) : reprise forcée (WP14, R-23) : seule la borne basse de la période de reprise est contrôlée ; une `ONLINE_REF` inconnue postérieure à la fin de la reprise ouvre aussi une anomalie `EDGE_REPLAY_FAILED` | Bruit d'anomalies à résoudre à deux (aucune perte, aucune écriture comptable) | Borne haute `completed_at` + 120 s contrôlée (`forced-takeover.ts`) ; test `apps/api/test/integration/edge/journal/online-ref-unknown.spec.ts` | Levé | Aucune |
 | OP-N118 | Purge des secrets de la passerelle (WP24) : (1) le WAL de PostgreSQL et les blocs libres du disque ne sont pas effacés ; (2) les tables d'ajout seul (audit local, ordres locaux) ne sont pas vidées ; (3) la purge n'est pas dans la même transaction que la file des décisions | Copie du disque après la purge : secrets ou données lisibles dans le WAL ou les blocs libres si le disque n'est pas chiffré ; données d'audit locales conservées ; arrêt entre la file et la purge : purge partielle à reprendre | Disque chiffré exigé par la procédure de site ; canari de purge sur les tables ; purge manuelle versée au central avant destruction (décision 48) | Mission 12b | Données au repos chiffrées sous une clé matérielle détruite à la révocation (même levée qu'OP-N106) ; purge reprise au démarrage si interrompue |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A) : purge manuelle (WP24, décision 48) : `/edge/sync-batches` exige au moins une opération et la purge exige une file vide ; l'ordre de purge ne peut pas partir seul, la passerelle purge après 30 s sans accusé avec la trace `CENTRAL_UNCONFIRMED` | Ordre de purge jamais vu du central si l'audit local est perdu avec le disque ; versé sinon avec le premier lot suivant | Lot sans opération portant des `local_orders` accepté sous `/edge/*` (`0069`, `edge-0009`) ; avec lien, purge seulement après l'accusé ; tests `sync-empty-batch.spec.ts`, `orders-only.spec.ts`, `purge-with-link.spec.ts` | Levé | Aucune ; trace `CENTRAL_UNCONFIRMED` gardée pour la purge sans lien |
+| OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier | Passerelle compromise qui affirme `pack_verified: true` sans avoir lu le bracelet ; perte bornée par les plafonds de rejeu | `pack_verified` repris seulement pour une opération de la voie `/edge/*` et seulement s'il vaut `true` ; plafonds d'ADR-159 ; test `sync-pack-verified-bound.spec.ts` | Mission 12b | Preuve signée du terminal relayée et vérifiée par le central (même levée qu'OP-N104) |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1412,6 +1414,8 @@ Mission 8 (passerelle locale), Décision 16 du porteur (contre la recommandation
 
 - **Constat.** Alerte immédiate, délai avant l'envoi des mots de passe (durée À SOUMETTRE AU PORTEUR), rien pour une `STANDBY` non promue.
 - **Risque.** Une personne inscrit une passerelle à sa clé d'accord et obtient les mots de passe si l'alerte n'est pas traitée.
+  L'option `--by` de l'outil d'inscription (`tools/edge-admin/src/commands.ts`, en tête) n'authentifie pas la personne : c'est
+  une étiquette déclarative, non une identité vérifiée (revue post-fusion de la mission 8).
 - **Mission qui le lève.** Mission 12b ou 13.
 - **Condition de levée.** Approbation à deux à l'inscription.
 - **Test de borne.** Alerte levée, aucun colis avant le délai, aucun colis à une `STANDBY`.
@@ -1554,6 +1558,24 @@ ne bloque plus la production.
   `apps/gateway/test/purge/purge-with-link.spec.ts`, `apps/gateway/test/e2e/purge-end-to-end.spec.ts`. Reste : sans
   lien, la purge forcée tracée `CENTRAL_UNCONFIRMED` (ordre versé avec le premier lot suivant).
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+### OP-N122 — Ventes relayées : `pack_verified` cru sans vérification possible (12 novembre 2026)
+
+Mission 8 (passerelle locale), revue post-fusion (constat C1), décision du porteur du 12/11/2026 (« consigner en dette ») ; ADR-188.
+**Bloque la production : oui.**
+
+- **Constat.** Pour une vente relayée par la passerelle, le central reprend `tap.pack_verified` (« la passerelle a lu le colis de
+  mots de passe du bracelet ») sans pouvoir le vérifier : seule la passerelle détient la clé des colis, par conception.
+  Code : `apps/api/src/edge/sync/edge-sync.writer.ts` (`pack_verified: t.pack_verified === true`) ; gardes SQL
+  `0070_edge_origin_key_padding.sql` (`TAP_PACK_NOT_VERIFIED`), `0061`, `0064`. Signalé en WP13, jamais consigné avant ce jour.
+- **Risque.** Une passerelle compromise affirme `pack_verified: true` sans avoir lu le bracelet. Perte bornée par les plafonds de
+  rejeu (ADR-159, OP-N104) : même enveloppe qu'OP-N104, pas de perte supplémentaire.
+- **Mission qui le lève.** Mission 12b (preuve signée du terminal relayée et vérifiée par le central, même levée qu'OP-N104).
+- **Condition de levée.** Preuve signée du terminal relayée avec la vente et vérifiée par le central.
+- **Test de borne.** `apps/api/test/integration/edge/sync/sync-pack-verified-bound.spec.ts` : seul le booléen `true` d'une
+  opération reçue d'une passerelle authentifiée est repris ; une vente ainsi crue reste sous les plafonds d'ADR-159 ; tout
+  élargissement de la confiance rend le test rouge.
+- **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;
