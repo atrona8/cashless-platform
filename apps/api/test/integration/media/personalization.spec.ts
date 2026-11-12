@@ -362,7 +362,7 @@ describe('poste de personnalisation', () => {
       expect(await findSecretAtRest(media!.pwd_pack_enc.subarray(0, 12))).toEqual([
         '"public"."media"',
       ]);
-    });
+    }, 60_000); // balaie toutes les tables : la durée croît avec la base (114 tables depuis la mission 8)
 
     it('le bracelet suivant de la série réutilise la clé de données de session', async () => {
       perso.kms.resetCalls();
