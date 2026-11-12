@@ -2,10 +2,9 @@
   "event_count": 282,
   "last_event_id": "01M7873V4HTPA561ATCDQWFDGJ",
   "materialized_at": "2026-11-12T15:48:09.489611+00:00",
-  "mission_number": "3",
+  "mission_number": "",
   "mission_slug": "passerelle-locale-01M6NM1S",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,861 +20,422 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871GF6791G12D9H2KVAGNG",
       "last_transition_at": "2026-11-12T15:46:53.030818+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Contrat /edge/* + contrôle de stabilité, 34 tests node verts",
-        "Review passed: openapi.yaml 0 deleted/modified lines vs d2a7c538 (634 additions, /edge/* only); types additions only; no PIN hash; check:stability 23 ADMISE/0 refused, 34 node tests pass; 28 attack mutations all refused (exit 2). Minor: baseline-decision lenient; check:stability not in CI."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP01-contrat-stabilite/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP01-contrat-stabilite/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 28751,
-      "shell_pid_created_at": "1793893542.237395",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
-      }
+      "shell_pid": 19055,
+      "shell_pid_created_at": "1793892931.278113"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871KD9712S8N2C5NDC967V",
       "last_transition_at": "2026-11-12T15:46:56.041435+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Paquet shared-rules, deplacements git mv, 7 fonctions, vecteurs a-k; typecheck vert, shared-rules 257 tests, unit API 1458 tests",
-        "Review passed: git mv 100% identiques, edgeContent conforme R-12, genese = SQL edge_chain_genesis, vecteurs independants et deterministes, mutations detectees, nodeEnv unique, shared-rules 257 tests et API unit 1458 verts"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP02-shared-rules/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP02-shared-rules/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 26592,
-      "shell_pid_created_at": "1793893462.185306",
-      "subtasks": {
-        "T005": "done",
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done"
-      }
+      "shell_pid": 19048,
+      "shell_pid_created_at": "1793892924.92073"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871PBV6V24BPFYD5XKTJPJ",
       "last_transition_at": "2026-11-12T15:46:59.067466+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0058 + tests_edge_gateway.sql (79 ok); suites du kit vertes sans modification",
-        "Review passed: 0058 relue, tests_edge_gateway 79/79, grand_livre 400/400, definer_search_path 14/14, offline_snapshots 145/145 sur cashless_wp03. Mineurs consignes: touch oracle inter-prestataires, tests inter-prestataires et RLS edge_reference_change a renforcer"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP03-base-edge-gateway/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP03-base-edge-gateway/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 23421,
-      "shell_pid_created_at": "1793893352.264314",
-      "subtasks": {
-        "T010": "done",
-        "T011": "done",
-        "T012": "done",
-        "T013": "done"
-      }
+      "shell_pid": 19051,
+      "shell_pid_created_at": "1793892926.745251"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871SDQYN5PVTC1KCNSNXXA",
       "last_transition_at": "2026-11-12T15:47:02.199781+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0059 : bascule, rendu, reprise, begin_cash_close ; pgTAP 123/123 sur cashless_wp04",
-        "Relecture WP04 : approuve. pgTAP relances sur cashless_wp04 apres reset-db : edge_handover 123 ok, cash_sessions 174 ok, grand_livre_cashless 400 ok, execute_grants/definer_search_path/default_acl ok. Aucun GRANT, S12 inchangees. Notes non bloquantes : (1) begin_cash_close prend le verrou d'autorite partage APRES le solde (inverse de post_transaction : autorite avant soldes) - cycle theorique avec un accord en attente et un ecrivain sur le compte de caisse sans verrou terminal ; proposer de le prendre juste apres le verrou terminal ; (2) force_central_authority_approved ne consomme ni ne verifie l'expiration de la demande : l'API doit passer EXECUTED dans la meme transaction (WP12, test) ; (3) begin_edge_release rejoue sans effet meme avec une declaration differente, rendu bloque jusqu'a fail_edge_release ; (4) journal vide refuse a l'accord : WP08 doit amorcer une ligne par grand livre ; (5) CL029 = CONFLICT_STATE 409 deja dans sqlstate-map, pas de regression."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP04-base-handover/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP04-base-handover/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 39966,
-      "shell_pid_created_at": "1793894195.111054",
-      "subtasks": {
-        "T014": "done",
-        "T015": "done",
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done"
-      }
+      "shell_pid": 28244,
+      "shell_pid_created_at": "1793893523.700464"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871WF0Q9Y2WQRZ49CQ8EWN",
       "last_transition_at": "2026-11-12T15:47:05.312369+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0060 : VOID, lots, edge_record_seq, garde EDGE_SYNC ; tests_edge_sync 86/86, suites voisines vertes",
-        "Revue independante: post_transaction identique hors garde (pg_get_functiondef 0058 vs 0060, seul ecart la garde), garde EDGE_SYNC allowlist verifiee par wrapper DEFINER (cashless_app/maint/platform refuses 42501, cashless_edge passe), registre CHECK conserves + VOID sans tx, RLS forcee. pgTAP edge_sync 86, grand_livre 400, scenario 64 verts. Mineurs consignes au compte rendu."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP05-base-registre-lots/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP05-base-registre-lots/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 40228,
-      "shell_pid_created_at": "1793894245.872595",
-      "subtasks": {
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
-      }
+      "shell_pid": 33099,
+      "shell_pid_created_at": "1793893680.066552"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M78722QVNWTB0Z92YVMEP6Q2",
       "last_transition_at": "2026-11-12T15:47:11.739887+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Migration 0061 et suite pgTAP livrées ; suite non exécutée sous pgTAP (conteneur de test arrêté), exécutée avec une cale locale : 157 verifications OK, 3 mutations détectées",
-        "Cycle 2 : B1, B2, M1 a M3 corriges ; pgTAP reel 177/177",
-        "Cycle 2 : B1 (fenetre symetrique, preuve par paires), B2 (declencheur + REVOKE, sondes sous 3 roles reels), M1, M2 verifies. pgTAP lot 177/177, voisines vertes, batterie 56/57 fichiers (offline_rights 1 : liste de tables, hors WP06 pour 3 tables sur 4)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP06-base-post-transaction/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP06-base-post-transaction/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 21805,
-      "shell_pid_created_at": "1793963586.736383",
-      "subtasks": {
-        "T024": "done",
-        "T025": "done",
-        "T026": "done",
-        "T027": "done",
-        "T028": "done"
-      }
+      "shell_pid": 7980,
+      "shell_pid_created_at": "1793961122.250083"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M78729BW3894B0EVS4587TPJ",
       "last_transition_at": "2026-11-12T15:47:18.524462+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0062 : edge_activate_media, edge_take_deposit, edge_topup_cash ; pgTAP 116/116 sur cashless_wp07",
-        "Cycle 1 : B1 date bornee comme 0061, M1 tests d'autorite, M3 scope et caution exacte",
-        "Cycle 2 : B1 ferme (borne sur marge et ecriture, mutation 106-111), M1 conforme au plan (vidange en RELEASING), M3 ferme ; 6 suites pgTAP vertes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP07-base-guichet/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP07-base-guichet/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 12967,
-      "shell_pid_created_at": "1794218737.745234",
-      "subtasks": {
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done"
-      }
+      "shell_pid": 7444,
+      "shell_pid_created_at": "1794218169.096307"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872CD1CMQZDX3FJJ3PPXET",
       "last_transition_at": "2026-11-12T15:47:21.633509+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Migration 0063 et pgTAP edge_replication (160 tests) verts sur cashless_wp08; voir compte rendu",
-        "Cycle 2 : 7 suites voisines corrigees, mode differe reel (dblink), edge_exposed et token_family, regle DDL en en-tete",
-        "Cycle 2 : 58/59 suites pgTAP (seule tests_offline_rights, WP09), mode différé prouvé, décisions 23 et 28 conformes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP08-base-replication/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP08-base-replication/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 25467,
-      "shell_pid_created_at": "1794221657.81012",
-      "subtasks": {
-        "T033": "done",
-        "T034": "done",
-        "T035": "done",
-        "T036": "done",
-        "T037": "done"
-      }
+      "shell_pid": 16704,
+      "shell_pid_created_at": "1794220511.030425"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872NEXQZ9MSRV3CR3SZF0B",
       "last_transition_at": "2026-11-12T15:47:30.909636+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Droits de la base, 0064, tests_edge_rights/fixes, edge-sync-guard",
-        "Approuvé au cycle 1 : 62/62 pgTAP, Jest 7/7 et 9/9, mutations de droits et d'isolation tuées"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP09-droits/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP09-droits/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 52312,
-      "shell_pid_created_at": "1794224509.425963",
-      "subtasks": {
-        "T038": "done",
-        "T039": "done",
-        "T040": "done",
-        "T041": "done"
-      }
+      "shell_pid": 32228,
+      "shell_pid_created_at": "1794222264.790678"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872VFF49CYAZP0KEWVQE3H",
       "last_transition_at": "2026-11-12T15:47:37.071281+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Processus edge, garde mTLS, attente longue, 5 suites vertes sur cashless_wp10",
-        "Cycle 2 : close dès la garde, borne 4 attentes/passerelle, test d'énumération des routes edge",
-        "Cycle 3: écouteurs de client-gone retirés à la fin de la réponse; test keep-alive 20 requêtes",
-        "Cycle 3: écouteurs client-gone retirés à finish/close, test keep-alive muté puis rétabli, edge 18 suites/303 tests, tsc OK",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals).",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "auto-approval:WP10:20261112",
         "reviewer": "relecteur distinct (sous-agent)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 4568,
-      "shell_pid_created_at": "1794236453.103344",
-      "subtasks": {
-        "T042": "done",
-        "T043": "done",
-        "T044": "done",
-        "T045": "done",
-        "T046": "done"
-      }
+      "shell_pid": 96112,
+      "shell_pid_created_at": "1794236154.043864"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872YJNNNJ3EZKTC2T3NN7K",
       "last_transition_at": "2026-11-12T15:47:40.246120+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Routes humaines, reprise forcee a deux, 409 complete, chemins de debit testes",
-        "Review passed: 53 tests debit-authority, 593 tests erreurs/approbation/caisses/paiements/media, tsc propre",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals).",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "auto-approval:WP11:20261112",
         "reviewer": "relecteur distinct (sous-agent)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 84981,
-      "shell_pid_created_at": "1794226943.555312",
-      "subtasks": {
-        "T047": "done",
-        "T048": "done",
-        "T049": "done",
-        "T050": "done",
-        "T051": "done"
-      }
+      "shell_pid": 63936,
+      "shell_pid_created_at": "1794225478.872704"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873BX99R8AY54BDPRF2PMC",
       "last_transition_at": "2026-11-12T15:47:53.897925+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Accusé, rendu en deux transactions, flux de réplication, travailleurs silence et rendu bloqué ; 34/34 routes, 231 edge+debit-authority+refresh+architecture",
-        "Cycle 2 : constats 1 à 4 (tests exposeWhileEdge, rejeu 40001/23505, canari colis réel, routes nommées), décision 36 (edge_terms, 0065), décision 37 (edge_log_release_stuck, 0065)",
-        "Cycle 2 : constats 1-4 leves (mutations tuees), 0065 conforme (page identique a 0063 + edge_terms), pgTAP 26+177+99 ok, Jest edge/routes 65 ok. Reserve consignee : check.test.mjs code 23 admises (24 avec edge_terms)"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP12-routes-edge/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP12-routes-edge/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 28911,
-      "shell_pid_created_at": "1794309615.849172",
-      "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done",
-        "T056": "done"
-      }
+      "shell_pid": 57699,
+      "shell_pid_created_at": "1794244269.488397"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873F0FNGH470QRV6DVP83Y",
       "last_transition_at": "2026-11-12T15:47:57.071560+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Reception EDGE_SYNC : 6 specs sync (intake, chaine, ecrivain, tap, relais, audit/abandon, 100 rejeux, frontieres) 56+ tests verts sur cashless_wp13 ; ports EDGE_SYNC_CENTRAL et TAP_PROOF_VERIFIER sans adaptateur de production (503 ferme) ; constat bloquant check_balanced non SECURITY DEFINER sous cashless_edge",
-        "Renvoi orchestrateur : décisions 38 et 39 (migration 0066)",
-        "Correction cycle 1 : 0066 (check_balanced DEFINER, 6 fonctions étroites), route câblée, tests sous cashless_edge",
-        "Review passed cycle 2: 9 suites/89 Jest, pgTAP 0066/grants/rights OK; mutations caught (INVOKER, posting grant, table grant, cursor bind, gateway fees, tap proof). Minors: edge_sync_results gateway filter untested."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP13-reception-sync/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP13-reception-sync/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 27021,
-      "shell_pid_created_at": "1794309508.289971",
-      "subtasks": {
-        "T057": "done",
-        "T058": "done",
-        "T059": "done",
-        "T060": "done",
-        "T061": "done",
-        "T062": "done"
-      }
+      "shell_pid": 12244,
+      "shell_pid_created_at": "1794308568.49922"
     },
     "WP14": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873R4AWGMH73JTXM0YDST9",
       "last_transition_at": "2026-11-12T15:48:06.411115+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Résolveur ONLINE_REF/TOPUP_CASH de reprise forcée (R-23), 3 appels dans le processeur, 3 suites (20 tests)",
-        "Cycle 2 : test du second appel resolveOnlineRef",
-        "Cycle 2: mutant du second appel resolveOnlineRef tue (1 echec), 21/21 Jest, pgTAP 0068 OK"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP14-journal-reprise/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP14-journal-reprise/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 2664,
-      "shell_pid_created_at": "1794390960.721944",
-      "subtasks": {
-        "T063": "done",
-        "T064": "done",
-        "T065": "done"
-      }
+      "shell_pid": 65751,
+      "shell_pid_created_at": "1794316475.889677"
     },
     "WP15": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873J283J147QFVRFS4PRGX",
       "last_transition_at": "2026-11-12T15:48:00.200235+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "T066-T069 faits. T068: edge_media_to_pack (0067, ADR-183), travailleur edge/packs, canari. Point au porteur: source des prestataires du travailleur.",
-        "Cycle 2: preuves ajoutées",
-        "Cycle 3: page illisible journalisée",
-        "Cycle 3: OP-N115 consigné, message unique sans UID, test prouvé par mutation, packs 19/19"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP15-edge-admin/review-cycle-3.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP15-edge-admin/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 97674,
-      "shell_pid_created_at": "1794318694.307357",
-      "subtasks": {
-        "T066": "done",
-        "T067": "done",
-        "T068": "done",
-        "T069": "done"
-      }
+      "shell_pid": 58584,
+      "shell_pid_created_at": "1794244297.098408"
     },
     "WP16": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7871ZEAZV1D3TXB5HXXG1YD",
       "last_transition_at": "2026-11-12T15:47:08.362610+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Socle passerelle: 117 tests gateway verts (garde par demarrage reel, schema, horloge, enrolement)",
-        "Cycle 2: fichier de cles du faux 0600, controles serveur sur request/enroll, regle de secret elargie; 134 tests verts",
-        "Cycle 2: 134/134 Jest sur 5433, tsc propre. Mineurs consignes: tmp du fichier de cles (nom fixe, mode non force, lien suivi), mise a jour perdue entre processus"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP16-socle-passerelle/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP16-socle-passerelle/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 17149,
-      "shell_pid_created_at": "1793962780.2555",
-      "subtasks": {
-        "T070": "done",
-        "T071": "done",
-        "T072": "done",
-        "T073": "done",
-        "T074": "done",
-        "T118": "done"
-      }
+      "shell_pid": 14034,
+      "shell_pid_created_at": "1793962283.525189"
     },
     "WP17": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872648SGT3WBCRRWY4NX8F",
       "last_transition_at": "2026-11-12T15:47:15.208407+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Autorité de la passerelle: client mTLS épinglé, machine B.8, canal de contrôle, A12/A13, levée locale à deux personnes, edge-0002. 94 tests authority + 134 startup verts sur pg17:5433",
-        "Relecture WP17 : authority 94/94, startup 134/134 sur pg17:5433. Aucun bloquant. Mineurs et points porteur dans le compte rendu."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP17-autorite-passerelle/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP17-autorite-passerelle/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 28684,
-      "shell_pid_created_at": "1793964633.08475",
-      "subtasks": {
-        "T075": "done",
-        "T076": "done",
-        "T077": "done",
-        "T078": "done",
-        "T079": "done",
-        "T119": "done"
-      }
+      "shell_pid": 19224,
+      "shell_pid_created_at": "1793963008.198711"
     },
     "WP18": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872FFQ33V6B053PJ9PNFB9",
       "last_transition_at": "2026-11-12T15:47:24.791786+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP18 implémenté : réplication (pages atomiques, référence, solde effectif, purge A26), 6 specs + garde de production; edge-0003 ajoutée",
-        "Cycle 2 : B1 B2 M1-M4 M6 M7 corriges, M5 signale",
-        "Cycle 2 : B1/B2 corriges (mutations echouent), M2-M7 verifies, Jest 276/276, tsc propre"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP18-replication-passerelle/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP18-replication-passerelle/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 27378,
-      "shell_pid_created_at": "1794221801.902329",
-      "subtasks": {
-        "T080": "done",
-        "T081": "done",
-        "T082": "done",
-        "T083": "done"
-      }
+      "shell_pid": 20666,
+      "shell_pid_created_at": "1794221054.465805"
     },
     "WP19": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872RF8CTXMCW9J7X74TNQE",
       "last_transition_at": "2026-11-12T15:47:33.992637+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Implementation WP19 : 396 tests verts (device, startup, authority, replication)",
-        "Approuvé au cycle 1 : 306/306, mutations des preuves et jetons tuées, contrat respecté (409)",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals).",
-        "Commit 182e2efd après l'approbation (lane-s, présent dans j et k par le chaînage de consolidation) : tokens.spec.ts aligné sur la version testée en CI (516b4af4) : reformatage Prettier et deltaPurgeProvided: true (signature finale de evaluateProviderRules, WP24). Deux relectures distinctes : la 1re refuse la description « formatage seul », la 2de approuve le contenu (aucun affaiblissement ; DELTA_PURGE prouvée dans client-key-file, startup-guard, production-refusals)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "auto-approval:WP19:20261112",
         "reviewer": "relecteur distinct (sous-agent)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 49348,
-      "shell_pid_created_at": "1794224228.800439",
-      "subtasks": {
-        "T084": "done",
-        "T085": "done",
-        "T086": "done",
-        "T087": "done",
-        "T088": "done"
-      }
+      "shell_pid": 32785,
+      "shell_pid_created_at": "1794222280.107695"
     },
     "WP20": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7872JF29MBXR55DR4VNMTKH",
       "last_transition_at": "2026-11-12T15:47:27.842995+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP20 pret ; decisions 19, 20, 24 faites ; 22 bloquee (voir compte rendu)",
-        "Cycle 2 : décision 32 (clé TLS client durcie), DELTA_PURGE obligatoire en production, verrou du faux à jeton",
-        "Cycle 3 : lecture unique sur fd (O_NOFOLLOW+fstat), cablage prouve par processus, mutants tues, withLockForTest inerte en production",
-        "Cycle 3 : TOCTOU levé (lecture unique sur descripteur), câblage prouvé par processus, mutants tués ; 24 suites/347 tests, tsc propre"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP20-file-vidage/review-cycle-3.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP20-file-vidage/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 88858,
-      "shell_pid_created_at": "1794235416.694333",
-      "subtasks": {
-        "T089": "done",
-        "T090": "done",
-        "T091": "done",
-        "T092": "done"
-      }
+      "shell_pid": 76477,
+      "shell_pid_created_at": "1794226435.879468"
     },
     "WP21": {
       "actor": "merge",
-      "agent": null,
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M787322WZM4D3H32T1VWCMW6",
       "last_transition_at": "2026-11-12T15:47:43.836681+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Ventes passerelle: taps, paiements, annulations, refus, edge-0006. Jest sales 9 suites verts; NFR-005 concurrent 10 hors seuil sur poste Docker (WP25).",
-        "Cycle 2 : tests des plafonds, recul d'horloge, session expirée, autre terminal (mutations tuées)",
-        "Cycle 2: constats 1-4 leves, 6 mutants tues (plafond vente, horaire, elapsedMs<0, expires_at paiement et annulation, device_id)"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP21-ventes/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
-      "subtasks": {
-        "T093": "done",
-        "T094": "done",
-        "T095": "done",
-        "T096": "done",
-        "T097": "done"
-      }
+      "shell_pid": 99409,
+      "shell_pid_created_at": "1794236258.275658"
     },
     "WP22": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M78735A95VBD81P6FTD7SFFR",
       "last_transition_at": "2026-11-12T15:47:47.145710+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP22 : guichet (jeton de personne R-20, recharge, activation, caution), 95 tests test/counter verts",
-        "Cycle 2 : edge_terms replique, 5 mutants du garde tues, test cash-topup corrige",
-        "Cycle 3 : test devise hors XOF sans max_cash_topup",
-        "Cycle 3: mutant XOF->defaut tue par le nouveau test; test/counter 112/112. Mineur: restauration EUR non protegee par afterEach/finally (contamine les tests suivants en cas d'echec), a reprendre en WP25."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP22-guichet/review-cycle-3.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP22-guichet/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 90276,
-      "shell_pid_created_at": "1794318234.45015",
-      "subtasks": {
-        "T098": "done",
-        "T099": "done",
-        "T100": "done",
-        "T101": "done",
-        "T102": "done"
-      }
+      "shell_pid": 63134,
+      "shell_pid_created_at": "1794316405.207779"
     },
     "WP23": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M78738FDC0CR3ZZ1JAKCX0HV",
       "last_transition_at": "2026-11-12T15:47:50.381566+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP23 : lots, snapshots, getMediaAuthKey, canari ; edge-0008 ; 5 suites offline vertes (reprise)",
-        "Review passed: 192/192, tsc propre, mutations tuees (sauf 3 equivalents/defense en profondeur, mineurs)"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP23-lots-snapshots/review-cycle-1.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP23-lots-snapshots/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 32006,
-      "shell_pid_created_at": "1794242619.133895",
-      "subtasks": {
-        "T103": "done",
-        "T104": "done",
-        "T105": "done",
-        "T106": "done",
-        "T107": "done"
-      }
+      "shell_pid": 1958,
+      "shell_pid_created_at": "1794236312.297179"
     },
     "WP24": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873N42GXWFCV659A7PWJJZ",
       "last_transition_at": "2026-11-12T15:48:03.330671+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Purge auto/manuelle, STANDBY, image, procedure ; 430 tests verts (authority, queue, replication, startup, purge)",
-        "Cycle 2 : sonde HEALTHCHECK en HTTPS (ca = certificat monté, test exécutant la sonde), canari par mutation de PROTECTED_TABLES, lignes <= 100",
-        "Cycle 2: sonde HTTPS executee, canari par mutation, reformatage sans logique"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP24-purge-image/review-cycle-2.md",
         "reference": "review-cycle://passerelle-locale-01M6NM1S/WP24-purge-image/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 13116,
-      "shell_pid_created_at": "1794393960.951812",
-      "subtasks": {
-        "T108": "done",
-        "T109": "done",
-        "T110": "done",
-        "T111": "done"
-      }
+      "shell_pid": 10252,
+      "shell_pid_created_at": "1794393501.164856"
     },
     "WP25": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7873V4HTPA561ATCDQWFDGJ",
       "last_transition_at": "2026-11-12T15:48:09.489611+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "T117 : CI (stabilité, gateway-integration, job gateway-e2e à 100 débits/s, balayage image), ci-workflow/acceptance-matrix/consignation.spec.ts, CODEOWNERS, CI.md. Commit bb6f61ff",
-        "Refuse : B1 le job CI gateway-e2e ne pose pas M8_E2E_LONG=1 (3 bascules au lieu de 20, 2000 operations au lieu de 10000) ; details et non bloquants dans le fichier de constats",
-        "cycle 1 : correction",
-        "cycle 1 : volumes longs en CI, règles CI durcies, Trivy HIGH+CRITICAL, canari clé de jeton, nettoyage des bancs, CODEOWNERS",
-        "Cycle 2 : constats 1 a 9 du cycle 1 corriges (M8_E2E_LONG, regles CI, Trivy HIGH+CRITICAL, CODEOWNERS @atrona8, canari cle de jeton, nettoyage, ports). Mutations CI detectees. Non bloquant : if: sur job ledger, ; exit 0, | tee non vus.",
-        "Commits après l'approbation : 0672717d, 82b25713 (refus d'autorité EDGE avant la vente, NFR-001), cd5d25aa, 516b4af4 (charge offerte 110/s, cadence sur la fenêtre)",
-        "Commits après l'approbation relus par des agents distincts : 0672717d+82b25713 approuvés (rapports/feedback/wp25-apres-approbation.md), cd5d25aa approuvé, 516b4af4 approuvé. NFR-001 prouvé en CI : run 43241115603, 108 débits/s, 0 violation."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "auto-approval:WP25:20261112",
         "reviewer": "relecteur distinct (sous-agent)",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
-      "subtasks": {
-        "T112": "done",
-        "T113": "done",
-        "T114": "done",
-        "T115": "done",
-        "T116": "done",
-        "T117": "done"
-      }
+      "shell_pid": 16374,
+      "shell_pid_created_at": "1794394414.1669"
     }
   }
 }
