@@ -11,6 +11,8 @@ Wallets _$WalletsFromJson(Map<String, dynamic> json) => Wallets(
   status: $enumDecode(_$WalletStatusEnumMap, json['status']),
   paid: (json['paid'] as num).toInt(),
   promo: (json['promo'] as num).toInt(),
+  kycVerified: json['kyc_verified'] as bool?,
+  topupMonthPaid: (json['topup_month_paid'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$WalletsToJson(Wallets instance) => <String, dynamic>{
@@ -18,6 +20,8 @@ Map<String, dynamic> _$WalletsToJson(Wallets instance) => <String, dynamic>{
   'status': instance.status,
   'paid': instance.paid,
   'promo': instance.promo,
+  'kyc_verified': instance.kycVerified,
+  'topup_month_paid': instance.topupMonthPaid,
 };
 
 const _$WalletStatusEnumMap = {

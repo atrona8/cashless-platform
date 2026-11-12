@@ -2,9 +2,7 @@
 // n'engage que l'en-tête : les empreintes des opérations ne sont donc jamais crues. Pour chaque opération,
 // `content_sha256 = SHA-256(JCS(champs chaînés))` par `chainedContent` (WP16, point unique) puis
 // `chain_hash(n) = SHA-256(chain_hash(n-1) ‖ content_sha256(n))`, départ `prev_chain_hash` (sync_protocol.md §3.3).
-import { createHash } from 'node:crypto';
-import { chainedContent } from '../../payments/chained-content';
-import { contentSha256 } from '../../payments/device-seq-registry';
+import { chainedContent, chainStep, contentSha256 } from '@cashless/shared-rules';
 import type { ParsedBatch } from './batch.types';
 
 export interface ChainCheck {
@@ -21,9 +19,6 @@ export interface ChainCheck {
    */
   lastForOpen: Buffer;
 }
-
-export const chainStep = (prev: Buffer, content: Buffer): Buffer =>
-  createHash('sha256').update(prev).update(content).digest();
 
 export function verifyChain(batch: ParsedBatch): ChainCheck {
   let consistent = true;

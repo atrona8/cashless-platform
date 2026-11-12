@@ -57,7 +57,8 @@ SELECT is((SELECT count(*)::int FROM pg_proc p
                             AND e.deptype = 'e'
             JOIN pg_extension x ON x.oid = e.refobjid AND x.extname = 'pgcrypto'
            CROSS JOIN unnest(ARRAY['cashless_app', 'cashless_platform', 'cashless_tagkeys',
-                                   'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin']) r
+                                   'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin',
+                                   'cashless_edge', 'cashless_edgeadmin']) r
            WHERE has_function_privilege(r, p.oid, 'EXECUTE')), 0,
   'pgcrypto : aucun rôle applicatif ne l''exécute');
 
@@ -181,7 +182,12 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'offline_device_exposure(uuid,uuid,bigint,timestamptz,interval)', 'lock_device(uuid,text)',
   -- 0051 (WP21 partie D) : enveloppe étroite de la remontée des terminaux ; les deux fonctions qu'elle appelle
   -- (event_device_sync_status, event_sync_deadline) restent refusées à cashless_app
-  'event_device_sync_status_api(uuid)'
+  'event_device_sync_status_api(uuid)',
+  -- Mission passerelle-locale, lot WP09 (post-roles.sql §9c) : enveloppes humaines de la bascule d'autorité (0059),
+  -- fonctions du kit sans enveloppe (assert_tenant) et exposition des jetons d'appareil (0064, décision 23)
+  'edge_grant_authority(uuid,uuid,uuid)', 'get_debit_authority(uuid)', 'fail_edge_release(uuid,uuid)',
+  'force_central_authority_approved(uuid,uuid,text)', 'request_edge_release(uuid,uuid)',
+  'fail_edge_grant(uuid,uuid,text)', 'edge_expose_device_token_families(uuid)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -230,7 +236,22 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'rotate_snapshot_signing_key(text,bytea,text,uuid)',
                     'publish_offline_snapshot(bigint,text,bytea)',
                     'save_offline_snapshot_draft(uuid,text,jsonb,bytea,jsonb)',
-                    'discard_offline_snapshot_draft(bigint,text)']) f;
+                    'discard_offline_snapshot_draft(bigint,text)',
+                    -- passerelle locale (WP09) : fonctions S12 brutes du kit (sans filigrane de référence, sans
+                    -- refus d'une caisse CLOSING : les ouvrir contournerait A03) et internes de 0058 à 0064
+                    'grant_edge_authority(uuid,uuid,uuid)', 'ack_edge_handover(uuid,integer,bigint)',
+                    'complete_edge_release(uuid,integer,bigint,bytea)',
+                    'record_edge_seq(uuid,bigint,text,bytea,text,uuid,text)',
+                    'edge_ack_handover(uuid,uuid,bigint,bigint)',
+                    'edge_complete_release(uuid,uuid,bigint,bigint,bytea,bigint)',
+                    'edge_record_seq(uuid,bigint,text,bytea,text,uuid,text)',
+                    'edge_post_transaction(uuid,bigint,bigint,text,bytea,jsonb,jsonb)',
+                    'set_edge_setting(text,bigint,text)', 'set_edge_gateway_role(uuid,text,text)',
+                    'edge_replication_page(uuid,bigint,bigint,integer)',
+                    'deposit_edge_pwd_pack(uuid,uuid,bytea,bytea,bigint)',
+                    'edge_counter_op(text,uuid,bigint,bigint,text,bytea,jsonb)',
+                    'edge_ref_emit_many(uuid,text,uuid[])', 'edge_bind_gateway(uuid,boolean)',
+                    'edge_lock_handover(uuid,uuid)', 'edge_event_lock(uuid)']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),
@@ -239,9 +260,12 @@ SELECT is(pg_temp.fns('cashless_tagkeys'), pg_temp.sigs(ARRAY[
   'assert_device_active(uuid)', 'claim_tag_key_job(text[],integer)',
   'claim_tag_key_job_for(uuid[],text[],integer)',
   'consume_device_nonce(uuid,bytea,timestamptz,integer)', 'device_token_family_active(uuid,uuid)',
-  'finish_tag_key_job(uuid,text,text,jsonb,integer)', 'tag_key_job_refusal(uuid)'
+  'finish_tag_key_job(uuid,text,text,jsonb,integer)', 'tag_key_job_refusal(uuid)',
+  -- passerelle locale (WP09, post-roles.sql §9f) : dépôt du colis de mots de passe et de sa clé enveloppée (0063)
+  'deposit_edge_pwd_pack(uuid,uuid,bytea,bytea,bigint)', 'deposit_edge_pwd_pack_key(uuid,bytea,jsonb)',
+  'edge_gateways_awaiting_pack(integer)', 'edge_media_to_pack(uuid,integer)'
 ]::text[]::regprocedure[]),
-  'cashless_tagkeys : liste exacte (file des rechiffrements, garde des terminaux)');
+  'cashless_tagkeys : liste exacte (file des rechiffrements, garde des terminaux, dépôt des colis)');
 SELECT is(pg_temp.fns('cashless_perso'), pg_temp.sigs(ARRAY[
   'associate_claim_code(bytea,uuid)', 'claim_tag_key_job(text[],integer)',
   'claim_tag_key_job_for(uuid[],text[],integer)', 'enqueue_tag_key_child_job(uuid,uuid)',
@@ -279,13 +303,64 @@ SELECT is(pg_temp.fns('cashless_snapsign'), pg_temp.sigs(ARRAY[
 ]::text[]::regprocedure[]),
   'cashless_snapsign : liste exacte (ADR-140)');
 SELECT is(pg_temp.fns('cashless_maint'), pg_temp.sigs(ARRAY[
-  'purge_device_request_nonces(integer)', 'purge_device_enrollment_attempts()'
+  'purge_device_request_nonces(integer)', 'purge_device_enrollment_attempts()',
+  -- passerelle locale (WP09, §9f) : passerelles silencieuses, rendus bloqués
+  'mark_edge_gateways_silent(interval)', 'edge_stuck_handovers(interval)',
+  'edge_log_release_stuck(uuid)'
 ]::text[]::regprocedure[]),
-  'cashless_maint : les deux purges, rien d''autre (OP-N75)');
+  'cashless_maint : les deux purges (OP-N75) et les trois fonctions de la passerelle, rien d''autre');
+-- Passerelle locale (WP09, post-roles.sql §9d et §9e). Listes figées, nommées, jamais ALL.
+SELECT is(pg_temp.fns('cashless_edge'), pg_temp.sigs(ARRAY[
+  'identify_edge_gateway(bytea)', 'touch_edge_gateway(uuid)', 'get_current_edge_handover(uuid)',
+  'get_debit_authority(uuid)', 'begin_edge_release(uuid,uuid,bigint,bigint,bytea,bigint)',
+  'edge_ack_handover(uuid,uuid,bigint,bigint)', 'edge_complete_release(uuid,uuid,bigint,bigint,bytea,bigint)',
+  'edge_record_seq(uuid,bigint,text,bytea,text,uuid,text)',
+  'edge_sync_batch_begin(uuid,uuid,bigint,bigint,bigint,bytea,integer)',
+  'edge_sync_batch_result(uuid,bigint,text,text,text,uuid,boolean)', 'edge_sync_batch_finish(uuid,text)',
+  'edge_record_staff_token_audit(uuid,uuid,jsonb)',
+  'edge_post_transaction(uuid,bigint,bigint,text,bytea,jsonb,jsonb)',
+  'edge_activate_media(uuid,bigint,bigint,text,bytea,jsonb)',
+  'edge_take_deposit(uuid,bigint,bigint,text,bytea,jsonb)',
+  'edge_topup_cash(uuid,bigint,bigint,text,bytea,jsonb)', 'edge_replication_page(uuid,bigint,bigint,integer)',
+  -- 0066 (décision 39) : accès étroits de la réception des lots
+  'edge_sync_cursor(uuid)', 'edge_sync_device_key(uuid,text)', 'edge_sync_results(uuid,uuid)',
+  'edge_fee_config(uuid,text,timestamptz)', 'edge_sync_audit(uuid,text,uuid,jsonb)',
+  'edge_tap_proof(uuid,bytea,bytea,bytea)'
+]::text[]::regprocedure[]),
+  'cashless_edge : liste exacte (23 fonctions, ni post_transaction ni fonction S12 brute)');
+SELECT is(pg_temp.fns('cashless_edgeadmin'), pg_temp.sigs(ARRAY[
+  'register_edge_gateway(uuid,uuid,text,text,bytea,bytea,bytea,text,text)',
+  'revoke_edge_gateway(uuid,text,text)', 'rotate_edge_gateway_cert(uuid,bytea,text)',
+  'swap_edge_gateway_roles(uuid,uuid,text)', 'edge_register_snapshot_key(uuid,text,bytea,text)',
+  'set_edge_setting(text,bigint,text)'
+]::text[]::regprocedure[]),
+  'cashless_edgeadmin : liste exacte (six fonctions ; set_edge_gateway_role à personne)');
+-- Jamais accordées à un rôle quelconque (S12 brutes, internes de 0058 à 0064 : exécutées par d'autres fonctions DEFINER).
+SELECT is((SELECT coalesce(string_agg(r || ':' || p.oid::regprocedure::text, ' '
+                                      ORDER BY r, p.oid::regprocedure::text), '')
+             FROM pg_proc p CROSS JOIN unnest(ARRAY['public', 'cashless_app', 'cashless_platform', 'cashless_tagkeys',
+                'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign',
+                'cashless_maint', 'cashless_edge', 'cashless_edgeadmin']) r
+            WHERE p.pronamespace = 'public'::regnamespace
+              AND p.proname IN ('set_debit_authority', 'force_central_authority',
+                                'grant_edge_authority', 'ack_edge_handover', 'complete_edge_release',
+                                'set_edge_gateway_role', 'edge_event_lock', 'edge_event_handover_open',
+                                'edge_admin_audit', 'edge_bind_gateway', 'edge_lock_handover',
+                                'edge_assert_session_gateway', 'edge_ledger_of_gateway', 'edge_counter_op',
+                                'edge_open_replay_failed', 'edge_record_rejection', 'edge_setting_value',
+                                'edge_spend_promo_first', 'edge_ref_emit_many', 'edge_ref_emit_media_set',
+                                'edge_ref_backfill', 'edge_ref_trigger', 'edge_ref_event_ledger',
+                                'edge_ref_scope_ledgers', 'edge_ref_staff_ledgers', 'edge_ref_ctx_enter',
+                                'edge_ref_ctx_leave', 'edge_owner_only_guard', 'edge_forbid_truncate', 'edge_ts',
+                                'edge_b64', 'edge_platform_setting_owner_only', 'edge_sync_batch_guard',
+                                'edge_chain_genesis', 'edge_gateway_revoked_terminal', 'edge_handover_notify')
+              AND has_function_privilege(r, p.oid, 'EXECUTE')), '',
+  'passerelle : fonctions S12 brutes et internes de 0058 à 0064 exécutables par aucun rôle (même set_debit_authority)');
 -- Jamais accordées à un rôle quelconque (internes DEFINER sans garde propre, gardes, fonctions de déclencheur).
 SELECT is((SELECT count(*)::int FROM pg_proc p CROSS JOIN unnest(ARRAY['public', 'cashless_app',
             'cashless_platform', 'cashless_tagkeys', 'cashless_perso', 'cashless_tagcheck',
-            'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint']) r
+            'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint',
+            'cashless_edge', 'cashless_edgeadmin']) r
            WHERE p.pronamespace = 'public'::regnamespace
              AND p.proname IN ('offline_snapshot_add_entries', 'offline_snapshot_draft_locked',
                                'offline_snapshot_source_rows', 'offline_snapshot_item_ok',
@@ -332,14 +407,17 @@ CREATE TEMP TABLE wp07_before AS
   SELECT r, pg_temp.fns(r) AS f
     FROM unnest(ARRAY['public', 'cashless_app', 'cashless_platform', 'cashless_tagkeys',
                       'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin',
-                      'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint']) r;
+                      'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint', 'cashless_edge',
+                      'cashless_edgeadmin']) r;
 \ir ../roles.sql
 \ir ../post-roles.sql
 CREATE FUNCTION public.wp07_future_probe() RETURNS int LANGUAGE sql AS 'SELECT 1';
 SELECT ok(NOT has_function_privilege('public', 'public.wp07_future_probe()', 'EXECUTE')
       AND NOT has_function_privilege('cashless_app', 'public.wp07_future_probe()', 'EXECUTE')
       AND NOT has_function_privilege('cashless_snapcontent', 'public.wp07_future_probe()', 'EXECUTE')
-      AND NOT has_function_privilege('cashless_snapsign', 'public.wp07_future_probe()', 'EXECUTE'),
+      AND NOT has_function_privilege('cashless_snapsign', 'public.wp07_future_probe()', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_edge', 'public.wp07_future_probe()', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_edgeadmin', 'public.wp07_future_probe()', 'EXECUTE'),
   'OP-N68 levée : fonction créée à la main par le propriétaire, exécutable ni par PUBLIC ni par un rôle');
 SELECT is((SELECT count(*)::int FROM pg_default_acl d WHERE d.defaclobjtype = 'f'
              AND d.defaclnamespace = 0 AND d.defaclrole = (SELECT oid FROM pg_roles WHERE rolname = current_user)

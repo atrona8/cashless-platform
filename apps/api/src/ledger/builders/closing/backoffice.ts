@@ -1,5 +1,5 @@
 // ANOMALY_RESOLUTION, ADJUSTMENT, BREAKAGE, BREAKAGE_REVERSAL — SPECIFICATION §5.4, §12.1 (ADR-67, ADR-75).
-import { roundDiv, splitShare } from '../../money';
+import { roundDiv, splitShare } from '@cashless/shared-rules';
 import {
   BuildError,
   cashDue,

@@ -15,6 +15,7 @@ Problem _$ProblemFromJson(Map<String, dynamic> json) => Problem(
   detail: json['detail'] as String?,
   instance: json['instance'] as String?,
   retryable: json['retryable'] as bool?,
+  edgeBaseUrl: json['edge_base_url'] as String?,
   errors: (json['errors'] as List<dynamic>?)
       ?.map((e) => Errors.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -33,6 +34,7 @@ Map<String, dynamic> _$ProblemToJson(Problem instance) => <String, dynamic>{
   'code': instance.code,
   'request_id': instance.requestId,
   'retryable': instance.retryable,
+  'edge_base_url': instance.edgeBaseUrl,
   'errors': instance.errors,
   'violations': instance.violations,
   'authority_epoch': instance.authorityEpoch,

@@ -19,8 +19,7 @@ import {
   textField,
   unprocessable,
 } from '../organization/platform/platform.dto';
-import { contentSha256 } from '../payments/device-seq-registry';
-import { chainedContent } from '../payments/chained-content';
+import { chainedContent, contentSha256 } from '@cashless/shared-rules';
 
 export type ReversalReason = components['schemas']['ReversalRequest']['reason'];
 

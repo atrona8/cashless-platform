@@ -112,6 +112,8 @@ describe('architecture', () => {
     maintenance: 'processes/maintenance.module.ts',
     'snapshot-content': 'processes/snapshot-content.module.ts',
     'snapshot-signer': 'processes/snapshot-signer.module.ts',
+    // Mission passerelle-locale, WP10 : processus `edge`, aucun droit de clé.
+    edge: 'processes/edge.module.ts',
   } as const;
   // Processus des lots WP11 (snapshot-content) et WP13 (snapshot-signer) : leurs lots ajoutent leur
   // racine ici ; tant que le fichier n'existe pas, la liste ne les attend pas.
@@ -140,6 +142,7 @@ describe('architecture', () => {
     maintenance: [],
     'snapshot-content': ['dataKey', 'decrypt'],
     'snapshot-signer': ['sign'],
+    edge: [],
   };
   const PORT_TOKEN: Record<string, string> = {
     mac: 'MAC_PORT',
@@ -293,6 +296,7 @@ describe('architecture', () => {
   it('chaque point d’entrée passe par le démarrage commun, qui applique la garde de production', () => {
     const mains = files.filter((file) => /^main(\.[a-z-]+)?\.ts$/.test(file.path));
     expect(mains.map((file) => file.path).sort()).toEqual([
+      'main.edge.ts',
       'main.key-admin.ts',
       'main.maintenance.ts',
       'main.personalization.ts',

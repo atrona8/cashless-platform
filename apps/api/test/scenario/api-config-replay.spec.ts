@@ -8,7 +8,7 @@ import { SqlConfigResolver } from '../../src/configuration/sql-config-resolver';
 import { TenantTx } from '../../src/db/tenant-tx';
 import { LedgerEngineService, type EngineResult } from '../../src/ledger/ledger-engine.service';
 import { CONFIG_RESOLVER } from '../../src/ledger/ledger.module';
-import type { FeeRule } from '../../src/ledger/money';
+import type { FeeRule } from '@cashless/shared-rules';
 import type { EventStatus } from '../../src/ledger/status-matrix';
 import { createTestApp } from '../support/app';
 import { withOwner } from '../support/db';

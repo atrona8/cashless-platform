@@ -1,8 +1,7 @@
 // Contrôles d'entrée d'un lot (lot WP18, T073, T076) : un cas par contrôle, dans l'ordre du contrat.
 import { createPublicKey, generateKeyPairSync, randomUUID } from 'node:crypto';
 import vectors from '../../fixtures/offline-vectors/vectors.json';
-import { contentSha256 } from '../../../src/payments/device-seq-registry';
-import { chainedContent } from '../../../src/payments/chained-content';
+import { chainedContent, contentSha256 } from '@cashless/shared-rules';
 import {
   buildJournal,
   chainHash,

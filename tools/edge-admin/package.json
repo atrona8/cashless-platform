@@ -1,0 +1,21 @@
+{
+  "name": "@cashless/edge-admin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Outil d'administration des passerelles locales : inscription, révocation, rotation du certificat, échange des rôles (mission passerelle-locale, WP15)",
+  "main": "src/main.ts",
+  "scripts": {
+    "edge-admin": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@peculiar/x509": "2.1.0",
+    "pg": "8.23.1",
+    "reflect-metadata": "0.2.2"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.15"
+  }
+}

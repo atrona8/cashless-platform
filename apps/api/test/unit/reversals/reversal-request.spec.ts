@@ -9,7 +9,7 @@ import {
   reversalContent,
   REVERSAL_REASONS,
 } from '../../../src/reversals/reversal.dto';
-import { contentSha256 } from '../../../src/payments/device-seq-registry';
+import { contentSha256 } from '@cashless/shared-rules';
 
 const SESSION = '2f3a4b5c-6d7e-4f80-9a1b-2c3d4e5f6a7b';
 const ok = {

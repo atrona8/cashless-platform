@@ -47,6 +47,14 @@ export const SNAPSIGN_URL = roleUrl(
   'CASHLESS_SNAPSIGN_PASSWORD',
 );
 
+/** Rôles de la passerelle locale (mission passerelle-locale, WP09/WP10, post-roles.sql § 9). */
+export const EDGE_URL = roleUrl('DATABASE_URL_EDGE', 'cashless_edge', 'CASHLESS_EDGE_PASSWORD');
+export const EDGEADMIN_URL = roleUrl(
+  'DATABASE_URL_EDGEADMIN',
+  'cashless_edgeadmin',
+  'CASHLESS_EDGEADMIN_PASSWORD',
+);
+
 const REPO_ROOT = join(__dirname, '../../../..');
 
 /** Recrée la base de test par les migrations (packages/ledger-sql/scripts/reset-db.sh). */

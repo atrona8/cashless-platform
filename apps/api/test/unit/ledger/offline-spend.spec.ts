@@ -1,7 +1,7 @@
 // `coveredCap` du moteur (mission 7, WP19) : la table de conflit plafonne la part prélevée sur le portefeuille d'une
 // vente hors ligne. Montants bigint exacts. Jamais de plafond en ligne.
 import { buildPurchase } from '../../../src/ledger/builders/festival/purchase';
-import { spendSplit } from '../../../src/ledger/money/spend';
+import { spendSplit } from '@cashless/shared-rules';
 import { commandFingerprint } from '../../../src/ledger/ledger-engine.service';
 import type { BuildContext, LedgerCommand, ResolvedConfig } from '../../../src/ledger/types';
 

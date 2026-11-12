@@ -1,5 +1,11 @@
 // PURCHASE (vente en ligne ou hors ligne synchronisée) — SPECIFICATION §5.4, cas 13, 14, 19.
-import { extractTax, fee, InsufficientFundsError, spendSplit, type SpendSplit } from '../../money';
+import {
+  extractTax,
+  fee,
+  InsufficientFundsError,
+  spendSplit,
+  type SpendSplit,
+} from '@cashless/shared-rules';
 import {
   BuildError,
   merchant,

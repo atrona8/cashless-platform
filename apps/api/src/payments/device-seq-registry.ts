@@ -17,10 +17,8 @@
 // `currency`, `tap` (lecture embarquée, telle que reçue) et `lines` (telles que reçues). JAMAIS `tap_id`,
 // `customer_qr_token`, `vendor_session_id` ni un champ d'état (`snapshot_version`, `config_id`,
 // `online_*`…). La forme devra être celle des lots hors ligne (mission 7).
-import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import canonicalize from 'canonicalize';
-import { chainedContent } from './chained-content';
+import { chainedContent, contentSha256 } from '@cashless/shared-rules';
 import type { TxClient } from '../db/tenant-tx';
 import { TenantTx } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
@@ -67,17 +65,6 @@ const toRow = (r: RegistrySqlRow): RegistryRow => ({
 
 /** Champs chaînés d'une vente que le terminal a pu envoyer (noms de `OfflineOperation`). */
 const PURCHASE_FIELDS = ['occurred_at', 'amount', 'currency', 'tap', 'lines'] as const;
-
-/**
- * SHA-256 de la forme canonique (RFC 8785) des champs fournis ; les champs `undefined` sont omis (« champs
- * absents = omis »). Aucun champ d'état ne doit être passé par l'appelant.
- */
-export function contentSha256(fields: Record<string, unknown>): Buffer {
-  const present = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
-  const canonical = canonicalize(present);
-  if (canonical === undefined) throw new Error('content_sha256 : forme canonique impossible');
-  return createHash('sha256').update(canonical, 'utf8').digest();
-}
 
 /**
  * Contenu d'une vente `createPayment` : calculé sur le corps TEL QUE REÇU (même un corps mal formé a un

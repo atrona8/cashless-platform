@@ -1,0 +1,15 @@
+{
+  "name": "@cashless/shared-rules",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Règles pures partagées par le central et la passerelle locale : argent, règles hors ligne, contenu et chaîne des opérations (mission 8, interfaces.md § 5)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "canonicalize": "5.1.0"
+  }
+}

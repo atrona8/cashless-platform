@@ -1,5 +1,5 @@
 // WALLET_REFUND (solde payé) et CHARGEBACK (contestation carte, ADR-77) — SPECIFICATION §5.4.
-import { fee } from '../../money';
+import { fee } from '@cashless/shared-rules';
 import {
   BuildError,
   money,

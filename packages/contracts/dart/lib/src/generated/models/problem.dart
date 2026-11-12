@@ -22,6 +22,7 @@ class Problem {
     this.detail,
     this.instance,
     this.retryable,
+    this.edgeBaseUrl,
     this.errors,
     this.violations,
     this.authorityEpoch,
@@ -42,6 +43,12 @@ class Problem {
 
   /// `true` si réessayer à l'identique (même clé d'idempotence) peut réussir.
   final bool? retryable;
+
+  /// `DEBIT_AUTHORITY_EDGE` seulement : adresse locale de la passerelle qui détient l'autorité de débit.
+  /// (ajout facultatif, décision 35 du porteur).
+  ///
+  @JsonKey(name: 'edge_base_url')
+  final String? edgeBaseUrl;
   final List<Errors>? errors;
 
   /// `VALIDATION_FAILED` sur un réglage hors bornes (§4.1) : une entrée par borne franchie. Le `detail`.

@@ -244,9 +244,17 @@ SELECT is((SELECT array_agg(viewname::text ORDER BY viewname) FROM pg_views v
               'trial_balance', 'party_position', 'ledger_invariant', 'hot_account_side_check',
               'balance_drift', 'counter_time_inversion', 'batch_inventory', 'ledgers_to_seal',
               'offline_snapshot_rows')),
-  ARRAY['vendor_public'],
-  'vues : vendor_public est la seule vue ajoutée depuis la mission 5a (une vue nouvelle doit être '
-  || 'fermée en écriture ici)');
+  ARRAY['edge_device_seq_acked', 'vendor_public'],
+  'vues : vendor_public et edge_device_seq_acked (0063, passerelle) sont les seules vues ajoutées depuis la mission 5a '
+  || '(une vue nouvelle doit être fermée en écriture ici)');
+-- edge_device_seq_acked (0063) : lecture étroite des terminaux de l'événement de la passerelle appelante. Ni PUBLIC ni
+-- aucun rôle cashless_* autre que cashless_app n'y écrit. cashless_app : roles.sql lui redonne arw sur toutes les vues
+-- (WP09 le retire) ; l'écriture est donc seulement bornée ici pour les autres rôles, et reste à fermer en WP09.
+SELECT is((SELECT array_agg(r || ':' || p ORDER BY r, p)
+             FROM unnest(pg_temp.others()) r, unnest(ARRAY['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) p
+            WHERE has_table_privilege(r, 'edge_device_seq_acked', p)
+               OR (p IN ('INSERT', 'UPDATE') AND has_any_column_privilege(r, 'edge_device_seq_acked', p))), NULL::text[],
+  'edge_device_seq_acked : aucune écriture pour PUBLIC ni pour les rôles cashless_* autres que cashless_app');
 
 -- 2. Refus réels sous cashless_app (droits contrôlés à la préparation, avec ou sans ligne) --------
 SET LOCAL ROLE cashless_app;

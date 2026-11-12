@@ -73,7 +73,9 @@ INSERT INTO new_tables VALUES
  ('offline_snapshot_media_log', false), ('offline_snapshot_key', true), ('offline_snapshot_ack', false),
  ('device_journal_import', true), ('offline_batch_retry', false), ('offline_op_result', false),
  ('wallet_status_history', false);
--- Tables de public avant la mission (liste figée) : une table ni ici ni dans new_tables fait échouer le test.
+-- Tables de public hors des dix de la mission (liste figée) : une table ni ici ni dans new_tables fait échouer le test.
+-- Passerelle locale (WP09) : les huit tables de 0058 à 0063 y sont ajoutées ; leurs droits sont figés par
+-- tests_edge_rights.sql (écriture fermée, lectures nommées).
 SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FROM pg_class c
             WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('r', 'p')
               AND c.relname NOT IN (SELECT t FROM new_tables)
@@ -83,7 +85,9 @@ SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FR
  'catalog_item', 'catalog_version', 'catalog_version_item', 'claim_attempt', 'claim_code', 'config_version', 'contract',
  'currency_exponent', 'debit_authority_handover', 'device', 'device_catalog_served', 'device_config_served',
  'device_enrollment_attempt', 'device_enrollment_code', 'device_refresh_token', 'device_request_nonce',
- 'device_seq_registry', 'device_status_history', 'edge_gateway', 'edge_sync_registry', 'event', 'event_psp_selection',
+ 'device_seq_registry', 'device_status_history', 'edge_gateway', 'edge_platform_setting', 'edge_pwd_pack',
+ 'edge_pwd_pack_key', 'edge_reference_change', 'edge_replication_horizon', 'edge_staff_token_audit',
+ 'edge_sync_batch', 'edge_sync_batch_result', 'edge_sync_registry', 'event', 'event_psp_selection',
  'event_status_history', 'event_status_transition', 'external_statement_line', 'fee_rule', 'handover_transition',
  'journal_transaction', 'jurisdiction_profile', 'kyc_verification', 'ledger', 'ledger_seal', 'media', 'media_assignment',
  'media_batch', 'media_batch_status_history', 'media_batch_transition', 'media_claim', 'media_identity_history',

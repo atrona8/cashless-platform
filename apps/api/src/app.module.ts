@@ -10,6 +10,7 @@ import { CustomerIdentityModule } from './customer-identity/customer-identity.mo
 import { DbModule } from './db/db.module';
 import { PublicDeviceIdentityModule } from './device-identity/device-identity.module';
 import { DevicesModule } from './devices/devices.module';
+import { DebitAuthorityModule } from './debit-authority/debit-authority.module';
 import { ProblemFilter } from './errors/problem.filter';
 import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.controller';
@@ -82,6 +83,8 @@ import { WorkerRegistry } from './processes/worker';
     // Mission 7 (lot WP20) : levée de trou de séquence et import du journal d'un terminal révoqué.
     OfflineSeqModule,
     OfflineJournalModule,
+    // Mission passerelle-locale (lot WP11) : autorité de débit côté humains.
+    DebitAuthorityModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

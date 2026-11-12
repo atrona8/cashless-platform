@@ -5,6 +5,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'device_batches.dart';
+import 'edge_local_order.dart';
+import 'edge_staff_token_audit.dart';
 import 'edge_sync_operation.dart';
 import 'hex32.dart';
 
@@ -29,6 +31,8 @@ class EdgeSyncBatch {
     required this.lastChainHash,
     required this.operations,
     required this.signature,
+    this.staffTokenAudit,
+    this.localOrders,
     this.deviceBatches,
   });
 
@@ -50,6 +54,24 @@ class EdgeSyncBatch {
   final Hex32 prevChainHash;
   @JsonKey(name: 'last_chain_hash')
   final Hex32 lastChainHash;
+
+  /// Audit des usages d'un jeton de personne EXPIRÉ toléré au guichet de la passerelle (tolérance de la.
+  /// décision 3 du porteur), pour les opérations de ce lot : au plus une ligne par opération, donc 500. Les.
+  /// lignes sont couvertes par la signature du lot (`signature` porte sur le lot entier sans elle). Le central.
+  /// les range dans `edge_staff_token_audit` (immuable, par passerelle) et les recopie dans l'audit de la.
+  /// plateforme. Absent ou vide : aucun usage toléré dans ce lot. Une ligne dont `edge_seq` n'est pas dans.
+  /// l'intervalle du lot est refusée (`400`, lot non traité).
+  ///
+  @JsonKey(name: 'staff_token_audit')
+  final List<EdgeStaffTokenAudit>? staffTokenAudit;
+
+  /// Ordres locaux à deux personnes exécutés sur la passerelle (levée locale de `STALE`, purge manuelle),.
+  /// versés à l'audit du central au retour du lien. Couverts par la signature du lot. Absent ou vide :.
+  /// aucun ordre local à verser. Le central les range à son audit (`EDGE_LOCAL_ORDER_RECORDED`), sans.
+  /// jamais en tirer d'effet comptable.
+  ///
+  @JsonKey(name: 'local_orders')
+  final List<EdgeLocalOrder>? localOrders;
 
   /// Au plus 500 opérations et 1 Mio par lot, dans l'ordre des `edge_seq`.
   final List<EdgeSyncOperation> operations;

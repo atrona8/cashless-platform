@@ -5,10 +5,10 @@ import { createHash } from 'node:crypto';
 import { ProblemException } from '../../../src/errors/problem';
 import type { TxClient } from '../../../src/db/tenant-tx';
 import { AnomalyWriter, openAnomaly } from '../../../src/offline/anomalies/anomaly-writer';
+import { contentSha256 } from '@cashless/shared-rules';
 import {
   DeviceSeqRegistry,
   isRegistrable,
-  contentSha256,
   purchaseContent,
 } from '../../../src/payments/device-seq-registry';
 import { qrTokenHash } from '../../../src/payments/qr-token-hash';

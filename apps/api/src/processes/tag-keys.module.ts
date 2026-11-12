@@ -6,6 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuditModule } from '../audit/audit.module';
 import { ProcessDbModule } from '../db/process-db.module';
 import { DeviceIdentityModule } from '../device-identity/device-identity.module';
+import { EdgePacksModule } from '../edge/packs/edge-packs.module';
 import { HealthModule } from '../health/health.controller';
 import { KmsModule } from '../kms/kms.module';
 import { MediaTagKeysModule } from '../media/media-tag-keys.module';
@@ -20,6 +21,7 @@ import { DenyUnmarkedRoutesGuard, ProcessBaseModule } from './process-base';
     AuditModule,
     KmsModule.forCapabilities(['decrypt']),
     MediaTagKeysModule,
+    EdgePacksModule,
   ],
   providers: [
     DenyUnmarkedRoutesGuard,

@@ -1,0 +1,640 @@
+{
+  "mission_slug": "passerelle-locale-01M6NM1S",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 (Application passerelle) : En tant qu'op\u00e9rateur, je veux une application de passerelle, avec sa propre base, qui r\u00e9utilise les r\u00e8gles de l'API au lieu de les r\u00e9\u00e9crire, afin que le site se comporte comme le central.",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (f1f22df5); WP16 approuv\u00e9 (66ee8ae0) ; tests : apps/gateway/test/startup/architecture.spec.ts, packages/shared-rules/test/architecture.spec.ts, packages/shared-rules/test/edge-vectors.spec.ts, apps/gateway/test/sales/shared-rules-parity.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP02, WP16 ; les tests ne citent pas tous \u00ab FR-001 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 (Inscription d'une passerelle) : En tant qu'op\u00e9rateur, je veux inscrire une passerelle pour un \u00e9v\u00e9nement (num\u00e9ro, r\u00f4le, certificat, cl\u00e9 d'accord, adresse sur le site) par un outil d'administration, hors API publique, afin de ne pas ajouter de route aux \u00e9quipes clientes.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (6d5768dd); WP15 approuv\u00e9 (5b78b6a6); WP16 approuv\u00e9 (66ee8ae0) ; tests : packages/ledger-sql/tests/tests_edge_gateway.sql, tools/edge-admin/test/register.spec.ts, tools/edge-admin/test/enrollment-file.spec.ts, apps/gateway/test/startup/enrollment.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP03, WP15, WP16 ; les tests ne citent pas tous \u00ab FR-002 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 (Demande de bascule) : En tant qu'admin, je veux demander le passage \u00e0 `EDGE` sur `POST /ledgers/{id}/debit-authority`, par `grant_edge_authority`, afin que le central cesse de d\u00e9biter d\u00e8s la validation.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP11 approuv\u00e9 (d0418ef8) ; tests : packages/ledger-sql/tests/tests_edge_handover.sql, apps/api/test/integration/debit-authority/debit-authority-routes.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP11 ; les tests ne citent pas tous \u00ab FR-003 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 (\u00c9tat de l'autorit\u00e9) : En tant qu'admin ou passerelle, je veux lire l'autorit\u00e9, l'\u00e9poque et l'adresse de la passerelle (`getDebitAuthority`), et que le terminal les re\u00e7oive par son battement de c\u0153ur et sa configuration.",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuv\u00e9 (6eafac0b); WP11 approuv\u00e9 (d0418ef8) ; tests : apps/api/test/integration/debit-authority/debit-authority-routes.spec.ts, apps/api/test/integration/debit-authority/edge-view-by-terminals.spec.ts, apps/gateway/test/device/reads.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP10, WP11 ; les tests ne citent pas tous \u00ab FR-004 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 (Canal de contr\u00f4le) : En tant que passerelle, je veux interroger le central en attente longue (`getCurrentEdgeHandover`, 25 s au plus), ce qui vaut battement de c\u0153ur, afin de recevoir accords et demandes de rendu.",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuv\u00e9 (6eafac0b) ; tests : apps/api/test/integration/edge/process/current-handover-wait.spec.ts, apps/gateway/test/authority/central-client.spec.ts, apps/gateway/test/e2e/handover-and-freshness.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP10 ; les tests ne citent pas tous \u00ab FR-005 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 (Accus\u00e9 de bascule) : En tant que passerelle, je veux accuser r\u00e9ception (`\u00e9poque`, filigrane atteint), le central refusant un accus\u00e9 incomplet, et ne d\u00e9biter qu'apr\u00e8s sa r\u00e9ponse `200`.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP12 approuv\u00e9 (1ff002c3); WP17 approuv\u00e9 (53e5cc75) ; tests : packages/ledger-sql/tests/tests_edge_handover.sql, apps/api/test/integration/edge/routes/ack-handover.spec.ts, apps/gateway/test/authority/authority-states.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP12, WP17 ; les tests ne citent pas tous \u00ab FR-006 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 (\u00c9chec de bascule) : En tant qu'admin, je veux qu'une bascule non accus\u00e9e puisse \u00e9chouer (`fail_edge_grant`) et rendre l'autorit\u00e9 au central.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP11 approuv\u00e9 (d0418ef8) ; tests : packages/ledger-sql/tests/tests_edge_handover.sql, apps/api/test/integration/debit-authority/debit-authority-routes.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP11 ; les tests ne citent pas tous \u00ab FR-007 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 (Flux de r\u00e9plication) : En tant que passerelle, je veux tirer en continu `getEdgeReplicationFeed` et m\u00e9moriser ma position, afin de recevoir soldes, statuts, nouveaux bracelets et mots de passe chiffr\u00e9s pour ma cl\u00e9 d'accord, sans jamais manquer une \u00e9criture valid\u00e9e hors ordre ni un blocage sans \u00e9criture comptable.",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (166263ee); WP12 approuv\u00e9 (1ff002c3); WP18 approuv\u00e9 (117d6893) ; tests : packages/ledger-sql/tests/tests_edge_replication.sql, apps/api/test/integration/edge/routes/replication-feed.spec.ts, apps/api/test/integration/edge/routes/replication-feed-retry.spec.ts, apps/gateway/test/replication/page-apply.spec.ts, apps/gateway/test/replication/reference.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP08, WP12, WP18 ; les tests ne citent pas tous \u00ab FR-008 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 (Donn\u00e9es de service r\u00e9pliqu\u00e9es) : En tant que passerelle, je veux recevoir aussi les sessions de caisse ouvertes, les sessions vendeur valides, les terminaux de l'\u00e9v\u00e9nement et leurs cl\u00e9s publiques, le catalogue et les r\u00e9glages de l'\u00e9v\u00e9nement, par des champs facultatifs et r\u00e9trocompatibles limit\u00e9s \u00e0 `/edge/*` (sch\u00e9ma unique : `contracts/replication-page-additions.yaml`).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuv\u00e9 (d2e489b2); WP08 approuv\u00e9 (166263ee); WP18 approuv\u00e9 (117d6893) ; tests : packages/ledger-sql/tests/tests_edge_replication.sql, apps/gateway/test/replication/reference.spec.ts, apps/gateway/test/e2e/contract-stability.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP01, WP08, WP18 ; les tests ne citent pas tous \u00ab FR-009 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 (Op\u00e9rations servies) : En tant que terminal, je veux que la passerelle serve exactement les 16 op\u00e9rations marqu\u00e9es `x-edge-available`, avec le m\u00eame format et les m\u00eames erreurs qu'au central.",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (43f41ec9); WP21 approuv\u00e9 (ccc77e12) ; tests : apps/gateway/test/sales/contract.spec.ts, apps/gateway/test/device/contract.spec.ts, apps/gateway/test/counter/contract.spec.ts, apps/gateway/test/offline/contract.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP19, WP21 ; les tests ne citent pas tous \u00ab FR-010 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 (Op\u00e9rations refus\u00e9es) : En tant que terminal, je veux un refus `409 DEBIT_AUTHORITY_EDGE` pour tout pr\u00e9l\u00e8vement sur solde autre qu'une vente, remboursement, restitution, paiement par QR.",
+      "proof_type": "automated_test",
+      "evidence": "WP21 approuv\u00e9 (ccc77e12) ; tests : apps/gateway/test/sales/refusals.spec.ts, apps/gateway/test/counter/refusals.spec.ts, apps/gateway/test/authority/authority-states.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP21 ; les tests ne citent pas tous \u00ab FR-011 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 (Exclusion par l'\u00e9poque) : En tant que syst\u00e8me, je veux que la passerelle ne d\u00e9bite que si elle d\u00e9tient l'autorit\u00e9 active et que la requ\u00eate porte son \u00e9poque, et qu'elle cesse de d\u00e9biter, de fa\u00e7on persistante, d\u00e8s qu'elle voit une \u00e9poque sup\u00e9rieure confirm\u00e9e par le central ou plausible (au plus l'\u00e9poque d\u00e9tenue + 2) ; une \u00e9poque implausible est refus\u00e9e sans arr\u00eat ni persistance, avec alerte.",
+      "proof_type": "automated_test",
+      "evidence": "WP17 approuv\u00e9 (53e5cc75); WP21 approuv\u00e9 (ccc77e12) ; tests : apps/gateway/test/authority/epochs.spec.ts, apps/gateway/test/authority/authority-states.spec.ts, apps/gateway/test/device/authority-separation.spec.ts, apps/gateway/test/e2e/exclusion-under-load.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP17, WP21 ; les tests ne citent pas tous \u00ab FR-012 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 (Refus central pendant EDGE) : En tant que syst\u00e8me, je veux que tout d\u00e9bit central r\u00e9ponde `409 DEBIT_AUTHORITY_EDGE`, avec l'adresse de la passerelle et l'\u00e9poque, en acceptant les cr\u00e9dits, sur tous les chemins de d\u00e9bit.",
+      "proof_type": "automated_test",
+      "evidence": "WP11 approuv\u00e9 (d0418ef8) ; tests : apps/api/test/integration/debit-authority/debit-paths-refused.spec.ts, apps/api/test/integration/debit-authority/edge-conflict-body.spec.ts, packages/ledger-sql/tests/tests_edge_sync.sql ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP11 ; les tests ne citent pas tous \u00ab FR-013 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 (Num\u00e9rotation et cha\u00eene) : En tant que passerelle, je veux num\u00e9roter chaque d\u00e9cision par un `edge_seq` continu et cha\u00een\u00e9, persistant, avec la cl\u00e9 d'origine du terminal (son `Idempotency-Key`), \u00e9crit avant toute r\u00e9ponse au terminal.",
+      "proof_type": "automated_test",
+      "evidence": "WP20 approuv\u00e9 (2aa97075) ; tests : apps/gateway/test/queue/append.spec.ts, apps/gateway/test/queue/vectors.spec.ts, apps/gateway/test/queue/crash-points.spec.ts, apps/api/test/integration/edge/sync/sync-origin-key.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP20 ; les tests ne citent pas tous \u00ab FR-014 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 (Recharges esp\u00e8ces) : En tant que caissier, je veux recharger sur la passerelle, seulement sur une session ouverte au central et r\u00e9pliqu\u00e9e avant la bascule ; toute autre recharge est refus\u00e9e et rien n'est \u00e9crit. Au rejeu au central, elle n'est jamais rejet\u00e9e pour un plafond r\u00e9glementaire (deux parts, anomalie r\u00e9solue \u00e0 deux).",
+      "proof_type": "automated_test",
+      "evidence": "WP22 approuv\u00e9 (1c2a08a9) ; tests : apps/gateway/test/counter/cash-topup.spec.ts, packages/ledger-sql/tests/tests_edge_counter_ops.sql ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP22 ; les tests ne citent pas tous \u00ab FR-015 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 (Activation et caution) : En tant que caissier, je veux activer un bracelet sans frais sur solde et prendre une caution en esp\u00e8ces, transmises au central dans la m\u00eame file (`ACTIVATION`, `DEPOSIT_CASH`).",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (03bc9650); WP22 approuv\u00e9 (1c2a08a9) ; tests : apps/gateway/test/counter/activation.spec.ts, apps/gateway/test/counter/deposit.spec.ts, packages/ledger-sql/tests/tests_edge_counter_ops.sql ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP07, WP22 ; les tests ne citent pas tous \u00ab FR-016 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 (Vidage de la file) : En tant que passerelle, je veux envoyer mes op\u00e9rations par `submitEdgeSyncBatch`, dans l'ordre, un lot en vol \u00e0 la fois (500 op\u00e9rations et 1 Mio au plus), d\u00e8s le retour du lien, en continuant de servir les terminaux.",
+      "proof_type": "automated_test",
+      "evidence": "WP13 approuv\u00e9 (e299c476); WP20 approuv\u00e9 (2aa97075) ; tests : apps/gateway/test/queue/drain.spec.ts, apps/api/test/integration/edge/sync/sync-batch-intake.spec.ts, apps/api/test/integration/edge/sync/sync-boundaries.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP13, WP20 ; les tests ne citent pas tous \u00ab FR-017 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 (Rejeu au central) : En tant que central, je veux \u00e9crire chaque op\u00e9ration en `EDGE_SYNC`, avec la cl\u00e9 d'origine, `origin_occurred_at` et `origin_mode`, en reprenant la d\u00e9cision de la passerelle et en ne recalculant que frais et commissions ; une cl\u00e9 d\u00e9j\u00e0 connue est `DUPLICATE`.",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (04d0b1cb); WP13 approuv\u00e9 (e299c476) ; tests : packages/ledger-sql/tests/tests_edge_post_transaction.sql, apps/api/test/integration/edge/sync/sync-writer.spec.ts, apps/api/test/integration/edge/sync/sync-spend-order.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP06, WP13 ; les tests ne citent pas tous \u00ab FR-018 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 (Refus de la file) : En tant que central, je veux refuser un lot hors ordre (`SEQ_OUT_OF_ORDER`), \u00e0 la cha\u00eene rompue (`CHAIN_BROKEN`, avec alerte), \u00e0 la signature invalide ou d'une \u00e9poque p\u00e9rim\u00e9e.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (1be0ba1b); WP13 approuv\u00e9 (e299c476) ; tests : packages/ledger-sql/tests/tests_edge_sync.sql, apps/api/test/integration/edge/sync/sync-chain-order.spec.ts, apps/api/test/integration/edge/sync/sync-empty-batch.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP05, WP13 ; les tests ne citent pas tous \u00ab FR-019 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 (Rejeu impossible) : En tant que central, je veux traiter un rejeu impossible d'activation ou de caution en `REJECTED EDGE_REPLAY_FAILED`, avec anomalie et esp\u00e8ces au compte d'attente, sans jamais le rejouer ; une op\u00e9ration d\u00e9j\u00e0 rejou\u00e9e sous la m\u00eame cl\u00e9 de terminal n'ouvre aucune anomalie.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (03bc9650); WP13 approuv\u00e9 (e299c476) ; tests : packages/ledger-sql/tests/tests_edge_counter_ops.sql, packages/ledger-sql/tests/tests_edge_replay_anomaly.sql, apps/api/test/integration/edge/journal/online-ref-unknown.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP07, WP13 ; les tests ne citent pas tous \u00ab FR-020 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 (Demande de rendu) : En tant qu'admin, je veux demander le retour au central (`RELEASE_REQUESTED`) ; la passerelle persiste `RELEASING`, cesse de d\u00e9biter (`409 DEBIT_AUTHORITY_MOVING`) et refuse les nouveaux lots.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP12 approuv\u00e9 (1ff002c3); WP17 approuv\u00e9 (53e5cc75) ; tests : packages/ledger-sql/tests/tests_edge_handover.sql, apps/api/test/integration/edge/routes/release-handover.spec.ts, apps/gateway/test/authority/authority-states.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP12, WP17 ; les tests ne citent pas tous \u00ab FR-021 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 (Rendu final) : En tant que passerelle, je veux demander le rendu (`final_edge_seq`, `last_chain_hash`, `operations_count`) ; le central passe en `RELEASING` avant toute v\u00e9rification, r\u00e9pond `409 EDGE_NOT_CAUGHT_UP` si la continuit\u00e9 manque, sinon reprend l'autorit\u00e9.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP12 approuv\u00e9 (1ff002c3); WP20 approuv\u00e9 (2aa97075) ; tests : apps/api/test/integration/edge/routes/release-handover.spec.ts, packages/ledger-sql/tests/tests_edge_handover.sql, apps/gateway/test/e2e/release-10000.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP12, WP20 ; les tests ne citent pas tous \u00ab FR-022 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 (Pas de reprise apr\u00e8s RELEASING) : En tant que syst\u00e8me, je veux qu'une passerelle en `RELEASING` ne reprenne jamais les d\u00e9bits, m\u00eame apr\u00e8s red\u00e9marrage, sauf \u00e9chec du handover signal\u00e9 pour la m\u00eame \u00e9poque.",
+      "proof_type": "automated_test",
+      "evidence": "WP17 approuv\u00e9 (53e5cc75) ; tests : apps/gateway/test/authority/restart-cases.spec.ts, apps/gateway/test/authority/local-unstale.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP17 ; les tests ne citent pas tous \u00ab FR-023 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 (Autorit\u00e9 avant cl\u00f4ture) : En tant que syst\u00e8me, je veux que le passage en `RECONCILING` soit refus\u00e9 tant que l'autorit\u00e9 n'est pas revenue au central (`CL019`).",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (741266f6); WP11 approuv\u00e9 (d0418ef8) ; tests : packages/ledger-sql/tests/tests_edge_handover.sql, apps/api/test/integration/debit-authority/debit-paths-refused.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP04, WP11 ; les tests ne citent pas tous \u00ab FR-024 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025 (Lots hors ligne relay\u00e9s) : En tant que passerelle, je veux traiter les lots de terminaux selon les r\u00e8gles de la mission 7 avec mes soldes, puis les relayer avec l'en-t\u00eate et la signature d'origine.",
+      "proof_type": "automated_test",
+      "evidence": "WP13 approuv\u00e9 (e299c476); WP23 approuv\u00e9 (81dd2541) ; tests : apps/gateway/test/offline/batches.spec.ts, apps/gateway/test/offline/relay.spec.ts, apps/api/test/integration/edge/sync/sync-device-batches.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP13, WP23 ; les tests ne citent pas tous \u00ab FR-025 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026 (Accus\u00e9 du central aux terminaux) : En tant que terminal, je veux lire sur la passerelle (`getDeviceSeqStatus`) l'accus\u00e9 contigu du central, jamais un accus\u00e9 provisoire, seul \u00e0 m'autoriser \u00e0 marquer une op\u00e9ration acquitt\u00e9e (donn\u00e9e `device_seq_acked` du flux).",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (43f41ec9); WP23 approuv\u00e9 (81dd2541) ; tests : apps/gateway/test/device/reads.spec.ts, apps/gateway/test/replication/reference.spec.ts, packages/ledger-sql/tests/tests_edge_replication.sql ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP19, WP23 ; les tests ne citent pas tous \u00ab FR-026 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "FR-027 (Blocages et snapshots locaux) : En tant que passerelle, je veux appliquer un blocage d\u00e8s r\u00e9ception et produire un snapshot au format de la mission 7, sign\u00e9 par ma cl\u00e9 propre d\u00e9clar\u00e9e dans `config.snapshot_keys`.",
+      "proof_type": "automated_test",
+      "evidence": "WP23 approuv\u00e9 (81dd2541) ; tests : apps/gateway/test/offline/snapshots.spec.ts, apps/gateway/test/replication/freshness.spec.ts, apps/gateway/test/replication/page-apply.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP23 ; les tests ne citent pas tous \u00ab FR-027 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-028",
+      "description": "FR-028 (Reprise forc\u00e9e) : En tant qu'`OPERATOR_ADMIN`, je veux demander la reprise forc\u00e9e (constat physique d\u00e9clar\u00e9), approuv\u00e9e par une seconde personne (`FORCE_CENTRAL_AUTHORITY`), qui r\u00e9voque la passerelle et rend l'autorit\u00e9 au central.",
+      "proof_type": "automated_test",
+      "evidence": "WP11 approuv\u00e9 (d0418ef8); WP14 approuv\u00e9 (5a0e9a78) ; tests : apps/api/test/integration/debit-authority/force-central.spec.ts, apps/api/test/integration/edge/journal/forced-takeover-journal.spec.ts, apps/gateway/test/e2e/forced-resume.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP11, WP14 ; les tests ne citent pas tous \u00ab FR-028 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-029",
+      "description": "FR-029 (Journal apr\u00e8s reprise) : En tant que central, je veux traiter le journal non acquitt\u00e9 renvoy\u00e9 par les terminaux, y compris les op\u00e9rations confirm\u00e9es par la passerelle, sans double \u00e9criture, comme pr\u00e9vu par le protocole (\u00a79.7-3).",
+      "proof_type": "automated_test",
+      "evidence": "WP14 approuv\u00e9 (5a0e9a78) ; tests : apps/api/test/integration/edge/journal/forced-takeover-journal.spec.ts, apps/api/test/integration/edge/journal/no-silent-loss.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP14 ; les tests ne citent pas tous \u00ab FR-029 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-030",
+      "description": "FR-030 (STANDBY) : En tant que syst\u00e8me, je veux qu'une passerelle `STANDBY` refuse tout d\u00e9bit et ne re\u00e7oive jamais l'autorit\u00e9 sans promotion par handover normal.",
+      "proof_type": "automated_test",
+      "evidence": "WP24 approuv\u00e9 (cb6a9f95) ; tests : apps/gateway/test/purge/standby.spec.ts, apps/api/test/integration/edge/packs/pack-standby.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP24 ; les tests ne citent pas tous \u00ab FR-030 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-031",
+      "description": "FR-031 (Certificat et p\u00e9rim\u00e8tre) : En tant que syst\u00e8me, je veux que `/edge/*` n'accepte que le certificat d'une passerelle non r\u00e9voqu\u00e9e, et seulement pour son \u00e9v\u00e9nement et son prestataire.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (6d5768dd); WP05 approuv\u00e9 (1be0ba1b); WP09 approuv\u00e9 (ea4b9bc8); WP10 approuv\u00e9 (6eafac0b) ; tests : apps/api/test/integration/edge/process/edge-mtls-guard.spec.ts, apps/api/test/integration/edge/process/edge-isolation.spec.ts, apps/api/test/integration/edge/edge-sync-guard.spec.ts, packages/ledger-sql/tests/tests_edge_gateway.sql, packages/ledger-sql/tests/tests_edge_rights.sql, apps/gateway/test/e2e/scoping.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP03, WP05, WP09, WP10 ; les tests ne citent pas tous \u00ab FR-031 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-032",
+      "description": "FR-032 (Port de stockage mat\u00e9riel) : En tant qu'op\u00e9rateur, je veux que la cl\u00e9 de signature et la cl\u00e9 d'accord de la passerelle passent par un port de stockage mat\u00e9riel, avec un faux refus\u00e9 au d\u00e9marrage en production.",
+      "proof_type": "automated_test",
+      "evidence": "WP16 approuv\u00e9 (66ee8ae0) ; tests : apps/gateway/test/startup/keystore.spec.ts, apps/gateway/test/startup/startup-guard.spec.ts, apps/gateway/test/e2e/production-refusals.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP16 ; les tests ne citent pas tous \u00ab FR-032 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-033",
+      "description": "FR-033 (Image et proc\u00e9dure de site) : En tant qu'op\u00e9rateur, je veux une image de d\u00e9ploiement de la passerelle et une proc\u00e9dure de site (disque chiffr\u00e9, onduleur, Wi-Fi d\u00e9di\u00e9, r\u00e9vocation \u00e0 distance).",
+      "proof_type": "automated_test",
+      "evidence": "WP24 approuv\u00e9 (cb6a9f95) ; tests : apps/gateway/test/purge/image.spec.ts, apps/gateway/test/e2e/ci-workflow.spec.ts, docs/procedure-site-passerelle.md ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP24 ; les tests ne citent pas tous \u00ab FR-033 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-034",
+      "description": "FR-034 (Audit et alertes) : En tant que responsable, je veux un audit de chaque bascule, rendu, reprise et r\u00e9vocation, et une alerte sur cha\u00eene rompue, rendu bloqu\u00e9 et passerelle muette.",
+      "proof_type": "automated_test",
+      "evidence": "WP12 approuv\u00e9 (1ff002c3); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/api/test/integration/edge/packs/register-alert.spec.ts, apps/api/test/integration/edge/routes/edge-maintenance.spec.ts, apps/api/test/integration/edge/sync/sync-audit-abandon.spec.ts, apps/api/test/integration/edge/sync/sync-chain-order.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP12, WP25 ; les tests ne citent pas tous \u00ab FR-034 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-035",
+      "description": "FR-035 (Purge des secrets du site) : En tant qu'op\u00e9rateur, je veux que les cl\u00e9s et les mots de passe de bracelets de la passerelle soient d\u00e9truits \u00e0 la cl\u00f4ture de l'\u00e9v\u00e9nement et sur ordre de deux personnes, afin qu'un mini-PC r\u00e9cup\u00e9r\u00e9 ne livre rien (limite : mini-PC vol\u00e9 avant la purge).",
+      "proof_type": "automated_test",
+      "evidence": "WP24 approuv\u00e9 (cb6a9f95) ; tests : apps/gateway/test/purge/purge-auto.spec.ts, apps/gateway/test/purge/purge-manual.spec.ts, apps/gateway/test/purge/purge-bound.spec.ts, apps/gateway/test/purge/purge-with-link.spec.ts, apps/gateway/test/purge/purge-canary.spec.ts, apps/gateway/test/e2e/purge-end-to-end.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP24 ; les tests ne citent pas tous \u00ab FR-035 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-036",
+      "description": "FR-036 (Audit de la tol\u00e9rance vers\u00e9 au central) : En tant que responsable, je veux que chaque usage d'un jeton de personne expir\u00e9 tol\u00e9r\u00e9 au guichet soit vers\u00e9 au central avec le lot suivant (champ facultatif sous `/edge/*`) et recopi\u00e9 dans l'audit, afin de voir ce qui s'est pass\u00e9 pendant la coupure.",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (166263ee); WP13 approuv\u00e9 (e299c476) ; tests : apps/gateway/test/counter/staff-token.spec.ts, apps/gateway/test/counter/tolerance-bounds.spec.ts, packages/ledger-sql/tests/tests_edge_replication.sql, apps/api/test/integration/edge/sync/sync-audit-abandon.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP08, WP13 ; les tests ne citent pas tous \u00ab FR-036 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-037",
+      "description": "FR-037 (Inscription avec alerte et d\u00e9lai) : En tant que responsable, je veux qu'une inscription ou un changement de r\u00f4le de passerelle l\u00e8ve une alerte imm\u00e9diate et qu'aucun mot de passe de bracelet ne parte avant un d\u00e9lai, ni vers une `STANDBY` non promue.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (6d5768dd); WP15 approuv\u00e9 (5b78b6a6) ; tests : packages/ledger-sql/tests/tests_edge_gateway.sql, apps/api/test/integration/edge/packs/register-alert.spec.ts, apps/api/test/integration/edge/packs/pack-delay.spec.ts, apps/api/test/integration/edge/packs/pack-standby.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP03, WP15 ; les tests ne citent pas tous \u00ab FR-037 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-038",
+      "description": "FR-038 (Bornes du rejeu `EDGE_ONLINE`) : En tant que central, je veux, au rejeu d'une vente ou d'une annulation d\u00e9cid\u00e9e par la passerelle, v\u00e9rifier en SQL sous verrou le type, les comptes, la preuve du bracelet, le plafond par vente et par terminal et par heure, et rogner \u00e0 la borne du solde central, afin de borner la perte d'une passerelle compromise.",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (04d0b1cb); WP13 approuv\u00e9 (e299c476) ; tests : packages/ledger-sql/tests/tests_edge_post_transaction.sql, apps/api/test/integration/edge/sync/sync-boundaries.spec.ts, apps/api/test/unit/ledger/offline-spend.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP06, WP13 ; les tests ne citent pas tous \u00ab FR-038 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "FR-039",
+      "description": "FR-039 (Jeton d'appareil sans rotation) : En tant que terminal, je veux renouveler mon jeton d'acc\u00e8s sur la passerelle avec mon certificat, ma preuve de possession et mon jeton de rafra\u00eechissement, sans que la passerelle le fasse tourner, afin de continuer \u00e0 vendre au-del\u00e0 de 15 minutes de coupure.",
+      "proof_type": "automated_test",
+      "evidence": "WP19 approuv\u00e9 (43f41ec9) ; tests : apps/gateway/test/device/refresh.spec.ts, apps/gateway/test/device/tokens.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184 (seul rouge : plancher NFR-001 local).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Couvert par WP19 ; les tests ne citent pas tous \u00ab FR-039 \u00bb en toutes lettres, la correspondance suit tasks.md et les fichiers nomm\u00e9s."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 (Exclusion sous charge) : Bascule sous 100 d\u00e9bits par seconde : 0 d\u00e9bit de portefeuille de source autre que `EDGE_SYNC` \u00e9crit au central apr\u00e8s la bascule, 0 op\u00e9ration perdue (`sync_protocol.md` \u00a713-4).",
+      "proof_type": "automated_test",
+      "evidence": "CI GitHub Actions, job gateway-e2e (ubuntu-24.04, postgres:17, M8_E2E_LONG=1, M8_MIN_DEBIT_RATE=100), run 43241115603 du 12/11/2026 sur la t\u00eate 516b4af4 de la lane-y : exclusion-under-load.spec.ts, 20 bascules, 3975 requ\u00eates, 108 d\u00e9bits/s (r\u00e9ponses de la fen\u00eatre mesur\u00e9e seulement), 0 violation, latence p50 53 ms, p95 222 ms. Avant : 96/s (run 43232785666), puis 99/s apr\u00e8s le refus d'autorit\u00e9 anticip\u00e9 (0672717d, 82b25713) ; charge offerte port\u00e9e \u00e0 110/s pour un plancher inchang\u00e9 de 100 (cd5d25aa).",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "D\u00e9cision 54 du porteur : preuve de r\u00e9f\u00e9rence en CI. Local (colima) : ~60-80/s, 0 violation. Relectures distinctes : rapports/feedback/wp25-apres-approbation.md et relecture de cd5d25aa/516b4af4."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 (Rendu d'une grosse file) : Rendu avec 10 000 op\u00e9rations en file : continuit\u00e9 v\u00e9rifi\u00e9e, 0 d\u00e9bit de passerelle apr\u00e8s `RELEASING`, 0 op\u00e9ration perdue (\u00a713-5).",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/release-10000.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184. Mode long v\u00e9rifi\u00e9 au cycle 1 de WP25 : 10 000 op\u00e9rations en file, continuit\u00e9 v\u00e9rifi\u00e9e.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 (Aucune double \u00e9criture) : 0 double \u00e9criture sur 100 rejeux d'une m\u00eame op\u00e9ration, par tous les chemins (direct, passerelle, journal apr\u00e8s reprise).",
+      "proof_type": "automated_test",
+      "evidence": "WP13 approuv\u00e9 (e299c476); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/replay-100.spec.ts, apps/gateway/test/offline/relay.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 (Tenue aux pannes) : Arr\u00eat brutal de la passerelle \u00e0 3 moments (avant \u00e9criture, apr\u00e8s \u00e9criture avant r\u00e9ponse, pendant le vidage) : 0 op\u00e9ration perdue et num\u00e9rotation continue au red\u00e9marrage.",
+      "proof_type": "automated_test",
+      "evidence": "WP20 approuv\u00e9 (2aa97075); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/crash-points.spec.ts, apps/gateway/test/queue/append.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 (Latence d'un paiement sur la passerelle) : Paiement par bracelet sur la passerelle, r\u00e9seau local : p95 \u2264 200 ms et p99 \u2264 500 ms sur 1 000 paiements (200 ne donnerait que 2 observations au-del\u00e0 du p99), serveur seul, comme au central.",
+      "proof_type": "automated_test",
+      "evidence": "WP21 approuv\u00e9 (ccc77e12); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/latency-two-process.spec.ts, apps/gateway/test/sales/latency.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184. Mesure locale : p95 409 ms puis 170 ms \u00e0 concurrence 10 apr\u00e8s optimisation (fe47ec54) ; seuils du test v\u00e9rifi\u00e9s en e2e.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 (Dur\u00e9e du vidage) : 10 000 op\u00e9rations revers\u00e9es au central en moins de 10 minutes sur un lien local, mesur\u00e9 sur poste, \u00e0 remesurer en recette.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/release-10000.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184. 10 000 op\u00e9rations vid\u00e9es en 397 s (< 10 min) au cycle 1 de WP25, mode long ; mesure sur poste, \u00e0 remesurer en recette.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "NFR-007 (Prise d'autorit\u00e9) : Accus\u00e9 de bascule en moins de 30 s apr\u00e8s l'accord quand le lien est sain et que moins de 10 000 \u00e9critures restent \u00e0 rattraper.",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuv\u00e9 (6eafac0b); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/handover-and-freshness.spec.ts, apps/api/test/integration/edge/process/current-handover-wait.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-008",
+      "description": "NFR-008 (Fra\u00eecheur de la r\u00e9plication) : Un blocage au central est appliqu\u00e9 sur la passerelle en moins de 5 s, lien sain, au p95.",
+      "proof_type": "automated_test",
+      "evidence": "WP18 approuv\u00e9 (117d6893) ; tests : apps/gateway/test/e2e/handover-and-freshness.spec.ts, apps/gateway/test/replication/freshness.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-009",
+      "description": "NFR-009 (Aucun faux en production) : 100 % des ports \u00e0 faux et r\u00e9glages de d\u00e9veloppement de la passerelle (stockage de cl\u00e9s, autorit\u00e9 des passerelles, points d'arr\u00eat, identit\u00e9 de test, CORS ouvert, \u00e9coute sans TLS, joker d'autorit\u00e9, `NODE_ENV` inconnu) refusent le d\u00e9marrage en configuration de production, chacun prouv\u00e9 par un d\u00e9marrage r\u00e9el.",
+      "proof_type": "automated_test",
+      "evidence": "WP16 approuv\u00e9 (66ee8ae0); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/tcp-relay.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-010",
+      "description": "NFR-010 (Aucune cl\u00e9 ma\u00eetre) : 0 cl\u00e9 ma\u00eetre et 0 mot de passe en clair de bracelet, sous aucune repr\u00e9sentation (hexad\u00e9cimal, base64, \u00e9chapp\u00e9), dans le flux, la base de la passerelle, les journaux (PostgreSQL local compris), la sortie des processus et l'image, prouv\u00e9 par un test \u00e0 canari avec contr\u00f4le positif.",
+      "proof_type": "automated_test",
+      "evidence": "WP24 approuv\u00e9 (cb6a9f95); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/canary-end-to-end.spec.ts, apps/gateway/test/offline/canary.spec.ts, apps/gateway/test/purge/purge-canary.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-011",
+      "description": "NFR-011 (Cloisonnement) : 0 lecture d'une autre passerelle, d'un autre \u00e9v\u00e9nement ou d'un autre prestataire, prouv\u00e9 par test sur chaque route `/edge/*`.",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuv\u00e9 (ea4b9bc8); WP10 approuv\u00e9 (6eafac0b); WP12 approuv\u00e9 (1ff002c3); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/scoping.spec.ts, apps/api/test/integration/edge/routes/edge-cloistering.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-012",
+      "description": "NFR-012 (Stabilit\u00e9 du contrat) : 0 diff\u00e9rence pour les routes hors `/edge/*`, et diff\u00e9rences limit\u00e9es \u00e0 des ajouts facultatifs sous `/edge/*` (aucune valeur d'\u00e9num\u00e9ration ajout\u00e9e), v\u00e9rifi\u00e9 en CI contre le contrat du 05/11/2026.",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuv\u00e9 (d2e489b2); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/contract-stability.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "NFR-013",
+      "description": "NFR-013 (Purge) : Apr\u00e8s la purge (cl\u00f4ture ou ordre \u00e0 deux), 0 occurrence du canari sous toute repr\u00e9sentation et 0 cl\u00e9 utilisable (`sign`, `agree` refus\u00e9s).",
+      "proof_type": "automated_test",
+      "evidence": "WP24 approuv\u00e9 (cb6a9f95); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/purge-end-to-end.spec.ts, apps/gateway/test/purge/purge-canary.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001 : un parcours complet (inscription, bascule, ventes, recharge esp\u00e8ces, activation, caution, blocage r\u00e9pliqu\u00e9, coupure, retour du lien, rendu, fermeture de caisse) se d\u00e9roule sans intervention manuelle autre que les demandes d'admin, et les soldes du central \u00e9galent ceux de la passerelle \u00e0 la fin.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/sc-001-journey.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002 : sur 100 % des essais de bascule et de rendu sous charge, une seule autorit\u00e9 d\u00e9bite \u00e0 tout instant.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/exclusion-under-load.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184. Mode long v\u00e9rifi\u00e9 au cycle 1 de WP25 : 20 bascules, 0 violation.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003 : 0 vente perdue et 0 vente \u00e9crite deux fois sur 10 000 op\u00e9rations, y compris avec arr\u00eat brutal de la passerelle pendant le vidage.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/release-10000.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004 : un paiement sur la passerelle reste aussi rapide qu'au central pour le terminal : 95 % en 200 ms ou moins.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/latency-two-process.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-005",
+      "description": "SC-005 : une passerelle perdue est remplac\u00e9e par le central en moins de 5 minutes une fois les deux personnes pr\u00e9sentes, sans perdre d'op\u00e9ration acquitt\u00e9e par un terminal.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/forced-resume.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-006",
+      "description": "SC-006 : les \u00e9quipes clientes n'ont rien \u00e0 changer : 0 diff\u00e9rence sur les routes qu'elles utilisent.",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuv\u00e9 (d2e489b2); WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/contract-stability.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    },
+    {
+      "criterion_id": "SC-007",
+      "description": "SC-007 : 100 % des faux de la passerelle sont refus\u00e9s au d\u00e9marrage en production.",
+      "proof_type": "automated_test",
+      "evidence": "WP25 approuv\u00e9 (34b7e9e6) ; tests : apps/gateway/test/e2e/production-refusals.spec.ts ; rejou\u00e9 le 12/11/2026 sur la t\u00eate 34b7e9e6 : passerelle hors e2e 856/856, pgTAP tests_edge_* 1109/1109, int\u00e9gration edge 262/262, e2e 183/184.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur)",
+      "verified_at": "2026-11-12",
+      "notes": "Preuve ex\u00e9cutable cit\u00e9e par apps/gateway/test/e2e/acceptance-matrix.spec.ts."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucune fuite entre prestataires, \u00e9v\u00e9nements ni passerelles : scoping de chaque route /edge/*, isolation de edge_sync_results et des lots, cloisonnement de la r\u00e9plication (NFR-011)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs --runInBand scoping && cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wp25; source ../../tools/dev-db/env.sh; npx jest --runInBand edge/routes/edge-cloistering edge/sync/sync-gateway-isolation edge/process/edge-isolation",
+      "result": "confirmed_absent",
+      "evidence": "scoping.spec.ts (e2e, 42/42 avec production-refusals) ; edge-cloistering, sync-gateway-isolation, edge-isolation (API, 34/34 avec les suites de NI-004 et du canari de colis) ; rejou\u00e9 par l'orchestrateur le 12/11/2026 sur la lane-y (34b7e9e6) ; tests_edge_gateway.sql et tests_edge_rights.sql dans pgTAP 1109/1109."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun faux en production : KMS, stockage de cl\u00e9s, autorit\u00e9, points d'arr\u00eat, identit\u00e9 de test, CORS ouvert, \u00e9coute sans TLS, joker d'autorit\u00e9, NODE_ENV inconnu refusent le d\u00e9marrage (NFR-009, SC-007, r\u00e8gle 2 de CLAUDE.md)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs --runInBand production-refusals",
+      "result": "confirmed_absent",
+      "evidence": "production-refusals.spec.ts (d\u00e9marrages r\u00e9els) et startup/startup-guard.spec.ts ; rejou\u00e9 par l'orchestrateur le 12/11/2026 sur la lane-y (34b7e9e6) : 42/42 (avec scoping) et 48/48 (purge, startup-guard) verts."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun secret en clair hors de la passerelle : 0 cl\u00e9 ma\u00eetre et 0 mot de passe de bracelet, sous aucune repr\u00e9sentation, dans le flux, la base, les journaux (PostgreSQL compris), les sorties de processus et l'image (NFR-010)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs --runInBand canary-end-to-end && cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wp25; source ../../tools/dev-db/env.sh; npx jest --runInBand edge/packs/pack-canary",
+      "result": "confirmed_absent",
+      "evidence": "canary-end-to-end.spec.ts (canari avec contr\u00f4le positif, colis rescell\u00e9) et pack-canary.spec.ts ; rejou\u00e9 par l'orchestrateur le 12/11/2026 sur la lane-y (34b7e9e6) : e2e 13/13 (avec replay-100 et purge-end-to-end), API 34/34 ; offline/canary.spec.ts et purge-canary.spec.ts dans la passerelle hors e2e 856/856."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucun double d\u00e9bit entre voies : 0 double \u00e9criture sur 100 rejeux d'une m\u00eame op\u00e9ration (direct, passerelle, journal apr\u00e8s reprise), cl\u00e9 d'origine canonique (NFR-003, SC-003)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs --runInBand replay-100 && cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wp25; source ../../tools/dev-db/env.sh; npx jest --runInBand edge/sync/sync-replay-hundred edge/sync/sync-origin-key",
+      "result": "confirmed_absent",
+      "evidence": "replay-100.spec.ts (e2e), sync-replay-hundred.spec.ts et sync-origin-key.spec.ts (API) ; rejou\u00e9 par l'orchestrateur le 12/11/2026 sur la lane-y (34b7e9e6) : e2e 13/13, API 34/34. Voie journal apr\u00e8s reprise forc\u00e9e : journal/no-silent-loss et forced-takeover-journal dans l'int\u00e9gration edge 262/262."
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Pas de purge avant l'accus\u00e9 avec lien : les secrets du site ne sont d\u00e9truits qu'apr\u00e8s versement et accus\u00e9 du central quand le lien existe ; purge manuelle \u00e0 deux, vers\u00e9e avant destruction (FR-035, NFR-013, ADR-187)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs --runInBand purge-end-to-end && cd ../.. && cd apps/gateway && npx jest --runInBand purge/purge-with-link purge/purge-bound purge/purge-canary",
+      "result": "confirmed_absent",
+      "evidence": "purge-with-link.spec.ts, purge-bound.spec.ts, purge-canary.spec.ts (gateway, 48/48 avec startup-guard) et purge-end-to-end.spec.ts (e2e, 13/13) ; rejou\u00e9 par l'orchestrateur le 12/11/2026 sur la lane-y (34b7e9e6) ."
+    }
+  ]
+}

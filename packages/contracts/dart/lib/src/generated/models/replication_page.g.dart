@@ -19,6 +19,19 @@ ReplicationPage _$ReplicationPageFromJson(Map<String, dynamic> json) =>
           .map((e) => SnapshotEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
       hasMore: json['has_more'] as bool,
+      edgeSeqApplied: (json['edge_seq_applied'] as num?)?.toInt(),
+      deviceSeqAcked: (json['device_seq_acked'] as List<dynamic>?)
+          ?.map((e) => EdgeDeviceSeqAcked.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      pwdPackKey: json['pwd_pack_key'] == null
+          ? null
+          : WrappedKey.fromJson(json['pwd_pack_key'] as Map<String, dynamic>),
+      reference: json['reference'] == null
+          ? null
+          : EdgeReference.fromJson(json['reference'] as Map<String, dynamic>),
+      edgeTerms: json['edge_terms'] == null
+          ? null
+          : EdgeTerms.fromJson(json['edge_terms'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ReplicationPageToJson(ReplicationPage instance) =>
@@ -30,4 +43,9 @@ Map<String, dynamic> _$ReplicationPageToJson(ReplicationPage instance) =>
       'wallets': instance.wallets,
       'media': instance.media,
       'has_more': instance.hasMore,
+      'edge_seq_applied': instance.edgeSeqApplied,
+      'device_seq_acked': instance.deviceSeqAcked,
+      'pwd_pack_key': instance.pwdPackKey,
+      'reference': instance.reference,
+      'edge_terms': instance.edgeTerms,
     };

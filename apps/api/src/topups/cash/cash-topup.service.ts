@@ -33,12 +33,8 @@ import { lockCounterMedia } from '../../media/lifecycle/release.service';
 import { TapRefused, TapService, type RegisteredTap } from '../../media/taps/tap.service';
 import { tapProblem, type TapInput } from '../../media/taps/taps.dto';
 import { conflict, invalid } from '../../organization/platform/platform.dto';
-import {
-  contentSha256,
-  DeviceSeqRegistry,
-  isRegistrable,
-} from '../../payments/device-seq-registry';
-import { chainedContent } from '../../payments/chained-content';
+import { chainedContent, contentSha256 } from '@cashless/shared-rules';
+import { DeviceSeqRegistry, isRegistrable } from '../../payments/device-seq-registry';
 import { parseCashTopup, type CashTopupInput } from './cash-topup.dto';
 
 const CASH_ACCOUNT_PREFIX = 'A-CAISSE-';

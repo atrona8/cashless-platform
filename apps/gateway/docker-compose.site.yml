@@ -1,0 +1,116 @@
+# Déploiement de site de la passerelle locale (WP24, T110 ; FR-033, research R-26 et R-27).
+# Lancement : `docker compose -f docker-compose.site.yml --env-file site.env up -d`, depuis la
+# racine
+# du dépôt. Aucune valeur secrète n'est écrite ici : les mots de passe et les clés viennent de
+# `site.env` et des fichiers montés (hors dépôt). Le dossier des données de PostgreSQL et le volume
+# de
+# la passerelle (marqueur de purge) sont sur le DISQUE CHIFFRÉ de l'hôte
+# (docs/procedure-site-passerelle.md).
+# PostgreSQL 17 en service voisin, image épinglée par condensat (relevé au registre officiel le
+# 10/11/2026). Réglages de durabilité posés EXPLICITEMENT (R-26) : on ne dépend d'aucune valeur par
+# défaut. `log_statement=none` : aucune requête (donc aucun secret) dans les journaux.
+services:
+  postgres:
+    image: postgres:17@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_superuser_password
+      EDGE_APP_PASSWORD_FILE: /run/secrets/edge_app_password
+    secrets:
+      - pg_superuser_password
+      - edge_app_password
+    configs:
+      - source: initdb_edge_app
+        target: /docker-entrypoint-initdb.d/10-edge-app.sh
+        mode: 0555
+    command:
+      - postgres
+      - -c
+      - fsync=on
+      - -c
+      - full_page_writes=on
+      - -c
+      - synchronous_commit=on
+      - -c
+      - log_statement=none
+      - -c
+      - log_min_duration_statement=-1
+      - -c
+      - listen_addresses=*
+    volumes:
+      - ${GATEWAY_PG_DATA_DIR:?dossier PostgreSQL sur le disque chiffré}:/var/lib/postgresql/data
+    networks: [site]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    image: ${GATEWAY_IMAGE:?image de la passerelle (condensat ou étiquette interne)}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      GATEWAY_DATABASE_URL: ${GATEWAY_DATABASE_URL:?URL du rôle edge_app}
+      GATEWAY_CENTRAL_URL: ${GATEWAY_CENTRAL_URL:?adresse du central}
+      GATEWAY_REQUEST_AUTHORITY: ${GATEWAY_REQUEST_AUTHORITY:?hôte:port signé par les terminaux}
+      GATEWAY_LISTEN_PORT: "8443"
+      GATEWAY_ADMIN_PORT: "8444"
+      # Décision 47 : TLS du port d'administration, certificat et clé montés depuis le dossier de
+      # site
+      # (/run/site, lecture seule), jamais dans l'image. Sans eux, le démarrage est refusé.
+      GATEWAY_ADMIN_TLS_CERT_FILE: /run/site/admin-tls.crt
+      GATEWAY_ADMIN_TLS_KEY_FILE: /run/site/admin-tls.key
+      GATEWAY_TLS_CERT_FILE: /run/site/tls.crt
+      GATEWAY_TLS_KEY_FILE: /run/site/tls.key
+      GATEWAY_DEVICE_CA_FILE: /run/site/device-ca.pem
+      GATEWAY_CENTRAL_CLIENT_CERT_FILE: /run/site/central-client.crt
+      GATEWAY_CENTRAL_CLIENT_KEY_FILE: /run/site/central-client.key
+      GATEWAY_IDENTITY_JWKS_URL: ${GATEWAY_IDENTITY_JWKS_URL:?clés publiques du serveur d'identité}
+      GATEWAY_IDENTITY_ISSUER: ${GATEWAY_IDENTITY_ISSUER:?émetteur attendu}
+      GATEWAY_IDENTITY_AUDIENCE: ${GATEWAY_IDENTITY_AUDIENCE:?audience attendue}
+      GATEWAY_PURGE_MARKER_FILE: /var/lib/gateway/purge.marker
+      HARDWARE_KEYSTORE: hardware
+    volumes:
+      - ${GATEWAY_STATE_DIR:?volume de la passerelle sur le disque chiffré}:/var/lib/gateway
+      - ${GATEWAY_SITE_FILES_DIR:?fichiers de site (certificats, enrôlement), hors dépôt}:/run/site:ro
+    ports:
+      # Réseau des terminaux seulement (adresse du Wi-Fi dédié). Le port d'administration (8444)
+      # n'est PAS publié : il n'écoute que la boucle locale du conteneur (`docker compose exec`).
+      - "${GATEWAY_LAN_ADDRESS:?adresse du Wi-Fi dédié aux terminaux}:8443:8443"
+    networks: [site]
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  site: {}
+
+secrets:
+  pg_superuser_password:
+    file: ${GATEWAY_SECRETS_DIR:?dossier des secrets, hors dépôt}/pg_superuser_password
+  edge_app_password:
+    file: ${GATEWAY_SECRETS_DIR:?dossier des secrets, hors dépôt}/edge_app_password
+
+configs:
+  # Crée le rôle `edge_app` (NON superutilisateur : la migration edge-0001 refuse l'inverse) et la
+  # base
+  # `edge` qu'il possède. Le mot de passe vient du fichier secret, jamais de ce fichier.
+  initdb_edge_app:
+    content: |
+      #!/bin/sh
+      set -eu
+      pw="$$(cat "$$EDGE_APP_PASSWORD_FILE")"
+      psql -v ON_ERROR_STOP=1 --username postgres --set=pw="$$pw" <<'SQL'
+      CREATE ROLE edge_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'pw';
+      CREATE DATABASE edge OWNER edge_app;
+      SQL

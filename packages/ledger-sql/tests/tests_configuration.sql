@@ -134,6 +134,8 @@ SELECT throws_ok($$UPDATE merchant_participation SET link_type = 'EXTERNAL' WHER
 INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, jurisdiction_id, funds_holder) VALUES
  ('00000000-0000-0000-0000-00000007a062','00000000-0000-0000-0000-00000007a001','00000000-0000-0000-0000-00000007a011',
   'Événement clos','XOF','Africa/Dakar','00000000-0000-0000-0000-00000007a041','ORGANIZER');
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE event DISABLE TRIGGER event_status_guard;
 UPDATE event SET status = 'CLOSED' WHERE id = '00000000-0000-0000-0000-00000007a062';
 ALTER TABLE event ENABLE TRIGGER event_status_guard;

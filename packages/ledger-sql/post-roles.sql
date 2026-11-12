@@ -925,3 +925,117 @@ CREATE POLICY keyadmin_snapshot_key_audit_read ON audit_log FOR SELECT TO cashle
   USING (operator_id IS NULL AND action LIKE 'SNAPSHOT\_SIGNING\_KEY\_%');
 CREATE POLICY keyadmin_snapshot_key_audit_insert ON audit_log FOR INSERT TO cashless_keyadmin
   WITH CHECK (operator_id IS NULL AND action LIKE 'SNAPSHOT\_SIGNING\_KEY\_%');
+
+-- -----------------------------------------------------------------------------------------------
+-- 9. Passerelle locale, mission passerelle-locale (WP09 ; FR-031, NFR-011, C-010 ; contracts/interfaces.md
+-- § 1, § 2, § 3, § 12.3 à 12.5, § 13.5 ; data-model A.1 ; migrations 0058 à 0064). Rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (CLAUDE.md, règle 4) : frontière de privilèges de la passerelle côté central. Un
+-- GRANT de trop rend toute la défense vaine. Principe : liste NOMMEE, jamais ALL, jamais PUBLIC. Une fonction oubliée
+-- échoue fermée ; une fonction en trop est un défaut bloquant. Les mots de passe des deux rôles viennent de migrate.ts
+-- (CASHLESS_EDGE_PASSWORD, CASHLESS_EDGEADMIN_PASSWORD), hors de ce fichier.
+-- -----------------------------------------------------------------------------------------------
+
+-- 9a. Rôles cashless_edge (processus `edge`, connexion mTLS) et cashless_edgeadmin (outil d'administration) :
+-- créés par 0058 sans droit ; ici attributs, délais de session (comme cashless_app), tout remis à zéro puis accordé un
+-- à un, aucun TEMPORARY.
+DO $$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['cashless_edge','cashless_edgeadmin'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+      EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT', r);
+    END IF;
+    EXECUTE format('ALTER ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT', r);
+    EXECUTE format('ALTER ROLE %I SET statement_timeout = ''30s''', r);
+    EXECUTE format('ALTER ROLE %I SET idle_in_transaction_session_timeout = ''10s''', r);
+    EXECUTE format('ALTER ROLE %I SET lock_timeout = ''5s''', r);
+    IF current_setting('server_version_num')::int >= 170000 THEN
+      EXECUTE format('ALTER ROLE %I SET transaction_timeout = ''60s''', r);
+    END IF;
+    EXECUTE format('REVOKE ALL ON ALL TABLES IN SCHEMA public FROM %I', r);
+    EXECUTE format('REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM %I', r);
+    EXECUTE format('REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM %I', r);
+    EXECUTE format('GRANT USAGE ON SCHEMA public TO %I', r);
+    EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM %I', current_database(), r);
+  END LOOP;
+END $$;
+
+-- 9b. cashless_app : roles.sql lui rend INSERT et UPDATE sur toute table. Les tables de la passerelle ne s'écrivent que
+-- par les fonctions SECURITY DEFINER (propriétaire). Lecture : retirée là où l'API publique n'en a pas l'usage.
+--   edge_gateway : SELECT conservé (sous RLS), plus aucune écriture (R-06.1 ; fenêtre entre 0058 et ce fichier fermée).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON edge_gateway FROM cashless_app, cashless_platform;
+--   Registres de lots et de résultats : SELECT sous RLS conservé, aucune écriture.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON edge_sync_batch, edge_sync_batch_result
+  FROM cashless_app, cashless_platform;
+--   Fermées en lecture ET en écriture : colis et clé de colis (chiffrés, inutiles à l'API publique), journal de
+--   référence, réglages de plateforme (écrits par set_edge_setting seule, lus par edge_setting_value), horizon de
+--   réplication, audit des jetons de personnel, vue des numéros de terminal (lue par cashless_edge seul, 9d).
+REVOKE ALL ON edge_pwd_pack, edge_pwd_pack_key, edge_reference_change, edge_platform_setting,
+  edge_replication_horizon, edge_staff_token_audit, edge_device_seq_acked FROM cashless_app, cashless_platform;
+
+-- 9c. EXECUTE de cashless_app (signatures complètes). Enveloppes HUMAINES uniquement (assert_tenant) ; post_transaction
+-- reste exécutable (sa garde SQL refuse EDGE_SYNC à cette connexion, WP05). fail_edge_grant et request_edge_release sont des
+-- fonctions du kit sans enveloppe (0059) : elles portent assert_tenant, la route humaine les appelle. Accordées
+-- nommément (ÉCART signalé au porteur : elles n'étaient pas dans la liste de cashless_app).
+GRANT EXECUTE ON FUNCTION
+  edge_grant_authority(uuid, uuid, uuid), get_debit_authority(uuid), fail_edge_release(uuid, uuid),
+  force_central_authority_approved(uuid, uuid, text), request_edge_release(uuid, uuid),
+  fail_edge_grant(uuid, uuid, text),
+  -- Décision 23 (0064) : exposition des jetons d'appareil d'un événement, appelée par l'API centrale seule
+  edge_expose_device_token_families(uuid)
+  TO cashless_app;
+-- Redit explicite : jamais exécutables par un rôle applicatif (fonctions S12 brutes du kit, sans le filigrane de
+-- référence ni le refus d'une caisse CLOSING ; internes de 0058 à 0064). Quoi que roles.sql ait accordé.
+REVOKE EXECUTE ON FUNCTION
+  grant_edge_authority(uuid, uuid, uuid), ack_edge_handover(uuid, integer, bigint),
+  complete_edge_release(uuid, integer, bigint, bytea), record_edge_seq(uuid, bigint, text, bytea, text, uuid, text),
+  edge_event_lock(uuid), edge_event_handover_open(uuid), edge_admin_audit(uuid, text, uuid, text, jsonb, text),
+  edge_bind_gateway(uuid, boolean), edge_lock_handover(uuid, uuid), edge_assert_session_gateway(uuid),
+  edge_ledger_of_gateway(uuid), edge_counter_op(text, uuid, bigint, bigint, text, bytea, jsonb),
+  edge_open_replay_failed(uuid, uuid, bigint, text, uuid, uuid, bigint, uuid, bigint, text, text, text),
+  edge_record_rejection(uuid, uuid, bigint, text, bytea, text, text, uuid, uuid, bigint, bigint, text, boolean),
+  edge_setting_value(text, text), edge_spend_promo_first(uuid, timestamptz), set_edge_setting(text, bigint, text),
+  edge_ref_emit_many(uuid, text, uuid[]), edge_ref_emit_media_set(uuid[]), edge_ref_backfill(uuid),
+  edge_ref_event_ledger(uuid), edge_ref_scope_ledgers(text, uuid), edge_ref_staff_ledgers(uuid),
+  edge_ref_ctx_enter(uuid), edge_ref_ctx_leave(text), edge_ts(timestamptz), edge_b64(bytea)
+  FROM cashless_app, cashless_platform;
+
+-- 9d. cashless_edge (processus `edge`) : EXECUTE nommé, AUCUN droit de table, sauf la lecture de la vue étroite des
+-- numéros de terminal (déclarée à accorder par l'en-tête de 0063 : base de getDeviceSeqStatus, FR-026 ; limitée par la
+-- vue aux terminaux de l'événement de la passerelle appelante, app.gateway_id). Jamais : post_transaction,
+-- set_debit_authority, fonctions S12 brutes, internes.
+GRANT EXECUTE ON FUNCTION
+  identify_edge_gateway(bytea), touch_edge_gateway(uuid), get_current_edge_handover(uuid), get_debit_authority(uuid),
+  begin_edge_release(uuid, uuid, bigint, bigint, bytea, bigint), edge_ack_handover(uuid, uuid, bigint, bigint),
+  edge_complete_release(uuid, uuid, bigint, bigint, bytea, bigint),
+  edge_record_seq(uuid, bigint, text, bytea, text, uuid, text),
+  edge_sync_batch_begin(uuid, uuid, bigint, bigint, bigint, bytea, integer),
+  edge_sync_batch_result(uuid, bigint, text, text, text, uuid, boolean), edge_sync_batch_finish(uuid, text),
+  edge_record_staff_token_audit(uuid, uuid, jsonb),
+  edge_post_transaction(uuid, bigint, bigint, text, bytea, jsonb, jsonb),
+  edge_activate_media(uuid, bigint, bigint, text, bytea, jsonb), edge_take_deposit(uuid, bigint, bigint, text, bytea, jsonb),
+  edge_topup_cash(uuid, bigint, bigint, text, bytea, jsonb), edge_replication_page(uuid, bigint, bigint, integer),
+  -- Décision 39 (0066, ADR-174) : accès étroits de la réception des lots, aucun droit de table. edge_tap_proof : hors
+  -- liste de la décision, soumise au porteur.
+  edge_sync_cursor(uuid), edge_sync_device_key(uuid, text), edge_sync_results(uuid, uuid),
+  edge_fee_config(uuid, text, timestamptz), edge_sync_audit(uuid, text, uuid, jsonb),
+  edge_tap_proof(uuid, bytea, bytea, bytea)
+  TO cashless_edge;
+GRANT SELECT ON edge_device_seq_acked TO cashless_edge;
+
+-- 9e. cashless_edgeadmin (outil edge-admin) : six fonctions. set_edge_gateway_role n'est accordée à PERSONNE.
+GRANT EXECUTE ON FUNCTION
+  register_edge_gateway(uuid, uuid, text, text, bytea, bytea, bytea, text, text),
+  revoke_edge_gateway(uuid, text, text), rotate_edge_gateway_cert(uuid, bytea, text),
+  swap_edge_gateway_roles(uuid, uuid, text), edge_register_snapshot_key(uuid, text, bytea, text),
+  set_edge_setting(text, bigint, text)
+  TO cashless_edgeadmin;
+
+-- 9f. Processus existants : colis de mots de passe (cashless_tagkeys) et maintenance (cashless_maint).
+GRANT EXECUTE ON FUNCTION
+  deposit_edge_pwd_pack(uuid, uuid, bytea, bytea, bigint), deposit_edge_pwd_pack_key(uuid, bytea, jsonb),
+  edge_gateways_awaiting_pack(integer), edge_media_to_pack(uuid, integer)
+  TO cashless_tagkeys;
+GRANT EXECUTE ON FUNCTION mark_edge_gateways_silent(interval), edge_stuck_handovers(interval),
+  edge_log_release_stuck(uuid)  -- 0065, décision 37 (ADR-173)
+  TO cashless_maint;

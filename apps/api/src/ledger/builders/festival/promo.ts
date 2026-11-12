@@ -1,5 +1,5 @@
 // PROMO_CREDIT, PROMO_EXPIRY et ACTIVATION_FEE — SPECIFICATION §5.4.
-import { fee, groupForTax } from '../../money';
+import { fee, groupForTax } from '@cashless/shared-rules';
 import {
   BuildError,
   partyAccounts,

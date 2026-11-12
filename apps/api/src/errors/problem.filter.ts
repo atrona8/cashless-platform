@@ -6,12 +6,15 @@ import {
   Catch,
   HttpException,
   Inject,
+  Optional,
   type ArgumentsHost,
   type ExceptionFilter,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { ProblemCode } from '@cashless/contracts';
 import type { Request, Response } from 'express';
 import { APP_CONFIG, type AppConfig } from '../config/config';
+import { EdgeConflictEnricher } from '../debit-authority/edge-conflict';
 import { messageFor, pickLanguage } from '../http/language';
 import { requestIdOf } from '../http/request-id.middleware';
 import { ProblemException } from './problem';
@@ -97,18 +100,41 @@ export function logProblem(error: unknown, problem: ResolvedProblem, req: Reques
 
 @Catch()
 export class ProblemFilter implements ExceptionFilter {
-  constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
+  private readonly edgeConflicts?: EdgeConflictEnricher;
 
-  catch(error: unknown, host: ArgumentsHost): void {
+  constructor(
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Optional() moduleRef?: ModuleRef,
+  ) {
+    if (moduleRef) this.edgeConflicts = new EdgeConflictEnricher(moduleRef);
+  }
+
+  async catch(error: unknown, host: ArgumentsHost): Promise<void> {
     const http = host.switchToHttp();
     const req = http.getRequest<Request>();
     const res = http.getResponse<Response>();
-    const problem = resolveProblem(error);
+    const problem = await this.withEdgeConflict(resolveProblem(error), req);
     logProblem(error, problem, req);
     for (const [name, value] of Object.entries(problem.headers ?? {})) res.setHeader(name, value);
     res
       .status(problem.status)
       .type(PROBLEM_CONTENT_TYPE)
       .send(JSON.stringify(problemBody(problem, req, this.config)));
+  }
+
+  /**
+   * T049 (WP11) : `409 DEBIT_AUTHORITY_EDGE` complété de `edge_base_url` et `authority_epoch` (edge-routes.md).
+   * Un seul point d'accroche pour tous les chemins de débit ; sans certitude sur le grand livre, corps inchangé.
+   */
+  private async withEdgeConflict(problem: ResolvedProblem, req: Request): Promise<ResolvedProblem> {
+    if (
+      problem.code !== 'DEBIT_AUTHORITY_EDGE' ||
+      !this.edgeConflicts ||
+      problem.extensions?.authority_epoch !== undefined
+    )
+      return problem;
+    const extra = await this.edgeConflicts.extensionsFor(req);
+    if (!extra) return problem;
+    return { ...problem, extensions: { ...problem.extensions, ...extra, retryable: true } };
   }
 }

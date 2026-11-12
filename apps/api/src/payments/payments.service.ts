@@ -9,7 +9,8 @@
 //      qu'en fin de transaction, verrou déjà tenu (elle exige l'issue et `transaction_id`, connus à la fin) ;
 //   2. mode du terminal, devise, époque d'autorité (`X-Authority-Epoch`), heure bornée à ±120 s de la base ;
 //   3. `assert_device_active`, puis la garde de session : le vendeur est TOUJOURS celui de la session, jamais
-//      un champ du corps (FR-006) ;
+//      un champ du corps (FR-006), puis refus `409 DEBIT_AUTHORITY_EDGE` si le grand livre est sous
+//      autorité `EDGE` (NFR-001) ;
 //   4. le moyen : lecture embarquée (`TapService.registerOrRefuse`), `tap_id` (`assert_tap_payable`, jamais
 //      `TapService.byId`, A1) ou QR client (`lock_customer_qr_token`) → bracelet et portefeuille ;
 //   5. `assert_wallet_payable` sur les trois moyens (A17) ;
@@ -61,6 +62,7 @@ interface TerminalRow {
   event_currency: string | null;
   ledger_id: string | null;
   authority_epoch: number | null;
+  debit_authority: string | null;
   db_now: Date;
 }
 
@@ -115,6 +117,11 @@ export class PaymentsService {
     if (input.vendorSessionId === null) throw new ProblemException('VENDOR_SESSION_INVALID');
     await this.sessions.assert(client, device, input.vendorSessionId);
 
+    // Autorité de débit lue avec le terminal (même requête, aucun aller-retour de plus) : sous `EDGE`, la
+    // passerelle détient l'autorité ; le refus part ICI, après les gardes du terminal et du
+    // vendeur (mêmes priorités de refus qu'avant), avant la lecture du bracelet et l'écriture (NFR-001).
+    // Même erreur que la garde SQL `CL006` (dernier recours, inchangée si l'autorité change après cette lecture).
+    if (terminal.debit_authority === 'EDGE') throw new ProblemException('DEBIT_AUTHORITY_EDGE');
     // 4. Le moyen : bracelet (lecture embarquée ou `tap_id`) ou demande QR, puis portefeuille.
     let mediaId: string | null = null;
     let tapId: string | null = null;
@@ -239,6 +246,7 @@ export class PaymentsService {
     const { rows } = await client.query<TerminalRow>(
       `SELECT d.app_mode, d.os, d.nfc_enabled, d.event_id, pos.participation_id,
               e.currency AS event_currency, l.id AS ledger_id, l.authority_epoch,
+              l.debit_authority,
               clock_timestamp() AS db_now
          FROM device d
          LEFT JOIN point_of_sale pos ON pos.id = d.pos_id AND pos.operator_id = d.operator_id

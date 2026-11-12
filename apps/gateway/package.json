@@ -1,0 +1,38 @@
+{
+  "name": "@cashless/gateway",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Passerelle locale du site : file des décisions, base locale, terminaux sur le réseau du site (mission 8, interfaces.md § 3 et § 8)",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --require tsx/cjs src/main.ts",
+    "migrate": "node --require tsx/cjs src/main.ts migrate",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@cashless/shared-rules": "0.0.0",
+    "@cashless/tag-format": "0.0.0",
+    "@nestjs/common": "11.2.7",
+    "@nestjs/core": "11.2.7",
+    "@nestjs/platform-express": "11.2.7",
+    "@peculiar/x509": "2.1.0",
+    "canonicalize": "5.1.0",
+    "cbor2": "2.3.0",
+    "jose": "6.2.12",
+    "pg": "8.23.1",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "structured-headers": "2.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "11.2.7",
+    "@types/express": "5.0.6",
+    "@types/pg": "8.23.1",
+    "@types/supertest": "7.2.1",
+    "supertest": "7.3.1",
+    "tsx": "4.23.15",
+    "yaml": "2.9.1"
+  }
+}
