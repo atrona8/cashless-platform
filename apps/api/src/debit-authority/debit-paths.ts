@@ -33,7 +33,7 @@ export const DEBIT_PATHS: readonly DebitPath[] = [
     operationId: 'createPayment',
     kind: 'DEBIT',
     layer: 'HTTP',
-    protection: `payments/payments.service.ts:123 (refus après les gardes du terminal et du vendeur, avant la lecture du bracelet) ; payments/payments.service.ts:165 (PURCHASE par le moteur) ; ${CL006}`,
+    protection: `payments/payments.service.ts:124 (throw de DEBIT_AUTHORITY_EDGE, après les gardes du terminal et du vendeur, avant la lecture du bracelet) ; payments/payments.service.ts:166 (appel du moteur, PURCHASE) ; ${CL006}`,
   },
   {
     route: 'POST /payment-requests/{payment_request_id}/pay',

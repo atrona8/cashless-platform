@@ -1,6 +1,7 @@
 // Refus d'autorité `EDGE` avant le travail de la vente (NFR-001, mission passerelle-locale). `createPayment`
-// lit l'autorité du grand livre avec le terminal (étape 1) et refuse `409 DEBIT_AUTHORITY_EDGE` dès l'étape 2 :
-// ni session, ni `register_tap`, ni écriture. La garde SQL `CL006` reste le dernier recours.
+// lit l'autorité du grand livre avec le terminal (étape 1) et refuse `409 DEBIT_AUTHORITY_EDGE` juste après
+// l'étape 3 (terminal actif, session de vendeur) : ni lecture du bracelet, ni `register_tap`, ni écriture.
+// La garde SQL `CL006` reste le dernier recours.
 // La transaction refusée est annulée : les lignes de passage n'en disent rien ; la preuve de l'absence de
 // `register_tap` est la séquence `media_tap_id_seq` (une séquence n'est jamais annulée).
 import 'reflect-metadata';
