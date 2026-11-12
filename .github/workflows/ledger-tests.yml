@@ -64,6 +64,13 @@ jobs:
       DATABASE_URL_SNAPCONTENT: postgres://cashless_snapcontent:cashless_snapcontent_ci@localhost:5432/cashless_test
       DATABASE_URL_SNAPSIGN: postgres://cashless_snapsign:cashless_snapsign_ci@localhost:5432/cashless_test
       DATABASE_URL_MAINT: postgres://cashless_maint:cashless_maint_ci@localhost:5432/cashless_test
+      # Mission passerelle-locale (WP09, WP10, WP15) : rôles cashless_edge (processus /edge/*) et
+      # cashless_edgeadmin (outil d'inscription). Sans ces adresses, test/support/db.ts retombe sur
+      # 127.0.0.1:5433 (CI du 12/11 : 177 tests du central et 6 de tools/edge-admin en ECONNREFUSED).
+      CASHLESS_EDGE_PASSWORD: cashless_edge_ci
+      CASHLESS_EDGEADMIN_PASSWORD: cashless_edgeadmin_ci
+      DATABASE_URL_EDGE: postgres://cashless_edge:cashless_edge_ci@localhost:5432/cashless_test
+      DATABASE_URL_EDGEADMIN: postgres://cashless_edgeadmin:cashless_edgeadmin_ci@localhost:5432/cashless_test
       # Clé d'empreinte des codes de rattachement : valeur de test (32 octets en hexadécimal), sans valeur ailleurs.
       CLAIM_CODE_HMAC_KEY: 636173686c6573732d63692d636c61696d2d636f64652d686d61632d74657374
       # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
