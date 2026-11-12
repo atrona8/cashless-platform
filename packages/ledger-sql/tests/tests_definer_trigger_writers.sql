@@ -138,7 +138,12 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
   -- AFTER INSERT avec WHEN : deux déclencheurs, une fonction)
   'offline_policy:log_offline_policy offline_policy:offline_policy_scope_guard '
   'point_of_sale:point_of_sale_guard '
-  'posting:posting_cash_desk_guard '
+  -- Mission passerelle-locale (WP13, 0066, décision 38 du porteur) : check_balanced (déclencheur de contrainte
+  -- différé posting_balanced) passe en DEFINER pour que le COMMIT d'une écriture sous cashless_edge lise `posting`
+  -- sans droit de table. Sans paramètre, ne rend rien, ne lit que les lignes de la transaction et ne fait que
+  -- refuser une écriture déséquilibrée : aucun nouvel écrivain (posting n'est écrit que par les fonctions du grand
+  -- livre). Fonction à faire relire par une personne (0066).
+  'posting:check_balanced posting:posting_cash_desk_guard '
   'psp_chargeback:psp_chargeback_cap psp_chargeback:psp_chargeback_guard '
   'psp_configuration:psp_configuration_immutable psp_event:psp_event_guard '
   'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard '
