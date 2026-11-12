@@ -119,6 +119,15 @@ jobs:
       - name: Installer pgTAP dans le conteneur et pg_prove sur le runner
         run: |
           docker exec ${{ job.services.postgres.id }} bash -c "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
+          # L'installation de pgTAP peut monter la version mineure de PostgreSQL 17 sous le serveur
+          # en marche (17.11 -> 17.12 le 12/11/2026 : plpgsql.so incompatible, toute migration
+          # échoue) : le service est redémarré sur les nouveaux binaires, puis attendu.
+          docker restart ${{ job.services.postgres.id }}
+          for i in $(seq 1 60); do
+            docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break
+            sleep 1
+          done
+          docker exec ${{ job.services.postgres.id }} pg_isready -U postgres
           sudo apt-get update -qq && sudo apt-get install -y -qq libtap-parser-sourcehandler-pgtap-perl postgresql-client
 
       # .npmrc porte ignore-scripts=true (research R-12) : vérifié avant l'installation.
