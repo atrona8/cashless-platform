@@ -87,9 +87,16 @@ describe('configurations PSP : routes', () => {
   });
 
   it('refus de forme : secret collé, titulaire différent, point initial, champ inconnu, jamais recopiés', async () => {
-    const before = (
-      await w.owner<{ n: number }>('SELECT count(*)::int n FROM psp_configuration')
-    )[0]!.n;
+    // Compte limité à l'organisateur du test : d'autres suites écrivent dans psp_configuration en
+    // parallèle (CI du 12/11 : 61 attendu, 64 lu).
+    const count = async (): Promise<number> =>
+      (
+        await w.owner<{ n: number }>(
+          'SELECT count(*)::int n FROM psp_configuration WHERE organizer_id = $1',
+          [org],
+        )
+      )[0]!.n;
+    const before = await count();
     const bad: Array<Record<string, unknown>> = [
       { secret_ref: CANARY },
       { secret_ref: `psp/${org}/${CANARY}` },
@@ -114,10 +121,7 @@ describe('configurations PSP : routes', () => {
       expect({ over, status: res.status }).toEqual({ over, status: 422 });
       expect(res.text).not.toContain('CANARY');
     }
-    const after = (
-      await w.owner<{ n: number }>('SELECT count(*)::int n FROM psp_configuration')
-    )[0]!.n;
-    expect(after).toBe(before);
+    expect(await count()).toBe(before);
     const leaked = await w.owner(
       `SELECT 1 FROM audit_log WHERE after::text LIKE '%CANARY%' OR before::text LIKE '%CANARY%'`,
     );
