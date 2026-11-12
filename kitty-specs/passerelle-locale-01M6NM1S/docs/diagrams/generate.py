@@ -89,11 +89,11 @@ def sequence(name,title,sub,parts,msgs,note=None):
 files=[]
 P=lambda k,l,s='neutral':(k,l,s)
 files.append(usecase('usecase-admin','Passerelle : pilotage par les personnes','Qui inscrit, qui bascule, qui rend, qui reprend la main',
- ['Opérateur (outil admin)','Admin prestataire','Second admin prestataire','Responsable'],
+ ['Opérateur (outil admin)','Admin prestataire','Second admin prestataire','Responsable','Deux titulaires de clés de site'],
  [('Inscrire une passerelle','primary'),('Demander la bascule','primary'),('Abandonner une bascule','warn'),('Demander le rendu','primary'),('Reprise forcée (à deux)','accent'),('Purger les secrets du site (à deux)','accent'),('Voir l’autorité et l’époque','neutral'),('Recevoir les alertes','neutral')],
  [('Opérateur (outil admin)','Inscrire une passerelle'),('Admin prestataire','Demander la bascule'),('Admin prestataire','Abandonner une bascule'),('Admin prestataire','Demander le rendu'),('Admin prestataire','Reprise forcée (à deux)'),('Admin prestataire','Voir l’autorité et l’époque'),
-  ('Second admin prestataire','Reprise forcée (à deux)'),('Second admin prestataire','Purger les secrets du site (à deux)'),('Admin prestataire','Purger les secrets du site (à deux)'),('Responsable','Recevoir les alertes'),('Responsable','Voir l’autorité et l’époque')],
- note="Bascule demandée par un admin, avec le lien, jamais prise par la passerelle (décision du 05/11/2026). Inscription par une personne : alerte immédiate, délai de 30 min avant les mots de passe.\nReprise forcée : constat physique déclaré, seconde personne obligatoire, certificat révoqué. Purge des secrets aussi à la clôture de l’événement.\nAucune route d’inscription dans le contrat public : l’outil d’administration agit hors API.",H=860))
+  ('Second admin prestataire','Reprise forcée (à deux)'),('Deux titulaires de clés de site','Purger les secrets du site (à deux)'),('Responsable','Recevoir les alertes'),('Responsable','Voir l’autorité et l’époque')],
+ note="Bascule demandée par un admin, avec le lien, jamais prise par la passerelle (décision du 05/11/2026). Inscription par une personne : alerte immédiate, délai de 30 min avant les mots de passe.\nReprise forcée : constat physique déclaré, seconde personne obligatoire, certificat révoqué.\nPurge des secrets : ordre signé par deux titulaires de clés de site (port d’administration local), versé au central avant la destruction ;\nelle est aussi automatique à la clôture de l’événement.\nAucune route d’inscription dans le contrat public : l’outil d’administration agit hors API.",H=860))
 files.append(usecase('usecase-site','Passerelle : le site pendant la coupure','Terminal, guichet, passerelle de secours',
  ['Terminal / vendeur','Caissier de guichet','Terminal hors ligne','Passerelle de secours'],
  [('Vendre sur la passerelle','primary'),('Annuler, lire un solde','primary'),('Recharger en espèces','accent'),('Activer, prendre une caution','accent'),('Renouveler son jeton','neutral'),('Lire l’accusé du central','neutral'),('Envoyer un lot hors ligne','primary'),('Refus : opération non servie','warn'),('Refus : débit d’une STANDBY','warn')],
@@ -126,4 +126,11 @@ files.append(sequence('sequence-reprise','Reprise forcée à deux, passerelle pe
  note="Activations et cautions perdues : pas de rejeu automatique (le contrat l’interdit), espèces en attente, résolution à deux. Passerelle zombie : risque du protocole."))
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
+files.append(sequence('sequence-purge','Purge manuelle : le central est prévenu avant la destruction','Deux titulaires de clés de site ; ordre versé au central dans un lot sans opération',
+ [P('r','Deux responsables','data'),P('g','Passerelle','accent'),P('l','Base locale'),P('c','API centrale','primary')],
+ [('r','g','Ordre PURGE signé par deux (port d’administration)'),('g','g','Vérifier signatures, nonce, 10 min','self'),('g','l','Audit local : AWAITING_CENTRAL'),
+  ('#open','alt accusé du central dans les 30 s'),('g','c','Lot sans opération, avec l’ordre dans local_orders'),('c','g','200 : ordre versé à l’audit central','ret'),('g','l','Détruire clés, colis, tables'),
+  ('#else','sinon : lien coupé ou refus'),('g','l','Purge locale forcée, trace CENTRAL_UNCONFIRMED','bad'),('#close',),
+  ('g','r','Passerelle muette (503), refus de redémarrer','ret')],
+ note="Lot sans opération accepté seulement s’il porte des ordres locaux (edge_seq et chaîne inchangés). Limites consignées : WAL et blocs libres non effacés (OP-N118, ADR-186). Mini-PC volé avant la purge : OP-N106."))
 for f in files: print(r.render(f))

@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-05T14:00:00Z",
+  "derniere_verification_globale": "2026-11-12T16:00:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -58,10 +58,10 @@
       "spec_index_a_jour": true
     },
     "passerelle-locale-01M6NM1S": {
-      "statut": "planifiée (plan finalisé le 05/11/2026)",
-      "verifie_le": "2026-11-05T14:00:00Z",
+      "statut": "relue (25 lots sur 25 approuvés le 12/11/2026 ; non acceptée, non fusionnée)",
+      "verifie_le": "2026-11-12T16:00:00Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }

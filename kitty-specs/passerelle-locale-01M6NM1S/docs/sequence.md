@@ -1,7 +1,9 @@
 # Séquences : mission passerelle-locale-01M6NM1S
 
-> État : **plan finalisé le 05/11/2026**, flux cibles, rien n'est encore codé. Sources : `plan.md`, `contracts/edge-routes.md`,
-> `sync_protocol.md` §9. Diagrammes `/illustre`, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`).
+> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission NON acceptée, NON fusionnée. Flux recalés sur le code de la
+> lane `y`. Sources : `plan.md`, `contracts/edge-routes.md`, `sync_protocol.md` §9, `docs/passation-8/suivi-lots.md`. Diagrammes
+> `/illustre`, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les quatre diagrammes du plan restent justes et ne
+> sont pas redessinés ; un cinquième (purge manuelle) est ajouté.
 
 ## Flux internes propres à cette mission
 
@@ -35,21 +37,37 @@ dernière chaîne ; `409 EDGE_NOT_CAUGHT_UP` renvoie au vidage, `409 CHAIN_BROKE
 
 Sources : [`sequence-reprise.excalidraw`](diagrams/sequence-reprise.excalidraw), [`sequence-reprise.svg`](diagrams/sequence-reprise.svg).
 
+### Purge manuelle : le central est prévenu avant la destruction
+
+![Purge manuelle](diagrams/sequence-purge.png)
+
+Sources : [`sequence-purge.excalidraw`](diagrams/sequence-purge.excalidraw), [`sequence-purge.svg`](diagrams/sequence-purge.svg).
+Deux titulaires de clés de site signent l'ordre `PURGE` (10 min, nonce unique). La passerelle l'inscrit à l'audit local (`AWAITING_CENTRAL`),
+l'envoie au central dans un lot sans opération (`local_orders`, `edge_seq` et chaîne inchangés), attend l'accusé 30 s, puis détruit.
+Sans accusé, la purge locale est forcée et tracée `CENTRAL_UNCONFIRMED`. Après la purge, 503 et refus de redémarrer.
+
 ### Flux décrits en texte seulement (pas de diagramme séparé)
 
-- **Réplication** (`getEdgeReplicationFeed`) : tirage continu avec curseur (`after_posting_id`, `after_change_seq`) ; soldes,
-  statuts, bracelets, mots de passe chiffrés sous une clé de contenu par passerelle, sessions de caisse et de vendeur, terminaux,
-  catalogue ; jamais de mot de passe avant 30 min ni pour une `STANDBY` non promue.
+- **Réplication** (`getEdgeReplicationFeed`) : tirage continu avec curseur (`after_posting_id`, `after_change_seq`), pages de 200 au plus ;
+  soldes, statuts, bracelets, mots de passe chiffrés sous une clé de contenu par passerelle, sessions de caisse et de vendeur, terminaux,
+  catalogue, `edge_terms` (plafond par recharge, frais, conditions de caution, ordre de dépense). Jamais de colis avant le délai de garde
+  de 30 min ni pour une `STANDBY` non promue : le dépôt est refusé avant ce terme (`0072`), et tout dépôt qui réussit émet dans le flux
+  (`0071`) pour qu'une passerelle en marche le reçoive sans relecture complète.
 - **Lot hors ligne relayé** : lot du terminal traité avec les règles de la mission 7 sur les soldes locaux, puis relayé en
-  `EDGE_SYNC` avec l'en-tête et la signature d'origine ; `400 BATCH_SIGNATURE_INVALID` si la signature d'origine est invalide.
-- **Recharge espèces sous session déjà ouverte** : décision locale sur une session répliquée avant la bascule, rejouée au central
-  en deux parts si un plafond est dépassé (anomalie `CASH_TOPUP_OVER_LIMIT`, jamais de rejet).
+  `EDGE_SYNC` avec l'en-tête et la signature d'origine, la décision locale (`edge_decision`) jointe et celle du terminal écartée ;
+  `400 BATCH_SIGNATURE_INVALID` si la signature d'origine est invalide. La clé d'origine est la même que sur les voies en ligne et hors
+  ligne (`<serial>:<seq>` sur 4 chiffres) : une opération reçue deux fois est un doublon (NFR-003).
+- **Recharge espèces sous session déjà ouverte** : décision locale sur une session répliquée avant la bascule (réévaluée à chaque
+  bascule), refus à la saisie au-delà du plafond par recharge (500 000 XOF par défaut) ; rejouée au central en deux parts si un plafond du
+  portefeuille est dépassé (anomalie `CASH_TOPUP_OVER_LIMIT`, jamais de rejet).
+- **Lot d'ordres seuls** : un lot sans opération qui ne porte que des ordres locaux à deux personnes (purge, levée de `STALE`) est accepté
+  par le central pour les verser à l'audit ; sans ordre, il est refusé par l'API et par la base (`EMPTY_BATCH_WITHOUT_LOCAL_ORDERS`).
 
 ## Flux transverses auxquels cette mission participe (référence, pas dupliqué)
 
-Voir `docs/05-sequence-diagrams.md`, flux : « Bascule vers la passerelle et retour » (flux global de l'initialisation, à
-recaler sur le code à la review) ; « Vente hors ligne puis synchronisation » (mission 7, que la passerelle relaie).
+Voir `docs/05-sequence-diagrams.md`, flux : « Bascule vers la passerelle et retour » (flux global de l'initialisation, image
+non redessinée ; elle reste compatible avec le code, les détails sont dans les diagrammes locaux ci-dessus) ; « Vente hors ligne puis synchronisation » (mission 7, que la passerelle relaie).
 
-## Nécessaire pour cette mission ? Oui : la mission est avant tout une interaction entre composants (administrateur, central, passerelle, terminal, base locale).
-## Complet ? Oui pour le plan (réponse proposée par l'Agent). Non dessinés : réplication, lot relayé, recharge espèces (texte ci-dessus) ; à compléter à la review si le code diffère.
-## Validé par : réponse proposée par l'Agent le 05/11/2026, en attente de confirmation du porteur.
+## Nécessaire pour cette mission ? Oui : la mission est avant tout une interaction entre composants (administrateur, central, passerelle, terminal, base locale) (réponse proposée par l'Agent le 12/11/2026, en attente de confirmation du porteur).
+## Complet ? Oui, recalé à la review (réponse proposée par l'Agent le 12/11/2026, en attente de confirmation du porteur) : cinq diagrammes `/illustre` (purge manuelle ajoutée), réplication, lot relayé, recharge espèces et lot d'ordres seuls en texte. Écart du plan : la purge versée au central avant la destruction n'était pas un flux du plan.
+## Validé par : réponse proposée par l'Agent le 12/11/2026, en attente de confirmation du porteur.

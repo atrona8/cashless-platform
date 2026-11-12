@@ -958,7 +958,7 @@
   {
     "mission": "passerelle-locale-01M6NM1S",
     "titre_cas_usage": "Passerelle locale de site",
-    "statut": "planifiée",
+    "statut": "relue (25 lots sur 25 approuvés le 12/11/2026 ; non acceptée, non fusionnée, accept et consolidate à venir)",
     "user_stories": [
       {
         "titre": "Basculer vers la passerelle",
@@ -1005,7 +1005,7 @@
       "État répliqué",
       "Registre de la passerelle"
     ],
-    "resultat_mesurable": "Bascule sous 100 débits par seconde : 0 débit de source autre que EDGE_SYNC au central après la bascule et 0 opération perdue ; rendu de 10 000 opérations sans perte ni double écriture ; paiement sur la passerelle p95 ≤ 200 ms et p99 ≤ 500 ms ; 0 différence du contrat hors /edge/*",
+    "resultat_mesurable": "Mesuré sur la branche : 0 violation d'exclusion sous charge (66 débits/s en local, plancher de 100 exigé dans le job CI gateway-e2e) ; 10 000 opérations vidées en 6,6 min avec kill -9, sans perte ni double écriture ; paiement sur la passerelle p95 176 ms à concurrence 10 (200 ms visés) ; accusé de bascule en 0,2 à 0,3 s ; 0 différence du contrat hors /edge/* et hors les ajouts facultatifs admis de Problem",
     "hypotheses": [
       "La passerelle tourne en configuration de développement jusqu'à la mission 12b (services réels simulés, faux refusés en production)",
       "Une session vendeur ouverte au central avant la bascule reste valable sur la passerelle jusqu'à son expiration (12 h)",
@@ -1014,22 +1014,23 @@
       "Les fonctions S12 et S13 du schéma sont correctes ; un défaut se corrige par migration"
     ],
     "contraintes": [
-      "Contrat openapi.yaml stable : ajouts facultatifs sous /edge/* seulement, aucune valeur d'énumération ajoutée",
+      "Contrat openapi.yaml stable : ajouts facultatifs sous /edge/* seulement, plus edge_base_url et authority_epoch facultatifs sur Problem (décision du porteur, ADR-171) ; aucune valeur d'énumération ajoutée ; 167 chemins et 202 opérations inchangés",
       "L'application n'appelle jamais set_debit_authority ; bascule demandée par un admin, jamais prise par la passerelle",
       "Aucune ouverture, relève ni fermeture de session de caisse sur la passerelle ; TOPUP_CASH d'un lot de terminal toujours rejeté",
       "Aucune clé maître sur la passerelle ; clés derrière un port de stockage matériel, faux refusé en production (adaptateur réel en 12b)",
       "Les .sql générés de packages/ledger-sql ne se modifient pas",
-      "Aucune nouvelle dépendance hors pile (ADR-78)"
+      "Aucune nouvelle dépendance hors pile (ADR-78) : celles de la passerelle sont déjà celles de l'API, aux mêmes versions"
     ],
     "cas_limites": [
       "Coupure sans bascule préalable : terminaux en hors ligne avec plafonds (mission 7)",
       "Lien perdu entre l'accord et l'accusé : aucun débit nulle part",
       "Passerelle zombie après reprise forcée : risque résiduel du protocole",
-      "Rejeu impossible d'une activation ou d'une caution : REJECTED EDGE_REPLAY_FAILED, espèces au compte d'attente",
+      "Passerelle perdue : activations et cautions non rejouées automatiquement, anomalie EDGE_REPLAY_FAILED résolue à deux, espèces au compte d'attente",
       "Époque forgée très supérieure : refus sans arrêt des débits",
       "Horloge système reculée au redémarrage : l'heure servie ne recule jamais",
       "Redémarrage en plein traitement : aucun numéro perdu, aucune réponse sans écriture persistée",
-      "Clôture de l'événement : purge des clés et des mots de passe du site"
+      "Clôture de l'événement ou ordre à deux personnes : purge des clés et des mots de passe du site, ordre versé au central avant la destruction (lot d'ordres seuls)",
+      "Colis de mots de passe : aucun dépôt avant le délai de garde de 30 min, ni pour une STANDBY non promue"
     ],
     "fonctionnel": [
       "Application passerelle avec base locale et règles partagées (FR-001)",
@@ -1041,9 +1042,9 @@
       "STANDBY, certificat et périmètre, port de stockage, purge, audit (FR-030 à FR-037, FR-039)"
     ],
     "non_fonctionnel": [
-      "Exclusion sous charge et rendu d'une grosse file (NFR-001, NFR-002)",
+      "Exclusion sous charge (plancher de 100 débits/s exigé en CI, 66 mesurés en local) et rendu d'une grosse file (NFR-001, NFR-002)",
       "0 double écriture, tenue aux arrêts brutaux (NFR-003, NFR-004)",
-      "Latence p95 ≤ 200 ms, vidage de 10 000 opérations en moins de 10 min (NFR-005, NFR-006)",
+      "Latence p95 ≤ 200 ms (176 ms mesurés), vidage de 10 000 opérations en moins de 10 min (6,6 min mesurées) (NFR-005, NFR-006)",
       "Aucun faux en production, aucune clé maître, cloisonnement, purge (NFR-009 à NFR-011, NFR-013)",
       "Contrat stable vérifié en CI (NFR-012)"
     ],

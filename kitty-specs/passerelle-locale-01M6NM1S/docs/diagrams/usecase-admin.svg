@@ -1,10 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1278" viewBox="0 0 1960 1278">
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1342" viewBox="0 0 1960 1342">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(20,50)">
-<ellipse cx="275.0" cy="277.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="492.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="707.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<ellipse cx="275.0" cy="922.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="256.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="428.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="600.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="772.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="944.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
 <rect x="1010" y="181.75" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
 <rect x="1010" y="289.25" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
 <rect x="1010" y="396.75" width="430" height="84" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
@@ -13,25 +14,25 @@
 <rect x="1010" y="719.25" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
 <rect x="1010" y="826.75" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <rect x="1010" y="934.25" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="448,277.5 1000,223.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,223.75 981.8062627074917,236.11882869681648 979.7618713240682,215.12340462891478" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,331.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,331.25 984.425200839204,346.7878773035723 978.5102271835275,326.5394093473961" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,438.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,438.75 981.8062627074917,451.1188286968165 979.7618713240682,430.1234046289148" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,546.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,546.25 979.7618713240682,554.8765953710852 981.8062627074917,533.8811713031836" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,653.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,653.75 978.5102271835275,658.4605906526039 984.425200839204,638.2121226964277" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,868.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,868.75 978.1061594814904,866.5913552052111 989.9871444448614,849.160647697488" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,707.5 1000,653.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,653.75 981.8062627074917,666.1188286968164 979.7618713240682,645.1234046289148" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,707.5 1000,761.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,761.25 979.7618713240682,769.8765953710852 981.8062627074917,748.8811713031836" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,492.5 1000,761.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,761.25 978.0242064779071,762.2817456442064 987.2582440634295,743.3154619336635" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,922.5 1000,976.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,976.25 979.7618713240682,984.8765953710852 981.8062627074917,963.8811713031836" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
-<polyline points="448,922.5 1000,868.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,868.75 981.8062627074917,881.1188286968164 979.7618713240682,860.1234046289148" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,256.0 1000,223.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,223.75 981.3412191705704,235.40546644108724 980.1108808685939,214.34665271423333" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,428.0 1000,331.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,331.25 982.8039726653046,344.9721224271033 979.1621789069035,324.1941363326592" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,428.0 1000,438.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,438.75 980.4914766532484,448.9194403400209 980.9022108738051,427.8287157123628" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,428.0 1000,546.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,546.25 978.9121570099437,552.5192007486389 983.3308392787717,531.892455612123" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,428.0 1000,653.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,653.75 978.1373168179433,656.204197237594 986.1224060978391,636.679194878779" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,428.0 1000,868.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,868.75 978.3314402366872,864.9455923215643 991.4937258708245,848.4610054354752" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,600.0 1000,653.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,653.75 979.7618713240682,662.3765953710852 981.8062627074917,641.3811713031836" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,944.0 1000,761.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,761.25 984.9864875039306,777.330871945587 978.3565774265708,757.3050970470777" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,772.0 1000,976.25" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,976.25 978.232794524466,979.4419846155465 985.5531662513279,959.658164820062" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,772.0 1000,868.75" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,868.75 979.1621789069035,875.8058636673408 982.8039726653046,855.0278775728967" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Passerelle : pilotage par les personnes</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui inscrit, qui bascule, qui rend, qui reprend la main</text>
 <text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
 <text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
-<text x="275.0" y="282.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Opérateur (outil admin)</text>
-<text x="275.0" y="497.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin prestataire</text>
-<text x="275.0" y="712.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Second admin prestataire</text>
-<text x="275.0" y="927.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Responsable</text>
+<text x="275.0" y="260.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Opérateur (outil admin)</text>
+<text x="275.0" y="432.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Admin prestataire</text>
+<text x="275.0" y="604.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Second admin prestataire</text>
+<text x="275.0" y="776.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Responsable</text>
+<text x="275.0" y="948.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Deux titulaires de clés de site</text>
 <text x="1225.0" y="228.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Inscrire une passerelle</text>
 <text x="1225.0" y="336.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Demander la bascule</text>
 <text x="1225.0" y="443.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Abandonner une bascule</text>
@@ -41,7 +42,9 @@
 <text x="1225.0" y="873.7" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Voir l’autorité et l’époque</text>
 <text x="1225.0" y="981.2" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Recevoir les alertes</text>
 <text x="60" y="1071.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Bascule demandée par un admin, avec le lien, jamais prise par la passerelle (décision du 05/11/2026). Inscription par une personne : alerte immédiate, délai de 30 min avant les mots de passe.</text>
-<text x="60" y="1103.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Reprise forcée : constat physique déclaré, seconde personne obligatoire, certificat révoqué. Purge des secrets aussi à la clôture de l’événement.</text>
-<text x="60" y="1135.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Aucune route d’inscription dans le contrat public : l’outil d’administration agit hors API.</text>
+<text x="60" y="1103.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Reprise forcée : constat physique déclaré, seconde personne obligatoire, certificat révoqué.</text>
+<text x="60" y="1135.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Purge des secrets : ordre signé par deux titulaires de clés de site (port d’administration local), versé au central avant la destruction ;</text>
+<text x="60" y="1167.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">elle est aussi automatique à la clôture de l’événement.</text>
+<text x="60" y="1199.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Aucune route d’inscription dans le contrat public : l’outil d’administration agit hors API.</text>
 </g>
 </svg>

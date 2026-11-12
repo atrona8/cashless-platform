@@ -91,3 +91,18 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 
 Tranché le 09/10/2026 (ADR-79, ex-OP-N40) : 30 jours par défaut (`IDEMPOTENCY_TTL_HOURS` = 720), conformément au
 contrat ; les clés des terminaux, qui sont aussi la clé du grand livre, sont conservées pour toujours.
+
+## 7. Passerelle locale (mission 8, relue le 12/11/2026, non fusionnée)
+
+Aucune dépendance nouvelle : `apps/gateway` n'utilise que des paquets déjà en place dans `apps/api` (`@nestjs/*` 11.2.7, `pg` 8.23.1,
+`jose` 6.2.12, `@peculiar/x509` 2.1.0, `canonicalize` 5.1.0, `cbor2` 2.3.0, `structured-headers` 2.1.0, `tsx` 4.23.15), aux mêmes versions
+exactes (ADR-78) ; `tools/edge-admin` : `@peculiar/x509`, `pg`, `reflect-metadata`.
+
+| Domaine | Logiciel | Version | Statut | Remarque |
+|---|---|---|---|---|
+| Image de la passerelle | `node:22-bookworm-slim` | épinglée par condensat (relevé le 10/11/2026) | en place (branche de la mission 8) | `apps/gateway/Dockerfile` : exécution par `tsx` comme l'API, utilisateur non-root, aucun secret dans l'image, sonde de santé en HTTPS ; contexte de construction : racine du dépôt |
+| Base locale du site | PostgreSQL | `postgres:17` épinglée par condensat (`docker-compose.site.yml`) | en place (branche de la mission 8) | rôle unique `edge_app` (OP-N111, ADR-166) ; migrations `edge-0001` à `edge-0010` |
+| Balayage de l'image | Trivy | image épinglée par condensat dans le job CI `gateway-e2e` | en place (branche de la mission 8) | bloquant sur HIGH et CRITICAL corrigeables (`--ignore-unfixed`, décision 56) ; à éprouver sur un exécuteur réel (base de vulnérabilités, durée) |
+| Stockage matériel de clés | module à choisir (HSM, TPM ou PKCS#11) | — | cible (mission 12b) | faux refusé en production ; clé TLS client en fichier durci jusqu'alors (OP-N100, OP-N113, ADR-168) ; purge des secrets : limites OP-N106 et OP-N118 |
+
+Enrôlement : le `central_url` du fichier d'enrôlement doit finir par `/v1` (le client de la passerelle ajoute les chemins `/edge/*` à cette base).
