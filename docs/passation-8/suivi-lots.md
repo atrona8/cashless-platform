@@ -594,3 +594,12 @@ Notes à transmettre aux lots suivants.
   `reference-store.ts`). NFR-003 chemin 4 ajouté. **Défauts ouverts** : B, opérations hors ligne relayées par la
   passerelle sans `edge_decision` (`offline-batches.service.ts` l.265), toutes refusées au central ; C, fin du délai
   de garde de 30 min des colis sans émission. Relecture humaine : `0071`, `reference-store.ts`.
+- WP25 **session B7** (11/11, 4c856d41 à 8bb98704) et **vérification de l'orchestrateur** (12/11, 552ccfae) :
+  défaut B corrigé (`edgeDecisionOf`, décision locale jointe, celle du terminal écartée ; mutation : 4 tests rouges) ;
+  défaut C corrigé (`0072`, dépôt de colis et de clé refusé avant le délai de garde ou à une STANDBY ; diff avec `0071`
+  limité à la garde ; mutation : pgTAP 35-38 rouges) ; délai inchangé (1800 s, e2e par vieillissement de la ligne).
+  Suite de 0072 hors carte : `pack-standby.spec.ts` (le test déposait à une STANDBY). Résultats : passerelle 856/856,
+  pgTAP `tests_edge_*` 1109/1109, intégration `edge` du central 262/262, e2e `replay-100`, `pack-after-start`,
+  `sc-001-journey` 18/18. Horloge colima resynchronisée (redémarrage). Relecture humaine : `0072`,
+  `offline-batches.service.ts` (`edgeDecisionOf`). Reste en ouvert (consigné par 0072) : PRIMARY promue de nouveau,
+  délai qui repart sans émission.
