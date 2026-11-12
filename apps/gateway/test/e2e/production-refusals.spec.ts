@@ -270,12 +270,22 @@ describe('règles du serveur local et des objets instanciés (démarrage réel)'
   }, 120_000);
 
   it('rôle superutilisateur : refusé', async () => {
-    const url = `postgres://${process.env.PGUSER ?? 'postgres'}:${STRONG}@127.0.0.1:${
-      process.env.PGPORT ?? '5433'
-    }/${db.name}`;
-    const r = await start({ ...healthy, GATEWAY_DATABASE_URL: url });
-    expect(r.code).toBe(1);
-    expect(r.stderr).toMatch(/superutilisateur/);
+    // Le mot de passe du superutilisateur du serveur de test peut être trivial (en CI :
+    // `PGPASSWORD=postgres`), refusé par la règle du secret avant la règle du rôle. Un
+    // superutilisateur jetable au mot de passe fort isole donc la seule règle du rôle.
+    const su = 'edge_su_refusal_test';
+    await admin(async (c) => {
+      await c.query(`DROP ROLE IF EXISTS ${su}`);
+      await c.query(`CREATE ROLE ${su} LOGIN SUPERUSER PASSWORD '${STRONG}'`);
+    });
+    try {
+      const url = `postgres://${su}:${STRONG}@127.0.0.1:${process.env.PGPORT ?? '5433'}/${db.name}`;
+      const r = await start({ ...healthy, GATEWAY_DATABASE_URL: url });
+      expect(r.code).toBe(1);
+      expect(r.stderr).toMatch(/superutilisateur/);
+    } finally {
+      await admin((c) => c.query(`DROP ROLE IF EXISTS ${su}`));
+    }
   }, 120_000);
 
   it('DELTA_PURGE absent : refusé (main.ts réel, règle des objets instanciés)', async () => {
