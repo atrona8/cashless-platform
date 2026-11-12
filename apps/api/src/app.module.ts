@@ -6,7 +6,9 @@ import { ApprovalModule } from './approval/approval.module';
 import { AuditModule } from './audit/audit.module';
 import { ConfigResolverModule } from './configuration/config-resolver.module';
 import { ConfigurationCoreModule } from './configuration/configuration-core.module';
+import { CustomerAuthModule } from './customer-auth/customer-auth.module';
 import { CustomerIdentityModule } from './customer-identity/customer-identity.module';
+import { devPspSimulationImports } from './dev/psp-simulation.module';
 import { DbModule } from './db/db.module';
 import { PublicDeviceIdentityModule } from './device-identity/device-identity.module';
 import { DevicesModule } from './devices/devices.module';
@@ -34,6 +36,7 @@ import { ChargebacksModule } from './chargebacks/chargebacks.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { VendorPinModule } from './vendor-pin/vendor-pin.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { MeModule } from './customer-app/me.module';
 import { RequestIdMiddleware } from './http/request-id.middleware';
 import { PlatformModule } from './organization/platform/platform.module';
 import { TenantModule } from './organization/tenant/tenant.module';
@@ -60,6 +63,10 @@ import { WorkerRegistry } from './processes/worker';
     PublicDeviceIdentityModule,
     CustomerIdentityModule,
     MediaPublicModule,
+    // Lectures de l'app festivalier (/me), servies avant la mission 10a (porteur, 10/11/2026).
+    MeModule,
+    // Authentification des festivaliers par code à usage unique (faux envoyeur jusqu'à la mission 12b).
+    CustomerAuthModule,
     // Mission identite-enrolement-terminaux : routes des terminaux (enrôlement, jetons, configuration, back-office).
     DevicesModule,
     // Mission 5b : PIN des vendeurs (argon2 éprouvé au démarrage, sinon démarrage refusé).
@@ -85,6 +92,8 @@ import { WorkerRegistry } from './processes/worker';
     OfflineJournalModule,
     // Mission passerelle-locale (lot WP11) : autorité de débit côté humains.
     DebitAuthorityModule,
+    // Simulation du paiement PSP : développement seulement, absente en production (OP-N121).
+    ...devPspSimulationImports(),
   ],
   providers: [{ provide: APP_FILTER, useClass: ProblemFilter }, WorkerRegistry],
   exports: [IdentityModule],

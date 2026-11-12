@@ -11,7 +11,8 @@
 //
 // NFR-001 : le graphe réel de l'API publique, compilé en configuration de production, refuse de
 // démarrer (`assertProcessIsSafe`) pour CHAQUE faux branché seul (identité du terminal, autorité
-// des terminaux, signataire des jetons, vérificateur d'attestation, identité du festivalier), et
+// des terminaux, signataire des jetons, vérificateur d'attestation, envoyeur de codes, simulation PSP ;
+// l'identité du festivalier, par jeton, n'est plus un faux et ignore les en-têtes de test), et
 // démarre sans faux. Le terminal de test et son autorité ne sont atteignables ni par un réglage de
 // production (`DEVICE_CA_FAKE_KEY_FILE`, `DEVICE_IDENTITY_FAKE` refusés) ni depuis le code servi
 // (aucun fichier de `src/` n'importe `test/`). Complète les tests unitaires de la garde
@@ -25,8 +26,9 @@ import type { Request } from 'express';
 import { Test } from '@nestjs/testing';
 import { FakeAttestation } from '../../../src/attestation/fake-attestation';
 import { APP_CONFIG, loadConfig, type AppConfig } from '../../../src/config/config';
+import { FakeOtpSender, OTP_SENDER } from '../../../src/customer-auth/otp-sender';
 import { CUSTOMER_IDENTITY } from '../../../src/customer-identity/customer-identity.port';
-import { FakeCustomerIdentity } from '../../../src/customer-identity/fake-customer-identity';
+import { TokenCustomerIdentity } from '../../../src/customer-identity/token-customer-identity';
 import type { DeviceCaPort } from '../../../src/device-ca/device-ca.port';
 import { FakeDeviceCa } from '../../../src/device-ca/fake-device-ca';
 import {
@@ -44,6 +46,7 @@ import { FakeTokenSigner } from '../../../src/device-tokens/fake-token-signer';
 import { FakeInProductionError } from '../../../src/kms/production-guard';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
 import { PublicProcessModule } from '../../../src/processes/public.module';
+import { DEV_NOTIFICATION_FABRICATOR } from '../../../src/psp/psp.tokens';
 import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../../../src/security/port-tokens';
 import { startHttpsApp, type HttpsTestApp } from '../../support/app';
 import { withOwner } from '../../support/db';
@@ -278,9 +281,21 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
       sign: () => Promise.reject(new Error('non appelé')),
       publicJwk: () => ({}),
     },
-    [CUSTOMER_IDENTITY]: { identify: () => Promise.reject(new Error('non appelé')) },
     [ATTESTATION_VERIFIER]: { verify: () => Promise.reject(new Error('non appelé')) },
+    // Envoyeur de codes des festivaliers : sans adaptateur réel avant la mission 12b, fournisseur « réel » neutre.
+    [OTP_SENDER]: { send: () => Promise.reject(new Error('non appelé')) },
+    // Fabricant de notifications PSP du module de simulation de développement (chargé quand NODE_ENV vaut `test`).
+    [DEV_NOTIFICATION_FABRICATOR]: () => {
+      throw new Error('non appelé');
+    },
   };
+  const NEUTRAL = [
+    DEVICE_CA,
+    TOKEN_SIGNER,
+    ATTESTATION_VERIFIER,
+    OTP_SENDER,
+    DEV_NOTIFICATION_FABRICATOR,
+  ];
   const saved = process.env.DEVICE_IDENTITY_FAKE;
   beforeEach(() => delete process.env.DEVICE_IDENTITY_FAKE);
   afterAll(() => {
@@ -289,12 +304,12 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
   });
 
   /** API publique en production : chaque port réel-neutre, sauf `fake` posé sur son jeton. */
-  const compile = (fake?: { token: symbol; provider: object }) => {
+  const compile = (fake?: { token: symbol; provider: object }, neutral: symbol[] = NEUTRAL) => {
     const config: AppConfig = { ...loadConfig(), production: true };
     const builder = Test.createTestingModule({ imports: [PublicProcessModule] })
       .overrideProvider(APP_CONFIG)
       .useValue(config);
-    for (const token of [DEVICE_CA, TOKEN_SIGNER, CUSTOMER_IDENTITY, ATTESTATION_VERIFIER])
+    for (const token of neutral)
       builder.overrideProvider(token).useValue(realLike[token as keyof typeof realLike]);
     if (fake) builder.overrideProvider(fake.token).useValue(fake.provider);
     return builder.compile();
@@ -315,7 +330,7 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
     ['l’autorité des terminaux', DEVICE_CA, () => FakeDeviceCa.inMemory()],
     ['le signataire des jetons d’appareil', TOKEN_SIGNER, () => FakeTokenSigner.create()],
     ['le vérificateur d’attestation', ATTESTATION_VERIFIER, () => new FakeAttestation()],
-    ['l’identité du festivalier', CUSTOMER_IDENTITY, () => new FakeCustomerIdentity()],
+    ['l’envoi des codes à usage unique', OTP_SENDER, () => new FakeOtpSender()],
   ])('faux de %s seul : démarrage refusé, et seul ce faux est nommé', async (name, token, make) => {
     const app = await compile({ token, provider: await make() });
     try {
@@ -327,6 +342,49 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
       }
       expect(error).toBeInstanceOf(FakeInProductionError);
       expect((error as FakeInProductionError).names).toEqual([name]);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('simulation de paiement PSP seule : démarrage refusé, et seule cette simulation est nommée', async () => {
+    // Le fabricant du module de développement se construit lui-même : il refuse en production sans remplaçant.
+    let error: unknown;
+    try {
+      await compile(
+        undefined,
+        NEUTRAL.filter((token) => token !== DEV_NOTIFICATION_FABRICATOR),
+      );
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(FakeInProductionError);
+    expect((error as FakeInProductionError).names).toEqual(['la simulation de paiement PSP']);
+  });
+
+  it('envoyeur de codes : sa fabrique refuse aussi en production sans remplaçant', async () => {
+    await expect(
+      compile(
+        undefined,
+        NEUTRAL.filter((token) => token !== OTP_SENDER),
+      ),
+    ).rejects.toThrow(/l’envoi des codes à usage unique est un faux/);
+  });
+
+  it('identité du festivalier : réelle (par jeton, non factice) et sourde aux en-têtes X-Test-* en production', async () => {
+    const app = await compile();
+    try {
+      const identity = app.get<TokenCustomerIdentity & { isFake?: boolean }>(CUSTOMER_IDENTITY, {
+        strict: false,
+      });
+      expect(identity).toBeInstanceOf(TokenCustomerIdentity);
+      expect(identity.isFake).toBeUndefined();
+      const headers: Record<string, string> = {
+        'x-test-customer-id': '11111111-1111-4111-8111-111111111111',
+        'x-test-operator-id': '22222222-2222-4222-8222-222222222222',
+      };
+      const req = { header: (name: string) => headers[name.toLowerCase()] } as unknown as Request;
+      expect(await identity.identify(req)).toBeNull();
     } finally {
       await app.close();
     }

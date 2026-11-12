@@ -1,0 +1,131 @@
+IDENTIFIANTS DES DONNÉES DE DÉMO — API CASHLESS PARTAGÉE
+État au 10/11/2026. Développement seulement.
+
+=====================================================================
+ACCÈS
+=====================================================================
+URL de base   : https://removable-thimble-uptight.ngrok-free.dev/v1
+Documentation : https://removable-thimble-uptight.ngrok-free.dev/docs
+
+En-têtes à envoyer :
+  ngrok-skip-browser-warning: 1
+  Content-Type: application/json          (requêtes avec corps)
+  Idempotency-Key: <UUID neuf>            (chaque POST)
+  X-Test-Customer-Id: <id du festivalier>
+  X-Test-Operator-Id: <id de son prestataire>
+  X-Test-Customer-Device: app-demo        (texte libre)
+
+Connexion : POST /customer-auth/otp {"phone": "...", "operator_code": "demo-a"} puis POST /customer-auth/token
+{"otp_request_id": "...", "code": "..."} -> jeton Bearer (900 s) + jeton de renouvellement (/customer-auth/refresh,
+usage unique). SUR CE SERVEUR DE DÉVELOPPEMENT, le code n'est pas envoyé : il est rendu dans l'en-tête de réponse
+X-Test-Otp-Code de la demande (jamais en production). Les en-têtes X-Test-* ci-dessus restent admis tant qu'aucun
+en-tête Authorization n'est envoyé ; un Bearer invalide donne 401 (pas de repli sur les en-têtes).
+Mis à jour le 10/11/2026 : connexion OTP, GET /me (phone), /me/wallets, historique, GET /me/media et report-lost servis.
+
+Codes publics des prestataires (operator_code) : A = demo-a    B = demo-b
+Limites : 3 codes par numéro sur 15 min, 10 demandes par adresse et par heure ; 5 codes faux = numéro bloqué 30 min
+(429 OTP_RATE_LIMITED + Retry-After).
+
+=====================================================================
+PRESTATAIRES ET ÉVÉNEMENTS
+=====================================================================
+Prestataire A : ec04692a-229e-482b-8542-7492544766c8
+  Événement   : Festival Démo A — 16f8cb90-4cfd-4052-89e6-e3f155d0b29d (LIVE, XOF)
+
+Prestataire B : 6c4bedbe-a509-40c0-a6df-ecad419ef5d5
+  Événement   : Festival Démo B — 6ccda773-c3c4-493c-bfa8-895fc96c96b0 (LIVE, XOF)
+
+=====================================================================
+FESTIVALIERS
+=====================================================================
+Awa Diop (prestataire A) — cas nominal
+  Numéro (OTP)       : +221770000001
+  X-Test-Customer-Id : c10e0ac3-f0ca-43fc-9b1a-8fcf53cd07ae
+  X-Test-Operator-Id : ec04692a-229e-482b-8542-7492544766c8
+  Portefeuille       : 44f1a187-a49c-4152-8f5d-8f4991cdb6c8  ACTIVE  25 000 XOF
+  Bracelet           : 8c8f93a2-3a1b-4d26-85c9-efce5477964e  ACTIVE  (code 9TS5N-FFKZB)
+
+Moussa Ndiaye (prestataire A) — petit solde
+  Numéro (OTP)       : +221770000002
+  X-Test-Customer-Id : 22ba6846-28a5-46bc-91e4-6502de5d2a1b
+  X-Test-Operator-Id : ec04692a-229e-482b-8542-7492544766c8
+  Portefeuille       : 921f33c9-93fc-474a-b93d-6a5747b2b151  ACTIVE  8 000 XOF
+  Bracelet           : b21dd2e9-d9b9-4376-9238-ca6b4b7dd726  ACTIVE  (code ATZAX-A9K5N)
+
+Fatou Sarr (prestataire A) — compte neuf
+  Numéro (OTP)       : +221770000003
+  X-Test-Customer-Id : 96a58580-81a1-4d4d-b3ea-cfd78f010075
+  X-Test-Operator-Id : ec04692a-229e-482b-8542-7492544766c8
+  Portefeuille       : aucun (il est créé au premier rattachement d'un bracelet libre)
+
+Ibrahima Fall (prestataire A) — portefeuille bloqué, pour les erreurs
+  Numéro (OTP)       : +221770000004
+  X-Test-Customer-Id : d22ffa2b-71ab-4b4b-929d-dbc8f80f1795
+  X-Test-Operator-Id : ec04692a-229e-482b-8542-7492544766c8
+  Portefeuille       : 3437eecc-da19-42a5-9abe-01fc864a9455  BLOCKED  5 000 XOF
+  Bracelet           : f4d5a617-3200-4419-bb89-cf6238d3c71a  ACTIVE  (code MS4XC-3MPWM)
+
+Khady Ba (prestataire B) — cloisonnement entre prestataires
+  Numéro (OTP)       : +221770000005
+  X-Test-Customer-Id : 7696da46-ee8f-4ae2-9839-7ef3965241c2
+  X-Test-Operator-Id : 6c4bedbe-a509-40c0-a6df-ecad419ef5d5
+  Portefeuille       : 5f2da6b2-0018-4adf-b353-f9630cafb820  ACTIVE  7 000 XOF
+
+=====================================================================
+CODES DE BRACELETS
+=====================================================================
+Bracelets libres du prestataire A, à rattacher avec POST /me/media {"claim_code": "..."}.
+Chaque code ne sert qu'une fois.
+  SL6WM-28D6E   DLSG2-8YNX4   H3CZY-ZYL5A   UKK77-UPV5P   QBQ56-PRCJT
+  VMW3S-EJU9M   GKZL5-CTWXP   XV3EM-AXKFJ   TBA56-D2VYY   XVYBX-HJLF8
+  Q3GKJ-EYGSV   KMHLV-A6VW6   VW5SG-BDCLK   NAQPU-LHLB7   63NFN-88TBA
+  8RJGE-5K6D5   8HMM9-SG72M   D926Y-TSWK4   NW53W-YM5UW   STGGV-8K25P
+
+Bracelets anonymes crédités du prestataire A, sans compte :
+  FNT97-9A3JD   10 000 XOF
+  82CFB-WJUG9    2 500 XOF
+  WZ6WZ-DEEQE        0 XOF
+  - Solde sans compte : POST /public/balance-lookups {"claim_code": "..."}
+  - Rattachement à un compte : réponse 202 avec un code à 6 chiffres à confirmer au guichet
+
+=====================================================================
+PERSONNEL (pour information : aucun jeton utilisable sur l'API partagée)
+=====================================================================
+Administrateur du prestataire A : 7278ceb4-ff42-46a1-a138-643b711a68cf  (OPERATOR_ADMIN)
+Administrateur du prestataire B : 0081d7cc-afd2-4cc3-9773-21d013e0610d  (OPERATOR_ADMIN)
+
+=====================================================================
+CATALOGUE DU PRESTATAIRE A (servi aux terminaux, pas à l'app)
+=====================================================================
+Bar Démo           : Jus de bissap 1 500, Soda 1 000, Eau 500
+Restauration Démo  : Thiéboudienne 3 500, Dibi 3 000
+Boutique Démo      : T-shirt 7 500, Casquette 4 000
+
+=====================================================================
+ROUTES QUI MARCHENT AUJOURD'HUI
+=====================================================================
+POST /me/customer-qr-tokens   {"wallet_id": "..."}        QR client valable 60 s
+POST /me/media                {"claim_code": "..."}       rattacher un bracelet
+POST /public/balance-lookups  {"claim_code": "..."}       solde d'un bracelet anonyme, sans en-têtes de festivalier
+POST /customer-auth/otp | /token | /refresh               connexion par numéro et code (voir ACCÈS)
+POST /me/media/{media_id}/report-lost                     déclarer un bracelet perdu (ACTIVE -> SUSPENDED)
+GET  /me                                                  profil (phone = numéro vérifié)
+GET  /me/wallets                                          portefeuilles, soldes, bracelets
+GET  /me/wallets/{wallet_id}/transactions?limit=&cursor=  historique, du plus récent au plus ancien
+GET  /me/media                                            bracelets rattachés
+
+Pas encore servies (réponse 404) : remboursements.
+
+=====================================================================
+RECHARGE PSP (faux PSP, développement seulement) — servie depuis le 10/11/2026
+=====================================================================
+POST /topups/psp  {"wallet_id": "...", "amount": 5000, "currency": "XOF", "provider": "WAVE",
+                   "payer_msisdn": "+221770000001", "return_url": "https://xaamga.example/cashless/topup/callback"}
+  provider : WAVE | ORANGE_MONEY | CARD. return_url en https: ou cashless: (xaamga:// refusé, 422).
+  -> 201 {topup_id, status PENDING, checkout_url "https://fake-psp.invalid/..." (ne s'ouvre pas)}
+POST /__dev/psp-topups/{topup_id}/outcome  {"outcome": "SUCCEEDED" | "FAILED"}
+  À APPELER À LA PLACE DU PAIEMENT. Hors contrat, absente en production. Seul le festivalier de la recharge (404
+  sinon) ; recharge PENDING seulement ; répétable (un seul crédit). 200 -> état de la recharge.
+GET  /topups/psp/{topup_id}   PENDING -> SUCCEEDED (avec transaction_id) ou FAILED
+POST /topups/psp/{topup_id}/cancel
+Après SUCCEEDED : /me/wallets montre le solde augmenté, l'historique une ligne TOPUP positive.

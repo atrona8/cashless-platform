@@ -1039,3 +1039,25 @@ GRANT EXECUTE ON FUNCTION
 GRANT EXECUTE ON FUNCTION mark_edge_gateways_silent(interval), edge_stuck_handovers(interval),
   edge_log_release_stuck(uuid)  -- 0065, décision 37 (ADR-173)
   TO cashless_maint;
+-- 10. Authentification des festivaliers par code à usage unique (migration 0080 ; hors Spec Kitty, porteur, 10/11/2026).
+-- roles.sql vient de rendre SELECT, INSERT et UPDATE sur toutes les tables à cashless_app : on retire ce qui n'est pas
+-- nécessaire. Aucun DELETE ni TRUNCATE (retirés par roles.sql, redits).
+--   Codes publics : lus par operator_by_public_code (SECURITY DEFINER) seulement ; aucun droit de table.
+REVOKE ALL ON operator_public_code FROM cashless_app;
+--   Numéros vérifiés : lus et créés au premier passage ; jamais modifiés par l'API.
+REVOKE UPDATE, DELETE, TRUNCATE ON customer_identity FROM cashless_app;
+--   Défis : l'API en crée, et ne change que le compteur d'essais, la consommation et l'invalidation ; ni le code
+--   (empreinte), ni le numéro, ni l'échéance ne se réécrivent.
+REVOKE UPDATE, DELETE, TRUNCATE ON otp_challenge FROM cashless_app;
+GRANT UPDATE (attempts, consumed_at, invalidated_at) ON otp_challenge TO cashless_app;
+--   Blocages de numéro : création puis prolongation de l'échéance seulement.
+REVOKE UPDATE, DELETE, TRUNCATE ON otp_phone_block FROM cashless_app;
+GRANT UPDATE (blocked_until) ON otp_phone_block TO cashless_app;
+--   Jetons de renouvellement : usage et révocation seulement ; l'empreinte, le compte et la famille ne changent pas.
+REVOKE UPDATE, DELETE, TRUNCATE ON customer_refresh_token FROM cashless_app;
+GRANT UPDATE (used_at, revoked_at) ON customer_refresh_token TO cashless_app;
+--   Les trois lectures qui précèdent la connaissance du prestataire : cashless_app seul (jamais les autres rôles).
+REVOKE EXECUTE ON FUNCTION operator_by_public_code(text), otp_challenge_operator(uuid),
+  customer_refresh_operator(bytea) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION operator_by_public_code(text), otp_challenge_operator(uuid),
+  customer_refresh_operator(bytea) TO cashless_app;

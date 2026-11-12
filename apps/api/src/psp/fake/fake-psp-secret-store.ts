@@ -1,4 +1,5 @@
 // Faux coffre en mémoire, hors production seulement. Aucune lecture d'environnement ni de fichier.
+import { createHmac } from 'node:crypto';
 import {
   PspSecretError,
   type PspSecretBinding,
@@ -18,6 +19,27 @@ function parseRef(secretRef: string): { holder: string; name: string } {
   if (holder === undefined || name === undefined || name.startsWith('.'))
     throw new PspSecretError('REF_INVALID');
   return { holder: holder.toLowerCase(), name };
+}
+
+/**
+ * Secret de test PUBLIC (sa valeur est dans le dépôt) : il ne sert qu'à dériver les secrets des références de démo
+ * `psp/<titulaire>/demo-<moyen>`, jamais ailleurs (OP-N121, ADR-181). Hors production seulement : ce faux coffre est
+ * refusé au démarrage en production (`assertNoFakeInProduction`).
+ */
+export const DEMO_PSP_PUBLIC_SECRET = 'cashless-demo-psp-public-test-secret-not-a-secret';
+const DEMO_NAME = /^demo-(wave|om|card)$/;
+
+function demoSecrets(holder: string, name: string): PspSecrets {
+  const derive = (label: string): Secret =>
+    Secret.of(
+      createHmac('sha256', DEMO_PSP_PUBLIC_SECRET)
+        .update(`${label}/${holder}/${name}`)
+        .digest('hex'),
+    );
+  return {
+    adapter: derive('adapter'),
+    notification: { current: derive('notification'), previous: null, previousValidUntil: null },
+  };
 }
 
 const asSecret = (value: string | Secret): Secret =>
@@ -56,7 +78,11 @@ export class FakePspSecretStore implements PspSecretStore {
       if (holder !== binding.holderPartyId.toLowerCase())
         throw new PspSecretError('HOLDER_MISMATCH');
       const found = this.entries.get(`${holder}/${name}`);
-      if (found === undefined) throw new PspSecretError('NOT_FOUND');
+      if (found === undefined) {
+        // Références de démo seulement ; toute autre référence reste introuvable.
+        if (DEMO_NAME.test(name)) return Promise.resolve(demoSecrets(holder, name));
+        throw new PspSecretError('NOT_FOUND');
+      }
       return Promise.resolve({ adapter: found.adapter, notification: { ...found.notification } });
     } catch (error) {
       return Promise.reject(error);

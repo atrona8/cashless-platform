@@ -10,6 +10,6 @@ import { WebhooksController } from './webhooks.controller';
   imports: [PspTopupsModule],
   controllers: [WebhooksController],
   providers: [WebhookIntake, WebhookRejections, EventDispatcher],
-  exports: [EventDispatcher],
+  exports: [EventDispatcher, WebhookIntake],
 })
 export class WebhooksModule {}

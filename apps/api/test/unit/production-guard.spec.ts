@@ -1,7 +1,10 @@
 // Aucun faux en production (règle du porteur du 13/10/2026, NFR-010) : un test par faux.
 import { APP_CONFIG, loadConfig } from '../../src/config/config';
+import { CustomerAccessTokens } from '../../src/customer-identity/customer-access-token';
 import { createCustomerIdentity } from '../../src/customer-identity/customer-identity.module';
 import { FakeCustomerIdentity } from '../../src/customer-identity/fake-customer-identity';
+import { TokenCustomerIdentity } from '../../src/customer-identity/token-customer-identity';
+import { createOtpSender, FakeOtpSender, OTP_SENDER } from '../../src/customer-auth/otp-sender';
 import { createDeviceIdentity } from '../../src/device-identity/device-identity.module';
 import { FakeDeviceIdentity } from '../../src/device-identity/fake-device-identity';
 import { RealDeviceIdentity } from '../../src/device-identity/real-device-identity';
@@ -58,16 +61,66 @@ describe('aucun faux en production', () => {
     for (const production of [true, false]) {
       const identity = device(production, {});
       expect(identity).toBeInstanceOf(RealDeviceIdentity);
-      expect(identity.isFake).toBeUndefined();
+      expect((identity as { isFake?: boolean }).isFake).toBeUndefined();
       expect(device(production, { DEVICE_IDENTITY_FAKE: '' })).toBeInstanceOf(RealDeviceIdentity);
     }
     // Une autre valeur n'est pas une demande de faux reconnue : refus, jamais de faux par erreur.
     expect(() => device(false, { DEVICE_IDENTITY_FAKE: 'true' })).toThrow(/DEVICE_IDENTITY_FAKE/);
   });
 
-  it('faux festivalier : construction refusée en production', () => {
-    expect(() => createCustomerIdentity(PRODUCTION)).toThrow(FakeInProductionError);
-    expect(createCustomerIdentity(LOCAL)).toBeInstanceOf(FakeCustomerIdentity);
+  // Identité du festivalier par jeton (10a, hors Spec Kitty) : ce n'est pas un faux ; en production, elle ignore les
+  // en-têtes de test, hors production elle les admet seulement en l'absence de `Authorization`.
+  const KEY = { customerAuthHmacKey: Buffer.alloc(32, 7) };
+  const withHeaders = {
+    'x-test-customer-id': '11111111-1111-4111-8111-111111111111',
+    'x-test-operator-id': '22222222-2222-4222-8222-222222222222',
+  } as Record<string, string>;
+  const requestOf = (headers: Record<string, string>) =>
+    ({ header: (name: string) => headers[name.toLowerCase()] }) as never;
+
+  it('identité du festivalier : non factice en production, et les en-têtes X-Test-* y sont ignorés', async () => {
+    const identity = createCustomerIdentity({ ...PRODUCTION, ...KEY });
+    expect(identity).toBeInstanceOf(TokenCustomerIdentity);
+    expect((identity as { isFake?: boolean }).isFake).toBeUndefined();
+    expect(() => assertNoFakeInProduction(true, { festivalier: identity })).not.toThrow();
+    expect(await identity.identify(requestOf(withHeaders))).toBeNull();
+    // Hors production, les mêmes en-têtes sont admis (OP-N43) ; un Bearer invalide ne se replie jamais dessus.
+    const local = createCustomerIdentity({ ...LOCAL, ...KEY });
+    expect(await local.identify(requestOf(withHeaders))).toMatchObject({
+      customerId: withHeaders['x-test-customer-id'],
+    });
+    expect(
+      await local.identify(requestOf({ ...withHeaders, authorization: 'Bearer abc.def.ghi' })),
+    ).toBeNull();
+  });
+
+  it('identité du festivalier : un jeton valide est reconnu en production', async () => {
+    const identity = createCustomerIdentity({ ...PRODUCTION, ...KEY });
+    const customerId = '33333333-3333-4333-8333-333333333333';
+    const familyId = '44444444-4444-4444-8444-444444444444';
+    const token = await new CustomerAccessTokens(KEY).sign({
+      customerId,
+      operatorId: withHeaders['x-test-operator-id']!,
+      familyId,
+    });
+    expect(await identity.identify(requestOf({ authorization: `Bearer ${token}` }))).toEqual({
+      customerId,
+      operatorId: withHeaders['x-test-operator-id'],
+      deviceRef: familyId,
+    });
+  });
+
+  it('faux envoyeur de codes : construction refusée en production, et l’en-tête X-Test-Otp-Code impossible', () => {
+    expect(() => createOtpSender(PRODUCTION)).toThrow(FakeInProductionError);
+    expect(createOtpSender(LOCAL)).toBeInstanceOf(FakeOtpSender);
+    // La garde de démarrage nomme l'envoyeur ; l'en-tête n'est posé que si `isFake` : jamais atteint en production.
+    expect(() =>
+      assertProcessIsSafe(processWith(true, OTP_SENDER, new FakeOtpSender()) as never),
+    ).toThrow(/l’envoi des codes à usage unique est un faux/);
+    expect(() =>
+      assertProcessIsSafe(processWith(false, OTP_SENDER, new FakeOtpSender()) as never),
+    ).not.toThrow();
+    expect(() => assertProcessIsSafe(processWith(true, OTP_SENDER, {}) as never)).not.toThrow();
   });
 
   it.each([
@@ -120,7 +173,8 @@ describe('aucun faux en production', () => {
     expect(() =>
       createDeviceIdentity(config, DEVICE_DEPS, { ...process.env, DEVICE_IDENTITY_FAKE: '1' }),
     ).toThrow(FakeInProductionError);
-    expect(() => createCustomerIdentity(config)).toThrow(FakeInProductionError);
+    expect((createCustomerIdentity(config) as { isFake?: boolean }).isFake).toBeUndefined();
+    expect(() => createOtpSender(config)).toThrow(FakeInProductionError);
   });
 
   // ----- Mission identite-enrolement-terminaux (T038) : trois ports de plus, lus par la garde de démarrage -----

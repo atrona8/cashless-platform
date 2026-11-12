@@ -2724,3 +2724,49 @@ Décision du porteur : 12/11/2026 ADR-188
 - **Test de borne.** `apps/api/test/integration/edge/sync/sync-pack-verified-bound.spec.ts` : toute valeur autre que `true`
   refusée (`TAP_PACK_NOT_VERIFIED`), appel sans certificat de passerelle refusé, ventes crues sous les plafonds d'ADR-159.
 - **État.** Ouvert (OP-N122, bloque la production).
+## ADR-180 — Authentification des festivaliers par code, servie avant la mission 10a ; code rendu en en-tête par le faux envoyeur (OP-N120)
+
+- **Statut** : Acceptée, 10 novembre 2026 (décision du porteur, hors Spec Kitty). Complète ADR-66 ; met à jour OP-N43.
+- **Contexte.** L'équipe de l'app festivalier a besoin d'une connexion réelle (`requestCustomerOtp`,
+  `exchangeCustomerOtp`, `refreshCustomerToken`, contrat inchangé) avant le vrai fournisseur d'envoi (mission 12b).
+- **Décision.** (1) Comptes par numéro (migration `0080`) : code à 6 chiffres (`randomInt`), empreinte HMAC liée au défi
+  (sous-clé de `CUSTOMER_AUTH_HMAC_KEY`), 300 s, 5 essais, au 5ᵉ faux le défi est invalidé et le numéro bloqué 30 min ;
+  3 envois par numéro sur 15 min glissantes, `CUSTOMER_OTP_IP_HOURLY_MAX` (10) par adresse et par heure ; jeton d'accès
+  JWT HS256 de 900 s (`iss` `cashless-api`, `aud` `cashless-customer`), jeton de renouvellement `crt_…` gardé en SHA-256,
+  30 jours, usage unique, famille révoquée au réemploi. (2) L'identité par jeton n'est pas un faux : en production seul le
+  jeton est cru ; hors production les en-têtes `X-Test-*` restent admis sans `Authorization` (un Bearer invalide : 401).
+  (3) **Écart accepté** : tant que l'envoyeur est le faux (jamais en production : il refuse le démarrage), la réponse de
+  `POST /customer-auth/otp` porte `X-Test-Otp-Code`.
+- **Risque (écart de sécurité, règle du porteur du 13/10/2026).** Sur une API de développement, quiconque connaît l'URL et
+  le code public d'un prestataire se connecte sur n'importe quel numéro. Aucun effet en production.
+- **Conséquences.** Limite par adresse comptée par prestataire (la RLS ne permet pas de compter entre prestataires) : un
+  appelant qui change de `operator_code` multiplie son quota. Un jeton d'accès reste valable jusqu'à son expiration même
+  si sa famille est révoquée (900 s). Les trois fonctions DEFINER de `0080` supposent, comme `0019` à `0022`, un
+  propriétaire qui ignore la RLS. Sous-clés distinctes par usage (signature, empreinte du code, référence d'adresse).
+- **Renforcement du 10/11/2026 (revue).** Les essais faux sont cumulés par numéro et prestataire sur 30 min glissantes,
+  tous défis confondus (somme de `otp_challenge.attempts`, sans migration) : au 5ᵉ essai faux cumulé le numéro est bloqué
+  30 min (429 + `Retry-After`). Un nouveau code ne remet plus les essais à zéro (avant : ~12 devinettes par 15 min).
+  Limite restante, inhérente : un tiers qui connaît un numéro peut le bloquer en échouant volontairement. Test :
+  `attempts.spec.ts` (4 faux, nouveau code, 1 faux : 429).
+- **Mission qui le lève.** Mission 12b ; condition : vrai `OtpSender`, retrait du faux et de l'en-tête du code de production.
+- **Test de borne.** `production-guard.spec.ts` (envoyeur refusé en production, identité par jeton sans repli sur les
+  en-têtes) ; `otp.spec.ts` (aucun en-tête avec un envoyeur réel) ; `tests_customer_auth.sql` (droits exacts, RLS,
+  fonctions DEFINER) ; `attempts.spec.ts` et `tokens.spec.ts` (blocage, rotation, réemploi).
+
+## ADR-181 — Secrets PSP de démo et simulation du paiement par le festivalier, hors production (OP-N121)
+
+- **Statut** : Acceptée, 10 novembre 2026 (décision du porteur, hors Spec Kitty).
+- **Contexte.** L'équipe de l'app festivalier doit tester la recharge PSP (`POST /topups/psp`, suivi, annulation) sur
+  l'API de développement partagée avec les faux PSP, sans PSP réel ni outil de test.
+- **Décision.** (1) Le seed de démo pose, pour les événements A et B, une configuration `ACTIVE` par moyen (références
+  `psp/<titulaire>/demo-wave|demo-om|demo-card`, règle de frais 1,5 %), rejouée à chaque lancement. (2) Le faux coffre
+  dérive les secrets de ces seules références d'un secret de test public. (3) `POST /v1/__dev/psp-topups/{id}/outcome`,
+  hors contrat, passe par `WebhookIntake` (signature, idempotence, écriture `TOPUP`, plafonds) ; `FAILED` ajoute la
+  finalisation `settleUnpaid`. (4) Module chargé seulement pour `NODE_ENV` `development` ou `test`.
+- **Risque (écart de sécurité, règle du porteur du 13/10/2026).** Crédit de son propre portefeuille de démo sans paiement,
+  par quiconque a l'URL et un compte de démo ; secrets de démo publics. Aucun effet en production.
+- **Conséquences.** Le `checkout_url` du faux reste `https://fake-psp.invalid/...` : l'app appelle la route de simulation
+  à la place du paiement. Le contrat `openapi.yaml` n'est pas modifié.
+- **Mission qui le lève.** Mission 12b ; condition : adaptateurs réels, retrait du module, des secrets `demo-*` et des
+  configurations de démo.
+- **Test de borne.** `psp-dev-simulation.spec.ts` (unitaire) et `dev-simulation.spec.ts` (intégration).

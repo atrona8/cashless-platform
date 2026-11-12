@@ -20,7 +20,10 @@ bash demarrer-local.sh
 Le script :
 1. démarre Docker s'il ne répond pas (colima, ou Docker Desktop sur macOS), puis lance PostgreSQL 17 dans Docker sur `127.0.0.1:5434` (`docker-compose.yml`, accès local seulement ; 5434 et non 5433 pour ne pas gêner la base de test du dépôt) ;
 2. installe les dépendances (`npm ci`) ;
-3. crée la base `cashless_dev` et applique les migrations et les rôles (`packages/ledger-sql`) ;
+3. crée la base `cashless_dev` si elle n'existe pas, applique les migrations manquantes et les rôles
+   (`packages/ledger-sql`), puis écrit une seule fois les données de démonstration (`DONNEES-DEMO.md`). **La base est
+   gardée d'un démarrage à l'autre** : `REINIT_DB=1 bash demarrer-local.sh` repart d'une base neuve, `DEMO_DATA=0`
+   n'écrit pas les données de démo ;
 4. compile et démarre l'API (`apps/api`) sur le port 80 (`PORT`) avec les valeurs de test de `tools/dev-db/env.sh` ;
 5. ouvre un tunnel `ngrok http 80` et affiche l'URL publique. L'API tourne avec des faux et des valeurs de test publiques : ne diffusez pas cette URL au-delà de l'équipe qui intègre.
 

@@ -96,7 +96,10 @@ SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FR
  'point_of_sale', 'point_of_sale_catalog_policy', 'posting', 'psp_chargeback', 'psp_configuration', 'psp_event',
  'psp_topup', 'psp_webhook_rejection', 'role_assignment', 'sale_attribution', 'sale_line', 'snapshot_signing_key',
  'tag_data_key', 'tag_key', 'tag_key_check_run', 'tag_key_job', 'vendor', 'vendor_pin_check', 'vendor_session',
- 'wallet'])), '',
+ 'wallet',
+ -- 0080 : authentification des festivaliers (droits bornés par tests_customer_auth.sql)
+ 'customer_identity', 'customer_refresh_token', 'operator_public_code', 'otp_challenge',
+ 'otp_phone_block'])), '',
   'aucune table de public hors de la liste d''avant 0043 et des dix tables de la mission');
 SELECT is((SELECT count(*)::int FROM new_tables n JOIN pg_class c ON c.relname = n.t
             AND c.relnamespace = 'public'::regnamespace), 10, 'les dix tables nouvelles existent');

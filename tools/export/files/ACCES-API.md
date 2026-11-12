@@ -31,6 +31,9 @@ Schémas déclarés dans `components/securitySchemes` :
   être obtenu (serveur d'identité d'intégration ou jeton fourni par le référent), les routes protégées répondent
   `401` ; seules les routes publiques et la documentation interactive répondent. Pour jouer un parcours protégé,
   demander au référent un jeton d'essai ou l'ouverture de l'environnement d'intégration.
+- Festivalier (routes `/me/*`, `POST /topups/psp`, paiement QR) : en développement, pas de jeton mais trois en-têtes
+  de test (`X-Test-Customer-Id`, `X-Test-Operator-Id`, `X-Test-Customer-Device`) ; festivaliers, portefeuilles et
+  codes de bracelets prêts à l'emploi dans `DONNEES-DEMO.md`. Faux refusé en production.
 - `deviceToken` + `deviceMtls` : terminaux enrôlés (certificat client et jeton court ; voir les contrats
   complémentaires « terminaux »).
 

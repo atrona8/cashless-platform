@@ -68,6 +68,8 @@ export ENROLLMENT_CODE_HMAC_KEY="${ENROLLMENT_CODE_HMAC_KEY:-$(printf '%s' 'cash
 export VENDOR_PIN_SECRET="${VENDOR_PIN_SECRET:-$(printf '%s' 'cashless-vendor-pin-secret-argon2-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
 # Secret argon2 du dérivé du PIN dans l'empreinte d'idempotence (ADR-126), distinct des autres secrets.
 export VENDOR_PIN_IDEMPOTENCY_SECRET="${VENDOR_PIN_IDEMPOTENCY_SECRET:-$(printf '%s' 'cashless-vendor-pin-idempotency-secret-de-test-uniquement' | od -An -tx1 | tr -d ' \n')}"
+# Secret des jetons et codes des festivaliers (authentification par numéro), distinct des autres.
+export CUSTOMER_AUTH_HMAC_KEY="${CUSTOMER_AUTH_HMAC_KEY:-$(printf '%s' 'cashless-customer-auth-hmac-key-de-test-uniquement-0' | od -An -tx1 | tr -d ' \n')}"
 # Jetons d'appareil (R-07) et certificat client (R-09).
 export DEVICE_TOKEN_ISSUER="${DEVICE_TOKEN_ISSUER:-https://api.cashless.test}"
 export DEVICE_TOKEN_TTL_SECONDS="${DEVICE_TOKEN_TTL_SECONDS:-900}"
