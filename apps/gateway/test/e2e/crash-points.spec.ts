@@ -2,7 +2,9 @@
 // (`EDGE_ALLOW_FAILPOINTS=1`, hors production seulement), puis redémarrage : aucune perte,
 // numérotation continue, aucune réponse 2xx sans entrée de file, lot renvoyé à l'identique.
 //   - `before-local-write`, `after-local-write-before-reply` : pendant une vente ;
-//   - `during-drain-after-send-before-result`, `after-releasing-persisted` : pendant le rendu ;
+//   - `during-drain-after-send-before-result` : pendant le vidage (état actif, file vidée avant le
+//     kill puis une vente ; le lot en vol est renvoyé à l'identique au rendu) ;
+//   - `after-releasing-persisted` : pendant le rendu ;
 //   - `kill-local-database` : le processus signale le point et attend ; le banc exécute
 //     `docker kill` du conteneur PostgreSQL LOCAL (un conteneur jetable `cashless_m8_edge_pg_*`,
 //     jamais le serveur partagé du poste), le relance, la passerelle repart.
@@ -62,6 +64,28 @@ async function waitReleased(): Promise<void> {
       )[0]?.status === 'COMPLETED',
     300_000,
     300,
+  );
+}
+
+/**
+ * Attend que la file locale soit vide et acquittée (même critère que `isEmpty()` du vidage).
+ * La passerelle relancée avec un point d'arrêt de vidage vide la file dès son démarrage, AVANT
+ * d'écrire sa ligne d'écoute : une opération encore non acquittée la tuerait avant l'écoute.
+ */
+async function waitQueueDrained(): Promise<void> {
+  await until(
+    'file locale vide et acquittée',
+    async () =>
+      (
+        await local<{ empty: boolean }>(
+          `SELECT (h.acked_edge_seq = h.last_edge_seq)
+                  AND NOT EXISTS (SELECT 1 FROM edge_outgoing_batch
+                                   WHERE status <> 'DONE' AND edge_seq_to >= edge_seq_from) AS empty
+             FROM edge_chain_head h`,
+        )
+      )[0]?.empty === true,
+    120_000,
+    200,
   );
 }
 
@@ -137,12 +161,23 @@ describe('NFR-004 : points d’arrêt de la passerelle', () => {
   }, 300_000);
 
   it('during-drain-after-send-before-result : lot identique, 0 perte, 0 doublon', async () => {
-    const before = await localContinuity();
+    // La file doit être vide et acquittée AVANT le kill : sinon la passerelle relancée avec le
+    // point d'arrêt vide sa file au démarrage et se tue avant d'écrire sa ligne d'écoute.
+    await waitQueueDrained();
     await bench.gateway!.kill('SIGKILL');
     const proc = await bench.startGateway(FAILPOINT_ENV('during-drain-after-send-before-result'));
-    await bench.releaseToCentral();
+    // La passerelle écoute : une vente donne maintenant un lot, qui part (vidage toutes les
+    // secondes en état ACTIF) et tue la passerelle entre l'envoi et le résultat.
+    const key = till.t.seqKey();
+    try {
+      if ((await sale(key)).res.status === 201) acknowledged.add(key);
+    } catch {
+      /* la passerelle peut mourir avant la réponse : la vente est de toute façon validée */
+    }
     await proc.closed;
     expect(proc.exit?.signal).toBe('SIGKILL');
+    const before = await localContinuity(); // la vente ci-dessus y est (validée avant réponse)
+    await bench.releaseToCentral();
     const inFlight = await local<{ batch_id: string; body_sha256: Buffer; status: string }>(
       'SELECT batch_id, body_sha256, status FROM edge_outgoing_batch WHERE status <> $1',
       ['DONE'],
@@ -178,6 +213,7 @@ describe('NFR-004 : points d’arrêt de la passerelle', () => {
       acknowledged.add(s.key);
     }
     const total = (await localContinuity()).max;
+    await waitQueueDrained(); // sinon la relance vide sa file et se tue avant d'écouter
     await bench.gateway!.kill('SIGKILL');
     const proc = await bench.startGateway(FAILPOINT_ENV('after-releasing-persisted'));
     await bench.releaseToCentral();
