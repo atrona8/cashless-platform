@@ -1,0 +1,10 @@
+#!/bin/bash
+# Exécute pg_prove dans le conteneur : copie le dossier courant (suites .sql) dans un répertoire unique.
+C=cashless-platform-pg17
+W=/tmp/pgprove-$$-$RANDOM
+docker exec $C mkdir -p $W
+tar cf - --exclude=node_modules . | docker exec -i $C tar xf - -C $W
+docker exec -w $W -e PGUSER=postgres $C pg_prove -h 127.0.0.1 -p 5432 "$@"
+rc=$?
+docker exec $C rm -rf $W
+exit $rc

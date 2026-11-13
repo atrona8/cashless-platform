@@ -92,6 +92,11 @@ Recherche en lecture seule du 13/11/2026 sur `feat/remboursements` (main + spec)
 - **Hors périmètre**: un grand livre `LOCKED` refuse les lignes de frais (`check_late_claim`, ASSET seulement). Les
   remboursements après verrouillage relèvent des réclamations tardives (9b).
 
+> **Précision du 13/11 (après rédaction des lots)** : la base ne lit que `ledger.status` ; la matrice par statut
+> d'événement est appliquée par le moteur (`status-matrix.ts`, `checkStatus`). La décision se réalise donc dans le
+> moteur, `post_transaction` reste inchangée, et la branche `LOCKED` relève de la 9b. Voir `contracts/interfaces.md`,
+> « Arbitrages de l'orchestrateur ».
+
 ### R-04 — Portefeuille bloqué, bracelet suspendu
 
 - **Decision**: remboursable seulement si le seul blocage vient d'un bracelet déclaré perdu (`SUSPENDED`). Refus
@@ -177,7 +182,7 @@ Recherche en lecture seule du 13/11/2026 sur `feat/remboursements` (main + spec)
     contrôlé côté API, la base ne le faisant que pour les espèces dues.
   - Tout refus annule toute la transaction.
   - `@Idempotent` rejoue la réponse.
-  - `cash_to_hand_back` = caution en espèces + solde payé + espèces dues.
+  - `cash_to_hand_back` = caution en espèces + (solde payé − frais) + espèces dues.
   - Le moteur passe la session de caisse et le terminal à un `WALLET_REFUND` en espèces, comme pour les fonctions
     déléguées.
   - Sans `settle_balance`, le comportement reste inchangé.

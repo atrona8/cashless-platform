@@ -86,5 +86,6 @@ puis consommé à la création de la demande.
   publique du titulaire).
 - `promote_due_refund_requests() RETURNS integer` : SECURITY DEFINER ; passe en `REQUESTED` les `AWAITING_HOLDER`
   échues ; idempotente ; EXECUTE pour `cashless_app` et `cashless_maint`.
-- `post_transaction` : nouvelle version, garde de statut élargie au seul `REVERSAL` d'un `WALLET_REFUND` (R-03).
+- `post_transaction` : inchangée (elle ne lit que `ledger.status`) ; le `REVERSAL` d'un `WALLET_REFUND` est accepté par la
+  matrice du moteur (`status-matrix.ts`, `checkStatus`), R-03 et arbitrages d'`interfaces.md`.
 - `replace_media` : nouvelle version, réattribue les anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes (R-09).

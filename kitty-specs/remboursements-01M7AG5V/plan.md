@@ -21,8 +21,8 @@ La mission ajoute :
 - la table `refund_request` (S16), avec isolation par prestataire, ses droits et une demande ouverte au plus par
   portefeuille ;
 - l'action d'approbation `WALLET_REFUND` ;
-- la contre-passation d'un échec de paiement, la base acceptant ce seul `REVERSAL` après `RECONCILING` (décision du
-  porteur, contradiction SPEC §11.4 / §12.1) ;
+- la contre-passation d'un échec de paiement, la matrice du moteur acceptant ce seul `REVERSAL` après
+  `RECONCILING` (décision du porteur, contradiction SPEC §11.4 / §12.1) ;
 - un défi de code à usage unique lié à la demande, pour le titulaire ;
 - l'enchaînement atomique du guichet de retour ;
 - le transfert des espèces dues au bracelet neuf lors d'un remplacement (OP-N55).
@@ -94,7 +94,8 @@ kitty-specs/remboursements-01M7AG5V/
 
 ```
 packages/ledger-sql/
-├── migrations/0081_refund_requests.sql      # table, RLS, index, fonctions, garde REVERSAL, OP-N55
+├── migrations/0081_refund_requests.sql      # table, RLS, index, fonctions
+├── migrations/0082_replace_media_cash_due.sql  # OP-N55
 ├── post-roles.sql                           # section 11 : droits de refund_request et des fonctions
 └── tests/tests_refund_requests.sql          # pgTAP (+ mises à jour tests_execute_grants, tests_offline_rights…)
 
@@ -176,15 +177,14 @@ Les concerns ne sont pas des lots. `/spec-kitty.tasks` les traduit.
 - **Purpose**: permettre le `REVERSAL` d'un `WALLET_REFUND` de source back-office partout où `WALLET_REFUND` est
   permis, et rien d'autre.
 - **Relevant requirements**: FR-009, FR-019 ; NFR-003.
-- **Affected surfaces**: garde de statut de `post_transaction` (nouvelle version dans `0081`, `CREATE OR REPLACE` de la
-  dernière définition `0060`), `apps/api/src/ledger/status-matrix.ts`, pgTAP de la matrice.
-- **Sequencing/depends-on**: IC-01 (même migration ou suivante).
+- **Affected surfaces**: `apps/api/src/ledger/status-matrix.ts` et `checkStatus` de `ledger-engine.service.ts` (le
+  moteur applique la matrice par statut d'événement ; `post_transaction` ne lit que `ledger.status` et reste
+  inchangée, constaté à la rédaction des lots) ; tests unitaires et d'intégration du moteur.
+- **Sequencing/depends-on**: none.
 - **Risks**:
-  - la redéfinition de `post_transaction` doit reprendre exactement la version `0060` (gardes `LOCKED`, `CLOSING`,
-    `EDGE`) ;
   - un test négatif refuse tout autre `REVERSAL` hors `LIVE` et `CLOSING` ;
-  - ADR-189 à consigner ;
-  - à faire relire par une personne.
+  - après verrouillage (`LOCKED`), on passe par les réclamations tardives (9b) ;
+  - ADR-189 à consigner.
 
 ### IC-03 — Création, éligibilité et listes
 
