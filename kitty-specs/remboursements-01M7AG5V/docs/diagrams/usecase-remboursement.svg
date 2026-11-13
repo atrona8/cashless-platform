@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1166" viewBox="0 0 1960 1166">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(20,50)">
+<ellipse cx="275.0" cy="267.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="462.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="657.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="852.5" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="183.71428571428572" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="295.14285714285717" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="406.5714285714286" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="518.0" width="430" height="84" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1010" y="629.4285714285714" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="740.8571428571428" width="430" height="84" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<rect x="1010" y="852.2857142857142" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="448,267.5 1000,225.71428571428572" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,225.71428571428572 981.5444083487513,237.68888954081626 979.9521196000745,216.654346891629" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,267.5 1000,337.14285714285717" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,337.14285714285717 979.5247937341919,345.190585292628 982.1652691098043,324.26177123854393" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,462.5 1000,448.5714285714286" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,448.5714285714286 980.9653830763983,459.602446592071 980.4332709875977,438.51443519591055" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,657.5 1000,560.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,560.0 982.8220719106507,573.7447730631374 979.1528981178883,552.9716045133436" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,657.5 1000,671.4285714285714" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,671.4285714285714 980.4332709875977,681.4855648040896 980.9653830763983,660.3975534079291" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,657.5 1000,894.2857142857142" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,894.2857142857142 978.0987424028,896.3677603133244 986.4147186975522,876.9813757565082" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,852.5 1000,782.8571428571428" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,782.8571428571428 982.1652691098043,795.738228761456 979.5247937341919,774.809414707372" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Remboursements : festivalier et back-office</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Qui demande, qui décide, qui approuve, qui confirme le paiement</text>
+<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
+<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
+<text x="275.0" y="272.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
+<text x="275.0" y="467.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Titulaire (numéro vérifié)</text>
+<text x="275.0" y="662.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Back-office : auteur</text>
+<text x="275.0" y="857.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Back-office : valideur</text>
+<text x="1225.0" y="230.6642857142857" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Demander un remboursement</text>
+<text x="1225.0" y="342.09285714285716" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Suivre mes demandes</text>
+<text x="1225.0" y="453.5214285714286" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Confirmer ou bloquer (autre numéro)</text>
+<text x="1225.0" y="564.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Lister et refuser une demande</text>
+<text x="1225.0" y="676.3785714285715" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Proposer l’approbation</text>
+<text x="1225.0" y="787.8071428571428" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver à deux</text>
+<text x="1225.0" y="899.2357142857143" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Confirmer le paiement (PAID, FAILED)</text>
+<text x="60" y="991.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Planifié (plan du 13/11/2026), non implémenté. Le valideur est une autre personne que l’auteur et que le demandeur. Le paiement Wave ou Orange Money est fait hors système.</text>
+<text x="60" y="1023.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Le titulaire est le festivalier lui-même quand il demande vers son numéro vérifié ; il décide seulement pour une demande vers un autre numéro.</text>
+</g>
+</svg>

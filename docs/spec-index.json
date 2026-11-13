@@ -1049,5 +1049,78 @@
       "Contrat stable vérifié en CI (NFR-012)"
     ],
     "source": "kitty-specs/passerelle-locale-01M6NM1S/spec.md"
+  },
+  {
+    "mission": "remboursements-01M7AG5V",
+    "titre_cas_usage": "Remboursements des festivaliers",
+    "statut": "planifiée (plan finalisé le 13/11/2026)",
+    "user_stories": [
+      {
+        "titre": "Demander son remboursement",
+        "detail": "Un festivalier connecté demande que son solde payé lui soit rendu sur son numéro Wave ou Orange Money vérifié et suit l'état de sa demande."
+      },
+      {
+        "titre": "Approuver à deux, confirmer",
+        "detail": "Une personne du back-office propose l'approbation, une seconde, différente, l'approuve et le grand livre sort l'argent ; l'opérateur paie hors système puis enregistre PAID ou FAILED."
+      },
+      {
+        "titre": "Autre numéro, décision titulaire",
+        "detail": "Le festivalier veut être remboursé sur un autre numéro : le nouveau numéro prouve qu'il existe par un code, le titulaire peut confirmer ou bloquer jusqu'à l'échéance."
+      },
+      {
+        "titre": "Guichet de retour enchaîné",
+        "detail": "Au guichet de retour, le caissier rend tout dans l'ordre imposé : caution, crédits offerts expirés, solde payé en espèces, espèces dues, puis restitution du bracelet."
+      }
+    ],
+    "entites_cles": [
+      "Demande de remboursement",
+      "Défi du titulaire",
+      "WALLET_REFUND",
+      "REVERSAL",
+      "Solde payé",
+      "Crédits offerts"
+    ],
+    "resultat_mesurable": "Un parcours complet (demande, approbation à deux, paiement confirmé) rend au festivalier exactement son solde payé moins les frais ; 0 écriture WALLET_REFUND en double sur 100 approbations concurrentes ; 95 % des créations et lectures en moins de 500 ms sous 20 requêtes simultanées",
+    "hypotheses": [
+      "Le titulaire est la personne au numéro vérifié rattachée au portefeuille (customer_identity)",
+      "Frais de remboursement : règle de frais de l'événement, obligatoire (refus sans règle, décision du porteur du 13/11/2026)",
+      "Le remboursement en espèces n'existe qu'à travers le guichet de retour (releaseMedia)",
+      "L'envoi du code au titulaire réutilise l'envoyeur simulé existant (OP-N120), refusé en production",
+      "Un portefeuille bloqué pour cause de perte reste remboursable, tout autre blocage non (décision du porteur du 13/11/2026)",
+      "Les statuts d'événement où WALLET_REFUND est permis sont ceux de la matrice §12.1, la clôture est en 9b"
+    ],
+    "contraintes": [
+      "Contrat openapi.yaml stable : aucune route, aucun champ ni code d'erreur nouveau (décision du 05/11/2026)",
+      "Paiement manuel en V1 : aucun versement déclenché par l'API, pas de remboursement par carte",
+      "Demande créée par le back-office (virement BANK_TRANSFER) reportée (OP-N123)",
+      "Écritures par les fonctions du grand livre et la double validation existante, .sql générés intouchés",
+      "Un rôle de base par processus, aucun DELETE sur la table des demandes",
+      "Tout écart qui affaiblit la sécurité est soumis avant d'être codé (règle du 13/10/2026)"
+    ],
+    "cas_limites": [
+      "Autorité de débit EDGE : approbation et échec refusés (409 DEBIT_AUTHORITY_EDGE)",
+      "Solde payé modifié entre la demande et l'approbation : montant du moment, solde nul fait échouer l'approbation",
+      "Portefeuille bloqué, bracelet suspendu ou liste noire, portefeuille fermé",
+      "Code à usage unique expiré, déjà utilisé ou faux, limites d'essais (429)",
+      "Décision du titulaire après l'échéance ou hors AWAITING_HOLDER (409)",
+      "Demande d'un autre festivalier invisible (404)",
+      "Statuts d'événement hors matrice §12.1 : refus explicite"
+    ],
+    "fonctionnel": [
+      "Table refund_request isolée par prestataire, une demande ouverte au plus par portefeuille (FR-001, FR-003)",
+      "Création, fenêtre, éligibilité, montant estimé, listes festivalier et back-office (FR-002, FR-004 à FR-007)",
+      "Approbation à deux, résultat du paiement, refus (FR-008 à FR-010)",
+      "Autre numéro, décision du titulaire, échéance, vérification d'identité au-delà du seuil (FR-011 à FR-014)",
+      "Guichet de retour enchaîné, seconde personne, tout ou rien et rejouable (FR-015 à FR-017)",
+      "Espèces dues d'un bracelet remplacé, autorité de débit, journal d'audit (FR-018 à FR-020)"
+    ],
+    "non_fonctionnel": [
+      "0 double remboursement sous concurrence et rejeu (NFR-001)",
+      "Une seule demande ouverte sous 50 créations simultanées (NFR-002)",
+      "Grand livre équilibré après tout parcours (NFR-003)",
+      "95 % des créations et lectures en moins de 500 ms (NFR-004)",
+      "Demande en attente traitable au plus 5 min après l'échéance (NFR-005)"
+    ],
+    "source": "kitty-specs/remboursements-01M7AG5V/spec.md"
   }
 ]

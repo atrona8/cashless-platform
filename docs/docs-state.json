@@ -63,6 +63,13 @@
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true
+    },
+    "remboursements-01M7AG5V": {
+      "statut": "planifiée (plan finalisé le 13/11/2026)",
+      "verifie_le": "2026-11-13T13:44:05Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
+      "spec_index_a_jour": true
     }
   }
 }
