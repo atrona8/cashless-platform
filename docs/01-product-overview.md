@@ -9,7 +9,7 @@
 > 29/10/2026 : mission 6 relue (14 lots approuvés), acceptée et mergée sur `feat/recharges-caisses-psp`, dans `main` par la PR #8 le 29/10/2026.
 > 30/10/2026 : plan de la mission 7 « Hors ligne : snapshots et lots » finalisé (`hors-ligne-snapshots-lots-01M645RN`).
 > 05/11/2026 : mission 7 acceptée puis mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
-> 12/11/2026 : review de la mission 8 terminée (25 lots sur 25 approuvés), mission NON acceptée ni fusionnée ; documents recalés sur le code. 05/11/2026 : plan de la mission 8 « Passerelle locale de site » finalisé (`passerelle-locale-01M6NM1S`, planifiée) ; statut de la mission 7 corrigé (dans `main` par la PR #10).
+> 13/11/2026 : mission 8 dans `main` par la PR #12 (acceptée et consolidée sur feat le 12/11/2026). 12/11/2026 : review de la mission 8 terminée (25 lots sur 25 approuvés) ; documents recalés sur le code. 05/11/2026 : plan de la mission 8 « Passerelle locale de site » finalisé (`passerelle-locale-01M6NM1S`, planifiée) ; statut de la mission 7 corrigé (dans `main` par la PR #10).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -36,7 +36,7 @@ Au 27/10/2026, six missions sont fusionnées dans `main` : 1 (grand livre), 2 (i
 (encaissement en ligne, PR #6 : contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par
 bracelet et par QR, annulation à deux voies, OP-N74 levé, preuves de bout en bout ; latence du paiement par bracelet
 en CI p95 ≈ 29 ms, p99 ≈ 32 ms). Revue post-fusion de la 5b : publiable avec réserves (mineurs de test et de
-consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et la mission 8 (passerelle locale : review terminée le 12/11/2026, 25 lots sur 25 approuvés, accept et consolidate à venir, NON fusionnée) et les missions 9 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) est mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
+consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 8 (passerelle locale) est mergée sur feat (9d5e4592, 12/11/2026), dans `main` par la PR #12 le 13/11/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et les missions 9 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) est mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
@@ -113,7 +113,7 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
   mission : OP-N57, OP-N58, OP-N68, OP-N69, OP-N75. Limites nommées ouvertes : OP-N89 à OP-N98, dont un changement
   ordinaire de snapshot visible en 60 s plus la boucle (OP-N98). Réserve : le câblage des refus « grand livre verrouillé »
   et « date limite de synchronisation dépassée » n'est prouvé qu'en test de fonction pure. 
-  **Passerelle locale : 🔎 relue (mission 8, 25 lots sur 25 approuvés le 12/11/2026 ; NON acceptée, NON fusionnée).** Livré sur la branche
+  **Passerelle locale : ✅ mergée sur feat (9d5e4592, 12/11/2026), dans `main` par la PR #12 le 13/11/2026 (mission 8, 25 lots sur 25 approuvés le 12/11/2026).** Livré
   `feat/passerelle-locale` : une passerelle de site (`apps/gateway`,
   base PostgreSQL locale à schéma réduit) devient la seule autorité de débit de l'événement pendant la coupure, puis rend l'autorité au
   central sans perte ni double écriture ; bascule demandée par un admin, avec le lien (jamais prise par la passerelle) ; 16 opérations
@@ -126,7 +126,7 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
   mission 12b, donc la passerelle n'est pas utilisable en production avant ; ventes `EDGE_ONLINE` bornées au rejeu ; jetons d'appareil
   de la passerelle sans rotation ; jeton de personne expiré toléré 12 h ; inscription par une personne ; recharge espèces à signaler au
   juriste. Détail : `kitty-specs/passerelle-locale-01M6NM1S/docs/`.
-- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026) ; passerelle : `passerelle-locale-01M6NM1S` (Passerelle locale de site, 🔎 relue le 12/11/2026, 25 lots sur 25 approuvés, accept et consolidate à venir)
+- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026) ; passerelle : `passerelle-locale-01M6NM1S` (Passerelle locale de site, ✅ mergée sur feat (9d5e4592, 12/11/2026), dans `main` par la PR #12 le 13/11/2026)
 
 ### Argent réel : PSP, caisses, rapprochements, versements
 - Description : Wave, Orange Money, carte (PayDunya, Stripe) ; sessions de caisse ; rapprochements ; versements
