@@ -80,7 +80,7 @@ Recherche en lecture seule du 13/11/2026 sur `feat/remboursements` (main + spec)
 
 ### R-03 — `REVERSAL` d'un `WALLET_REFUND` après `RECONCILING` (contradiction SPEC §11.4 / §12.1)
 
-- **Decision**: la garde de statut de la base et `status-matrix.ts` acceptent un `REVERSAL` de source `BACKOFFICE` dont
+- **Decision**: la matrice du moteur (`status-matrix.ts`, `checkStatus` ; `post_transaction` inchangée) accepte un `REVERSAL` de source `BACKOFFICE` dont
   la transaction contre-passée est un `WALLET_REFUND`, dans tout statut où `WALLET_REFUND` est permis. Tout autre
   `REVERSAL` reste soumis à la matrice. Test négatif : un `REVERSAL` d'un `PURCHASE` en `SETTLING` est refusé.
   Contradiction consignée en ADR-189.
@@ -130,9 +130,8 @@ Recherche en lecture seule du 13/11/2026 sur `feat/remboursements` (main + spec)
 - **Alternatives considered**: défi générique tel quel (réemploi possible) ; nouvelle route pour demander le code du
   nouveau numéro (contrat modifié, C-002).
 - **Envoi du code au titulaire.** Il passe par le port `OtpSender` existant, avec un faux refusé en production
-  (OP-N120). Le code est rendu dans `X-Test-Otp-Code` sur la réponse de création, en développement seulement,
-  comme pour la connexion. À confirmer à l'implémentation : le contrat déclare-t-il cet en-tête sur cette réponse ?
-  S'il ne le déclare pas, les tests lisent le code par le faux, sans en-tête.
+  (OP-N120). Aucun en-tête `X-Test-Otp-Code` n'est rendu sur la création (absent du contrat) : les tests lisent le code par un
+  `OtpSender` d'enregistrement (arbitrage du 13/11, `contracts/interfaces.md`).
 
 ### R-06 — Échéance de l'attente du titulaire
 

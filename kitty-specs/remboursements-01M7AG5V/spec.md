@@ -2,7 +2,7 @@
 
 **Mission Branch**: `feat/remboursements`
 **Created**: 2026-11-13
-**Status**: Draft
+**Status**: Planned
 **Input**: Mission 9a de `PROMPTS-A-ENVOYER.md` (découpée de la mission 9 le 13/11/2026, décision du porteur) : remboursements
 des festivaliers par l'app, le back-office et le guichet de retour.
 
@@ -155,6 +155,8 @@ seul appel `releaseMedia` avec `settle_balance` ; les écritures sont passées d
 - Code à usage unique expiré, déjà utilisé ou faux : refusé, avec les limites d'essais existantes (`429`).
 - Décision du titulaire après l'échéance, ou sur une demande qui n'est pas `AWAITING_HOLDER` : `409 CONFLICT_STATE`.
 - Demande d'un autre festivalier : invisible (`404`), jamais `403`, pour ne pas révéler son existence.
+- Création sur un portefeuille inconnu ou d'un autre festivalier : `422 REFUND_NOT_ALLOWED`, même réponse dans les deux
+  cas (le contrat ne déclare pas `404` sur cette route).
 - Clôture de l'événement : les statuts où `WALLET_REFUND` est permis suivent la matrice §12.1 ; hors de ces statuts, la
   base refuse et l'API rend une erreur explicite.
 
