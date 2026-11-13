@@ -20,7 +20,7 @@ import {
 } from './batch.types';
 import { ReferenceMemo } from '../../ledger/ports/reference-memo';
 import { TOLERANCE_MS } from '../processing/compliance-input.reader';
-import { detectInversions } from '../rules/offline-time';
+import { detectInversions } from '@cashless/shared-rules';
 
 /** Ligne de `offline_batch_state` (lot du prestataire de la transaction seulement). */
 export interface BatchState {

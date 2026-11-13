@@ -250,6 +250,8 @@ SELECT ok(create_device_enrollment_code(pg_temp.h('code pos moved'), pg_temp.id(
                                         pg_temp.id('35f110'), 'CATALOG_POS', false, NULL,
                                         pg_temp.id('35e001')) IS NOT NULL,
   'point de vente : code émis sur d010 avec f110');
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE merchant_participation DISABLE TRIGGER participation_guard;
 UPDATE merchant_participation SET event_id = pg_temp.id('35d011') WHERE id = pg_temp.id('35f010');
 ALTER TABLE merchant_participation ENABLE TRIGGER participation_guard;
@@ -258,6 +260,8 @@ SELECT throws_ok(pg_temp.enroll_sql('pos moved', 'SN-pos-moved'), 'CL031', NULL,
   'point de vente rattaché à un autre événement que celui du code : CL031');
 SELECT ok(NOT pg_temp.used('pos moved') AND NOT pg_temp.has_device('SN-pos-moved'),
   'point de vente hors de l''événement : code non consommé, aucun terminal');
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE merchant_participation DISABLE TRIGGER participation_guard;
 UPDATE merchant_participation SET event_id = pg_temp.id('35d010') WHERE id = pg_temp.id('35f010');
 ALTER TABLE merchant_participation ENABLE TRIGGER participation_guard;

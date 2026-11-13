@@ -16,12 +16,16 @@ import type {
   OperationResult,
   ParsedOperation,
 } from '../batches/batch.types';
-import { checkCompliance } from '../rules/compliance';
-import { conflictOutcome } from '../rules/conflict-outcome';
-import { lossBearer } from '../rules/loss-bearer';
-import { resolveOfflineTime } from '../rules/offline-time';
-import { checkPeriod } from '../rules/period';
-import type { OfflineRejectReason, OperationType, TapResult } from '../rules/types';
+import {
+  checkCompliance,
+  checkPeriod,
+  conflictOutcome,
+  lossBearer,
+  resolveOfflineTime,
+  type OfflineRejectReason,
+  type OperationType,
+  type TapResult,
+} from '@cashless/shared-rules';
 import {
   ComplianceInputReader,
   TOLERANCE_MS,
@@ -32,6 +36,7 @@ import {
 } from './compliance-input.reader';
 import { OfflineReversalWriter } from './offline-reversal.writer';
 import { OfflineSaleWriter, type WriteDecision } from './offline-sale.writer';
+import { resolveForcedTopup, resolveOnlineRef } from './online-ref-resolver';
 import { anomalyAmount, readFields, type OperationFields } from './operation-input';
 
 const INVERSION_CODE = 'DATE_INVERSION';
@@ -140,12 +145,15 @@ export class OfflineOperationProcessorService implements OfflineOperationProcess
 
     // 4. Selon le type.
     if (op.type === 'VOID') return this.noEffect(env, 'VOID', null);
-    if (op.type === 'TOPUP_CASH')
+    if (op.type === 'TOPUP_CASH') {
+      await resolveForcedTopup(client, ctx, op, terminal.providedBy); // WP14 : reprise forcée (R-23)
       return this.reject(env, 'OFFLINE_NOT_ALLOWED', ['TOPUP_CASH'], 'NON_COMPLIANT_OPERATION');
+    }
     let exemptTx: string | null = null;
     if (fields.onlineStatus === 'CONFIRMED') {
       exemptTx = await this.reader.confirmedTransaction(client, ctx, fields.onlineTransactionId);
     } else if (op.type === 'ONLINE_REF') {
+      await resolveOnlineRef(client, ctx, op, terminal.providedBy); // WP14 : reprise forcée (R-23)
       return this.noEffect(env, 'VOID', 'ONLINE_NOT_EXECUTED');
     }
     let confirmedMissing: string | undefined;
@@ -232,7 +240,10 @@ export class OfflineOperationProcessorService implements OfflineOperationProcess
       });
     const deviceOccurredAt = skew !== 'NONE' ? fields.occurredAt : null;
 
-    if (type === 'ONLINE_REF') return this.noEffect(env, 'VOID', 'ONLINE_NOT_EXECUTED');
+    if (type === 'ONLINE_REF') {
+      await resolveOnlineRef(client, ctx, op, terminal.providedBy); // WP14 : reprise forcée (R-23)
+      return this.noEffect(env, 'VOID', 'ONLINE_NOT_EXECUTED');
+    }
     if (type === 'REVERSAL')
       return this.reverse(env, target!, corrected, deviceOccurredAt, skewAnomaly);
     return this.sell(env, media, snapshot!, corrected, deviceOccurredAt, skewAnomaly);

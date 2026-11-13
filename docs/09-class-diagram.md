@@ -3,7 +3,7 @@
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
 > `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
 > 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3).
-> Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
+> Complément du 12/11/2026 (review de la mission 8, 25 lots approuvés, NON fusionnée) : section 4 sexies recalée sur les migrations réelles `0058` à `0072` de la branche `feat/passerelle-locale` (8 tables nouvelles, 103 au total). Complément du 05/11/2026 (plan de la mission 8) : section 4 sexies prévue. Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
 > terminaux » (mergée, dans `main` par la PR #4 le 22/10/2026), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
@@ -565,7 +565,7 @@ classDiagram
   PspChargeback "0..1" --> "1" Transaction : CHARGEBACK
 ```
 
-## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », ✅ mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir)
+## 4 quinquies. Hors ligne : snapshots, lots, anomalies (mission « Hors ligne : snapshots et lots », ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026)
 
 > **Recalée le 05/11/2026 sur les migrations réelles** `0043` à `0057` (`packages/ledger-sql/migrations`) : 10 tables
 > nouvelles (`0044` : 4, `0045` : 1, `0046` : 3, `0047` : 1, `0048` : 1). `0043`, `0049` à `0057` ne créent aucune table
@@ -593,6 +593,42 @@ classDiagram
   DeviceJournalImport "1" --> "1" ApprovalRequest : DEVICE_JOURNAL_IMPORT
   Anomaly "*" --> "0..1" OfflineBatch
   WalletStatusHistory "*" --> "1" Wallet
+```
+
+## 4 sexies. Passerelle locale : autorité, file, réplication (mission « Passerelle locale de site », 🔎 relue le 12/11/2026, 25 lots approuvés, non fusionnée)
+
+> **Recalée le 12/11/2026 sur les migrations réelles** `0058` à `0072` (`packages/ledger-sql/migrations`, lane `y` de la mission) : 8 tables
+> nouvelles (`0058` : `edge_reference_change` ; `0060` : `edge_sync_batch`, `edge_sync_batch_result` ; `0061` : `edge_platform_setting` ;
+> `0063` : `edge_pwd_pack_key`, `edge_pwd_pack`, `edge_staff_token_audit`, `edge_replication_horizon`). `0058` ajoute aussi des colonnes à
+> `edge_gateway` (inscription, révocation, `reference_applied_seq`) et `0059` à `debit_authority_handover` (début du rendu, nombre
+> d'opérations, numéro d'activation, filigrane) ; `0060` admet `VOID` dans `edge_sync_registry`. Les autres migrations (`0059`, `0061`
+> à `0072`) ne créent aucune table : enveloppes et fonctions `edge_*`, correctifs, accès étroits `SECURITY DEFINER`. Aucun `.sql` généré
+> n'est modifié. La base **locale** de la passerelle (schéma réduit, `edge-0001` à `edge-0010`) n'est pas une table du central : voir
+> `kitty-specs/passerelle-locale-01M6NM1S/data-model.md`, partie B. Le SQL fait foi ; `data-model.md` reste un instantané du plan.
+
+```mermaid
+classDiagram
+  class EdgeGateway { role PRIMARY/STANDBY ; statut ; cert_sha256 ; lan_url ; clé d'accord ; registered_at ; revoked_at ; reference_applied_seq }
+  class DebitAuthorityHandover { état GRANTED/ACTIVE/RELEASE_REQUESTED/RELEASING/COMPLETED/FAILED/FORCED ; époque ; begun_releasing_at ; edge_seq_at_activation ; reference_watermark_seq }
+  class EdgeSyncBatch { batch_id ; edge_seq_from..to (intervalle vide permis pour un lot d'ordres seuls) ; request_sha256 ; statut }
+  class EdgeSyncBatchResult { edge_seq ; outcome dont VOID ; reason ; retryable }
+  class EdgeSyncRegistry { edge_seq ; chaîne ; résultat, dont VOID }
+  class EdgeReferenceChange { change_seq ; entity_kind ; entity_id }
+  class EdgeReplicationHorizon { horizon par grand livre }
+  class EdgePlatformSetting { plafonds de rejeu ; pack_delay_seconds }
+  class EdgePwdPackKey { clé de contenu scellée pour la clé d'accord }
+  class EdgePwdPack { pwd_pack_enc par bracelet ; media_version }
+  class EdgeStaffTokenAudit { sujet ; émetteur ; jti ; secondes après expiration ; route }
+  EdgeGateway "1" --> "*" DebitAuthorityHandover
+  EdgeGateway "1" --> "*" EdgeSyncBatch
+  EdgeSyncBatch "1" --> "*" EdgeSyncBatchResult
+  EdgeSyncBatch "1" --> "*" EdgeStaffTokenAudit
+  EdgeGateway "1" --> "*" EdgeSyncRegistry
+  EdgeGateway "1" --> "0..1" EdgePwdPackKey
+  EdgeGateway "1" --> "*" EdgePwdPack
+  EdgeGateway "1" --> "*" EdgeStaffTokenAudit
+  Ledger "1" --> "*" EdgeReferenceChange
+  Ledger "1" --> "0..1" EdgeReplicationHorizon
 ```
 
 ## 5. Description des tables
@@ -660,7 +696,15 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `edge_gateway` | Passerelle locale de site (optionnelle). | réf. |
 | `debit_authority_handover` | Bascule de l'autorité de débit vers une passerelle et retour : accordée, active, rendue, forcée ou échouée. | réf. |
 | `handover_transition` | Passages permis d'une bascule d'autorité. | réf. |
-| `edge_sync_registry` | Registre des décisions prises par la passerelle, reçues dans l'ordre par le central qui recalcule et compare la chaîne. | réf. |
+| `edge_sync_registry` | Registre des décisions prises par la passerelle, reçues dans l'ordre par le central qui recalcule et compare la chaîne ; résultat `VOID` admis (numéro consommé sans effet comptable). | réf. (+0060) |
+| `edge_reference_change` | Journal numéroté des changements de référence (soldes, bracelets, terminaux, sessions, catalogue…) que lit le flux de réplication. | 0058 (+0063) |
+| `edge_sync_batch` | Lot reçu d'une passerelle, idempotent par `batch_id` : intervalle de numéros (vide pour un lot d'ordres seuls), empreinte de la requête, statut. | 0060 (+0069) |
+| `edge_sync_batch_result` | Résultat par numéro d'un lot de passerelle : accepté, avec manque, doublon, rejeté ou `VOID`. | 0060 |
+| `edge_platform_setting` | Réglages globaux de rejeu (plafond par vente, par terminal et par heure, par recharge espèces) et délai de garde des colis ; écrits par `set_edge_setting` seule. | 0061 |
+| `edge_pwd_pack_key` | Clé de contenu des colis de mots de passe, scellée pour la clé d'accord de chaque passerelle. | 0063 |
+| `edge_pwd_pack` | Colis chiffré du mot de passe d'un bracelet pour une passerelle ; déposé seulement après le délai de garde. | 0063 (+0071, 0072) |
+| `edge_staff_token_audit` | Audit immuable de la tolérance des jetons de personne expirés au guichet de la passerelle. | 0063 |
+| `edge_replication_horizon` | Dernier horizon sûr de la réplication, par grand livre. | 0063 |
 
 ### Encaissement en ligne (mission 5b)
 
@@ -748,5 +792,5 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 ## Mise à jour
 
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
-domaine (prochaine : mission 8, passerelle). Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
+domaine (prochaine : mission 9, ou le recalage de la section 4 sexies si la consolidation de la mission 8 ajoute une migration). Section 4 sexies (mission 8, passerelle) ajoutée au plan le 05/11/2026, recalée le 12/11/2026 sur `0058` à `0072` : 8 tables (`0058`, `0060`, `0061`, `0063`), 103 au total. Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.

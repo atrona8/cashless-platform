@@ -20,6 +20,12 @@ EdgeSyncBatch _$EdgeSyncBatchFromJson(Map<String, dynamic> json) =>
           .map((e) => EdgeSyncOperation.fromJson(e as Map<String, dynamic>))
           .toList(),
       signature: json['signature'] as String,
+      staffTokenAudit: (json['staff_token_audit'] as List<dynamic>?)
+          ?.map((e) => EdgeStaffTokenAudit.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      localOrders: (json['local_orders'] as List<dynamic>?)
+          ?.map((e) => EdgeLocalOrder.fromJson(e as Map<String, dynamic>))
+          .toList(),
       deviceBatches: (json['device_batches'] as List<dynamic>?)
           ?.map((e) => DeviceBatches.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -35,6 +41,8 @@ Map<String, dynamic> _$EdgeSyncBatchToJson(EdgeSyncBatch instance) =>
       'edge_seq_to': instance.edgeSeqTo,
       'prev_chain_hash': instance.prevChainHash,
       'last_chain_hash': instance.lastChainHash,
+      'staff_token_audit': instance.staffTokenAudit,
+      'local_orders': instance.localOrders,
       'operations': instance.operations,
       'device_batches': instance.deviceBatches,
       'signature': instance.signature,

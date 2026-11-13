@@ -17,7 +17,7 @@
 // est retirée : aucune règle de ce type n'est plus lue.
 import { Injectable } from '@nestjs/common';
 import { ProblemException } from '../errors/problem';
-import type { FeeRule } from '../ledger/money';
+import type { FeeRule } from '@cashless/shared-rules';
 import type { Queryable } from '../ledger/ports/account-resolver';
 import type { ReferenceMemo } from '../ledger/ports/reference-memo';
 import type { ConfigQuery, ConfigResolver } from '../ledger/ports/config-resolver';

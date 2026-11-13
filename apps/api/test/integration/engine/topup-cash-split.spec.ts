@@ -8,7 +8,7 @@ import { LedgerEngineService, type EngineResult } from '../../../src/ledger/ledg
 import { CONFIG_RESOLVER, LedgerModule } from '../../../src/ledger/ledger.module';
 import type { LedgerCommand } from '../../../src/ledger/types';
 import { createTestApp } from '../../support/app';
-import { withOwner } from '../../support/db';
+import { connect, OWNER_URL, withOwner } from '../../support/db';
 import { createMiniFixture, inMemoryConfigResolver, type MiniFixture } from './mini-fixture';
 
 describe('recharge en espèces : découpage hors ligne et anomalie', () => {
@@ -176,7 +176,51 @@ describe('recharge en espèces : découpage hors ligne et anomalie', () => {
     expect(await countOf('anomaly')).toBe(0);
   });
 
-  for (const source of ['OFFLINE_SYNC', 'EDGE_SYNC'] as const) {
+  // EDGE_SYNC : depuis 0060 (WP05) la garde de post_transaction refuse cette source à toute connexion autre que le
+  // propriétaire et cashless_edge. La connexion applicative (TenantTx) est donc refusée ; le découpage se prouve par
+  // le chemin légitime. Une connexion cashless_edge passerait par edge_topup_cash, qui exige une passerelle, un
+  // handover et une session de caisse que cette fixture n'a pas (couvert par tests_edge_counter_ops.sql) : le moteur
+  // est donc exécuté sous le propriétaire, qui est l'autre identité admise par la garde.
+  it('EDGE_SYNC sous la connexion applicative : refusé par la garde (42501), rien d’écrit', async () => {
+    const key = `espece:EDGE_SYNC:refused:${++seq}`;
+    const amount = 10_000n - (await wallet1Balance()) + 4_000n;
+    const dueBefore = await balance('L-ESP-A-RENDRE-W1');
+    const rejected = await rejection(topup(key, fx.wallet1, amount, 'EDGE_SYNC', fx.mediaId));
+    expect(rejected.sqlstate ?? rejected.code).toBe('42501');
+    expect(await countOf('journal_transaction', key)).toBe(0);
+    expect(await balance('L-ESP-A-RENDRE-W1')).toBe(dueBefore);
+  });
+
+  it('EDGE_SYNC sous le propriétaire : découpage, espèces dues et une anomalie ouverte', async () => {
+    const key = `espece:EDGE_SYNC:${++seq}`;
+    const paidBefore = await wallet1Balance();
+    const dueBefore = await balance('L-ESP-A-RENDRE-W1');
+    const margin = 10_000n - paidBefore;
+    const owner = await connect(OWNER_URL);
+    let result: EngineResult;
+    try {
+      await owner.query('BEGIN');
+      await owner.query(`SELECT set_config('app.operator_id', $1, true)`, [fx.operatorId]);
+      result = await engine.execute(
+        owner,
+        topup(key, fx.wallet1, margin + 4_000n, 'EDGE_SYNC', fx.mediaId),
+      );
+      await owner.query('COMMIT');
+    } catch (e) {
+      await owner.query('ROLLBACK').catch(() => undefined);
+      throw e;
+    } finally {
+      await owner.end();
+    }
+    expect(result.replayed).toBe(false);
+    expect((await wallet1Balance()) - paidBefore).toBe(margin);
+    expect((await balance('L-ESP-A-RENDRE-W1')) - dueBefore).toBe(-4_000n);
+    const anomalies = await anomalyOf(result.transactionId!);
+    expect(anomalies).toHaveLength(1);
+    expect(anomalies[0]).toMatchObject({ amount: '4000', status: 'OPEN', media_id: fx.mediaId });
+  });
+
+  for (const source of ['OFFLINE_SYNC'] as const) {
     it(`${source} : découpage, espèces dues et une anomalie ouverte`, async () => {
       const key = `espece:${source}:${++seq}`;
       const paidBefore = await wallet1Balance();

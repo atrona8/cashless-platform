@@ -49,7 +49,6 @@ describe('deviceKey', () => {
 describe('plus de Number(seq) dans les fichiers du lot', () => {
   const root = join(__dirname, '../../../src');
   it.each([
-    'payments/chained-content.ts',
     'payments/device-seq-registry.ts',
     'idempotency/device-key.ts',
     'topups/cash/cash-topup.service.ts',
@@ -57,6 +56,11 @@ describe('plus de Number(seq) dans les fichiers du lot', () => {
     'payments/payments.service.ts',
   ])('%s', (file) => {
     expect(readFileSync(join(root, file), 'utf8')).not.toMatch(/Number\((args\.)?seq/);
+  });
+
+  it('shared-rules/chained-content.ts (déplacé depuis payments/)', () => {
+    const moved = join(root, '../../../packages/shared-rules/src/chained-content.ts');
+    expect(readFileSync(moved, 'utf8')).not.toMatch(/Number\((args\.)?seq/);
   });
 
   it('plus d’INSERT INTO anomaly dans payments.service.ts (CLOCK_SKEW par la fonction)', () => {

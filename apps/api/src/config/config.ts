@@ -1,4 +1,5 @@
 // Configuration lue dans l'environnement (pas de @nestjs/config : aucune dépendance ajoutée).
+import { nodeEnv } from '@cashless/shared-rules';
 
 export interface AppConfig {
   port: number;
@@ -20,6 +21,17 @@ export interface AppConfig {
   personalizationDatabaseUrl: string;
   tagCheckDatabaseUrl: string;
   keyAdminDatabaseUrl: string;
+  /**
+   * Processus `edge` (mission passerelle-locale, WP10) : rôle `cashless_edge` (`DATABASE_URL_EDGE`), écouteur TLS
+   * propre (`EDGE_TLS_CERT_FILE`, `EDGE_TLS_KEY_FILE`), seule autorité cliente celle des passerelles
+   * (`EDGE_CA_CERT_FILE`) et port (`EDGE_LISTEN_PORT`). Facultatifs ici (les autres processus n'en ont pas l'usage) :
+   * le processus `edge` les exige en production et refuse un port absent (processes/bootstrap.ts, main.edge.ts).
+   */
+  edgeDatabaseUrl: string;
+  edgeTlsCertFile: string | null;
+  edgeTlsKeyFile: string | null;
+  edgeCaCertFile: string | null;
+  edgeListenPort: number | null;
   /** Processus `maintenance` (mission hors-ligne-snapshots-lots, WP10) : rôle `cashless_maint`, purges seules. */
   maintenanceDatabaseUrl: string;
   /** Rôle `cashless_snapcontent` du processus snapshot-content (mission hors-ligne-snapshots-lots, WP11). */
@@ -201,6 +213,7 @@ const LOCAL_TAG_URLS = {
   DATABASE_URL_MAINT: 'postgres://cashless_maint:cashless_maint_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_SNAPCONTENT:
     'postgres://cashless_snapcontent:cashless_snapcontent_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_EDGE: 'postgres://cashless_edge:cashless_edge_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_SNAPSIGN:
     'postgres://cashless_snapsign:cashless_snapsign_local@127.0.0.1:5433/cashless_test',
 } as const;
@@ -338,25 +351,6 @@ function trustProxyHops(value: string | undefined, production: boolean): number 
 }
 
 /**
- * Valeurs admises de `NODE_ENV` (RISK-3 de la revue post-fusion de bracelets-nfc). `production`
- * arme toutes les gardes (aucun faux, secrets et références obligatoires) ; `development` (poste
- * local) et `test` (Jest, CI) les laissent désarmées. Toute autre valeur, ou son absence, refuse le
- * démarrage : un déploiement oublié ou mal nommé (`prod`, `staging`) démarrait sinon hors
- * production, avec les faux et le secret de test.
- */
-export const NODE_ENVS = ['production', 'development', 'test'] as const;
-export type NodeEnv = (typeof NODE_ENVS)[number];
-
-function nodeEnv(value: string | undefined): NodeEnv {
-  if (!NODE_ENVS.includes(value as NodeEnv)) {
-    throw new Error(
-      `NODE_ENV ${value ? `inconnu (« ${value} »)` : 'manquant'} : ${NODE_ENVS.join(', ')} attendu`,
-    );
-  }
-  return value as NodeEnv;
-}
-
-/**
  * Référence de la clé d'emballage des clés de données (RISK-4) : obligatoire en production, défaut
  * de test ailleurs.
  */
@@ -477,6 +471,32 @@ function tlsSettings(
       'DEVICE_CA_FAKE_KEY_FILE posé : clé de l’autorité de test des terminaux interdite en production',
     );
   return { tlsCertFile, tlsKeyFile, deviceCaCertFile, deviceCaFakeKeyFile };
+}
+
+/**
+ * Écouteur du processus `edge` : certificat et clé ensemble ou pas du tout, port entier de 1 à 65535. L'obligation
+ * en production (et celle du port) est vérifiée par le processus `edge` seul, au démarrage.
+ */
+function edgeSettings(
+  env: NodeJS.ProcessEnv,
+): Pick<AppConfig, 'edgeTlsCertFile' | 'edgeTlsKeyFile' | 'edgeCaCertFile' | 'edgeListenPort'> {
+  const edgeTlsCertFile = env.EDGE_TLS_CERT_FILE || null;
+  const edgeTlsKeyFile = env.EDGE_TLS_KEY_FILE || null;
+  if ((edgeTlsCertFile === null) !== (edgeTlsKeyFile === null))
+    throw new Error('EDGE_TLS_CERT_FILE et EDGE_TLS_KEY_FILE : les deux ou aucun');
+  const rawPort = env.EDGE_LISTEN_PORT;
+  let edgeListenPort: number | null = null;
+  if (rawPort !== undefined && rawPort !== '') {
+    edgeListenPort = Number(rawPort);
+    if (!Number.isInteger(edgeListenPort) || edgeListenPort <= 0 || edgeListenPort > 65535)
+      throw new Error(`EDGE_LISTEN_PORT : port invalide (reçu « ${rawPort} »)`);
+  }
+  return {
+    edgeTlsCertFile,
+    edgeTlsKeyFile,
+    edgeCaCertFile: env.EDGE_CA_CERT_FILE || null,
+    edgeListenPort,
+  };
 }
 
 /** Empreintes SHA-256 (64 caractères hexadécimaux, `:` admis), au moins une ; rendues en minuscules, sans doublon. */
@@ -760,6 +780,19 @@ function orphanDiscardSeconds(value: string | undefined): number {
   return seconds;
 }
 
+/**
+ * CORS ouvert à toutes les origines (`CORS_ALLOW_ALL=1`, ADR-154) : partage d'un serveur de développement avec des
+ * clients web. Refusé au démarrage en production ; sans le réglage, aucun en-tête CORS n'est posé.
+ */
+export function corsAllowAll(env: NodeJS.ProcessEnv = process.env): boolean {
+  const value = env.CORS_ALLOW_ALL;
+  if (value === undefined || value === '') return false;
+  if (value !== '1') throw new Error(`CORS_ALLOW_ALL : 1 attendu (reçu « ${value} »)`);
+  if (nodeEnv(env.NODE_ENV) === 'production')
+    throw new Error('CORS_ALLOW_ALL interdit en production');
+  return true;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const production = nodeEnv(env.NODE_ENV) === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
@@ -794,6 +827,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     personalizationDatabaseUrl: tagUrl('DATABASE_URL_PERSO'),
     tagCheckDatabaseUrl: tagUrl('DATABASE_URL_TAGCHECK'),
     keyAdminDatabaseUrl: tagUrl('DATABASE_URL_KEYADMIN'),
+    edgeDatabaseUrl: tagUrl('DATABASE_URL_EDGE'),
+    ...edgeSettings(env),
     maintenanceDatabaseUrl: tagUrl('DATABASE_URL_MAINT'),
     snapshotContentDatabaseUrl: tagUrl('DATABASE_URL_SNAPCONTENT'),
     snapshotPollSeconds: positiveInt('SNAPSHOT_POLL_SECONDS', env.SNAPSHOT_POLL_SECONDS, 1),

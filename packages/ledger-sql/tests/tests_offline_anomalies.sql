@@ -275,6 +275,8 @@ SELECT is((SELECT count(*)::int FROM information_schema.columns WHERE table_name
   'colonne operator_id');
 
 -- 6. Ligne de départ (règle de la migration, rejouée sur des portefeuilles sans historique) --------------------
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE wallet DISABLE TRIGGER USER;
 ALTER TABLE psp_topup DISABLE TRIGGER USER;
 ALTER TABLE psp_chargeback DISABLE TRIGGER USER;
@@ -324,6 +326,8 @@ SELECT is((SELECT count(*)::int FROM wallet_status_history WHERE wallet_id = pg_
 
 -- 7. offline_block_time -----------------------------------------------------------------------------------------
 -- Entités sans déclencheur d'historique, historiques posés à la main (dates fixes).
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE wallet DISABLE TRIGGER USER;
 ALTER TABLE media DISABLE TRIGGER USER;
 ALTER TABLE media_batch DISABLE TRIGGER USER;

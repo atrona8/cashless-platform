@@ -1,5 +1,5 @@
 // TOPUP (recharge par PSP) et TOPUP_CASH (recharge en espèces) — SPECIFICATION §5.4.
-import { fee } from '../../money';
+import { fee } from '@cashless/shared-rules';
 import {
   cashDue,
   money,

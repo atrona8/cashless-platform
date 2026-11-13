@@ -42,6 +42,8 @@ export CASHLESS_KEYADMIN_PASSWORD="${CASHLESS_KEYADMIN_PASSWORD:-cashless_keyadm
 export CASHLESS_SNAPCONTENT_PASSWORD="${CASHLESS_SNAPCONTENT_PASSWORD:-cashless_snapcontent_local}"
 export CASHLESS_SNAPSIGN_PASSWORD="${CASHLESS_SNAPSIGN_PASSWORD:-cashless_snapsign_local}"
 export CASHLESS_MAINT_PASSWORD="${CASHLESS_MAINT_PASSWORD:-cashless_maint_local}"
+export CASHLESS_EDGE_PASSWORD="${CASHLESS_EDGE_PASSWORD:-cashless_edge_local}"
+export CASHLESS_EDGEADMIN_PASSWORD="${CASHLESS_EDGEADMIN_PASSWORD:-cashless_edgeadmin_local}"
 export DATABASE_URL_OWNER="${DATABASE_URL_OWNER:-postgres://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_APP="${DATABASE_URL_APP:-postgres://cashless_app:$CASHLESS_APP_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_PLATFORM="${DATABASE_URL_PLATFORM:-postgres://cashless_platform:$CASHLESS_PLATFORM_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
@@ -52,6 +54,9 @@ export DATABASE_URL_TAGCHECK="${DATABASE_URL_TAGCHECK:-postgres://cashless_tagch
 export DATABASE_URL_KEYADMIN="${DATABASE_URL_KEYADMIN:-postgres://cashless_keyadmin:$CASHLESS_KEYADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 # Mission hors-ligne-snapshots-lots : processus de maintenance (WP10).
 export DATABASE_URL_MAINT="${DATABASE_URL_MAINT:-postgres://cashless_maint:$CASHLESS_MAINT_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+# Mission passerelle-locale : processus `edge` (cashless_edge) et outil d'administration (cashless_edgeadmin).
+export DATABASE_URL_EDGE="${DATABASE_URL_EDGE:-postgres://cashless_edge:$CASHLESS_EDGE_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+export DATABASE_URL_EDGEADMIN="${DATABASE_URL_EDGEADMIN:-postgres://cashless_edgeadmin:$CASHLESS_EDGEADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 
 # Mission identite-enrolement-terminaux : VALEURS DE TEST seulement (publiques), identiques aux défauts hors
 # production de apps/api/src/config/config.ts ; refusées en production même posées (secrets de test). En production,

@@ -66,13 +66,21 @@ export class FakeIdp {
     private readonly otherKey: CryptoKey,
     readonly keys: JWTVerifyGetKey,
     readonly config: OidcConfig,
+    /** Clé publique de vérification (JWK), pour la copie locale d'une passerelle de banc (WP25). */
+    readonly publicJwk: Record<string, unknown> = {},
   ) {}
 
   static async create(config: OidcConfig = loadConfig().oidc): Promise<FakeIdp> {
     const { privateKey, publicKey } = await generateKeyPair('ES256');
     const other = await generateKeyPair('ES256');
     const jwk = { ...(await exportJWK(publicKey)), kid: KID, alg: 'ES256', use: 'sig' };
-    return new FakeIdp(privateKey, other.privateKey, createLocalJWKSet({ keys: [jwk] }), config);
+    return new FakeIdp(
+      privateKey,
+      other.privateKey,
+      createLocalJWKSet({ keys: [jwk] }),
+      config,
+      jwk,
+    );
   }
 
   verifier(): JoseIdentityVerifier {

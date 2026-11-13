@@ -1,5 +1,5 @@
 // PITCH_FEE, MERCHANT_DEBT_TRANSFER, OPERATOR_FEE, PLATFORM_FEE — SPECIFICATION §5.4, §5.6.
-import { extractTax, fee, groupForTax } from '../../money';
+import { extractTax, fee, groupForTax } from '@cashless/shared-rules';
 import {
   BuildError,
   merchant,

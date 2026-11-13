@@ -7,7 +7,7 @@
 // de débit) sont posés par le propriétaire : AMORÇAGE seulement, remis en état dans `finally`.
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
-import { contentSha256 } from '../../../src/payments/device-seq-registry';
+import { contentSha256 } from '@cashless/shared-rules';
 import { qrTokenHash } from '../../../src/payments/qr-token-hash';
 import { withOwner } from '../../support/db';
 import { ownerRows } from '../../support/media-fixtures';

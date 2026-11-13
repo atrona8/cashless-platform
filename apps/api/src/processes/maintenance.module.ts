@@ -5,7 +5,10 @@
 import { Module } from '@nestjs/common';
 import { MaintenanceDbModule } from '../db/maintenance-db.module';
 import { DeviceMaintenanceModule } from '../device-identity/device-maintenance';
+import { EdgeMaintenanceModule } from '../edge/maintenance/edge-maintenance.module';
 import { ProcessBaseModule } from './process-base';
 
-@Module({ imports: [MaintenanceDbModule, ProcessBaseModule, DeviceMaintenanceModule] })
+@Module({
+  imports: [MaintenanceDbModule, ProcessBaseModule, DeviceMaintenanceModule, EdgeMaintenanceModule],
+})
 export class MaintenanceProcessModule {}

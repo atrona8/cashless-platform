@@ -206,6 +206,8 @@ export class DeviceTokenRefreshService {
       // autre terminal ici serait une incohérence, l'échange est annulé.
       if (row.device_id !== device.id || !row.family_id)
         throw new Error('Rafraîchissement : jeton échangé pour un autre terminal');
+      // Décision 23 : tant que l'événement est `EDGE`, la nouvelle ligne de la famille est exposée à la passerelle.
+      if (device.event_id) await this.exposeWhileEdge(client, device.event_id);
       const token = await this.tokens.issue({
         deviceId: device.id,
         operatorId: device.operator_id,
@@ -238,6 +240,16 @@ export class DeviceTokenRefreshService {
         // REUSED (famille révoquée et audit validés) ou INVALID.
         throw this.refuse(req, 6, `échange refusé (${result.outcome})`, device.id);
     }
+  }
+
+  /** Décision 23 (WP12) : expose les familles de l'événement si son grand livre est sous autorité `EDGE`. */
+  private async exposeWhileEdge(client: TxClient, eventId: string): Promise<void> {
+    const { rows } = await client.query(
+      `SELECT 1 FROM ledger WHERE scope_type = 'EVENT' AND scope_id = $1 AND debit_authority = 'EDGE'`,
+      [eventId],
+    );
+    if (rows.length > 0)
+      await client.query('SELECT edge_expose_device_token_families($1)', [eventId]);
   }
 
   /**

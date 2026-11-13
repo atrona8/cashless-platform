@@ -1,0 +1,577 @@
+{
+  "chain": {
+    "chain_hash_0": "2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b",
+    "gateway_id": "7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+    "links": [
+      {
+        "chain_hash": "f01fb7f12f3e259faa4138083c668769d8fdac30d5d24cb86d410c52f8efe75b",
+        "content_sha256": "4bd26aa42b8603a814c03fb5e395d0b375e2b93e05141cb75e1a16a5f77980e8"
+      },
+      {
+        "chain_hash": "c887578f688e89738d06d16cb23c065aba8b8cffc207be3d4883d903ad56da32",
+        "content_sha256": "e884d51c015ee4b6c19a3cf3de231c08388e7ebb4e9530788911cf4a1fea74ad"
+      },
+      {
+        "chain_hash": "6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5",
+        "content_sha256": "6f4dc2ecc40e2c69a4eb20ae9de0816edc0182af8e03e854f1459590ecb0c5a5"
+      }
+    ],
+    "ops": [
+      "b1_purchase",
+      "b2_void",
+      "b3_reversal"
+    ]
+  },
+  "decision_pair": {
+    "name": "h_decision",
+    "sha_with": "00f23adf15e1077c3dcb5f300b6b3e4465cc679b430c23497f6810429c10df3d",
+    "sha_without": "f043380e5c31f036c66b45aeb13e2fef663f48ede85c469c04bb4783172bc4eb",
+    "with_decision": {
+      "amount": 500,
+      "authorized_mode": "EDGE_ONLINE",
+      "currency": "XOF",
+      "device_serial": "TPE-BAR-01",
+      "edge_decision": {
+        "charged_to_wallet": 6000,
+        "shortfall_amount": 0,
+        "status": "ACCEPTED"
+      },
+      "edge_seq": 10,
+      "occurred_at": "2026-12-12T08:10:00Z",
+      "seq": 10,
+      "type": "PURCHASE"
+    },
+    "without_decision": {
+      "amount": 500,
+      "authorized_mode": "EDGE_ONLINE",
+      "currency": "XOF",
+      "device_serial": "TPE-BAR-01",
+      "edge_seq": 10,
+      "occurred_at": "2026-12-12T08:10:00Z",
+      "seq": 10,
+      "type": "PURCHASE"
+    }
+  },
+  "genesis": [
+    {
+      "chain_hash_0": "2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b",
+      "gateway_id": "7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+      "name": "a_genesis"
+    },
+    {
+      "chain_hash_0": "653d89cb2b901195b87a901535eb6cf3351252c75c7078cd34b0f2899d9d75a3",
+      "gateway_id": "e1000000-0000-0000-0000-000000000001",
+      "name": "a_genesis_kit_g1"
+    }
+  ],
+  "ops": [
+    {
+      "content_sha256": "4bd26aa42b8603a814c03fb5e395d0b375e2b93e05141cb75e1a16a5f77980e8",
+      "edge_content_canonical": "{\"amount\":6000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":6000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":1,\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-12T08:01:00Z\",\"seq\":1,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "name": "b1_purchase",
+      "op": {
+        "amount": 6000,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_decision": {
+          "charged_to_wallet": 6000,
+          "shortfall_amount": 0,
+          "status": "ACCEPTED"
+        },
+        "edge_seq": 1,
+        "lines": [
+          {
+            "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+            "quantity": 2,
+            "unit_price": 3000
+          }
+        ],
+        "occurred_at": "2026-12-12T08:01:00Z",
+        "seq": 1,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "content_sha256": "e884d51c015ee4b6c19a3cf3de231c08388e7ebb4e9530788911cf4a1fea74ad",
+      "edge_content_canonical": "{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":2,\"occurred_at\":\"2026-12-12T08:02:00Z\",\"seq\":2,\"type\":\"VOID\",\"void_reason\":\"TERMINAL_ERROR\"}",
+      "name": "b2_void",
+      "op": {
+        "authorized_mode": "EDGE_ONLINE",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 2,
+        "occurred_at": "2026-12-12T08:02:00Z",
+        "seq": 2,
+        "type": "VOID",
+        "void_reason": "TERMINAL_ERROR"
+      }
+    },
+    {
+      "content_sha256": "6f4dc2ecc40e2c69a4eb20ae9de0816edc0182af8e03e854f1459590ecb0c5a5",
+      "edge_content_canonical": "{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":3,\"occurred_at\":\"2026-12-12T08:03:00Z\",\"reverses_seq\":1,\"reverses_transaction_id\":\"0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a\",\"seq\":3,\"type\":\"REVERSAL\"}",
+      "name": "b3_reversal",
+      "op": {
+        "authorized_mode": "EDGE_ONLINE",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 3,
+        "occurred_at": "2026-12-12T08:03:00Z",
+        "reverses_seq": 1,
+        "reverses_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+        "seq": 3,
+        "type": "REVERSAL"
+      }
+    },
+    {
+      "content_sha256": "1ca69506551bf2ad825b8d08b2c29dc0540f21b8ca76ba4d6181a915bb0ebda4",
+      "edge_content_canonical": "{\"amount\":3000,\"authorized_mode\":\"DEVICE_OFFLINE\",\"currency\":\"XOF\",\"device_batch_id\":\"3b9f0c52-7a1e-4d68-9c24-5e8a1f7b6d30\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":3000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":4,\"occurred_at\":\"2026-12-12T08:04:00Z\",\"seq\":12,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "name": "c_device_offline_relayed",
+      "op": {
+        "amount": 3000,
+        "authorized_mode": "DEVICE_OFFLINE",
+        "currency": "XOF",
+        "device_batch_id": "3b9f0c52-7a1e-4d68-9c24-5e8a1f7b6d30",
+        "device_serial": "TPE-BAR-01",
+        "edge_decision": {
+          "charged_to_wallet": 3000,
+          "shortfall_amount": 0,
+          "status": "ACCEPTED"
+        },
+        "edge_seq": 4,
+        "occurred_at": "2026-12-12T08:04:00Z",
+        "seq": 12,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "content_sha256": "1985d0cc2f25406d8b44307314bf3c7621fa4bd29ba062e8ee7a70a49ac3be66",
+      "edge_content_canonical": "{\"amount\":0,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":0,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_guichet\":{\"channel\":\"DESK\",\"event_id\":\"11111111-2222-4333-8444-555555555555\",\"media_id\":\"5d4c3b2a-1908-4f7e-9d6c-5b4a39281706\",\"wallet_id\":\"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d\"},\"edge_seq\":5,\"occurred_at\":\"2026-12-12T08:05:00Z\",\"seq\":5,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"ACTIVATION\"}",
+      "name": "d_activation",
+      "op": {
+        "amount": 0,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_decision": {
+          "charged_to_wallet": 0,
+          "shortfall_amount": 0,
+          "status": "ACCEPTED"
+        },
+        "edge_guichet": {
+          "channel": "DESK",
+          "event_id": "11111111-2222-4333-8444-555555555555",
+          "media_id": "5d4c3b2a-1908-4f7e-9d6c-5b4a39281706",
+          "wallet_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+        },
+        "edge_seq": 5,
+        "occurred_at": "2026-12-12T08:05:00Z",
+        "seq": 5,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "ACTIVATION"
+      }
+    },
+    {
+      "content_sha256": "3793b4e4b3da7a4fbd5192f56e9fa1c59be69714a1da39563d8d6e0486fb20e4",
+      "edge_content_canonical": "{\"amount\":1000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":0,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_guichet\":{\"cash_desk_account_id\":\"c0ffee00-0000-4000-8000-00000000cafe\",\"deposit_amount\":1000,\"media_id\":\"5d4c3b2a-1908-4f7e-9d6c-5b4a39281706\"},\"edge_seq\":6,\"occurred_at\":\"2026-12-12T08:06:00Z\",\"seq\":6,\"type\":\"DEPOSIT_CASH\"}",
+      "name": "e_deposit_cash",
+      "op": {
+        "amount": 1000,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_decision": {
+          "charged_to_wallet": 0,
+          "shortfall_amount": 0,
+          "status": "ACCEPTED"
+        },
+        "edge_guichet": {
+          "cash_desk_account_id": "c0ffee00-0000-4000-8000-00000000cafe",
+          "deposit_amount": 1000,
+          "media_id": "5d4c3b2a-1908-4f7e-9d6c-5b4a39281706"
+        },
+        "edge_seq": 6,
+        "occurred_at": "2026-12-12T08:06:00Z",
+        "seq": 6,
+        "type": "DEPOSIT_CASH"
+      }
+    },
+    {
+      "content_sha256": "d24b957569a6d47c30706a1229a8ea747d7e3cad4ad62766ea36dc39d565fea5",
+      "edge_content_canonical": "{\"amount\":10000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":10000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":7,\"occurred_at\":\"2026-12-12T08:07:00Z\",\"seq\":7,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"TOPUP_CASH\"}",
+      "name": "f_topup_cash",
+      "op": {
+        "amount": 10000,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_decision": {
+          "charged_to_wallet": 10000,
+          "shortfall_amount": 0,
+          "status": "ACCEPTED"
+        },
+        "edge_seq": 7,
+        "occurred_at": "2026-12-12T08:07:00Z",
+        "seq": 7,
+        "tap": {
+          "counter": 413,
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "TOPUP_CASH"
+      }
+    },
+    {
+      "content_sha256": "8e8decd6e3870efb9dd9f2f45af4f84bb3ab72977c979c6befead28111eb8e3e",
+      "edge_content_canonical": "{\"amount\":500,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":4294967296,\"occurred_at\":\"2026-12-12T08:16:00Z\",\"seq\":8,\"type\":\"PURCHASE\"}",
+      "name": "g1_edge_seq_2_pow_32",
+      "op": {
+        "amount": 500,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 4294967296,
+        "occurred_at": "2026-12-12T08:16:00Z",
+        "seq": 8,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "content_sha256": "4f83adbeaa412fe6bb0f97e22303b9a4c48926e1e6b6d907b7ad52993169b6ad",
+      "edge_content_canonical": "{\"amount\":500,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":9007199254740991,\"occurred_at\":\"2026-12-12T08:31:00Z\",\"seq\":9,\"type\":\"PURCHASE\"}",
+      "name": "g2_edge_seq_max_safe",
+      "op": {
+        "amount": 500,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 9007199254740991,
+        "occurred_at": "2026-12-12T08:31:00Z",
+        "seq": 9,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "content_sha256": "62b711675094b7569e7953d67bf96a7e0eb26bc9256370f3977003b18b36afa2",
+      "edge_content_canonical": "{\"amount\":500,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":11,\"occurred_at\":\"2026-12-12T08:11:00Z\",\"seq\":11,\"tap\":{\"counter\":413,\"extra_é\":\"ü\\n\\u0001\",\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"}",
+      "name": "i_unknown_tap_property",
+      "op": {
+        "amount": 500,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 11,
+        "occurred_at": "2026-12-12T08:11:00Z",
+        "seq": 11,
+        "tap": {
+          "counter": 413,
+          "extra_é": "ü\n\u0001",
+          "key_index": 1,
+          "nfc_uid": "04a1b2c3d4e5f6",
+          "occurred_at": "2026-12-11T19:09:59Z",
+          "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+          "pack_verified": true,
+          "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "type": "PURCHASE"
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "name": "j_edge_seq_2_pow_53",
+      "op": {
+        "amount": 1,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 9007199254740992,
+        "occurred_at": "2026-12-12T08:32:00Z",
+        "seq": 1,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "name": "j_edge_seq_negative",
+      "op": {
+        "amount": 1,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": -1,
+        "occurred_at": "2026-12-12T08:59:00Z",
+        "seq": 1,
+        "type": "PURCHASE"
+      }
+    },
+    {
+      "name": "j_edge_seq_fraction",
+      "op": {
+        "amount": 1,
+        "authorized_mode": "EDGE_ONLINE",
+        "currency": "XOF",
+        "device_serial": "TPE-BAR-01",
+        "edge_seq": 1.5,
+        "occurred_at": "2026-12-12T08:01:00Z",
+        "seq": 1,
+        "type": "PURCHASE"
+      }
+    }
+  ],
+  "signature_payloads": [
+    {
+      "batch": {
+        "batch_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+        "edge_gateway_id": "7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+        "edge_seq_from": 1,
+        "edge_seq_to": 3,
+        "epoch": 3,
+        "last_chain_hash": "6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5",
+        "ledger_id": "44444444-5555-4666-8777-888888888888",
+        "operations": [
+          {
+            "amount": 6000,
+            "authorized_mode": "EDGE_ONLINE",
+            "currency": "XOF",
+            "device_serial": "TPE-BAR-01",
+            "edge_decision": {
+              "charged_to_wallet": 6000,
+              "shortfall_amount": 0,
+              "status": "ACCEPTED"
+            },
+            "edge_seq": 1,
+            "lines": [
+              {
+                "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+                "quantity": 2,
+                "unit_price": 3000
+              }
+            ],
+            "occurred_at": "2026-12-12T08:01:00Z",
+            "seq": 1,
+            "tap": {
+              "counter": 413,
+              "key_index": 1,
+              "nfc_uid": "04a1b2c3d4e5f6",
+              "occurred_at": "2026-12-11T19:09:59Z",
+              "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+              "pack_verified": true,
+              "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            },
+            "type": "PURCHASE"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 2,
+            "occurred_at": "2026-12-12T08:02:00Z",
+            "seq": 2,
+            "type": "VOID",
+            "void_reason": "TERMINAL_ERROR"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 3,
+            "occurred_at": "2026-12-12T08:03:00Z",
+            "reverses_seq": 1,
+            "reverses_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+            "seq": 3,
+            "type": "REVERSAL"
+          }
+        ],
+        "prev_chain_hash": "2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b",
+        "signature": "MEUCIQDfake+signature/base64=="
+      },
+      "name": "k_without_staff_token_audit",
+      "payload_canonical": "{\"batch_id\":\"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\",\"edge_gateway_id\":\"7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5\",\"edge_seq_from\":1,\"edge_seq_to\":3,\"epoch\":3,\"last_chain_hash\":\"6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5\",\"ledger_id\":\"44444444-5555-4666-8777-888888888888\",\"operations\":[{\"amount\":6000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":6000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":1,\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-12T08:01:00Z\",\"seq\":1,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":2,\"occurred_at\":\"2026-12-12T08:02:00Z\",\"seq\":2,\"type\":\"VOID\",\"void_reason\":\"TERMINAL_ERROR\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":3,\"occurred_at\":\"2026-12-12T08:03:00Z\",\"reverses_seq\":1,\"reverses_transaction_id\":\"0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a\",\"seq\":3,\"type\":\"REVERSAL\"}],\"prev_chain_hash\":\"2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b\"}",
+      "payload_sha256": "a455bd7ddb2d738d2392b5af11df6712d41bbe5b640a438def31cb14c3262ea2"
+    },
+    {
+      "batch": {
+        "batch_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+        "edge_gateway_id": "7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+        "edge_seq_from": 1,
+        "edge_seq_to": 3,
+        "epoch": 3,
+        "last_chain_hash": "6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5",
+        "ledger_id": "44444444-5555-4666-8777-888888888888",
+        "operations": [
+          {
+            "amount": 6000,
+            "authorized_mode": "EDGE_ONLINE",
+            "currency": "XOF",
+            "device_serial": "TPE-BAR-01",
+            "edge_decision": {
+              "charged_to_wallet": 6000,
+              "shortfall_amount": 0,
+              "status": "ACCEPTED"
+            },
+            "edge_seq": 1,
+            "lines": [
+              {
+                "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+                "quantity": 2,
+                "unit_price": 3000
+              }
+            ],
+            "occurred_at": "2026-12-12T08:01:00Z",
+            "seq": 1,
+            "tap": {
+              "counter": 413,
+              "key_index": 1,
+              "nfc_uid": "04a1b2c3d4e5f6",
+              "occurred_at": "2026-12-11T19:09:59Z",
+              "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+              "pack_verified": true,
+              "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            },
+            "type": "PURCHASE"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 2,
+            "occurred_at": "2026-12-12T08:02:00Z",
+            "seq": 2,
+            "type": "VOID",
+            "void_reason": "TERMINAL_ERROR"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 3,
+            "occurred_at": "2026-12-12T08:03:00Z",
+            "reverses_seq": 1,
+            "reverses_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+            "seq": 3,
+            "type": "REVERSAL"
+          }
+        ],
+        "prev_chain_hash": "2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b",
+        "signature": "MEUCIQDfake+signature/base64==",
+        "staff_token_audit": [
+          {
+            "jti": "tok-1",
+            "staff_id": "S-77",
+            "used_at": "2026-12-12T08:01:00Z"
+          }
+        ]
+      },
+      "name": "k_with_staff_token_audit",
+      "payload_canonical": "{\"batch_id\":\"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\",\"edge_gateway_id\":\"7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5\",\"edge_seq_from\":1,\"edge_seq_to\":3,\"epoch\":3,\"last_chain_hash\":\"6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5\",\"ledger_id\":\"44444444-5555-4666-8777-888888888888\",\"operations\":[{\"amount\":6000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":6000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":1,\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-12T08:01:00Z\",\"seq\":1,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":2,\"occurred_at\":\"2026-12-12T08:02:00Z\",\"seq\":2,\"type\":\"VOID\",\"void_reason\":\"TERMINAL_ERROR\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":3,\"occurred_at\":\"2026-12-12T08:03:00Z\",\"reverses_seq\":1,\"reverses_transaction_id\":\"0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a\",\"seq\":3,\"type\":\"REVERSAL\"}],\"prev_chain_hash\":\"2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b\",\"staff_token_audit\":[{\"jti\":\"tok-1\",\"staff_id\":\"S-77\",\"used_at\":\"2026-12-12T08:01:00Z\"}]}",
+      "payload_sha256": "12b8a5d69235440e467b0f10b19da1673a2b627b5da5c65408bb0557ba71e748"
+    },
+    {
+      "batch": {
+        "batch_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+        "champ_inconnu_é": {
+          "a": [
+            true,
+            null,
+            "x"
+          ],
+          "z": 1
+        },
+        "edge_gateway_id": "7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+        "edge_seq_from": 1,
+        "edge_seq_to": 3,
+        "epoch": 3,
+        "last_chain_hash": "6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5",
+        "ledger_id": "44444444-5555-4666-8777-888888888888",
+        "operations": [
+          {
+            "amount": 6000,
+            "authorized_mode": "EDGE_ONLINE",
+            "currency": "XOF",
+            "device_serial": "TPE-BAR-01",
+            "edge_decision": {
+              "charged_to_wallet": 6000,
+              "shortfall_amount": 0,
+              "status": "ACCEPTED"
+            },
+            "edge_seq": 1,
+            "lines": [
+              {
+                "product_id": "9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+                "quantity": 2,
+                "unit_price": 3000
+              }
+            ],
+            "occurred_at": "2026-12-12T08:01:00Z",
+            "seq": 1,
+            "tap": {
+              "counter": 413,
+              "key_index": 1,
+              "nfc_uid": "04a1b2c3d4e5f6",
+              "occurred_at": "2026-12-11T19:09:59Z",
+              "originality_signature": "3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a",
+              "pack_verified": true,
+              "token_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            },
+            "type": "PURCHASE"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 2,
+            "occurred_at": "2026-12-12T08:02:00Z",
+            "seq": 2,
+            "type": "VOID",
+            "void_reason": "TERMINAL_ERROR"
+          },
+          {
+            "authorized_mode": "EDGE_ONLINE",
+            "device_serial": "TPE-BAR-01",
+            "edge_seq": 3,
+            "occurred_at": "2026-12-12T08:03:00Z",
+            "reverses_seq": 1,
+            "reverses_transaction_id": "0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a",
+            "seq": 3,
+            "type": "REVERSAL"
+          }
+        ],
+        "prev_chain_hash": "2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b",
+        "signature": "MEUCIQDfake+signature/base64==",
+        "staff_token_audit": [
+          {
+            "jti": "tok-1",
+            "staff_id": "S-77",
+            "used_at": "2026-12-12T08:01:00Z"
+          }
+        ]
+      },
+      "name": "k_unknown_batch_field",
+      "payload_canonical": "{\"batch_id\":\"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\",\"champ_inconnu_é\":{\"a\":[true,null,\"x\"],\"z\":1},\"edge_gateway_id\":\"7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5\",\"edge_seq_from\":1,\"edge_seq_to\":3,\"epoch\":3,\"last_chain_hash\":\"6db371e0589d07aa63142727053e6007b95bc41142fbc60776d941714997b5a5\",\"ledger_id\":\"44444444-5555-4666-8777-888888888888\",\"operations\":[{\"amount\":6000,\"authorized_mode\":\"EDGE_ONLINE\",\"currency\":\"XOF\",\"device_serial\":\"TPE-BAR-01\",\"edge_decision\":{\"charged_to_wallet\":6000,\"shortfall_amount\":0,\"status\":\"ACCEPTED\"},\"edge_seq\":1,\"lines\":[{\"product_id\":\"9d1b7a4c-2e3f-4a5b-8c6d-7e8f9a0b1c2d\",\"quantity\":2,\"unit_price\":3000}],\"occurred_at\":\"2026-12-12T08:01:00Z\",\"seq\":1,\"tap\":{\"counter\":413,\"key_index\":1,\"nfc_uid\":\"04a1b2c3d4e5f6\",\"occurred_at\":\"2026-12-11T19:09:59Z\",\"originality_signature\":\"3a7f0c9e5b2d4a6f8e1c3b5d7f9a0c2e4b6d8f0a1c3e5b7d9f0a2c4e6b8d0f1a\",\"pack_verified\":true,\"token_hash\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type\":\"PURCHASE\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":2,\"occurred_at\":\"2026-12-12T08:02:00Z\",\"seq\":2,\"type\":\"VOID\",\"void_reason\":\"TERMINAL_ERROR\"},{\"authorized_mode\":\"EDGE_ONLINE\",\"device_serial\":\"TPE-BAR-01\",\"edge_seq\":3,\"occurred_at\":\"2026-12-12T08:03:00Z\",\"reverses_seq\":1,\"reverses_transaction_id\":\"0f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a\",\"seq\":3,\"type\":\"REVERSAL\"}],\"prev_chain_hash\":\"2d758141e12124fc7e67b0e5ca6828d953112282a14dd6604fd3ac6b2422bd0b\",\"staff_token_audit\":[{\"jti\":\"tok-1\",\"staff_id\":\"S-77\",\"used_at\":\"2026-12-12T08:01:00Z\"}]}",
+      "payload_sha256": "9e8b5b440ff18c268bd5cfb0a698d7f9d06b255f23cbc1b7b06363e3123e3bf8"
+    }
+  ]
+}

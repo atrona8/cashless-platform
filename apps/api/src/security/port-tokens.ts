@@ -10,3 +10,10 @@ export const TOKEN_SIGNER = Symbol('TOKEN_SIGNER');
 
 /** Vérificateur d'attestation Android et iOS (R-05, R-06). */
 export const ATTESTATION_VERIFIER = Symbol('ATTESTATION_VERIFIER');
+
+/**
+ * Autorité des passerelles locales (mission passerelle-locale, WP10, interfaces.md § 4) : seconde autorité, distincte
+ * de celle des terminaux, propre à l'écouteur du processus `edge`. Aujourd'hui seul un faux existe (refusé en
+ * production : `assertProcessIsSafe`) ; l'adaptateur réel est la mission 12b.
+ */
+export const EDGE_CA = Symbol('EDGE_CA');

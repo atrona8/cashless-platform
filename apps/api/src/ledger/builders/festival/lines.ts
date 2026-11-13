@@ -1,5 +1,5 @@
 // Outils communs aux constructeurs : contrôles d'entrée et assemblage des lignes.
-import { extractTax } from '../../money';
+import { extractTax } from '@cashless/shared-rules';
 import { BuildError, type AccountRef, type Line } from '../../types';
 
 export function requirePositive(amount: bigint, what: string): bigint {

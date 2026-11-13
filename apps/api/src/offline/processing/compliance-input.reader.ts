@@ -7,7 +7,7 @@ import type { TxClient } from '../../db/tenant-tx';
 import { deviceKey } from '../../idempotency/device-key';
 import { isSqlError } from '../../errors/sqlstate-map';
 import type { BatchContext } from '../batches/batch.types';
-import type { ComplianceInput, OperationType } from '../rules/types';
+import type { ComplianceInput, OperationType } from '@cashless/shared-rules';
 import type { OperationFields } from './operation-input';
 import { inSavepoint } from './savepoint';
 

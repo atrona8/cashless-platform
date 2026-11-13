@@ -40,6 +40,7 @@ Deux principes, décidés le 29/10/2026 au lancement de la mission 7 :
 | 9 | Remboursements, versements et clôture | nous | après 7 |
 | 10a | Serveur de l'app festivalier (comptes par numéro, code à usage unique simulé, `/me`) | nous | après 9 |
 | 11a | Durcissements serveur hérités (back-office et terminaux) | nous | quand on veut |
+| 10c | Gestion des clients par une application cliente (décidée le 05/11/2026) | nous | après 10a |
 | 10b | App festivalier (Flutter) | **déléguée** | contrat simulé maintenant ; routes réelles après 10a |
 | 11 | Back-office web (Next.js) | **déléguée** | maintenant (routes des missions 1 à 6 servies) ; écrans 7 à 9 au fil de l'eau |
 | 12 | App terminal (Flutter) | **déléguée** | partie en ligne maintenant ; hors ligne après 7 et 8 ; NFC après les actions 1 et 2 |
@@ -346,16 +347,23 @@ vendeurs et le catalogue : la mission les ajoute.
 > renommage, retrait ni changement d'une route, d'un schéma ou d'un code d'erreur existant ; un ajout seulement s'il est
 > indispensable et rétrocompatible, soumis au porteur avant d'être codé.
 >
+> **Spécifiée le 05/11/2026** (slug réel `passerelle-locale-01M6NM1S`, branche `feat/passerelle-locale`). Décisions du
+> porteur : bascule anticipée par un admin (aucune prise d'autorité automatique) ; sessions de caisse ouvertes au central
+> et répliquées avant la bascule, fermées au central après le rendu ; clés de la passerelle derrière un port de stockage
+> matériel, faux refusé en production, **adaptateur réel en mission 12b** (la passerelle n'ira pas en production avant) ;
+> `STANDBY` promue par handover normal seulement ; ajouts au contrat limités à des champs facultatifs sous `/edge/*`,
+> inscription d'une passerelle par un outil d'administration hors API publique.
+>
 > **Hérité de la mission 7 (plan du 30/10/2026)** : tests minimaux §13-4 et §13-5 de `sync_protocol.md` (bascules
 > CENTRAL → EDGE sous charge et EDGE → CENTRAL avec 10 000 opérations en file), non couverts par la mission 7.
 
-- [ ] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
-- [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker absent de la machine de développement actuelle). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
+- [x] /spec-kitty.specify Passerelle locale de site (SPECIFICATION §9.7, `docs/sync_protocol.md` §8 et §9, §14.1 S12 et S13, ADR-52). `apps/gateway` réutilise les modules de l'API, avec sa base PostgreSQL locale. Flux de réplication des soldes et des mots de passe de l'événement ; bascule d'autorité de débit par les seules fonctions du schéma (`grant_edge_authority`, `ack_edge_handover`, `fail_edge_grant`, `request_edge_release`, `complete_edge_release`, `force_central_authority` à deux) ; `X-Authority-Epoch` et arrêt des débits sur époque supérieure (`STALE_AUTHORITY_EPOCH`) ; refus des débits centraux pendant `EDGE` (`DEBIT_AUTHORITY_EDGE`). Opérations servies par la passerelle (`x-edge-available` : ventes, annulations, recharges espèces, activation sans frais sur solde, caution en espèces) et refusées (prélèvements sur solde, remboursements, restitutions, QR). Retour : vidage de la file `POST /edge/sync-batches` (`EDGE_SYNC`, `origin_key`, `origin_occurred_at`, `origin_mode`), chaîne calculée par le central, anomalie `EDGE_REPLAY_FAILED`. Snapshots signés par la clé propre de la passerelle. Seconde passerelle `STANDBY` qui ne débite pas sans promotion.
+- [ ] /spec-kitty.plan NestJS empaqueté en Docker (à prévoir pour le site ; Docker est présent sur le poste, l'image se construit et se balaie en CI). mTLS avec certificat propre, disque chiffré, révocation à distance, pas de clé maître. L'application n'appelle jamais `set_debit_authority`. Ordre de verrouillage : verrous consultatifs puis lignes. Tests de bascule sous charge (`sync_protocol.md` §13).
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission passerelle-locale
-- [ ] /spec-kitty.review --mission passerelle-locale
-- [ ] /spec-kitty.accept --mission passerelle-locale
-- [ ] spec-kitty merge --mission passerelle-locale
+- [ ] spec-kitty next --agent claude --mission passerelle-locale-01M6NM1S
+- [ ] /spec-kitty.review --mission passerelle-locale-01M6NM1S
+- [ ] /spec-kitty.accept --mission passerelle-locale-01M6NM1S
+- [ ] spec-kitty consolidate --mission passerelle-locale-01M6NM1S
 
 ## Mission 9 — Remboursements, versements et clôture
 
@@ -440,6 +448,25 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission serveur-app-festivalier
 - [ ] spec-kitty merge --mission serveur-app-festivalier
 
+## Mission 10c — Gestion des clients par une application cliente
+
+> **Décidée par le porteur le 05/11/2026** : « une méthode de pouvoir gérer facilement les clients de l'app cliente de
+> cashless ». Une application cliente gère elle-même, de serveur à serveur, les comptes de ses utilisateurs sur le
+> cashless ; ces utilisateurs ne voient jamais le cashless. Après 10a, dont elle réutilise les comptes et les routes `/me`.
+> Le contrat partagé ne change pas : routes nouvelles seulement, soumises au porteur au plan.
+>
+> **À trancher au specify** : téléphone transmis ou comptes sans numéro ; qui porte le risque si l'application est
+> compromise ; avis du juriste sur l'identification du client (SPEC §4, plafonds) ; parcours de remboursement, de perte
+> et de rattachement d'un bracelet ; droits exacts de l'application.
+
+- [ ] /spec-kitty.specify Gestion des clients par une application cliente. Une application inscrite auprès d'un prestataire s'authentifie de serveur à serveur. Elle crée ou retrouve un client par son identifiant externe (idempotent : le même identifiant donne toujours le même compte), lit la liste et le détail de ses clients, les recherche par identifiant externe, les désactive et les réactive. Pour agir au nom d'un client, elle obtient un jeton de compte court, identique à celui de `exchangeCustomerOtp`, utilisable sur les routes `/me` existantes. Correspondance (application, identifiant externe) vers compte, sans fusion entre applications ni entre prestataires ; une application ne voit jamais les clients d'une autre. Révocation immédiate d'une application, rotation de ses secrets, audit de chaque action et de chaque jeton délivré, limites de débit.
+- [ ] /spec-kitty.plan Routes nouvelles seulement, rétrocompatibles, soumises au porteur avant d'être codées ; aucune route existante modifiée ; contrôle de stabilité du contrat (`passerelle-locale`, NFR-012) étendu. Secrets de l'application jamais en clair en base. Faux refusés en production. Reprendre si possible le schéma `posClient` (OAuth 2.0 client credentials) déclaré au contrat.
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty consolidate --mission [slug réel]
+
 ## Mission 10b — App festivalier (déléguée)
 
 > **Déléguée à une équipe cliente (29/10/2026).** Code contre `packages/contracts/openapi.yaml` (routes simulées tant
@@ -479,6 +506,10 @@ vendeurs et le catalogue : la mission les ajoute.
 > `vendor_id` dans la clé composite référencée par `sale_attribution` (`(vendor_session_id, vendor_id)`), pour que le
 > schéma refuse une vente attribuée à un autre vendeur que celui de sa session ; test pgTAP d'une attribution
 > incohérente refusée, puis lever le point.
+>
+> **Hérité de la mission 8, OP-N116** : l'outil d'inscription des passerelles (`tools/edge-admin`, `register --ledger`)
+> ne vérifie pas le grand livre passé à la main contre l'événement ; ajouter une lecture étroite pour
+> `cashless_edgeadmin` ou faire rendre le grand livre par l'inscription (disponibilité seulement, aucune fuite).
 >
 > **Hérité aussi de la mission 4, OP-N60 (ADR-97, bloque la production)** : `cashless_app` a `INSERT` et `UPDATE` sur
 > toutes les colonnes de `media_batch` (lot inséré directement en `ACTIVE` ou `CLOSED`, clôture sans `close_batch`,
@@ -554,6 +585,22 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 12b — Intégrations réelles (services externes)
 
+> **Hérité de la mission 8 (porteur, 05/11/2026 ; bloque la production de la passerelle)** : écrire l'adaptateur réel du port
+> de stockage matériel de la passerelle (TPM ou équivalent, clé de signature des snapshots et clé d'accord), choisir le
+> matériel du mini-PC, puis retirer le faux des processus de production.
+>
+> **Hérité de la mission 8, écarts de sécurité acceptés (passe contradictoire du plan, 05/11/2026, ADR-155 à ADR-165 ; bloquent la
+> production de la passerelle)** : OP-N100 (adaptateurs réels de `HARDWARE_KEYSTORE` et `EDGE_CA`, faux retirés) ; OP-N101 (clé de
+> jetons d'appareil de la passerelle en module matériel non exportable, rotation de `kid` éprouvée) ; OP-N102 (renouvellement du jeton
+> d'appareil sans rotation : décider avec le porteur d'un canal de retour, sinon la limite reste) ; OP-N103 (jeton de coupure délivré
+> par le central pour remplacer la tolérance des jetons de personne expirés, mission à fixer par le porteur, proposition : exploitation
+> de la 12b) ; OP-N105 (approbation à deux à l'inscription d'une passerelle) ; OP-N106 (tables de la passerelle chiffrées sous une clé
+> matérielle détruite à la révocation, limite du mini-PC volé avant la purge). OP-N118 (purge de la passerelle : WAL, blocs libres et
+> tables d'ajout seul non effacés, purge hors de la transaction de la file ; même levée qu'OP-N106, ADR-186). OP-N119 (purge manuelle forcée sans accusé :
+> levé le 11/11/2026 par WP25 de la mission 8, ADR-187). OP-N115 (curseur dans `edge_media_to_pack` et alerte au
+> central : une page de 200 bracelets illisibles arrête le service des colis, ADR-184). À soumettre au porteur avant le codage de la mission 8 :
+> valeurs des plafonds de rejeu `EDGE_ONLINE` (OP-N104) et délai avant l'envoi des mots de passe (OP-N105).
+
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
 > avant la recette. Prérequis : accès de test PSP (action 11), devis et comptes OTP (action 10), compte AWS et région
 > confirmée (OP-N11), clé publique et signatures NXP réelles (action 1). Reprend la mission 6b.
@@ -601,6 +648,14 @@ vendeurs et le catalogue : la mission les ajoute.
 > à lever en ramenant le délai à 55 s au plus ou en reformulant NFR-005, ADR-151).
 > OP-N99 (FR-024 : câblage des refus `LEDGER_LOCKED` et `SYNC_DEADLINE_PASSED` depuis le lecteur de conformité à
 > prouver par deux cas d'intégration, refus et aucune écriture).
+>
+> **Hérité de la mission 8 (05/11/2026, ADR-159, ADR-162 à ADR-165)** : OP-N104 (perte maximale `EDGE_ONLINE` : mesurer sur une passerelle
+> hostile, ou relayer la signature du terminal) ; OP-N122 (le central croit `pack_verified` des ventes relayées sans pouvoir le vérifier : même
+> levée qu'OP-N104, preuve signée du terminal relayée et vérifiée, ADR-188) ; OP-N107 (procédure de rétablissement après passerelle perdue) ; OP-N108 (avis écrit du
+> juriste sur le dépassement temporaire d'un plafond réglementaire à la recharge espèces) ; OP-N109 (aligner §9 de `SPECIFICATION.md` :
+> « mêmes modules ») ; OP-N110 (`STALE` d'une époque forgée à `epoch + 1` ou `+ 2`) ; OP-N111 (propriétaire des migrations de la base
+> locale distinct du rôle d'exécution, ADR-166) ; OP-N112 (procédure de détention des clés de site vérifiée en recette, ADR-167) ; OP-N113 (mission 12b : poignée de main mTLS
+> de la passerelle signée par le composant matériel, fournisseur OpenSSL/PKCS#11 ou proxy, ADR-168).
 
 > **Hérité de la mission 6 (29/10/2026, WP14)** : OP-N83 (cause du blocage d'un portefeuille : corrigée en cycle 2
 > par la migration 0042, à relire en recette, ADR-134), OP-N84 (anciennes signatures de caisse : levé en cycle 2,

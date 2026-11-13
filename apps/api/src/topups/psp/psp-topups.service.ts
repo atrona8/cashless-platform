@@ -23,7 +23,7 @@ import { ProblemException } from '../../errors/problem';
 import { requestPrincipal } from '../../identity/principal';
 import { readTopupHeadroom } from '../../ledger/db/ledger-queries';
 import { SqlConfigResolver } from '../../configuration/sql-config-resolver';
-import { fee } from '../../ledger/money';
+import { fee } from '@cashless/shared-rules';
 import { CounterAccess } from '../../media/lifecycle/counter-access';
 import { TapService } from '../../media/taps/tap.service';
 import { conflict } from '../../organization/platform/platform.dto';

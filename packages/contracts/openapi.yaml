@@ -6988,6 +6988,23 @@ paths:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/RequestId'
         - $ref: '#/components/parameters/AcceptLanguage'
+        - name: after_change_seq
+          in: query
+          required: false
+          description: |
+            Curseur du bloc `reference` (journal des changements de données de référence). Absent : le bloc
+            `reference` n'est pas servi et la réponse est celle d'avant l'ajout. Présent (0 pour une première
+            copie complète) : la page porte, dans `reference`, les entités de référence modifiées depuis ce
+            curseur, au plus `Limit` entités au total. Le curseur ne progresse qu'avec la réponse reçue ; la
+            passerelle le mémorise après l'avoir appliqué (reprise sans trou ni doublon, US5-3). Une requête qui
+            porte le curseur `c` prouve au central que la passerelle a appliqué toutes les pages jusqu'à `c` : le
+            central le consigne (`reference_applied_seq`) et `edge_ack_handover` refuse l'accusé tant que ce curseur
+            n'a pas atteint le curseur de référence pris à l'accord (A03). Avant d'accuser, la passerelle relit donc
+            une page avec son curseur final (page vide).
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
       responses:
         '200':
           description: Page du flux.
@@ -11681,6 +11698,14 @@ components:
         retryable:
           type: boolean
           description: '`true` si réessayer à l''identique (même clé d''idempotence) peut réussir.'
+        edge_base_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: |
+            `DEBIT_AUTHORITY_EDGE` seulement : adresse locale de la passerelle qui détient l'autorité de débit
+            (ajout facultatif, décision 35 du porteur).
         errors:
           type: array
           items:
@@ -14514,9 +14539,31 @@ components:
           $ref: '#/components/schemas/Hex32'
         last_chain_hash:
           $ref: '#/components/schemas/Hex32'
+        staff_token_audit: # AJOUT (décision 18 du porteur)
+          type: array
+          maxItems: 500
+          description: |
+            Audit des usages d'un jeton de personne EXPIRÉ toléré au guichet de la passerelle (tolérance de la
+            décision 3 du porteur), pour les opérations de ce lot : au plus une ligne par opération, donc 500. Les
+            lignes sont couvertes par la signature du lot (`signature` porte sur le lot entier sans elle). Le central
+            les range dans `edge_staff_token_audit` (immuable, par passerelle) et les recopie dans l'audit de la
+            plateforme. Absent ou vide : aucun usage toléré dans ce lot. Une ligne dont `edge_seq` n'est pas dans
+            l'intervalle du lot est refusée (`400`, lot non traité).
+          items:
+            $ref: '#/components/schemas/EdgeStaffTokenAudit'
+        local_orders: # AJOUT (décision 33 du porteur, ADR-169)
+          type: array
+          maxItems: 50
+          description: |
+            Ordres locaux à deux personnes exécutés sur la passerelle (levée locale de `STALE`, purge manuelle),
+            versés à l'audit du central au retour du lien. Couverts par la signature du lot. Absent ou vide :
+            aucun ordre local à verser. Le central les range à son audit (`EDGE_LOCAL_ORDER_RECORDED`), sans
+            jamais en tirer d'effet comptable.
+          items:
+            $ref: '#/components/schemas/EdgeLocalOrder'
         operations:
           type: array
-          minItems: 1
+          minItems: 0 # RELÂCHÉ (décision 50, ADR-187) : vide seulement si `local_orders` n'est pas vide
           maxItems: 500
           description: Au plus 500 opérations et 1 Mio par lot, dans l'ordre des `edge_seq`.
           items:
@@ -14539,6 +14586,18 @@ components:
         signature:
           type: string
           contentEncoding: base64
+      x-empty-batch: # AJOUT (décision 50 du porteur, ADR-187, OP-N119)
+        description: |
+          Lot sans opération : `operations` vide est accepté seulement si `local_orders` porte au moins un ordre
+          (ordre de purge manuelle versé au central avant la destruction locale) ; sinon `422`
+          `VALIDATION_FAILED`, détail `EMPTY_BATCH_WITHOUT_LOCAL_ORDERS`. Représentation : `edge_seq_from` est le
+          numéro suivant le dernier numéro de la passerelle (dernier numéro + 1, soit 1 si aucune opération) et
+          `edge_seq_to` vaut `edge_seq_from - 1` (intervalle vide) ; `prev_chain_hash` et `last_chain_hash` sont
+          égaux à la chaîne au dernier numéro (genèse de la passerelle si aucune opération). Le central exige que
+          `edge_seq_from` soit le numéro suivant son dernier numéro contigu (`SEQ_OUT_OF_ORDER` sinon) et que la
+          chaîne égale la sienne (`CHAIN_BROKEN` sinon) : `edge_seq` et la chaîne ne bougent pas. Signature de la
+          passerelle, `Idempotency-Key` égale à `batch_id`, époque d'autorité du grand livre (`STALE_AUTHORITY_EPOCH`)
+          et idempotence du lot sont contrôlées comme pour tout lot ; aucun effet comptable.
       example:
         batch_id: 7e8f9a0b-1c2d-4e3f-8a4b-5c6d7e8f9a0b
         edge_gateway_id: 9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d
@@ -14720,12 +14779,691 @@ components:
               promo:
                 type: integer
                 format: int64
+              kyc_verified: # AJOUT
+                type: boolean
+                description: |
+                  Le portefeuille est rattaché à un client identifié (`wallet_kyc_level = VERIFIED`) à la date de la
+                  page. Choisit le palier des plafonds (`event.wallet_limits`). Absent : traiter comme non identifié
+                  (le palier le plus strict). Usage : `createCashTopup` (`422 WALLET_LIMIT_EXCEEDED`,
+                  `422 MONTHLY_TOPUP_LIMIT_EXCEEDED`, appliqués par `check_wallet_limits`).
+              topup_month_paid: # AJOUT
+                type: integer
+                format: int64
+                minimum: 0
+                description: |
+                  Total des recharges (`TOPUP`, `TOPUP_CASH`) créditées au portefeuille payé pendant le mois UTC
+                  de `to_posting_id` (même calcul que `check_wallet_limits`). La passerelle y ajoute ses propres
+                  recharges du mois. Usage : plafond mensuel de `createCashTopup`. Absent : traiter comme inconnu et
+                  refuser une recharge qui dépasserait le plafond mensuel du palier le plus strict.
         media:
           type: array
           items:
             $ref: '#/components/schemas/SnapshotEntry'
         has_more:
           type: boolean
+        edge_seq_applied: # AJOUT
+          type: integer
+          format: int64
+          minimum: 0
+          description: |
+            `contiguous_edge_seq` de la passerelle (dernier `edge_seq` enregistré au registre du central), lu dans la
+            MÊME transaction `REPEATABLE READ` que les soldes de la page. Sert au calcul du solde effectif de la
+            passerelle : solde central répliqué plus les deltas locaux des opérations d'`edge_seq` supérieur à cette
+            valeur, ce qui évite le double comptage d'une vente déjà rejouée (A02, A26). Présent sur chaque page.
+        device_seq_acked: # AJOUT
+          type: array
+          description: |
+            Accusé du central par terminal de l'événement, pour `getDeviceSeqStatus` (FR-026). Remplace tout champ
+            `seq_status` par terminal : il n'existe qu'ici. Après la bascule la passerelle ne l'avance que par les
+            résultats de `submitEdgeSyncBatch`, jamais provisoirement. Servi sur la dernière page d'une passe
+            (`has_more = false`) ; périmé plutôt que provisoire.
+          items:
+            $ref: '#/components/schemas/EdgeDeviceSeqAcked'
+        pwd_pack_key: # AJOUT
+          $ref: '#/components/schemas/WrappedKey'
+          description: |
+            Clé de contenu PAR PASSERELLE (et par clé d'accord), pas par page : elle est la même à chaque page tant que
+            la clé d'accord de la passerelle ne change pas (le central la génère une fois, la scelle pour
+            `edge_gateway.agreement_public_key`, jamais pour un terminal, et la dépose avec les colis). Elle ouvre les
+            `pwd_pack_enc` des entrées de `media` et de `reference.unassigned_media`. Absente (et colis non servis)
+            pour une passerelle `STANDBY` non promue et pendant le délai suivant l'inscription ou la promotion (A16).
+            Requise
+            par le contrat existant des entrées (`SnapshotEntry.pwd_pack_enc`) mais absente de la page
+            aujourd'hui : sans elle la passerelle ne peut pas ouvrir les mots de passe qu'on lui envoie.
+            Usage : `getMediaAuthKey` (re-chiffrement pour le terminal) et `getOfflineSnapshot` (snapshot signé
+            par la passerelle). Le central l'émet dès qu'une entrée de la page porte un `pwd_pack_enc`.
+            La construction de scellement et l'AAD (liaison à `ledger_id`, `edge_gateway_id` et à la page) sont
+            fixés par le plan ; le central ne scelle que pour la clé d'accord de la passerelle appelante.
+        reference: # AJOUT
+          $ref: '#/components/schemas/EdgeReference'
+          description: |
+            Données de référence que la passerelle ne peut pas déduire des écritures (sessions, terminaux,
+            personnes habilitées, catalogue, réglages de l'événement, bracelets non encore attachés).
+            Servi seulement si la requête porte `after_change_seq`.
+        edge_terms: # AJOUT (décision 36 du porteur, ADR-172)
+          type: object
+          description: |
+            Conditions que la passerelle ne peut pas déduire des écritures, pour qu'elle serve la caution, les frais
+            d'activation et le plafond de recharge en espèces pendant `EDGE` (usage : `activateMedia`, `takeDeposit`,
+            `createCashTopup`). Servi sur la dernière page d'une passe (`has_more = false`), état courant du central,
+            limité à l'événement et au prestataire de la passerelle. Chaque clé est facultative : une clé absente
+            signifie « inconnu » et la passerelle garde son refus (échec fermé). Champ absent : même comportement.
+          properties:
+            max_cash_topup:
+              type: integer
+              format: int64
+              minimum: 1
+              description: |
+                Plafond par recharge en espèces, unités mineures (réglage de plateforme `replay_max_per_cash_topup`,
+                500 000 XOF par défaut, décision 21). Absent si aucun réglage n'existe pour la devise du grand livre.
+            activation_fee:
+              type: integer
+              format: int64
+              minimum: 0
+              description: |
+                Frais d'activation par support, TTC, unités mineures (règle de frais `EVENT`, `ORG_FFEST`,
+                `PER_MEDIA` en vigueur ; 0 sans règle). Absent si plusieurs règles sont en vigueur (ambigu).
+            spend_order: # AJOUT (décision 45 du porteur, ADR-185)
+              type: string
+              enum: [PROMO_FIRST, PAID_FIRST]
+              description: |
+                Ordre de dépense du crédit offert et du crédit payé de l'événement (réglage `spend_order` de la
+                cascade, état courant du central ; `PROMO_FIRST` par défaut au central). La passerelle l'applique à
+                ses ventes (`createPayment`). Clé absente : « inconnu », et la passerelle refuse toute vente dont la
+                répartition dépend de l'ordre (portefeuille détenant du crédit payé et du crédit offert), échec fermé.
+            deposit_batches:
+              type: array
+              description: Conditions de caution de chaque lot de bracelets de l'événement.
+              items:
+                type: object
+                required: [batch_id, deposit_amount, deposit_mode]
+                properties:
+                  batch_id:
+                    type: string
+                    format: uuid
+                  deposit_amount:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: 0 = pas de caution.
+                  deposit_mode:
+                    type: [string, 'null']
+                    enum: [FROM_BALANCE, SEPARATE, null]
+
+    EdgeReference:
+      type: object
+      description: |
+        Changements de données de référence de l'événement de la passerelle, par ordre de `change_seq`. Chaque
+        entité modifiée est renvoyée en entier (état courant, pas de différence). Une fermeture ou une
+        révocation est un changement d'état de l'entité (`status`, `closed_at`), jamais une suppression : la
+        passerelle n'a donc besoin d'aucun marqueur de suppression. Tout est limité à l'événement, au grand
+        livre et au prestataire de la passerelle authentifiée (NFR-011).
+      required: [from_change_seq, to_change_seq, has_more]
+      # `change_seq` : journal central `edge_reference_change`, numéro attribué sous un verrou consultatif par grand
+      # livre tenu jusqu'à la validation, donc l'ordre des numéros est l'ordre de validation (aucun saut possible).
+      # Il couvre tout changement sans écriture comptable : statut d'un bracelet ou d'un portefeuille (blocage),
+      # palier d'identification, sessions, terminaux, personnes, catalogue, réglages, rôle de la passerelle (A03, A25).
+      properties:
+        from_change_seq:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Curseur reçu.
+        to_change_seq:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Dernier changement inclus ; à renvoyer comme `after_change_seq`.
+        has_more:
+          type: boolean
+          description: |
+            D'autres changements attendent. Indépendant de `ReplicationPage.has_more` : la passerelle boucle
+            tant que l'un des deux est vrai. Les deux curseurs avancent séparément.
+        gateway:
+          $ref: '#/components/schemas/EdgeGatewaySelf'
+        event:
+          $ref: '#/components/schemas/EdgeEventSettings'
+        wallet_states:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeWalletState'
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeDevice'
+        device_configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeDeviceConfig'
+        cash_sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeCashSession'
+        vendors:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeVendor'
+        vendor_sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeVendorSession'
+        staff:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeStaff'
+        catalogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeCatalog'
+        media_refs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeMediaRef'
+        unassigned_media:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdgeUnassignedMedia'
+
+    EdgeGatewaySelf:
+      type: object
+      description: |
+        Ligne de la passerelle appelante (jamais d'une autre). Porte son rôle : la promotion d'une `STANDBY` est
+        un changement de rôle fait au central par la fonction atomique `swap_edge_gateway_roles` ; la passerelle
+        l'apprend par ce bloc, relu à chaque passe (A25). Sûreté : elle ne débite jamais sans l'accusé `200`.
+      required: [gateway_id, role, status]
+      properties:
+        gateway_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [PRIMARY, STANDBY]
+        status:
+          type: string
+          enum: [ACTIVE, ISOLATED, CATCHING_UP, REVOKED]
+        role_changed_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    EdgeWalletState:
+      type: object
+      description: |
+        État d'un portefeuille changé SANS écriture comptable : blocage ou déblocage (statut), palier
+        d'identification. Un blocage n'écrit aucun `posting` : le curseur de soldes ne le livrerait pas (A03).
+        Prime sur `wallets[].status` et `wallets[].kyc_verified` pour la même valeur de `change_seq` ultérieure.
+      required: [wallet_id, status, kyc_verified]
+      properties:
+        wallet_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: Statut du portefeuille (même énumération que `wallets[].status`).
+        kyc_verified:
+          type: boolean
+
+    EdgeEventSettings:
+      type: object
+      description: |
+        Réglages de l'événement. Usage : `getDeviceConfig` et `postDeviceHeartbeat` (blocs `event` et
+        `terminal_settings`), refus `EVENT_CLOSING` / `LEDGER_LOCKED` des ventes et recharges, mode d'activation
+        autorisé de `activateMedia` (`422 ACTIVATION_MODE_NOT_ALLOWED`), plafonds de `createCashTopup`.
+      required: [event_id, name, currency, minor_units, timezone, status, activation_modes, terminal_settings, wallet_limits]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        currency:
+          $ref: '#/components/schemas/Currency'
+        minor_units:
+          type: integer
+          minimum: 0
+          maximum: 3
+        timezone:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, LIVE, CLOSING, RECONCILING, SETTLING, REFUND_WINDOW, CLOSED]
+        activation_modes:
+          type: array
+          items:
+            type: string
+            enum: [DESK, SELF_APP, FIRST_TOPUP]
+        terminal_settings:
+          $ref: '#/components/schemas/DeviceConfig/properties/terminal_settings'
+        wallet_limits:
+          type: object
+          description: |
+            Plafonds de la législation du grand livre (`jurisdiction_profile`), en unités mineures ; nul = aucun
+            plafond. Quatre valeurs, celles que lit `check_wallet_limits` ; rien d'autre du profil n'est servi.
+          required: [max_wallet_balance, unidentified_max_balance, identified_monthly_limit, unidentified_monthly_limit]
+          properties:
+            max_wallet_balance:
+              type: [integer, 'null']
+              format: int64
+            unidentified_max_balance:
+              type: [integer, 'null']
+              format: int64
+            identified_monthly_limit:
+              type: [integer, 'null']
+              format: int64
+            unidentified_monthly_limit:
+              type: [integer, 'null']
+              format: int64
+
+    EdgeDevice:
+      type: object
+      description: |
+        Terminal de l'événement. Usage : les trois preuves du terminal sur chacune des 16 opérations (certificat,
+        clé de signature de requête, état), blocs `device` et `pos` de `getDeviceConfig`, enveloppe du mot de
+        passe pour ce terminal (`getMediaAuthKey`, `getOfflineSnapshot`), `getDeviceSeqStatus`. Un terminal
+        suspendu ou révoqué au central l'est sur la passerelle dès réception. Aucune de ces valeurs n'est
+        secrète (certificat, clés publiques), sauf `token_family` (empreinte d'un jeton de rafraîchissement, voir sa
+        description) ; elles ne sortent que par `/edge/*`, comme `DeviceAdmin` les cache aux écrans.
+      required: [device_id, serial, kind, app_mode, os, nfc_enabled, status, public_key, cert_sha256]
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        serial:
+          type: string
+        kind:
+          $ref: '#/components/schemas/DeviceKind'
+        app_mode:
+          $ref: '#/components/schemas/DeviceAppMode'
+        os:
+          type: string
+          enum: [ANDROID, IOS]
+        nfc_enabled:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+        station_name:
+          type: [string, 'null']
+        pos:
+          type: [object, 'null']
+          description: Point de vente du terminal (bloc `pos` de `DeviceConfig`) ; nul sans point de vente.
+          required: [pos_id, name, merchant_name]
+          properties:
+            pos_id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            merchant_name:
+              type: string
+        cash_desk_account_id:
+          type: [string, 'null']
+          format: uuid
+          description: |
+            Compte d'espèces de la station du terminal. Usage : `EdgeSyncOperation.edge_guichet.cash_desk_account_id`,
+            obligatoire pour une opération `DEPOSIT_CASH` de la file ; sans ce champ la passerelle ne peut pas
+            décrire une caution en espèces.
+        public_key:
+          type: string
+          contentEncoding: base64
+          description: Clé publique de signature du terminal (`device.public_key`) ; épingle `cnf.jkt` et vérifie RFC 9421.
+        cert_sha256:
+          $ref: '#/components/schemas/Hex32'
+        agreement_public_key:
+          type: [string, 'null']
+          contentEncoding: base64
+          description: Clé d'accord ECDH P-256 du terminal ; nulle pour un terminal sans mots de passe hors ligne.
+        token_family:
+          type: [object, 'null']
+          description: |
+            Famille de jetons d'appareil du terminal, pour `refreshDeviceToken` sur la passerelle SANS rotation
+            (décision 11 du porteur, A01) : la passerelle vérifie le jeton de rafraîchissement présenté contre
+            l'empreinte courante, avec la preuve de possession (signature du terminal) et le certificat, puis émet un
+            jeton d'accès court, valable sur elle seule (`aud` de la passerelle), sans consommer ni faire tourner le
+            jeton de rafraîchissement. Le central ne sert l'empreinte qu'à la passerelle `PRIMARY` de l'événement,
+            marque la famille `edge_exposed` et force la rotation au rendu (la détection de réutilisation est
+            retrouvée). C'est un secret dérivé de plus sur le site : écart accepté, ADR et OP à l'appui.
+          required: [fid, status, refresh_token_sha256_current]
+          properties:
+            fid:
+              type: string
+            status:
+              type: string
+              enum: [ACTIVE, REVOKED]
+            refresh_token_sha256_current:
+              $ref: '#/components/schemas/Hex32'
+
+    EdgeDeviceSeqAcked:
+      type: object
+      description: |
+        État des numéros d'un terminal vu par le central à la date de la page : base de `getDeviceSeqStatus` et de
+        `DeviceConfig.seq`. Un seul endroit du flux le porte (A02).
+      required: [device_id, contiguous_acked_seq, max_seen_seq, missing_seqs, next_seq_floor, as_of]
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        contiguous_acked_seq:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9007199254740991
+        max_seen_seq:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9007199254740991
+        missing_seqs:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 9007199254740991
+        next_seq_floor:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9007199254740991
+        as_of:
+          $ref: '#/components/schemas/Timestamp'
+
+    EdgeDeviceConfig:
+      type: object
+      description: |
+        Configuration effective servie par le central à un terminal, et celles encore en vigueur. Usage :
+        `getDeviceConfig` et `postDeviceHeartbeat` doivent rendre le `config_id` du central (il ne se recrée
+        pas sur la passerelle) ; `submitOfflineBatch` contrôle les plafonds de la configuration citée par
+        `OfflineOperation.config_id` (sync_protocol.md §7.2, historique des politiques effectives). Une entrée
+        par `config_id` encore admissible ; la dernière en vigueur porte `in_force = true`.
+      required: [config_id, device_id, in_force, offline_policy]
+      properties:
+        config_id:
+          type: integer
+          format: int64
+        device_id:
+          type: string
+          format: uuid
+        in_force:
+          type: boolean
+        offline_policy:
+          $ref: '#/components/schemas/OfflinePolicy'
+
+    EdgeCashSession:
+      type: object
+      description: |
+        Session de caisse d'un terminal `TOPUP_DESK`. Usage : `createCashTopup` (`409 CONFLICT_STATE` sans
+        session `OPEN` du terminal, FR-015), `takeDeposit` en espèces (idem, `cash_session_id` facultatif de la
+        requête) ; condition 3 de la tolérance du jeton de personne (la personne qui a ouvert la session). Le
+        contrat public ne connaît que `OPEN` et `CLOSED` (`CashSession.status`) ; ici `CLOSING` existe aussi
+        (`cash_session.status`) et vaut fermé pour la passerelle. Ni théorique, ni compté, ni écart, ni compte
+        d'espèces : la passerelle n'en a pas l'usage.
+      required: [cash_session_id, device_id, status, opened_by, opened_at]
+      properties:
+        cash_session_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [OPEN, CLOSING, CLOSED]
+        opened_by:
+          type: string
+          format: uuid
+          description: Identifiant de la personne (`EdgeStaff.user_id`) qui a ouvert la session.
+        opened_at:
+          $ref: '#/components/schemas/Timestamp'
+        closed_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    EdgeVendor:
+      type: object
+      description: |
+        Vendeur. Usage : `createPayment` et `reversePayment` (vendeur `ACTIVE` et non bloqué, sinon
+        `409 VENDOR_SESSION_INVALID`), attribution et `PaymentResult.vendor` (`display_name`). JAMAIS de PIN, ni
+        d'empreinte de PIN (`pin_hash`), ni de compteur d'échecs, ni de secret de PIN : la passerelle n'ouvre
+        aucune session vendeur, elle n'a donc rien à vérifier.
+      required: [vendor_id, display_name, status, locked]
+      properties:
+        vendor_id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, DISABLED]
+        locked:
+          type: boolean
+          description: Vrai si le vendeur est bloqué (`locked_at` non nul). Le compteur d'échecs n'est pas servi.
+
+    EdgeVendorSession:
+      type: object
+      description: |
+        Session vendeur ouverte au central. Usage : `assert_vendor_session` de `createPayment` et
+        `reversePayment` (ouverte sur ce terminal, non expirée). La passerelle ne l'ouvre ni ne la prolonge
+        (`expires_at` = `opened_at` + 12 h, contrainte `vendor_session_ttl`).
+      required: [vendor_session_id, vendor_id, device_id, opened_at, expires_at]
+      properties:
+        vendor_session_id:
+          type: string
+          format: uuid
+        vendor_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        opened_at:
+          $ref: '#/components/schemas/Timestamp'
+        expires_at:
+          $ref: '#/components/schemas/Timestamp'
+        closed_at:
+          $ref: '#/components/schemas/Timestamp'
+        closed_reason:
+          type: string
+          enum: [LOGOUT, REPLACED, VENDOR_DISABLED, VENDOR_LOCKED, DEVICE_SUSPENDED, DEVICE_REVOKED, PIN_CHANGED]
+
+    EdgeStaff:
+      type: object
+      description: |
+        Personne habilitée au guichet ou à l'approbation de terrain, avec ses seuls rôles `CASHIER` et
+        `SUPERVISOR`. Usage : `X-Staff-Authorization` de `createCashTopup`, `activateMedia`, `takeDeposit` (le
+        jeton prouve l'identité `issuer` + `subject` ; le prestataire, le statut et les rôles sont relus ici,
+        comme `tx.identify` au central) ; `reversePayment` sur approbation d'un `SUPERVISOR` ; condition 2 de la
+        tolérance du jeton expiré (même personne que `EdgeCashSession.opened_by`). Aucune coordonnée (courriel,
+        téléphone) ni nom : le minimum pour identifier et autoriser. Un autre rôle (`OPERATOR_ADMIN`...) n'est
+        pas servi.
+      required: [user_id, issuer, subject, status, roles]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        issuer:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+          description: État de la personne (`app_user.status`) ; tout état autre qu'`ACTIVE` refuse l'accès.
+        roles:
+          type: array
+          description: >-
+            Affectations non révoquées de `CASHIER` ou `SUPERVISOR`. Vide : la personne perd l'accès.
+          items:
+            type: object
+            required: [role, scope_type, scope_id]
+            properties:
+              role:
+                type: string
+                enum: [CASHIER, SUPERVISOR]
+              scope_type:
+                type: string
+                enum: [ORGANIZER, EVENT]
+              scope_id:
+                type: string
+                format: uuid
+
+    EdgeCatalog:
+      type: object
+      description: |
+        Catalogue d'un point de vente de l'événement. Usage : `createPayment` depuis une caisse `CATALOG_POS`
+        (lignes obligatoires, prix et taux, sinon `422 SALE_LINES_INVALID`), bloc `catalog` de `getDeviceConfig`.
+        Les libellés sont servis dans les deux langues du catalogue : la passerelle choisit selon
+        `Accept-Language`, comme le central.
+      required: [pos_id, version, items]
+      properties:
+        pos_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            required: [product_id, name_fr, name_en, unit_price, vat_rate_bps]
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              name_fr:
+                type: string
+              name_en:
+                type: string
+              category_fr:
+                type: string
+              category_en:
+                type: string
+              unit_price:
+                $ref: '#/components/schemas/Amount'
+              vat_rate_bps:
+                type: integer
+                minimum: 0
+                maximum: 10000
+
+    EdgeMediaRef:
+      type: object
+      description: |
+        Lien entre un bracelet attaché et son identifiant. Usage : la réponse de `createTap` rend le bracelet ;
+        `takeDeposit` porte `media_id` dans son chemin ; `EdgeSyncOperation.edge_guichet.media_id` est obligatoire
+        pour `ACTIVATION` et `DEPOSIT_CASH`. `SnapshotEntry` (déjà dans `media`) ne porte ni `media_id`, ni
+        `wallet_id`, et ne peut pas être modifié : c'est un schéma partagé avec des routes hors `/edge/*`.
+      required: [media_id, token_hash, wallet_id, status]
+      properties:
+        media_id:
+          type: string
+          format: uuid
+        token_hash:
+          $ref: '#/components/schemas/Hex32'
+        wallet_id:
+          type: [string, 'null']
+          format: uuid
+          description: Portefeuille rattaché ; nul pour un bracelet non attaché (voir `unassigned_media`).
+        status:
+          $ref: '#/components/schemas/MediaStatus'
+          description: |
+            Statut courant du bracelet. Un blocage n'écrit aucun `posting` : le statut vient d'ici (journal
+            `change_seq`), et prime sur `media[]` pour le statut et le statut de lot (A03).
+        batch_status:
+          type: [string, 'null']
+          enum: [ORDERED, PERSONALIZED, DELIVERED, ACTIVE, SUSPENDED, CLOSED, null]
+
+    EdgeUnassignedMedia:
+      type: object
+      description: |
+        Bracelet de l'événement personnalisé mais pas encore attaché (aucun portefeuille). Le flux existant
+        (`media`, "une entrée par rattachement ouvert") ne peut pas le porter, car `SnapshotEntry.wallet_status`
+        est obligatoire. Usage : `getMediaAuthKey` (PWD/PACK avant `PWD_AUTH`), `createTap` (`NOT_ACTIVATED` plutôt
+        que `UNKNOWN`), `activateMedia` (vérification de l'UID et de la signature d'originalité). Sans lui,
+        l'activation au guichet pendant la coupure est impossible, alors qu'elle est servie (ADR-52).
+      required: [media_id, nfc_uid, token_hash, key_index, originality_sig_sha256, status, batch_event_id, batch_status, pwd_pack_enc, pwd_pack_sha256]
+      properties:
+        media_id:
+          type: string
+          format: uuid
+        nfc_uid:
+          $ref: '#/components/schemas/NfcUid'
+        token_hash:
+          $ref: '#/components/schemas/Hex32'
+        key_index:
+          type: integer
+        originality_sig_sha256:
+          oneOf:
+            - $ref: '#/components/schemas/Hex32'
+            - type: 'null'
+        status:
+          $ref: '#/components/schemas/MediaStatus'
+        batch_event_id:
+          type: [string, 'null']
+          format: uuid
+        batch_status:
+          type: [string, 'null']
+          enum: [ORDERED, PERSONALIZED, DELIVERED, ACTIVE, SUSPENDED, CLOSED, null]
+        pwd_pack_enc:
+          oneOf:
+            - $ref: '#/components/schemas/EncryptedBlob'
+            - type: 'null'
+          description: |
+            PWD||PACK chiffré (AES-256-GCM) avec la clé de contenu de `ReplicationPage.pwd_pack_key`. Jamais en
+            clair, jamais la clé maître du bracelet (C-009, NFR-010).
+        pwd_pack_sha256:
+          oneOf:
+            - $ref: '#/components/schemas/Hex32'
+            - type: 'null'
+
+    EdgeStaffTokenAudit:
+      type: object
+      required: [edge_seq, at, subject, issuer, jti, seconds_past_expiry, route, device_serial]
+      properties:
+        edge_seq:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Opération de la file que ce jeton a autorisée.
+        at:
+          $ref: '#/components/schemas/Timestamp'
+        subject:
+          type: string
+        issuer:
+          type: string
+        jti:
+          type: string
+        seconds_past_expiry:
+          type: integer
+          minimum: 1
+        route:
+          type: string
+          enum: [activateMedia, takeDeposit, createCashTopup]
+        device_serial:
+          type: string
+        cash_session_id:
+          type: string
+          format: uuid
+    EdgeLocalOrder:
+      type: object
+      description: |
+        Ordre local à deux personnes de la passerelle (décision 33 du porteur). Le central n'en vérifie pas la
+        signature (les clés de site ne lui sont pas confiées) : il en garde la trace, `order_sha256` étant
+        l'empreinte de l'ordre signé conservé sur le site.
+      required: [type, gateway_id, holders, at, order_sha256]
+      properties:
+        type:
+          type: string
+          enum: [LOCAL_UNSTALE, PURGE]
+        gateway_id:
+          type: string
+          format: uuid
+        holders:
+          type: array
+          minItems: 2
+          maxItems: 2
+          description: Les deux détenteurs nominatifs des clés de site qui ont signé l'ordre.
+          items:
+            type: string
+        at:
+          $ref: '#/components/schemas/Timestamp'
+        order_sha256:
+          $ref: '#/components/schemas/Hex32'
 
     # ------------------------------------------------------------ Guichet
     CashMovement:

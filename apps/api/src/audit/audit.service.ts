@@ -128,7 +128,16 @@ export type AuditAction =
   | 'SEQ_GAP_WAIVED'
   | 'DEVICE_JOURNAL_IMPORT_REQUESTED'
   | 'DEVICE_JOURNAL_IMPORTED'
-  | 'DEVICE_JOURNAL_IMPORT_CANCELLED';
+  | 'DEVICE_JOURNAL_IMPORT_CANCELLED'
+  // Mission passerelle-locale (lot WP13) : alertes et ordres locaux versés par les lots de passerelle
+  | 'EDGE_CHAIN_BROKEN'
+  | 'EDGE_BATCH_SIGNATURE_INVALID'
+  | 'EDGE_LOCAL_ORDER_RECORDED'
+  // Mission passerelle-locale (lot WP11) : bascule de l'autorité de débit demandée par une personne
+  | 'EDGE_AUTHORITY_GRANTED'
+  | 'EDGE_AUTHORITY_RELEASE_REQUESTED'
+  | 'EDGE_AUTHORITY_ABANDONED'
+  | 'EDGE_AUTHORITY_FORCED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

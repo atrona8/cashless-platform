@@ -1,8 +1,10 @@
 # Intégration continue — `ledger-tests`
 
-Workflow : [`.github/workflows/ledger-tests.yml`](workflows/ledger-tests.yml). Un seul job, `ledger`, sur
-`ubuntu-24.04` avec un service `postgres:17`, déclenché à chaque `push` et `pull_request` (une exécution par branche :
-la précédente est annulée), arrêté au bout de 20 minutes. Le job échoue à la première étape rouge.
+Workflow : [`.github/workflows/ledger-tests.yml`](workflows/ledger-tests.yml). Deux jobs, tous deux sur
+`ubuntu-24.04` avec un service `postgres:17`, déclenchés à chaque `push` et `pull_request` (une exécution par branche :
+la précédente est annulée) : `ledger` (étapes ci-dessous, arrêté au bout de **45 minutes**) et `gateway-e2e` (mission
+passerelle-locale, preuves de bout en bout de la passerelle, arrêté au bout de **90 minutes**, voir plus bas). Chaque
+job échoue à la première étape rouge.
 
 > **État** : exécuté avec succès sur GitHub le 2026-10-08 (run
 > [37771506938](https://github.com/atrona8/cashless-platform/actions/runs/37771506938), commit `ea20434`, toutes
@@ -146,6 +148,62 @@ lane de WP21) :
 | pgTAP (`test:pgtap`) | 52 fichiers, **4 850 assertions** ; un échec isolé (`tests_psp_configurations.sql`, test 121) qui passe seul (165/165), non reproduit |
 | Suites citées par les fiches d'OP levés | `tests_offline_snapshots` 145, `tests_offline_rights` 197, `tests_offline_policy` 82, `tests_definer_trigger_writers` 24, `tests_execute_grants` 79, `tests_device_rights` 89, `tests_device_purge_window` 9 : PASS |
 | Mesures NFR-003 à NFR-005 | voir le compte rendu de la part A de WP21 (machine, `CI` non posé, p95, p99, maximum) |
+
+## Mission passerelle-locale (lot WP25, T117, 2026-11-12)
+
+Étapes et job ajoutés ; aucune étape existante retirée ni rendue facultative, le délai du job `ledger` n'est pas
+touché. **Toutes les actions tierces sont épinglées par SHA de commit** (le commentaire `# v4` donne la version
+lisible ; les quatre actions du job `ledger` sont épinglées depuis ce lot) ; `ci-workflow.spec.ts` échoue sur toute
+action non épinglée, tout `continue-on-error`, toute écoute sur le port 80.
+
+| Où | Étape | Commande | Ce qu'elle garantit |
+|---|---|---|---|
+| `ledger` | Stabilité du contrat (témoin positif) | `node tools/contract-stability/check.mjs` ; `check-baseline-decision.mjs` ; `node --test` du comparateur | Sortie `0` : rien de refusé hors `/edge/*`, ajouts admis seulement (NFR-012, SC-006). Jamais `continue-on-error` : une sortie `1` (panne) est rouge comme une sortie `2` (refus) |
+| `ledger` | Migrations de la passerelle | rôle `edge_app`, base `cashless_gateway_ci`, `npm run migrate -w @cashless/gateway` | Les migrations `edge-NNNN` s'appliquent sur une base vierge, en plus de celles du central |
+| `ledger` | Accès au conteneur PostgreSQL | `docker rename` du service, `pg_dump` du conteneur en tête du `PATH` | Les suites de la passerelle qui lisent le journal et `pg_dump` du serveur (canari) trouvent un client de la version 17 du serveur |
+| `ledger` | `gateway-integration` | `npm test -w @cashless/gateway -- --runInBand --forceExit` | Les suites de `apps/gateway/test` hors `e2e` (écartées par `jest.config.cjs`), en série |
+| `gateway-e2e` | Image, construction | `docker build -f apps/gateway/Dockerfile .` | L'image de la passerelle se construit (base épinglée par condensat) |
+| `gateway-e2e` | Image, balayage (DIRECTIVE_051) | `docker save`, puis Trivy lancé depuis son image officielle **épinglée par condensat** | Tableau complet des vulnérabilités au journal du job ; échec sur toute vulnérabilité `HIGH` ou `CRITICAL` corrigeable (`--severity HIGH,CRITICAL --ignore-unfixed --exit-code 1`, décision du porteur du 12/11 ; auparavant `CRITICAL` seule) |
+| `gateway-e2e` | Preuves de bout en bout | `npx jest -c test/e2e/jest.e2e.config.cjs --runInBand --forceExit` (dans `apps/gateway`) | NFR-001 à NFR-013, SC-001 à SC-007, en série, bases jetables `cashless_m8_*` |
+
+**Job `gateway-e2e`** : séparé du job `ledger` (batterie plus longue que la marge du job `ledger`, 45 minutes), `ubuntu-24.04`,
+service `postgres:17`, `timeout-minutes: 90`. Variables : `PGHOST=localhost`, `PGPORT=5432`, `PGPASSWORD` (service
+jetable du job), `NODE_ENV=test`, `M8_PG_CONTAINER` (conteneur du service, lu par le canari : `pg_dump` et journal du
+serveur). Les secrets du banc sont des valeurs de test locales, jamais des secrets du dépôt ; les certificats sont
+générés à l'exécution et jetés ; le banc écoute sur des ports tirés au hasard, jamais sur le 80.
+
+**NFR-001 (décision 54).** Le plancher de **100 débits par seconde** est exigé dans ce job
+(`M8_MIN_DEBIT_RATE: "100"`, valeur par défaut du test) : Linux et PostgreSQL natif, sans la saturation de la VM
+colima qui plafonne le poste local à environ 66 débits par seconde. **Ne jamais abaisser cette valeur dans la CI** :
+`ci-workflow.spec.ts` échoue si elle est inférieure à 100, dans le job ou dans une étape. En local, le plancher reste
+réglable (`M8_MIN_DEBIT_RATE=50 npx jest ...`) ; la cadence mesurée est toujours affichée, et la preuve de référence
+est celle de la CI ou de la recette.
+
+**Volumes de la recette (DoD de T114).** Le job pose `M8_E2E_LONG: "1"` : `exclusion-under-load.spec.ts` joue
+**20 bascules** sous charge (SC-002) et `release-10000.spec.ts` rend **10 000 opérations** (NFR-002, SC-003 ; mesuré à
+environ 6,6 minutes, dans la marge de 90 minutes). Sans cette variable les mêmes suites tournent en volumes réduits
+(3 bascules, 2 000 opérations) : c'est le mode de la boucle locale rapide, pas une preuve. **Ne jamais retirer ni
+changer cette valeur** : `ci-workflow.spec.ts` échoue si `M8_E2E_LONG` n'est pas `"1"` dans le job, dans une étape ou
+dans une commande. Il échoue aussi si le contrôle de stabilité, `gateway-integration`, le jest e2e ou le balayage sont
+affaiblis (`|| true`, `|| :`, `; true`, `set +e`, `--passWithNoTests`, `if:`), ou si l'appel bloquant de Trivy perd
+`--exit-code 1` ou n'exige plus à la fois `HIGH` et `CRITICAL`.
+
+**Tests de contrôle de la CI elle-même** (`apps/gateway/test/e2e/`), lancés avec la batterie e2e :
+`ci-workflow.spec.ts` (étapes présentes, non tolérantes, plancher, SHA), `acceptance-matrix.spec.ts` (chaque NFR et
+chaque SC vers un fichier de test existant, qui contient des tests et qui le nomme) et `consignation.spec.ts`
+(OP-N100 à OP-N119 et ADR-155 à ADR-187 consignés, test de borne nommé qui existe, report dans
+`PROMPTS-A-ENVOYER.md` et `PRD.md`). Chacun rejoue ses règles sur des copies défectueuses pour prouver qu'il peut
+échouer. Dans une lane de la mission, dont les documents peuvent être en retard sur `feat/passerelle-locale`,
+`consignation.spec.ts` se lance avec `M8_DOCS_ROOT=<racine du checkout principal>`.
+
+**Reproduire en local** (cluster `127.0.0.1:5433`, jamais le port 80 ni 5434) :
+`cd apps/gateway && PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres npx jest -c test/e2e/jest.e2e.config.cjs
+--runInBand --forceExit <fichiers>`.
+
+**Non vérifié localement** : le workflow n'a pas été exécuté sur un runner GitHub (seul son YAML et le test
+`ci-workflow.spec.ts` l'ont été). À la première exécution, surveiller : le `docker rename` du service, le client
+`pg_dump` du conteneur, la durée du job `gateway-e2e` (marge de 90 minutes), le téléchargement de la base de
+vulnérabilités de Trivy.
 
 ## Répétition locale du 2026-10-14 (mission bracelets-nfc, WP20)
 

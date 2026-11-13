@@ -1,0 +1,158 @@
+{
+  "_comment": "Référence épinglée du contrat (mission 8). Changer ce fichier est une décision du porteur : ligne 'Décision du porteur : <date> <référence ADR>' exigée par check-baseline-decision.mjs. Fichier à faire relire par une personne.",
+  "baseline": {
+    "commit": "d2a7c538c81a2a790c1aec6902aaf09283bab58f",
+    "path": "packages/contracts/openapi.yaml",
+    "sha256": "7c93e918f4d1d524278431051c5963e78eade10e7621e0fbe2240a66932d2787",
+    "x_edge_available_operations": 16
+  },
+  "admitted_additions": [
+    {
+      "pointer": "/paths/~1edge~1replication-feed/get/parameters/4",
+      "kind": "parameter",
+      "name": "after_change_seq",
+      "sha256": "7090d4631a51765e5bb821026ae43dabb5b2cd5ff40344e84507d5f1675ca6eb"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/edge_seq_applied",
+      "kind": "property",
+      "sha256": "6e2edd504f70120d11bcc732b97595b8670ab27eec7ceae71ea50a4d2cc2f192"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/device_seq_acked",
+      "kind": "property",
+      "sha256": "4f92574d76a5752e6323bc6dfad3f13c3642ac33da1deb8cd7d866cba0404c74"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/pwd_pack_key",
+      "kind": "property",
+      "sha256": "ecd4117cf51443eed534daebd78512c6086fa1c37e0bbf3a46d25a266a811c6f"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/edge_terms",
+      "kind": "property",
+      "sha256": "5517d5620f6c8c9dbf85e23b6bb2fb495872a6e4684dc9822973f951df44b1a7"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/reference",
+      "kind": "property",
+      "sha256": "b7cde2156ff050150106523947e8684f9f66f54a19573e98100bd049f9bae5c4"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/wallets/items/properties/kyc_verified",
+      "kind": "property",
+      "sha256": "2f8fc3af1bb2c29ce8a52c09ec8c09bf5a3c41a3c459ae225ac68bb89db2683c"
+    },
+    {
+      "pointer": "/components/schemas/ReplicationPage/properties/wallets/items/properties/topup_month_paid",
+      "kind": "property",
+      "sha256": "f5157a9289c66464db85e87c30eda2d4415b4abcb1799916569b7ccc1f272e75"
+    },
+    {
+      "pointer": "/components/schemas/EdgeSyncBatch/properties/staff_token_audit",
+      "kind": "property",
+      "sha256": "75111145f72b970e970856d7a58eef75ea0cd4458a086ad89c174c0f912c197f"
+    },
+    {
+      "pointer": "/components/schemas/EdgeReference",
+      "kind": "schema",
+      "sha256": "816d2352ea6c8fec74cc7df73df912d033d8c7c975e062697710000588ba22f3"
+    },
+    {
+      "pointer": "/components/schemas/EdgeGatewaySelf",
+      "kind": "schema",
+      "sha256": "b4369d8174eea028cd6f5c7e8a8c414e46d2b9ed750781296dcf1a22f44a7f8d"
+    },
+    {
+      "pointer": "/components/schemas/EdgeWalletState",
+      "kind": "schema",
+      "sha256": "323cb69166f2a69454364616752a43890e7645e0286dfd75cb7ead185a61c5e2"
+    },
+    {
+      "pointer": "/components/schemas/EdgeEventSettings",
+      "kind": "schema",
+      "sha256": "4fcdd9d32251a2ecfd64d22d54505e05c9cababd41e5bace300ace1444965ba2"
+    },
+    {
+      "pointer": "/components/schemas/EdgeDevice",
+      "kind": "schema",
+      "sha256": "b6cdb0fbd949cba8635dcb8d1d739a6d164c02516fada53b05d62c3abeb797a6"
+    },
+    {
+      "pointer": "/components/schemas/EdgeDeviceSeqAcked",
+      "kind": "schema",
+      "sha256": "255409aa766f395999fbdb555825ceb53c03f966f31d078322641c3abaffd093"
+    },
+    {
+      "pointer": "/components/schemas/EdgeDeviceConfig",
+      "kind": "schema",
+      "sha256": "ce58f4aeb6a8f9dc66e0a82db3d65933860c0f6480de7e56bb7eff9759dc2229"
+    },
+    {
+      "pointer": "/components/schemas/EdgeCashSession",
+      "kind": "schema",
+      "sha256": "1236950782bac0d02c314ff18ec44abaec9c85715d25b239fd0a7eace4635674"
+    },
+    {
+      "pointer": "/components/schemas/EdgeVendor",
+      "kind": "schema",
+      "sha256": "15a8a83fc85af50d9328c8cf404a69115a49914680eeda1e55b60080c25b0e8c"
+    },
+    {
+      "pointer": "/components/schemas/EdgeVendorSession",
+      "kind": "schema",
+      "sha256": "5c2c8b1f879ada0e6aa12fc0a92c931e300c8c14274280ff9feefb19f06735be"
+    },
+    {
+      "pointer": "/components/schemas/EdgeStaff",
+      "kind": "schema",
+      "sha256": "c3bb7a0288b6d8f6ad6d4aa15c6a0820cd5a06d5bf668355f7d24526d3977803"
+    },
+    {
+      "pointer": "/components/schemas/EdgeCatalog",
+      "kind": "schema",
+      "sha256": "efebedb02992dc3ff83b6a0ab9f6fca914313f1782d788b8283193e918cdbb5b"
+    },
+    {
+      "pointer": "/components/schemas/EdgeMediaRef",
+      "kind": "schema",
+      "sha256": "c4194cb40c6c856f452a3595f5b543792672b7ec9aed0cae546bbe88d8cb80fe"
+    },
+    {
+      "pointer": "/components/schemas/EdgeUnassignedMedia",
+      "kind": "schema",
+      "sha256": "8188f537cdb550df7c17f997efd8ce1749d3ccd5daac114d4c371d98963b51b4"
+    },
+    {
+      "pointer": "/components/schemas/EdgeStaffTokenAudit",
+      "kind": "schema",
+      "sha256": "fbbec514f8f5c859c0364e097cfbde3fd5ff42c3d47751d71cee1427e3274713"
+    },
+    {
+      "pointer": "/components/schemas/Problem/properties/edge_base_url",
+      "kind": "property",
+      "sha256": "7f5ae0cda8171072c5e1ddf4bfe9a6be999b98989c7442907de445fc8b00e9f9"
+    },
+    {
+      "pointer": "/components/schemas/EdgeSyncBatch/properties/local_orders",
+      "kind": "property",
+      "sha256": "58428fc49039669205ee32aad4799367605fe5df6563f434da419dec5f9d73c4"
+    },
+    {
+      "pointer": "/components/schemas/EdgeLocalOrder",
+      "kind": "schema",
+      "sha256": "f2bde78d25e9ae443f8a5957d42dfbd456b96a416ee452b0fac99b7bad10e3dc"
+    },
+    {
+      "pointer": "/components/schemas/EdgeSyncBatch/x-empty-batch",
+      "kind": "extension",
+      "sha256": "a16f63bcf58a59b4b17699d7c9c0e2c4741da011f0b23ea2d45e2cfa804037f3"
+    },
+    {
+      "pointer": "/components/schemas/EdgeSyncBatch/properties/operations/minItems",
+      "kind": "relaxation",
+      "before": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+    }
+  ]
+}

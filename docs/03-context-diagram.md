@@ -4,7 +4,8 @@
 > supportée nativement par Mermaid (`C4Context`). Rendu en repli Mermaid (`excalidraw-diagram-skill` non installé).
 > Dernière mise à jour : initialisation du 07/10/2026 (`SPECIFICATION.md` §1.2, §3, §11, §13 ; `PRD.md` §4).
 > Complément du 27/10/2026, confirmé à la review du 29/10/2026 : PSP et coffre des secrets, intégrations toujours en faux après la mission 6 (code relu : faux refusés au démarrage en production, processus public et `psp-poller` ; OP-N81, ADR-131).
-> Complément du 30/10/2026, confirmé à la review du 05/11/2026 (mission 7 mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir) : AWS KMS signe les snapshots hors ligne ; faux seulement, refusé au démarrage en production (test de preuve), jusqu'à la mission 12b (OP-N89).
+> Complément du 30/10/2026, confirmé à la review du 05/11/2026 (mission 7 mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026) : AWS KMS signe les snapshots hors ligne ; faux seulement, refusé au démarrage en production (test de preuve), jusqu'à la mission 12b (OP-N89).
+> Complément du 12/11/2026 (review de la mission 8, 25 lots approuvés, non fusionnée) : confirmé par le code, aucun système externe nouveau ; clés de la passerelle (stockage matériel, autorité des passerelles, clé TLS client en fichier durci) en faux ou en fichier jusqu'à la 12b, refusés en production (OP-N100, OP-N113). Complément du 05/11/2026 (plan de la mission 8, planifiée) : aucun système externe nouveau ; le stockage matériel de clés de la passerelle (module à choisir) reste un faux refusé en production jusqu'à la mission 12b (OP-N100) ; la passerelle tient une copie des clés publiques du serveur d'identité OIDC pour vérifier les jetons de personne hors réseau.
 > Complément du 21/10/2026 : liste de révocation des attestations Android et racine Apple App Attest (mission
 > « Identité et enrôlement des terminaux », mergée le 21/10/2026).
 
@@ -60,7 +61,7 @@ C4Context
 | Liste de révocation des attestations Android (Google, `android.googleapis.com/attestation/status`) | Système externe | Lue et mise en cache par l'API publique pour refuser à l'enrôlement une chaîne Key Attestation révoquée (intégré par la mission « Identité et enrôlement des terminaux ») |
 | Racines d'attestation Google et Apple App Attest | Réglage de déploiement | Racines de confiance des chaînes d'attestation, vérifiées localement à l'enrôlement ; aucun appel à Apple |
 
-La passerelle locale (mini-PC sur site) fait partie du système : elle figure dans `04-architecture-diagram.md`.
+La passerelle locale (mini-PC sur site) fait partie du système : elle figure dans `04-architecture-diagram.md`. Mission 8 (relue le 12/11/2026) : elle ne parle qu'au central (TLS mutuel) et aux terminaux du site, et ne dépend d'aucun service AWS ; ses clés passent par un port de stockage matériel (faux jusqu'à 12b).
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

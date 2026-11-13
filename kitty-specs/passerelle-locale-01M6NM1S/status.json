@@ -1,0 +1,441 @@
+{
+  "event_count": 282,
+  "last_event_id": "01M7873V4HTPA561ATCDQWFDGJ",
+  "materialized_at": "2026-11-12T15:48:09.489611+00:00",
+  "mission_number": "",
+  "mission_slug": "passerelle-locale-01M6NM1S",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 25,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871GF6791G12D9H2KVAGNG",
+      "last_transition_at": "2026-11-12T15:46:53.030818+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP01-contrat-stabilite/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP01-contrat-stabilite/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 19055,
+      "shell_pid_created_at": "1793892931.278113"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871KD9712S8N2C5NDC967V",
+      "last_transition_at": "2026-11-12T15:46:56.041435+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP02-shared-rules/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP02-shared-rules/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 19048,
+      "shell_pid_created_at": "1793892924.92073"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871PBV6V24BPFYD5XKTJPJ",
+      "last_transition_at": "2026-11-12T15:46:59.067466+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP03-base-edge-gateway/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP03-base-edge-gateway/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 19051,
+      "shell_pid_created_at": "1793892926.745251"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871SDQYN5PVTC1KCNSNXXA",
+      "last_transition_at": "2026-11-12T15:47:02.199781+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP04-base-handover/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP04-base-handover/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 28244,
+      "shell_pid_created_at": "1793893523.700464"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871WF0Q9Y2WQRZ49CQ8EWN",
+      "last_transition_at": "2026-11-12T15:47:05.312369+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP05-base-registre-lots/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP05-base-registre-lots/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 33099,
+      "shell_pid_created_at": "1793893680.066552"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M78722QVNWTB0Z92YVMEP6Q2",
+      "last_transition_at": "2026-11-12T15:47:11.739887+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP06-base-post-transaction/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP06-base-post-transaction/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7980,
+      "shell_pid_created_at": "1793961122.250083"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M78729BW3894B0EVS4587TPJ",
+      "last_transition_at": "2026-11-12T15:47:18.524462+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP07-base-guichet/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP07-base-guichet/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7444,
+      "shell_pid_created_at": "1794218169.096307"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872CD1CMQZDX3FJJ3PPXET",
+      "last_transition_at": "2026-11-12T15:47:21.633509+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP08-base-replication/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP08-base-replication/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16704,
+      "shell_pid_created_at": "1794220511.030425"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872NEXQZ9MSRV3CR3SZF0B",
+      "last_transition_at": "2026-11-12T15:47:30.909636+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP09-droits/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP09-droits/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 32228,
+      "shell_pid_created_at": "1794222264.790678"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872VFF49CYAZP0KEWVQE3H",
+      "last_transition_at": "2026-11-12T15:47:37.071281+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP10:20261112",
+        "reviewer": "relecteur distinct (sous-agent)",
+        "verdict": "approved"
+      },
+      "shell_pid": 96112,
+      "shell_pid_created_at": "1794236154.043864"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872YJNNNJ3EZKTC2T3NN7K",
+      "last_transition_at": "2026-11-12T15:47:40.246120+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP11:20261112",
+        "reviewer": "relecteur distinct (sous-agent)",
+        "verdict": "approved"
+      },
+      "shell_pid": 63936,
+      "shell_pid_created_at": "1794225478.872704"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873BX99R8AY54BDPRF2PMC",
+      "last_transition_at": "2026-11-12T15:47:53.897925+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP12-routes-edge/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP12-routes-edge/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 57699,
+      "shell_pid_created_at": "1794244269.488397"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873F0FNGH470QRV6DVP83Y",
+      "last_transition_at": "2026-11-12T15:47:57.071560+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP13-reception-sync/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP13-reception-sync/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12244,
+      "shell_pid_created_at": "1794308568.49922"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873R4AWGMH73JTXM0YDST9",
+      "last_transition_at": "2026-11-12T15:48:06.411115+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP14-journal-reprise/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP14-journal-reprise/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 65751,
+      "shell_pid_created_at": "1794316475.889677"
+    },
+    "WP15": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873J283J147QFVRFS4PRGX",
+      "last_transition_at": "2026-11-12T15:48:00.200235+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP15-edge-admin/review-cycle-3.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP15-edge-admin/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 58584,
+      "shell_pid_created_at": "1794244297.098408"
+    },
+    "WP16": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7871ZEAZV1D3TXB5HXXG1YD",
+      "last_transition_at": "2026-11-12T15:47:08.362610+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP16-socle-passerelle/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP16-socle-passerelle/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 14034,
+      "shell_pid_created_at": "1793962283.525189"
+    },
+    "WP17": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872648SGT3WBCRRWY4NX8F",
+      "last_transition_at": "2026-11-12T15:47:15.208407+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP17-autorite-passerelle/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP17-autorite-passerelle/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 19224,
+      "shell_pid_created_at": "1793963008.198711"
+    },
+    "WP18": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872FFQ33V6B053PJ9PNFB9",
+      "last_transition_at": "2026-11-12T15:47:24.791786+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP18-replication-passerelle/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP18-replication-passerelle/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20666,
+      "shell_pid_created_at": "1794221054.465805"
+    },
+    "WP19": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872RF8CTXMCW9J7X74TNQE",
+      "last_transition_at": "2026-11-12T15:47:33.992637+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP19:20261112",
+        "reviewer": "relecteur distinct (sous-agent)",
+        "verdict": "approved"
+      },
+      "shell_pid": 32785,
+      "shell_pid_created_at": "1794222280.107695"
+    },
+    "WP20": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7872JF29MBXR55DR4VNMTKH",
+      "last_transition_at": "2026-11-12T15:47:27.842995+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP20-file-vidage/review-cycle-3.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP20-file-vidage/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 76477,
+      "shell_pid_created_at": "1794226435.879468"
+    },
+    "WP21": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M787322WZM4D3H32T1VWCMW6",
+      "last_transition_at": "2026-11-12T15:47:43.836681+00:00",
+      "review_result": {
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP21-ventes/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 99409,
+      "shell_pid_created_at": "1794236258.275658"
+    },
+    "WP22": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M78735A95VBD81P6FTD7SFFR",
+      "last_transition_at": "2026-11-12T15:47:47.145710+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP22-guichet/review-cycle-3.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP22-guichet/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 63134,
+      "shell_pid_created_at": "1794316405.207779"
+    },
+    "WP23": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M78738FDC0CR3ZZ1JAKCX0HV",
+      "last_transition_at": "2026-11-12T15:47:50.381566+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP23-lots-snapshots/review-cycle-1.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP23-lots-snapshots/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1958,
+      "shell_pid_created_at": "1794236312.297179"
+    },
+    "WP24": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873N42GXWFCV659A7PWJJZ",
+      "last_transition_at": "2026-11-12T15:48:03.330671+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/passerelle-locale-01M6NM1S-coord/kitty-specs/passerelle-locale-01M6NM1S/tasks/WP24-purge-image/review-cycle-2.md",
+        "reference": "review-cycle://passerelle-locale-01M6NM1S/WP24-purge-image/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 10252,
+      "shell_pid_created_at": "1794393501.164856"
+    },
+    "WP25": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7873V4HTPA561ATCDQWFDGJ",
+      "last_transition_at": "2026-11-12T15:48:09.489611+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP25:20261112",
+        "reviewer": "relecteur distinct (sous-agent)",
+        "verdict": "approved"
+      },
+      "shell_pid": 16374,
+      "shell_pid_created_at": "1794394414.1669"
+    }
+  }
+}

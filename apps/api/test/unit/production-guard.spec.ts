@@ -24,7 +24,13 @@ import {
   UnsafeTransportError,
 } from '../../src/kms/production-guard';
 import { assertProcessIsSafe, tlsServerOptions } from '../../src/processes/bootstrap';
-import { ATTESTATION_VERIFIER, DEVICE_CA, TOKEN_SIGNER } from '../../src/security/port-tokens';
+import {
+  ATTESTATION_VERIFIER,
+  DEVICE_CA,
+  EDGE_CA,
+  TOKEN_SIGNER,
+} from '../../src/security/port-tokens';
+import { FakeEdgeCa } from '../../src/edge/ca/fake-edge-ca';
 import { DEVICE_PRODUCTION, testTls } from '../support/tls';
 
 const PRODUCTION = { production: true };
@@ -200,6 +206,19 @@ describe('aucun faux en production', () => {
     expect(() =>
       assertProcessIsSafe(processWith(true, KMS_PROVIDER, new FakeKms()) as never),
     ).toThrow(/service de clés/);
+  });
+
+  it('faux de l’autorité des passerelles (FakeEdgeCa, EDGE_CA) : production refusée, nommée', async () => {
+    const fake = await FakeEdgeCa.inMemory();
+    expect(fake.isFake).toBe(true);
+    expect(() => assertProcessIsSafe(processWith(true, EDGE_CA, fake) as never)).toThrow(
+      FakeInProductionError,
+    );
+    expect(() => assertProcessIsSafe(processWith(true, EDGE_CA, fake) as never)).toThrow(
+      /l’autorité des passerelles/,
+    );
+    expect(() => assertProcessIsSafe(processWith(false, EDGE_CA, fake) as never)).not.toThrow();
+    expect(() => assertProcessIsSafe(processWith(true, EDGE_CA, {}) as never)).not.toThrow();
   });
 
   // ----- Mission hors-ligne-snapshots-lots (WP09, T040) : le signataire de snapshots -----

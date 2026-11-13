@@ -122,6 +122,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
+- Gestion des clients par une application cliente (décision du porteur du 05/11/2026, mission 10c) : l'application
+  s'authentifie de serveur à serveur, crée ou retrouve un client par son identifiant externe, liste, recherche,
+  désactive, et obtient un jeton court pour agir en son nom sur les routes `/me` ; ses utilisateurs ne voient pas le
+  cashless. Cloisonnement entre applications et entre prestataires. Risque à trancher au cadrage : l'application devient
+  garante de l'identité de comptes qui portent de l'argent ; identification du client à soumettre au juriste.
   Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : connexion par numéro et code à usage unique, jetons d'accès et de renouvellement, déclaration de perte ; l'envoi réel du code (12b) et l'identification au guichet restent à faire (OP-N120, ADR-180).
   Recharge PSP testable de bout en bout en développement (10/11/2026) : configurations de démo, secrets de démo du faux coffre, route de simulation du paiement hors contrat, absente en production ; levée par la 12b (OP-N121, ADR-181).
 
@@ -141,6 +146,36 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Snapshots produits par un processus dédié (seul détenteur des clés), une version signée par pas ; signature par un
   faux KMS refusé en production : aucun snapshot servi en production avant la mission 12b (OP-N89).
 - Passerelle locale qui prend l'autorité de débit pendant une coupure (bascule, époque, reprise forcée). (§9.7)
+  Décisions du porteur du 05/11/2026 (mission 8) : bascule demandée par un admin par anticipation, jamais prise par la
+  passerelle ; recharges espèces sur sessions de caisse ouvertes au central avant la bascule, fermées au central après
+  le rendu ; aucune relève de guichet pendant la coupure ; promotion d'une passerelle de secours par handover normal ;
+  clés derrière un port de stockage matériel dont le faux est refusé en production : passerelle non utilisable en
+  production avant la mission 12b.
+- Contrat d'API stable depuis le 05/11/2026 : les routes sont partagées avec les équipes clientes ; aucun renommage,
+  retrait ni changement ; un ajout seulement s'il est indispensable et rétrocompatible.
+- Écarts acceptés de la mission 8 (passe contradictoire du plan, décisions du porteur du 05/11/2026, `OP-N100` à `OP-N110`, `ADR-155` à `ADR-165`) :
+  clés de la passerelle simulées jusqu'à la 12b ; jetons d'appareil de la passerelle sans rotation ; jeton de personne expiré toléré au guichet (12 h) ;
+  ventes `EDGE_ONLINE` bornées au rejeu avec perte maximale chiffrée ; inscription par une personne avec alerte et délai ; purge des secrets (limite du
+  mini-PC volé) ; passerelle perdue sans rejeu automatique ; dépassement temporaire d'un plafond réglementaire à la recharge espèces (à signaler au
+  juriste) ; `STALE` seulement si confirmé ou plausible ; « même moteur » devient « mêmes modules ».
+- Écarts de la mission 8 décidés en cours d'implémentation (09/11/2026, `OP-N111`, `OP-N112`, `ADR-166`, `ADR-167`) : rôle unique propriétaire de la
+  base locale de la passerelle (`TRUNCATE` refusé, le reste consigné) ; détention des deux clés de site par une seule personne non détectable ;
+  clé TLS client de la passerelle en fichier durci jusqu'à la mission 12b (`OP-N113`, `ADR-168`). Ordres locaux à deux personnes versés à l'audit
+  du central par un champ facultatif sous `/edge/*` (`ADR-169`). Abandon du retour de l'autorité par une seconde demande consigné
+  (`OP-N114`, `ADR-170`) ; `edge_base_url` et `authority_epoch` facultatifs au schéma `Problem` (`ADR-171`).
+  Renforcements décidés le même jour : recul d'horloge du central borné à quelques minutes ; plafond par recharge au guichet (500 000 XOF par défaut,
+  réglable) ; certificat client de la passerelle signé par le composant matériel ; frais recalculés par le central à la réception.
+- Purge des secrets de la passerelle (11/11/2026, `OP-N118`, `ADR-186`) : WAL et blocs libres non effacés, tables d'ajout seul non
+  vidées, purge hors de la transaction de la file, consignés jusqu'à la mission 12b ; TLS du port d'administration et purge
+  manuelle versée au central avant destruction faits dans la mission 8.
+- Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des
+  colis (`OP-N122`, `ADR-188`, décision du 12/11/2026, revue post-fusion C1) ; perte bornée par les plafonds de rejeu (`OP-N104`) ; levée
+  par la mission 12b (preuve signée du terminal relayée et vérifiée).
+- Purge manuelle forcée sans accusé tant qu'un lot sans opération ne peut pas porter l'ordre (`OP-N119`, `ADR-187`) ;
+  levé le 11/11/2026 par WP25 : lot de la passerelle sans opération accepté s'il porte des ordres locaux. Reprise forcée
+  bornée en haut (`OP-N117`, levé par WP25). Restent consignés : page de 200 bracelets illisibles qui arrête le service
+  des colis (`OP-N115`, `ADR-184`, mission 12b) ; grand livre passé à la main non vérifié par l'outil d'inscription
+  (`OP-N116`, mission 11a).
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)

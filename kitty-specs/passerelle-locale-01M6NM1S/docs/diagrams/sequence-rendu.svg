@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1552" viewBox="0 0 2066 1552">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1364" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="447.5" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="572.5,236 572.5,1364" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="960.0,236 960.0,1364" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
+<polyline points="1347.5,236 1347.5,1364" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="1735.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1364" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 564.5,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="564.5,290.72 545.1931836384118,301.2673618492925 545.1931836384118,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="280.35" y="253.72000000000003" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,366.72 952.0,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,366.72 932.6931836384118,377.2673618492925 932.6931836384118,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="667.85" y="329.72" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,442.71999999999997 580.5,442.71999999999997" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,442.71999999999997 599.8068163615882,432.1726381507075 599.8068163615882,453.26736184929246" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="794.0" y="405.71999999999997" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1197.5" y="488.72" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1729.0,594.72 1355.5,594.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1355.5,594.72 1374.8068163615883,584.1726381507076 1374.8068163615883,605.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="1312.85" y="557.72" width="456.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="644.72" width="344" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1341.5,746.72 580.5,746.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="580.5,746.72 599.8068163615882,736.1726381507076 599.8068163615882,757.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="716.0" y="709.72" width="488.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,822.72 952.0,822.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,822.72 932.6931836384118,833.2673618492925 932.6931836384118,812.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="600.25" y="785.72" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,898.72 1339.5,898.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1339.5,898.72 1320.1931836384117,909.2673618492925 1320.1931836384117,888.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="835.6" y="861.72" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="638.72" width="1856.0" height="293.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1341.5,1008.92 580.5,1008.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="580.5,1008.92 599.8068163615882,998.3726381507075 599.8068163615882,1019.4673618492924" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="716.0" y="971.92" width="488.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1084.92 952.0,1084.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,1084.92 932.6931836384118,1095.4673618492925 932.6931836384118,1074.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="693.85" y="1047.92" width="144.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1160.92 1339.5,1160.92" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1339.5,1160.92 1320.1931836384117,1171.4673618492925 1320.1931836384117,1150.3726381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="721.2" y="1123.92" width="477.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1236.92 952.0,1236.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,1236.92 932.6931836384118,1247.4673618492925 932.6931836384118,1226.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="605.45" y="1199.92" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1312.92 1339.5,1312.92" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1339.5,1312.92 1320.1931836384117,1323.4673618492925 1320.1931836384117,1302.3726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="851.2" y="1275.92" width="217.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Rendu : la file revient au central, dans l’ordre</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">RELEASING persisté avant tout ; le central vérifie la continuité puis reprend l’autorité</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Admin</text>
+<text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API centrale</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base centrale</text>
+<text x="1347.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Passerelle</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
+<text x="378.75" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Demander le rendu</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="766.25" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">RELEASE_REQUESTED</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="960.0" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Attente longue : demande reçue</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1347.5" y="520.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Persister RELEASING</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1541.25" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nouveau débit : 409 DEBIT_AUTHORITY_MOVING</text>
+<text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="74" y="662.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">loop Vider la file, un lot en vol</text>
+<text x="960.0" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lot EDGE_SYNC (500 opérations, 1 Mio au plus)</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="766.25" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rejouer en EDGE_SYNC, registre</text>
+<text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="960.0" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Résultat par opération</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="960.0" y="990.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rendu final (dernier numéro, dernière chaîne)</text>
+<text x="34.0" y="1011.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="766.25" y="1066.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Continuité ?</text>
+<text x="34.0" y="1087.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="960.0" y="1142.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">409 EDGE_NOT_CAUGHT_UP : reprendre le vidage</text>
+<text x="34.0" y="1163.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
+<text x="766.25" y="1218.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">COMPLETED, autorité = central</text>
+<text x="34.0" y="1239.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
+<text x="960.0" y="1294.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : rendu accepté</text>
+<text x="34.0" y="1315.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
+<text x="60" y="1409.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Chaîne incohérente : 409 CHAIN_BROKEN, alerte, examen manuel. Opération déjà reçue du terminal : DUPLICATE. RELEASING redémarré : pas de reprise des débits.</text>
+</g>
+</svg>

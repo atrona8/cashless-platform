@@ -89,6 +89,8 @@ INSERT INTO device (id, operator_id, event_id, pos_id, app_mode, status, serial)
 -- d002 passe CLOSED une fois ses participation, point de vente et terminal écrits
 -- (participation_guard refuse une participation sur un événement clos) ; garde de statut suspendue
 -- par le propriétaire, comme tests_configuration.sql.
+-- Les déclencheurs du journal sont différés : exécutés à l'instruction avant tout ALTER TABLE (0063, décision 28).
+SET CONSTRAINTS ALL IMMEDIATE;
 ALTER TABLE event DISABLE TRIGGER event_status_guard;
 UPDATE event SET status = 'CLOSED' WHERE id = pg_temp.id('32d002');
 ALTER TABLE event ENABLE TRIGGER event_status_guard;

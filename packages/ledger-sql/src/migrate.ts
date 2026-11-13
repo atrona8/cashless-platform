@@ -80,6 +80,7 @@ export async function migrate(
   client: Client,
   migrations: Migration[] = loadMigrations(),
   roleFiles: RoleFiles = loadRoleFiles(),
+  env: NodeJS.ProcessEnv = process.env,
 ): Promise<MigrationReport> {
   const report: MigrationReport = { applied: [], skipped: [] };
   // Toutes les instructions des migrations, de roles.sql et de post-roles.sql (CREATE/ALTER ROLE, GRANT,
@@ -133,6 +134,15 @@ export async function migrate(
     if (roleFiles.postRoles !== undefined) await client.query(roleFiles.postRoles);
     // roles.sql et post-roles.sql ne fixent volontairement aucun mot de passe : réglage local / CI seulement.
     // cashless_platform est créé par post-roles.sql : sans ce fichier, son mot de passe n'est pas posé.
+    // Rôles de la passerelle (mission passerelle-locale, WP10) : en production, jamais de rôle LOGIN sans mot de
+    // passe. Absence = refus de la série entière (rien n'est appliqué, la transaction est annulée).
+    if (report.postRoles && env.NODE_ENV === 'production') {
+      for (const variable of ['CASHLESS_EDGE_PASSWORD', 'CASHLESS_EDGEADMIN_PASSWORD'])
+        if (!env[variable])
+          throw new Error(
+            `${variable} manquant : rôle de la passerelle sans mot de passe en production`,
+          );
+    }
     const passwords: [role: string, password: string | undefined][] = [
       ['cashless_app', process.env.CASHLESS_APP_PASSWORD],
       ['cashless_platform', report.postRoles ? process.env.CASHLESS_PLATFORM_PASSWORD : undefined],
@@ -148,6 +158,9 @@ export async function migrate(
       ],
       ['cashless_snapsign', report.postRoles ? process.env.CASHLESS_SNAPSIGN_PASSWORD : undefined],
       ['cashless_maint', report.postRoles ? process.env.CASHLESS_MAINT_PASSWORD : undefined],
+      // Passerelle locale (WP09, créés par post-roles.sql) : processus `edge` et outil d'administration.
+      ['cashless_edge', report.postRoles ? env.CASHLESS_EDGE_PASSWORD : undefined],
+      ['cashless_edgeadmin', report.postRoles ? env.CASHLESS_EDGEADMIN_PASSWORD : undefined],
     ];
     for (const [role, password] of passwords) {
       if (!password) continue;

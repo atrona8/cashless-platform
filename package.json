@@ -4,9 +4,12 @@
   "description": "Système cashless multi-tenant — monorepo (SPECIFICATION §2.1)",
   "workspaces": [
     "apps/api",
+    "apps/gateway",
     "packages/contracts",
     "packages/ledger-sql",
-    "packages/tag-format"
+    "packages/shared-rules",
+    "packages/tag-format",
+    "tools/edge-admin"
   ],
   "engines": {
     "node": ">=22 <23"
@@ -17,7 +20,9 @@
     "test": "npm test --workspaces --if-present",
     "generate": "npm run generate -w @cashless/contracts",
     "format": "prettier --write \"**/*.{ts,js,cjs,mjs}\"",
-    "format:check": "prettier --check \"**/*.{ts,js,cjs,mjs}\""
+    "format:check": "prettier --check \"**/*.{ts,js,cjs,mjs}\"",
+    "edge-admin": "npm run edge-admin -w @cashless/edge-admin --",
+    "check:stability": "node tools/contract-stability/check.mjs && node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

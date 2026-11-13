@@ -1,6 +1,6 @@
 // Types du moteur d'écritures (SPECIFICATION §5.2 à §5.5, contracts/engine-command.md).
 // Les constructeurs sont purs : commande + contexte → lignes. Aucun accès base ici.
-import type { FeeRule } from './money';
+import type { FeeRule } from '@cashless/shared-rules';
 
 /** Les 26 types de transaction, dans l'ordre de la contrainte CHECK de journal_transaction.type. */
 export const TRANSACTION_TYPES = [

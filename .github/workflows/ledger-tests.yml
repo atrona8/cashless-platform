@@ -12,6 +12,10 @@
 # PSP, NFR-009 recharges espèces), suite seule après la passe parallèle ; les suites pgTAP de la mission
 # (tests_cash_sessions, tests_psp_configurations, tests_psp_topups, tests_cash_psp_rights, tests_execute_grants) sont
 # lues par le motif tests/*.sql de test-pgtap.sh ; `check:generated` garde les .sql générés intacts (C-002).
+# Mission passerelle-locale (lot WP25, T117) : contrôle de stabilité du contrat (témoin positif, jamais
+# tolérant), migrations de la passerelle puis suites `apps/gateway` hors e2e (`gateway-integration`), et job
+# séparé `gateway-e2e` (preuves de bout en bout en série, image construite puis balayée, NFR-001 à 100
+# débits/s). Toutes les actions tierces sont épinglées par SHA de commit (test ci-workflow.spec.ts).
 name: ledger-tests
 on: [push, pull_request]
 
@@ -60,6 +64,13 @@ jobs:
       DATABASE_URL_SNAPCONTENT: postgres://cashless_snapcontent:cashless_snapcontent_ci@localhost:5432/cashless_test
       DATABASE_URL_SNAPSIGN: postgres://cashless_snapsign:cashless_snapsign_ci@localhost:5432/cashless_test
       DATABASE_URL_MAINT: postgres://cashless_maint:cashless_maint_ci@localhost:5432/cashless_test
+      # Mission passerelle-locale (WP09, WP10, WP15) : rôles cashless_edge (processus /edge/*) et
+      # cashless_edgeadmin (outil d'inscription). Sans ces adresses, test/support/db.ts retombe sur
+      # 127.0.0.1:5433 (CI du 12/11 : 177 tests du central et 6 de tools/edge-admin en ECONNREFUSED).
+      CASHLESS_EDGE_PASSWORD: cashless_edge_ci
+      CASHLESS_EDGEADMIN_PASSWORD: cashless_edgeadmin_ci
+      DATABASE_URL_EDGE: postgres://cashless_edge:cashless_edge_ci@localhost:5432/cashless_test
+      DATABASE_URL_EDGEADMIN: postgres://cashless_edgeadmin:cashless_edgeadmin_ci@localhost:5432/cashless_test
       # Clé d'empreinte des codes de rattachement : valeur de test (32 octets en hexadécimal), sans valeur ailleurs.
       CLAIM_CODE_HMAC_KEY: 636173686c6573732d63692d636c61696d2d636f64652d686d61632d74657374
       # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
@@ -93,18 +104,18 @@ jobs:
     steps:
       # Historique complet : le test SC-007 (media-port-swap.spec.ts) compare les contrôleurs de la
       # mission 4 à la branche principale (`git merge-base HEAD origin/main`).
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
       # SDK Dart épinglé : bibliothèque de format des bracelets et types Dart du contrat.
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1
         with:
           sdk: "3.8.3"
 
@@ -115,6 +126,19 @@ jobs:
       - name: Installer pgTAP dans le conteneur et pg_prove sur le runner
         run: |
           docker exec ${{ job.services.postgres.id }} bash -c "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
+          # L'installation de pgTAP peut monter la version mineure de PostgreSQL 17 sous le serveur
+          # en marche (17.11 -> 17.12 le 12/11/2026 : plpgsql.so incompatible, toute migration
+          # échoue) : le service est redémarré sur les nouveaux binaires, puis attendu.
+          # Connexions : 100 par défaut ; l'étape de concurrence PSP (100 notifications simultanées
+          # plus les pools de l'API) les épuisait par intermittence (« too many clients already »,
+          # main 42821199712, feat 43413471770). Relevé à 300, pris en compte au redémarrage.
+          docker exec ${{ job.services.postgres.id }} psql -U postgres -c "ALTER SYSTEM SET max_connections = 300"
+          docker restart ${{ job.services.postgres.id }}
+          for i in $(seq 1 60); do
+            docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break
+            sleep 1
+          done
+          docker exec ${{ job.services.postgres.id }} pg_isready -U postgres
           sudo apt-get update -qq && sudo apt-get install -y -qq libtap-parser-sourcehandler-pgtap-perl postgresql-client
 
       # .npmrc porte ignore-scripts=true (research R-12) : vérifié avant l'installation.
@@ -142,6 +166,12 @@ jobs:
       - name: Types du contrat à jour (TypeScript et Dart)
         run: npm run check -w @cashless/contracts
 
+      - name: Stabilité du contrat (témoin positif)
+        run: |
+          node tools/contract-stability/check.mjs
+          node tools/contract-stability/check-baseline-decision.mjs
+          node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs
+
       - name: Types du contrat régénérés sans écart
         run: |
           npm run generate
@@ -156,6 +186,30 @@ jobs:
         run: |
           createdb cashless_test
           npm run migrate -w @cashless/ledger-sql
+
+      # Passerelle locale (WP25, T117) : rôle et base locale `edge_app`, migrations `edge-NNNN`, puis les suites
+      # d'intégration de `apps/gateway` hors e2e, en série. Le rôle `edge_app` est celui du site (propriétaire de
+      # sa base locale) ; mot de passe de test, public.
+      - name: Migrations de la passerelle (base locale edge_app)
+        env:
+          GATEWAY_DATABASE_URL: postgres://edge_app:edge_app_local@localhost:5432/cashless_gateway_ci
+        run: |
+          psql -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE edge_app LOGIN PASSWORD 'edge_app_local' NOSUPERUSER CREATEDB"
+          createdb -O edge_app cashless_gateway_ci
+          npm run migrate -w @cashless/gateway
+
+      # Quelques suites de la passerelle lisent le journal et lancent `pg_dump` du serveur : le conteneur du service
+      # porte le nom du poste de développement et `pg_dump` est celui du conteneur (version 17 du serveur).
+      - name: Accès au conteneur PostgreSQL pour les suites de la passerelle
+        run: |
+          docker rename ${{ job.services.postgres.id }} cashless-platform-pg17
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec docker exec -e PGPASSWORD="$PGPASSWORD" cashless-platform-pg17 pg_dump "$@"\n' > "$RUNNER_TEMP/bin/pg_dump"
+          chmod +x "$RUNNER_TEMP/bin/pg_dump"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Intégration de la passerelle (gateway-integration, hors e2e, en série)
+        run: npm test -w @cashless/gateway -- --runInBand --forceExit
 
       - name: Suites pgTAP (référence, scénario, S21, suites du dépôt dont celles des terminaux)
         run: npm run test:pgtap -w @cashless/ledger-sql
@@ -240,3 +294,69 @@ jobs:
         run: >-
           npm test -w @cashless/api -- --runInBand
           end-to-end/offline-latency end-to-end/snapshot-latency
+
+  # Preuves de bout en bout de la passerelle locale (mission 8, WP25, T117) : deux processus, deux bases, relais
+  # TCP, canari, purge, stabilité du contrat. Job SEPARÉ : la batterie est plus longue que les 20 minutes de
+  # marge du job `ledger` (dont le délai n'est pas touché) et tourne en série (`--runInBand`, une seule base à la
+  # fois). NFR-001 (décision 54) : plancher de 100 débits/s EXIGÉ ici (Linux, PostgreSQL natif) ; en local il reste
+  # réglable (`M8_MIN_DEBIT_RATE`), jamais abaissé en CI. Aucune écoute sur le port 80 : les bancs écoutent sur des
+  # ports tirés au hasard. Les secrets du banc sont des valeurs de test locales, publiques.
+  gateway-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      NODE_ENV: test
+      # NFR-001 : 100 débits/s exigés (décision 54). Ne jamais abaisser dans ce job (ci-workflow.spec.ts).
+      M8_MIN_DEBIT_RATE: "100"
+      # Volumes de la recette (DoD de T114) : 20 bascules sous charge (SC-002) et 10 000 opérations rendues
+      # (NFR-002, SC-003). Sans cette variable les suites tournent en volumes réduits (3 bascules, 2 000
+      # opérations). Ne jamais retirer ni changer (ci-workflow.spec.ts).
+      M8_E2E_LONG: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      # Conteneur PostgreSQL lu par le canari (`pg_dump`, journal du serveur) : celui du service. Le contexte
+      # `job` n'existe pas dans l'`env` d'un job : la variable est posée par une étape.
+      - name: Conteneur du service PostgreSQL
+        run: echo "M8_PG_CONTAINER=${{ job.services.postgres.id }}" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Dépendances (sans scripts d'installation)
+        run: |
+          test "$(npm config get ignore-scripts)" = "true"
+          npm ci --ignore-scripts
+
+      - name: Image de la passerelle (construction)
+        run: docker build -f apps/gateway/Dockerfile -t cashless-gateway-ci .
+
+      # DIRECTIVE_051 : balayage des vulnérabilités de l'image (condensats de base compris). Outil lancé depuis
+      # son image officielle épinglée par condensat (aucune action tierce). Tableau complet au journal du job,
+      # puis échec sur toute vulnérabilité HIGH ou CRITICAL corrigeable
+      # (décision du porteur, 12/11) ; le balayage n'est jamais facultatif.
+      - name: Image de la passerelle (balayage des vulnérabilités, DIRECTIVE_051)
+        run: |
+          docker save cashless-gateway-ci -o "$RUNNER_TEMP/gateway-image.tar"
+          TRIVY=ghcr.io/aquasecurity/trivy@sha256:ab70a02200597efa04748f210f793936eb647cbcdb0ea69cc30b226d6f5a22c7
+          docker run --rm -v "$RUNNER_TEMP:/scan:ro" "$TRIVY" image --input /scan/gateway-image.tar \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table
+          docker run --rm -v "$RUNNER_TEMP:/scan:ro" "$TRIVY" image --input /scan/gateway-image.tar \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --quiet
+
+      - name: Preuves de bout en bout de la passerelle (en série, NFR-001 à NFR-013, SC-001 à SC-007)
+        working-directory: apps/gateway
+        run: npx jest -c test/e2e/jest.e2e.config.cjs --runInBand --forceExit

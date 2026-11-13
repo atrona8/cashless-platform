@@ -254,8 +254,12 @@ SELECT ok(NOT EXISTS (SELECT 1 FROM pg_trigger g JOIN pg_proc p ON p.oid = g.tgf
                        WHERE g.tgrelid IN ('sale_attribution'::regclass,
                                            'approval_token_use'::regclass,
                                            'vendor_session'::regclass)
-                         AND NOT g.tgisinternal AND p.prosecdef),
-  'aucun déclencheur SECURITY DEFINER sur sale_attribution, approval_token_use, vendor_session');
+                         AND NOT g.tgisinternal AND p.prosecdef
+                         -- 0063 (WP08) : edge_ref_trigger, déclencheur différé du journal de réplication sur vendor_session ;
+                         -- écrivain unique edge_ref_emit_many, journal en ajout seul, aucun GRANT (liste exacte :
+                         -- tests_definer_trigger_writers.sql).
+                         AND p.proname <> 'edge_ref_trigger'),
+  'aucun déclencheur SECURITY DEFINER sur sale_attribution, approval_token_use, vendor_session (hors journal 0063)');
 SELECT is((SELECT relrowsecurity::text || relforcerowsecurity::text FROM pg_class
             WHERE oid = 'sale_attribution'::regclass), 'truetrue',
   'sale_attribution : RLS activée et forcée');

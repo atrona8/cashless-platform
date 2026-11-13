@@ -8,7 +8,8 @@
 > 27/10/2026 : plan de la mission 6 « Recharges, caisses et PSP » finalisé (`recharges-caisses-psp-01M5YEBA`).
 > 29/10/2026 : mission 6 relue (14 lots approuvés), acceptée et mergée sur `feat/recharges-caisses-psp`, dans `main` par la PR #8 le 29/10/2026.
 > 30/10/2026 : plan de la mission 7 « Hors ligne : snapshots et lots » finalisé (`hors-ligne-snapshots-lots-01M645RN`).
-> 05/11/2026 : mission 7 acceptée puis mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir (21 lots sur 21 approuvés le 04/11/2026).
+> 05/11/2026 : mission 7 acceptée puis mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
+> 12/11/2026 : review de la mission 8 terminée (25 lots sur 25 approuvés), mission NON acceptée ni fusionnée ; documents recalés sur le code. 05/11/2026 : plan de la mission 8 « Passerelle locale de site » finalisé (`passerelle-locale-01M6NM1S`, planifiée) ; statut de la mission 7 corrigé (dans `main` par la PR #10).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
 ## Vision
@@ -35,7 +36,7 @@ Au 27/10/2026, six missions sont fusionnées dans `main` : 1 (grand livre), 2 (i
 (encaissement en ligne, PR #6 : contrat d'API, vendeurs et sessions par PIN, catalogue versionné, paiement par
 bracelet et par QR, annulation à deux voies, OP-N74 levé, preuves de bout en bout ; latence du paiement par bracelet
 en CI p95 ≈ 29 ms, p99 ≈ 32 ms). Revue post-fusion de la 5b : publiable avec réserves (mineurs de test et de
-consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et les missions 8 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) est mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir (21 lots sur 21 approuvés le 04/11/2026).
+consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main` par la PR #8 le 29/10/2026 ; la mission 6b (adaptateurs PSP réels et coffre des secrets) et la mission 8 (passerelle locale : review terminée le 12/11/2026, 25 lots sur 25 approuvés, accept et consolidate à venir, NON fusionnée) et les missions 9 à 13 sont planifiées (`PROMPTS-A-ENVOYER.md`) ; la mission 7 (hors ligne : snapshots et lots) est mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
 
 ### Grand livre et moteur d'écritures
 - Description : comptabilité en partie double par pool d'argent ; un seul point d'écriture (`post_transaction`) ;
@@ -96,7 +97,7 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
 ### Hors ligne et passerelle locale
 - Description : snapshot signé, plafonds hors ligne, lots numérotés, conflits, passerelle locale qui prend
   l'autorité de débit pendant une coupure (§9, `sync_protocol.md`).
-- Statut : côté serveur, ✅ mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir (mission 7, 21 lots sur 21 approuvés le 04/11/2026)
+- Statut : côté serveur, ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (mission 7, 21 lots sur 21 approuvés le 04/11/2026)
   Livré par la mission 7 : politique hors ligne à trois portées (organisateur, événement, terminal) plafonnée par le prestataire,
   avec le risque maximal affiché ; snapshots signés `FULL` ou `DELTA` (60 s après un changement, 5 s après un blocage,
   mots de passe chiffrés pour le seul terminal) ; lots de 500 opérations au plus, une transaction par opération, sans
@@ -111,8 +112,21 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
   donc aucun snapshot servi en production avant 12b (OP-N41, OP-N73 restent ouverts). Dettes de droits levées par la
   mission : OP-N57, OP-N58, OP-N68, OP-N69, OP-N75. Limites nommées ouvertes : OP-N89 à OP-N98, dont un changement
   ordinaire de snapshot visible en 60 s plus la boucle (OP-N98). Réserve : le câblage des refus « grand livre verrouillé »
-  et « date limite de synchronisation dépassée » n'est prouvé qu'en test de fonction pure. Passerelle locale : 📋 planifiée (mission 8).
-- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, ✅ mergée sur feat (f3bef0c0, 05/11/2026), PR vers main à venir) ; passerelle : à définir (mission 8)
+  et « date limite de synchronisation dépassée » n'est prouvé qu'en test de fonction pure. 
+  **Passerelle locale : 🔎 relue (mission 8, 25 lots sur 25 approuvés le 12/11/2026 ; NON acceptée, NON fusionnée).** Livré sur la branche
+  `feat/passerelle-locale` : une passerelle de site (`apps/gateway`,
+  base PostgreSQL locale à schéma réduit) devient la seule autorité de débit de l'événement pendant la coupure, puis rend l'autorité au
+  central sans perte ni double écriture ; bascule demandée par un admin, avec le lien (jamais prise par la passerelle) ; 16 opérations
+  servies avec les formats du central ; recharges espèces, activations et cautions sur une session de caisse ouverte au central avant la
+  bascule ; rendu avec continuité vérifiée ; reprise forcée à deux si la passerelle est perdue ; passerelle de secours `STANDBY` ;
+  routes `/edge/*` et `debit-authority` au central, rôle de base `cashless_edge`, contrat inchangé pour les équipes clientes (ajouts
+  facultatifs sous `/edge/*` et sur `Problem`, 167 chemins et 202 opérations inchangés) ; purge des secrets à la clôture ou à deux
+  personnes, versée au central avant la destruction ; image Docker et procédure d'exploitation. Limites nommées (OP-N100 à OP-N119, dont OP-N117
+  et OP-N119 levés ; ADR-155 à ADR-187) : clés de la passerelle simulées jusqu'à la
+  mission 12b, donc la passerelle n'est pas utilisable en production avant ; ventes `EDGE_ONLINE` bornées au rejeu ; jetons d'appareil
+  de la passerelle sans rotation ; jeton de personne expiré toléré 12 h ; inscription par une personne ; recharge espèces à signaler au
+  juriste. Détail : `kitty-specs/passerelle-locale-01M6NM1S/docs/`.
+- Mission(s) associée(s) : `hors-ligne-snapshots-lots-01M645RN` (Hors ligne : snapshots et lots, ✅ mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026) ; passerelle : `passerelle-locale-01M6NM1S` (Passerelle locale de site, 🔎 relue le 12/11/2026, 25 lots sur 25 approuvés, accept et consolidate à venir)
 
 ### Argent réel : PSP, caisses, rapprochements, versements
 - Description : Wave, Orange Money, carte (PayDunya, Stripe) ; sessions de caisse ; rapprochements ; versements

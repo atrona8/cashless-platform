@@ -125,7 +125,8 @@ SELECT is((SELECT count(*)::int FROM pg_policies WHERE tablename = 'media' AND r
 -- les fonctions DEFINER du registre y écrivent (cashless_app n'a aucun INSERT sur device_seq_registry, roles.sql).
 SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relname, p.proname)
              FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_class c ON c.oid = t.tgrelid
-            WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace),
+            WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace
+              AND p.proname <> 'edge_ref_trigger'),
   'account:account_hot_switch anomaly:anomaly_cash_due_guard app_user:app_user_guard audit_log:audit_log_chain '
   'config_version:config_version_assign contract:contract_version_assign '
   'device_seq_registry:close_offline_batch_retry event:event_jurisdiction_bounds '
@@ -137,12 +138,37 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
   -- AFTER INSERT avec WHEN : deux déclencheurs, une fonction)
   'offline_policy:log_offline_policy offline_policy:offline_policy_scope_guard '
   'point_of_sale:point_of_sale_guard '
-  'posting:posting_cash_desk_guard '
+  -- Mission passerelle-locale (WP13, 0066, décision 38 du porteur) : check_balanced (déclencheur de contrainte
+  -- différé posting_balanced) passe en DEFINER pour que le COMMIT d'une écriture sous cashless_edge lise `posting`
+  -- sans droit de table. Sans paramètre, ne rend rien, ne lit que les lignes de la transaction et ne fait que
+  -- refuser une écriture déséquilibrée : aucun nouvel écrivain (posting n'est écrit que par les fonctions du grand
+  -- livre). Fonction à faire relire par une personne (0066).
+  'posting:check_balanced posting:posting_cash_desk_guard '
   'psp_chargeback:psp_chargeback_cap psp_chargeback:psp_chargeback_guard '
   'psp_configuration:psp_configuration_immutable psp_event:psp_event_guard '
   'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard '
   'wallet:log_wallet_status wallet:log_wallet_status',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
+-- Mission passerelle-locale (WP08, 0063) : edge_ref_trigger, déclencheur du journal de réplication (écrit au COMMIT).
+-- Écrivain unique : edge_ref_emit_many (verrou `edge-reference`, numérotation) ; le journal est en ajout seul (immuable,
+-- vidage interdit) et aucune de ces fonctions n'a de GRANT. Une entrée par déclencheur : liste exacte.
+SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relname, p.proname)
+             FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_class c ON c.oid = t.tgrelid
+            WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace
+              AND p.proname = 'edge_ref_trigger'),
+  'app_user:edge_ref_trigger cash_desk:edge_ref_trigger cash_session:edge_ref_trigger '
+  'cash_session:edge_ref_trigger catalog_version:edge_ref_trigger device:edge_ref_trigger '
+  'device:edge_ref_trigger device_config_served:edge_ref_trigger '
+  'device_refresh_token:edge_ref_trigger edge_gateway:edge_ref_trigger '
+  'edge_gateway:edge_ref_trigger event:edge_ref_trigger jurisdiction_profile:edge_ref_trigger '
+  'kyc_verification:edge_ref_trigger kyc_verification:edge_ref_trigger ledger:edge_ref_trigger '
+  'media:edge_ref_trigger media:edge_ref_trigger media_assignment:edge_ref_trigger '
+  'media_assignment:edge_ref_trigger media_batch:edge_ref_trigger '
+  'merchant_participation:edge_ref_trigger point_of_sale:edge_ref_trigger '
+  'role_assignment:edge_ref_trigger role_assignment:edge_ref_trigger vendor:edge_ref_trigger '
+  'vendor:edge_ref_trigger vendor_session:edge_ref_trigger vendor_session:edge_ref_trigger '
+  'wallet:edge_ref_trigger wallet:edge_ref_trigger',
+  'déclencheurs du journal de réplication (edge_ref_trigger) : liste exacte, écrivain unique edge_ref_emit_many');
 -- Liste exacte des droits d'écriture des rôles de l'application sur les deux tables. Avant 0018 :
 --   cashless_app (UPDATE status de media, INSERT et UPDATE de media_batch) avait INSERT sur les deux historiques :
 --   le déclencheur n'écrit rien de plus qu'avant (et UPDATE ne crée aucun rattachement) ;
