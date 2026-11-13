@@ -8,6 +8,9 @@ requirement_refs:
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: 39f0248adde7369f088498f15ce2ed5441ca0787
+created_at: '2026-11-13T14:52:32.085199+00:00'
 subtasks: [T007, T008, T009, T010, T011]
 phase: Phase 1 - Base
 agent: claude
@@ -16,12 +19,12 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-role: implementer
-model: sonnet
-execution_mode: code_change
 authoritative_surface: apps/api/src/ledger/
-owned_files: [packages/ledger-sql/migrations/0082_replace_media_cash_due.sql, packages/ledger-sql/tests/tests_replace_cash_due.sql, apps/api/src/ledger/status-matrix.ts, apps/api/src/ledger/ledger-engine.service.ts, apps/api/test/unit/ledger/status-matrix*.spec.ts, apps/api/test/integration/ledger/refund-reversal-matrix.spec.ts]
 create_intent: [packages/ledger-sql/migrations/0082_replace_media_cash_due.sql, packages/ledger-sql/tests/tests_replace_cash_due.sql, apps/api/test/unit/ledger/status-matrix-refund-reversal.spec.ts, apps/api/test/integration/ledger/refund-reversal-matrix.spec.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [packages/ledger-sql/migrations/0082_replace_media_cash_due.sql, packages/ledger-sql/tests/tests_replace_cash_due.sql, apps/api/src/ledger/status-matrix.ts, apps/api/src/ledger/ledger-engine.service.ts, apps/api/test/unit/ledger/status-matrix*.spec.ts, apps/api/test/integration/ledger/refund-reversal-matrix.spec.ts]
+role: implementer
 tags: []
 tracker_refs: []
 ---
