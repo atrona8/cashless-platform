@@ -92,7 +92,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 Tranché le 09/10/2026 (ADR-79, ex-OP-N40) : 30 jours par défaut (`IDEMPOTENCY_TTL_HOURS` = 720), conformément au
 contrat ; les clés des terminaux, qui sont aussi la clé du grand livre, sont conservées pour toujours.
 
-## 7. Passerelle locale (mission 8, relue le 12/11/2026, non fusionnée)
+## 7. Passerelle locale (mission 8, dans `main` par la PR #12 le 13/11/2026)
 
 Aucune dépendance nouvelle : `apps/gateway` n'utilise que des paquets déjà en place dans `apps/api` (`@nestjs/*` 11.2.7, `pg` 8.23.1,
 `jose` 6.2.12, `@peculiar/x509` 2.1.0, `canonicalize` 5.1.0, `cbor2` 2.3.0, `structured-headers` 2.1.0, `tsx` 4.23.15), aux mêmes versions

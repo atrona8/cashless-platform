@@ -3,7 +3,7 @@
 > Modèle des entités métier tel qu'il est **réellement** dans le schéma SQL (source normative, SPECIFICATION §0.3) :
 > `packages/ledger-sql/schema_grand_livre_cashless.sql` et les migrations 0002 à 0020 (missions 1 à 4, état du
 > 16/10/2026, correctif post-fusion n° 1 compris ; mission 4 mergée le 16/10/2026, dans `main` par la PR #3).
-> Complément du 12/11/2026 (review de la mission 8, 25 lots approuvés, NON fusionnée) : section 4 sexies recalée sur les migrations réelles `0058` à `0072` de la branche `feat/passerelle-locale` (8 tables nouvelles, 103 au total). Complément du 05/11/2026 (plan de la mission 8) : section 4 sexies prévue. Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
+> Complément du 12/11/2026 (review de la mission 8, 25 lots approuvés ; mission dans `main` par la PR #12 le 13/11/2026) : section 4 sexies recalée sur les migrations réelles `0058` à `0072` de la branche `feat/passerelle-locale` (8 tables nouvelles, 103 au total). Complément du 05/11/2026 (plan de la mission 8) : section 4 sexies prévue. Complément du 21/10/2026 : migrations 0021 à 0027, 0029 et 0030 de la mission « Identité et enrôlement des
 > terminaux » (mergée, dans `main` par la PR #4 le 22/10/2026), section 4 bis. Seuls les attributs utiles à la compréhension sont montrés ; les
 > colonnes techniques (horodatages de création, empreintes de chaîne, compteurs internes) sont omises.
 >
@@ -595,7 +595,7 @@ classDiagram
   WalletStatusHistory "*" --> "1" Wallet
 ```
 
-## 4 sexies. Passerelle locale : autorité, file, réplication (mission « Passerelle locale de site », 🔎 relue le 12/11/2026, 25 lots approuvés, non fusionnée)
+## 4 sexies. Passerelle locale : autorité, file, réplication (mission « Passerelle locale de site », ✅ mergée sur feat (9d5e4592, 12/11/2026), dans `main` par la PR #12 le 13/11/2026)
 
 > **Recalée le 12/11/2026 sur les migrations réelles** `0058` à `0072` (`packages/ledger-sql/migrations`, lane `y` de la mission) : 8 tables
 > nouvelles (`0058` : `edge_reference_change` ; `0060` : `edge_sync_batch`, `edge_sync_batch_result` ; `0061` : `edge_platform_setting` ;

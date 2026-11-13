@@ -958,7 +958,7 @@
   {
     "mission": "passerelle-locale-01M6NM1S",
     "titre_cas_usage": "Passerelle locale de site",
-    "statut": "relue (25 lots sur 25 approuvés le 12/11/2026 ; non acceptée, non fusionnée, accept et consolidate à venir)",
+    "statut": "mergée (dans main par la PR #12 le 13/11/2026 ; acceptée et consolidée le 12/11/2026)",
     "user_stories": [
       {
         "titre": "Basculer vers la passerelle",

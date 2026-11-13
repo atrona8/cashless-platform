@@ -1,6 +1,6 @@
 # Notes d'architecture : mission passerelle-locale-01M6NM1S
 
-> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission NON acceptée, NON consolidée, NON fusionnée.
+> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission acceptée et consolidée le 12/11/2026, dans `main` par la PR #12 le 13/11/2026.
 > Recalé sur le code de la lane `y` (qui contient toutes les autres lanes). Sources : `plan.md`, `research.md`, `data-model.md`,
 > `contracts/`, `docs/passation-8/suivi-lots.md` (journal des lots) et `docs/passation-8/contexte-m8.md` (décisions 1 à 58 du porteur).
 > Le code fait foi sur le plan quand ils divergent (voir « Écarts entre le plan et le livré »).

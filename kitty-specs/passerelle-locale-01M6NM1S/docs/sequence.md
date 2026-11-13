@@ -1,6 +1,6 @@
 # Séquences : mission passerelle-locale-01M6NM1S
 
-> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission NON acceptée, NON fusionnée. Flux recalés sur le code de la
+> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission acceptée et consolidée le 12/11/2026, dans `main` par la PR #12 le 13/11/2026. Flux recalés sur le code de la
 > lane `y`. Sources : `plan.md`, `contracts/edge-routes.md`, `sync_protocol.md` §9, `docs/passation-8/suivi-lots.md`. Diagrammes
 > `/illustre`, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les quatre diagrammes du plan restent justes et ne
 > sont pas redessinés ; un cinquième (purge manuelle) est ajouté.
