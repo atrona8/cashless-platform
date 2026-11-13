@@ -423,6 +423,11 @@ describe('central : aucun faux en production', () => {
       edgeProcess: false,
       suite: 'test/unit/production-guard.spec.ts',
     },
+    // App festivalier (PR #11, migration 0080) : l'envoyeur de codes n'existe qu'en faux (mission 12b).
+    'l’envoi des codes à usage unique': {
+      edgeProcess: false,
+      suite: 'test/unit/production-guard.spec.ts',
+    },
   };
 
   it('chaque faux du central est rattaché à un démarrage réel ou à une suite qui existe', () => {
