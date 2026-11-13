@@ -99,6 +99,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
 | OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Mission 12b |
+| OP-N123 | Demande de remboursement créée par le back-office (virement `BANK_TRANSFER`) : opération absente du contrat, reportée de la 9a (décision du 13/11/2026) | Non | Non | Mission 9b |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -1575,6 +1576,21 @@ Mission 8 (passerelle locale), revue post-fusion (constat C1), décision du port
   opération reçue d'une passerelle authentifiée est repris ; une vente ainsi crue reste sous les plafonds d'ADR-159 ; tout
   élargissement de la confiance rend le test rouge.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N123 — Demande de remboursement créée par le back-office (virement bancaire), reportée (13 novembre 2026)
+
+Mission 9a (remboursements), specify ; décision du porteur du 13/11/2026 (« reporter, consigné »).
+**Bloque le code : non. Bloque la production : non** (le canal virement reste inutilisable d'ici là).
+
+- **Constat.** SPECIFICATION §8.5 réserve le virement bancaire aux demandes créées par le back-office ; le contrat
+  `openapi.yaml` (description de `createMyRefundRequest`) déclare cette opération « à ajouter, non décrite ici ». La 9a
+  sert le contrat tel quel : demandes de l'app (Wave, Orange Money), approbation, confirmation, refus, guichet de retour.
+- **Conséquence.** D'ici la 9b, un gros montant se rembourse par Wave ou Orange Money (circuit à deux, vérification
+  d'identité au-delà de `refund_new_number_max` pour un autre numéro) ou en espèces au guichet de retour.
+- **Mission qui le lève.** Mission 9b : ajout rétrocompatible au contrat (création par le back-office, `BANK_TRANSFER`
+  avec IBAN), annoncé à l'équipe back-office, même circuit à deux.
+- **Condition de levée.** Opération au contrat, servie et testée (demande `BANK_TRANSFER` créée par le back-office,
+  approuvée à deux, confirmée).
 ### OP-N120 — Code à usage unique rendu en en-tête de réponse par le faux envoyeur (10 novembre 2026)
 
 Décision du porteur du 10/11/2026 (authentification des festivaliers servie en avance sur la mission 10a, hors Spec Kitty) ;

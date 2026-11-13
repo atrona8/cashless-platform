@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-13T13:05:42.666002Z",
+      "decision_id": "01M7AG73R9WN4A9S69VRGMJF57",
+      "final_answer": "Manuel, comme la SPECIFICATION (\u00a78.5, ADR-53) : paiement hors syst\u00e8me, confirmation ou \u00e9chec au back-office avec r\u00e9f\u00e9rence ; aucun port de versement dans la 9a",
+      "input_key": "payout_mode",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Manuel (SPECIFICATION, ADR-53)",
+        "Port automatique avec faux",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Versement d'un remboursement Wave/Orange Money/virement : manuel comme le pr\u00e9voit la SPECIFICATION (\u00a78.5, ADR-53 : paiement hors syst\u00e8me puis confirmation au back-office avec r\u00e9f\u00e9rence) ou par un port de versement automatique avec faux jusqu'\u00e0 la 12b ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:06:45.236134Z",
+      "resolved_by": null,
+      "slot_key": "specify.payout.mode",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:07:27.281640Z",
+      "decision_id": "01M7AGA9XHFVJJSK267D76M9D4",
+      "final_answer": "Reporter : la demande cr\u00e9\u00e9e par le back-office (virement BANK_TRANSFER) n'est pas dans la 9a ; consign\u00e9e (OP + report en 9b), contrat inchang\u00e9",
+      "input_key": "backoffice_created_request",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Reporter (9b ou 11a), consign\u00e9",
+        "Ajouter en 9a (route r\u00e9trocompatible)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Demande de remboursement cr\u00e9\u00e9e par le back-office (virement bancaire, BANK_TRANSFER) : le contrat la d\u00e9clare \u00ab op\u00e9ration \u00e0 ajouter, non d\u00e9crite \u00bb. L'ajouter dans la 9a (route r\u00e9trocompatible) ou la reporter ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:09:28.834745Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.backoffice-created-request",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+  "version": 1
+}
