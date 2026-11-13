@@ -1,0 +1,17 @@
+{
+  "coordination_branch": "kitty/mission-remboursements-01M7AG5V",
+  "created_at": "2026-11-13T13:05:01.682249+00:00",
+  "flattened": false,
+  "friendly_name": "Remboursements des festivaliers",
+  "mid8": "01M7AG5V",
+  "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+  "mission_number": null,
+  "mission_slug": "remboursements-01M7AG5V",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Mission 9a, découpée de la mission 9 le 13/11/2026 : l'app festivalier attend les demandes de remboursement (routes déjà au contrat). Couvre les demandes par l'app et le back-office, l'approbation à deux, le remboursement vers un autre numéro avec décision du titulaire, les espèces au guichet et le guichet de retour ordonné. Versement externe simulé jusqu'à la mission 12b ; versements aux parties, rapprochements et clôture restent en 9b.",
+  "purpose_tldr": "Permettre aux festivaliers de récupérer le solde payé de leur portefeuille, par mobile money, virement ou espèces, sous contrôle à deux.",
+  "slug": "remboursements-01M7AG5V",
+  "target_branch": "feat/remboursements",
+  "topology": "coord"
+}
