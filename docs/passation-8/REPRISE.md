@@ -18,8 +18,8 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 
 ## Pour reprendre
 
-1. CI de feat après le push de 215f6ee8 et de cette note : `gh run list --branch feat/passerelle-locale --limit 1`.
-2. CI verte : ouvrir la PR vers main ; supprimer la branche `ci/m8-gateway-e2e`.
+1. CI verte sur aee8c172 (run 43408913602). **PR #12 ouverte** vers main ; branche `ci/m8-gateway-e2e` supprimée.
+2. Relecture humaine (liste dans la PR), puis fusion.
 3. Règle `main protege` : contournement admin ou second relecteur (porteur).
 4. Restes : ADR-161/OP-N106, alias `Loose`, `claim-code-order` instable, nettoyage des worktrees des lanes ;
    correction de fond possible : écrire `GATEWAY listening` avant le démarrage du vidage (bootstrap.ts).
