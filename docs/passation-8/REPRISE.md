@@ -23,6 +23,10 @@ relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implemen
 3. Règle `main protege` : contournement admin ou second relecteur (porteur).
 4. Restes : ADR-161/OP-N106, alias `Loose`, `claim-code-order` instable, nettoyage des worktrees des lanes ;
    correction de fond possible : écrire `GATEWAY listening` avant le démarrage du vidage (bootstrap.ts).
+5. `apps/api/test/integration/edge/routes/replication-feed.spec.ts` : le cas « trois pages » attend désormais
+   l'horizon (CI 43406536917, horizon non avancé sous écritures concurrentes, 0065). Même fragilité, jamais vue en
+   échec, signalée par la relecture : « horizon A18 » (l. 145-148), « edge_terms » (l. 219-222), « forme du
+   schéma » (l. 82-87), « canari » (l. 175-177, 200). Piste : un assistant `waitHorizon` (au porteur).
 
 ## À ne pas oublier
 

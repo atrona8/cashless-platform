@@ -95,6 +95,17 @@ describe('getEdgeReplicationFeed', () => {
       await topup(owner, world, gw, wallet, 100 + i);
       wallets.push(wallet.walletId);
     }
+    // L'horizon n'avance que s'il est sûr (0065 : aucune transaction concurrente validée depuis
+    // l'instantané, verrou obtenu) ; sinon le flux rend l'horizon précédent. Les autres suites
+    // écrivent en parallèle sur la même base : on attend qu'il couvre les cinq recharges (il est
+    // durable et ne recule jamais), puis on vérifie la pagination elle-même.
+    for (let attempt = 0; ; attempt += 1) {
+      const all = await page(gw, 'after_posting_id=0&limit=200');
+      const covered = new Set(all.wallets.map((w) => w.wallet_id));
+      if (wallets.every((w) => covered.has(w))) break;
+      expect(attempt).toBeLessThan(50);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
     const seen: string[] = [];
     let after = 0;
     let pages = 0;
