@@ -4,12 +4,12 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: remboursements-01M7AG5V
 mission_id: 01M7AG5VMS4GNWVA9DH2JQ0E05
-generated_at: '2026-11-13T14:46:43.101285+00:00'
+generated_at: '2026-11-13T14:51:11.149977+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: kitty-specs/remboursements-01M7AG5V/spec.md
-    sha256: e183f26eb73b90933e6ab6c9e35d16f4ccf066a4b1d6666f2765aa6374305017
+    sha256: 93124af1babad9563391e1aa06b282f67c41e7f0b42d15c452787b1762ad1ad2
   plan.md:
     path: kitty-specs/remboursements-01M7AG5V/plan.md
     sha256: 10b53258930855b77ac16c8701b4a38268f64805b7adc739f9564c21a6b7f56a
@@ -22,23 +22,11 @@ input_artifacts:
 verdict: ready
 issue_counts:
   high: 0
-  low: 3
+  low: 2
   critical: 0
-  medium: 5
+  medium: 2
   info: 0
 findings:
-- id: I1
-  severity: medium
-  category: inconsistency
-  summary: research.md R-03 (Decision) parle encore d'une garde de statut de la base ; seule la précision du 13/11 et interfaces.md disent que l'élargissement est dans le moteur.
-- id: I2
-  severity: medium
-  category: inconsistency
-  summary: research.md R-05 prévoit X-Test-Otp-Code sur la réponse de création ; l'arbitrage du 13/11 (interfaces.md) l'exclut, les tests lisent le code par un OtpSender d'enregistrement.
-- id: I3
-  severity: medium
-  category: inconsistency
-  summary: spec.md ne dit pas que la création sur le portefeuille d'autrui rend 422 REFUND_NOT_ALLOWED (arbitrage, faute de 404 au contrat) ; le cas limite ne vise que la lecture d'une demande (404).
 - id: U1
   severity: medium
   category: underspecification
@@ -51,10 +39,6 @@ findings:
   severity: low
   category: coverage
   summary: "acceptance-matrix.json n'appartient à aucun lot (interdit sous kitty-specs) : l'orchestrateur l'écrit à partir des preuves de suivi-lots.md ; à ne pas oublier avant accept."
-- id: S1
-  severity: low
-  category: inconsistency
-  summary: spec.md garde le statut Draft alors que le plan et les lots sont finalisés.
 - id: S2
   severity: low
   category: inconsistency
@@ -68,13 +52,9 @@ Mission `remboursements-01M7AG5V` (9a). Pas de charte (`.kittify/charter/` absen
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| I1 | Inconsistency | MEDIUM | research.md:83 ; contracts/interfaces.md (Arbitrages) | R-03 « Decision » décrit encore une garde en base | Réécrire la phrase de R-03 (moteur seulement) |
-| I2 | Inconsistency | MEDIUM | research.md:133 | `X-Test-Otp-Code` sur la création | Aligner R-05 sur l'arbitrage (OtpSender d'enregistrement) |
-| I3 | Inconsistency | MEDIUM | spec.md:157 ; contracts/served-operations.md | 422 pour le portefeuille d'autrui non dit dans la spec | Ajouter un cas limite à la spec |
 | U1 | Underspecification | MEDIUM | tasks/WP06 ; research.md R-08 | Fractionnement sous le seuil au guichet | Question au porteur pendant WP06 (déjà prévue), consigner la réponse |
 | U2 | Underspecification | MEDIUM | tasks/WP03 ; research.md R-05 | Quotas et blocage OTP partagés | Consigner en OP au WP07 (risque résiduel) ou décider d'un quota par usage |
 | C1 | Coverage | LOW | tasks/WP07 T041 | Matrice d'acceptation sans propriétaire | Orchestrateur, avant `accept` |
-| S1 | Inconsistency | LOW | spec.md:5 | Statut Draft | Passer à « Planned » à la prochaine retouche de la spec |
 | S2 | Inconsistency | LOW | plan.md ; tasks/WP07 | Amendement §12.1 sans lot | Décider au WP07 / revue |
 
 **Coverage Summary Table:**
@@ -106,6 +86,5 @@ Mission `remboursements-01M7AG5V` (9a). Pas de charte (`.kittify/charter/` absen
 - Duplication Count : 0
 - Critical Issues Count : 0
 
-**Next Actions:** aucun constat bloquant ; l'implémentation peut commencer. I1 à I3 et S1 sont des alignements de texte
-à faire avant le lot concerné (ils ne changent aucune décision) ; U1 sera soumis au porteur pendant WP06 ; U2 consigné
-au WP07.
+**Next Actions:** aucun constat bloquant ; l'implémentation peut commencer. Alignements de la première passe (R-03,
+R-05, cas limite 422, statut de la spec) faits (`fb973727`). U1 sera soumis au porteur pendant WP06 ; U2 consigné au WP07.
