@@ -129,6 +129,10 @@ jobs:
           # L'installation de pgTAP peut monter la version mineure de PostgreSQL 17 sous le serveur
           # en marche (17.11 -> 17.12 le 12/11/2026 : plpgsql.so incompatible, toute migration
           # échoue) : le service est redémarré sur les nouveaux binaires, puis attendu.
+          # Connexions : 100 par défaut ; l'étape de concurrence PSP (100 notifications simultanées
+          # plus les pools de l'API) les épuisait par intermittence (« too many clients already »,
+          # main 42821199712, feat 43413471770). Relevé à 300, pris en compte au redémarrage.
+          docker exec ${{ job.services.postgres.id }} psql -U postgres -c "ALTER SYSTEM SET max_connections = 300"
           docker restart ${{ job.services.postgres.id }}
           for i in $(seq 1 60); do
             docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break
