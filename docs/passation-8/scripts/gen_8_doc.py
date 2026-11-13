@@ -144,8 +144,9 @@ table(['Élément', 'Valeur'], [
     ['Type de mission', 'software-dev'],
     ['Dépend de', 'Missions 1 (grand livre), 2 (identité, rôles), 3 (configuration), 4 (bracelets NFC), '
      '5a (identité des terminaux), 5b (encaissement en ligne), 6 (recharges, caisses, PSP), 7 (hors ligne, snapshots, lots)'],
-    ['État au 5 novembre 2026', 'Spécification et plan terminés ; passe contradictoire du plan faite (29 constats traités) ; '
-     'tâches pas encore générées ; aucun code écrit'],
+    ['État au 13 novembre 2026', 'Mission terminée : 25 lots sur 25 approuvés, acceptée (311af360), consolidée sur '
+     'feat/passerelle-locale (9d5e4592), revue après fusion faite (publiable avec réserves), dans main par la PR #12 '
+     '(6bb1c378) le 13/11/2026. Passerelle inutilisable en production avant la mission 12b'],
 ], widths_from=EX['cover_tbl'])
 add(copy.deepcopy(EX['spacer']))
 add(copy.deepcopy(EX['blank']))
@@ -169,10 +170,12 @@ para('para', 'Les services matériels sont simulés (décision du porteur du 05/
      'port de stockage matériel dont le faux est refusé au démarrage en production. La passerelle n’est donc pas utilisable en '
      'production avant la mission 12b. Plafonds de rejeu des ventes décidées par la passerelle : 50 000 XOF par vente et '
      '500 000 XOF par terminal et par heure. Délai avant l’envoi des mots de passe après une inscription (EDGE_PACK_DELAY) : 30 minutes.')
-para('para', 'État au 5 novembre 2026 : la spécification (39 exigences fonctionnelles, 13 non fonctionnelles, 13 contraintes, '
-     '7 critères de succès) et le plan sont terminés. Une passe contradictoire indépendante a relevé 29 constats (4 bloquants, '
-     '11 élevés, 11 moyens, 3 faibles), tous traités : 23 corrigés, 6 réglés par une décision du porteur. Les points à soumettre '
-     'au porteur ont reçu leur réponse (plafonds, délai). Les tâches ne sont pas générées et aucun code n’est écrit.')
+para('para', 'État au 13 novembre 2026 : la mission est livrée dans main (PR #12, 6bb1c378). Les 25 lots ont été '
+     'implémentés et relus par des agents distincts (détail dans docs/passation-8/suivi-lots.md), la mission a été acceptée '
+     'et consolidée le 12/11/2026, puis revue après fusion : publiable avec réserves (docs/passation-8/rapports/'
+     'revue-mission-8.md). Le seul constat bloquant (pack_verified cru de la passerelle) est consigné en OP-N122 et ADR-188. '
+     'La CI (jobs ledger et gateway-e2e, plancher NFR-001 de 100 débits/s, balayage Trivy) est verte. La section 8 présente '
+     'encore les concerns du plan ; le découpage réel en 25 lots est dans kitty-specs/passerelle-locale-01M6NM1S/tasks.md.')
 para('h2', 'Ce que la mission doit prouver')
 for m in re.finditer(r'^- \*\*(SC-\d{3})\*\* : (.+)$', SPEC, re.M):
     txt = re.sub(r'\s+— \[(build|ratchet)\].*$', '', m.group(2)).strip().replace('`', '')
@@ -436,16 +439,17 @@ table(['Étape', 'État', 'Remarque'], [
     ['Plan', 'Fait', '05/11/2026 : plan.md, research.md, data-model.md, quickstart.md, contrats ; 16 concerns IC-01 à IC-16'],
     ['Passe contradictoire du plan', 'Faite', '29 constats (4 bloquants, 11 élevés, 11 moyens, 3 faibles) : 23 corrigés, 6 réglés par une décision du porteur ; plafonds (50 000 et 500 000 XOF) et délai (30 minutes) tranchés'],
     ['Consignation des écarts', 'Faite', 'OP-N100 à OP-N110 et ADR-155 à ADR-165 (commit e74f7f06)'],
-    ['Tâches et lots', 'À faire', '/spec-kitty.tasks pas encore lancée ; la section 8 sera remplacée par la liste des lots'],
-    ['Implémentation et relecture', 'À faire', 'Aucun code écrit'],
-    ['Matrice d’acceptation, accept, consolidation', 'À faire', ''],
-    ['Revue post-fusion', 'À faire', 'Liste des écarts de sécurité ouverts ; un écart non consigné est un constat bloquant'],
-    ['Relecture humaine des fichiers du 7.3', 'À faire', 'Clés, droits de la base, cryptographie'],
+    ['Tâches et lots', 'Faites', '25 lots (tasks.md) ; la section 8 garde les concerns du plan'],
+    ['Implémentation et relecture', 'Faites', '25 lots sur 25 approuvés le 12/11/2026, implémenteur et relecteur distincts par lot'],
+    ['Matrice d’acceptation, accept, consolidation', 'Faites', 'Acceptée (311af360), consolidée sur feat (9d5e4592) le 12/11/2026'],
+    ['Revue post-fusion', 'Faite', 'Publiable avec réserves ; C1 consigné (OP-N122, ADR-188) ; onze écarts bloquent la production jusqu’à 12b'],
+    ['Fusion dans main', 'Faite', 'PR #12 (6bb1c378) le 13/11/2026, après fusion de main (PR #11) et CI verte'],
+    ['Relecture humaine des fichiers du 7.3', 'Déclarée faite', 'Par le porteur, avant la fusion du 13/11/2026'],
     ['Avis du juriste (OP-N108)', 'À demander', 'Dépassement temporaire d’un plafond réglementaire au rejeu d’une recharge espèces'],
     ['Confirmation avec l’équipe terminal', 'À demander', 'Un 401 sur un jeton du central déclenche un rafraîchissement ; code 409 CONFLICT_STATE pour ARMED et STANDBY'],
 ])
-para('para', 'Prochaines étapes : générer les tâches (/spec-kitty.tasks) et l’analyse, puis implémenter et relire lot par lot, '
-     'en reportant les écarts dans PROMPTS-A-ENVOYER.md et PRD.md. Missions liées : mission 12b (adaptateurs réels de clés, qui '
+para('para', 'Prochaines étapes : lever les écarts de production avec la mission 12b, puis la recette V1. Restes notés '
+     'dans docs/passation-8/REPRISE.md (ADR-161/OP-N106, typage des tests, tests fragiles). Missions liées : mission 12b (adaptateurs réels de clés, qui '
      'lèvent OP-N100, OP-N101, OP-N105 et OP-N106) et mission 13 (recette V1, qui revoit OP-N104, OP-N107 à OP-N110). '
      'Suivi : docs/passation-8/contexte-m8.md et docs/passation-8/rapports/plan-adversarial.md.')
 

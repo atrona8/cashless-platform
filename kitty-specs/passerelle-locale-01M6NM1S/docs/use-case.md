@@ -1,7 +1,7 @@
 # Cas d'usage : mission passerelle-locale-01M6NM1S
 
-> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission NON acceptée, NON consolidée, NON fusionnée (accept et
-> consolidate à venir). Recalé le 12/11/2026 sur le code de la lane `y` (qui contient toutes les autres lanes). Source : `spec.md`
+> État : **review terminée le 12/11/2026, 25 lots sur 25 approuvés** ; mission acceptée et consolidée le 12/11/2026,
+> dans `main` par la PR #12 le 13/11/2026. Recalé le 12/11/2026 sur le code de la lane `y` (qui contient toutes les autres lanes). Source : `spec.md`
 > (9 user stories, 39 FR, 13 NFR, 13 contraintes), `plan.md`, `contracts/`, `docs/passation-8/suivi-lots.md`. Diagrammes `/illustre`
 > (préférence du porteur du 13/10/2026), police sans empattement, rendus relus. Le diagramme du pilotage a été corrigé à la review
 > (acteurs de la purge) ; les quatre autres sont conservés (ils restent justes).
