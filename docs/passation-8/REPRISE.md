@@ -4,25 +4,25 @@
 relecteur distincts par lot (sous-agents `sonnet`, fiche commune `fiche-implementation.md`), notes entre lots dans
 `suivi-lots.md`, décisions du porteur dans `contexte-m8.md` (1 à 58). Commandes spec-kitty avec `LC_ALL=C LANG=C`.
 
-## État au 12/11/2026, 21 h 15 UTC (limite d'usage atteinte)
+## État au 13/11/2026 (reprise du matin)
 
 - Mission acceptée (311af360), consolidée (9d5e4592), revue après fusion faite (`rapports/revue-mission-8.md`,
-  publiable avec réserves ; C1 consigné en OP-N122/ADR-188). Lot de correction et tests de CI corrigés, chacun relu.
-- **CI entièrement verte** sur c441288e (run 43305550802 : `ledger` et `gateway-e2e`). `feat/passerelle-locale`
-  poussé sur origin à c441288e.
-- **Fusion de main (PR #11, app festivalier) dans feat : dcd4684e, NON poussée, NON testée.** Conflits résolus :
-  `post-roles.sql` (sections 9 et 10 gardées, indépendantes), `app.module.ts` (les deux modules), docs (union),
-  `tools/export/files` (version de main). `npm ci` refait (node_modules = lockfile).
-- Batterie locale complète lancée sur dcd4684e (résultat dans le scratchpad de la session, perdu) : à relancer.
+  publiable avec réserves ; C1 consigné en OP-N122/ADR-188).
+- Fusion de main (PR #11, app festivalier) : dcd4684e. **Batterie locale verte** sur `cashless_wp25` : lint, format,
+  tsc, pgTAP (70 fichiers, 6052 tests), Jest central (269 suites, 3477 tests), passerelle (72 suites, 865),
+  `tools/edge-admin` (4 suites, 29). `post-roles.sql` fusionné relu par un agent distinct : approuvé (sections 9 et
+  10 complètes, aucun droit edge sur les objets festivaliers).
+- CI rouge sur feat à c441288e (run 43309965846, vert sur `ci/m8-gateway-e2e` au même commit) : course dans
+  `test/e2e/crash-points.spec.ts` (le vidage démarre avant `GATEWAY listening`). Corrigé dans le test (215f6ee8,
+  relu) : file vidée avant chaque kill ; `during-drain…` se déclenche pendant le vidage en état actif (NFR-004).
 
 ## Pour reprendre
 
-1. Relancer en local, sur `cashless_wp25` (URL vérifiées) : lint, format, tsc, pgTAP complet (hors `_*.sql`), Jest
-   complet du central (`--maxWorkers=2`), passerelle, `tools/edge-admin`. Corriger ce qui tombe (relecture distincte
-   pour toute retouche de code ou de sécurité ; faire relire `post-roles.sql` fusionné).
-2. Pousser feat, attendre la CI verte, ouvrir la PR vers main ; supprimer la branche `ci/m8-gateway-e2e`.
+1. CI de feat après le push de 215f6ee8 et de cette note : `gh run list --branch feat/passerelle-locale --limit 1`.
+2. CI verte : ouvrir la PR vers main ; supprimer la branche `ci/m8-gateway-e2e`.
 3. Règle `main protege` : contournement admin ou second relecteur (porteur).
-4. Restes : ADR-161/OP-N106, alias `Loose`, `claim-code-order` instable, nettoyage des worktrees des lanes.
+4. Restes : ADR-161/OP-N106, alias `Loose`, `claim-code-order` instable, nettoyage des worktrees des lanes ;
+   correction de fond possible : écrire `GATEWAY listening` avant le démarrage du vidage (bootstrap.ts).
 
 ## À ne pas oublier
 
