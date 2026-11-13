@@ -137,8 +137,8 @@ seul appel `releaseMedia` avec `settle_balance` ; les écritures sont passées d
    `RELEASED`.
 2. **Given** un solde payé à rendre au-delà de `cash_refund_single_max`, **When** la restitution est demandée sans jeton
    d'approbation sur place, **Then** elle est refusée (`403 APPROVAL_REQUIRED`) et rien n'est écrit.
-3. **Given** une étape qui échoue au milieu, **When** l'appel est rejoué avec la même clé, **Then** les étapes déjà
-   faites ne sont pas refaites et l'enchaînement reprend.
+3. **Given** une étape refusée au milieu (par exemple jeton manquant), **Then** rien n'est écrit ; **When** l'appel
+   réussi est rejoué avec la même clé, **Then** la même réponse est rendue sans nouvelle écriture.
 4. **Given** une restitution sans `settle_balance` sur un bracelet soldé, **Then** le comportement actuel est conservé.
 5. **Given** un bracelet remplacé dont l'ancien portait des espèces dues (OP-N55), **When** ces espèces sont rendues,
    **Then** elles le sont une fois et une seule.
@@ -180,8 +180,8 @@ seul appel `releaseMedia` avec `settle_balance` ; les écritures sont passées d
 | FR-014 | Vérification d'identité au-delà du seuil | En tant qu'opérateur, je veux que les demandes vers un autre numéro au-delà de `refund_new_number_max` portent `extra_check_required` et que leur approbation exige la vérification d'identité notée dans la décision. | Medium | Open | build | no |
 | FR-015 | Guichet de retour enchaîné | En tant que caissier, je veux que `releaseMedia` avec `settle_balance` enchaîne caution, expiration des crédits offerts, remboursement du solde payé en espèces, espèces dues et restitution, dans cet ordre, sur la session de caisse ouverte du terminal ; le refus `release.no_chaining` disparaît (OP-N51, ADR-91). | Medium | Open | build | no |
 | FR-016 | Seconde personne au guichet | En tant qu'opérateur, je veux qu'un remboursement en espèces au-delà de `cash_refund_single_max` exige un jeton d'approbation sur place d'une seconde personne (`403 APPROVAL_REQUIRED` / `APPROVAL_INVALID`). | Medium | Open | build | no |
-| FR-017 | Reprise de l'enchaînement | En tant que caissier, je veux qu'un enchaînement interrompu, rejoué avec la même clé, reprenne sans refaire les étapes déjà passées. | Medium | Open | build | no |
-| FR-018 | Espèces dues d'un bracelet remplacé | En tant qu'opérateur, je veux que les espèces dues d'un bracelet remplacé soient rendues une fois et une seule (OP-N55, ADR-100), par le bracelet neuf ou par une décision à deux au back-office. | Medium | Open | build | no |
+| FR-017 | Enchaînement atomique et rejouable | En tant que caissier, je veux que l'enchaînement soit tout ou rien (un refus à une étape n'écrit rien) et qu'un rejeu avec la même clé rende la même réponse sans rien écrire deux fois. | Medium | Open | build | no |
+| FR-018 | Espèces dues d'un bracelet remplacé | En tant qu'opérateur, je veux que les espèces dues d'un bracelet remplacé soient rendues une fois et une seule (OP-N55, ADR-100), en faisant suivre au bracelet neuf, lors du remplacement, les espèces dues encore ouvertes de l'ancien (le contrat n'a pas de route de rendu au back-office). | Medium | Open | build | no |
 | FR-019 | Autorité de débit | En tant qu'opérateur, je veux que toute écriture de remboursement (approbation, échec, guichet) respecte l'autorité de débit : refus `409 DEBIT_AUTHORITY_EDGE` quand la passerelle locale a l'autorité. | High | Open | build | no |
 | FR-020 | Journal d'audit | En tant qu'auditeur, je veux que chaque création, décision, approbation, confirmation et refus soit tracé au journal d'audit avec son auteur. | High | Open | build | no |
 
@@ -237,12 +237,13 @@ seul appel `releaseMedia` avec `settle_balance` ; les écritures sont passées d
 
 - Le titulaire est la personne au numéro vérifié rattachée au portefeuille par son compte (`customer_identity`, livré le
   10/11/2026) ; un bracelet anonyme rattaché à un compte a ce compte pour titulaire.
-- Les frais de remboursement suivent la règle de frais de l'événement déjà livrée par la mission 3 ; sans règle, 0.
+- Les frais de remboursement suivent la règle de frais de l'événement déjà livrée par la mission 3 ; sans règle configurée, le remboursement est refusé (décision du porteur du 13/11/2026 au plan : l'organisateur configure une règle, éventuellement à 0).
 - Le remboursement en espèces au guichet n'existe qu'à travers le guichet de retour (`releaseMedia`), comme le décrit
   le contrat ; aucune route d'espèces séparée n'est ajoutée.
 - L'envoi du code au titulaire réutilise l'envoyeur simulé existant (OP-N120), refusé en production.
-- Un portefeuille bloqué ou un bracelet suspendu (perte déclarée) reste remboursable : le remboursement n'est pas une
-  dépense et c'est souvent la suite d'une perte. À confirmer au plan contre les règles du grand livre.
+- Un portefeuille dont le seul blocage vient d'un bracelet déclaré perdu (`SUSPENDED`) reste remboursable ; un
+  portefeuille bloqué pour contestation, fraude ou autre cause, ou portant un bracelet `BLACKLISTED`, ne l'est pas
+  (`422 REFUND_NOT_ALLOWED`) (décision du porteur du 13/11/2026 au plan).
 - Les statuts de l'événement où `WALLET_REFUND` est permis sont ceux de la matrice §12.1 ; la 9a ne change pas ces
   statuts (la clôture est en 9b).
 
