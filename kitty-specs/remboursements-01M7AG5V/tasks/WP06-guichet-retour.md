@@ -6,6 +6,9 @@ requirement_refs: [FR-015, FR-016, FR-017]
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: 6ff27ff396b35171f311d225fee6ad2566690783
+created_at: '2026-11-13T15:05:30.840691+00:00'
 subtasks: [T031, T032, T033, T034, T035]
 phase: Phase 3 - Back-office et guichet
 agent: claude
