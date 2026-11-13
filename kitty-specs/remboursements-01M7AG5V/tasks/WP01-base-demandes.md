@@ -9,6 +9,9 @@ requirement_refs:
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: 9db0d2825203b1979ac3079b2f8d839efedc4616
+created_at: '2026-11-13T14:51:54.333683+00:00'
 subtasks: [T001, T002, T003, T004, T005, T006]
 phase: Phase 1 - Base
 agent: claude
@@ -17,12 +20,12 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-role: implementer
-model: sonnet
-execution_mode: code_change
 authoritative_surface: packages/ledger-sql/
-owned_files: [packages/ledger-sql/migrations/0081_refund_requests.sql, packages/ledger-sql/post-roles.sql, packages/ledger-sql/tests/tests_refund_requests.sql, packages/ledger-sql/tests/tests_execute_grants.sql, packages/ledger-sql/tests/tests_offline_rights.sql]
 create_intent: [packages/ledger-sql/migrations/0081_refund_requests.sql, packages/ledger-sql/tests/tests_refund_requests.sql]
+execution_mode: code_change
+model: sonnet
+owned_files: [packages/ledger-sql/migrations/0081_refund_requests.sql, packages/ledger-sql/post-roles.sql, packages/ledger-sql/tests/tests_refund_requests.sql, packages/ledger-sql/tests/tests_execute_grants.sql, packages/ledger-sql/tests/tests_offline_rights.sql]
+role: implementer
 tags: []
 tracker_refs: []
 ---

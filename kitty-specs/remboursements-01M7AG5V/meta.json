@@ -13,5 +13,7 @@
   "purpose_tldr": "Permettre aux festivaliers de récupérer le solde payé de leur portefeuille, par mobile money, virement ou espèces, sous contrôle à deux.",
   "slug": "remboursements-01M7AG5V",
   "target_branch": "feat/remboursements",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-13T14:51:48.816896+00:00"
 }
