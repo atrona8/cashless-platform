@@ -292,7 +292,10 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026 ; fondue dans la 12b le 29/10/2026)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
-9. Remboursements, versements et clôture
+9. Remboursements, versements et clôture, découpée le 13/11/2026 (décision du porteur) :
+   9a. Remboursements (demandes par l'app et le back-office, approbation à deux, autre numéro et décision du titulaire,
+       espèces au guichet, guichet de retour ordonné) ; versement externe simulé jusqu'à la 12b
+   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
