@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1780" viewBox="0 0 2066 1780">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1592" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1592" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="1218.3333333333333" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1592" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1592" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 693.6666666666666,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,290.72 674.3598503050785,301.2673618492925 674.3598503050785,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="277.3333333333333" y="253.72000000000003" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,366.72 693.6666666666666,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,366.72 674.3598503050785,377.2673618492925 674.3598503050785,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="246.1333333333333" y="329.72" width="394.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,442.71999999999997 1727.0,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,442.71999999999997 1707.6931836384117,453.26736184929246 1707.6931836384117,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1057.5333333333333" y="405.71999999999997" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,518.72 193.0,518.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="350.1333333333333" y="481.72" width="186.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,594.72 693.6666666666666,594.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="693.6666666666666,594.72 674.3598503050785,605.2673618492925 674.3598503050785,584.1726381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="272.1333333333333" y="557.72" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,670.72 709.6666666666666,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="709.6666666666666,670.72 728.9734830282548,660.1726381507076 728.9734830282548,681.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="684.8" y="633.72" width="550.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,746.72 1727.0,746.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,746.72 1707.6931836384117,757.2673618492925 1707.6931836384117,736.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="958.7333333333332" y="709.72" width="519.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="796.72" width="364" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,898.72 709.6666666666666,898.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="709.6666666666666,898.72 728.9734830282548,888.1726381507076 728.9734830282548,909.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="1010.7333333333332" y="861.72" width="415.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="64,942.72 1920.0,942.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="70" y="948.72" width="64" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,1050.72 709.6666666666666,1050.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,1050.72 728.9734830282548,1040.1726381507076 728.9734830282548,1061.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="1031.5333333333333" y="1013.72" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="790.72" width="1856.0" height="293.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,1160.92 693.6666666666666,1160.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,1160.92 674.3598503050785,1171.4673618492925 674.3598503050785,1150.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="324.1333333333333" y="1123.92" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,1236.92 193.0,1236.92" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1236.92 212.3068163615882,1226.3726381507076 212.3068163615882,1247.4673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="173.33333333333331" y="1199.92" width="540.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="1282.92" width="300" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="191.0,1388.92 693.6666666666666,1388.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,1388.92 674.3598503050785,1399.4673618492925 674.3598503050785,1378.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="188.9333333333333" y="1351.92" width="508.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,1464.9199999999998 1727.0,1464.9199999999998" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1464.9199999999998 1707.6931836384117,1475.4673618492923 1707.6931836384117,1454.3726381507074" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1026.3333333333333" y="1427.9199999999998" width="384.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,1540.9199999999998 193.0,1540.9199999999998" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1540.9199999999998 212.3068163615882,1530.3726381507074 212.3068163615882,1551.4673618492923" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="272.1333333333333" y="1503.9199999999998" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Lot de versements préparé et validé à deux</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Le droit net borne chaque ligne ; le paiement est fait hors système puis confirmé</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Administrateur auteur</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Administrateur valideur</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
+<text x="443.3333333333333" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Droits nets (GET entitlements)</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="443.3333333333333" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Préparer le lot (lignes ≤ droit net)</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1218.3333333333335" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Approbation PAYOUT en attente</text>
+<text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="443.3333333333333" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">202 : en attente</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="443.3333333333333" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Valider soi-même le lot : refus</text>
+<text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver (autre personne, rôle selon bénéficiaire)</text>
+<text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="1218.3333333333335" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">create_payout_batch : droit net relu sous verrou</text>
+<text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="74" y="814.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt un montant dépasse le droit net</text>
+<text x="1218.3333333333335" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">CL055 : 409 PAYOUT_EXCEEDS_ENTITLEMENT</text>
+<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="74" y="966.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon</text>
+<text x="1218.3333333333335" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">PAYOUT_INITIATED, lignes INITIATED</text>
+<text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="443.3333333333333" y="1142.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Exporter le lot (CSV)</text>
+<text x="34.0" y="1163.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="443.3333333333333" y="1218.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">CSV : bénéficiaire, moyen, numéro ou IBAN, montant</text>
+<text x="34.0" y="1239.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
+<text x="220.0" y="1315.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Paiement fait hors système</text>
+<text x="34.0" y="1315.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
+<text x="443.3333333333333" y="1370.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Confirmer la ligne (référence) ou échec (motif)</text>
+<text x="34.0" y="1391.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
+<text x="1218.3333333333335" y="1446.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">settle_payout : CONFIRMED ou FAILED</text>
+<text x="34.0" y="1467.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">14</text>
+<text x="443.3333333333333" y="1522.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : FAILED recrédite le droit</text>
+<text x="34.0" y="1543.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">15</text>
+<text x="60" y="1637.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu (plan du 17/11/2026), non servi. Une ligne change d’état une seule fois. Une ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation.</text>
+</g>
+</svg>

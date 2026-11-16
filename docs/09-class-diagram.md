@@ -14,6 +14,7 @@
 > Rendu : Mermaid (aperçu Markdown de VS Code, GitHub). Aucun outil de diagramme de classes n'est prévu dans
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
 > Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Dans `main` par la PR #15 le 16/11/2026.
+> Complément du 17/11/2026 (plan de la mission 9b, planifiée, non implémentée) : section 4 octies prévue (tables `closing_step`, `statement_import`, `account_mapping` ; colonnes ajoutées à `payout` et `external_statement_line` ; déclencheur de `refund_request`) ; migrations prévues `0083` à `0088`, rien n'existe encore au schéma.
 
 ## 1. Organisation, événements et identité
 
@@ -649,6 +650,30 @@ classDiagram
 
 Invariants livrés : une demande ouverte au plus par portefeuille (index unique partiel), `PAID` exige une référence, `FAILED` un motif et une contre-passation, `REJECTED` un motif ; `AWAITING_HOLDER` exige `hold_until`, `BLOCKED` exige la décision `BLOCK`, numéro mobile en E.164, demandeur différent du valideur ; isolation par prestataire (RLS) ; aucun `DELETE`.
 
+## 4 octies. Versements, rapprochements et clôture (mission 9b, **planifiée : plan du 17/11/2026, non implémentée**)
+
+> **Section prévue, pas encore au schéma.** Source : `kitty-specs/versements-rapprochements-cloture-01M7JT4G/data-model.md`. Migrations prévues `0083` à `0088` : trois tables nouvelles (`closing_step`, `statement_import`, `account_mapping`), colonnes ajoutées à `payout` (`approval_request_id`, `msisdn`, `iban`, `failure_reason`, `confirmed_by`, `confirmed_at`) et à `external_statement_line` (`statement_import_id`, `currency`, `matched_anomaly_id`, `matched_by`, `matched_at`), déclencheur `refund_request_transition_guard` (OP-N130), fonctions `record_closing_step`, `create_payout_batch`, `settle_payout`, `import_statement_lines`, `match_statement_line`, `account_reconciliation`, `ops_*`. À recaler sur les migrations réelles à la review ; le SQL fait foi.
+
+```mermaid
+classDiagram
+  class ClosingStep { événement ; étape (7) ; DONE ou NOT_APPLICABLE ; auteur ; date ; transactions écrites ; résumé des montants }
+  class StatementImport { compte ; source ; empreinte du fichier ; date du relevé ; solde de clôture ; devise ; lignes créées, existantes, rapprochées }
+  class AccountMapping { entité ; version ; valide dès ; usage ; type de transaction ; compte débit ; compte crédit }
+  class Payout { bénéficiaire ; méthode ; montant ; statut INITIATED, CONFIRMED, FAILED ; numéro ou IBAN ; motif d'échec ; confirmé par }
+  class ExternalStatementLine { compte ; source ; référence externe ; montant ; devise ; rapprochée }
+  Event "1" --> "*" ClosingStep
+  ClosingStep "0..1" --> "*" Transaction : écritures de l'étape
+  Account "1" --> "*" StatementImport
+  StatementImport "1" --> "*" ExternalStatementLine
+  ExternalStatementLine "0..1" --> "1" Transaction : rapprochement
+  ExternalStatementLine "0..1" --> "1" Anomaly : anomalie PSP représentée
+  ApprovalRequest "1" --> "*" Payout : lot PAYOUT
+  Payout "1" --> "*" Transaction : INITIATED, CONFIRMED ou FAILED
+  Party "1" --> "*" AccountMapping : entité comptable
+```
+
+Invariants prévus (testés en pgTAP) : une étape de clôture au plus une fois par événement (clé primaire, ajout seul) ; versements `INITIATED` non réglés ≤ droit net à l'initiation (`CL055`) ; une ligne `payout` change d'état une seule fois ; une ligne de relevé rapprochée au plus une fois, au même prestataire, grand livre et compte ; `refund_request` ne suit que son graphe, montant et frais figés après `PROCESSING` ; `cashless_app` sans `DELETE` ni `UPDATE` direct sur ces tables ; `cashless_maint` sans lecture de table. Isolation par prestataire (RLS `ENABLE` et `FORCE`).
+
 ## 5. Description des tables
 
 Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers »),
@@ -819,4 +844,4 @@ Ce document décrit le schéma à une date donnée. À régénérer quand une mi
 domaine (prochaine : mission 9, ou le recalage de la section 4 sexies si la consolidation de la mission 8 ajoute une migration). Section 4 sexies (mission 8, passerelle) ajoutée au plan le 05/11/2026, recalée le 12/11/2026 sur `0058` à `0072` : 8 tables (`0058`, `0060`, `0061`, `0063`), 103 au total. Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
 
-Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026, recalée à la review et décrite en section 5 le 16/11/2026 après la consolidation (migrations `0081` et `0082` : 1 table, 109 au total avec les 5 tables de `0080`) ; prochaine régénération : mission 9b.
+Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026, recalée à la review et décrite en section 5 le 16/11/2026 après la consolidation (migrations `0081` et `0082` : 1 table, 109 au total avec les 5 tables de `0080`) ; prochaine régénération : mission 9b. Section 4 octies (mission 9b, versements, rapprochements et clôture) ajoutée au plan le 17/11/2026 : `closing_step`, `statement_import`, `account_mapping` prévues en migrations `0083` à `0088`, non implémentées ; prochaine régénération : à la review de la 9b.

@@ -1125,5 +1125,94 @@
       "Demande en attente traitable au plus 5 min après l'échéance (NFR-005)"
     ],
     "source": "kitty-specs/remboursements-01M7AG5V/spec.md"
+  },
+  {
+    "mission": "versements-rapprochements-cloture-01M7JT4G",
+    "titre_cas_usage": "Versements, rapprochements et clôture",
+    "statut": "planifiée (plan finalisé le 17/11/2026)",
+    "user_stories": [
+      {
+        "titre": "Clore dans l'ordre de référence",
+        "detail": "Une personne du back-office fait passer l'événement de CLOSING à CLOSED : elle voit les conditions de chaque statut, lance dans l'ordre les sept étapes de clôture avec un aperçu des montants, puis l'exécute ; quand les positions sont soldées, les grands livres sont verrouillés."
+      },
+      {
+        "titre": "Verser à deux",
+        "detail": "Un administrateur prépare un lot de versements à partir des droits nets, un second administrateur le valide ; le lot est exporté en CSV, payé hors système, puis chaque ligne est confirmée ou déclarée en échec."
+      },
+      {
+        "titre": "Rapprocher les relevés",
+        "detail": "Le back-office importe en CSV un relevé par compte d'argent ; les lignes à référence connue sont rapprochées automatiquement, le reste à la main ; le passage à SETTLING exige les comptes PSP rapprochés."
+      },
+      {
+        "titre": "Réclamations tardives",
+        "detail": "Après le verrouillage, une personne propose une réclamation tardive (annulation de casse, remboursement, ajustement) qu'une seconde valide, bornée par la base."
+      },
+      {
+        "titre": "Remboursement du back-office, dettes 9a",
+        "detail": "Le back-office crée une demande de remboursement par virement pour un festivalier sans mobile money, et la mission lève les limites OP-N123, N124, N126, N128 et N130 consignées en 9a."
+      },
+      {
+        "titre": "Sceller, surveiller, alerter",
+        "detail": "Les grands livres et le journal d'audit sont scellés toutes les 5 minutes avec une copie hors de la base (simulée), vérifiés chaque jour ; les contrôles permanents lèvent une alerte à l'exploitation en cas d'échec."
+      },
+      {
+        "titre": "Relevés et export comptable",
+        "detail": "Chaque partie obtient son relevé par l'API et en CSV ; l'exploitation exporte la comptabilité par entité selon une correspondance configurable."
+      }
+    ],
+    "entites_cles": [
+      "Lot de versements",
+      "Versement (payout)",
+      "Ligne de relevé externe",
+      "Import de relevé",
+      "Étape de clôture",
+      "Réclamation tardive",
+      "Correspondance comptable (account_mapping)",
+      "Scellement"
+    ],
+    "resultat_mesurable": "Le scénario de référence se clôt de bout en bout (CLOSING, CLOSED, LOCKED) par les seules opérations du back-office avec ses soldes finaux attendus ; 100 % des versements au-delà du droit net ou validés par leur auteur refusés ; 0 écriture en double sur 50 exécutions concurrentes ; relevé de 10 000 lignes importé et rapproché en moins de 60 s ; aucune écriture non scellée plus de 10 min",
+    "hypotheses": [
+      "Les montants des frais, droits de place, redevance et casse se calculent entièrement depuis la configuration en vigueur ; une personne suffit à exécuter une étape",
+      "Format CSV commun d'import (source, référence externe, date de valeur, montant, devise) ; formats Wave, Orange Money et banques en 12b",
+      "Alertes par le mécanisme alarm() des processus existants ; envoi réel en 12b",
+      "Relevés en données API et CSV, PDF plus tard",
+      "La demande de remboursement du back-office suit le circuit de la 9a (approbation WALLET_REFUND)"
+    ],
+    "contraintes": [
+      "Ajouts au contrat openapi.yaml listés au plan et validés par le porteur le 17/11/2026 (20 opérations), rien d'existant modifié",
+      "Paiement manuel en V1 : aucun versement envoyé par l'API",
+      "Écritures par les fonctions du grand livre et la double validation existante, .sql générés intouchés",
+      "Un rôle de base par processus ; tâches d'exploitation sans écriture au grand livre ; aucun DELETE",
+      "Copie externe des scellements simulée, refusée en production (dette consignée)",
+      "Alertes sans envoi réel avant la 12b (dette consignée)",
+      "Transactions longues surveillées sans texte de requête",
+      "Correspondance SYSCOHADA indicative (OP-N3), jamais codée en dur"
+    ],
+    "cas_limites": [
+      "Étape de clôture exécutée deux fois ou en concurrence : une seule écriture",
+      "Droit net d'un commerçant négatif après droits de place : transfert de dette vers L-ORG-CREANCES",
+      "Droit net qui baisse entre la préparation et la validation d'un lot",
+      "Grand livre à portée ORGANIZER (plusieurs événements) : reste OPEN",
+      "Autorité de débit encore détenue par une passerelle : RECONCILING refusé",
+      "Relevé dans une autre devise que le compte : refus",
+      "Clôture avec soldes restants : CLOSED avec grand livre CLOSING",
+      "Contestation tardive après verrouillage : même circuit que les réclamations tardives"
+    ],
+    "fonctionnel": [
+      "Conditions de passage visibles, caisse ouverte bloquante, étapes avec aperçu, ordre imposé, droits de place par mode, frais, redevance, régularisation, casse, cautions, crédits offerts, clôture et verrouillage (FR-001 à FR-008)",
+      "Lot de versements, validation à deux, export CSV, résultat par ligne (FR-009 à FR-012)",
+      "Import et rapprochement des relevés, anomalies PSP représentées (FR-013 à FR-015)",
+      "Réclamations tardives, demande de remboursement du back-office, transitions gardées, limites de la 9a levées (FR-016 à FR-019)",
+      "Scellement, vérification, contrôles permanents, relevés des parties, export comptable, journal d'audit (FR-020 à FR-024)"
+    ],
+    "non_fonctionnel": [
+      "0 double écriture sous concurrence et rejeu (NFR-001)",
+      "Grand livre juste à la clôture (NFR-002)",
+      "Import de 10 000 lignes en moins de 60 s (NFR-003)",
+      "95 % des aperçus, listes et relevés en moins de 1 s (NFR-004)",
+      "Écriture non scellée au plus 10 min (NFR-005)",
+      "Alerte au plus une période de contrôle après l'échec (NFR-006)"
+    ],
+    "source": "kitty-specs/versements-rapprochements-cloture-01M7JT4G/spec.md"
   }
 ]
