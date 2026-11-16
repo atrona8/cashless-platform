@@ -13,7 +13,7 @@
 >
 > Rendu : Mermaid (aperçu Markdown de VS Code, GitHub). Aucun outil de diagramme de classes n'est prévu dans
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
-> Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Pas encore dans `main`.
+> Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Dans `main` par la PR #15 le 16/11/2026.
 
 ## 1. Organisation, événements et identité
 
@@ -632,7 +632,7 @@ classDiagram
   Ledger "1" --> "0..1" EdgeReplicationHorizon
 ```
 
-## 4 septies. Remboursements des festivaliers (mission 9a, ✅ consolidée sur `feat/remboursements` le 16/11/2026, squash `bf0b6376` ; pas encore dans `main`)
+## 4 septies. Remboursements des festivaliers (mission 9a, ✅ consolidée sur `feat/remboursements` le 16/11/2026, squash `bf0b6376` ; dans `main` par la PR #15 le 16/11/2026)
 
 > **Recalée sur les migrations fusionnées sur `feat/remboursements`.** `0081_refund_requests.sql` : une table nouvelle (`refund_request`), deux colonnes ajoutées à `otp_challenge` (`purpose`, `subject_id`, CHECK `otp_challenge_purpose_subject`), trois fonctions (`refund_request_operator`, `promote_due_refund_requests`, garde d'insertion `refund_request_scope_guard`) ; `0082_replace_media_cash_due.sql` : `replace_media` seul (espèces dues suivent le bracelet neuf). Aucune nouvelle version de `post_transaction`. Le SQL fait foi.
 
