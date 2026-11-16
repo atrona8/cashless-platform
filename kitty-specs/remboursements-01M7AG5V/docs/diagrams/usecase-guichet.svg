@@ -20,8 +20,8 @@
 <text x="1225.0" y="252.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Restituer et solder le bracelet</text>
 <text x="1225.0" y="407.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Rendre le solde payé en espèces</text>
 <text x="1225.0" y="562.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Rendre les espèces dues</text>
-<text x="1225.0" y="717.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver sur place (gros montant)</text>
-<text x="60" y="831.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Planifié (plan du 13/11/2026), non implémenté. Au-delà du plafond d’espèces par remboursement, un jeton d’approbation d’une seconde personne est exigé.</text>
+<text x="1225.0" y="717.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Approuver sur place (cumul)</text>
+<text x="60" y="831.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Livré (review du 16/11/2026). Le plafond porte sur le total des espèces qui sortent (caution, solde payé, espèces dues) : au-delà, jeton d’une seconde personne.</text>
 <text x="60" y="863.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Tout ou rien : un refus à une étape n’écrit rien ; le rejeu avec la même clé rend la même réponse.</text>
 </g>
 </svg>

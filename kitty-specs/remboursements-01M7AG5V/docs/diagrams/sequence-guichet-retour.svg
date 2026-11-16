@@ -11,8 +11,8 @@
 <polyline points="1735.0,236 1735.0,1030.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <polyline points="191.0,294.4 1210.3333333333333,294.4" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,294.4 1191.026516971745,304.94736184929246 1191.026516971745,283.8526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="494.0666666666666" y="257.4" width="415.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="1013.3333333333333" y="345.5111111111111" width="410" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<rect x="70" y="430.6222222222222" width="344" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="908.3333333333333" y="345.5111111111111" width="620" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="70" y="430.6222222222222" width="414" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="1212.3333333333333,537.7333333333333 193.0,537.7333333333333" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,537.7333333333333 212.3068163615882,527.1859714840409 212.3068163615882,548.2806951826258" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
 <rect x="561.6666666666666" y="500.73333333333335" width="280.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="695.6666666666666,618.8444444444444 193.0,618.8444444444444" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,618.8444444444444 212.3068163615882,608.297082595152 212.3068163615882,629.3918062937369" fill="#047857" stroke="#047857" stroke-width="1"/>
@@ -34,9 +34,9 @@
 <text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
 <text x="701.6666666666666" y="275.67499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Restituer le bracelet, solder le solde</text>
 <text x="34.0" y="297.45" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="1218.3333333333333" y="377.7861111111111" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Vérifier session de caisse et plafond</text>
+<text x="1218.3333333333333" y="377.7861111111111" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Session de caisse ; cumul des espèces avant toute écriture</text>
 <text x="34.0" y="378.56111111111113" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
-<text x="74" y="448.6722222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt solde payé au-delà du plafond</text>
+<text x="74" y="448.6722222222222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt cumul des espèces au-delà du plafond</text>
 <text x="701.6666666666666" y="519.0083333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">403 : approbation requise</text>
 <text x="34.0" y="540.7833333333333" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
 <text x="443.3333333333333" y="600.1194444444444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jeton sur place</text>
@@ -49,6 +49,6 @@
 <text x="34.0" y="901.7277777777778" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
 <text x="701.6666666666666" y="961.0638888888889" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : espèces à remettre</text>
 <text x="34.0" y="982.8388888888888" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="60" y="1075.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Tout ou rien : un refus à une étape n’écrit rien ; rejeu avec la même clé : même réponse. Planifié (plan du 13/11/2026), non implémenté.</text>
+<text x="60" y="1075.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Cumul = caution en espèces + solde payé + espèces dues. Tout ou rien : un refus à une étape n’écrit rien ; rejeu avec la même clé : même réponse. Livré (16/11/2026).</text>
 </g>
 </svg>

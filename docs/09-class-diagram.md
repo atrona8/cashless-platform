@@ -13,7 +13,7 @@
 >
 > Rendu : Mermaid (aperçu Markdown de VS Code, GitHub). Aucun outil de diagramme de classes n'est prévu dans
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
-> Complément du 13/11/2026 (plan de la mission 9a, planifiée, non implémentée) : section 4 septies prévue (`refund_request`, colonnes ajoutées à `otp_challenge`) ; migration prévue `0081`, rien n'existe encore au schéma.
+> Complément du 16/11/2026 (review de la mission 9a, non fusionnée) : section 4 septies recalée sur les migrations `0081` et `0082` livrées sur la branche de la mission (`refund_request`, colonnes ajoutées à `otp_challenge`) ; pas encore au schéma de `feat`.
 
 ## 1. Organisation, événements et identité
 
@@ -632,9 +632,9 @@ classDiagram
   Ledger "1" --> "0..1" EdgeReplicationHorizon
 ```
 
-## 4 septies. Remboursements des festivaliers (mission 9a, **planifiée : plan du 13/11/2026, non implémentée**)
+## 4 septies. Remboursements des festivaliers (mission 9a, **review terminée le 16/11/2026, non fusionnée**)
 
-> **Section prévue, pas encore au schéma.** Source : `kitty-specs/remboursements-01M7AG5V/data-model.md`. Migration prévue `0081_refund_requests.sql` : une table nouvelle (`refund_request`), deux colonnes ajoutées à `otp_challenge` (`purpose`, `subject_id`), deux fonctions (`refund_request_operator`, `promote_due_refund_requests`). À recaler sur les migrations réelles à la review ; le SQL fait foi.
+> **Recalée à la review sur les migrations de la branche de la mission, pas encore dans `feat`.** `0081_refund_requests.sql` : une table nouvelle (`refund_request`), deux colonnes ajoutées à `otp_challenge` (`purpose`, `subject_id`, CHECK `otp_challenge_purpose_subject`), trois fonctions (`refund_request_operator`, `promote_due_refund_requests`, garde d'insertion `refund_request_scope_guard`) ; `0082_replace_media_cash_due.sql` : `replace_media` seul (espèces dues suivent le bracelet neuf). Aucune nouvelle version de `post_transaction`. Le SQL fait foi.
 
 ```mermaid
 classDiagram
@@ -647,7 +647,7 @@ classDiagram
   RefundRequest "0..1" --> "*" OtpChallenge : défi du titulaire
 ```
 
-Invariants prévus : une demande ouverte au plus par portefeuille (index unique partiel), `PAID` exige une référence, `FAILED` un motif et une contre-passation, `REJECTED` un motif ; isolation par prestataire (RLS) ; aucun `DELETE`.
+Invariants livrés : une demande ouverte au plus par portefeuille (index unique partiel), `PAID` exige une référence, `FAILED` un motif et une contre-passation, `REJECTED` un motif ; `AWAITING_HOLDER` exige `hold_until`, `BLOCKED` exige la décision `BLOCK`, numéro mobile en E.164, demandeur différent du valideur ; isolation par prestataire (RLS) ; aucun `DELETE`.
 
 ## 5. Description des tables
 
@@ -813,4 +813,4 @@ Ce document décrit le schéma à une date donnée. À régénérer quand une mi
 domaine (prochaine : mission 9, ou le recalage de la section 4 sexies si la consolidation de la mission 8 ajoute une migration). Section 4 sexies (mission 8, passerelle) ajoutée au plan le 05/11/2026, recalée le 12/11/2026 sur `0058` à `0072` : 8 tables (`0058`, `0060`, `0061`, `0063`), 103 au total. Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
 
-Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026 : table `refund_request` prévue en migration `0081`, non implémentée ; prochaine régénération : à la review de la 9a, puis la mission 9b.
+Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026 et recalée à la review le 16/11/2026 (migrations `0081` et `0082`, branche de la mission, non fusionnée) ; la description de la table dans la section 5 est à ajouter à la fusion ; prochaine régénération : à la fusion de la 9a, puis la mission 9b.

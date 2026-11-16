@@ -1053,7 +1053,7 @@
   {
     "mission": "remboursements-01M7AG5V",
     "titre_cas_usage": "Remboursements des festivaliers",
-    "statut": "planifiée (plan finalisé le 13/11/2026)",
+    "statut": "review terminée (7 lots sur 7 approuvés le 16/11/2026), acceptation à venir, non fusionnée",
     "user_stories": [
       {
         "titre": "Demander son remboursement",
@@ -1087,7 +1087,8 @@
       "Le remboursement en espèces n'existe qu'à travers le guichet de retour (releaseMedia)",
       "L'envoi du code au titulaire réutilise l'envoyeur simulé existant (OP-N120), refusé en production",
       "Un portefeuille bloqué pour cause de perte reste remboursable, tout autre blocage non (décision du porteur du 13/11/2026)",
-      "Les statuts d'événement où WALLET_REFUND est permis sont ceux de la matrice §12.1, la clôture est en 9b"
+      "Les statuts d'événement où WALLET_REFUND est permis sont ceux de la matrice §12.1, la clôture est en 9b",
+      "Un compte sans identité vérifiée est refusé (422 REFUND_NOT_ALLOWED) : la branche « sans titulaire, REQUESTED directement » est retirée de FR-012 (décision du 16/11/2026, ADR-194)"
     ],
     "contraintes": [
       "Contrat openapi.yaml stable : aucune route, aucun champ ni code d'erreur nouveau (décision du 05/11/2026)",
@@ -1095,7 +1096,8 @@
       "Demande créée par le back-office (virement BANK_TRANSFER) reportée (OP-N123)",
       "Écritures par les fonctions du grand livre et la double validation existante, .sql générés intouchés",
       "Un rôle de base par processus, aucun DELETE sur la table des demandes",
-      "Tout écart qui affaiblit la sécurité est soumis avant d'être codé (règle du 13/10/2026)"
+      "Tout écart qui affaiblit la sécurité est soumis avant d'être codé (règle du 13/10/2026)",
+      "FAILED refusé à qui a proposé ou exécuté le remboursement ; une seule personne étrangère recrédite encore (OP-N126, levée par la 9b)"
     ],
     "cas_limites": [
       "Autorité de débit EDGE : approbation et échec refusés (409 DEBIT_AUTHORITY_EDGE)",
@@ -1104,14 +1106,15 @@
       "Code à usage unique expiré, déjà utilisé ou faux, limites d'essais (429)",
       "Décision du titulaire après l'échéance ou hors AWAITING_HOLDER (409)",
       "Demande d'un autre festivalier invisible (404)",
-      "Statuts d'événement hors matrice §12.1 : refus explicite"
+      "Statuts d'événement hors matrice §12.1 : refus explicite",
+      "Guichet : seuil de la seconde personne sur le cumul des espèces sorties (caution, solde payé, espèces dues), calculé avant la première écriture"
     ],
     "fonctionnel": [
       "Table refund_request isolée par prestataire, une demande ouverte au plus par portefeuille (FR-001, FR-003)",
       "Création, fenêtre, éligibilité, montant estimé, listes festivalier et back-office (FR-002, FR-004 à FR-007)",
       "Approbation à deux, résultat du paiement, refus (FR-008 à FR-010)",
-      "Autre numéro, décision du titulaire, échéance, vérification d'identité au-delà du seuil (FR-011 à FR-014)",
-      "Guichet de retour enchaîné, seconde personne, tout ou rien et rejouable (FR-015 à FR-017)",
+      "Autre numéro, décision du titulaire par lien, échéance, vérification d'identité au-delà du seuil (FR-011 à FR-014)",
+      "Guichet de retour enchaîné, seconde personne sur le cumul des espèces, tout ou rien et rejouable (FR-015 à FR-017)",
       "Espèces dues d'un bracelet remplacé, autorité de débit, journal d'audit (FR-018 à FR-020)"
     ],
     "non_fonctionnel": [

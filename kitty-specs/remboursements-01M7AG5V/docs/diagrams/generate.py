@@ -92,34 +92,34 @@ P=lambda k,l,s='neutral':(k,l,s)
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
 files.append(usecase('usecase-remboursement','Remboursements : festivalier et back-office','Qui demande, qui décide, qui approuve, qui confirme le paiement',
- ['Festivalier','Titulaire (numéro vérifié)','Back-office : auteur','Back-office : valideur'],
- [('Demander un remboursement','primary'),('Suivre mes demandes','primary'),('Confirmer ou bloquer (autre numéro)','accent'),('Lister et refuser une demande','neutral'),('Proposer l’approbation','primary'),('Approuver à deux','accent'),('Confirmer le paiement (PAID, FAILED)','primary')],
- [('Festivalier','Demander un remboursement'),('Festivalier','Suivre mes demandes'),('Titulaire (numéro vérifié)','Confirmer ou bloquer (autre numéro)'),
-  ('Back-office : auteur','Lister et refuser une demande'),('Back-office : auteur','Proposer l’approbation'),('Back-office : auteur','Confirmer le paiement (PAID, FAILED)'),
+ ['Festivalier','Titulaire (numéro vérifié)','Back-office : auteur','Back-office : valideur','Back-office : confirmeur'],
+ [('Demander un remboursement','primary'),('Suivre mes demandes','primary'),('Confirmer ou bloquer (lien reçu)','accent'),('Lister et refuser une demande','neutral'),('Proposer l’approbation','primary'),('Approuver à deux','accent'),('Confirmer le paiement (PAID, FAILED)','primary')],
+ [('Festivalier','Demander un remboursement'),('Festivalier','Suivre mes demandes'),('Titulaire (numéro vérifié)','Confirmer ou bloquer (lien reçu)'),
+  ('Back-office : auteur','Lister et refuser une demande'),('Back-office : auteur','Proposer l’approbation'),('Back-office : confirmeur','Confirmer le paiement (PAID, FAILED)'),
   ('Back-office : valideur','Approuver à deux')],
- note="Planifié (plan du 13/11/2026), non implémenté. Le valideur est une autre personne que l’auteur et que le demandeur. Le paiement Wave ou Orange Money est fait hors système.\nLe titulaire est le festivalier lui-même quand il demande vers son numéro vérifié ; il décide seulement pour une demande vers un autre numéro.",H=780))
+ note="Livré (review du 16/11/2026). Le valideur est une autre personne que l’auteur et que le demandeur. Le paiement Wave ou Orange Money est fait hors système.\nPAID : toute personne habilitée. FAILED : refusé à l’auteur et au valideur (403), donc un troisième administrateur. Le titulaire décide par le lien reçu avec son code.",H=860))
 files.append(usecase('usecase-guichet','Guichet de retour : restituer et solder','Un seul appel, dans l’ordre imposé : caution, crédits offerts, solde payé, espèces dues, restitution',
  ['Caissier','Superviseur'],
- [('Restituer et solder le bracelet','primary'),('Rendre le solde payé en espèces','primary'),('Rendre les espèces dues','neutral'),('Approuver sur place (gros montant)','accent')],
- [('Caissier','Restituer et solder le bracelet'),('Caissier','Rendre le solde payé en espèces'),('Caissier','Rendre les espèces dues'),('Superviseur','Approuver sur place (gros montant)')],
- note="Planifié (plan du 13/11/2026), non implémenté. Au-delà du plafond d’espèces par remboursement, un jeton d’approbation d’une seconde personne est exigé.\nTout ou rien : un refus à une étape n’écrit rien ; le rejeu avec la même clé rend la même réponse.",H=620))
+ [('Restituer et solder le bracelet','primary'),('Rendre le solde payé en espèces','primary'),('Rendre les espèces dues','neutral'),('Approuver sur place (cumul)','accent')],
+ [('Caissier','Restituer et solder le bracelet'),('Caissier','Rendre le solde payé en espèces'),('Caissier','Rendre les espèces dues'),('Superviseur','Approuver sur place (cumul)')],
+ note="Livré (review du 16/11/2026). Le plafond porte sur le total des espèces qui sortent (caution, solde payé, espèces dues) : au-delà, jeton d’une seconde personne.\nTout ou rien : un refus à une étape n’écrit rien ; le rejeu avec la même clé rend la même réponse.",H=620))
 files.append(sequence('sequence-demande-approbation','Demande, approbation à deux, confirmation du paiement','Le grand livre sort l’argent à l’approbation ; le paiement est fait hors système puis confirmé',
- [P('f','Festivalier','data'),P('a','API','primary'),P('d','Base'),P('b1','Back-office auteur','data'),P('b2','Back-office valideur','data')],
+ [P('f','Festivalier','data'),P('a','API','primary'),P('d','Base'),P('b1','Back-office auteur','data'),P('b2','Back-office valideur','data'),P('b3','Confirmeur tiers','data')],
  [('f','a','Demander (numéro vérifié, clé)'),('a','d','Éligibilité, frais, demande REQUESTED'),('a','f','201 : montant estimé','ret'),('a','f','Sinon (fenêtre close, solde nul) : 422','bad'),
   ('b1','a','Approuver la demande'),('a','d','Approbation WALLET_REFUND PENDING'),('a','b1','202 : en attente','ret'),
-  ('b2','a','Approuver (autre personne)'),('a','d','Écriture WALLET_REFUND, PROCESSING'),('b1','a','Confirmer PAID + référence ou FAILED + motif'),('a','d','FAILED : REVERSAL, solde recrédité'),('a','b1','200 : PAID ou FAILED','ret')],
- note="Même personne que l’auteur ou le demandeur : refus. Autorité de débit EDGE : 409. PAID n’écrit rien. Planifié (plan du 13/11/2026), non implémenté."))
+  ('b2','a','Approuver (autre personne)'),('a','d','Écriture WALLET_REFUND, PROCESSING'),('a','b2','Confirmer FAILED par le valideur : 403','bad'),('b3','a','Confirmer PAID + référence ou FAILED + motif'),('a','d','FAILED : REVERSAL, solde recrédité'),('a','b3','200 : PAID ou FAILED','ret')],
+ note="Approbation : même personne que l’auteur ou le demandeur, refus. FAILED : refusé à l’auteur et au valideur (403). Autorité EDGE : 409. PAID n’écrit rien. Livré (16/11/2026)."))
 files.append(sequence('sequence-autre-numero','Autre numéro : décision du titulaire et échéance','Le code du nouveau numéro prouve qu’il existe ; le titulaire peut bloquer jusqu’à l’échéance',
  [P('f','Festivalier','data'),P('a','API','primary'),P('t','Titulaire','data'),P('d','Base et maintenance')],
- [('f','a','Demander vers un autre numéro + code'),('a','d','Vérifier et consommer le code du numéro'),('a','d','AWAITING_HOLDER, échéance hold_until'),('a','t','Code envoyé au numéro vérifié','ret'),
-  ('#open','alt le titulaire répond avant l’échéance'),('t','a','Décision CONFIRM ou BLOCK + code'),('a','d','CONFIRM : REQUESTED ; BLOCK : BLOCKED'),
+ [('f','a','Demander vers un autre numéro + code'),('a','f','Compte sans identité vérifiée : 422','bad'),('a','d','Vérifier et consommer le code du numéro'),('a','d','AWAITING_HOLDER, échéance hold_until'),('a','t','Code et lien (demande, défi) envoyés','ret'),
+  ('#open','alt le titulaire répond avant l’échéance'),('t','a','Décision CONFIRM ou BLOCK + code (lien)'),('a','d','CONFIRM : REQUESTED ; BLOCK : BLOCKED'),
   ('#else','sinon : aucune réponse'),('d','d','Échéance atteinte : REQUESTED','self'),('#close',),
   ('a','f','Montant au-delà du seuil : identité à noter','note')],
- note="Sans titulaire vérifié : REQUESTED directement. Après l’échéance, le titulaire ne peut plus bloquer (409). Planifié (plan du 13/11/2026), non implémenté."))
+ note="Sans identité vérifiée : refus 422, jamais REQUESTED directement. Après l’échéance, le titulaire ne peut plus bloquer (409). Livré (16/11/2026)."))
 files.append(sequence('sequence-guichet-retour','Guichet de retour enchaîné','Une seule transaction, dans l’ordre imposé ; jeton sur place au-delà du plafond',
  [P('c','Caissier','data'),P('s','Superviseur','data'),P('a','API','primary'),P('d','Base')],
- [('c','a','Restituer le bracelet, solder le solde'),('a','a','Vérifier session de caisse et plafond','self'),
-  ('#open','alt solde payé au-delà du plafond'),('a','c','403 : approbation requise','bad'),('s','c','Jeton sur place','ret'),('c','a','Rejouer avec le jeton'),('#close',),
+ [('c','a','Restituer le bracelet, solder le solde'),('a','a','Session de caisse ; cumul des espèces avant toute écriture','self'),
+  ('#open','alt cumul des espèces au-delà du plafond'),('a','c','403 : approbation requise','bad'),('s','c','Jeton sur place','ret'),('c','a','Rejouer avec le jeton'),('#close',),
   ('a','d','Caution, crédits offerts, solde payé, espèces dues'),('a','d','Restitution : bracelet RELEASED'),('a','c','200 : espèces à remettre','ret')],
- note="Tout ou rien : un refus à une étape n’écrit rien ; rejeu avec la même clé : même réponse. Planifié (plan du 13/11/2026), non implémenté."))
+ note="Cumul = caution en espèces + solde payé + espèces dues. Tout ou rien : un refus à une étape n’écrit rien ; rejeu avec la même clé : même réponse. Livré (16/11/2026)."))
 for f in files: print(r.render(f))
