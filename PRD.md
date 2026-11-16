@@ -310,7 +310,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        (ADR-191 à ADR-193, ADR-195) ; C-001 (FR-012) tranchée : comportement strict, OP-N127 clos (ADR-194) ; lien du titulaire (OP-N129) levé par la 9a ; `REVERSAL` d'un `WALLET_REFUND`
        `BACKOFFICE` admis (ADR-189). Mesures : NFR-004 p95 sous 500 ms, NFR-005 promotion sous 5 min, NFR-001 et
        NFR-002 par 100 et 50 requêtes simultanées.
-   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés
+   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés Décisions du porteur du 17/11/2026 : mission gardée entière ; opérations absentes ajoutées au contrat, listées au plan et validées avant l'implémentation.
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
