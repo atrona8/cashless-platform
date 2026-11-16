@@ -134,10 +134,10 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-189 | Mission 9a : contre-passation d'un `WALLET_REFUND` de source `BACKOFFICE` acceptée partout où `WALLET_REFUND` l'est ; renforcements de la mission | Acceptée (décision du porteur du 13/11/2026) |
 | ADR-190 | Mission 9a : seuil de la seconde personne au guichet appliqué au cumul des espèces sorties | Acceptée (renforcement, décision du porteur du 16/11/2026) |
 | ADR-191 | Mission 9a : `FAILED` refusé au proposant et à l'exécutant ; une seule personne habilitée recrédite (OP-N126) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée proposée : 9b |
-| ADR-192 | Mission 9a : code du titulaire consommé avant l'écriture de sa décision (OP-N124) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée à confirmer par le porteur |
-| ADR-193 | Mission 9a : quota de codes par numéro commun à tous les usages, alerte de `BLOCK` réduite à une ligne d'audit (OP-N125) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée à confirmer par le porteur |
+| ADR-192 | Mission 9a : code du titulaire consommé avant l'écriture de sa décision (OP-N124) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée : mission 9b (confirmée le 16/11/2026) |
+| ADR-193 | Mission 9a : quota de codes par numéro commun à tous les usages, alerte de `BLOCK` réduite à une ligne d'audit (OP-N125) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée : mission 12b (confirmée le 16/11/2026) |
 | ADR-194 | Mission 9a : contradiction C-001, FR-012 « sans titulaire vérifié » inatteignable par `/me` (OP-N127) | Acceptée (décision du porteur du 16/11/2026) ; OP-N127 clos |
-| ADR-195 | Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128) | Proposée : à confirmer par le porteur |
+| ADR-195 | Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128) | Acceptée (porteur, 16/11/2026) ; ouvert, levée : mission 9b |
 | ADR-196 | Mission 9a : ordre des états d'une demande de remboursement gardé par l'API seule (OP-N130) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée : mission 9b |
 
 ---
@@ -2868,8 +2868,8 @@ Décision du porteur : 16/11/2026 (décision n° 12a, relecture de WP03). **Limi
   réessayer avec lui. Un `BLOCK` perdu laisse la demande passer `REQUESTED` à l'échéance, donc approuvable. Pas de
   perte de fonds hors du circuit à deux ; l'alerte du titulaire est perdue.
 - **Raison.** Pas de nouveau cycle sur WP03 (décision du porteur du 16/11/2026).
-- **Mission qui le lève.** Proposition : mission 9b (consommation et décision dans une même transaction, essais faux
-  comptés à part) ; **à confirmer par le porteur**. **Condition de levée.** Un code n'est consommé que si la décision est
+- **Mission qui le lève.** Mission 9b (consommation et décision dans une même transaction, essais faux
+  comptés à part), confirmé par le porteur le 16/11/2026. **Condition de levée.** Un code n'est consommé que si la décision est
   écrite, et le code faux reste compté.
 - **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N124) : code consommé après un `409`,
   décision absente, demande `REQUESTED`.
@@ -2887,8 +2887,8 @@ Décision du porteur : 16/11/2026 (décision n° 12b, relecture de WP03). **Limi
   recevoir ni utiliser son code pour `BLOCK`. De plus l'alerte du `BLOCK` du titulaire se réduit à une ligne d'audit
   (`REFUND_HOLDER_DECIDED`, sans code ni numéro) : aucun envoi vers le prestataire. Disponibilité et alerte, pas de perte de fonds.
 - **Raison.** Contrat stable ; envoi réel non disponible avant la 12b.
-- **Mission qui le lève.** Proposition : mission 12b (quota séparé par usage, vraie alerte vers le back-office avec le
-  vrai fournisseur d'envoi) ; **à confirmer par le porteur**. **Condition de levée.** Quotas distincts connexion /
+- **Mission qui le lève.** Mission 12b (quota séparé par usage, vraie alerte vers le back-office avec le
+  vrai fournisseur d'envoi), confirmé par le porteur le 16/11/2026. **Condition de levée.** Quotas distincts connexion /
   titulaire ; alerte de `BLOCK` livrée à une personne du prestataire.
 - **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N125) : `429` à la création après
   épuisement par la connexion ; `BLOCK` sans envoi, une ligne d'audit.
@@ -2906,9 +2906,9 @@ Décision du porteur : 16/11/2026 (décision n° 15). Relevée en relecture de W
 
 ## ADR-195 — Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128)
 
-Relevées en relecture de WP06 (16/11/2026) ; **non soumises au porteur avant cette consignation : à confirmer ou à lever**.
+Relevées en relecture de WP06 (16/11/2026) ; soumises au porteur après la consignation, **acceptées le 16/11/2026**.
 
-- **Statut** : Proposée.
+- **Statut** : Acceptée (porteur, 16/11/2026).
 - **Constat (a), traçabilité.** Caution seule au-dessus du seuil avec jeton (`refund_deposit_by`) : l'écriture
   `DEPOSIT_REFUNDED` porte `approved_by` nul ; l'approbateur n'est que dans l'audit du jeton. Test :
   `journey.spec.ts` (OP-N128 (a)).
@@ -2917,7 +2917,7 @@ Relevées en relecture de WP06 (16/11/2026) ; **non soumises au porteur avant ce
   couvert par un test (fenêtre de course).
 - **Risque.** (a) trace moins directe de la seconde personne ; (b) dépassement possible du seuil cumulé par un
   événement concurrent rare, borné par le seuil de `refund_cash_due`.
-- **Mission qui le lève.** Proposition : mission 9b ; à confirmer par le porteur. **Condition de levée.** `approved_by`
+- **Mission qui le lève.** Mission 9b (confirmé par le porteur le 16/11/2026). **Condition de levée.** `approved_by`
   porté par l'écriture ; cumul relu sous verrou du portefeuille.
 - **Références.** OP-N128 ; ADR-190.
 

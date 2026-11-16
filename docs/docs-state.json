@@ -65,7 +65,7 @@
       "spec_index_a_jour": true
     },
     "remboursements-01M7AG5V": {
-      "statut": "mergée sur feat/remboursements (acceptée 8cd5ae97, squash bf0b6376, 16/11/2026), pas encore dans main",
+      "statut": "mergée sur feat/remboursements (acceptée 8cd5ae97, squash bf0b6376, 16/11/2026), dans main par la PR #15 le 16/11/2026",
       "verifie_le": "2026-11-16T13:30:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
