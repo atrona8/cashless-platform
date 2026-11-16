@@ -31,3 +31,8 @@ Branche de planification et de fusion : `feat/remboursements`. Sources de la mis
     b. le quota et le blocage de 30 min par numéro sont communs à tous les usages (R-05) : un tiers peut épuiser le quota
        d'un numéro par des demandes de connexion publiques et gêner `createMyRefundRequest` (429) ou le `BLOCK` du
        titulaire. L'alerte de `BLOCK` réduite à une ligne d'audit est à nommer dans la même entrée.
+13. (16/11, relecture de WP05) **Confirmation `FAILED` par une personne étrangère au remboursement** : `confirmRefundRequest`
+    avec `outcome = FAILED` est refusé si l'appelant a proposé (auteur de l'approbation) ou exécuté (`approved_by`) le
+    remboursement, avec un code déjà au contrat (`403`, réponse `Forbidden`) ; `PAID` reste ouvert à toute personne
+    habilitée. Contrat inchangé. Une seule personne habilitée suffit encore pour recréditer : dette à consigner par WP07
+    (OP + ADR + test qui borne la limite), levée par les rapprochements avec les relevés Wave/Orange Money (mission 9b).
