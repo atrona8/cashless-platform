@@ -22,7 +22,7 @@ import {
 import { deriveCustomerKey } from '../customer-identity/customer-keys';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
-import { OTP_SENDER, type OtpChannel, type OtpSender } from './otp-sender';
+import { OTP_SENDER, type HolderLink, type OtpChannel, type OtpSender } from './otp-sender';
 
 export const OTP_TTL_SECONDS = 300;
 export const OTP_PHONE_MAX = 3;
@@ -52,6 +52,19 @@ type Exchange =
   | { kind: 'OK'; tokens: TokenResponse }
   | { kind: 'INVALID' }
   | { kind: 'BLOCKED'; retryAfter: number };
+/** Usage d'un code à usage unique : la connexion, ou la décision du titulaire sur une demande de remboursement. */
+export type ChallengePurpose = 'LOGIN' | 'REFUND_HOLDER';
+/** Issue du cœur de vérification : le code est consommé (`CONSUMED`), refusé, ou le numéro est bloqué. */
+type Check =
+  | { kind: 'CONSUMED'; phone: string }
+  | { kind: 'INVALID' }
+  | { kind: 'BLOCKED'; retryAfter: number };
+/** Liaison exigée du défi, vérifiée AVANT la comparaison du code et sans compter d'essai. */
+interface Binding {
+  purpose: ChallengePurpose;
+  subjectId: string | null;
+  expectedPhone: string | null;
+}
 type Renewal = { kind: 'OK'; tokens: TokenResponse } | { kind: 'REFUSED' };
 
 @Injectable()
@@ -105,38 +118,107 @@ export class CustomerAuthService {
         detail: 'operator_code : code de prestataire inconnu.',
       });
     const clientRef = createHmac('sha256', this.clientKey).update(address, 'utf8').digest('hex');
+    const { challengeId, code } = await this.createChallenge({
+      operatorId,
+      phone: input.phone,
+      channel: input.channel,
+      clientRef,
+      purpose: 'LOGIN',
+      subjectId: null,
+      perAddressLimit: true,
+    });
+    return { otp_request_id: `otp_${challengeId}`, expires_in: OTP_TTL_SECONDS, code };
+  }
+
+  /**
+   * Code du titulaire d'une demande de remboursement (mission 9a, WP03) : même défi, même limite par numéro et même
+   * blocage que la connexion, mais lié à la demande (`subject_id`) et sans limite par adresse (elle fusionnerait
+   * tous les titulaires). `code` n'est rendu que pour les tests (envoyeur d'enregistrement ou faux) ; il n'est
+   * jamais écrit dans un journal ni dans une réponse.
+   */
+  async issueChallenge(input: {
+    operatorId: string;
+    phone: string;
+    purpose: 'REFUND_HOLDER';
+    subjectId: string;
+  }): Promise<{ otpRequestId: string; expiresIn: number; code: string }> {
+    const clientRef = createHmac('sha256', this.clientKey)
+      .update(`refund-holder:${input.subjectId}`, 'utf8')
+      .digest('hex');
+    const { challengeId, code } = await this.createChallenge({
+      operatorId: input.operatorId,
+      phone: input.phone,
+      channel: 'AUTO',
+      clientRef,
+      purpose: input.purpose,
+      subjectId: input.subjectId,
+      perAddressLimit: false,
+      linkFor: (challengeId) => ({
+        refundRequestId: input.subjectId,
+        otpRequestId: `otp_${challengeId}`,
+      }),
+    });
+    return { otpRequestId: `otp_${challengeId}`, expiresIn: OTP_TTL_SECONDS, code };
+  }
+
+  /** Création d'un défi (verrou du numéro, attente, remplacement du code vivant, insertion), puis envoi. */
+  private async createChallenge(input: {
+    operatorId: string;
+    phone: string;
+    channel: OtpChannel;
+    clientRef: string;
+    purpose: ChallengePurpose;
+    subjectId: string | null;
+    perAddressLimit: boolean;
+    linkFor?: (challengeId: string) => HolderLink;
+  }): Promise<{ challengeId: string; code: string }> {
+    const { operatorId, phone, clientRef } = input;
     const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
     const challengeId = randomUUID();
     await this.tx.run(operatorId, async (client) => {
-      await this.lockPhone(client, operatorId, input.phone);
-      await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [
-        `customer-otp-client:${operatorId}:${clientRef}`,
-      ]);
-      const wait = await this.waitBeforeRequest(client, operatorId, input.phone, clientRef);
+      await this.lockPhone(client, operatorId, phone);
+      if (input.perAddressLimit)
+        await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [
+          `customer-otp-client:${operatorId}:${clientRef}`,
+        ]);
+      const wait = await this.waitBeforeRequest(
+        client,
+        operatorId,
+        phone,
+        input.perAddressLimit ? clientRef : null,
+      );
       if (wait !== null) throw rateLimited(wait);
-      // Un seul code vivant par numéro : le nouveau remplace les précédents (moins de codes à deviner).
+      // Un seul code vivant par (numéro, usage) : le nouveau remplace les précédents (moins de codes à deviner).
+      // Pour `REFUND_HOLDER`, par sujet aussi : deux demandes du même titulaire ne s'invalident pas.
       await client.query(
         `UPDATE otp_challenge SET invalidated_at = clock_timestamp()
-          WHERE operator_id = $1 AND phone = $2 AND consumed_at IS NULL AND invalidated_at IS NULL`,
-        [operatorId, input.phone],
+          WHERE operator_id = $1 AND phone = $2 AND purpose = $3
+            AND subject_id IS NOT DISTINCT FROM $4::uuid
+            AND consumed_at IS NULL AND invalidated_at IS NULL`,
+        [operatorId, phone, input.purpose, input.subjectId],
       );
       await client.query(
-        `INSERT INTO otp_challenge (id, operator_id, phone, channel, code_hash, client_ref, expires_at)
-         VALUES ($1, $2, $3, $4, $5, $6, clock_timestamp() + make_interval(secs => $7))`,
+        `INSERT INTO otp_challenge (id, operator_id, phone, channel, code_hash, client_ref, expires_at, purpose,
+                                    subject_id)
+         VALUES ($1, $2, $3, $4, $5, $6, clock_timestamp() + make_interval(secs => $7), $8, $9)`,
         [
           challengeId,
           operatorId,
-          input.phone,
+          phone,
           input.channel,
           this.codeHash(challengeId, code),
           clientRef,
           OTP_TTL_SECONDS,
+          input.purpose,
+          input.subjectId,
         ],
       );
     });
     // Après validation du défi : l'envoi n'a lieu que pour un défi enregistré. Même chemin, numéro connu ou non.
-    await this.sender.send(input.phone, code, input.channel);
-    return { otp_request_id: `otp_${challengeId}`, expires_in: OTP_TTL_SECONDS, code };
+    const link = input.linkFor?.(challengeId);
+    if (link) await this.sender.send(phone, code, input.channel, link);
+    else await this.sender.send(phone, code, input.channel);
+    return { challengeId, code };
   }
 
   /** Secondes à attendre avant une nouvelle demande (numéro bloqué, 3 par 15 min, adresse par heure), sinon `null`. */
@@ -144,7 +226,7 @@ export class CustomerAuthService {
     client: TxClient,
     operatorId: string,
     phone: string,
-    clientRef: string,
+    clientRef: string | null,
   ): Promise<number | null> {
     const waits: number[] = [];
     const blocked = await client.query<{ wait: number }>(
@@ -171,24 +253,16 @@ export class CustomerAuthService {
       if (rows[0]) waits.push(rows[0].wait);
     };
     await slot('phone', phone, OTP_PHONE_MAX, `${OTP_PHONE_WINDOW_MINUTES} minutes`);
-    await slot('client_ref', clientRef, this.config.customerOtpIpHourlyMax, '1 hour');
+    if (clientRef !== null)
+      await slot('client_ref', clientRef, this.config.customerOtpIpHourlyMax, '1 hour');
     return waits.length > 0 ? Math.max(...waits) : null;
   }
 
   // ----- Échange du code ---------------------------------------------------------------------------------------
 
   async exchange(input: { requestId: string; code: string }): Promise<TokenResponse> {
-    const match = REQUEST_ID.exec(input.requestId);
-    if (!match) throw otpInvalid();
-    const challengeId = match[1]!.toLowerCase();
-    const operatorId = await this.tx.withoutTenant(async (client) => {
-      const { rows } = await client.query<{ id: string | null }>(
-        'SELECT otp_challenge_operator($1) AS id',
-        [challengeId],
-      );
-      return rows[0]?.id ?? null;
-    });
-    if (!operatorId) throw otpInvalid();
+    const challengeId = this.parseRequestId(input.requestId);
+    const operatorId = await this.challengeOperator(challengeId);
     const outcome = await this.tx.run(operatorId, (client) =>
       this.exchangeIn(client, operatorId, challengeId, input.code),
     );
@@ -198,12 +272,81 @@ export class CustomerAuthService {
     return outcome.tokens;
   }
 
+  /**
+   * Vérifie et CONSOMME un code à usage unique sans émettre de jeton ni créer de compte (mission 9a, WP03). Le défi
+   * doit avoir l'usage, le sujet et le numéro attendus (et le prestataire, s'il est donné) : sinon `422 OTP_INVALID`
+   * sans compter d'essai. Transaction PROPRE (`TenantTx.run` annule sur exception) : l'essai faux compté et le
+   * blocage survivent à l'erreur levée après elle. Ne jamais l'appeler en comptant sur la transaction de l'appelant.
+   */
+  async verifyChallenge(input: {
+    otpRequestId: string;
+    code: string;
+    expectedPhone: string;
+    purpose: ChallengePurpose;
+    subjectId?: string;
+    operatorId?: string;
+  }): Promise<void> {
+    const challengeId = this.parseRequestId(input.otpRequestId);
+    const operatorId = await this.challengeOperator(challengeId);
+    if (input.operatorId !== undefined && input.operatorId !== operatorId) throw otpInvalid();
+    const outcome = await this.tx.run(operatorId, (client) =>
+      this.checkCode(client, operatorId, challengeId, input.code, {
+        purpose: input.purpose,
+        subjectId: input.subjectId ?? null,
+        expectedPhone: input.expectedPhone,
+      }),
+    );
+    if (outcome.kind === 'BLOCKED') throw rateLimited(outcome.retryAfter);
+    if (outcome.kind === 'INVALID') throw otpInvalid();
+  }
+
+  private parseRequestId(requestId: string): string {
+    const match = REQUEST_ID.exec(requestId);
+    if (!match) throw otpInvalid();
+    return match[1]!.toLowerCase();
+  }
+
+  /** Prestataire du défi (fonction SECURITY DEFINER qui ne rend que l'identifiant) ; `422` s'il est inconnu. */
+  private async challengeOperator(challengeId: string): Promise<string> {
+    const operatorId = await this.tx.withoutTenant(async (client) => {
+      const { rows } = await client.query<{ id: string | null }>(
+        'SELECT otp_challenge_operator($1) AS id',
+        [challengeId],
+      );
+      return rows[0]?.id ?? null;
+    });
+    if (!operatorId) throw otpInvalid();
+    return operatorId;
+  }
+
   private async exchangeIn(
     client: TxClient,
     operatorId: string,
     challengeId: string,
     code: string,
   ): Promise<Exchange> {
+    // Seul un code de CONNEXION ouvre une session : un code de titulaire ne doit jamais en ouvrir une.
+    const checked = await this.checkCode(client, operatorId, challengeId, code, {
+      purpose: 'LOGIN',
+      subjectId: null,
+      expectedPhone: null,
+    });
+    if (checked.kind !== 'CONSUMED') return checked;
+    const customerId = await this.customerFor(client, operatorId, checked.phone);
+    return { kind: 'OK', tokens: await this.issue(client, operatorId, customerId, randomUUID()) };
+  }
+
+  /**
+   * Cœur commun : verrou du numéro, ligne verrouillée, blocage, liaison, défi utilisable, comparaison en temps
+   * constant, essais cumulés, consommation. Les écritures sont celles de la transaction de l'appelant.
+   */
+  private async checkCode(
+    client: TxClient,
+    operatorId: string,
+    challengeId: string,
+    code: string,
+    binding: Binding,
+  ): Promise<Check> {
     const peek = await client.query<{ phone: string }>(
       'SELECT phone FROM otp_challenge WHERE id = $1',
       [challengeId],
@@ -215,8 +358,10 @@ export class CustomerAuthService {
       code_hash: Buffer;
       attempts: number;
       usable: boolean;
+      purpose: string;
+      subject_id: string | null;
     }>(
-      `SELECT code_hash, attempts,
+      `SELECT code_hash, attempts, purpose, subject_id,
               (consumed_at IS NULL AND invalidated_at IS NULL AND expires_at > clock_timestamp()) AS usable
          FROM otp_challenge WHERE id = $1 FOR UPDATE`,
       [challengeId],
@@ -229,6 +374,13 @@ export class CustomerAuthService {
       [operatorId, phone],
     );
     if (block.rows[0]) return { kind: 'BLOCKED', retryAfter: block.rows[0].wait };
+    // Liaison : usage, sujet et numéro du défi, avant toute comparaison du code, sans essai compté.
+    if (
+      challenge.purpose !== binding.purpose ||
+      (challenge.subject_id ?? null) !== binding.subjectId ||
+      (binding.expectedPhone !== null && binding.expectedPhone !== phone)
+    )
+      return { kind: 'INVALID' };
     if (!challenge.usable) return { kind: 'INVALID' };
 
     const expected = this.codeHash(challengeId, code);
@@ -265,8 +417,7 @@ export class CustomerAuthService {
     await client.query('UPDATE otp_challenge SET consumed_at = clock_timestamp() WHERE id = $1', [
       challengeId,
     ]);
-    const customerId = await this.customerFor(client, operatorId, phone);
-    return { kind: 'OK', tokens: await this.issue(client, operatorId, customerId, randomUUID()) };
+    return { kind: 'CONSUMED', phone };
   }
 
   /** Compte du numéro dans ce prestataire ; créé au premier passage (nom neutre, jamais le numéro). */

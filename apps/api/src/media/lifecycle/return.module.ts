@@ -2,6 +2,7 @@
 // retrouvé, rendu des espèces dues.
 import { Module } from '@nestjs/common';
 import { OnsiteApprovalModule } from '../../approval/onsite/onsite-approval.module';
+import { ConfigResolverModule } from '../../configuration/config-resolver.module';
 import { TenantModule } from '../../organization/tenant/tenant.module';
 import { TapsModule } from '../taps/taps.module';
 import { CashDueController } from './cash-due.controller';
@@ -15,7 +16,7 @@ import { ReplaceController } from './replace.controller';
 import { ReplaceService } from './replace.service';
 
 @Module({
-  imports: [TenantModule, TapsModule, LifecycleModule, OnsiteApprovalModule],
+  imports: [TenantModule, ConfigResolverModule, TapsModule, LifecycleModule, OnsiteApprovalModule],
   controllers: [ReleaseController, ReplaceController, LossController, CashDueController],
   providers: [ReleaseService, ReplaceService, LossService, CashDueService],
 })

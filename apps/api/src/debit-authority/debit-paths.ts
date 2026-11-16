@@ -103,11 +103,12 @@ export const DEBIT_PATHS: readonly DebitPath[] = [
       'offline/batches/batch-intake.ts:193 (contrôle 9, checkAuthority) ; offline-batches.service.ts:120',
   },
   {
-    route: 'POST /refund-requests/{refund_request_id}/confirm',
-    operationId: 'confirmRefundRequest',
+    route: 'POST /approval-requests/{approval_request_id}/approve',
+    operationId: 'approveApprovalRequest',
     kind: 'DEBIT',
-    layer: 'ABSENT',
-    protection: 'aucune route dans apps/api/src (contrat seulement)',
+    layer: 'ENGINE',
+    protection: `refunds/wallet-refund-action.ts:157 (garde EDGE de l'exécution WALLET_REFUND, 409 avant toute écriture) ; ${CL006}`,
+    note: 'Exécution de WALLET_REFUND à l’approbation : la demande d’approbation passe FAILED, la demande de remboursement reste REQUESTED. Les autres actions approuvées gardent leurs propres gardes.',
   },
   {
     route: 'POST /payment-intents/{payment_intent_id}/capture',
@@ -167,5 +168,61 @@ export const DEBIT_PATHS: readonly DebitPath[] = [
     layer: 'HTTP',
     protection:
       'begin_cash_close lève CL029 sous EDGE (0059:402) : 409 CONFLICT_STATE, sens de CL029 inchangé',
+  },
+  {
+    route: 'POST /refund-requests/{refund_request_id}/confirm',
+    operationId: 'confirmRefundRequest',
+    kind: 'CREDIT',
+    layer: 'HTTP',
+    protection:
+      'garde EDGE de refunds/refund-confirm.service.ts:117 (409 avant le REVERSAL : un crédit n’est pas refusé par CL006) ; PAID n’écrit rien',
+  },
+  {
+    route: 'POST /me/refund-requests',
+    operationId: 'createMyRefundRequest',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
+  },
+  {
+    route: 'GET /me/refund-requests',
+    operationId: 'listMyRefundRequests',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
+  },
+  {
+    route: 'GET /refund-requests',
+    operationId: 'listRefundRequests',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
+  },
+  {
+    route: 'POST /refund-requests/{refund_request_id}/reject',
+    operationId: 'rejectRefundRequest',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
+  },
+  {
+    route: 'POST /refund-requests/{refund_request_id}/holder-decision',
+    operationId: 'decideRefundRequestAsHolder',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
+  },
+  {
+    route: 'POST /refund-requests/{refund_request_id}/approve',
+    operationId: 'approveRefundRequest',
+    kind: 'NEUTRAL',
+    layer: 'CLASSIFIED',
+    protection:
+      'refunds/ : aucune écriture au grand livre (état de la demande de remboursement seulement)',
   },
 ];

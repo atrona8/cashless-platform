@@ -11,9 +11,9 @@ Date : 13/11/2026. Destinataire : équipe de l'app Xaamga Cashless (Flutter). En
 - **Les formes de réponse attendues dans votre note ne sont pas celles du contrat.** La référence est
   `openapi.yaml` (contrat partagé, stable) : l'API le suit à la lettre. Il faut aligner l'app sur le contrat (tableau
   ci-dessous), pas l'inverse. Pour régénérer les modèles Dart : `packages/contracts` du kit client.
-- **P4 (remboursements) : pas encore servis.** Ils arrivent avec la mission 9 (remboursements, versements et
-  clôture), la prochaine côté serveur. Les formes sont déjà fixées dans le contrat : vous pouvez coder contre lui
-  dès maintenant, avec des réponses simulées.
+- **P4 (remboursements) : servis depuis la mission 9a (16/11/2026).** Création, liste et décision du titulaire répondent
+  (ni `404` ni route à ajouter). Le paiement du remboursement est **manuel** : le statut `PAID` arrive après un paiement
+  fait hors système par le prestataire (voir § 4).
 
 **Documentation interactive** : `https://removable-thimble-uptight.ngrok-free.dev/docs` (Swagger UI, contrat brut sur
 `/docs/openapi.yaml`). Vérifiée le 13/11 : elle affiche le contrat à jour pour toutes les routes festivalier. Elle ne
@@ -88,7 +88,7 @@ Exemples réels pris sur l'API partagée le 13/11 :
     "balance_as_of": "2026-11-13T12:25:45.040Z",
     "media": [ { "media_id": "8c8f93a2-3a1b-4d26-85c9-efce5477964e", "status": "ACTIVE",
                  "deposit_status": "NONE", "wallet_id": "44f1a187-…", "printed_number": null } ],
-    "refund": { "eligible": false, "deadline": null } } ] }
+    "refund": { "eligible": true, "deadline": "2026-12-01T00:00:00.000Z", "fee": 500 } } ] }
 ```
 
 ```json
@@ -125,16 +125,45 @@ En-tête **`Idempotency-Key: <UUID>`** obligatoire, le même en cas de nouvel es
 Même objet `PspTopup`. `status` passe à `SUCCEEDED` quand la notification du PSP est reçue, et `transaction_id` est
 alors rempli. Un `404` sur un identifiant inventé est normal.
 
-## 4. Remboursements (P4) : mission 9
+## 4. Remboursements (P4) : routes servies
 
-| Route | Contrat |
+| Route | Ce que l'API fait |
 |---|---|
-| `POST /me/refund-requests` | corps `{ wallet_id, destination { method: WAVE|ORANGE_MONEY|BANK_TRANSFER, msisdn?, iban?, new_number_otp? } }`, `Idempotency-Key` ; réponse `201` `RefundRequest` (`status`, `estimated_amount`, `fee`, `created_at`…) |
-| `GET /me/refund-requests` | `{ data: RefundRequest[], next_cursor, has_more }` |
-| `POST /refund-requests/{id}/holder-decision` | corps `{ decision: CONFIRM|BLOCK, otp_request_id, code }` : le titulaire confirme ou bloque par un code à usage unique (pas `ACCEPT`) |
+| `POST /me/refund-requests` | corps `{ wallet_id, destination { method: WAVE or ORANGE_MONEY, msisdn?, new_number_otp? } }` ; en-tête **`Idempotency-Key` obligatoire** (sans lui : erreur `IDEMPOTENCY_KEY_REQUIRED`) ; réponse `201` `RefundRequest` (`status`, `estimated_amount` = solde payé moins frais, `fee`, `new_number`, `extra_check_required`, `hold_until`, `destination`, `created_at`) |
+| `GET /me/refund-requests` | `{ data: RefundRequest[], next_cursor, has_more }`, vos demandes seulement, les plus récentes d'abord |
+| `POST /refund-requests/{id}/holder-decision` | route **publique** (pas de jeton) : corps `{ decision: CONFIRM or BLOCK, otp_request_id, code }` |
 
-Les statuts sont `AWAITING_HOLDER`, `REQUESTED`, `PROCESSING`, `PAID`, `FAILED`, `REJECTED`, `CANCELLED` et `BLOCKED`.
-Aujourd'hui ces routes répondent `404`. Nous vous préviendrons quand elles seront servies.
+Ce qu'il faut savoir :
+
+- **Éligibilité.** `GET /me/wallets` donne `refund { eligible, deadline, fee }` par portefeuille : `deadline` est la date
+  limite **effective** (date limite de l'événement, à défaut fin de l'événement + 30 jours). `eligible` est faux hors
+  fenêtre, à solde payé nul, portefeuille bloqué (sauf blocage dû à un bracelet déclaré perdu), bracelet en liste noire
+  ou règle de frais absente. Seul le solde **payé** est remboursable ; les crédits offerts ne le sont pas.
+- **Canaux.** `WAVE` et `ORANGE_MONEY`. `BANK_TRANSFER` répond `422 REFUND_NOT_ALLOWED` (création par le back-office,
+  prévue plus tard).
+- **Autre numéro.** Demander un code pour CE numéro par `POST /customer-auth/otp` (le code arrive sur ce numéro), puis
+  l'envoyer dans `destination.new_number_otp = { otp_request_id, code }` avec `msisdn`. Le code est consommé même si la
+  création est refusée ensuite : en redemander un. Le titulaire du compte reçoit à son tour un code et la demande passe
+  `AWAITING_HOLDER` avec `hold_until` (48 h par défaut) : tant que le titulaire n'a pas dit `CONFIRM` et que `hold_until`
+  n'est pas passé, le back-office ne peut pas l'approuver ; `BLOCK` la clôt (`BLOCKED`, jamais approuvable). Au-delà de
+  `refund_new_number_max`, `extra_check_required` est vrai (contrôle renforcé au back-office).
+- **Décision du titulaire.** Le titulaire reçoit, avec son code, un lien qui porte l'identifiant de la demande
+  (`refund_request_id`) et celui du code (`otp_request_id`) ; l'écran de décision les envoie avec le code saisi à
+  `holder-decision`. Ils ne figurent dans aucune réponse du demandeur, le code non plus (ni corps, ni en-têtes). En
+  développement, l'envoyeur de test les garde ; l'envoi réel du lien arrive avec la mission 12b.
+  Après `hold_until`, la décision est refusée (`409`). Un code faux compte un essai ; 5 essais bloquent le numéro 30 min
+  (`429` avec `Retry-After`).
+- **Erreurs de la création.** `409 REFUND_ALREADY_OPEN` (une demande ouverte par portefeuille), `422 REFUND_WINDOW_CLOSED`,
+  `422 REFUND_NOT_ALLOWED` (portefeuille inconnu ou d'autrui, solde nul, bloqué, canal refusé, autre numéro sans code
+  valable, compte sans numéro vérifié), `422 OTP_INVALID` (code faux, expiré ou déjà utilisé), `429` (trop de codes
+  demandés pour un numéro : 3 par 15 minutes, tous usages confondus), `400` (corps invalide).
+- **Aucun en-tête de test sur la création.** `X-Test-Otp-Code` n'est rendu que par `POST /customer-auth/otp` avec le faux
+  envoyeur de développement ; la création et la décision n'en rendent jamais.
+- **Statuts.** `AWAITING_HOLDER` puis `REQUESTED` (confirmation du titulaire ou échéance), ou `BLOCKED` (final). `REQUESTED`
+  passe `PROCESSING` quand deux personnes du back-office l'ont approuvée (le solde payé sort alors du portefeuille), ou
+  `REJECTED` (refus, avec `reject_reason`). `PROCESSING` passe `PAID` ou `FAILED` quand le prestataire confirme le
+  paiement : **le paiement est manuel, hors système, et `PAID` arrive après lui** ; `FAILED` recrédite tout le solde payé
+  et permet une nouvelle demande. `CANCELLED` existe au contrat mais n'est pas produit pour l'instant.
 
 ## 5. Pour la suite
 

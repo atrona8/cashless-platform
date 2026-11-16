@@ -29,6 +29,7 @@ import { OfflinePolicyModule } from './offline/policy/offline-policy.module';
 import { PspConfigurationsModule } from './psp-configurations/psp-configurations.module';
 import { PspModule } from './psp/psp.module';
 import { ReversalsModule } from './reversals/reversals.module';
+import { RefundsModule } from './refunds/refunds.module';
 import { UsersModule } from './identity/users/users.module';
 import { CashTopupModule } from './topups/cash/cash-topup.module';
 import { PspTopupsModule } from './topups/psp/psp-topups.module';
@@ -74,6 +75,8 @@ import { WorkerRegistry } from './processes/worker';
     VendorsModule,
     PaymentsModule,
     ReversalsModule,
+    // Mission 9a : demandes de remboursement des festivaliers (création, listes, refus).
+    RefundsModule,
     PaymentRequestsModule,
     // Mission 6 : ports PSP et coffre, faux hors production seulement.
     PspModule,

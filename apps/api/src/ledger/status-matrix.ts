@@ -25,6 +25,12 @@ export interface StatusCheckInput {
   variant?: string;
   /** Mode de caution de l'événement : `FROM_BALANCE` (C) ou `SEPARATE` (D). */
   depositMode?: 'FROM_BALANCE' | 'SEPARATE';
+  /**
+   * Type de la transaction contre-passée (`REVERSAL` seulement). Absent : règle de `REVERSAL` seule.
+   * Un `REVERSAL` de source `BACKOFFICE` d'un `WALLET_REFUND` suit la règle de `WALLET_REFUND`
+   * (paiement échoué : recréditer le festivalier, ADR-189).
+   */
+  reversesType?: TransactionType;
 }
 
 export type StatusCheck = { ok: true } | { ok: false; reason: string };
@@ -166,6 +172,15 @@ function matrixFor(
 }
 
 export function isAccepted(input: StatusCheckInput): StatusCheck {
+  // Contre-passation d'un remboursement du back-office : le verdict est celui de WALLET_REFUND
+  // (une seule règle, aucune cellule dupliquée). Tout autre cas : règle de `type` inchangée.
+  if (
+    input.type === 'REVERSAL' &&
+    input.source === 'BACKOFFICE' &&
+    input.reversesType === 'WALLET_REFUND'
+  ) {
+    return isAccepted({ ...input, type: 'WALLET_REFUND', reversesType: undefined });
+  }
   const { eventStatus, ledgerStatus, type, source } = input;
   const where = `événement ${eventStatus}${eventStatus === 'CLOSED' ? ` (grand livre ${ledgerStatus})` : ''}`;
   const rule = matrixFor(eventStatus, ledgerStatus)[type];

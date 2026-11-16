@@ -19,6 +19,16 @@ export interface WalletRefundPayload {
   moneyAccount: string;
 }
 
+/**
+ * Compte d'argent de sortie d'un remboursement manuel, par canal (mission 9a, WP05 ; comptes de
+ * `0037_psp_configurations.sql`). Le virement (`BANK_TRANSFER`) n'est pas servi en 9a ; aucun compte de caisse ici.
+ */
+export function moneyAccountFor(method: string): string {
+  if (method === 'WAVE') return 'A-PSP-WAVE';
+  if (method === 'ORANGE_MONEY') return 'A-PSP-OM';
+  throw new BuildError('VALIDATION_FAILED', `remboursement : canal ${method} non pris en charge`);
+}
+
 /** Rendu du solde payé (le rendu d'espèces dues est délégué à `refund_cash_due`). */
 export function buildWalletRefund(
   command: LedgerCommand<'WALLET_REFUND', WalletRefundPayload>,

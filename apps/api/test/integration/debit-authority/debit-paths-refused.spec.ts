@@ -189,6 +189,50 @@ describe('chemins de débit refusés sous EDGE (WP11, T050)', () => {
     });
   });
 
+  describe('remboursements (WP05) : gardes EDGE de l’API', () => {
+    it('approveApprovalRequest (WALLET_REFUND) et confirmRefundRequest (FAILED) : gardes en place avant l’écriture', () => {
+      const action = readFileSync(
+        join(__dirname, '../../../src/refunds/wallet-refund-action.ts'),
+        'utf8',
+      );
+      const confirm = readFileSync(
+        join(__dirname, '../../../src/refunds/refund-confirm.service.ts'),
+        'utf8',
+      );
+      expect(action).toContain("rows[0]?.debit_authority === 'EDGE'");
+      expect(action.indexOf('await refuseUnderEdge(')).toBeLessThan(
+        action.indexOf('engine.execute('),
+      );
+      expect(confirm.indexOf('await refuseUnderEdge(')).toBeLessThan(
+        confirm.indexOf('engine.execute('),
+      );
+    });
+
+    it('confirmRefundRequest n’est plus classée ABSENT ni DEBIT ; les routes de remboursement sans écriture sont NEUTRAL', () => {
+      const find = (id: string) => DEBIT_PATHS.find((p) => p.operationId === id)!;
+      expect([find('confirmRefundRequest').kind, find('confirmRefundRequest').layer]).toEqual([
+        'CREDIT',
+        'HTTP',
+      ]);
+      expect([find('approveApprovalRequest').kind, find('approveApprovalRequest').layer]).toEqual([
+        'DEBIT',
+        'ENGINE',
+      ]);
+      for (const id of [
+        'createMyRefundRequest',
+        'listMyRefundRequests',
+        'listRefundRequests',
+        'rejectRefundRequest',
+        'decideRefundRequestAsHolder',
+        'approveRefundRequest',
+      ])
+        expect(find(id).kind).toBe('NEUTRAL');
+      expect(
+        DEBIT_PATHS.filter((p) => p.layer === 'ABSENT').map((p) => p.operationId),
+      ).not.toContain('confirmRefundRequest');
+    });
+  });
+
   describe('closeCashSession : fermeture de caisse sous EDGE (CL029, sans changer son sens)', () => {
     let cw: CashWorld;
     beforeAll(async () => {
