@@ -170,6 +170,8 @@ Levés par la mission : OP-N55 (espèces dues du bracelet remplacé), OP-N129 (l
 
 ### Fichiers à faire relire par une personne
 
+> **Relecture humaine : validée par le porteur le 16/11/2026**, après la fusion dans `main` (PR #15), sans remarque.
+
 - `packages/ledger-sql/migrations/0081_refund_requests.sql` (RLS, garde d'insertion, trois fonctions `SECURITY DEFINER`)
 - `packages/ledger-sql/migrations/0082_replace_media_cash_due.sql` (`replace_media`)
 - `packages/ledger-sql/post-roles.sql` § 11 (droits par colonne, `EXECUTE` de `cashless_app` et `cashless_maint`)
