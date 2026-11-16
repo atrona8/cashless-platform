@@ -386,7 +386,7 @@ vendeurs et le catalogue : la mission les ajoute.
 
 > **État au 16/11/2026 (WP07).** OP-N51 et OP-N55 levés par cette mission (preuves : `release-chaining.spec.ts`,
 > `tests_replace_cash_due.sql`). Dettes et limites consignées à l'issue de la 9a, que la mission qui les lève hérite
-> (propositions **à confirmer par le porteur**) : OP-N124 (code du titulaire consommé avant sa décision, ADR-192) et
+> (missions de levée **confirmé par le porteur le 16/11/2026**) : OP-N124 (code du titulaire consommé avant sa décision, ADR-192) et
 > OP-N128 (limites du guichet enchaîné, ADR-195) vers la 9b ; OP-N125 (quota de codes commun à tous les usages, alerte de
 > `BLOCK` en ligne d'audit, ADR-193) vers la 12b ; OP-N126 (une seule personne habilitée recrédite un `FAILED`, ADR-191)
 > vers la 9b (rapprochements Wave/Orange Money) ; OP-N127 clos le 16/11/2026 (décision 15, ADR-194 : FR-012 amendée, comportement strict `422 REFUND_NOT_ALLOWED`) ; OP-N129 (lien du titulaire) levé par la 9a (décision 14, `holder-link.spec.ts`). Revue post-fusion (16/11/2026) : OP-N130 (ordre des états d'une demande gardé par l'API seule, ADR-196) vers la 9b, **décidé par le porteur** : déclencheur de transition sur `refund_request`, montant et frais figés après `REQUESTED`.
