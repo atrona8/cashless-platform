@@ -19,3 +19,15 @@ Branche de planification et de fusion : `feat/remboursements`. Sources de la mis
 9. (05/11, toujours valable) Contrat stable : aucune route, aucun champ, aucun code d'erreur ajouté.
 10. (13/10, règle du porteur, CLAUDE.md) Tout écart qui affaiblit la sécurité est soumis avant d'être codé ; un
     renforcement se fait puis se consigne.
+11. (16/11, implémentation de WP06) **Seuil de la seconde personne au guichet sur le cumul** : `cash_refund_single_max`
+    est comparé (`>`) au TOTAL des espèces sorties pour une restitution (caution rendue en espèces `SEPARATE` + brut du
+    `WALLET_REFUND` + espèces dues), et non au seul `WALLET_REFUND`. Renforcement, même `403 APPROVAL_REQUIRED`, contrat
+    inchangé. À consigner par WP07 (ADR, section « Renforcements »).
+12. (16/11, relecture de WP03) **Deux limites acceptées et consignées, sans nouveau cycle sur WP03** ; WP07 en fait
+    chacune un point ouvert, un ADR, un test qui échoue si la limite s'élargit, et un report dans `PROMPTS-A-ENVOYER.md`
+    et `PRD.md` (mission qui la lève à proposer au porteur) :
+    a. le code du titulaire est consommé avant l'écriture de sa décision : si cette écriture échoue (panne, 409), il ne
+       peut pas réessayer, et un `BLOCK` perdu laisse la demande passer `REQUESTED` à l'échéance ;
+    b. le quota et le blocage de 30 min par numéro sont communs à tous les usages (R-05) : un tiers peut épuiser le quota
+       d'un numéro par des demandes de connexion publiques et gêner `createMyRefundRequest` (429) ou le `BLOCK` du
+       titulaire. L'alerte de `BLOCK` réduite à une ligne d'audit est à nommer dans la même entrée.
