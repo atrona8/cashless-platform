@@ -113,8 +113,9 @@ titulaire la bloque par son code (`BLOCKED`), ou la confirme (`REQUESTED`), ou n
    `REQUESTED` ; **When** il envoie `BLOCK`, **Then** elle passe `BLOCKED` et ne peut plus être approuvée.
 4. **Given** une demande `AWAITING_HOLDER` sans réponse, **When** `hold_until` est dépassé, **Then** elle est traitée
    comme `REQUESTED` ; le titulaire ne peut plus la bloquer après cette échéance.
-5. **Given** un portefeuille sans titulaire vérifié (bracelet anonyme rattaché), **When** la demande vers un autre
-   numéro est créée avec le code de ce numéro, **Then** elle est `REQUESTED` directement.
+5. **Given** un compte sans identité de festivalier vérifiée, **When** une demande est créée, **Then** elle est refusée
+   (`422 REFUND_NOT_ALLOWED`) ; il n'existe pas de demande vers un autre numéro sans titulaire vérifié (décision du
+   porteur du 16/11/2026, C-001, ADR-194 ; amendement : la branche « `REQUESTED` directement » est retirée).
 6. **Given** un montant estimé au-delà de `refund_new_number_max`, **When** la demande est créée, **Then**
    `extra_check_required = true`, et l'approbation exige que la vérification d'identité soit notée dans la décision.
 
@@ -177,7 +178,7 @@ seul appel `releaseMedia` avec `settle_balance` ; les écritures sont passées d
 | FR-009 | Résultat du paiement | En tant que back-office, je veux enregistrer `PAID` (référence obligatoire, aucune écriture) ou `FAILED` (motif obligatoire, `REVERSAL` du remboursement, solde recrédité) sur une demande `PROCESSING` (`confirmRefundRequest`). | High | Open | build | no |
 | FR-010 | Refus | En tant que back-office, je veux refuser une demande `REQUESTED` avec un motif (`rejectRefundRequest`), sans écriture. | High | Open | build | no |
 | FR-011 | Autre numéro | En tant que festivalier, je veux demander un remboursement vers un autre numéro en joignant le code de ce numéro ; sans code valide, refus (ADR-76). | Medium | Open | build | no |
-| FR-012 | Décision du titulaire | En tant que titulaire vérifié, je veux recevoir un code et confirmer ou bloquer la demande vers un autre numéro (`decideRefundRequestAsHolder`) jusqu'à `hold_until` ; sans titulaire vérifié, la demande est `REQUESTED` directement. | Medium | Open | build | no |
+| FR-012 | Décision du titulaire | En tant que titulaire vérifié, je veux recevoir un code et confirmer ou bloquer la demande vers un autre numéro (`decideRefundRequestAsHolder`) jusqu'à `hold_until` ; toute demande a un titulaire vérifié (amendement du 16/11/2026, C-001, ADR-194). | Medium | Open | build | no |
 | FR-013 | Échéance de l'attente | En tant qu'opérateur, je veux qu'une demande `AWAITING_HOLDER` sans réponse devienne `REQUESTED` à `hold_until` (`refund_new_number_hold_hours`, 48 h par défaut), sans action manuelle. | Medium | Open | build | no |
 | FR-014 | Vérification d'identité au-delà du seuil | En tant qu'opérateur, je veux que les demandes vers un autre numéro au-delà de `refund_new_number_max` portent `extra_check_required` et que leur approbation exige la vérification d'identité notée dans la décision. | Medium | Open | build | no |
 | FR-015 | Guichet de retour enchaîné | En tant que caissier, je veux que `releaseMedia` avec `settle_balance` enchaîne caution, expiration des crédits offerts, remboursement du solde payé en espèces, espèces dues et restitution, dans cet ordre, sur la session de caisse ouverte du terminal ; le refus `release.no_chaining` disparaît (OP-N51, ADR-91). | Medium | Open | build | no |

@@ -36,3 +36,10 @@ Branche de planification et de fusion : `feat/remboursements`. Sources de la mis
     remboursement, avec un code déjà au contrat (`403`, réponse `Forbidden`) ; `PAID` reste ouvert à toute personne
     habilitée. Contrat inchangé. Une seule personne habilitée suffit encore pour recréditer : dette à consigner par WP07
     (OP + ADR + test qui borne la limite), levée par les rapprochements avec les relevés Wave/Orange Money (mission 9b).
+14. (16/11, constat de WP07, OP-N129) **Lien du titulaire corrigé en 9a** : pour l'usage « titulaire », l'envoyeur de
+    codes (port `OtpSender`) reçoit aussi `refund_request_id` et `otp_request_id` pour construire le lien du contrat
+    (`decideRefundRequestAsHolder`). Aucune route ni champ ajouté à `openapi.yaml` ; faux envoyeur toujours interdit en
+    production ; test de bout en bout sans lecture en base. Correction portée par WP03 rouvert ; OP-N129 levé par la 9a.
+15. (16/11, C-001, OP-N127) **FR-012 amendée, comportement strict gardé** : la branche « sans titulaire vérifié →
+    `REQUESTED` directement » est retirée de FR-012 et du scénario 5 (`spec.md`) ; un compte sans identité vérifiée est
+    refusé (`422 REFUND_NOT_ALLOWED`). OP-N127 clos par ADR-194.
