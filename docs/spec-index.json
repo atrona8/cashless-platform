@@ -1053,7 +1053,7 @@
   {
     "mission": "remboursements-01M7AG5V",
     "titre_cas_usage": "Remboursements des festivaliers",
-    "statut": "review terminée (7 lots sur 7 approuvés le 16/11/2026), acceptation à venir, non fusionnée",
+    "statut": "mergée sur feat/remboursements (acceptée 8cd5ae97, squash bf0b6376, 16/11/2026), pas encore dans main",
     "user_stories": [
       {
         "titre": "Demander son remboursement",
