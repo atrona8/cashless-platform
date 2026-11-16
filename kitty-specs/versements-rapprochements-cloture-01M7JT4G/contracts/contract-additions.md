@@ -1,4 +1,4 @@
-# Ajouts au contrat `openapi.yaml` (mission 9b) — à valider par le porteur
+# Ajouts au contrat `openapi.yaml` (mission 9b) — **validés par le porteur le 17/11/2026, tels quels**
 
 Décision du porteur du 17/11/2026 (C-002) : les opérations absentes sont ajoutées, listées ici et validées avant
 l'implémentation. **Rien d'existant ne change** : aucune route, aucun champ, aucun code ni aucune valeur d'enum existants

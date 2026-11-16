@@ -12,6 +12,15 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
    l'existant. Le plan liste chaque route, champ et code d'erreur ajouté ; le porteur valide cette liste avant
    l'implémentation (exception à la consigne du 05/11/2026 pour cette mission seulement).
 
+3. **17/11/2026 (specify)** — Relevés importés en CSV, rapprochement automatique puis manuel ; lot préparé par un
+   administrateur et validé par un second ; étapes de clôture par action avec aperçu ; copie externe des scellements
+   simulée jusqu'à la 12b (refusée en production) ; relevés par API et CSV.
+4. **17/11/2026 (plan)** — Rôle du versement selon le bénéficiaire (SPECIFICATION §3.2 à amender) ; transactions longues
+   par fonction dédiée sans texte de requête ; alertes par audit, journal et notification, envoi réel en 12b ;
+   `postLateClaim` plus `ADJUSTMENT` ajouté au contrat.
+5. **17/11/2026 (plan)** — Ajouts au contrat de `contracts/contract-additions.md` validés tels quels (20 opérations,
+   3 valeurs de condition, code `PAYOUT_EXCEEDS_ENTITLEMENT`).
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse
