@@ -16,6 +16,9 @@ requirement_refs:
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: aea0bf3da362e5e409e2c63a721bd7cb7aef884b
+created_at: '2026-11-16T10:48:23.268035+00:00'
 subtasks: [T036, T037, T038, T039, T040, T041]
 phase: Phase 4 - Preuves
 agent: claude
