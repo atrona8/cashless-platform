@@ -6,6 +6,9 @@ requirement_refs: [FR-002, FR-004, FR-005, FR-006, FR-007, FR-010, FR-014, FR-02
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: 730f3f8cf02988247fbd5186bd777c2625542d57
+created_at: '2026-11-16T09:59:56.551849+00:00'
 subtasks: [T018, T019, T020, T021, T022, T023, T024]
 phase: Phase 2 - Parcours festivalier
 agent: claude
