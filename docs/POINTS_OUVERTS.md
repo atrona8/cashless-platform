@@ -29,11 +29,11 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N48 | Fichier de commande des codes de rattachement perdu en route : pas de nouvelle émission | Non | Non | Agent (choix laissé par le porteur) ; à revoir en exploitation |
 | OP-N49 | Caution en espèces et espèces dues : aucune caisse avant la mission des caisses (`409`) — **levé** le 29/10/2026 par la mission 6 (migration `0036_cash_sessions.sql` ; `tests_cash_sessions.sql`, `deposit.spec.ts`, `cash-due.spec.ts`, `release.spec.ts`, `cash-desk-guard.spec.ts`, cas `SC-002 : OP-N49 levé` de `topup-journey.spec.ts`) | Non | Non | — |
 | OP-N50 | Lecture liée à une demande de rattachement utilisable par `consume_tap` — **levé** le 21/10/2026 par la mission 5a (migrations 0024, 0026 ; `tests_consume_tap_claim.sql`, `tap-claim-race.spec.ts`) | Non | Non | — |
-| OP-N51 | Guichet de retour : enchaînement des étapes servi par la mission 9 (décidé le 15/10/2026, ADR-91) | Non | Non | Mission 9 |
+| OP-N51 | Guichet de retour : enchaînement des étapes servi par la mission 9 (décidé le 15/10/2026, ADR-91) — **levé** le 16/11/2026 par la mission 9a (`release-chaining.spec.ts`, `journey.spec.ts` SC-004) | Non | Non | — |
 | OP-N52 | Sortie de liste noire : valideur non vérifié par la base — **levé** le 15/10/2026 (migration 0017, ADR-94), avec une limite résiduelle : OP-N56 | Non | Non | — |
 | OP-N53 | Limite de la consultation anonyme par adresse sans réglage `trust proxy` — **levé** le 15/10/2026 (`TRUST_PROXY_HOPS`, ADR-95) | Non | Non | Exploitation (valeur du déploiement) |
 | OP-N54 | Empreinte de requête sans clé au registre d'idempotence — **levé** le 21/10/2026 par la mission 5a (HMAC `IDEMPOTENCY_HMAC_KEY`, ADR-99 ; `request-hash.spec.ts`, `personalization.spec.ts`) ; consigne de déploiement à appliquer (purge des lignes antérieures) | Non | Non | Exploitation (consigne de déploiement) |
-| OP-N55 | `replace_media` ne fait pas suivre les espèces dues au bracelet neuf (ADR-100) | Non | Non | Mission 9 |
+| OP-N55 | `replace_media` ne fait pas suivre les espèces dues au bracelet neuf (ADR-100) — **levé** le 16/11/2026 par la mission 9a (migration `0082_replace_media_cash_due.sql` ; `tests_replace_cash_due.sql`, `cash-due-after-replace.spec.ts`) | Non | Non | — |
 | OP-N56 | Décision d'une demande d'approbation : la base ne vérifie pas l'identité de la personne qui décide (limite résiduelle d'ADR-94) | Non | Non (limite acceptée, ADR-94) | Mission 11 (back-office), avec le serveur d'identité réel |
 | OP-N57 | `offline_snapshot` : une version très grande plantée par la connexion de l'API bloquait les snapshots suivants du grand livre — **levé** le 04/11/2026 par la mission 7 (migration `0044_offline_snapshots.sql`, `publish_offline_snapshot` calcule la version ; `post-roles.sql` ; `tests_offline_snapshots.sql`, `tests_offline_rights.sql`, `tests_definer_trigger_writers.sql` §3) | Non | Non | — |
 | OP-N58 | `offline_policy_history` : trace des politiques hors ligne falsifiable — **levé** le 04/11/2026 par la mission 7 (migration `0043_offline_policy.sql`, `log_offline_policy` en SECURITY DEFINER, écritures par `set_offline_policy` et `clear_offline_policy` ; `tests_offline_policy.sql`, `tests_definer_trigger_writers.sql` §3 inversé, `tests_offline_rights.sql`) | Non | Non | — |
@@ -99,6 +99,14 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
 | OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Mission 12b |
+| OP-N123 | Demande de remboursement créée par le back-office (virement `BANK_TRANSFER`) : opération absente du contrat, reportée de la 9a (décision du 13/11/2026) | Non | Non | Mission 9b |
+| OP-N124 | Remboursement : le code du titulaire est consommé avant l'écriture de sa décision (mission 9a, décision 12a du 16/11/2026, ADR-192) | Non | Non | Proposé : mission 9b — à confirmer par le porteur |
+| OP-N125 | Remboursement : quota de codes par numéro commun à tous les usages ; alerte de `BLOCK` réduite à une ligne d'audit (mission 9a, décision 12b du 16/11/2026, ADR-193) | Non | Non | Proposé : mission 12b — à confirmer par le porteur |
+| OP-N126 | Remboursement : une seule personne habilitée recrédite un `FAILED` ; il faut un troisième administrateur sur l'événement (mission 9a, décision 13 du 16/11/2026, ADR-191) | Non | Non | Mission 9b (rapprochements Wave/Orange Money), à confirmer par le porteur |
+| OP-N127 | Contradiction C-001 : FR-012 / scénario 5 « sans titulaire vérifié → REQUESTED » — **clos** le 16/11/2026 (décision 15 du porteur, ADR-194 : spec amendée, comportement strict gardé : `422 REFUND_NOT_ALLOWED`) | Non | Non | — |
+| OP-N128 | Guichet enchaîné : `approved_by` nul sur la caution seule au-dessus du seuil ; cumul lu sous le verrou du bracelet (mission 9a, relecture de WP06, ADR-195) | Non | Non | Proposé : mission 9b — à confirmer par le porteur |
+| OP-N129 | Décision du titulaire : lien du contrat (`otp_request_id`, `refund_request_id`) — **levé** le 16/11/2026 par la mission 9a (décision 14 : l'envoyeur de codes les reçoit ; `holder-link.spec.ts`, `journey.spec.ts`) | Non | Non | — |
+| OP-N130 | Remboursement : l'ordre des états d'une demande n'est gardé que par l'API ; la base laisse `cashless_app` modifier les colonnes de transition (revue post-fusion de la mission 9a, décision du porteur du 16/11/2026, ADR-196) | Non | Non | Mission 9b |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -203,6 +211,11 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N118 | Purge des secrets de la passerelle (WP24) : (1) le WAL de PostgreSQL et les blocs libres du disque ne sont pas effacés ; (2) les tables d'ajout seul (audit local, ordres locaux) ne sont pas vidées ; (3) la purge n'est pas dans la même transaction que la file des décisions | Copie du disque après la purge : secrets ou données lisibles dans le WAL ou les blocs libres si le disque n'est pas chiffré ; données d'audit locales conservées ; arrêt entre la file et la purge : purge partielle à reprendre | Disque chiffré exigé par la procédure de site ; canari de purge sur les tables ; purge manuelle versée au central avant destruction (décision 48) | Mission 12b | Données au repos chiffrées sous une clé matérielle détruite à la révocation (même levée qu'OP-N106) ; purge reprise au démarrage si interrompue |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A) : purge manuelle (WP24, décision 48) : `/edge/sync-batches` exige au moins une opération et la purge exige une file vide ; l'ordre de purge ne peut pas partir seul, la passerelle purge après 30 s sans accusé avec la trace `CENTRAL_UNCONFIRMED` | Ordre de purge jamais vu du central si l'audit local est perdu avec le disque ; versé sinon avec le premier lot suivant | Lot sans opération portant des `local_orders` accepté sous `/edge/*` (`0069`, `edge-0009`) ; avec lien, purge seulement après l'accusé ; tests `sync-empty-batch.spec.ts`, `orders-only.spec.ts`, `purge-with-link.spec.ts` | Levé | Aucune ; trace `CENTRAL_UNCONFIRMED` gardée pour la purge sans lien |
 | OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier | Passerelle compromise qui affirme `pack_verified: true` sans avoir lu le bracelet ; perte bornée par les plafonds de rejeu | `pack_verified` repris seulement pour une opération de la voie `/edge/*` et seulement s'il vaut `true` ; plafonds d'ADR-159 ; test `sync-pack-verified-bound.spec.ts` | Mission 12b | Preuve signée du terminal relayée et vérifiée par le central (même levée qu'OP-N104) |
+| OP-N124 | Code du titulaire consommé avant l'écriture de sa décision | Décision perdue (panne, `409`) : pas de nouvel essai avec ce code ; un `BLOCK` perdu laisse la demande passer `REQUESTED` à l'échéance (jamais payée sans deux administrateurs) | Circuit à deux ; test `journey-limits.spec.ts` (OP-N124) | Proposé : mission 9b — à confirmer par le porteur | Consommation et décision dans une même transaction, essais faux comptés à part |
+| OP-N125 | Quota de codes (3 par 15 min) et blocage de 30 min communs à tous les usages ; alerte de `BLOCK` = une ligne d'audit | Un tiers épuise le quota d'un numéro : `429` à la création ou titulaire sans code (disponibilité) ; `BLOCK` sans alerte livrée | Limite par numéro ; test `journey-limits.spec.ts` (OP-N125) | Proposé : mission 12b — à confirmer par le porteur | Quotas séparés par usage ; alerte livrée à une personne du prestataire |
+| OP-N126 | Une seule personne habilitée, étrangère au remboursement, recrédite un `FAILED` | Recrédit sans échec réel du paiement (double versement), visible seulement au rapprochement | `FAILED` refusé au proposant et à l'exécutant ; audit ; test `journey-limits.spec.ts` (OP-N126) | Mission 9b (à confirmer par le porteur) | Rapprochement avec les relevés Wave/Orange Money, ou second valideur au contrat |
+| OP-N128 | Guichet enchaîné : `approved_by` nul sur `DEPOSIT_REFUNDED` seule ; cumul lu sous le verrou du bracelet | Trace de la seconde personne moins directe ; dépassement rare du seuil cumulé par un événement concurrent, borné par `refund_cash_due` | Jeton d'approbation dans l'audit ; test `journey.spec.ts` (OP-N128 (a)) | Proposé : mission 9b — à confirmer par le porteur | `approved_by` porté par l'écriture ; cumul relu sous verrou du portefeuille |
+| OP-N130 | Ordre des états d'une demande de remboursement gardé par l'API seule (`UPDATE` des colonnes de transition accordé à `cashless_app`) | Un défaut de l'API ou un accès au rôle ramène une demande `PAID`/`FAILED` à `REQUESTED` ou change son montant après approbation : seconde approbation possible, bornée par le solde payé restant du grand livre (pas de découvert) | Droits par colonne (identité de la demande non modifiable), CHECK jumelés, une demande ouverte par portefeuille, contrôle à deux de chaque `WALLET_REFUND` ; test `tests_refund_requests.sql` (liste exacte des colonnes modifiables : échoue si elle s'élargit) | Mission 9b | Déclencheur de base qui refuse toute transition hors du graphe de `data-model.md` (et `estimated_amount`/`fee` figés après `REQUESTED`) |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -281,6 +294,8 @@ servie sans enchaînement, ces champs sont refusés en `422` (règle `release.no
 **Décision du porteur du 15/10/2026 (ADR-91, acceptée)** : la mission 9 sert l'enchaînement, le contrat reste
 inchangé. Point encore ouvert, rattaché à la mission 9 ; il ne bloque pas la mission des bracelets.
 
+**Levé le 16/11/2026 par la mission 9a (ADR-91 annotée).** `settle_balance` et `refund_deposit_by` sont servis en une transaction ; le refus `release.no_chaining` a disparu. Preuves : `apps/api/test/integration/media/release-chaining.spec.ts` (FR-015 à FR-017, SC-004, seuil sur le cumul), `apps/api/test/integration/refunds/journey.spec.ts` (SC-004 de bout en bout).
+
 ### OP-N52 à OP-N55 — Constats des relectures indépendantes de la mission des bracelets (14 octobre 2026)
 
 Relevés par les relectures indépendantes des lots 16 à 19 ; corrigé dans la mission tout ce qui renforçait la sécurité
@@ -326,6 +341,7 @@ d'une requête antérieure reçoit `409 IDEMPOTENCY_KEY_REUSED` au lieu de la r�
   personnes ; test : espèces dues d'un bracelet `REPLACED` rendues une fois, et une seule.
 - **Test.** Aucun test ne fige ce manque : ce n'est pas un droit qui peut s'élargir mais une opération absente ; la
   dette reste au grand livre (`L-ESP-A-RENDRE`), dont les soldes sont vérifiés par les suites pgTAP du kit.
+- **Levé le 16/11/2026 par la mission 9a (ADR-100 annotée).** `replace_media` fait suivre les anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes au bracelet neuf (migration `0082_replace_media_cash_due.sql`) ; espèces dues rendues une fois et une seule. Preuves : `packages/ledger-sql/tests/tests_replace_cash_due.sql`, `apps/api/test/integration/media/cash-due-after-replace.spec.ts`.
 
 ### OP-N56 — Décision d'une demande d'approbation : la personne qui décide n'est pas authentifiée par la base (15 octobre 2026)
 
@@ -1575,6 +1591,23 @@ Mission 8 (passerelle locale), revue post-fusion (constat C1), décision du port
   opération reçue d'une passerelle authentifiée est repris ; une vente ainsi crue reste sous les plafonds d'ADR-159 ; tout
   élargissement de la confiance rend le test rouge.
 - **Report.** `PROMPTS-A-ENVOYER.md` et `PRD.md` §2.6.
+
+### OP-N123 — Demande de remboursement créée par le back-office (virement bancaire), reportée (13 novembre 2026)
+
+Mission 9a (remboursements), specify ; décision du porteur du 13/11/2026 (« reporter, consigné »).
+**Bloque le code : non. Bloque la production : non** (le canal virement reste inutilisable d'ici là).
+
+- **Constat.** SPECIFICATION §8.5 réserve le virement bancaire aux demandes créées par le back-office ; le contrat
+  `openapi.yaml` (description de `createMyRefundRequest`) déclare cette opération « à ajouter, non décrite ici ». La 9a
+  sert le contrat tel quel : demandes de l'app (Wave, Orange Money), approbation, confirmation, refus, guichet de retour.
+- **Conséquence.** D'ici la 9b, un gros montant se rembourse par Wave ou Orange Money (circuit à deux, vérification
+  d'identité au-delà de `refund_new_number_max` pour un autre numéro) ou en espèces au guichet de retour.
+- **Mission qui le lève.** Mission 9b : ajout rétrocompatible au contrat (création par le back-office, `BANK_TRANSFER`
+  avec IBAN), annoncé à l'équipe back-office, même circuit à deux.
+- **Condition de levée.** Opération au contrat, servie et testée (demande `BANK_TRANSFER` créée par le back-office,
+  approuvée à deux, confirmée).
+- **Ce que la 9a sert (confirmé le 16/11/2026).** `BANK_TRANSFER` à la création répond `422 REFUND_NOT_ALLOWED` (`create-refund-request.spec.ts`, « BANK_TRANSFER et autre numéro sans code »). Texte vérifié, inchangé ; test de levée inchangé.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 9b) et `PRD.md`.
 ### OP-N120 — Code à usage unique rendu en en-tête de réponse par le faux envoyeur (10 novembre 2026)
 
 Décision du porteur du 10/11/2026 (authentification des festivaliers servie en avance sur la mission 10a, hors Spec Kitty) ;
@@ -1828,3 +1861,67 @@ Questions de la partie B de `REVUE_COHERENCE_2.md`. Statut : **à trancher**. El
 | Q4 | Faut-il une limite au montant et au périmètre des réclamations tardives (comptes, montant, `ADJUSTMENT` libre, `BREAKAGE_REVERSAL` accepté sur un grand livre `OPEN`) ? (DB-I6) | Limite = casse initiale du support ; double validation ; seulement par le back-office | **Tranché le 2 octobre 2026 : option A** (ADR-75) | `check_late_claim` dans `post_transaction`, `CL024` (SPEC §5.3, §12.1) |
 | Q5 | Le numéro pour un remboursement mobile peut-il être différent du numéro vérifié ? | Oui, mais seulement après un code à usage unique envoyé au nouveau numéro | **Tranché le 2 octobre 2026 : option C, 50 000 et 48 h** (ADR-76) | SPEC §8.5 ; `event.refund_new_number_max`, `event.refund_new_number_hold_hours` |
 | Q6 (= OP-N9) | Qui paie les contestations carte, et comment traiter une contestation reçue après `CLOSED` (flux `LATE_CHARGEBACK`) ? | Toujours ouvert ; à reposer avec le flux `LATE_CHARGEBACK` | **Tranché le 2 octobre 2026 : partie 1 option C, partie 2 option B** (ADR-77) | `contract.chargeback_bearer` ; contestation tardive par demande d'approbation (SPEC §5.3, §12.1) |
+
+### OP-N124 — Remboursement : code du titulaire consommé avant l'écriture de sa décision (16 novembre 2026)
+
+Mission 9a, relecture de WP03 ; décision du porteur n° 12a du 16/11/2026 ; ADR-192. **Bloque la production : non.**
+
+- **Constat.** `decideRefundRequestAsHolder` vérifie et consomme le code dans une transaction propre (pour que les essais faux restent comptés), puis écrit la décision. Si l'écriture échoue (panne, `409` d'une demande échue), le code est perdu.
+- **Risque.** Pas de nouvel essai avec ce code ; un `BLOCK` perdu laisse la demande passer `REQUESTED` à l'échéance (approuvable). Aucun paiement sans deux administrateurs.
+- **Mission qui le lève.** Proposition : mission 9b ; **à confirmer par le porteur.** **Condition de levée.** Code consommé seulement si la décision est écrite, code faux toujours compté.
+- **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N124). Une levée le fait aussi échouer : à mettre à jour avec la consignation.
+- **Report.** `PROMPTS-A-ENVOYER.md` (9a, 9b) et `PRD.md`.
+
+### OP-N125 — Remboursement : quota de codes commun à tous les usages, alerte de `BLOCK` en ligne d'audit (16 novembre 2026)
+
+Mission 9a, relecture de WP03 ; décision du porteur n° 12b du 16/11/2026 ; ADR-193. **Bloque la production : non.**
+
+- **Constat.** Le quota (3 envois par numéro sur 15 min) et le blocage de 30 min sont par numéro, tous usages confondus (R-05). L'alerte du `BLOCK` du titulaire est réduite à une ligne d'audit (`REFUND_HOLDER_DECIDED`, sans code ni numéro), sans envoi au prestataire.
+- **Risque.** Un tiers qui connaît un numéro et un code public épuise le quota par des demandes de connexion : `429` à `createMyRefundRequest` (autre numéro) ou titulaire sans code pour `BLOCK`. Disponibilité et alerte, aucune perte de fonds.
+- **Mission qui le lève.** Proposition : mission 12b (vrai envoi, quotas par usage) ; **à confirmer par le porteur.** **Condition de levée.** Quotas séparés ; alerte de `BLOCK` livrée.
+- **Test de borne.** `journey-limits.spec.ts` (OP-N125).
+- **Report.** `PROMPTS-A-ENVOYER.md` (9a, 9b) et `PRD.md`.
+
+### OP-N126 — Remboursement : une seule personne habilitée recrédite un `FAILED` (16 novembre 2026)
+
+Mission 9a, relecture de WP05 ; décision du porteur n° 13 du 16/11/2026 ; ADR-191. **Bloque la production : non.**
+
+- **Constat.** `FAILED` est refusé (`403`) au proposant et à l'exécutant (renforcement) ; une seule autre personne habilitée suffit à recréditer, le valideur du `REVERSAL` restant nominal. **Il faut un troisième administrateur sur l'événement** : avec deux, personne ne peut confirmer `FAILED`.
+- **Risque.** Recrédit sans échec réel du paiement hors système, détectable au rapprochement seulement.
+- **Mission qui le lève.** Mission 9b (rapprochements Wave/Orange Money), proposition à confirmer par le porteur. **Condition de levée.** `FAILED` sans paiement correspondant signalé au rapprochement, ou second valideur au contrat.
+- **Test de borne.** `journey-limits.spec.ts` (OP-N126), `confirm-refund.spec.ts` (décision 13).
+- **Report.** `PROMPTS-A-ENVOYER.md` (9b) et `PRD.md`.
+
+### OP-N127 — Contradiction C-001 : FR-012 « sans titulaire vérifié → REQUESTED » (16 novembre 2026) — CLOS
+
+Mission 9a, relecture de WP04 ; **décision du porteur n° 15 du 16/11/2026, ADR-194 (acceptée).**
+
+- **Constat.** Par `/me`, toute identité est créée avec le numéro : la branche « sans titulaire vérifié → `REQUESTED` » de FR-012 et du scénario 5 était inatteignable.
+- **Décision.** `spec.md` amendée (branche retirée), comportement strict gardé : un compte sans identité vérifiée reçoit `422 REFUND_NOT_ALLOWED`. Plus aucune limite à borner.
+- **Test.** `journey-limits.spec.ts` (comportement strict).
+
+### OP-N128 — Guichet enchaîné : limites relevées en relecture de WP06 (16 novembre 2026)
+
+Mission 9a ; ADR-195 (proposée) ; ADR-190 pour le seuil sur le cumul. **Bloque la production : non.** À confirmer par le porteur.
+
+- **(a)** Caution seule au-dessus du seuil avec jeton : `DEPOSIT_REFUNDED` sans `approved_by` ; approbateur dans l'audit du jeton seulement. Test : `journey.spec.ts` (OP-N128 (a)).
+- **(b)** Cumul lu sous le verrou du bracelet, non du portefeuille : des espèces dues apparues avant l'étape 5 ne sont contrôlées que par le seuil propre de `refund_cash_due`. Non testé (fenêtre de course).
+- **Mission qui le lève.** Proposition : mission 9b.
+
+### OP-N129 — Décision du titulaire : lien du contrat (16 novembre 2026) — LEVÉ
+
+Constat de WP07 ; **décision du porteur n° 14 du 16/11/2026 : corrigé en 9a** (WP03 rouvert).
+
+- **Constat initial.** `holder-decision` exige `otp_request_id` et `code`, mais l'identifiant n'était rendu par aucune route.
+- **Levée.** Pour l'usage « titulaire », l'envoyeur de codes (`OtpSender.send(phone, code, channel, link?)`) reçoit aussi `refund_request_id` et `otp_request_id` pour construire le lien. Aucune route ni champ ajouté à `openapi.yaml` ; faux envoyeur interdit en production.
+- **Preuves.** `apps/api/test/integration/refunds/holder-link.spec.ts` (envoyeur reçoit les deux identifiants, décision par le lien) ; `journey.spec.ts` (décision par le lien reçu, sans lecture en base ; la réponse de création ne contient pas le code du titulaire).
+
+### OP-N130 — Ordre des états d'une demande de remboursement gardé par l'API seule (16 novembre 2026)
+
+Revue post-fusion de la mission 9a ; ADR-196 ; **décision du porteur du 16/11/2026 : consigner, lever en 9b.** **Bloque la production : non.**
+
+- **Constat.** `0081_refund_requests.sql` garde la cohérence de chaque ligne (CHECK jumelés) mais pas le passage d'un état à l'autre ; `post-roles.sql` § 11 accorde à `cashless_app` l'`UPDATE` des colonnes de transition (`status`, `approved_by`, `transaction_id`, `estimated_amount`, `fee`…). Limite prévue au prompt de WP01 (« à signaler, pas à corriger ici »), restée sans entrée jusqu'à la revue.
+- **Risque.** Un défaut de l'API ou un accès au rôle ramène une demande `PAID` ou `FAILED` à `REQUESTED` : elle peut être approuvée une seconde fois. Le grand livre borne le débit au solde payé restant (pas de création de monnaie).
+- **Garde en place.** Identité de la demande non modifiable (droits par colonne), aucun `DELETE`, une demande ouverte par portefeuille, contrôle à deux de chaque `WALLET_REFUND`, parcours et concurrence testés (`journey.spec.ts`, `concurrency.spec.ts`).
+- **Test de la limite.** `packages/ledger-sql/tests/tests_refund_requests.sql` : liste exacte des colonnes modifiables par `cashless_app` (échoue si elle s'élargit) et refus de l'`UPDATE` des colonnes d'identité.
+- **Mission qui le lève.** Mission 9b. **Condition de levée.** Déclencheur qui refuse toute transition hors du graphe de `data-model.md`, et `estimated_amount`/`fee` figés après `REQUESTED` ; test pgTAP de chaque transition interdite.

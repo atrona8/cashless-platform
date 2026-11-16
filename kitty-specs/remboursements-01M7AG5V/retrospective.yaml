@@ -1,0 +1,156 @@
+schema_version: 1
+mission_id: 01M7AG5VMS4GNWVA9DH2JQ0E05
+mission_slug: remboursements-01M7AG5V
+mission_number: 4
+friendly_name: Remboursements des festivaliers
+mission_type: software-dev
+target_branch: feat/remboursements
+created_at: '2026-11-16T12:02:38.759197+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-16T12:02:38.759197+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-003
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-012
+not_helpful:
+- id: n-005
+  category: doc
+  summary: analysis-report.md records 3 finding(s)
+  evidence_refs:
+  - e-017
+  details: The analysis-report.md artifact for this mission records 3 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-001
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-013
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-014
+  details: WP WP05 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP06 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-015
+  details: WP WP06 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP07 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-016
+  details: WP WP07 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP01-base-demandes.md
+- id: e-006
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP02-garde-reversal-especes-dues.md
+- id: e-007
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP03-codes-titulaire-destination.md
+- id: e-008
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP04-creation-listes-refus.md
+- id: e-009
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP05-approbation-confirmation.md
+- id: e-010
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP06-guichet-retour.md
+- id: e-011
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/tasks/WP07-preuves-consignation.md
+- id: e-012
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/status.events.jsonl
+- id: e-013
+  kind: event_range
+  path: kitty-specs/remboursements-01M7AG5V/status.events.jsonl
+  range: 01M7J0QMWPDB74ANC7VA1ABSGD
+- id: e-014
+  kind: event_range
+  path: kitty-specs/remboursements-01M7AG5V/status.events.jsonl
+  range: 01M7HZ4N3PHRXHHNCNDKJK97SZ
+- id: e-015
+  kind: event_range
+  path: kitty-specs/remboursements-01M7AG5V/status.events.jsonl
+  range: 01M7HX9ERCMZV7K8CWB6XVYT31..01M7J2K28WDC0WJVZ3GJVDRTCF
+- id: e-016
+  kind: event_range
+  path: kitty-specs/remboursements-01M7AG5V/status.events.jsonl
+  range: 01M7J0R2899HKE2NV6ANEAPS9W
+- id: e-017
+  kind: file
+  path: kitty-specs/remboursements-01M7AG5V/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

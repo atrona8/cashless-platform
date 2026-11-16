@@ -1,0 +1,139 @@
+{
+  "event_count": 77,
+  "last_event_id": "01M7J3S8VZQVNB3G3R1QSV7YAZ",
+  "materialized_at": "2026-11-16T12:02:21.695918+00:00",
+  "mission_number": "",
+  "mission_slug": "remboursements-01M7AG5V",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 7,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3RQDZD4BJETMDDTM7T8F9",
+      "last_transition_at": "2026-11-16T12:02:03.839293+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP01-base-demandes/review-cycle-1.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP01-base-demandes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 52354,
+      "shell_pid_created_at": "1794581496.95267"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3RTCQ5GCS5VAX1SHFK61W",
+      "last_transition_at": "2026-11-16T12:02:06.871774+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP02-garde-reversal-especes-dues/review-cycle-1.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP02-garde-reversal-especes-dues/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 52354,
+      "shell_pid_created_at": "1794581496.95267"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3RX8YWDFQ1W9E11XKQXGE",
+      "last_transition_at": "2026-11-16T12:02:09.822479+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP03-codes-titulaire-destination/review-cycle-1.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP03-codes-titulaire-destination/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 40804,
+      "shell_pid_created_at": "1794827360.225503"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3S320E684SPF8AWNKP9SF",
+      "last_transition_at": "2026-11-16T12:02:15.744451+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP04-creation-listes-refus/review-cycle-1.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP04-creation-listes-refus/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12834,
+      "shell_pid_created_at": "1794823174.023547"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3S5YYPXNEJJ9CTGD7BVE1",
+      "last_transition_at": "2026-11-16T12:02:18.718646+00:00",
+      "review_result": {
+        "reference": "review-cycle://remboursements-01M7AG5V/WP05-approbation-confirmation/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 29698,
+      "shell_pid_created_at": "1794825690.770291"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3S03R9W7C6Z2TX42TQK1E",
+      "last_transition_at": "2026-11-16T12:02:12.728560+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP06-guichet-retour/review-cycle-2.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP06-guichet-retour/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 51344,
+      "shell_pid_created_at": "1794829311.999981"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7J3S8VZQVNB3G3R1QSV7YAZ",
+      "last_transition_at": "2026-11-16T12:02:21.695918+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP07-preuves-consignation/review-cycle-2.md",
+        "reference": "review-cycle://remboursements-01M7AG5V/WP07-preuves-consignation/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 43685,
+      "shell_pid_created_at": "1794827689.084487"
+    }
+  }
+}

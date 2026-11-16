@@ -127,6 +127,8 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'payment_request_for_token(uuid,bytea)',
   -- Authentification des festivaliers (0080, post-roles.sql §10)
   'operator_by_public_code(text)', 'otp_challenge_operator(uuid)', 'customer_refresh_operator(bytea)',
+  -- mission 9a, lot WP01 : demandes de remboursement (0081, post-roles.sql §11)
+  'refund_request_operator(uuid)', 'promote_due_refund_requests()',
   -- Mission 6, lot WP05 : sessions de caisse (0036)
   'open_cash_session(uuid,uuid)', 'count_cash_session(uuid,bigint,uuid,uuid,text)',
   'begin_cash_close(uuid,uuid)', 'finish_cash_close(uuid,uuid,uuid)', 'attach_cash_tx(uuid,uuid)',
@@ -253,7 +255,9 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'deposit_edge_pwd_pack(uuid,uuid,bytea,bytea,bigint)',
                     'edge_counter_op(text,uuid,bigint,bigint,text,bytea,jsonb)',
                     'edge_ref_emit_many(uuid,text,uuid[])', 'edge_bind_gateway(uuid,boolean)',
-                    'edge_lock_handover(uuid,uuid)', 'edge_event_lock(uuid)']) f;
+                    'edge_lock_handover(uuid,uuid)', 'edge_event_lock(uuid)',
+                    -- mission 9a, lot WP01 : fonction de déclencheur de refund_request (0081)
+                    'refund_request_scope_guard()']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),
@@ -308,9 +312,12 @@ SELECT is(pg_temp.fns('cashless_maint'), pg_temp.sigs(ARRAY[
   'purge_device_request_nonces(integer)', 'purge_device_enrollment_attempts()',
   -- passerelle locale (WP09, §9f) : passerelles silencieuses, rendus bloqués
   'mark_edge_gateways_silent(interval)', 'edge_stuck_handovers(interval)',
-  'edge_log_release_stuck(uuid)'
+  'edge_log_release_stuck(uuid)',
+  -- mission 9a, lot WP01 (§9f) : promotion des demandes de remboursement échues
+  'promote_due_refund_requests()'
 ]::text[]::regprocedure[]),
-  'cashless_maint : les deux purges (OP-N75) et les trois fonctions de la passerelle, rien d''autre');
+  'cashless_maint : les deux purges (OP-N75), les trois fonctions de la passerelle et la promotion des demandes de '
+  'remboursement, rien d''autre');
 -- Passerelle locale (WP09, post-roles.sql §9d et §9e). Listes figées, nommées, jamais ALL.
 SELECT is(pg_temp.fns('cashless_edge'), pg_temp.sigs(ARRAY[
   'identify_edge_gateway(bytea)', 'touch_edge_gateway(uuid)', 'get_current_edge_handover(uuid)',

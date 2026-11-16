@@ -99,7 +99,9 @@ SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FR
  'wallet',
  -- 0080 : authentification des festivaliers (droits bornés par tests_customer_auth.sql)
  'customer_identity', 'customer_refresh_token', 'operator_public_code', 'otp_challenge',
- 'otp_phone_block'])), '',
+ 'otp_phone_block',
+ -- 0081 : demandes de remboursement (droits bornés par tests_refund_requests.sql)
+ 'refund_request'])), '',
   'aucune table de public hors de la liste d''avant 0043 et des dix tables de la mission');
 SELECT is((SELECT count(*)::int FROM new_tables n JOIN pg_class c ON c.relname = n.t
             AND c.relnamespace = 'public'::regnamespace), 10, 'les dix tables nouvelles existent');

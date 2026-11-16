@@ -12,5 +12,7 @@ import { createOtpSender, OTP_SENDER } from './otp-sender';
     { provide: OTP_SENDER, inject: [APP_CONFIG], useFactory: createOtpSender },
     CustomerAuthService,
   ],
+  // Seul le service est exporté (mission 9a : codes du titulaire, destination des remboursements).
+  exports: [CustomerAuthService],
 })
 export class CustomerAuthModule {}

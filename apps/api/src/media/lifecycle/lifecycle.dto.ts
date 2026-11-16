@@ -30,7 +30,7 @@ export interface ActivationInput {
   occurredAt: Date;
 }
 
-function payment(raw: unknown, name: string): Payment | null {
+export function payment(raw: unknown, name: string): Payment | null {
   if (raw === undefined || raw === null) return null;
   if (typeof raw !== 'object' || Array.isArray(raw))
     throw invalid(`${name} : moyen de paiement attendu.`);
@@ -121,9 +121,9 @@ const RULES: Record<string, Record<Language, string>> = {
     fr: 'La lecture présentée ne concerne pas ce bracelet.',
     en: 'The presented tap does not belong to this wristband.',
   },
-  'release.no_chaining': {
-    fr: 'refund_deposit_by, settle_balance : le serveur n’enchaîne pas le guichet de retour. Rendre la caution (refundDeposit), les espèces dues (refundCashDue), faire rembourser le solde, puis restituer.',
-    en: 'refund_deposit_by, settle_balance: the server does not chain the return desk steps. Refund the deposit (refundDeposit), the cash due (refundCashDue), have the balance refunded, then release.',
+  'release.media_blocked': {
+    fr: 'Restitution refusée : le bracelet n’est pas actif. Aucun solde n’est rendu en espèces pour un bracelet suspendu ou sur liste noire.',
+    en: 'Release refused: the wristband is not active. No balance is paid out in cash for a suspended or blacklisted wristband.',
   },
   'release.deposit_held': {
     fr: 'Restitution refusée : la caution est encore détenue. La rendre d’abord (refundDeposit).',

@@ -292,7 +292,25 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
    6b. Adaptateurs PSP réels et coffre des secrets (ajoutée le 27/10/2026 ; fondue dans la 12b le 29/10/2026)
 7. Hors ligne (snapshots et lots)
 8. Passerelle locale
-9. Remboursements, versements et clôture
+9. Remboursements, versements et clôture, découpée le 13/11/2026 (décision du porteur) :
+   9a. Remboursements (demandes par l'app et le back-office, approbation à deux, autre numéro et décision du titulaire,
+       espèces au guichet, guichet de retour ordonné) ; versement externe simulé jusqu'à la 12b
+       **Périmètre réel livré (état du 16/11/2026, WP01 à WP07).** Paiement manuel : l'API ne verse rien ; la demande
+       est créée par l'app (`POST`/`GET /me/refund-requests`, Wave ou Orange Money ; `BANK_TRANSFER` : `422
+       REFUND_NOT_ALLOWED`, reporté en 9b, OP-N123), approuvée par `OPERATOR_ADMIN` ou `ORGANIZER_ADMIN` (circuit à
+       deux : proposition puis validation par une autre personne, écriture `WALLET_REFUND`), payée hors système, puis
+       confirmée `PAID` ou `FAILED` (le `FAILED` recrédite par `REVERSAL`, refusé au proposant et à l'exécutant :
+       décision du 16/11/2026, OP-N126). Autre numéro : code envoyé au nouveau numéro, décision du titulaire (`CONFIRM`
+       ou `BLOCK`, route publique `holder-decision`), attente `AWAITING_HOLDER` jusqu'à `hold_until`, vérification
+       renforcée au-delà de `refund_new_number_max`. Portefeuille bloqué remboursable seulement si le blocage vient
+       d'un bracelet déclaré perdu ; règle de frais obligatoire. Guichet de retour enchaîné (caution, crédits offerts,
+       solde payé, espèces dues, `release_media`, en une transaction ; seconde personne au-delà de
+       `cash_refund_single_max` sur le cumul des espèces sorties, ADR-190). Espèces dues d'un bracelet remplacé
+       rendues (`replace_media`, `0082`). OP-N51 et OP-N55 levés ; limites consignées : OP-N124 à OP-N126 et OP-N128
+       (ADR-191 à ADR-193, ADR-195) ; C-001 (FR-012) tranchée : comportement strict, OP-N127 clos (ADR-194) ; lien du titulaire (OP-N129) levé par la 9a ; `REVERSAL` d'un `WALLET_REFUND`
+       `BACKOFFICE` admis (ADR-189). Mesures : NFR-004 p95 sous 500 ms, NFR-005 promotion sous 5 min, NFR-001 et
+       NFR-002 par 100 et 50 requêtes simultanées.
+   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
@@ -368,6 +386,11 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 9 : enchaînement du guichet de retour (caution, crédits offerts, solde, restitution), servi par la mission 9
   (décision du porteur du 15/10/2026, OP-N51, ADR-91) ; rendu des espèces dues d'un bracelet remplacé (OP-N55,
   ADR-100) ;
+- mission 9a, suite (16/11/2026) : OP-N51 et OP-N55 levés ; reste pour la 9b : OP-N123 (création par le back-office,
+  `BANK_TRANSFER`), OP-N126 (rapprochements avec les relevés Wave et Orange Money pour borner le recrédit par une seule
+  personne), réclamations tardives de `WALLET_REFUND`, et, **à confirmer par le porteur**, OP-N124 et OP-N128 ; OP-N125
+  proposé à la 12b ; OP-N127 clos (décision 15 du 16/11/2026, FR-012 amendée) et OP-N129 levé (décision 14) ; OP-N130 (ordre des états
+  d'une demande gardé par l'API seule, ADR-196 : déclencheur de transition en base) en 9b, décidé par le porteur le 16/11/2026 ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :

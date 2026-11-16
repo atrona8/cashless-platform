@@ -100,7 +100,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-88 | Ports et faux pour le KMS, l'identité du terminal et celle du festivalier | Acceptée (OP-N42 levé par la mission 5a le 21/10/2026) |
 | ADR-89 | Pas de compte de caisse avant la mission des caisses | Acceptée |
 | ADR-90 | Rattachement par code : consultation réduite, lecture consommée, activation depuis l'app | Acceptée (OP-N50 levé par la mission 5a le 21/10/2026) |
-| ADR-91 | Guichet de retour : enchaînement des étapes servi par la mission 9 | Acceptée |
+| ADR-91 | Guichet de retour : enchaînement des étapes servi par la mission 9 | Acceptée (levée par la 9a le 16/11/2026) |
 | ADR-92 | Contrôle quotidien des mots de passe : alerte d'audit, pas d'anomalie | Acceptée |
 | ADR-93 | Remise en stock d'un bracelet rendu : route `reassignPoolMedia` distincte de la restitution | Acceptée |
 | ADR-94 | Sortie de liste noire vérifiée par la base (demande approuvée concordante) | Acceptée |
@@ -109,7 +109,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-97 | Écritures directes de `cashless_app` sur `media_batch` (OP-N60) : limite acceptée, levée par la mission 11, bloque la production | Acceptée |
 | ADR-98 | Traitements par tranches (NFR-008, OP-N61) : preuve sur 5 000 bracelets reportée à la mission 13, bloque la production | Acceptée |
 | ADR-99 | Empreinte de requête sans clé au registre d'idempotence (OP-N54) : limite acceptée, levée par la mission 5 | Acceptée (mission de levée confirmée par le porteur le 15/10/2026) ; **levée par la mission 5a le 21/10/2026** |
-| ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée |
+| ADR-100 | Espèces dues d'un bracelet remplacé (OP-N55) : limite acceptée, levée par la mission 9 | Acceptée (levée par la 9a le 16/11/2026) |
 | ADR-101 | Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50 | Acceptée (confirmée par le porteur le 15/10/2026) |
 | ADR-102 | Travaux de clé nés d'une demande approuvée à deux seulement, vérifiés par la base et par les exécutants (SEC-1) | Acceptée (décision du porteur du 16/10/2026) ; **levée par la mission 5a le 21/10/2026** |
 | ADR-103 | `activateMedia` et `replaceMedia` : lecture du bracelet embarquée dans la requête (contradiction contrat / schéma) | Acceptée (consignée le 16/10/2026) |
@@ -131,6 +131,14 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-119 | Autorité des terminaux et signataire des jetons d'appareil : faux seulement (OP-N73), levée par la mission 7 | Acceptée (décision du porteur du 21/10/2026) |
 | ADR-120 | Enrôlement sur un événement clos ou un point de vente supprimé (OP-N74) : écart consigné, **levé le 26/10/2026 par la mission 5b** (migration 0035) | Acceptée (décision du porteur du 21/10/2026), levée |
 | ADR-121 | PIN des vendeurs vérifié dans l'API, session ouverte par la base sur la transaction de l'API (OP-N76) : limite acceptée, levée avec OP-N56 | Acceptée (décision du porteur du 22/10/2026) |
+| ADR-189 | Mission 9a : contre-passation d'un `WALLET_REFUND` de source `BACKOFFICE` acceptée partout où `WALLET_REFUND` l'est ; renforcements de la mission | Acceptée (décision du porteur du 13/11/2026) |
+| ADR-190 | Mission 9a : seuil de la seconde personne au guichet appliqué au cumul des espèces sorties | Acceptée (renforcement, décision du porteur du 16/11/2026) |
+| ADR-191 | Mission 9a : `FAILED` refusé au proposant et à l'exécutant ; une seule personne habilitée recrédite (OP-N126) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée proposée : 9b |
+| ADR-192 | Mission 9a : code du titulaire consommé avant l'écriture de sa décision (OP-N124) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée à confirmer par le porteur |
+| ADR-193 | Mission 9a : quota de codes par numéro commun à tous les usages, alerte de `BLOCK` réduite à une ligne d'audit (OP-N125) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée à confirmer par le porteur |
+| ADR-194 | Mission 9a : contradiction C-001, FR-012 « sans titulaire vérifié » inatteignable par `/me` (OP-N127) | Acceptée (décision du porteur du 16/11/2026) ; OP-N127 clos |
+| ADR-195 | Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128) | Proposée : à confirmer par le porteur |
+| ADR-196 | Mission 9a : ordre des états d'une demande de remboursement gardé par l'API seule (OP-N130) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée : mission 9b |
 
 ---
 
@@ -1056,6 +1064,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   3. Jeton d'approbation sur place : exigé seulement au-delà de `cash_refund_single_max` (option `optional` de la garde ; la base refuse de toute façon sans valideur distinct au-delà du seuil). C'est la règle de SPEC §3.2 et §8.5 et d'ADR-53 (une seule personne jusqu'au plafond, une seconde au-delà) : **ce n'est pas un écart**.
 - **Conséquences.** OP-N51 est rattaché à la mission 9 (encore ouvert, non bloquant pour la mission des bracelets). Le report figure dans `PROMPTS-A-ENVOYER.md` et `PRD.md` pour la mission 9.
 - **Références.** SPEC §3.2, §7.9, §8.5 ; ADR-53 ; `apps/api/src/media/lifecycle/release.service.ts` ; `apps/api/src/approval/onsite/onsite-approval.ts` ; OP-N51.
+- **Mise à jour du 13/11/2026 : levée par la mission 9a** (constatée le 16/11/2026 à la clôture du lot de preuves). `settle_balance` et `refund_deposit_by` sont servis en une transaction (caution, expiration des crédits offerts, solde payé, espèces dues, `release_media`) ; le refus `release.no_chaining` a disparu. Preuves : `apps/api/test/integration/media/release-chaining.spec.ts` (SC-004, FR-015 à FR-017), `apps/api/test/integration/refunds/journey.spec.ts` (SC-004 de bout en bout). Le seuil de la seconde personne porte sur le cumul (ADR-190).
 
 ## ADR-92 — Contrôle quotidien des mots de passe : alerte d'audit, pas d'anomalie
 
@@ -1209,6 +1218,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
   dette est tenue par le grand livre. Report dans `PROMPTS-A-ENVOYER.md` (mission 9) et `PRD.md` (héritages de la
   mission 4).
 - **Références.** OP-N55 ; ADR-63 ; `apps/api/test/integration/media/cash-due.spec.ts`, `replace.spec.ts`.
+- **Mise à jour du 13/11/2026 : levée par la mission 9a** (constatée le 16/11/2026). `replace_media` fait suivre les anomalies `CASH_TOPUP_OVER_LIMIT` ouvertes au bracelet neuf (migration `0082_replace_media_cash_due.sql`) ; les espèces dues d'un bracelet remplacé se rendent une fois. Preuves : `packages/ledger-sql/tests/tests_replace_cash_due.sql` (39 assertions), `apps/api/test/integration/media/cash-due-after-replace.spec.ts`, `release-chaining.spec.ts`.
 
 ## ADR-101 — Missions de levée d'OP-N41, OP-N44, OP-N45, OP-N46 et OP-N50
 
@@ -2770,3 +2780,155 @@ Décision du porteur : 12/11/2026 ADR-188
 - **Mission qui le lève.** Mission 12b ; condition : adaptateurs réels, retrait du module, des secrets `demo-*` et des
   configurations de démo.
 - **Test de borne.** `psp-dev-simulation.spec.ts` (unitaire) et `dev-simulation.spec.ts` (intégration).
+
+## ADR-189 — Mission 9a : contre-passation d'un `WALLET_REFUND` de source `BACKOFFICE`, et renforcements de la mission
+
+Décision du porteur : 13/11/2026 (décision n° 5 de la mission 9a, au plan).
+
+- **Statut** : Acceptée.
+- **Contexte.** Contradiction entre SPECIFICATION §11.4 (un paiement échoué rend le solde au festivalier par une
+  contre-passation) et §12.1 (la matrice des statuts n'admet `REVERSAL` que pour une vente, jamais pour un
+  remboursement). Sans correction, un virement `FAILED` ne peut pas recréditer le festivalier une fois l'événement en
+  `SETTLING` ou après. Priorité des sources (§0.3) : la contradiction est signalée, la décision est celle du porteur.
+- **Décision.** La garde de statut de `post_transaction` (inchangée) et `apps/api/src/ledger/status-matrix.ts`
+  (`reversesType`, `readReversedType` sous RLS) acceptent le `REVERSAL` d'un `WALLET_REFUND` de source `BACKOFFICE`
+  partout où `WALLET_REFUND` l'est. **Rien d'autre n'est élargi** : le `REVERSAL` d'une vente et celui d'un
+  `WALLET_REFUND` d'une autre source restent refusés ; un grand livre `LOCKED` refuse toujours (`CL003`).
+- **Risque.** Un crédit au festivalier, jamais un débit ; une seule contre-passation par transaction (index
+  `journal_transaction_reverses_once`), valideur distinct de l'auteur. Le risque résiduel est celui d'OP-N126 (ADR-191).
+- **Raison.** Le paiement manuel peut échouer hors système ; le solde payé doit revenir en un geste tracé.
+- **Mission qui le lève.** Aucune : amendement de SPECIFICATION §12.1 proposé au porteur (matrice : `REVERSAL` d'un
+  `WALLET_REFUND` `BACKOFFICE` admis comme `WALLET_REFUND`) ; à défaut la décision reste (condition de levée).
+- **Tests qui échouent si la garde s'élargit.** `apps/api/test/integration/refunds/journey.spec.ts` (« négatif d'ADR-189 » :
+  matrice de tous types, statuts, sources et grands livres ; moteur ; `CL003`), `apps/api/test/integration/ledger/refund-reversal-matrix.spec.ts`,
+  `apps/api/test/unit/ledger/status-matrix-refund-reversal.spec.ts`. Nota : aucun pgTAP `tests_refund_reversal_guard.sql` n'existe (`post_transaction` est inchangée) ; le refus
+  des statuts d'événement est porté par le moteur ; la base ne refuse que `LOCKED`.
+- **Renforcements de la mission (se font, puis se consignent).** (1) Défi du titulaire lié à la demande (`purpose`,
+  `subject_id`, un code vivant par numéro ET par usage ; CHECK `otp_challenge_purpose_subject`). (2) Code du nouveau
+  numéro vérifié contre la destination et consommé, y compris si la création échoue ensuite. (3) Seuil de
+  `cash_refund_single_max` appliqué au solde payé du guichet, puis au cumul (ADR-190). (4) Remboursement refusé hors
+  portefeuille `ACTIVE` et pour bracelet `BLACKLISTED` ; blocage seulement par bracelet perdu (décision 6). (5) Garde
+  d'insertion `refund_request_scope_guard`, CHECK jumelés (`AWAITING_HOLDER`/`hold_until`, `BLOCKED`/`BLOCK`, E.164,
+  demandeur ≠ valideur). (6) Bracelet non `ACTIVE` refusé en chaînage (`409 MEDIA_STATE_INVALID`). (7) Liaison
+  usage/sujet/numéro vérifiée avant le code sans compter d'essai ; `exchangeIn` impose `LOGIN`.
+- **Fichiers à faire relire par une personne.** `packages/ledger-sql/migrations/0081_refund_requests.sql`, `0082_replace_media_cash_due.sql`,
+  `post-roles.sql` § 11 ; `apps/api/src/ledger/status-matrix.ts` (`checkStatus`, `readReversedType`) ;
+  `customer-auth.service.ts` (`checkCode`, `createChallenge`, `verifyChallenge`, `issueChallenge`, `exchangeIn`),
+  `holder-decision.controller.ts`, `holder-challenge.service.ts` ; `refund-eligibility.ts`, `refund-requests.service.ts` ;
+  `wallet-refund-action.ts`, `refund-confirm.service.ts` ; `release.service.ts` (caisse, `attach_cash_tx`, jeton).
+- **Références.** SPEC §11.4, §12.1 ; ADR-91, ADR-100 ; OP-N51, OP-N55.
+
+## ADR-190 — Mission 9a : seuil de la seconde personne au guichet appliqué au cumul des espèces sorties
+
+Décision du porteur : 16/11/2026 (décision n° 11, implémentation de WP06). **Renforcement.**
+
+- **Statut** : Acceptée. **Section « Renforcements »** : se fait, puis se consigne.
+- **Contexte.** Au guichet de retour enchaîné, `cash_refund_single_max` ne portait que sur le `WALLET_REFUND` : une
+  restitution en plusieurs écritures (caution rendue en espèces `SEPARATE`, solde payé, espèces dues) passait sous le
+  seuil sans seconde personne.
+- **Décision.** Le seuil est comparé (`>`) au TOTAL des espèces sorties : caution `SEPARATE` rendue en espèces + brut du
+  `WALLET_REFUND` (caution `FROM_BALANCE` comprise) + espèces dues, lu avant la première écriture. Même `403
+  APPROVAL_REQUIRED`, contrat inchangé.
+- **Risque couvert.** Fractionnement d'un gros rendu pour éviter la seconde personne. Aucun affaiblissement.
+- **Limites résiduelles** : OP-N128 (ADR-195).
+- **Tests.** `apps/api/test/integration/media/release-chaining.spec.ts` (« fractionnement (décision du porteur du 16/11) »).
+- **Références.** SPEC §3.2, §8.5 ; ADR-53, ADR-91.
+
+## ADR-191 — Mission 9a : confirmation `FAILED` refusée au proposant et à l'exécutant ; une seule personne habilitée recrédite (OP-N126)
+
+Décision du porteur : 16/11/2026 (décision n° 13, relecture de WP05). **Renforcement partiel et dette.**
+
+- **Statut** : Acceptée (limite consignée) ; ouvert.
+- **Contexte.** Le `REVERSAL` d'un `FAILED` exige un valideur distinct de l'auteur (interfaces.md l. 114), mais ce valideur
+  est nominal : `approved_by` de la demande, déjà connu.
+- **Décision.** `confirmRefundRequest` avec `outcome = FAILED` est refusé (`403`, réponse `Forbidden`, code déjà au contrat) à
+  la personne qui a proposé (auteur de l'approbation) ou exécuté (`approved_by`) ; `PAID` reste ouvert à toute personne
+  habilitée. **Renforcement.** **Limite acceptée (dette)** : une seule personne habilitée, étrangère au remboursement,
+  suffit à recréditer le festivalier après un paiement fait hors système. **Il faut un troisième administrateur sur
+  l'événement** pour confirmer `FAILED` (avec deux seulement, personne ne le peut).
+- **Risque.** Une personne habilitée malveillante recrédite sans que le paiement ait échoué (double versement).
+  Détectable seulement par rapprochement avec les relevés Wave et Orange Money.
+- **Raison.** Pas de seconde validation sur la confirmation (contrat stable : aucune route, aucun champ ajouté).
+- **Mission qui le lève.** Mission 9b (rapprochements avec les relevés Wave/Orange Money) ; proposition de l'orchestrateur,
+  à confirmer par le porteur. **Condition de levée.** Un `FAILED` sans paiement correspondant au relevé est signalé, ou un
+  second valideur est exigé au contrat.
+- **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N126), `confirm-refund.spec.ts`
+  (« décision 13 ») : échoue si le proposant ou l'exécutant peut confirmer `FAILED`, ou si deux personnes en
+  exigeaient trois.
+- **Références.** OP-N126 ; ADR-189.
+
+## ADR-192 — Mission 9a : code du titulaire consommé avant l'écriture de sa décision (OP-N124)
+
+Décision du porteur : 16/11/2026 (décision n° 12a, relecture de WP03). **Limite acceptée.**
+
+- **Statut** : Acceptée ; ouvert.
+- **Contexte.** `decideRefundRequestAsHolder` vérifie et consomme le code (transaction propre de `verifyChallenge`,
+  nécessaire pour que les essais faux restent comptés), puis écrit la décision.
+- **Risque.** Si l'écriture échoue (panne, `409` d'une demande échue), le code est perdu : le titulaire ne peut pas
+  réessayer avec lui. Un `BLOCK` perdu laisse la demande passer `REQUESTED` à l'échéance, donc approuvable. Pas de
+  perte de fonds hors du circuit à deux ; l'alerte du titulaire est perdue.
+- **Raison.** Pas de nouveau cycle sur WP03 (décision du porteur du 16/11/2026).
+- **Mission qui le lève.** Proposition : mission 9b (consommation et décision dans une même transaction, essais faux
+  comptés à part) ; **à confirmer par le porteur**. **Condition de levée.** Un code n'est consommé que si la décision est
+  écrite, et le code faux reste compté.
+- **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N124) : code consommé après un `409`,
+  décision absente, demande `REQUESTED`.
+- **Références.** OP-N124 ; ADR-189.
+
+## ADR-193 — Mission 9a : quota de codes par numéro commun à tous les usages ; alerte de `BLOCK` réduite à une ligne d'audit (OP-N125)
+
+Décision du porteur : 16/11/2026 (décision n° 12b, relecture de WP03). **Limite acceptée.**
+
+- **Statut** : Acceptée ; ouvert.
+- **Contexte.** Le quota (3 envois par numéro sur 15 min, `OTP_PHONE_MAX`) et le blocage de 30 min sont par numéro, tous
+  usages confondus (R-05).
+- **Risque.** Un tiers qui connaît un numéro et un code public de prestataire épuise le quota par des demandes de
+  connexion publiques : le festivalier reçoit `429` à `createMyRefundRequest` (autre numéro), ou le titulaire ne peut plus
+  recevoir ni utiliser son code pour `BLOCK`. De plus l'alerte du `BLOCK` du titulaire se réduit à une ligne d'audit
+  (`REFUND_HOLDER_DECIDED`, sans code ni numéro) : aucun envoi vers le prestataire. Disponibilité et alerte, pas de perte de fonds.
+- **Raison.** Contrat stable ; envoi réel non disponible avant la 12b.
+- **Mission qui le lève.** Proposition : mission 12b (quota séparé par usage, vraie alerte vers le back-office avec le
+  vrai fournisseur d'envoi) ; **à confirmer par le porteur**. **Condition de levée.** Quotas distincts connexion /
+  titulaire ; alerte de `BLOCK` livrée à une personne du prestataire.
+- **Test de borne.** `apps/api/test/integration/refunds/journey-limits.spec.ts` (OP-N125) : `429` à la création après
+  épuisement par la connexion ; `BLOCK` sans envoi, une ligne d'audit.
+- **Références.** OP-N125 ; ADR-180.
+
+## ADR-194 — Mission 9a : contradiction C-001, FR-012 « sans titulaire vérifié → REQUESTED » (OP-N127)
+
+Décision du porteur : 16/11/2026 (décision n° 15). Relevée en relecture de WP04.
+
+- **Statut** : Acceptée ; OP-N127 clos.
+- **Constat.** FR-012 et le scénario 5 prévoyaient qu'un autre numéro sans titulaire vérifié passe directement `REQUESTED`. Par `/me`, toute identité est créée avec le numéro : le cas n'arrive jamais.
+- **Décision.** Spec amendée : la branche est retirée de FR-012 et du scénario 5. Comportement strict gardé : un compte sans identité vérifiée est refusé (`422 REFUND_NOT_ALLOWED`). Aucun affaiblissement.
+- **Test.** `journey-limits.spec.ts` (comportement strict).
+- **Références.** OP-N127 ; `spec.md` FR-012.
+
+## ADR-195 — Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128)
+
+Relevées en relecture de WP06 (16/11/2026) ; **non soumises au porteur avant cette consignation : à confirmer ou à lever**.
+
+- **Statut** : Proposée.
+- **Constat (a), traçabilité.** Caution seule au-dessus du seuil avec jeton (`refund_deposit_by`) : l'écriture
+  `DEPOSIT_REFUNDED` porte `approved_by` nul ; l'approbateur n'est que dans l'audit du jeton. Test :
+  `journey.spec.ts` (OP-N128 (a)).
+- **Constat (b), concurrence.** Le cumul du seuil est lu sous le verrou du bracelet, non du portefeuille : des espèces
+  dues apparues entre la lecture et l'étape 5 ne sont contrôlées que par le seuil propre de `refund_cash_due`. Non
+  couvert par un test (fenêtre de course).
+- **Risque.** (a) trace moins directe de la seconde personne ; (b) dépassement possible du seuil cumulé par un
+  événement concurrent rare, borné par le seuil de `refund_cash_due`.
+- **Mission qui le lève.** Proposition : mission 9b ; à confirmer par le porteur. **Condition de levée.** `approved_by`
+  porté par l'écriture ; cumul relu sous verrou du portefeuille.
+- **Références.** OP-N128 ; ADR-190.
+
+## ADR-196 — Mission 9a : ordre des états d'une demande de remboursement gardé par l'API seule (OP-N130)
+
+Relevé par la revue post-fusion de la mission 9a (16/11/2026, `kitty-specs/remboursements-01M7AG5V/mission-review-report.md`, RISK-1).
+
+- **Statut** : Acceptée (décision du porteur du 16/11/2026 : consigner, lever en 9b).
+- **Contexte.** La base garde la cohérence de chaque ligne de `refund_request` mais pas les transitions ; `cashless_app` peut modifier les colonnes de transition (`post-roles.sql` § 11). Limite prévue au plan de WP01, non consignée avant la revue.
+- **Décision.** Garder le code livré (l'API ordonne les états, vérifié par les parcours et la concurrence) ; consigner la limite ; ajouter le déclencheur de transition en 9b.
+- **Risque.** Une demande ramenée à `REQUESTED` par un défaut ou un accès au rôle peut être approuvée une seconde fois, dans la limite du solde payé restant.
+- **Test de la limite.** `tests_refund_requests.sql` : liste exacte des colonnes modifiables par `cashless_app`.
+- **Mission qui le lève.** Mission 9b. **Condition de levée.** Déclencheur de transition en base conforme au graphe de `data-model.md`, montant et frais figés après `REQUESTED`, test pgTAP de chaque transition interdite.
+- **Références.** OP-N130 ; C-006 ; ADR-189.

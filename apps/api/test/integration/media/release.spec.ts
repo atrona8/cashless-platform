@@ -1,7 +1,7 @@
 // Intégration : restitution d'un bracelet et remise en stock d'un lot réattribuable (FR-025 ;
 // SPECIFICATION §7.8, §7.9 ; contrat `releaseMedia`, `reassignPoolMedia` ; spec US 6, scénarios 2
-// et 3). Chaque refus nomme ce qui reste à faire ; l'API n'enchaîne pas le guichet de retour à la
-// place de l'agent.
+// et 3). Sans `settle_balance`, chaque refus nomme ce qui reste à faire (l'enchaînement est dans
+// release-chaining.spec.ts).
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -286,18 +286,25 @@ describe('restitution d’un bracelet', () => {
     await sound();
   });
 
-  it('le serveur n’enchaîne pas le guichet de retour : refund_deposit_by et settle_balance refusés (422, règle citée)', async () => {
+  it('le guichet enchaîné n’est plus refusé : settle_balance sur un bracelet soldé rend le bracelet (cas détaillés : release-chaining.spec.ts)', async () => {
     const m = await fresh(plain);
     await activate(m);
-    for (const body of [
-      { settle_balance: { method: 'CASH' } },
-      { refund_deposit_by: { method: 'CASH' } },
-    ]) {
-      const res = await post(`/v1/media/${m.id}/release`, body);
-      expect(res.status).toBe(422);
-      expect(res.body.rule).toBe('release.no_chaining');
-    }
-    expect(await status(m.id)).toBe('ACTIVE');
+    const res = await post(`/v1/media/${m.id}/release`, { settle_balance: { method: 'CASH' } });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      media_status: 'RELEASED',
+      balance_refund_transaction_id: null,
+      cash_to_hand_back: 0,
+      cash_session_id: session.sessionId,
+    });
+    expect(await status(m.id)).toBe('RELEASED');
+    // Moyen autre que CASH : refusé par le contrat.
+    const other = await fresh(plain);
+    await activate(other);
+    expect(
+      (await post(`/v1/media/${other.id}/release`, { settle_balance: { method: 'WAVE' } })).status,
+    ).toBe(400);
+    expect(await status(other.id)).toBe('ACTIVE');
   });
 
   it('lecture d’un autre bracelet : refusée ; pendant que la passerelle a l’autorité : 409 DEBIT_AUTHORITY_EDGE', async () => {

@@ -146,7 +146,11 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
   'posting:check_balanced posting:posting_cash_desk_guard '
   'psp_chargeback:psp_chargeback_cap psp_chargeback:psp_chargeback_guard '
   'psp_configuration:psp_configuration_immutable psp_event:psp_event_guard '
-  'psp_topup:psp_topup_transition_guard role_assignment:role_assignment_guard '
+  'psp_topup:psp_topup_transition_guard '
+  -- Mission 9a (WP01, 0081) : refund_request_scope_guard (BEFORE INSERT) ne fait que lire tenant_of_*() et
+  -- customer_identity pour refuser une demande qui vise un autre prestataire ; elle n'écrit rien : aucun nouvel
+  -- écrivain. Fonction à faire relire par une personne (0081).
+  'refund_request:refund_request_scope_guard role_assignment:role_assignment_guard '
   'wallet:log_wallet_status wallet:log_wallet_status',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
 -- Mission passerelle-locale (WP08, 0063) : edge_ref_trigger, déclencheur du journal de réplication (écrit au COMMIT).

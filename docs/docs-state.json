@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-13T12:00:00Z",
+  "derniere_verification_globale": "2026-11-16T11:28:28Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -60,6 +60,13 @@
     "passerelle-locale-01M6NM1S": {
       "statut": "mergée (dans main par la PR #12 le 13/11/2026)",
       "verifie_le": "2026-11-13T12:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "remboursements-01M7AG5V": {
+      "statut": "mergée sur feat/remboursements (acceptée 8cd5ae97, squash bf0b6376, 16/11/2026), pas encore dans main",
+      "verifie_le": "2026-11-16T13:30:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

@@ -9,6 +9,7 @@
 > 29/10/2026 : mission 6 relue (14 lots approuvés), acceptée et mergée sur `feat/recharges-caisses-psp`, dans `main` par la PR #8 le 29/10/2026.
 > 30/10/2026 : plan de la mission 7 « Hors ligne : snapshots et lots » finalisé (`hors-ligne-snapshots-lots-01M645RN`).
 > 05/11/2026 : mission 7 acceptée puis mergée sur feat (f3bef0c0, 05/11/2026), dans `main` par la PR #10 le 05/11/2026 (21 lots sur 21 approuvés le 04/11/2026).
+> 16/11/2026 : mission 9a « Remboursements des festivaliers » (`remboursements-01M7AG5V`) : review terminée (sept lots approuvés), acceptation à venir, non fusionnée. Plan finalisé le 13/11/2026. La mission 9b (versements, rapprochements, clôture) suit la 9a.
 > 13/11/2026 : mission 8 dans `main` par la PR #12 (acceptée et consolidée sur feat le 12/11/2026). 12/11/2026 : review de la mission 8 terminée (25 lots sur 25 approuvés) ; documents recalés sur le code. 05/11/2026 : plan de la mission 8 « Passerelle locale de site » finalisé (`passerelle-locale-01M6NM1S`, planifiée) ; statut de la mission 7 corrigé (dans `main` par la PR #10).
 > Le détail normatif de chaque règle est dans `docs/SPECIFICATION.md` (section citée entre parenthèses).
 
@@ -137,8 +138,10 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
   consignées : PSP et coffre des secrets en faux, refusés en production, donc aucune recharge en ligne en production avant
   la mission 6b des adaptateurs réels (OP-N81, ADR-131) ; remboursement d'un paiement non crédité hors plateforme
   (OP-N82) ; reprise de la caution due après un arrêt du processus (OP-N85). Rapprochements et versements : 📋 planifié
-  (mission 9).
+  (mission 9b, après la 9a décrite ci-dessous).
 - Mission(s) associée(s) : `recharges-caisses-psp-01M5YEBA` (Recharges, caisses et PSP, 14 lots approuvés, acceptée et mergée le 29/10/2026 sur `feat/recharges-caisses-psp`, dans `main` par la PR #8 le 29/10/2026)
+- Remboursements des festivaliers (mission 9a, **implémentée, review terminée le 16/11/2026, acceptation à venir, non fusionnée**) : demande de remboursement du solde payé vers Wave ou Orange Money (numéro vérifié ou autre numéro sous contrôle du titulaire), circuit à deux personnes au back-office, paiement fait hors système puis confirmé (`PAID` ou `FAILED`, ce dernier recrédite et est refusé à qui a proposé ou exécuté le remboursement), guichet de retour enchaîné (caution, crédits offerts, solde payé, espèces dues, restitution ; seconde personne exigée quand le cumul des espèces sorties dépasse le plafond). Un autre numéro exige un compte à identité vérifiée (sinon `422`) et le titulaire reçoit son code avec un lien. Dette consignée : OP-N124 à N126 et N128. Hors périmètre : demande créée par le back-office et virement (OP-N123), versements, rapprochements et clôture (mission 9b), remboursement par carte. Détail : `kitty-specs/remboursements-01M7AG5V/docs/`.
+- Mission(s) associée(s) : `remboursements-01M7AG5V` (Remboursements des festivaliers, 🔎 review terminée le 16/11/2026, non fusionnée)
 
 ### Cycle de l'événement et clôture
 - Description : statuts `DRAFT` à `CLOSED`, conditions de clôture vérifiées par la base, droit de place, casse
@@ -151,6 +154,7 @@ consignation). La mission 6 (recharges, caisses et PSP) est mergée, dans `main`
   remboursement ; consultation anonyme du solde par code (§8.5).
 - Statut : 📋 planifié
 - Mission(s) associée(s) : à définir
+- Remboursements (demande, suivi, décision du titulaire) : mission 9a `remboursements-01M7AG5V`, 🔎 review terminée le 16/11/2026, non fusionnée ; les sept routes sont servies sur la branche de la mission, elles répondent `404` dans `feat` et `main` tant que la 9a n'est pas fusionnée.
 
 ### Back-office web
 - Description : interfaces plateforme, prestataire, organisateur, commerçant ; double validation par demande puis

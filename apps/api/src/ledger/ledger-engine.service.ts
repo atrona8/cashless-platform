@@ -41,6 +41,7 @@ import {
   type LedgerCommand,
   type Line,
   type Source,
+  type TransactionType,
   type WalletBalances,
 } from './types';
 
@@ -143,7 +144,12 @@ export class LedgerEngineService {
 
     const context = await this.ledgerContext(client, command);
     const deferPurposeCheck = command.type === 'PAYOUT_INITIATED';
-    if (!deferPurposeCheck) checkStatus(context, command);
+    // REVERSAL : le type de la transaction contre-passée (introuvable : la lecture des lignes refuse).
+    const reversesType =
+      command.type === 'REVERSAL' && command.reversesId
+        ? await readReversedType(client, command.ledgerId, command.reversesId)
+        : undefined;
+    if (!deferPurposeCheck) checkStatus(context, command, undefined, reversesType);
 
     const config = await this.configResolver.resolve({
       ledgerId: command.ledgerId,
@@ -186,7 +192,7 @@ export class LedgerEngineService {
         'VALIDATION_FAILED',
         'TOPUP_CASH : support (mediaId) requis pour un découpage hors ligne',
       );
-    if (deferPurposeCheck) checkStatus(context, command, debitPurposes(lines));
+    if (deferPurposeCheck) checkStatus(context, command, debitPurposes(lines), reversesType);
 
     const ids = await this.accountResolver.resolve(
       client,
@@ -400,6 +406,7 @@ function checkStatus(
   context: LedgerContextRow & { eventStatus: EventStatus },
   command: LedgerCommand,
   purposes?: string[],
+  reversesType?: TransactionType,
 ): void {
   const check = isAccepted({
     eventStatus: context.eventStatus,
@@ -409,8 +416,23 @@ function checkStatus(
     variant: variantOf(command),
     ...(context.depositMode ? { depositMode: context.depositMode } : {}),
     ...(purposes ? { debitPurposes: purposes } : {}),
+    ...(reversesType ? { reversesType } : {}),
   });
   if (!check.ok) throw new BuildError('VALIDATION_FAILED', check.reason);
+}
+
+/** Type de la transaction contre-passée, lu sous la RLS du client ; `undefined` si introuvable. */
+async function readReversedType(
+  client: Queryable,
+  ledgerId: string,
+  reversesId: string,
+): Promise<TransactionType | undefined> {
+  if (!UUID.test(reversesId)) return undefined;
+  const { rows } = await client.query<{ type: TransactionType }>(
+    'SELECT type FROM journal_transaction WHERE id = $1 AND ledger_id = $2',
+    [reversesId, ledgerId],
+  );
+  return rows[0]?.type;
 }
 
 function pspConfigurationOf(command: LedgerCommand): string | undefined {

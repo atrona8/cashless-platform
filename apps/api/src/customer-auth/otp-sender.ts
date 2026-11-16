@@ -7,9 +7,23 @@ import type { AppConfig } from '../config/config';
 
 export type OtpChannel = 'AUTO' | 'SMS' | 'WHATSAPP';
 
+/** Envoi d'usage « titulaire » (mission 9a, décision 14) : de quoi construire le lien de décision. */
+export interface HolderLink {
+  refundRequestId: string;
+  otpRequestId: string;
+}
+
 export interface OtpSender {
   readonly isFake?: boolean;
-  send(phone: string, code: string, channel: OtpChannel): Promise<void>;
+  /** `link` n'est présent que pour le code d'un titulaire ; la connexion garde la signature à trois arguments. */
+  send(phone: string, code: string, channel: OtpChannel, link?: HolderLink): Promise<void>;
+}
+
+export interface SentOtp {
+  phone: string;
+  code: string;
+  channel: OtpChannel;
+  link?: HolderLink;
 }
 
 export const OTP_SENDER = Symbol('OTP_SENDER');
@@ -18,8 +32,18 @@ export const TEST_OTP_CODE_HEADER = 'X-Test-Otp-Code';
 export class FakeOtpSender implements OtpSender {
   readonly isFake = true;
 
-  async send(): Promise<void> {
-    // Rien n'est envoyé ni journalisé : le code ne sort que par l'en-tête de test de la réponse.
+  private last: SentOtp | null = null;
+
+  send(phone: string, code: string, channel: OtpChannel, link?: HolderLink): Promise<void> {
+    // Rien n'est envoyé ni journalisé. Le dernier envoi reste en mémoire, lisible par les tests seulement (injection
+    // du fournisseur) ; le code d'un titulaire ne sort dans AUCUNE réponse, en-têtes de test compris.
+    this.last = { phone, code, channel, ...(link ? { link } : {}) };
+    return Promise.resolve();
+  }
+
+  /** Dernier envoi (tests). */
+  lastSent(): SentOtp | null {
+    return this.last;
   }
 }
 

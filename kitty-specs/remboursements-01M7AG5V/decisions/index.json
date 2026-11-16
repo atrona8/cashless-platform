@@ -1,0 +1,151 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-13T13:05:42.666002Z",
+      "decision_id": "01M7AG73R9WN4A9S69VRGMJF57",
+      "final_answer": "Manuel, comme la SPECIFICATION (\u00a78.5, ADR-53) : paiement hors syst\u00e8me, confirmation ou \u00e9chec au back-office avec r\u00e9f\u00e9rence ; aucun port de versement dans la 9a",
+      "input_key": "payout_mode",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Manuel (SPECIFICATION, ADR-53)",
+        "Port automatique avec faux",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Versement d'un remboursement Wave/Orange Money/virement : manuel comme le pr\u00e9voit la SPECIFICATION (\u00a78.5, ADR-53 : paiement hors syst\u00e8me puis confirmation au back-office avec r\u00e9f\u00e9rence) ou par un port de versement automatique avec faux jusqu'\u00e0 la 12b ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:06:45.236134Z",
+      "resolved_by": null,
+      "slot_key": "specify.payout.mode",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:07:27.281640Z",
+      "decision_id": "01M7AGA9XHFVJJSK267D76M9D4",
+      "final_answer": "Reporter : la demande cr\u00e9\u00e9e par le back-office (virement BANK_TRANSFER) n'est pas dans la 9a ; consign\u00e9e (OP + report en 9b), contrat inchang\u00e9",
+      "input_key": "backoffice_created_request",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Reporter (9b ou 11a), consign\u00e9",
+        "Ajouter en 9a (route r\u00e9trocompatible)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Demande de remboursement cr\u00e9\u00e9e par le back-office (virement bancaire, BANK_TRANSFER) : le contrat la d\u00e9clare \u00ab op\u00e9ration \u00e0 ajouter, non d\u00e9crite \u00bb. L'ajouter dans la 9a (route r\u00e9trocompatible) ou la reporter ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:09:28.834745Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.backoffice-created-request",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:24:42.194957Z",
+      "decision_id": "01M7AH9WJJ01ZWGRC0DDX6SN9V",
+      "final_answer": "\u00c9tendre la matrice au seul REVERSAL d'un WALLET_REFUND (source back-office), partout o\u00f9 WALLET_REFUND est permis ; test n\u00e9gatif pour tout autre REVERSAL ; contradiction \u00a711.4/\u00a712.1 consign\u00e9e (ADR)",
+      "input_key": "reversal_after_closing",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "\u00c9tendre, seulement ce cas",
+        "Refuser FAILED apr\u00e8s RECONCILING",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "\u00c9chec de paiement (FAILED) apr\u00e8s RECONCILING : la matrice \u00a712.1 refuse le REVERSAL en BACKOFFICE alors que \u00a711.4 et le contrat l'exigent. \u00c9tendre la matrice au seul REVERSAL d'un WALLET_REFUND ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:35:05.352255Z",
+      "resolved_by": null,
+      "slot_key": "plan.ledger.reversal-after-closing",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:24:49.936997Z",
+      "decision_id": "01M7AHA44G4WAMEJBK1KFN4FS8",
+      "final_answer": "Remboursable si le seul blocage vient d'un bracelet d\u00e9clar\u00e9 perdu (SUSPENDED) ; refus 422 REFUND_NOT_ALLOWED si portefeuille bloqu\u00e9 pour contestation, fraude ou other_block, ou bracelet BLACKLISTED",
+      "input_key": "blocked_wallet_refund",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Perte oui, contestation/fraude non",
+        "Toujours",
+        "Jamais",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Portefeuille bloqu\u00e9 ou bracelet suspendu : remboursable ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:35:12.945108Z",
+      "resolved_by": null,
+      "slot_key": "plan.rules.blocked-wallet",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:24:57.448321Z",
+      "decision_id": "01M7AHABF8C7XV7BV83Y4K95Z9",
+      "final_answer": "OPERATOR_ADMIN ou ORGANIZER_ADMIN sur la port\u00e9e de l'\u00e9v\u00e9nement, pour proposer et approuver",
+      "input_key": "refund_approval_role",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "OPERATOR_ADMIN et ORGANIZER_ADMIN",
+        "OPERATOR_ADMIN seul",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "R\u00f4le exig\u00e9 pour proposer et approuver un WALLET_REFUND au back-office ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:35:20.697559Z",
+      "resolved_by": null,
+      "slot_key": "plan.roles.approval",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-13T13:25:05.070313Z",
+      "decision_id": "01M7AHAJXEJN4R9HCWVHWJ2PDH",
+      "final_answer": "Refus 422 (comportement actuel) : l'organisateur configure une r\u00e8gle de frais de remboursement, \u00e9ventuellement \u00e0 0, avant tout remboursement",
+      "input_key": "missing_refund_fee_rule",
+      "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+      "mission_slug": "remboursements-01M7AG5V",
+      "opened_by": "cli",
+      "options": [
+        "Frais 0",
+        "Refus 422",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "\u00c9v\u00e9nement sans r\u00e8gle de frais de remboursement : frais 0 ou refus ?",
+      "rationale": null,
+      "resolved_at": "2026-11-13T13:35:28.300164Z",
+      "resolved_by": null,
+      "slot_key": "plan.fees.missing-rule",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+  "version": 1
+}

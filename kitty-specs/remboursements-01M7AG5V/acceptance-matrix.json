@@ -1,0 +1,422 @@
+{
+  "mission_slug": "remboursements-01M7AG5V",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 (Demande de remboursement enregistr\u00e9e) : En tant que syst\u00e8me, je veux une demande de remboursement persistante (S16 : portefeuille, canal, destination, statut, demandeur, valideur distinct, transaction `WALLET_REFUND`, confirmation ou \u00e9chec, frais, \u00e9ch\u00e9ance) dans le grand livre du prestataire, isol\u00e9e par prestataire.",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuv\u00e9 (f660b909, lane-a) : migration 0081_refund_requests.sql ; tests_refund_requests.sql 88/88, batterie pgTAP 71 fichiers / 6141 (rapport de lot du 13/11). ; tests_refund_requests.sql 88/88 rejou\u00e9 par la relecture de WP07 le 16/11 ; table utilis\u00e9e par WP03 \u00e0 WP07.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Partiel, lots restants \u00e0 approuver."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 (Cr\u00e9ation par le festivalier) : En tant que festivalier connect\u00e9, je veux cr\u00e9er une demande (`createMyRefundRequest`) vers mon num\u00e9ro Wave ou Orange Money v\u00e9rifi\u00e9, avec cl\u00e9 d'idempotence, afin d'\u00eatre rembours\u00e9 de mon solde pay\u00e9.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : create-refund-request.spec.ts (cr\u00e9ation Wave/OM, idempotence).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 (Une seule demande ouverte) : En tant qu'op\u00e9rateur, je veux qu'un portefeuille n'ait jamais plus d'une demande non termin\u00e9e (`409 REFUND_ALREADY_OPEN`), garanti par la base.",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuv\u00e9 (f660b909) : index refund_request_one_open ; WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : 409 REFUND_ALREADY_OPEN, nouvelle demande apr\u00e8s REJECTED.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 (Fen\u00eatre et \u00e9ligibilit\u00e9) : En tant qu'op\u00e9rateur, je veux refuser une demande hors de la fen\u00eatre de remboursement de l'\u00e9v\u00e9nement (`422 REFUND_WINDOW_CLOSED`) ou sur un portefeuille non remboursable (solde pay\u00e9 nul, portefeuille ferm\u00e9, destination non v\u00e9rifi\u00e9e : `422 REFUND_NOT_ALLOWED`).",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : fen\u00eatre close, solde nul, BLOCKED, CLOSED, BLACKLISTED, SUSPENDED (perdu) accept\u00e9, BANK_TRANSFER 422, r\u00e8gle de frais absente 422.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 (Montant estim\u00e9) : En tant que festivalier, je veux voir le montant estim\u00e9 (solde pay\u00e9 moins les frais de remboursement de l'\u00e9v\u00e9nement) ; les cr\u00e9dits offerts n'en font jamais partie.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : montant estim\u00e9 = pay\u00e9 \u2212 frais, cr\u00e9dits offerts exclus, frais \u2265 solde 422 ; me-refund.spec.ts.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 (Mes demandes) : En tant que festivalier, je veux lister mes demandes, pagin\u00e9es, avec leur statut courant (`listMyRefundRequests`) ; les demandes des autres me sont invisibles.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : list-refund-requests.spec.ts (isolation entre festivaliers, pagination 3 pages).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 (Liste du back-office) : En tant que personne du back-office, je veux lister les demandes de mon p\u00e9rim\u00e8tre, filtr\u00e9es par statut et \u00e9v\u00e9nement (`listRefundRequests`).",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : liste du back-office filtr\u00e9e par port\u00e9e (hors port\u00e9e absente), CASHIER 403.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 (Approbation \u00e0 deux) : En tant que back-office, je veux que `approveRefundRequest` cr\u00e9e une demande d'approbation `WALLET_REFUND` et qu'une seconde personne, distincte de l'auteur et du demandeur, l'ex\u00e9cute une seule fois : \u00e9criture `WALLET_REFUND` (source back-office, frais compris), demande `PROCESSING`.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : approve-refund.spec.ts (202 sans \u00e9criture, ex\u00e9cution par une seconde personne, m\u00eame personne refus\u00e9e).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 (R\u00e9sultat du paiement) : En tant que back-office, je veux enregistrer `PAID` (r\u00e9f\u00e9rence obligatoire, aucune \u00e9criture) ou `FAILED` (motif obligatoire, `REVERSAL` du remboursement, solde recr\u00e9dit\u00e9) sur une demande `PROCESSING` (`confirmRefundRequest`).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (80b826b2) : REVERSAL d'un WALLET_REFUND (ADR-189) ; WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : confirm-refund.spec.ts (PAID sans \u00e9criture, FAILED \u2192 REVERSAL ; d\u00e9cision 13 : FAILED refus\u00e9 au proposant et \u00e0 l'ex\u00e9cutant).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 (Refus) : En tant que back-office, je veux refuser une demande `REQUESTED` avec un motif (`rejectRefundRequest`), sans \u00e9criture.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : reject-refund-request.spec.ts (REQUESTED seulement, motif obligatoire, aucune \u00e9criture).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 (Autre num\u00e9ro) : En tant que festivalier, je veux demander un remboursement vers un autre num\u00e9ro en joignant le code de ce num\u00e9ro ; sans code valide, refus (ADR-76).",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (331ca8cb, 8f71cf8b) : holder-challenge.spec.ts, holder-link.spec.ts ; WP04 (facb2bef) ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : journey.spec.ts, code du titulaire absent de la r\u00e9ponse de cr\u00e9ation.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 (D\u00e9cision du titulaire) : En tant que titulaire v\u00e9rifi\u00e9, je veux recevoir un code et confirmer ou bloquer la demande vers un autre num\u00e9ro (`decideRefundRequestAsHolder`) jusqu'\u00e0 `hold_until` ; sans titulaire v\u00e9rifi\u00e9, la demande est `REQUESTED` directement.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 cycle 2 (8f71cf8b) : holder-link.spec.ts (BLOCK et CONFIRM par le lien re\u00e7u, sans lecture en base) ; WP03 cycle 1 : holder-decision.spec.ts ; FR-012 amend\u00e9e le 16/11 (d\u00e9cision 15, ADR-194) : compte sans identit\u00e9 \u2192 422, test strict de WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 (\u00c9ch\u00e9ance de l'attente) : En tant qu'op\u00e9rateur, je veux qu'une demande `AWAITING_HOLDER` sans r\u00e9ponse devienne `REQUESTED` \u00e0 `hold_until` (`refund_new_number_hold_hours`, 48 h par d\u00e9faut), sans action manuelle.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuv\u00e9 (331ca8cb) : holder-promotion.spec.ts (deux prestataires, second passage \u00e0 0, cadence 60 s, aucune d\u00e9cision invent\u00e9e).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteur WP03, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Couvert par WP03 seul (tasks.md)."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 (V\u00e9rification d'identit\u00e9 au-del\u00e0 du seuil) : En tant qu'op\u00e9rateur, je veux que les demandes vers un autre num\u00e9ro au-del\u00e0 de `refund_new_number_max` portent `extra_check_required` et que leur approbation exige la v\u00e9rification d'identit\u00e9 not\u00e9e dans la d\u00e9cision.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) : extra_check_required au-del\u00e0 du seuil ; WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : note exig\u00e9e \u00e0 l'approbation.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 (Guichet de retour encha\u00een\u00e9) : En tant que caissier, je veux que `releaseMedia` avec `settle_balance` encha\u00eene caution, expiration des cr\u00e9dits offerts, remboursement du solde pay\u00e9 en esp\u00e8ces, esp\u00e8ces dues et restitution, dans cet ordre, sur la session de caisse ouverte du terminal ; le refus `release.no_chaining` dispara\u00eet (OP-N51, ADR-91).",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (90492e77, lane-f, cycle 2) : release-chaining.spec.ts (encha\u00eenement caution, PROMO_EXPIRY, WALLET_REFUND, esp\u00e8ces dues, release_media) ; rejou\u00e9 par la relecture le 16/11 : 6 suites / 55 tests.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteur WP06, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Couvert par les lots cit\u00e9s (tasks.md)."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 (Seconde personne au guichet) : En tant qu'op\u00e9rateur, je veux qu'un remboursement en esp\u00e8ces au-del\u00e0 de `cash_refund_single_max` exige un jeton d'approbation sur place d'une seconde personne (`403 APPROVAL_REQUIRED` / `APPROVAL_INVALID`).",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (90492e77) : seuil sur le cumul (d\u00e9cision 11 du porteur), tests au seuil exact (10000 passe, 10001 \u2192 403), fractionnement 3\u00d76000 \u2192 403 sans jeton, 200 avec jeton.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteur WP06, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Couvert par les lots cit\u00e9s (tasks.md)."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 (Encha\u00eenement atomique et rejouable) : En tant que caissier, je veux que l'encha\u00eenement soit tout ou rien (un refus \u00e0 une \u00e9tape n'\u00e9crit rien) et qu'un rejeu avec la m\u00eame cl\u00e9 rende la m\u00eame r\u00e9ponse sans rien \u00e9crire deux fois.",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 (90492e77) : refus \u00e0 toute \u00e9tape = aucune \u00e9criture (caution HELD) ; 5 rejeux m\u00eame cl\u00e9 + 5 cl\u00e9s concurrentes \u2192 une seule \u00e9criture par \u00e9tape.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteur WP06, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Couvert par les lots cit\u00e9s (tasks.md)."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 (Esp\u00e8ces dues d'un bracelet remplac\u00e9) : En tant qu'op\u00e9rateur, je veux que les esp\u00e8ces dues d'un bracelet remplac\u00e9 soient rendues une fois et une seule (OP-N55, ADR-100), en faisant suivre au bracelet neuf, lors du remplacement, les esp\u00e8ces dues encore ouvertes de l'ancien (le contrat n'a pas de route de rendu au back-office).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuv\u00e9 (80b826b2) : 0082, tests_replace_cash_due.sql 39/39 ; WP06 approuv\u00e9 (90492e77) : cash-due-after-replace.spec.ts (rendu une fois, second appel 409).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteur WP06, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Couvert par les lots cit\u00e9s (tasks.md)."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 (Autorit\u00e9 de d\u00e9bit) : En tant qu'op\u00e9rateur, je veux que toute \u00e9criture de remboursement (approbation, \u00e9chec, guichet) respecte l'autorit\u00e9 de d\u00e9bit : refus `409 DEBIT_AUTHORITY_EDGE` quand la passerelle locale a l'autorit\u00e9.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : DEBIT_AUTHORITY_EDGE en 409 \u00e0 la cr\u00e9ation, \u00e0 l'ex\u00e9cution et sur FAILED ; debit-paths-refused vert ; WP06 : garde EDGE du guichet.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 (Journal d'audit) : En tant qu'auditeur, je veux que chaque cr\u00e9ation, d\u00e9cision, approbation, confirmation et refus soit trac\u00e9 au journal d'audit avec son auteur.",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (facb2bef, lane-d), rejou\u00e9 par la relecture le 16/11 (7 suites / 48 tests) et WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : une ligne d'audit par cr\u00e9ation, refus, proposition, ex\u00e9cution, confirmation ; WP03 : REFUND_HOLDER_DECIDED.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 (Aucun double remboursement) : 0 \u00e9criture `WALLET_REFUND` en double sur 100 approbations ou ex\u00e9cutions concurrentes d'une m\u00eame demande, et sur 100 rejeux d'une m\u00eame cl\u00e9 d'idempotence.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (7af0ac88, lane-e, cycle 2), rejou\u00e9 par la relecture le 16/11 (22 suites / 292 tests) : 100 ex\u00e9cutions simultan\u00e9es \u2192 1 WALLET_REFUND, 100 rejeux \u2192 1 approbation, 20 FAILED simultan\u00e9s \u2192 1 REVERSAL.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Preuves des lots cit\u00e9s (tasks.md) ; parcours de bout en bout rejou\u00e9 par WP07."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 (Une seule demande ouverte sous concurrence) : 0 portefeuille avec deux demandes non termin\u00e9es apr\u00e8s 50 cr\u00e9ations simultan\u00e9es sur le m\u00eame portefeuille.",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (index) ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : concurrency.spec.ts, 50 cr\u00e9ations simultan\u00e9es \u2192 1 \u00d7 201 et 49 \u00d7 409, aucun 500.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 (Grand livre \u00e9quilibr\u00e9) : Apr\u00e8s tout parcours (pay\u00e9, \u00e9chou\u00e9, refus\u00e9, bloqu\u00e9, guichet), la somme de chaque transaction est nulle et le solde pay\u00e9 du portefeuille \u00e9gale le solde initial moins les remboursements pay\u00e9s.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : refund-invariants.ts (somme de chaque transaction nulle, solde pay\u00e9 = initial \u2212 remboursements + contre-passations) appliqu\u00e9 \u00e0 journey.spec.ts (pay\u00e9, \u00e9chou\u00e9, refus\u00e9, bloqu\u00e9, guichet).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 (Temps de r\u00e9ponse) : 95 % des cr\u00e9ations et lectures de demandes r\u00e9pondent en moins de 500 ms sous 20 requ\u00eates simultan\u00e9es.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : refund-latency.spec.ts sans SKIP_LATENCY, 20 requ\u00eates simultan\u00e9es : cr\u00e9ation p95 475 ms (marge faible), listes p95 82 et 154 ms.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 (\u00c9ch\u00e9ance tenue) : Une demande `AWAITING_HOLDER` devient traitable au plus 5 minutes apr\u00e8s `hold_until`.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (travailleur \u00e0 60 s) ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : refund-latency.spec.ts, promotion moins de 5 min apr\u00e8s hold_until.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-001",
+      "description": "C-001 (Priorit\u00e9 des sources) : SPECIFICATION \u00a70.3 ; toute contradiction est signal\u00e9e, jamais tranch\u00e9e en silence.",
+      "proof_type": "review",
+      "evidence": "Contradictions signal\u00e9es et tranch\u00e9es par le porteur : C-001 / FR-012 (d\u00e9cision 15, ADR-194).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-002",
+      "description": "C-002 (Contrat stable) : D\u00e9cision du porteur du 05/11/2026 : les op\u00e9rations du contrat sont servies telles qu'elles sont d\u00e9crites ; aucune route, aucun champ ni code d'erreur nouveau sans accord pr\u00e9alable du porteur.",
+      "proof_type": "review",
+      "evidence": "openapi.yaml inchang\u00e9, v\u00e9rifi\u00e9 par chaque relecture (WP03 \u00e0 WP07).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-003",
+      "description": "C-003 (Paiement manuel en V1) : D\u00e9cision du porteur du 13/11/2026 (SPECIFICATION \u00a78.5, ADR-53) : aucun versement n'est d\u00e9clench\u00e9 par l'API ; le paiement est fait hors syst\u00e8me puis confirm\u00e9. Pas de remboursement par carte.",
+      "proof_type": "review",
+      "evidence": "Aucun versement d\u00e9clench\u00e9 : PAID n'\u00e9crit rien (WP05, relecture).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-004",
+      "description": "C-004 (Demande cr\u00e9\u00e9e par le back-office report\u00e9e) : D\u00e9cision du porteur du 13/11/2026 : la demande cr\u00e9\u00e9e par le back-office (virement `BANK_TRANSFER`) reste hors de la 9a, consign\u00e9e (OP + report en 9b).",
+      "proof_type": "review",
+      "evidence": "BANK_TRANSFER \u2192 422 REFUND_NOT_ALLOWED (WP04) ; OP-N123 confirm\u00e9 ouvert pour la 9b (WP07).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-005",
+      "description": "C-005 (\u00c9critures par les fonctions du grand livre) : Les \u00e9critures passent par les fonctions existantes du grand livre (`post_transaction`, `refund_deposit`, `refund_cash_due`, `release_media`) et la double validation existante (ADR-74) ; les migrations compl\u00e8tent sans affaiblir un contr\u00f4le. Les `.sql` g\u00e9n\u00e9r\u00e9s de `packages/ledger-sql/` ne sont jamais modifi\u00e9s \u00e0 la main.",
+      "proof_type": "review",
+      "evidence": "\u00c9critures par les fonctions du grand livre et la double validation existantes (WP02, WP05, WP06, relectures).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-006",
+      "description": "C-006 (Droits de la base) : Un r\u00f4le par processus (`post-roles.sql`) ; le r\u00f4le applicatif ne re\u00e7oit que les droits n\u00e9cessaires sur la table des demandes ; aucun `DELETE`.",
+      "proof_type": "review",
+      "evidence": "Droits de la table des demandes accord\u00e9s par WP01 seul (post-roles.sql \u00a7 11), aucun DELETE ; tests_refund_requests.sql 88/88.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-007",
+      "description": "C-007 (\u00c9carts de s\u00e9curit\u00e9) : R\u00e8gle du porteur du 13/10/2026 (`CLAUDE.md`) : tout \u00e9cart qui affaiblit la s\u00e9curit\u00e9 est soumis avant d'\u00eatre cod\u00e9 ; chaque \u00e9cart accept\u00e9 a une entr\u00e9e OP, un ADR et un test qui \u00e9choue si la limite s'\u00e9largit.",
+      "proof_type": "review",
+      "evidence": "D\u00e9cisions 11 \u00e0 15 du porteur soumises avant le code ; dettes consign\u00e9es : ADR-189 \u00e0 195, OP-N124 \u00e0 126, OP-N128 (WP07).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "C-008",
+      "description": "C-008 (Chemins du monorepo) : Le code vit dans `apps/api/` et `packages/ledger-sql/` (et `packages/contracts/` en lecture) ; les tests dans `apps/api/test/` et `packages/ledger-sql/tests/`.",
+      "proof_type": "review",
+      "evidence": "Code dans apps/api et packages/ledger-sql ; tests dans apps/api/test et packages/ledger-sql/tests.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001 : l'app festivalier cr\u00e9e, liste et suit ses demandes sur l'API partag\u00e9e sans aucune r\u00e9ponse `404` sur les trois routes festivalier du contrat. \u2014 [build] \u00b7 no-op passable: no",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : journey.spec.ts (cr\u00e9ation, liste et suivi par /me, aucun 404 sur les routes servies).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002 : un parcours complet (demande, approbation \u00e0 deux, paiement confirm\u00e9) rend au festivalier exactement son solde pay\u00e9 moins les frais, et un parcours \u00e9chou\u00e9 lui rend tout son solde pay\u00e9. \u2014 [build] \u00b7 no-op passable: no",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : journey.spec.ts (demande, approbation \u00e0 deux, PAID : montant rendu = solde pay\u00e9 \u2212 frais).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003 : 100 % des tentatives d'approbation par la m\u00eame personne que l'auteur ou le demandeur sont refus\u00e9es. \u2014 [build] \u00b7 no-op passable: no",
+      "proof_type": "automated_test",
+      "evidence": "WP05 (7af0ac88) : m\u00eame personne refus\u00e9e, d\u00e9cision 13 ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : journey-limits.spec.ts.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004 : un bracelet avec caution, cr\u00e9dits offerts, solde pay\u00e9 et esp\u00e8ces dues est restitu\u00e9 en une seule op\u00e9ration au guichet, avec les \u00e9critures dans l'ordre de \u00a77.9. \u2014 [build] \u00b7 no-op passable: no",
+      "proof_type": "automated_test",
+      "evidence": "WP06 (90492e77) : release-chaining.spec.ts ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : journey.spec.ts (guichet).",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    },
+    {
+      "criterion_id": "SC-005",
+      "description": "SC-005 : aucune demande vers un autre num\u00e9ro n'est traitable avant la d\u00e9cision du titulaire ou l'\u00e9ch\u00e9ance. \u2014 [build] \u00b7 no-op passable: no",
+      "proof_type": "automated_test",
+      "evidence": "WP03 cycle 2 (8f71cf8b) : holder-link.spec.ts (BLOCK et CONFIRM par le lien re\u00e7u, sans lecture en base) ; WP07 approuv\u00e9 (2698740c, lane-g, cycle 2), rejou\u00e9 par la relecture le 16/11 (20 suites / 170 tests ; latence 4/4) : aucune demande vers un autre num\u00e9ro traitable avant d\u00e9cision ou \u00e9ch\u00e9ance.",
+      "pass_fail": "pass",
+      "verified_by": "claude (relecteurs des lots, orchestrateur)",
+      "verified_at": "2026-11-16",
+      "notes": "Batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11 : pgTAP 72 fichiers / 6180 PASS ; Jest API 3635/3636 (seul \u00e9chec SC-007, corrig\u00e9 par WP06 cycle 3 puis 45 suites / 512 verts) ; tsc OK."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun double WALLET_REFUND ni double REVERSAL sous concurrence ou rejeu (NFR-001)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/refunds/concurrency test/integration/refunds/approve-refund test/integration/refunds/confirm-refund",
+      "result": "confirmed_absent",
+      "evidence": "concurrency.spec.ts, approve-refund.spec.ts, confirm-refund.spec.ts ; batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11/2026 (pgTAP 6180 PASS, Jest 3635/3636 puis SC-007 corrig\u00e9, 45 suites / 512 verts)."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Le code du titulaire ne sort dans aucune r\u00e9ponse adress\u00e9e au demandeur",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/refunds/journey test/integration/refunds/holder-link",
+      "result": "confirmed_absent",
+      "evidence": "journey.spec.ts, holder-link.spec.ts ; batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11/2026 (pgTAP 6180 PASS, Jest 3635/3636 puis SC-007 corrig\u00e9, 45 suites / 512 verts)."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun \u00e9largissement de la matrice des REVERSAL hors WALLET_REFUND BACKOFFICE (d\u00e9cision 5, ADR-189)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/ledger/refund-reversal-matrix test/unit/ledger test/integration/refunds/journey",
+      "result": "confirmed_absent",
+      "evidence": "refund-reversal-matrix.spec.ts, status-matrix-refund-reversal.spec.ts, journey.spec.ts ; batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11/2026 (pgTAP 6180 PASS, Jest 3635/3636 puis SC-007 corrig\u00e9, 45 suites / 512 verts)."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Faux envoyeur de codes refus\u00e9 au d\u00e9marrage en production",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit test/integration/customer-auth",
+      "result": "confirmed_absent",
+      "evidence": "otp-sender.ts createOtpSender (FakeInProductionError), test existant ; batterie compl\u00e8te du code int\u00e9gr\u00e9 le 16/11/2026 (pgTAP 6180 PASS, Jest 3635/3636 puis SC-007 corrig\u00e9, 45 suites / 512 verts)."
+    }
+  ]
+}

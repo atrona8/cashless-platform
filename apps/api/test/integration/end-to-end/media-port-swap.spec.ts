@@ -77,6 +77,21 @@ const MISSION_6_CONTROLLERS = [
   'apps/api/src/media/lifecycle/release.controller.ts',
 ];
 
+/**
+ * Tolérance propre à la mission 9a (lot WP06, décision 11 du porteur : guichet de retour enchaîné) pour
+ * `release.controller.ts` : jeton d'approbation sur place de `releaseMedia`, lecture de `settle_balance` et de
+ * `refund_deposit_by`, construction de l'enchaînement, retrait du refus `release.no_chaining`. Bornée sur la diff
+ * réelle (47 lignes ajoutées, 7 retirées) avec une marge étroite ; chaque ligne ajoutée substantielle doit parler
+ * de ce périmètre. Aucun décorateur d'authentification ne peut bouger (voir l'assertion dédiée).
+ */
+const MISSION_9A_RELEASE = {
+  file: 'apps/api/src/media/lifecycle/release.controller.ts',
+  maxAdded: 55,
+  maxRemoved: 10,
+  scope:
+    /^\s*(\?\s*null|:\s*\{)$|cash_?session|CashSession|\bused\b|\bdone\b|settle_?balance|refund_?deposit_?by|chain|approv|Approval|onsite|operationId|role:|optional:|scope:|cashMovement|payment|Payment|parsed|audit|AuditService|TxClient|release\.no_chaining|CASH|invalid|SUPERVISOR|requestDevice|Idempotency/i,
+};
+
 function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
 }
@@ -428,11 +443,26 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
         .filter((l) => l.startsWith('+') && !l.startsWith('+++'))
         .map((l) => l.slice(1));
       const removed = lines.filter((l) => l.startsWith('-') && !l.startsWith('---'));
-      expect([file, added.length <= 40, removed.length <= 15]).toEqual([file, true, true]);
+      const is9a = file === MISSION_9A_RELEASE.file;
+      const maxAdded = is9a ? MISSION_9A_RELEASE.maxAdded : 40;
+      const maxRemoved = is9a ? MISSION_9A_RELEASE.maxRemoved : 15;
+      expect([file, added.length <= maxAdded, removed.length <= maxRemoved]).toEqual([
+        file,
+        true,
+        true,
+      ]);
       const substantive = added.filter((l) => !/^\s*([\w{},:\s]+,|\}.*|import .*|\)?;?)$/.test(l));
-      expect(
-        substantive.filter((l) => !/^\s*\/\/|cash_?session|CashSession|\bused\b|\bdone\b/i.test(l)),
-      ).toEqual([]);
+      const allowed = is9a
+        ? new RegExp(
+            `^\\s*//|${/cash_?session|CashSession|\bused\b|\bdone\b/i.source}|${MISSION_9A_RELEASE.scope.source}`,
+            'i',
+          )
+        : /^\s*\/\/|cash_?session|CashSession|\bused\b|\bdone\b/i;
+      expect(substantive.filter((l) => !allowed.test(l))).toEqual([]);
+      // Aucun décorateur d'authentification (`@DeviceAuth`, `@CounterAuth`, `@CustomerAuth`…) ajouté ni retiré
+      // dans ces trois contrôleurs : SC-007 protège l'authentification des routes de la mission 4.
+      const authTouched = lines.filter((l) => /^[+-](?![+-])/.test(l) && /@\w*Auth\w*\b/.test(l));
+      expect([file, authTouched]).toEqual([file, []]);
     }
     const diff = git('diff', '-U0', base, '--', ALLOWED_CHANGE.file).split('\n');
     const lines = (sign: '+' | '-') =>

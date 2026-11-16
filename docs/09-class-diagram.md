@@ -13,6 +13,7 @@
 >
 > Rendu : Mermaid (aperçu Markdown de VS Code, GitHub). Aucun outil de diagramme de classes n'est prévu dans
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
+> Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Pas encore dans `main`.
 
 ## 1. Organisation, événements et identité
 
@@ -631,9 +632,26 @@ classDiagram
   Ledger "1" --> "0..1" EdgeReplicationHorizon
 ```
 
+## 4 septies. Remboursements des festivaliers (mission 9a, ✅ consolidée sur `feat/remboursements` le 16/11/2026, squash `bf0b6376` ; pas encore dans `main`)
+
+> **Recalée sur les migrations fusionnées sur `feat/remboursements`.** `0081_refund_requests.sql` : une table nouvelle (`refund_request`), deux colonnes ajoutées à `otp_challenge` (`purpose`, `subject_id`, CHECK `otp_challenge_purpose_subject`), trois fonctions (`refund_request_operator`, `promote_due_refund_requests`, garde d'insertion `refund_request_scope_guard`) ; `0082_replace_media_cash_due.sql` : `replace_media` seul (espèces dues suivent le bracelet neuf). Aucune nouvelle version de `post_transaction`. Le SQL fait foi.
+
+```mermaid
+classDiagram
+  class RefundRequest { méthode WAVE/ORANGE_MONEY/BANK_TRANSFER ; msisdn ; autre numéro ; statut ; montant estimé ; frais ; hold_until ; vérification supplémentaire ; décision du titulaire ; référence externe ; motif }
+  Wallet "1" --> "*" RefundRequest
+  CustomerIdentity "1" --> "*" RefundRequest
+  RefundRequest "0..1" --> "1" ApprovalRequest
+  RefundRequest "0..1" --> "1" Transaction : WALLET_REFUND
+  RefundRequest "0..1" --> "1" Transaction : REVERSAL de l'échec
+  RefundRequest "0..1" --> "*" OtpChallenge : défi du titulaire
+```
+
+Invariants livrés : une demande ouverte au plus par portefeuille (index unique partiel), `PAID` exige une référence, `FAILED` un motif et une contre-passation, `REJECTED` un motif ; `AWAITING_HOLDER` exige `hold_until`, `BLOCKED` exige la décision `BLOCK`, numéro mobile en E.164, demandeur différent du valideur ; isolation par prestataire (RLS) ; aucun `DELETE`.
+
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots »),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers »),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -659,6 +677,11 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 |---|---|---|
 | `app_user` | Personne du personnel connue par son fournisseur d'identité (émetteur, sujet), rattachée à un prestataire ou à la plateforme. | 0003 |
 | `role_assignment` | Rôle tenu par une personne sur une portée (plateforme, prestataire, organisateur, événement, commerçant), avec qui l'a accordé ou retiré ; rôle `PERSONALIZER` ajouté par 0011. | 0003 (+0011) |
+| `customer_identity` | Compte d'un festivalier par numéro de téléphone vérifié par code (un numéro = un compte par prestataire). | 0080 |
+| `otp_challenge` | Défi de code à usage unique : empreinte HMAC du code, canal, 5 essais au plus, expiration ; usage (`purpose`) et objet (`subject_id`) ajoutés par `0081` pour le titulaire d'un remboursement. | 0080 (+0081) |
+| `otp_phone_block` | Numéro bloqué un temps après trop d'essais faux. | 0080 |
+| `customer_refresh_token` | Jetons de renouvellement des festivaliers (empreinte, usage unique, rotation par famille, réemploi = famille révoquée). | 0080 |
+| `operator_public_code` | Code public d'un prestataire, utilisé par l'app festivalier multi-prestataires. | 0080 |
 | `kyc_verification` | Identification d'un festivalier (pièce vérifiée au guichet) : fait passer son niveau à « vérifié » tant qu'elle n'est ni expirée ni révoquée. | réf. |
 
 ### Grand livre
@@ -783,6 +806,7 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 | Table | Rôle | Origine |
 |---|---|---|
 | `approval_request` | Demande d'action à deux personnes : action et paramètres figés, auteur, décision par une autre personne, exécution (écriture ou résultat) ou échec ; actions de clé de bracelet ajoutées par 0011. | réf. (+0011) |
+| `refund_request` | Demande de remboursement d'un portefeuille : canal (Wave, Orange Money, virement), numéro, statut, montant estimé et frais, attente du titulaire (`hold_until`, décision), approbation, écriture `WALLET_REFUND` et contre-passation d'un échec, référence ou motif ; une seule demande ouverte par portefeuille ; aucun `DELETE`. | 0081 |
 | `approval_token_use` | Jetons d'approbation sur place déjà consommés (usage unique). | 0005 |
 | `anomaly` | Anomalie ouverte par un contrôle (copie de bracelet, espèces dues, écart de caisse, trou de séquence…), avec montant et écriture de résolution. | réf. |
 | `audit_log` | Journal d'audit chaîné : auteur, rôle, action, objet, avant et après, valideur, origine. | 0004 |
@@ -794,3 +818,5 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 Ce document décrit le schéma à une date donnée. À régénérer quand une migration ajoute ou modifie une table du
 domaine (prochaine : mission 9, ou le recalage de la section 4 sexies si la consolidation de la mission 8 ajoute une migration). Section 4 sexies (mission 8, passerelle) ajoutée au plan le 05/11/2026, recalée le 12/11/2026 sur `0058` à `0072` : 8 tables (`0058`, `0060`, `0061`, `0063`), 103 au total. Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
+
+Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026, recalée à la review et décrite en section 5 le 16/11/2026 après la consolidation (migrations `0081` et `0082` : 1 table, 109 au total avec les 5 tables de `0080`) ; prochaine régénération : mission 9b.

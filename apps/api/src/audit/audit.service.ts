@@ -137,7 +137,17 @@ export type AuditAction =
   | 'EDGE_AUTHORITY_GRANTED'
   | 'EDGE_AUTHORITY_RELEASE_REQUESTED'
   | 'EDGE_AUTHORITY_ABANDONED'
-  | 'EDGE_AUTHORITY_FORCED';
+  | 'EDGE_AUTHORITY_FORCED'
+  // Mission 9a (lot WP03) : décision du titulaire sur une demande de remboursement vers un autre numéro
+  | 'REFUND_HOLDER_DECIDED'
+  // Mission 9a (lot WP04) : création et refus d'une demande de remboursement
+  | 'REFUND_REQUEST_CREATED'
+  | 'REFUND_REQUEST_REJECTED'
+  // Mission 9a (lot WP05) : approbation à deux et confirmation du paiement
+  | 'REFUND_APPROVAL_REQUESTED'
+  | 'REFUND_REQUEST_PROCESSING'
+  | 'REFUND_REQUEST_PAID'
+  | 'REFUND_REQUEST_FAILED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

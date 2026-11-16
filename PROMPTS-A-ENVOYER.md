@@ -37,7 +37,8 @@ Deux principes, décidés le 29/10/2026 au lancement de la mission 7 :
 |---|---|---|---|
 | 7 | Hors ligne, côté serveur (KMS simulé) | nous | maintenant |
 | 8 | Passerelle locale | nous | après 7 |
-| 9 | Remboursements, versements et clôture | nous | après 7 |
+| 9a | Remboursements (festivalier, back-office, guichet) — découpée le 13/11/2026 | nous | en cours (16/11/2026) : WP01 à WP06 approuvés, WP07 (preuves, consignation) en relecture ; reste review, accept, merge |
+| 9b | Versements, rapprochements et clôture | nous | après la fusion de 9a |
 | 10a | Serveur de l'app festivalier (comptes par numéro, code à usage unique simulé, `/me`) | nous | après 9 |
 | 11a | Durcissements serveur hérités (back-office et terminaux) | nous | quand on veut |
 | 10c | Gestion des clients par une application cliente (décidée le 05/11/2026) | nous | après 10a |
@@ -365,12 +366,14 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission passerelle-locale-01M6NM1S
 - [ ] spec-kitty consolidate --mission passerelle-locale-01M6NM1S
 
-## Mission 9 — Remboursements, versements et clôture
+## Mission 9a — Remboursements (découpée le 13/11/2026)
 
-> **Hérité de la mission 6 (27/10/2026)** : (1) un paiement réussi chez le PSP mais non crédité n'a aucune écriture
-> (OP-N82) : le contrôle « grand livre = relevé » et le rapprochement doivent exclure les anomalies
-> `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes, ou les représenter (constat A16) ; (2) refuser le passage
-> à `RECONCILING` tant qu'une session de caisse est ouverte (constat A32).
+> **Découpage du 13/11/2026 (décision du porteur)** : la mission 9 est coupée en 9a (remboursements, attendus par
+> l'app festivalier : `POST`/`GET /me/refund-requests`, `holder-decision`, signalés en 404 par l'équipe Flutter le
+> 13/11/2026) puis 9b (versements, rapprochements, clôture). Paiement des remboursements manuel en V1 (SPECIFICATION §8.5,
+> ADR-53 ; décision du porteur du 13/11/2026 au specify) : aucun port de versement ; demande créée par le back-office
+> (virement) reportée en 9b. Le contrat `openapi.yaml` est déjà complet pour ces routes : l'implémenter tel
+> quel (consigne du 05/11/2026).
 
 > **Hérité de la mission 4 (bracelets-nfc)** : enchaînement du guichet de retour (`releaseMedia` avec `settle_balance`,
 > `refund_deposit_by`) — **servi par cette mission**, décision du porteur du 15/10/2026 (OP-N51, ADR-91 acceptée) ; le
@@ -381,13 +384,42 @@ vendeurs et le catalogue : la mission les ajoute.
 > reste au grand livre (`L-ESP-A-RENDRE`). Faire suivre les anomalies au remplacement (migration) ou servir un rendu au
 > back-office sur décision de deux personnes ; test : espèces dues d'un bracelet remplacé rendues une fois, et une seule.
 
-- [ ] /spec-kitty.specify Remboursements, versements, rapprochements et clôture d'un événement (SPECIFICATION §8.5, §11.3, §11.4, §12, §13.7, §14.2 S16 et S22, ADR-49, ADR-53, ADR-67, ADR-73, ADR-75, ADR-76). Demandes de remboursement (`refund_request` : Wave, Orange Money, virement ; approbation à deux qui écrit `WALLET_REFUND` ; confirmation ou échec avec `REVERSAL` ; autre numéro avec code au nouveau numéro, accord ou attente du numéro vérifié, vérification d'identité au-delà du seuil) ; remboursement en espèces au guichet avec jeton d'approbation au-delà du seuil ; guichet de retour dans l'ordre imposé (§7.9). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
+> **État au 16/11/2026 (WP07).** OP-N51 et OP-N55 levés par cette mission (preuves : `release-chaining.spec.ts`,
+> `tests_replace_cash_due.sql`). Dettes et limites consignées à l'issue de la 9a, que la mission qui les lève hérite
+> (propositions **à confirmer par le porteur**) : OP-N124 (code du titulaire consommé avant sa décision, ADR-192) et
+> OP-N128 (limites du guichet enchaîné, ADR-195) vers la 9b ; OP-N125 (quota de codes commun à tous les usages, alerte de
+> `BLOCK` en ligne d'audit, ADR-193) vers la 12b ; OP-N126 (une seule personne habilitée recrédite un `FAILED`, ADR-191)
+> vers la 9b (rapprochements Wave/Orange Money) ; OP-N127 clos le 16/11/2026 (décision 15, ADR-194 : FR-012 amendée, comportement strict `422 REFUND_NOT_ALLOWED`) ; OP-N129 (lien du titulaire) levé par la 9a (décision 14, `holder-link.spec.ts`). Revue post-fusion (16/11/2026) : OP-N130 (ordre des états d'une demande gardé par l'API seule, ADR-196) vers la 9b, **décidé par le porteur** : déclencheur de transition sur `refund_request`, montant et frais figés après `REQUESTED`.
+
+- [x] /spec-kitty.specify Remboursements des festivaliers (SPECIFICATION §8.5, §7.9, §14.2 S16, ADR-49, ADR-53, ADR-67, ADR-73). Demandes de remboursement (`refund_request` : Wave, Orange Money, virement) par l'app (`POST`/`GET /me/refund-requests`) et par le back-office (`GET /refund-requests`, `approve`, `confirm`, `reject` ; la création d'une demande par le back-office, virement `BANK_TRANSFER`, est reportée en 9b) ; approbation à deux qui écrit `WALLET_REFUND` ; confirmation ou échec avec `REVERSAL` ; destination vers un autre numéro avec code au nouveau numéro, décision du titulaire (`POST /refund-requests/{refund_request_id}/holder-decision`, `CONFIRM` ou `BLOCK` par code à usage unique) ou attente du numéro vérifié, vérification d'identité au-delà du seuil ; respect de `refund_deadline` et des réglages d'événement (remboursement vers un autre numéro). Remboursement en espèces au guichet avec jeton d'approbation au-delà du seuil (`cash_refund_single_max`). Guichet de retour dans l'ordre imposé (§7.9) : caution, crédits offerts, solde, restitution (`releaseMedia` avec `settle_balance`, `refund_deposit_by`). Hors périmètre (mission 9b) : versements aux parties, rapprochements, clôture, réclamations tardives, scellement, relevés.
+- [x] /spec-kitty.plan Montant remboursable = compte payé seulement (les crédits offerts ne se remboursent pas). Paiement hors système, confirmé au back-office (`confirmRefundRequest`). Les droits de base suivent `post-roles.sql` (un rôle par processus) ; aucune route nouvelle hors du contrat.
+- [x] /spec-kitty.tasks
+- [x] spec-kitty next --agent claude --mission remboursements (implémentation : WP01 à WP06 approuvés le 16/11/2026, WP07 en relecture)
+- [ ] /spec-kitty.review --mission remboursements
+- [ ] /spec-kitty.accept --mission remboursements
+- [ ] spec-kitty merge --mission remboursements
+
+## Mission 9b — Versements, rapprochements et clôture
+
+> **Hérité de la mission 6 (27/10/2026)** : (1) un paiement réussi chez le PSP mais non crédité n'a aucune écriture
+> (OP-N82) : le contrôle « grand livre = relevé » et le rapprochement doivent exclure les anomalies
+> `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes, ou les représenter (constat A16) ; (2) refuser le passage
+> à `RECONCILING` tant qu'une session de caisse est ouverte (constat A32).
+
+> **Hérité de la mission 9a (16/11/2026)** : (1) **OP-N123** : demande de remboursement créée par le back-office
+> (`BANK_TRANSFER`, IBAN) ; la 9a répond `422 REFUND_NOT_ALLOWED` à `BANK_TRANSFER` à la création ; test de levée
+> inchangé. (2) **Réclamations tardives de `WALLET_REFUND`** (R-03, « hors périmètre » de la 9a). (3) **OP-N126** (ADR-191) :
+> une seule personne habilitée recrédite un `FAILED` ; levée par les rapprochements avec les relevés Wave et Orange Money
+> (ou un second valideur au contrat). (4) **`requested_by`** jamais écrit en 9a : à rouvrir. (5) Propositions, **à confirmer
+> par le porteur** : OP-N124 (ADR-192) et OP-N128 (ADR-195). OP-N125 (ADR-193) est proposé à la 12b.
+
+- [ ] /spec-kitty.specify Versements, rapprochements et clôture d'un événement, plus la demande de remboursement créée par le back-office (virement `BANK_TRANSFER` avec IBAN, opération à ajouter au contrat, reportée de la 9a le 13/11/2026) (SPECIFICATION §11.3, §11.4, §12, §13.7, §14.2 S22, ADR-75, ADR-76 ; les remboursements des festivaliers sont livrés par la mission 9a). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock (faux jusqu'à la 12b) et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
 - [ ] /spec-kitty.plan Ordre de clôture de référence du scénario (§12.1). Les tâches d'exploitation (scellement, exports) utilisent un rôle distinct qui n'écrit pas au grand livre. Correspondance SYSCOHADA indicative, à faire valider (OP-N3) : configurable, jamais codée en dur. Copie des scellements sous un compte AWS distinct. Scellement : la tâche planifiée et la copie hors de la base (S3 Object Lock, compte distinct) couvrent aussi les scellements du journal d'audit (`audit_seal`, fonctions de scellement et de vérification livrées par la mission 2), avec vérification quotidienne de leur chaîne.
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission remboursements-versements-cloture
-- [ ] /spec-kitty.review --mission remboursements-versements-cloture
-- [ ] /spec-kitty.accept --mission remboursements-versements-cloture
-- [ ] spec-kitty merge --mission remboursements-versements-cloture
+- [ ] spec-kitty next --agent claude --mission versements-rapprochements-cloture
+- [ ] /spec-kitty.review --mission versements-rapprochements-cloture
+- [ ] /spec-kitty.accept --mission versements-rapprochements-cloture
+- [ ] spec-kitty merge --mission versements-rapprochements-cloture
 
 ## Mission 10a — Serveur de l'app festivalier
 

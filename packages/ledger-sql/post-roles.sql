@@ -1037,7 +1037,8 @@ GRANT EXECUTE ON FUNCTION
   edge_gateways_awaiting_pack(integer), edge_media_to_pack(uuid, integer)
   TO cashless_tagkeys;
 GRANT EXECUTE ON FUNCTION mark_edge_gateways_silent(interval), edge_stuck_handovers(interval),
-  edge_log_release_stuck(uuid)  -- 0065, décision 37 (ADR-173)
+  edge_log_release_stuck(uuid),  -- 0065, décision 37 (ADR-173)
+  promote_due_refund_requests()  -- 0081, mission 9a (promotion des demandes de remboursement échues)
   TO cashless_maint;
 -- 10. Authentification des festivaliers par code à usage unique (migration 0080 ; hors Spec Kitty, porteur, 10/11/2026).
 -- roles.sql vient de rendre SELECT, INSERT et UPDATE sur toutes les tables à cashless_app : on retire ce qui n'est pas
@@ -1061,3 +1062,20 @@ REVOKE EXECUTE ON FUNCTION operator_by_public_code(text), otp_challenge_operator
   customer_refresh_operator(bytea) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION operator_by_public_code(text), otp_challenge_operator(uuid),
   customer_refresh_operator(bytea) TO cashless_app;
+
+-- 11. Demandes de remboursement (migration 0081 ; mission 9a, lot WP01). roles.sql a rendu SELECT, INSERT et UPDATE
+-- sur toutes les tables et EXECUTE sur toutes les fonctions à cashless_app : on retire ce qui n'est pas nécessaire.
+--   Demandes : création et lecture ; l'UPDATE se borne aux colonnes de transition. Jamais l'identité de la demande
+--   (id, prestataire, grand livre, événement, portefeuille, festivalier, demandeur, canal, numéro, IBAN, devise,
+--   échéance, contrôle renforcé, création). Aucun DELETE ni TRUNCATE. Aucun droit pour les autres rôles cashless_*.
+REVOKE ALL ON refund_request FROM cashless_app;
+GRANT SELECT, INSERT ON refund_request TO cashless_app;
+GRANT UPDATE (status, updated_at, holder_decision, holder_decided_at, approval_request_id, approved_by,
+  transaction_id, external_reference, failure_reason, reject_reason, reversal_transaction_id, confirmed_by,
+  confirmed_at, estimated_amount, fee) ON refund_request TO cashless_app;
+--   Fonctions : cashless_app seul (route publique du titulaire, promotion à la lecture) ; cashless_maint n'obtient que
+--   la promotion (section 9f). La fonction de déclencheur n'est appelable par personne.
+REVOKE EXECUTE ON FUNCTION refund_request_operator(uuid), promote_due_refund_requests(),
+  refund_request_scope_guard() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION refund_request_operator(uuid), promote_due_refund_requests() TO cashless_app;
+REVOKE EXECUTE ON FUNCTION refund_request_scope_guard() FROM cashless_app;

@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "mission_slug": "remboursements-01M7AG5V",
+  "mission_id": "01M7AG5VMS4GNWVA9DH2JQ0E05",
+  "mission_branch": "kitty/mission-remboursements-01M7AG5V",
+  "target_branch": "feat/remboursements",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0081_refund_requests.sql",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql",
+        "packages/ledger-sql/tests/tests_offline_rights.sql",
+        "packages/ledger-sql/tests/tests_refund_requests.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "apps/api/src/ledger/ledger-engine.service.ts",
+        "apps/api/src/ledger/status-matrix.ts",
+        "apps/api/test/integration/ledger/refund-reversal-matrix.spec.ts",
+        "apps/api/test/unit/ledger/status-matrix*.spec.ts",
+        "packages/ledger-sql/migrations/0082_replace_media_cash_due.sql",
+        "packages/ledger-sql/tests/tests_replace_cash_due.sql"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "apps/api/src/customer-auth/customer-auth.module.ts",
+        "apps/api/src/customer-auth/customer-auth.service.ts",
+        "apps/api/src/processes/maintenance*",
+        "apps/api/src/refunds/destination.ts",
+        "apps/api/src/refunds/holder-challenge.service.ts",
+        "apps/api/src/refunds/holder-decision.controller.ts",
+        "apps/api/src/refunds/refunds-holder.module.ts",
+        "apps/api/test/integration/customer-auth/verify-challenge.spec.ts",
+        "apps/api/test/integration/refunds/holder*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/media/lifecycle/lifecycle.dto.ts",
+        "apps/api/src/media/lifecycle/release.controller.ts",
+        "apps/api/src/media/lifecycle/release.service.ts",
+        "apps/api/src/media/lifecycle/return.module.ts",
+        "apps/api/test/integration/media/cash-due-after-replace.spec.ts",
+        "apps/api/test/integration/media/release-chaining*.spec.ts",
+        "apps/api/test/integration/media/release.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "apps/api/src/app.module.ts",
+        "apps/api/src/customer-app/me.service.ts",
+        "apps/api/src/refunds/my-refund-requests.controller.ts",
+        "apps/api/src/refunds/refund-eligibility.ts",
+        "apps/api/src/refunds/refund-requests.controller.ts",
+        "apps/api/src/refunds/refund-requests.dto.ts",
+        "apps/api/src/refunds/refund-requests.service.ts",
+        "apps/api/src/refunds/refunds.module.ts",
+        "apps/api/test/integration/customer-app/me-refund.spec.ts",
+        "apps/api/test/integration/refunds/create*.spec.ts",
+        "apps/api/test/integration/refunds/list*.spec.ts",
+        "apps/api/test/integration/refunds/reject*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/debit-authority/debit-paths.ts",
+        "apps/api/src/ledger/builders/festival/refund.ts",
+        "apps/api/src/refunds/refund-approve.controller.ts",
+        "apps/api/src/refunds/refund-confirm.service.ts",
+        "apps/api/src/refunds/wallet-refund-action.ts",
+        "apps/api/test/integration/debit-authority/debit-cases.ts",
+        "apps/api/test/integration/debit-authority/debit-paths-refused.spec.ts",
+        "apps/api/test/integration/refunds/approve*.spec.ts",
+        "apps/api/test/integration/refunds/confirm*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "apps/api/test/integration/refunds/concurrency*.spec.ts",
+        "apps/api/test/integration/refunds/journey*.spec.ts",
+        "apps/api/test/integration/refunds/refund-latency.spec.ts",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md",
+        "tools/export/files/REPONSE-ENDPOINTS-FESTIVALIER.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-13T14:45:34.162875+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "3e26b2a8d4d66d764ecf302b3e56e75fbfe8812b"
+}

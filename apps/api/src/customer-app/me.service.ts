@@ -5,12 +5,14 @@
 // Limites connues jusqu'à la mission 10a (comptes par numéro) et la mission 9 (remboursements) :
 //   - `phone` : numéro de `customer_identity` ; chaîne vide pour un compte sans numéro vérifié (comptes de démo
 //     anciens, créés avant l'authentification par code) ;
-//   - `refund.eligible` : toujours faux (aucun remboursement servi) ; `deadline` = `event.refund_deadline` ;
+//   - `refund` : éligibilité, date limite EFFECTIVE et frais de `evaluateRefundEligibility` (mission 9a, WP04), la
+//     même règle que la création de la demande ; règle de frais absente : `eligible: false` ;
 //   - `pending_offline_notice` : absent (facultatif au contrat).
 import { Injectable } from '@nestjs/common';
 import type { CustomerContext } from '../customer-identity/customer-identity.port';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
+import { evaluateRefundEligibility, type RefundEligibility } from '../refunds/refund-eligibility';
 
 export const KYC_VERIFIED_SQL = `EXISTS (
   SELECT 1 FROM kyc_verification k
@@ -95,14 +97,13 @@ export class MeService {
         event_id: string;
         event_name: string;
         event_status: string;
-        refund_deadline: Date | null;
         paid: string;
         promo: string;
         verified: boolean;
         as_of: Date;
       }>(
         `SELECT w.id AS wallet_id, w.status, l.currency, e.id AS event_id, e.name AS event_name,
-                e.status::text AS event_status, e.refund_deadline,
+                e.status::text AS event_status,
                 coalesce((SELECT -sum(b.balance) FROM account a JOIN account_balance b ON b.account_id = a.id
                            WHERE a.wallet_id = w.id AND a.purpose = 'WALLET_PAID'), 0)::text AS paid,
                 coalesce((SELECT -sum(b.balance) FROM account a JOIN account_balance b ON b.account_id = a.id
@@ -117,8 +118,20 @@ export class MeService {
         [customer.customerId],
       );
       const media = await this.mediaRows(client, customer);
+      // Une seule fonction d'éligibilité, appelée à l'horloge de la base ; une règle de frais absente ne fait pas
+      // échouer la liste : ce portefeuille n'est simplement pas remboursable.
+      const refunds = new Map<string, RefundEligibility | null>();
+      for (const w of rows) {
+        try {
+          refunds.set(w.wallet_id, await evaluateRefundEligibility(client, w.wallet_id, w.as_of));
+        } catch (error) {
+          if (!(error instanceof ProblemException)) throw error;
+          refunds.set(w.wallet_id, null);
+        }
+      }
       return {
         data: rows.map((w) => {
+          const refund = refunds.get(w.wallet_id) ?? null;
           const paid = Number(w.paid);
           const promo = Number(w.promo);
           return {
@@ -131,8 +144,9 @@ export class MeService {
             balance_as_of: w.as_of.toISOString(),
             media: media.filter((m) => m.wallet_id === w.wallet_id),
             refund: {
-              eligible: false,
-              deadline: w.refund_deadline ? w.refund_deadline.toISOString() : null,
+              eligible: refund?.eligible ?? false,
+              deadline: refund?.deadline ?? null,
+              ...(refund?.eligible ? { fee: Number(refund.fee) } : {}),
             },
           };
         }),
