@@ -66,19 +66,19 @@ describe('verifyChallenge / issueChallenge', () => {
   const invalid = { code: 'OTP_INVALID', status: 422 };
 
   it('bon code : consommé, aucun jeton, aucun compte créé', async () => {
-    const before = await rows<{ n: number }>(
-      `SELECT (SELECT count(*) FROM customer_identity)::int AS n,
-              (SELECT count(*) FROM customer_refresh_token)::int AS t,
-              (SELECT count(*) FROM party)::int AS p`,
-    );
+    // Comptes limités au prestataire du test : les suites parallèles en créent pour les leurs (CI).
+    const counts = () =>
+      rows<{ n: number }>(
+        `SELECT (SELECT count(*) FROM customer_identity WHERE operator_id = $1)::int AS n,
+                (SELECT count(*) FROM customer_refresh_token WHERE operator_id = $1)::int AS t,
+                (SELECT count(*) FROM party WHERE operator_id = $1)::int AS p`,
+        [w.ops.a],
+      );
+    const before = await counts();
     const c = await login();
     await expect(verifyLogin(c)).resolves.toBeUndefined();
     expect((await state(c.id)).consumed_at).not.toBeNull();
-    const after = await rows<{ n: number }>(
-      `SELECT (SELECT count(*) FROM customer_identity)::int AS n,
-              (SELECT count(*) FROM customer_refresh_token)::int AS t,
-              (SELECT count(*) FROM party)::int AS p`,
-    );
+    const after = await counts();
     expect(after).toEqual(before);
     await expect(verifyLogin(c)).rejects.toMatchObject(invalid); // rejeu
   });
