@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-16T11:50:09.803244+00:00",
+      "accepted_by": "xaamga",
+      "accepted_from_commit": "47e2c66cab2a66c693b4fd8a81454b4d7bd332fa"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-16T11:50:09.803244+00:00",
+  "accepted_by": "xaamga",
+  "accepted_from_commit": "47e2c66cab2a66c693b4fd8a81454b4d7bd332fa",
   "coordination_branch": "kitty/mission-remboursements-01M7AG5V",
   "created_at": "2026-11-13T13:05:01.682249+00:00",
   "flattened": false,
