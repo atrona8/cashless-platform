@@ -1,0 +1,128 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-16T18:33:56.421068Z",
+      "decision_id": "01M7JT68Y47JAZMJ2CQ1RZ36ZW",
+      "final_answer": "Import CSV par le back-office, rapprochement automatique par r\u00e9f\u00e9rence puis manuel",
+      "input_key": "statement_import",
+      "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+      "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+      "opened_by": "cli",
+      "options": [
+        "Import CSV par le back-office, rapprochement automatique par r\u00e9f\u00e9rence puis manuel",
+        "Saisie manuelle ligne \u00e0 ligne",
+        "Lecture automatique chez les prestataires",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Comment les relev\u00e9s externes (Wave, Orange Money, banque, PSP) entrent-ils dans le syst\u00e8me ?",
+      "rationale": null,
+      "resolved_at": "2026-11-16T18:38:43.883106Z",
+      "resolved_by": null,
+      "slot_key": "specify.reconciliation.import",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-16T18:34:06.639694Z",
+      "decision_id": "01M7JT6JXFEN8274D5JQCNMFV3",
+      "final_answer": "Un administrateur pr\u00e9pare, un second administrateur distinct valide par le circuit \u00e0 deux existant",
+      "input_key": "payout_approval",
+      "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+      "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+      "opened_by": "cli",
+      "options": [
+        "Un administrateur pr\u00e9pare, un second administrateur distinct valide par le circuit \u00e0 deux existant",
+        "OPERATOR_ADMIN seul pr\u00e9pare et valide \u00e0 deux",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Qui pr\u00e9pare et qui valide un lot de versements ?",
+      "rationale": null,
+      "resolved_at": "2026-11-16T18:38:51.433194Z",
+      "resolved_by": null,
+      "slot_key": "specify.payouts.approval",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-16T18:34:15.188838Z",
+      "decision_id": "01M7JT6V8MKD80GADDMA61NS8X",
+      "final_answer": "Une action du back-office par \u00e9tape, avec aper\u00e7u calcul\u00e9 puis ex\u00e9cution",
+      "input_key": "closing_fee_steps",
+      "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+      "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+      "opened_by": "cli",
+      "options": [
+        "Une action du back-office par \u00e9tape, avec aper\u00e7u calcul\u00e9 puis ex\u00e9cution",
+        "Automatiquement au changement de statut",
+        "Chaque \u00e9tape valid\u00e9e \u00e0 deux",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Comment les \u00e9critures de cl\u00f4ture (droits de place, frais, redevance, casse, cautions acquises, cr\u00e9dits offerts) sont-elles d\u00e9clench\u00e9es ?",
+      "rationale": null,
+      "resolved_at": "2026-11-16T18:38:58.970175Z",
+      "resolved_by": null,
+      "slot_key": "specify.closing.fee_steps",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-16T18:34:23.663333Z",
+      "decision_id": "01M7JT73HFWT9BEHWG1DCYFEZ2",
+      "final_answer": "Faux refus\u00e9 en production, dette consign\u00e9e, lev\u00e9e en 12b",
+      "input_key": "external_seal_copy",
+      "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+      "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+      "opened_by": "cli",
+      "options": [
+        "Faux refus\u00e9 en production, dette consign\u00e9e, lev\u00e9e en 12b",
+        "Vrai stockage d\u00e8s la 9b",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "La copie externe des scellements (S3 Object Lock) peut-elle rester un faux jusqu \u00e0 la 12b ?",
+      "rationale": null,
+      "resolved_at": "2026-11-16T18:39:06.481062Z",
+      "resolved_by": null,
+      "slot_key": "specify.sealing.external",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-16T18:34:32.407703Z",
+      "decision_id": "01M7JT7C2QY4XNZK8KFAZ4P2VV",
+      "final_answer": "Donn\u00e9es par l'API et export CSV ; mise en page PDF plus tard",
+      "input_key": "statements_format",
+      "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+      "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+      "opened_by": "cli",
+      "options": [
+        "Donn\u00e9es par l API et export CSV ; mise en page PDF plus tard",
+        "PDF d\u00e8s la 9b",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Sous quelle forme livrer relev\u00e9s et export comptable ?",
+      "rationale": null,
+      "resolved_at": "2026-11-16T18:40:21.534952Z",
+      "resolved_by": null,
+      "slot_key": "specify.statements.format",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+  "version": 1
+}
