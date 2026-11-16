@@ -48,7 +48,7 @@
 ```mermaid
 stateDiagram-v2
   [*] --> AWAITING_HOLDER: autre numéro, titulaire vérifié
-  [*] --> REQUESTED: numéro vérifié, ou autre numéro sans titulaire
+  [*] --> REQUESTED: numéro vérifié du festivalier (amendement du 16/11, C-001)
   AWAITING_HOLDER --> REQUESTED: CONFIRM du titulaire, ou hold_until atteint
   AWAITING_HOLDER --> BLOCKED: BLOCK du titulaire (avant hold_until)
   REQUESTED --> PROCESSING: approbation exécutée (WALLET_REFUND)
