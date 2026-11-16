@@ -164,7 +164,7 @@ Aucun `catch` qui rend une valeur vide dans `apps/api/src/refunds/`, `release.se
 | OP-N126 un seul recrédit d'un `FAILED` | ADR-191, test de limite | 9b (rapprochements) |
 | OP-N128 guichet : `approved_by` nul sur la caution seule, cumul lu sous le verrou du bracelet | ADR-195 (Proposée), test de limite | 9b proposée, à confirmer |
 | OP-N123 demande du back-office hors contrat | existant | 9b |
-| **Transitions d'état gardées par l'API seule** | **aucune** | **RISK-1, à consigner** |
+| OP-N130 ordre des états d'une demande gardé par l'API seule | ADR-196, test de limite (`tests_refund_requests.sql`) | 9b (décision du porteur du 16/11/2026) |
 
 Levés par la mission : OP-N55 (espèces dues du bracelet remplacé), OP-N129 (lien du titulaire) ; OP-N127 clos.
 
@@ -185,7 +185,7 @@ Levés par la mission : OP-N55 (espèces dues du bracelet remplacé), OP-N129 (l
 
 ## Final Verdict
 
-**PASS WITH NOTES**, sous réserve de RISK-1.
+**PASS WITH NOTES**. RISK-1 consigné après la revue (décision du porteur du 16/11/2026 : OP-N130, ADR-196, levée en 9b).
 
 ### Verdict rationale
 

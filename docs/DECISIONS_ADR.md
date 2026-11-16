@@ -138,6 +138,7 @@ Ce document explique **pourquoi** la spécification est ce qu'elle est. Une fich
 | ADR-193 | Mission 9a : quota de codes par numéro commun à tous les usages, alerte de `BLOCK` réduite à une ligne d'audit (OP-N125) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée à confirmer par le porteur |
 | ADR-194 | Mission 9a : contradiction C-001, FR-012 « sans titulaire vérifié » inatteignable par `/me` (OP-N127) | Acceptée (décision du porteur du 16/11/2026) ; OP-N127 clos |
 | ADR-195 | Mission 9a : limites relevées en relecture du guichet enchaîné (OP-N128) | Proposée : à confirmer par le porteur |
+| ADR-196 | Mission 9a : ordre des états d'une demande de remboursement gardé par l'API seule (OP-N130) | Acceptée (décision du porteur du 16/11/2026) ; ouvert, levée : mission 9b |
 
 ---
 
@@ -2919,3 +2920,15 @@ Relevées en relecture de WP06 (16/11/2026) ; **non soumises au porteur avant ce
 - **Mission qui le lève.** Proposition : mission 9b ; à confirmer par le porteur. **Condition de levée.** `approved_by`
   porté par l'écriture ; cumul relu sous verrou du portefeuille.
 - **Références.** OP-N128 ; ADR-190.
+
+## ADR-196 — Mission 9a : ordre des états d'une demande de remboursement gardé par l'API seule (OP-N130)
+
+Relevé par la revue post-fusion de la mission 9a (16/11/2026, `kitty-specs/remboursements-01M7AG5V/mission-review-report.md`, RISK-1).
+
+- **Statut** : Acceptée (décision du porteur du 16/11/2026 : consigner, lever en 9b).
+- **Contexte.** La base garde la cohérence de chaque ligne de `refund_request` mais pas les transitions ; `cashless_app` peut modifier les colonnes de transition (`post-roles.sql` § 11). Limite prévue au plan de WP01, non consignée avant la revue.
+- **Décision.** Garder le code livré (l'API ordonne les états, vérifié par les parcours et la concurrence) ; consigner la limite ; ajouter le déclencheur de transition en 9b.
+- **Risque.** Une demande ramenée à `REQUESTED` par un défaut ou un accès au rôle peut être approuvée une seconde fois, dans la limite du solde payé restant.
+- **Test de la limite.** `tests_refund_requests.sql` : liste exacte des colonnes modifiables par `cashless_app`.
+- **Mission qui le lève.** Mission 9b. **Condition de levée.** Déclencheur de transition en base conforme au graphe de `data-model.md`, montant et frais figés après `REQUESTED`, test pgTAP de chaque transition interdite.
+- **Références.** OP-N130 ; C-006 ; ADR-189.

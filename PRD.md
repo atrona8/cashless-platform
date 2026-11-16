@@ -389,7 +389,8 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 9a, suite (16/11/2026) : OP-N51 et OP-N55 levés ; reste pour la 9b : OP-N123 (création par le back-office,
   `BANK_TRANSFER`), OP-N126 (rapprochements avec les relevés Wave et Orange Money pour borner le recrédit par une seule
   personne), réclamations tardives de `WALLET_REFUND`, et, **à confirmer par le porteur**, OP-N124 et OP-N128 ; OP-N125
-  proposé à la 12b ; OP-N127 clos (décision 15 du 16/11/2026, FR-012 amendée) et OP-N129 levé (décision 14) ;
+  proposé à la 12b ; OP-N127 clos (décision 15 du 16/11/2026, FR-012 amendée) et OP-N129 levé (décision 14) ; OP-N130 (ordre des états
+  d'une demande gardé par l'API seule, ADR-196 : déclencheur de transition en base) en 9b, décidé par le porteur le 16/11/2026 ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
