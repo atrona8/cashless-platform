@@ -2,10 +2,9 @@
   "event_count": 77,
   "last_event_id": "01M7J3S8VZQVNB3G3R1QSV7YAZ",
   "materialized_at": "2026-11-16T12:02:21.695918+00:00",
-  "mission_number": "4",
+  "mission_number": "",
   "mission_slug": "remboursements-01M7AG5V",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,254 +20,120 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3RQDZD4BJETMDDTM7T8F9",
       "last_transition_at": "2026-11-16T12:02:03.839293+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Base 0081 : refund_request (CHECK, index refund_request_one_open, RLS, garde d'insertion), otp_challenge.purpose/subject_id, 2 fonctions, post-roles s.11, tests_refund_requests (88) ; batterie pgTAP 6141 verts",
-        "Relu et rejoué sur cashless_wp01 : tests_refund_requests (88), execute_grants (100), offline_rights (211), definer_trigger_writers (25), definer_search_path (14), customer_auth (25) verts. RLS, garde d'insertion, droits par colonne, EXECUTE, CHECK conformes. Mineurs : transaction_id/approval_request_id/reversal_transaction_id sans garde de prestataire à la mise à jour (colonnes de transition, API à vérifier) ; aucune transition gardée par la base (limite connue)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP01-base-demandes/review-cycle-1.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP01-base-demandes/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 58574,
-      "shell_pid_created_at": "1794582151.312533",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done",
-        "T006": "done"
-      }
+      "shell_pid": 52354,
+      "shell_pid_created_at": "1794581496.95267"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3RTCQ5GCS5VAX1SHFK61W",
       "last_transition_at": "2026-11-16T12:02:06.871774+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP02 prete : REVERSAL d'un WALLET_REFUND BACKOFFICE delegue a WALLET_REFUND dans status-matrix.ts + checkStatus (reversesType lu par le moteur), post_transaction/0060 non touches ; 0082 replace_media reattribue les especes dues OPEN ; tests unitaire (matrice), integration (11) et pgTAP (39) verts",
-        "Relecture WP02 : approuve. Delegation unique a WALLET_REFUND, diff 0082 limite au search_path et a l'UPDATE anomaly, tests relances OK (pgTAP 138, Jest 246)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP02-garde-reversal-especes-dues/review-cycle-1.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP02-garde-reversal-especes-dues/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 58818,
-      "shell_pid_created_at": "1794582177.199149",
-      "subtasks": {
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done"
-      }
+      "shell_pid": 52354,
+      "shell_pid_created_at": "1794581496.95267"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3RX8YWDFQ1W9E11XKQXGE",
       "last_transition_at": "2026-11-16T12:02:09.822479+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Ready for review: verifyChallenge/issueChallenge, resolveDestination, route holder-decision, promotion maintenance",
-        "Relecture WP03 : 101 tests verts sur cashless_wp03, tsc et Prettier propres; liaison usage/sujet/numero/prestataire verifiee avant comparaison, exchangeIn impose LOGIN, reponses 422 identiques, ordre de la route respecte.",
-        "Rouvert : décision 14 du porteur (lien du titulaire, OP-N129)",
-        "Cycle 2: lien du titulaire (OtpSender link, faux en memoire)",
-        "Cycle 2 : lien du titulaire a l'envoyeur, 104 tests verts, typecheck propre, contrat inchange"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP03-codes-titulaire-destination/review-cycle-1.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP03-codes-titulaire-destination/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 42678,
-      "shell_pid_created_at": "1794827545.048432",
-      "subtasks": {
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done",
-        "T017": "done"
-      }
+      "shell_pid": 40804,
+      "shell_pid_created_at": "1794827360.225503"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3S320E684SPF8AWNKP9SF",
       "last_transition_at": "2026-11-16T12:02:15.744451+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Création, éligibilité, listes, refus, /me/wallets ; 30 tests verts sur cashless_wp04",
-        "Relecture WP04 : 48 tests verts sur cashless_wp04, typecheck et Prettier propres, contrat inchange; ecarts 1 a 7 verifies (voir compte rendu)"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP04-creation-listes-refus/review-cycle-1.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP04-creation-listes-refus/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 21518,
-      "shell_pid_created_at": "1794824099.806309",
-      "subtasks": {
-        "T018": "done",
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done",
-        "T024": "done"
-      }
+      "shell_pid": 12834,
+      "shell_pid_created_at": "1794823174.023547"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3S5YYPXNEJJ9CTGD7BVE1",
       "last_transition_at": "2026-11-16T12:02:18.718646+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Ready for review: approbation à deux WALLET_REFUND, confirmation PAID/FAILED, debit-paths reclassé",
-        "Review passed: 22 suites/290 tests sur cashless_wp05, typecheck et Prettier OK. Mineurs: pas de test compte PSP absent ni charge utile alteree; CL001 compte absent affiche un message d'evenement; confirm FAILED par une seule personne (valideur nominal, prevu par interfaces.md).",
-        "Renvoyé : décision 13 du porteur (FAILED refusé au proposant et à l'exécutant) ; fond approuvé 22/290",
-        "Cycle 2 : FAILED refusé au proposant et à l'exécutant (décision 13)",
-        "Review cycle 2 passed: 22 suites/292 tests sur cashless_wp05, typecheck et Prettier OK. Decision 13 appliquee, compte PSP absent teste."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "review-cycle://remboursements-01M7AG5V/WP05-approbation-confirmation/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
-      "subtasks": {
-        "T025": "done",
-        "T026": "done",
-        "T027": "done",
-        "T028": "done",
-        "T029": "done",
-        "T030": "done"
-      }
+      "shell_pid": 29698,
+      "shell_pid_created_at": "1794825690.770291"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3S03R9W7C6Z2TX42TQK1E",
       "last_transition_at": "2026-11-16T12:02:12.728560+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Guichet de retour enchaine: settle_balance/refund_deposit_by, jeton releaseMedia, tests release-chaining + cash-due-after-replace verts sur cashless_wp06",
-        "Renvoyé : seuil sur le cumul des espèces sorties (décision du porteur du 16/11) ; fond approuvé 38/38",
-        "Cycle 2: seuil sur le cumul des especes sorties, champ mort retire, test autre devise, debit-paths-refused execute",
-        "Review cycle 2 passed: 6 suites 55/55 sur cashless_wp06, typecheck et Prettier OK. Mineur: caution seule au-dessus du seuil avec jeton : approbateur consigne seulement a l'audit du jeton, DEPOSIT_REFUNDED sans approved_by (aucun test de succes).",
-        "Rouvert : borne SC-007 (media-port-swap.spec.ts) à ajuster pour release.controller.ts, batterie du 16/11",
-        "Cycle 3: tolerance 9a SC-007, mutation prouvee",
-        "Cycle 3: media-port-swap 19/19, typecheck OK, mutation CounterAuth detectee. Mineur: retrait de @RequiresOnsiteApproval non detecte par ce test (couvert par release-chaining)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP06-guichet-retour/review-cycle-2.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP06-guichet-retour/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 53695,
-      "shell_pid_created_at": "1794829473.859956",
-      "subtasks": {
-        "T031": "done",
-        "T032": "done",
-        "T033": "done",
-        "T034": "done",
-        "T035": "done"
-      }
+      "shell_pid": 51344,
+      "shell_pid_created_at": "1794829311.999981"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7J3S8VZQVNB3G3R1QSV7YAZ",
       "last_transition_at": "2026-11-16T12:02:21.695918+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Preuves (journey, limites, concurrence, latence), ADR-189 a 195, OP-N124 a N129, N51/N55 leves, matrice proposee (FR-012 en echec : C-001)",
-        "Cycle 2 : lien du titulaire (OP-N129 leve), C-001 clos (ADR-194), test sans fuite du code",
-        "Cycle 2 : 170 tests verts, latence p95 475/82/154 ms, ADR-194 et OP-N127/N129 coherents"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursements-01M7AG5V-coord/kitty-specs/remboursements-01M7AG5V/tasks/WP07-preuves-consignation/review-cycle-2.md",
         "reference": "review-cycle://remboursements-01M7AG5V/WP07-preuves-consignation/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 45917,
-      "shell_pid_created_at": "1794827953.118728",
-      "subtasks": {
-        "T036": "done",
-        "T037": "done",
-        "T038": "done",
-        "T039": "done",
-        "T040": "done",
-        "T041": "done"
-      }
+      "shell_pid": 43685,
+      "shell_pid_created_at": "1794827689.084487"
     }
   }
 }
