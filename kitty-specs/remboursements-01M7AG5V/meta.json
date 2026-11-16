@@ -1,6 +1,8 @@
 {
+  "accept_commit": "8cd5ae975c99204392366cb1241d8ca5c9d3f659",
   "acceptance_history": [
     {
+      "accept_commit": "8cd5ae975c99204392366cb1241d8ca5c9d3f659",
       "acceptance_mode": "pr",
       "accepted_at": "2026-11-16T11:50:09.803244+00:00",
       "accepted_by": "xaamga",
