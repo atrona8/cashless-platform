@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/remboursements
 merge_target_branch: feat/remboursements
 branch_strategy: Planning artifacts for this mission were generated on feat/remboursements. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/remboursements unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursements-01M7AG5V
+base_commit: 49c129f8fc50cdd387fdc75cb8eafadbba05a4ce
+created_at: '2026-11-16T09:45:56.036965+00:00'
 subtasks: [T012, T013, T014, T015, T016, T017]
 phase: Phase 2 - Parcours festivalier
 agent: claude
@@ -18,12 +21,12 @@ history:
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
-role: implementer
-model: sonnet
-execution_mode: code_change
 authoritative_surface: apps/api/src/refunds/
-owned_files: [apps/api/src/customer-auth/customer-auth.service.ts, apps/api/src/refunds/destination.ts, apps/api/src/refunds/holder-challenge.service.ts, apps/api/src/refunds/holder-decision.controller.ts, apps/api/src/processes/maintenance*, apps/api/test/integration/refunds/holder*.spec.ts, apps/api/test/integration/customer-auth/verify-challenge.spec.ts, apps/api/src/customer-auth/customer-auth.module.ts, apps/api/src/refunds/refunds-holder.module.ts]
 create_intent: [apps/api/src/refunds/destination.ts, apps/api/src/refunds/holder-challenge.service.ts, apps/api/src/refunds/holder-decision.controller.ts, apps/api/src/refunds/refunds-holder.module.ts, apps/api/src/processes/maintenance-refund-promotion.ts, apps/api/test/integration/refunds/holder-challenge.spec.ts, apps/api/test/integration/refunds/holder-decision.spec.ts, apps/api/test/integration/refunds/holder-promotion.spec.ts, apps/api/test/integration/customer-auth/verify-challenge.spec.ts]
+execution_mode: code_change
+model: sonnet
+owned_files: [apps/api/src/customer-auth/customer-auth.service.ts, apps/api/src/refunds/destination.ts, apps/api/src/refunds/holder-challenge.service.ts, apps/api/src/refunds/holder-decision.controller.ts, apps/api/src/processes/maintenance*, apps/api/test/integration/refunds/holder*.spec.ts, apps/api/test/integration/customer-auth/verify-challenge.spec.ts, apps/api/src/customer-auth/customer-auth.module.ts, apps/api/src/refunds/refunds-holder.module.ts]
+role: implementer
 tags: []
 tracker_refs: []
 ---
