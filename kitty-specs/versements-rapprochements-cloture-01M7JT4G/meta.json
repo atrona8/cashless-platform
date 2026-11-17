@@ -26,6 +26,7 @@
   "purpose_context": "Mission 9b, suite de la 9a (remboursements) : versements manuels aux parties validés à deux, rapprochement avec les relevés externes, clôture ordonnée d'un événement (droits de place, frais, redevance, casse, cautions acquises, crédits offerts expirés), réclamations tardives, scellement externe, contrôles permanents, relevés et export comptable, demande de remboursement créée par le back-office. Lève aussi les dettes héritées de la 9a (OP-N123, N124, N126, N128, N130). Décisions du porteur du 17/11/2026 : mission entière, ajouts au contrat listés au plan.",
   "purpose_tldr": "Verser à chaque partie ce qui lui revient, rapprocher le grand livre des relevés et clore un événement proprement.",
   "slug": "versements-rapprochements-cloture-01M7JT4G",
+  "status_phase": "1",
   "target_branch": "feat/versements-rapprochements-cloture",
   "topology": "coord",
   "vcs": "git",
