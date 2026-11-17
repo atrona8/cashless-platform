@@ -12,6 +12,9 @@ requirement_refs:
 planning_base_branch: feat/versements-rapprochements-cloture
 merge_target_branch: feat/versements-rapprochements-cloture
 branch_strategy: Planning artifacts for this mission were generated on feat/versements-rapprochements-cloture. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/versements-rapprochements-cloture unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-versements-rapprochements-cloture-01M7JT4G
+base_commit: 98adc6d35601e1fd70cea86f42b32f9cb44299c0
+created_at: '2026-11-17T07:04:10.142266+00:00'
 subtasks: [T001, T002, T003, T004, T005, T006]
 phase: Phase 1 - Fondations
 agent: claude
