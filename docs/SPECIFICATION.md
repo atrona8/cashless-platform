@@ -157,7 +157,7 @@ Chaque ligne métier DOIT porter `operator_id`. Les conditions d'un commerçant 
 | Rôle | Peut |
 |---|---|
 | `PLATFORM_ADMIN` | Gérer les prestataires, les contrats plateforme–prestataire, la redevance, la supervision globale |
-| `OPERATOR_ADMIN` | Gérer ses organisateurs, les contrats, les index de clés, les plafonds maximaux, les profils de législation |
+| `OPERATOR_ADMIN` | Gérer ses organisateurs, les contrats, les index de clés, les plafonds maximaux, les profils de législation ; demander et valider les versements dont il est le rôle (prestataire, plateforme : tableau ci-dessous) |
 | `ORGANIZER_ADMIN` | Gérer ses événements, commerçants, catalogues, terminaux, politique hors ligne ; valider les versements ; consulter les relevés |
 | `SUPERVISOR` | Sur un événement : lever un trou de séquence, valider une annulation hors délai, sortir un bracelet de la liste noire (avec un second valideur) |
 | `CASHIER` | Au guichet : recharges en espèces, cautions, restitutions, remplacements, remboursements en espèces, identification d'un festivalier (KYC, §6.3) |
@@ -193,7 +193,7 @@ Chaque ligne métier DOIT porter `operator_id`. Les conditions d'un commerçant 
 
 | Action | Opération | Rôle exigé (auteur et valideur) |
 |---|---|---|
-| `PAYOUT` | Versement : initiation et confirmation manuelle | `ORGANIZER_ADMIN` |
+| `PAYOUT` | Versement : initiation et confirmation manuelle | Selon le bénéficiaire (amendé le 17/11/2026, ADR-204) : `ORGANIZER_ADMIN` pour les commerçants et l'organisateur, `OPERATOR_ADMIN` pour le prestataire et la plateforme ; un lot mixte exige les deux rôles chez l'auteur et chez le valideur |
 | `ADJUSTMENT`, `ANOMALY_RESOLUTION` | Écriture manuelle (`source = BACKOFFICE`), indemnisation d'un commerçant | Rôle de l'opération (back-office, à ajouter au contrat) |
 | `LATE_CLAIM` | Réclamation tardive (`postLateClaim`) | Rôle de l'opération (back-office) |
 | `LATE_CHARGEBACK` | Écriture d'une contestation carte reçue après le verrouillage (ADR-77) | Rôle de l'opération (back-office) |

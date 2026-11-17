@@ -82,6 +82,9 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL053: { code: 'CONFLICT_STATE', status: 409 },
   // CL054 : troisième clé de signature valide par signataire (0045).
   CL054: { code: 'CONFLICT_STATE', status: 409 },
+  // Mission 9b (migration 0085).
+  // CL055 : montant d'un versement supérieur au droit net disponible, versements en cours déduits.
+  CL055: { code: 'PAYOUT_EXCEEDS_ENTITLEMENT', status: 409 },
   P0002: { code: 'NOT_FOUND', status: 404 },
   // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
   // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus

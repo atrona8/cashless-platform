@@ -30,10 +30,15 @@ import { PspConfigurationsModule } from './psp-configurations/psp-configurations
 import { PspModule } from './psp/psp.module';
 import { ReversalsModule } from './reversals/reversals.module';
 import { RefundsModule } from './refunds/refunds.module';
+import { ReconciliationModule } from './reconciliation/reconciliation.module';
 import { UsersModule } from './identity/users/users.module';
 import { CashTopupModule } from './topups/cash/cash-topup.module';
 import { PspTopupsModule } from './topups/psp/psp-topups.module';
 import { ChargebacksModule } from './chargebacks/chargebacks.module';
+import { ClosingModule } from './closing/closing.module';
+import { PayoutsModule } from './payouts/payouts.module';
+import { LateClaimsModule } from './late-claims/late-claims.module';
+import { StatementsModule } from './statements/statements.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { VendorPinModule } from './vendor-pin/vendor-pin.module';
 import { VendorsModule } from './vendors/vendors.module';
@@ -77,6 +82,7 @@ import { WorkerRegistry } from './processes/worker';
     ReversalsModule,
     // Mission 9a : demandes de remboursement des festivaliers (création, listes, refus).
     RefundsModule,
+    ReconciliationModule,
     PaymentRequestsModule,
     // Mission 6 : ports PSP et coffre, faux hors production seulement.
     PspModule,
@@ -88,6 +94,8 @@ import { WorkerRegistry } from './processes/worker';
     PspTopupsModule,
     WebhooksModule,
     ChargebacksModule,
+    PayoutsModule,
+    LateClaimsModule,
     // Mission 7 (lot WP18) : réception des lots hors ligne.
     OfflineBatchesModule,
     // Mission 7 (lot WP20) : levée de trou de séquence et import du journal d'un terminal révoqué.
@@ -95,6 +103,10 @@ import { WorkerRegistry } from './processes/worker';
     OfflineJournalModule,
     // Mission passerelle-locale (lot WP11) : autorité de débit côté humains.
     DebitAuthorityModule,
+    // Mission 9b (lot WP07) : étapes de clôture et soldes restants.
+    ClosingModule,
+    // Mission 9b (lot WP13) : relevés des parties, relevé du festivalier, export comptable.
+    StatementsModule,
     // Simulation du paiement PSP : développement seulement, absente en production (OP-N121).
     ...devPspSimulationImports(),
   ],

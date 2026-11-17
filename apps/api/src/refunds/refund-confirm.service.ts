@@ -63,6 +63,7 @@ interface Locked {
   transaction_id: string | null;
   approved_by: string | null;
   approval_request_id: string | null;
+  external_reference: string | null;
 }
 
 @Injectable()
@@ -82,7 +83,8 @@ export class RefundConfirmService {
   ): Promise<RefundRequest> {
     if (!isUuid(id)) throw new ProblemException('NOT_FOUND');
     const found = await client.query<Locked>(
-      `SELECT event_id, ledger_id, status, transaction_id, approved_by, approval_request_id
+      `SELECT event_id, ledger_id, status, transaction_id, approved_by, approval_request_id,
+            external_reference
          FROM refund_request WHERE id = $1 FOR UPDATE`,
       [id],
     );
@@ -115,6 +117,9 @@ export class RefundConfirmService {
     } else {
       // Un crédit n'est pas refusé par CL006 : la garde de l'API est le seul rempart (409 avant le REVERSAL).
       await refuseUnderEdge(client, current.ledger_id);
+      // OP-N126 : le paiement est visible à la banque (ligne de relevé rapprochée à cette sortie d'argent) :
+      // aucun recrédit. Lu sous le verrou de la demande, dans la transaction de la confirmation.
+      await this.refuseIfBankMatched(client, current);
       const approvedBy = await this.reversalApprover(client, current, who);
       const now = (
         await client.query<{ now: Date; currency: string }>(
@@ -169,6 +174,23 @@ export class RefundConfirmService {
       },
     });
     return toRefundRequest(row);
+  }
+
+  /** `409` si une ligne de relevé est rapprochée à la transaction (ou à la référence) du remboursement. */
+  private async refuseIfBankMatched(client: TxClient, current: Locked): Promise<void> {
+    const { rows } = await client.query(
+      `SELECT 1 FROM external_statement_line l
+        WHERE l.matched_tx_id = $1
+           OR ($2::text IS NOT NULL AND l.external_ref = $2
+               AND (l.matched_tx_id IS NOT NULL OR l.matched_anomaly_id IS NOT NULL))
+        LIMIT 1`,
+      [current.transaction_id, current.external_reference],
+    );
+    if (rows.length > 0)
+      throw new ProblemException('CONFLICT_STATE', {
+        detail:
+          'Le paiement apparaît rapproché sur un relevé bancaire : il ne peut plus être déclaré en échec.',
+      });
   }
 
   /** L'appelant a-t-il proposé (auteur de l'approbation) ou exécuté (`approved_by`) le remboursement ? */

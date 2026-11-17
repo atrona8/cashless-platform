@@ -24,7 +24,13 @@ import { OTP_SENDER } from '../customer-auth/otp-sender';
 import { KMS_PROVIDER } from '../kms/kms.module';
 import { SIGN_PORT } from '../kms/kms.ports';
 import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
-import { ATTESTATION_VERIFIER, DEVICE_CA, EDGE_CA, TOKEN_SIGNER } from '../security/port-tokens';
+import {
+  ATTESTATION_VERIFIER,
+  DEVICE_CA,
+  EDGE_CA,
+  SEAL_COPY,
+  TOKEN_SIGNER,
+} from '../security/port-tokens';
 import { WorkerRegistry } from './worker';
 
 function optional(app: INestApplicationContext, token: symbol): object | null {
@@ -53,8 +59,38 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'les adaptateurs PSP': optional(app, PSP_ADAPTERS),
     'le coffre des secrets PSP': optional(app, PSP_SECRET_STORE),
     'le processeur d’opérations hors ligne': optional(app, OFFLINE_OPERATION_PROCESSOR),
+    'la copie externe des scellements': optional(app, SEAL_COPY),
   });
   return config;
+}
+
+/** Au plus une ligne par minute pour un code d'alarme qui dure (la boucle repasse toutes les 5 secondes). */
+export const ALARM_LOG_REPEAT_MS = 60_000;
+
+/**
+ * Journal du code d'alarme des travailleurs (mission 9b, WP12 ; research R-12) : tout code non nul est écrit
+ * (`WORKER_ALARM`) à chaque changement de code, puis au plus une fois par minute tant qu'il dure ; le retour à 0 est
+ * écrit une fois (`cleared`) : un code qui disparaît ne reste pas affiché comme actif. Rend vrai si une ligne a été écrite.
+ */
+export class AlarmLog {
+  private last = 0;
+  private lastWrittenAt = 0;
+
+  constructor(private readonly write: (line: string) => void = (line) => console.error(line)) {}
+
+  observe(code: number, now: number = Date.now()): boolean {
+    if (code === 0) {
+      if (this.last === 0) return false;
+      this.write(JSON.stringify({ event: 'WORKER_ALARM', code: 0, cleared: this.last }));
+      this.last = 0;
+      return true;
+    }
+    if (code === this.last && now - this.lastWrittenAt < ALARM_LOG_REPEAT_MS) return false;
+    this.write(JSON.stringify({ level: 'ALERT', event: 'WORKER_ALARM', code }));
+    this.last = code;
+    this.lastWrittenAt = now;
+    return true;
+  }
 }
 
 /**
@@ -186,11 +222,15 @@ export async function serve(
   const workers = optional(app, WorkerRegistry as unknown as symbol) as WorkerRegistry | null;
   if (interval > 0 && workers && workers.names().length > 0) {
     let running = false;
+    const alarms = new AlarmLog();
     const timer = setInterval(() => {
       if (running) return;
       running = true;
       workers
         .drain()
+        .then(() => {
+          alarms.observe(workers.alarm());
+        })
         .catch((error: unknown) =>
           console.error('[travaux]', error instanceof Error ? error.message : error),
         )
@@ -231,8 +271,10 @@ export async function runWorkers(
     }
     const interval = options.pollSeconds ?? (pollSeconds() || 5);
     app.enableShutdownHooks();
+    const alarms = new AlarmLog();
     for (;;) {
       await workers.drain();
+      alarms.observe(workers.alarm());
       await new Promise((resolve) => setTimeout(resolve, interval * 1000));
     }
   } finally {

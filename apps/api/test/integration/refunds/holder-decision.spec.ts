@@ -213,7 +213,15 @@ describe('décision du titulaire (POST /refund-requests/{id}/holder-decision)', 
       decide(s.req.id, { decision: 'CONFIRM', otp_request_id: s.otp, code: s.code }),
       decide(s.req.id, { decision: 'BLOCK', otp_request_id: s.otp, code: s.code }),
     ]);
-    expect([a.status, b.status].sort()).toEqual([200, 422]);
+    // Une seule décide ; l'autre est refusée (409 si elle a vérifié le code avant la première, 422 après).
+    const statuses = [a.status, b.status].sort();
+    expect(statuses[0]).toBe(200);
+    expect([409, 422]).toContain(statuses[1]);
+    const consumed = await rows(
+      'SELECT 1 FROM otp_challenge WHERE id = $1 AND consumed_at IS NOT NULL',
+      [s.otp.slice(4)],
+    );
+    expect(consumed).toHaveLength(1);
     const audit = await rows(
       "SELECT 1 FROM audit_log WHERE action = 'REFUND_HOLDER_DECIDED' AND object_id = $1",
       [s.req.id],

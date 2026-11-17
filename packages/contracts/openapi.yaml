@@ -6210,6 +6210,50 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Remboursements]
+      operationId: createRefundRequest
+      x-process: public
+      summary: Créer une demande de remboursement (back-office)
+      description: |
+        Crée, pour un portefeuille, une demande directement en `REQUESTED` (numéro non vérifié par l'app : le back-office
+        engage sa responsabilité). Destinations : `WAVE`, `ORANGE_MONEY` (avec `msisdn`) ou `BANK_TRANSFER` (avec `iban`,
+        validé ISO 13616 et normalisé ; masqué dans l'audit et les journaux). `requested_by` est l'auteur. La demande suit
+        ensuite `approveRefundRequest`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequestBackofficeCreate'
+      responses:
+        '201':
+          description: Demande créée (`REQUESTED`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
 
   /refund-requests/{refund_request_id}/holder-decision:
     post:
@@ -10855,6 +10899,911 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
 
+  # ---------------------------------------------------------------- Versements, rapprochements, clôture (mission 9b)
+  /operators/{operator_id}/events/{event_id}/closing-steps:
+    get:
+      tags: [Événements]
+      operationId: listEventClosingSteps
+      x-process: public
+      summary: Lister les sept étapes de clôture d'un événement et leur état
+      description: |
+        Rend les sept étapes (`PITCH_FEES`, `OPERATOR_FEE`, `PLATFORM_FEE`, `OPERATOR_FEE_REGULARIZATION`, `BREAKAGE`,
+        `DEPOSIT_FORFEIT`, `PROMO_EXPIRY`) dans l'ordre de clôture, chacune à faire, faite ou sans objet. Lecture seule.
+        Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`, `SUPERVISOR` (lecture).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Étapes dans l'ordre.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClosingStepState'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/events/{event_id}/closing-steps/{step}/preview:
+    get:
+      tags: [Événements]
+      operationId: previewEventClosingStep
+      x-process: public
+      summary: Aperçu d'une étape de clôture (rien n'est écrit)
+      description: |
+        Calcule les montants que l'étape écrirait, avec le même calcul que l'exécution, sans ouvrir de transaction d'écriture.
+        Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: step
+          in: path
+          required: true
+          description: 'Étape de clôture (`ClosingStep`).'
+          schema:
+            $ref: '#/components/schemas/ClosingStep'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Aperçu de l'étape.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosingStepPreview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/events/{event_id}/closing-steps/{step}:
+    post:
+      tags: [Événements]
+      operationId: executeEventClosingStep
+      x-process: public
+      summary: Exécuter une étape de clôture
+      description: |
+        Écrit les transactions de l'étape, une seule fois par événement : une étape déjà faite renvoie le même résultat, sans
+        nouvelle écriture. Une étape est refusée (`409 CLOSING_CONDITION_NOT_MET`, le `detail` nomme la condition) si une étape
+        précédente n'est ni faite ni sans objet, ou si le statut de l'événement ne la permet pas.
+        Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: step
+          in: path
+          required: true
+          description: 'Étape de clôture (`ClosingStep`).'
+          schema:
+            $ref: '#/components/schemas/ClosingStep'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Étape faite (ou sans objet).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosingStepResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /operators/{operator_id}/events/{event_id}/remaining-balances:
+    get:
+      tags: [Événements]
+      operationId: getEventRemainingBalances
+      x-process: public
+      summary: Soldes restants des portefeuilles d'un événement
+      description: |
+        Totaux des soldes non dépensés par nature (payé, espèces dues, offert) et nombre de portefeuilles concernés ; avec
+        `format=csv`, une ligne par portefeuille en `text/csv`. Lecture seule. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: format
+          in: query
+          required: false
+          description: 'Format de la réponse : `json` (défaut) ou `text/csv`.'
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Totaux (`format=json`) ou une ligne par portefeuille (`format=csv`, `text/csv`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemainingBalances'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                wallet_id,paid,cash_due,promo
+                3f2a6c1e-8b4d-4e7a-9c21-5d0b7e6a1f90,1500,0,0
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ledgers/{ledger_id}/payout-entitlements:
+    get:
+      tags: [Remboursements]
+      operationId: listPayoutEntitlements
+      x-process: public
+      summary: Droits nets des parties, moins les versements en cours
+      description: |
+        Pour chaque partie du grand livre : droit net (`party_position`), versements `INITIATED` non réglés, et montant
+        disponible pour un nouveau versement. Lecture seule. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Droits nets par partie.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PayoutEntitlement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ledgers/{ledger_id}/payout-batches/approval-requests:
+    post:
+      tags: [Remboursements]
+      operationId: requestPayoutBatch
+      x-process: public
+      summary: Demander l'approbation d'un lot de versements (deux personnes)
+      description: |
+        Prépare un lot : crée une demande d'approbation (action `PAYOUT`) dont la charge (bénéficiaires, montants, moyens,
+        destinations) est figée, et répond `202` ; rien n'est écrit. Une seconde personne (≠ appelant) l'approuve par
+        `approveApprovalRequest` : le droit net de chaque bénéficiaire est alors relu sous verrou, puis une transaction
+        `PAYOUT_INITIATED` et une ligne `Payout` par bénéficiaire sont écrites. Un montant supérieur au droit net disponible
+        est refusé (`409 PAYOUT_EXCEEDS_ENTITLEMENT`, `CL055`). IBAN invalide : `422 VALIDATION_FAILED`.
+        Rôle selon le bénéficiaire : `ORGANIZER_ADMIN` (commerçants, organisateur), `OPERATOR_ADMIN` (prestataire,
+        plateforme). Le paiement lui-même se fait hors système (l'API ne verse rien) ; le résultat s'enregistre par
+        `confirmPayout`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayoutBatchRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /ledgers/{ledger_id}/payouts:
+    get:
+      tags: [Remboursements]
+      operationId: listPayouts
+      x-process: public
+      summary: Lister les versements
+      description: |
+        Versements du grand livre, filtrables par statut et par lot. Ne porte jamais l'IBAN ni le numéro de destination.
+        Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - name: status
+          in: query
+          required: false
+          description: 'Filtre par statut.'
+          schema:
+            type: string
+            enum: [INITIATED, CONFIRMED, FAILED]
+        - name: approval_request_id
+          in: query
+          required: false
+          description: 'Filtre par lot (identifiant de la demande d''approbation).'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de versements.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Payout'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ledgers/{ledger_id}/payout-batches/{approval_request_id}/export:
+    get:
+      tags: [Remboursements]
+      operationId: exportPayoutBatch
+      x-process: public
+      summary: Exporter un lot de versements en CSV
+      description: |
+        Fichier à utiliser pour payer hors système : bénéficiaire, moyen, numéro ou IBAN, montant, référence. C'est le seul
+        endroit où le numéro ou l'IBAN sortent de l'API. Journalisé (nombre de lignes, jamais les destinations). Réponse non
+        rejouée. Rôle : celui du lot (voir `requestPayoutBatch`).
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - name: approval_request_id
+          in: path
+          required: true
+          description: 'Lot de versements (demande d''approbation `PAYOUT` exécutée).'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Une ligne par versement.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            text/csv:
+              schema:
+                type: string
+              example: |
+                beneficiary,method,destination,amount,currency,reference
+                Stand Bissap,WAVE,+221770000002,45000,XOF,PAYOUT-0001
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /payouts/{payout_id}/confirm:
+    post:
+      tags: [Remboursements]
+      operationId: confirmPayout
+      x-process: public
+      summary: Enregistrer le résultat d'un versement
+      description: |
+        Après le paiement hors système : `CONFIRMED` avec `external_reference`, ou `FAILED` avec `failure_reason`. Écrit une
+        transaction `PAYOUT_CONFIRMED` ou `PAYOUT_FAILED`. Un versement change de statut une seule fois ; un second résultat
+        reçoit `409 CONFLICT_STATE`. Rôle : celui du lot (voir `requestPayoutBatch`).
+      parameters:
+        - name: payout_id
+          in: path
+          required: true
+          description: 'Versement.'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayoutConfirm'
+      responses:
+        '200':
+          description: Versement mis à jour.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /ledgers/{ledger_id}/accounts/{account_id}/statements:
+    post:
+      tags: [Remboursements]
+      operationId: importAccountStatement
+      x-process: public
+      summary: Importer un relevé d'un compte d'argent (CSV)
+      description: |
+        Corps `text/csv` : `external_ref;value_date;amount;currency` (une ligne d'en-tête). Une devise ou un compte
+        étrangers au grand livre sont refusés (`422 VALIDATION_FAILED`). Un réimport ne crée aucune ligne en double. Les lignes
+        sont rapprochées automatiquement par la table source (recharge PSP, litige, remboursement, versement) ; le résultat
+        compte les lignes créées, rapprochées et déjà présentes. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - name: account_id
+          in: path
+          required: true
+          description: 'Compte d''argent (famille `ASSET`) du grand livre.'
+          schema:
+            type: string
+            format: uuid
+        - name: source
+          in: query
+          required: true
+          description: 'Origine du relevé (PSP, banque, mobile money).'
+          schema:
+            type: string
+            maxLength: 64
+        - name: statement_date
+          in: query
+          required: true
+          description: 'Date du relevé.'
+          schema:
+            type: string
+            format: date
+        - name: closing_balance
+          in: query
+          required: true
+          description: 'Solde de clôture du relevé, en unités mineures.'
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+            example: |
+              external_ref;value_date;amount;currency
+              WAVE-8841;2026-12-14;25000;XOF
+      responses:
+        '201':
+          description: Relevé importé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementImportResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /ledgers/{ledger_id}/statement-lines:
+    get:
+      tags: [Remboursements]
+      operationId: listStatementLines
+      x-process: public
+      summary: Lister les lignes de relevé
+      description: |
+        Lignes importées, filtrables par compte et par état de rapprochement. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - name: account_id
+          in: query
+          required: false
+          description: 'Filtre par compte d''argent.'
+          schema:
+            type: string
+            format: uuid
+        - name: matched
+          in: query
+          required: false
+          description: '`true` : rapprochées ; `false` : non rapprochées.'
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Page de lignes de relevé.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StatementLine'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /statement-lines/{statement_line_id}/match:
+    post:
+      tags: [Remboursements]
+      operationId: matchStatementLine
+      x-process: public
+      summary: Rapprocher une ligne de relevé à la main
+      description: |
+        Rattache la ligne à une transaction (`transaction_id`) ou à une anomalie ouverte (`anomaly_id`), exactement l'une des
+        deux : même prestataire, même grand livre, et une transaction qui mouvemente le compte de la ligne. Un rapprochement posé
+        ne se défait pas. Ligne déjà rapprochée : `409 CONFLICT_STATE`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - name: statement_line_id
+          in: path
+          required: true
+          description: 'Ligne de relevé.'
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementLineMatch'
+      responses:
+        '200':
+          description: Ligne rapprochée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementLine'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /ledgers/{ledger_id}/reconciliation:
+    get:
+      tags: [Remboursements]
+      operationId: getLedgerReconciliation
+      x-process: public
+      summary: État du rapprochement par compte d'argent
+      description: |
+        Par compte d'argent : lignes, lignes non rapprochées, solde du relevé, solde du grand livre à la même date, et
+        rapproché oui ou non (toutes les lignes rapprochées et soldes égaux). Lecture seule.
+        Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`, `SUPERVISOR`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: État par compte.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountReconciliation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ledgers/{ledger_id}/late-adjustments:
+    post:
+      tags: [Remboursements]
+      operationId: postLateAdjustment
+      x-process: public
+      summary: Apport d'un bénéficiaire après une réclamation tardive (deux personnes)
+      description: |
+        Un bénéficiaire de la casse rapporte sa part après une annulation de casse (`postLateClaim`). Opération à deux
+        personnes du back-office : crée une demande d'approbation (action `ADJUSTMENT`) et répond `202` ; rien n'est exécuté
+        avant l'approbation. À l'exécution, une écriture `ADJUSTMENT` est écrite sur le grand livre `LOCKED`, bornée par la base :
+        l'apport ne dépasse pas ce qui a été annulé sur le compte de casse du bénéficiaire (`409 LATE_CLAIM_INVALID`, `CL024`).
+        Autres refus : grand livre non `LOCKED` (`409 CONFLICT_STATE`), `late_claims_until` dépassée (`409 LEDGER_LOCKED`),
+        `DEBIT_AUTHORITY_EDGE`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LateAdjustmentRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/ApprovalRequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/events/{event_id}/statements/{party_kind}:
+    get:
+      tags: [Événements]
+      operationId: getPartyStatement
+      x-process: public
+      summary: Relevé d'une partie pour un événement
+      description: |
+        Relevé des écritures d'une partie (`party_kind` : `MERCHANT`, `ORGANIZER`, `OPERATOR`, `PLATFORM`) pour un événement,
+        paginé en JSON ou en `text/csv` (`format=csv`). `party_id` désigne le commerçant ou l'organisateur ; il est omis pour le
+        prestataire et la plateforme. Rôles : `MERCHANT_ADMIN` (son commerçant seulement), `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`,
+        `PLATFORM_ADMIN`, selon `party_kind` et `party_id` (sinon `403`).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/EventPathId'
+        - name: party_kind
+          in: path
+          required: true
+          description: 'Nature de la partie.'
+          schema:
+            type: string
+            enum: [MERCHANT, ORGANIZER, OPERATOR, PLATFORM]
+        - name: party_id
+          in: query
+          required: false
+          description: 'Commerçant ou organisateur visé (inutile pour `OPERATOR` et `PLATFORM`).'
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          required: false
+          description: 'Format de la réponse : `json` (défaut) ou `text/csv`.'
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Relevé (`format=json`) ou en CSV (`format=csv`, `text/csv`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyStatement'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                occurred_at,type,label,amount,balance
+                2026-12-12T20:05:01Z,SALE,Vente,4500,4500
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me/wallets/{wallet_id}/statement:
+    get:
+      tags: [App client]
+      operationId: getMyWalletStatement
+      x-process: public
+      summary: Relevé CSV de mon portefeuille
+      description: |
+        Relevé des mouvements du portefeuille du festivalier authentifié, en `text/csv`. Un portefeuille d'une autre personne
+        répond `404 NOT_FOUND`. Lecture seule.
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Mouvements du portefeuille.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            text/csv:
+              schema:
+                type: string
+              example: |
+                occurred_at,type,label,amount,balance
+                2026-12-12T20:05:01Z,TOPUP,Recharge,10000,10000
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /operators/{operator_id}/account-mappings:
+    get:
+      tags: [Organisation]
+      operationId: listAccountMappings
+      x-process: public
+      summary: Lister les correspondances comptables
+      description: |
+        Correspondances entre les comptes de l'application et les comptes légaux de l'entité, par version et date d'effet.
+        Aucun jeu de comptes n'est livré par défaut. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` (lecture).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - name: entity_party_id
+          in: query
+          required: false
+          description: 'Filtre par entité (organisateur ou prestataire).'
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Versions de correspondances.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AccountMappingVersion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Organisation]
+      operationId: createAccountMappingVersion
+      x-process: public
+      summary: Publier une nouvelle version de correspondances comptables
+      description: |
+        Une nouvelle version remplace la précédente à partir de `valid_from` ; les versions passées ne changent pas.
+        Rôle : `OPERATOR_ADMIN`.
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountMappingVersion'
+      responses:
+        '201':
+          description: Version créée.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountMappingVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
+  /operators/{operator_id}/accounting-exports:
+    get:
+      tags: [Organisation]
+      operationId: exportAccounting
+      x-process: public
+      summary: Exporter les écritures pour la comptabilité (CSV)
+      description: |
+        Écritures de l'entité sur la période, traduites par les correspondances en vigueur, en `text/csv`. Les couples non
+        mappés sont listés en tête de fichier et comptés dans l'en-tête `X-Unmapped-Count` (ils ne sont jamais omis en
+        silence). Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` (son entité).
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+        - name: entity
+          in: query
+          required: true
+          description: 'Entité (organisateur ou prestataire) exportée.'
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: true
+          description: 'Début de période (inclus).'
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          description: 'Fin de période (incluse).'
+          schema:
+            type: string
+            format: date
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Export comptable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            X-Unmapped-Count:
+              description: Nombre de couples non mappés listés en tête de fichier.
+              schema:
+                type: integer
+          content:
+            text/csv:
+              schema:
+                type: string
+              example: |
+                # non mappé : TOPUP / A-PSP-WAVE
+                date,debit_account,credit_account,amount
+                2026-12-12,521,411,10000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 webhooks:
   paymentIntentSucceeded:
     post:
@@ -11114,7 +12063,7 @@ components:
         `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
         terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
         Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-        `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+        `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
         même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
       schema:
         type: string
@@ -11886,6 +12835,8 @@ components:
         - `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre
           point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se
           resynchroniser.
+        - `PAYOUT_EXCEEDS_ENTITLEMENT` (409, `CL055`) : montant d'un versement supérieur au droit net disponible du
+          bénéficiaire, versements en cours déduits (mission 9b).
       enum:
         - VALIDATION_FAILED
         - UNAUTHENTICATED
@@ -11983,6 +12934,7 @@ components:
         - VENDOR_SESSION_INVALID
         - VENDOR_PIN_INVALID
         - SALE_LINES_INVALID
+        - PAYOUT_EXCEEDS_ENTITLEMENT
     PageMeta:
       type: object
       required: [next_cursor, has_more]
@@ -17313,9 +18265,11 @@ components:
           type: string
           description: |
             Identifiant stable. `DATABASE` : `TRANSITION_ALLOWED`, `DEVICES_CAUGHT_UP`, `DEBIT_AUTHORITY_CENTRAL`,
-            `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`. `CONFIGURATION` :
+            `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`,
+            `NO_OPEN_CASH_SESSION`, `REFUND_DEADLINE_REACHED`, `CLOSING_STEPS_DONE`, `PSP_RECONCILED` (calculée depuis
+            la mission 9b : tous les comptes d'argent du PSP rapprochés). `CONFIGURATION` :
             `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`, `JURISDICTION_SET`, `LEDGER_OPEN`. `EXTERNAL` :
-            `CASH_DESKS_COUNTED`, `PSP_RECONCILED`, `DEVICES_REPORTED`.
+            `CASH_DESKS_COUNTED`, `DEVICES_REPORTED`.
         met:
           type:
             - boolean
@@ -18113,3 +19067,527 @@ components:
           description: |
             `PWD‖PACK` (6 octets) sous enveloppe pour la clé du poste : ECDH-ES P-256 + HKDF-SHA256 + AES-256-GCM,
             AAD = `"CASHLESS/PWDPACK/PERSO/v1" || media_id || nfc_uid`. Jamais transmis en clair.
+
+    # ------------------------------------------------------------ Versements, rapprochements, clôture (mission 9b)
+    ClosingStep:
+      type: string
+      description: |
+        Étape de clôture d'un événement, dans l'ordre d'exécution (SPECIFICATION §12.1). `PITCH_FEES`, `OPERATOR_FEE`
+        et `PLATFORM_FEE` se font en `SETTLING` ; les quatre suivantes en `REFUND_WINDOW`, après `refund_deadline`.
+        `OPERATOR_FEE_REGULARIZATION` n'a d'objet que si `operator_fee_basis = NET_OF_REFUNDS`.
+      enum:
+        - PITCH_FEES
+        - OPERATOR_FEE
+        - PLATFORM_FEE
+        - OPERATOR_FEE_REGULARIZATION
+        - BREAKAGE
+        - DEPOSIT_FORFEIT
+        - PROMO_EXPIRY
+    ClosingStepState:
+      type: object
+      description: État d'une étape de clôture pour un événement.
+      required: [step, status]
+      properties:
+        step:
+          $ref: '#/components/schemas/ClosingStep'
+        status:
+          type: string
+          enum: [TODO, DONE, NOT_APPLICABLE]
+          description: '`TODO` : aucune ligne `closing_step` ; `DONE` : écritures faites ; `NOT_APPLICABLE` : sans objet.'
+        done_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        done_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        transaction_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Écritures produites (vide si l'étape est sans objet ou à faire).
+        summary:
+          type: object
+          additionalProperties: true
+          description: Montants par bénéficiaire, tels qu'écrits.
+    ClosingStepPreview:
+      type: object
+      description: Ce qu'une étape écrirait, sans rien écrire.
+      required: [event_id, step, currency, applicable, lines, total]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        step:
+          $ref: '#/components/schemas/ClosingStep'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        applicable:
+          type: boolean
+          description: '`false` : l''exécution marquerait l''étape sans objet.'
+        lines:
+          type: array
+          items:
+            type: object
+            required: [party_id, amount]
+            properties:
+              party_id:
+                type: string
+                format: uuid
+                description: Bénéficiaire (ou partie débitée).
+              label:
+                type: string
+              amount:
+                $ref: '#/components/schemas/SignedAmount'
+              reference:
+                type:
+                  - string
+                  - 'null'
+                description: Référence sans écriture (droit de place `PREPAID`).
+        total:
+          $ref: '#/components/schemas/SignedAmount'
+    ClosingStepResult:
+      type: object
+      description: Résultat d'une étape exécutée ; identique si l'étape était déjà faite.
+      required: [event_id, step, status, transaction_ids]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        step:
+          $ref: '#/components/schemas/ClosingStep'
+        status:
+          type: string
+          enum: [DONE, NOT_APPLICABLE]
+        transaction_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        summary:
+          type: object
+          additionalProperties: true
+        done_by:
+          type: string
+          format: uuid
+        done_at:
+          type: string
+          format: date-time
+    RemainingBalances:
+      type: object
+      description: Soldes restants des portefeuilles d'un événement, par nature. Le détail par portefeuille est en CSV.
+      required: [event_id, currency, as_of, wallet_count, paid_total, cash_due_total, promo_total]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        currency:
+          $ref: '#/components/schemas/Currency'
+        as_of:
+          type: string
+          format: date-time
+        wallet_count:
+          type: integer
+          minimum: 0
+          description: Portefeuilles à solde non nul.
+        paid_total:
+          type: integer
+          format: int64
+        cash_due_total:
+          type: integer
+          format: int64
+        promo_total:
+          type: integer
+          format: int64
+    PayoutEntitlement:
+      type: object
+      description: Droit net d'une partie, moins ses versements en cours.
+      required: [party_id, party_kind, currency, net_claim, pending_payouts, available]
+      properties:
+        party_id:
+          type: string
+          format: uuid
+        party_kind:
+          type: string
+          enum: [PLATFORM, OPERATOR, ORGANIZER, MERCHANT, CUSTOMER, THIRD_PARTY]
+        currency:
+          $ref: '#/components/schemas/Currency'
+        net_claim:
+          type: integer
+          format: int64
+          description: Droit net (`party_position`).
+        pending_payouts:
+          type: integer
+          format: int64
+          description: Versements `INITIATED` non réglés.
+        available:
+          type: integer
+          format: int64
+          description: '`net_claim` − `pending_payouts` : plafond d''un nouveau versement.'
+    PayoutBatchRequest:
+      type: object
+      description: Lot de versements à faire approuver. La charge est figée à la création de la demande.
+      required: [lines]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PayoutLine'
+    PayoutLine:
+      type: object
+      description: |
+        Un versement du lot. `msisdn` est exigé pour `WAVE` et `ORANGE_MONEY`, `iban` pour `BANK_TRANSFER` (validé
+        ISO 13616) ; `CASH` n'en porte aucun. Ces destinations ne sont jamais rendues par les lectures.
+      required: [beneficiary_party_id, amount, currency, method]
+      properties:
+        beneficiary_party_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Amount'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        method:
+          type: string
+          enum: [BANK_TRANSFER, WAVE, ORANGE_MONEY, CASH]
+        msisdn:
+          type: string
+          pattern: '^\+[1-9][0-9]{6,14}$'
+        iban:
+          type: string
+    Payout:
+      type: object
+      description: "Versement. Ne porte jamais l'IBAN ni le numéro : ils ne sortent que du CSV d'`exportPayoutBatch`."
+      required: [payout_id, ledger_id, approval_request_id, beneficiary_party_id, amount, currency, method, status, initiated_at, initiated_by, approved_by]
+      properties:
+        payout_id:
+          type: string
+          format: uuid
+        ledger_id:
+          type: string
+          format: uuid
+        approval_request_id:
+          type: string
+          format: uuid
+          description: Lot (demande d'approbation `PAYOUT`).
+        beneficiary_party_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Amount'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        method:
+          type: string
+          enum: [BANK_TRANSFER, WAVE, ORANGE_MONEY, CASH]
+        status:
+          type: string
+          enum: [INITIATED, CONFIRMED, FAILED]
+        external_reference:
+          type:
+            - string
+            - 'null'
+        failure_reason:
+          type:
+            - string
+            - 'null'
+        initiated_at:
+          type: string
+          format: date-time
+        initiated_by:
+          type: string
+          format: uuid
+        approved_by:
+          type: string
+          format: uuid
+        confirmed_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        confirmed_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        initiated_transaction_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        settled_transaction_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+    PayoutConfirm:
+      type: object
+      description: |
+        Résultat d'un versement payé hors système. `CONFIRMED` exige `external_reference` ; `FAILED` exige
+        `failure_reason` (sinon `422 VALIDATION_FAILED`).
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [CONFIRMED, FAILED]
+        external_reference:
+          type: string
+          maxLength: 128
+        failure_reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+    StatementImportResult:
+      type: object
+      description: Résultat d'un import de relevé.
+      required: [statement_import_id, account_id, lines_created, lines_matched, lines_existing]
+      properties:
+        statement_import_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        lines_created:
+          type: integer
+          minimum: 0
+        lines_matched:
+          type: integer
+          minimum: 0
+          description: Lignes créées puis rapprochées automatiquement.
+        lines_existing:
+          type: integer
+          minimum: 0
+          description: Lignes déjà présentes (réimport), ignorées.
+    StatementLine:
+      type: object
+      description: Ligne d'un relevé de PSP, de banque ou de mobile money.
+      required: [statement_line_id, ledger_id, account_id, source, external_ref, value_date, amount, currency, matched]
+      properties:
+        statement_line_id:
+          type: integer
+          format: int64
+        ledger_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        statement_import_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        source:
+          type: string
+        external_ref:
+          type: string
+        value_date:
+          type: string
+          format: date
+        amount:
+          $ref: '#/components/schemas/SignedAmount'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        matched:
+          type: boolean
+        matched_transaction_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        matched_anomaly_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        matched_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Auteur du rapprochement manuel ; nul pour un rapprochement automatique.
+        matched_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+    StatementLineMatch:
+      type: object
+      description: Cible d'un rapprochement manuel. Exactement l'un des deux champs (sinon `422 VALIDATION_FAILED`).
+      properties:
+        transaction_id:
+          type: string
+          format: uuid
+          description: Transaction du même prestataire et du même grand livre qui mouvemente le compte de la ligne.
+        anomaly_id:
+          type: string
+          format: uuid
+          description: Anomalie ouverte (`PSP_TOPUP_OVER_LIMIT`, `PSP_TOPUP_NOT_CREDITED`, `PSP_MISMATCH`) qui explique l'écart.
+    AccountReconciliation:
+      type: object
+      description: État du rapprochement d'un compte d'argent.
+      required: [account_id, currency, lines_total, lines_unmatched, ledger_balance, reconciled]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        currency:
+          $ref: '#/components/schemas/Currency'
+        lines_total:
+          type: integer
+          minimum: 0
+        lines_unmatched:
+          type: integer
+          minimum: 0
+        statement_date:
+          type:
+            - string
+            - 'null'
+          format: date
+          description: Date du dernier relevé importé.
+        statement_balance:
+          type:
+            - integer
+            - 'null'
+          format: int64
+          description: Solde de clôture du dernier relevé ; nul sans relevé.
+        ledger_balance:
+          type: integer
+          format: int64
+          description: Solde du compte au grand livre à la date du relevé.
+        reconciled:
+          type: boolean
+          description: Toutes les lignes rapprochées, et solde du relevé égal au solde du grand livre.
+    LateAdjustmentRequest:
+      type: object
+      description: Apport d'un bénéficiaire de la casse après une réclamation tardive (action `ADJUSTMENT`).
+      required: [beneficiary_party_id, amount, currency, reason]
+      properties:
+        beneficiary_party_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Amount'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        reason:
+          type: string
+          minLength: 10
+    RefundRequestBackofficeCreate:
+      type: object
+      description: Demande de remboursement créée par le back-office, directement `REQUESTED`.
+      required: [wallet_id, destination, reason]
+      properties:
+        wallet_id:
+          type: string
+          format: uuid
+        destination:
+          type: object
+          required: [method]
+          description: '`msisdn` pour `WAVE` et `ORANGE_MONEY` ; `iban` pour `BANK_TRANSFER` (ISO 13616, modulo 97).'
+          properties:
+            method:
+              type: string
+              enum: [WAVE, ORANGE_MONEY, BANK_TRANSFER]
+            msisdn:
+              type: string
+              pattern: '^\+[1-9][0-9]{6,14}$'
+            iban:
+              type: string
+        reason:
+          type: string
+          minLength: 10
+    PartyStatement:
+      type: object
+      description: Relevé d'une partie pour un événement, paginé.
+      required: [party_kind, event_id, currency, data, next_cursor, has_more]
+      properties:
+        party_kind:
+          type: string
+          enum: [MERCHANT, ORGANIZER, OPERATOR, PLATFORM]
+        party_id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        currency:
+          $ref: '#/components/schemas/Currency'
+        closing_balance:
+          type: integer
+          format: int64
+          description: Solde à la date de la requête.
+        data:
+          type: array
+          items:
+            type: object
+            required: [transaction_id, occurred_at, type, amount]
+            properties:
+              transaction_id:
+                type: string
+                format: uuid
+              occurred_at:
+                type: string
+                format: date-time
+              type:
+                type: string
+              label:
+                type: string
+              amount:
+                $ref: '#/components/schemas/SignedAmount'
+        next_cursor:
+          type:
+            - string
+            - 'null'
+        has_more:
+          type: boolean
+    AccountMapping:
+      type: object
+      description: Correspondance entre un compte de l'application (objet et type de transaction) et deux comptes légaux.
+      required: [purpose, debit_account, credit_account]
+      properties:
+        purpose:
+          type: string
+          description: Objet du compte de l'application (`purpose`).
+        transaction_type:
+          type:
+            - string
+            - 'null'
+          description: Type de transaction ; nul = tous.
+        debit_account:
+          type: string
+          description: Compte légal débité.
+        credit_account:
+          type: string
+          description: Compte légal crédité.
+    AccountMappingVersion:
+      type: object
+      description: Version des correspondances d'une entité ; remplace la précédente à partir de `valid_from`.
+      required: [entity_party_id, valid_from, mappings]
+      properties:
+        entity_party_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+          readOnly: true
+          description: Attribuée par le serveur (croissante).
+        valid_from:
+          type: string
+          format: date
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+        mappings:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/AccountMapping'

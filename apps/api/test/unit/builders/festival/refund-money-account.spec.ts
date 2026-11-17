@@ -6,9 +6,11 @@ describe('moneyAccountFor', () => {
   it('Wave et Orange Money : comptes A-PSP-* des grands livres d’événement', () => {
     expect(moneyAccountFor('WAVE')).toBe('A-PSP-WAVE');
     expect(moneyAccountFor('ORANGE_MONEY')).toBe('A-PSP-OM');
+    // Mission 9b, WP10 : le virement est servi (compte ouvert à l'ouverture du grand livre).
+    expect(moneyAccountFor('BANK_TRANSFER')).toBe('A-BANQUE');
   });
 
-  it.each(['BANK_TRANSFER', 'CARD', '', 'wave'])('%p : refusé (VALIDATION_FAILED)', (method) => {
+  it.each(['CARD', '', 'wave'])('%p : refusé (VALIDATION_FAILED)', (method) => {
     expect(() => moneyAccountFor(method)).toThrow(BuildError);
     try {
       moneyAccountFor(method);

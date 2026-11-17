@@ -121,8 +121,9 @@ export const DEBIT_PATHS: readonly DebitPath[] = [
     route: 'POST /ledgers/{ledger_id}/late-claims',
     operationId: 'postLateClaim',
     kind: 'DEBIT',
-    layer: 'ABSENT',
-    protection: 'aucune route dans apps/api/src (contrat seulement)',
+    layer: 'ENGINE',
+    protection: `late-claims/late-claim-scope.ts (checkLateScope : refuseUnderEdge avant toute écriture, demande puis exécution LATE_CLAIM, 409) ; ${CL006}`,
+    note: 'Demande à deux personnes : la demande ne débite rien ; l’exécution (BREAKAGE_REVERSAL puis WALLET_REFUND) repasse la garde, la demande d’approbation passe FAILED.',
   },
   {
     route: 'POST /topups/cash',

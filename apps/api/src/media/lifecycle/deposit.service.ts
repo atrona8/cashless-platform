@@ -141,6 +141,8 @@ export class DepositService {
     mediaId: string,
     payment: Payment | null,
     occurredAt: Date,
+    /** OP-N128 : auteur et valideur de l'écriture (valideur nul sous le seuil de la seconde personne). */
+    by?: { actor: string; approver: string | null },
   ): Promise<{ state: DepositState; transactionId: string | null }> {
     const row = await this.row(client, mediaId);
     if (row.deposit_status === 'REFUNDED')
@@ -161,6 +163,7 @@ export class DepositService {
       currency: row.currency.trim(),
       mediaId,
       ...(context.deviceId ? { deviceId: context.deviceId } : {}),
+      ...(by ? { createdBy: by.actor, ...(by.approver ? { approvedBy: by.approver } : {}) } : {}),
       payload: cashSessionId ? { cashSessionId } : {},
     });
     const state = await this.state(client, mediaId);

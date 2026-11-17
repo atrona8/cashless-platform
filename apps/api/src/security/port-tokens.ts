@@ -17,3 +17,10 @@ export const ATTESTATION_VERIFIER = Symbol('ATTESTATION_VERIFIER');
  * production : `assertProcessIsSafe`) ; l'adaptateur réel est la mission 12b.
  */
 export const EDGE_CA = Symbol('EDGE_CA');
+
+/**
+ * Copie externe des scellements (mission 9b, WP12, FR-020, interfaces.md IC-08) : écrit l'empreinte d'un scellement
+ * hors de la base (stockage à écriture unique). Aujourd'hui seul un faux existe (refusé en production :
+ * `createSealCopy` et `assertProcessIsSafe`) ; l'adaptateur réel est la mission 12b.
+ */
+export const SEAL_COPY = Symbol('SEAL_COPY');

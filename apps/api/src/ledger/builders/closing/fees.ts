@@ -91,6 +91,11 @@ export interface OperatorFeePayload {
   bases: { TOPUP_AMOUNT?: bigint; PER_MEDIA?: bigint };
   /** Régularisation `NET_OF_REFUNDS` : écriture de sens inverse (§5.6). */
   regularization?: boolean;
+  /**
+   * Variante `REGULARIZATION` seulement : écart explicite (frais sur assiette brute moins frais sur assiette nette,
+   * calculé avec la même règle min/max/fixe), écrit en une transaction inversée. Ignoré hors régularisation.
+   */
+  amount?: bigint;
 }
 
 /** Frais du prestataire : une ligne `ORG_FPREST` par règle (jamais fusionnées), une extraction de taxe sur la somme. */
@@ -98,10 +103,15 @@ export function buildOperatorFee(
   command: LedgerCommand<'OPERATOR_FEE', OperatorFeePayload>,
   ctx: BuildContext,
 ): Line[] {
-  const { bases, regularization } = command.payload;
+  const { bases, regularization, amount } = command.payload;
   const { config } = ctx;
   const { org, ope } = partyAccounts(config);
   const lines: Line[] = [];
+  if (regularization && amount !== undefined) {
+    push(lines, org('ORG_FPREST'), requirePositive(amount, 'écart de régularisation'));
+    creditWithTax(lines, amount, config.taxBps, ope('OPE_FRAIS'), ope('OPE_TAX'));
+    return balanced(lines.map((line) => ({ ...line, amount: -line.amount })));
+  }
   for (const { basis, rule } of config.operatorFees) {
     const base = bases?.[basis] ?? 0n;
     // PER_MEDIA : nombre de supports × montant par support ; TOPUP_AMOUNT : frais sur le montant des recharges.

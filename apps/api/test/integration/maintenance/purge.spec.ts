@@ -38,6 +38,10 @@ const present = (nonce: Buffer): Promise<number> =>
       0,
   );
 
+// Le processus `maintenance` démarre désormais les travailleurs de la mission 9b (scellement, contrôles) : sous la passe
+// parallèle, le démarrage dépasse les 5 s par défaut.
+jest.setTimeout(30_000);
+
 describe('processus maintenance : purges des terminaux sous cashless_maint', () => {
   const saved = process.env.DATABASE_URL_MAINT;
   beforeAll(() => {
@@ -61,15 +65,27 @@ describe('processus maintenance : purges des terminaux sous cashless_maint', () 
     const { moduleRef, workers } = await start();
     try {
       // Mission 8 (WP12) : deux travailleurs de passerelle s'ajoutent à la purge des terminaux ; mission 9a
-      // (WP03) : la promotion des demandes de remboursement échues.
-      expect(workers.names()).toEqual([
-        'edge-silence',
-        'edge-release-stuck',
-        'refund-promotion',
-        'device-purge',
-      ]);
+      // (WP03) : la promotion des demandes de remboursement échues ; mission 9b (WP12) : les huit travailleurs de
+      // scellement, de contrôle et de transactions longues (`long-transactions` en premier).
+      // L'ordre d'enregistrement suit l'ordre de résolution de Nest : on compare l'ensemble, pas l'ordre.
+      expect([...workers.names()].sort()).toEqual(
+        [
+          'long-transactions',
+          'ledger-controls',
+          'payout-overdue',
+          'statement-unmatched',
+          'open-anomalies',
+          'ledger-seal',
+          'audit-seal',
+          'seal-verify',
+          'edge-silence',
+          'edge-release-stuck',
+          'refund-promotion',
+          'device-purge',
+        ].sort(),
+      );
       const lines = await workers.describe();
-      expect(lines).toHaveLength(4);
+      expect(lines).toHaveLength(12);
       expect(lines.filter((l) => /device-purge|nonces expirés/.test(l))).toHaveLength(1);
       expect(await present(stale)).toBe(1);
     } finally {

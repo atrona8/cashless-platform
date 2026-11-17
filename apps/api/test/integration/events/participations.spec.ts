@@ -124,6 +124,18 @@ describe('participations et points de vente', () => {
         ]);
       await db.query('COMMIT');
     });
+  const closeSteps = (eventId: string, steps: string[]) =>
+    withOwner(async (db) => {
+      await db.query('BEGIN');
+      await db.query(`SELECT set_config('app.operator_id', $1, true)`, [ops.a]);
+      for (const step of steps)
+        await db.query(`SELECT record_closing_step($1, $2, 'NOT_APPLICABLE', NULL, NULL, $3)`, [
+          eventId,
+          step,
+          adminA.userId,
+        ]);
+      await db.query('COMMIT');
+    });
   const join = async (eventId: string, merchantId: string, overrides: object = {}) => {
     const res = await post(organizerAdmin, `${A()}/events/${eventId}/participations`, {
       merchant_id: merchantId,
@@ -486,15 +498,23 @@ describe('participations et points de vente', () => {
     it('après LIVE et jusqu’à CLOSED : plus d’inscription ni de modification (409)', async () => {
       const event = await newEvent();
       const participation = await join(event.event_id, ids.m1);
-      await setStatus(
-        event.event_id,
-        'LIVE',
-        'CLOSING',
-        'RECONCILING',
-        'SETTLING',
-        'REFUND_WINDOW',
-        'CLOSED',
+      // Événement sans montant à clôturer : les étapes de clôture sont « sans objet » (conditions réelles de la base).
+      await setStatus(event.event_id, 'LIVE', 'CLOSING', 'RECONCILING', 'SETTLING');
+      await closeSteps(event.event_id, ['PITCH_FEES', 'OPERATOR_FEE', 'PLATFORM_FEE']);
+      await setStatus(event.event_id, 'REFUND_WINDOW');
+      await closeSteps(event.event_id, [
+        'OPERATOR_FEE_REGULARIZATION',
+        'BREAKAGE',
+        'DEPOSIT_FORFEIT',
+        'PROMO_EXPIRY',
+      ]);
+      await withOwner((db) =>
+        db.query(
+          `UPDATE event SET refund_deadline = clock_timestamp() - interval '1 minute' WHERE id = $1`,
+          [event.event_id],
+        ),
       );
+      await setStatus(event.event_id, 'CLOSED');
       const refused = await post(organizerAdmin, `${A()}/events/${event.event_id}/participations`, {
         merchant_id: ids.m2,
         link_type: 'EXTERNAL',

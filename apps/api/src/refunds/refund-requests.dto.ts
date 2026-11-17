@@ -2,6 +2,7 @@
 // Lecture stricte : tout champ inconnu est refusé en `400` (aucun champ ne se pose de l'extérieur). La réponse sort
 // d'UN mapper : jamais `requested_by`, `confirmed_by`, `operator_id` ni l'IBAN.
 import type { components } from '@cashless/contracts';
+import { isValidIban, normalizeIban } from '../common/iban';
 import { ProblemException } from '../errors/problem';
 import { isUuid, objectBody } from '../organization/platform/platform.dto';
 
@@ -60,6 +61,55 @@ export function parseRefundRequestCreate(raw: unknown): RefundRequestCreate {
     destination.new_number_otp = { otp_request_id: id, code: otp.code };
   }
   return { wallet_id: body.wallet_id, destination };
+}
+
+export interface RefundBackofficeCreateInput {
+  walletId: string;
+  method: 'WAVE' | 'ORANGE_MONEY' | 'BANK_TRANSFER';
+  msisdn: string | null;
+  /** IBAN normalisé (`normalizeIban`), jamais la saisie brute. */
+  iban: string | null;
+  reason: string;
+}
+
+const invalid422 = (detail: string) =>
+  new ProblemException('VALIDATION_FAILED', { status: 422, detail });
+
+/** Corps de `createRefundRequest` (`RefundRequestBackofficeCreate`) : strict, champ inconnu en `422`. */
+export function parseRefundRequestBackofficeCreate(raw: unknown): RefundBackofficeCreateInput {
+  const body = objectBody(raw);
+  const bad = (where: string, allowed: readonly string[], o: Record<string, unknown>) => {
+    const unknown = Object.keys(o).filter((key) => !allowed.includes(key));
+    if (unknown.length > 0) throw invalid422(`${where} : champ inconnu (${unknown.join(', ')}).`);
+  };
+  bad('corps', ['wallet_id', 'destination', 'reason'], body);
+  if (!isUuid(body.wallet_id)) throw invalid422('wallet_id : identifiant attendu.');
+  const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
+  if (reason.length < 10 || reason.length > 2000)
+    throw invalid422('reason : texte de 10 à 2000 caractères attendu.');
+  const dest = objectBody(body.destination);
+  bad('destination', ['method', 'msisdn', 'iban'], dest);
+  const method = dest.method;
+  if (method !== 'WAVE' && method !== 'ORANGE_MONEY' && method !== 'BANK_TRANSFER')
+    throw invalid422('destination.method : WAVE, ORANGE_MONEY ou BANK_TRANSFER attendu.');
+  if (method === 'BANK_TRANSFER') {
+    if (dest.msisdn !== undefined)
+      throw invalid422('destination.msisdn : interdit pour un virement.');
+    if (typeof dest.iban !== 'string' || dest.iban.length === 0 || dest.iban.length > 64)
+      throw invalid422('destination.iban : IBAN attendu.');
+    if (!isValidIban(dest.iban)) throw invalid422('destination.iban : IBAN invalide.');
+    return {
+      walletId: body.wallet_id,
+      method,
+      msisdn: null,
+      iban: normalizeIban(dest.iban),
+      reason,
+    };
+  }
+  if (dest.iban !== undefined) throw invalid422('destination.iban : réservé au virement.');
+  if (typeof dest.msisdn !== 'string' || !MSISDN.test(dest.msisdn))
+    throw invalid422('destination.msisdn : numéro au format international attendu.');
+  return { walletId: body.wallet_id, method, msisdn: dest.msisdn, iban: null, reason };
 }
 
 export function parseRejectBody(raw: unknown): { reason: string } {

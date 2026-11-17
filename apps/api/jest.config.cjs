@@ -21,6 +21,10 @@ module.exports = {
   // toutes les suites : ils tournent aussi seuls. Les suites de rotation des clés de signature des snapshots
   // vident la table des clés (globale, au plus deux clés valides) : une suite voisine qui publie un snapshot la
   // référence ; elles tournent seules. Toutes ces suites tournent en série, juste après la passe parallèle.
+  // Mission versements-rapprochements-cloture (WP12, WP14) : `controls-alerts` et `seal-and-verify` recréent la base
+  // (`resetDatabase()`) pour que les contrôles permanents et le scellement, qui lisent TOUS les grands livres et
+  // toutes les chaînes d'audit, ne voient que leurs données. Elles détruiraient la base des autres travailleurs : elles
+  // tournent seules, en série, sur base recréée, après la passe parallèle (workflow CI).
   testPathIgnorePatterns: [
     '/node_modules/',
     ...(process.env.SKIP_LATENCY
@@ -45,6 +49,8 @@ module.exports = {
           'end-to-end/snapshot-latency',
           'snapshot-keys/rotation',
           'snapshot-keys/key-admin-worker',
+          'controls/controls-alerts',
+          'sealing/seal-and-verify',
         ]
       : []),
   ],

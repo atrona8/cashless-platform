@@ -382,5 +382,9 @@
   "SALE_LINES_INVALID": {
     "title": "Lignes de vente refusées",
     "detail": "Les lignes de la vente ne correspondent pas au catalogue du point de vente ; resynchronisez le terminal."
+  },
+  "PAYOUT_EXCEEDS_ENTITLEMENT": {
+    "title": "Versement supérieur au droit disponible",
+    "detail": "Le montant du versement dépasse le droit net disponible du bénéficiaire, versements en cours déduits."
   }
 }

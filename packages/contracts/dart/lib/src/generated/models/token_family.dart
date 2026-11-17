@@ -4,7 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'status5.dart';
+import 'status6.dart';
 import 'hex32.dart';
 
 part 'token_family.g.dart';
@@ -21,7 +21,7 @@ class TokenFamily {
       _$TokenFamilyFromJson(json);
 
   final String fid;
-  final Status5 status;
+  final Status6 status;
   @JsonKey(name: 'refresh_token_sha256_current')
   final Hex32 refreshTokenSha256Current;
 

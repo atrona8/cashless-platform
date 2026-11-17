@@ -733,9 +733,9 @@ def acc(led, pfx):
 P9, P8 = "29000000-0000-0000-0000-0000000000", "28000000-0000-0000-0000-0000000000"
 run(f"""INSERT INTO jurisdiction_profile (id, country_code, version, valid_from, breakage_destination) VALUES
  ('50000000-0000-0000-0000-000000000099','SN',99,'2026-01-01','NONE');
-INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, jurisdiction_id, funds_holder) VALUES
- ('{E9}','{SN}','{ORG}','Clôture complète','XOF','Africa/Dakar','50000000-0000-0000-0000-000000000001','ORGANIZER'),
- ('{E8}','{SN}','{ORG}','Clôture avec soldes restants','XOF','Africa/Dakar','50000000-0000-0000-0000-000000000099','ORGANIZER');
+INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, jurisdiction_id, funds_holder, refund_deadline) VALUES
+ ('{E9}','{SN}','{ORG}','Clôture complète','XOF','Africa/Dakar','50000000-0000-0000-0000-000000000001','ORGANIZER', now() - interval '1 day'),
+ ('{E8}','{SN}','{ORG}','Clôture avec soldes restants','XOF','Africa/Dakar','50000000-0000-0000-0000-000000000099','ORGANIZER', now() - interval '1 day');
 INSERT INTO ledger (id, operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id) VALUES
  ('{L9}','{SN}','EVENT','{E9}','XOF','{ORG}','{ORG}'), ('{L8}','{SN}','EVENT','{E8}','XOF','{ORG}','{ORG}');
 {acc(L9, P9)}; {acc(L8, P8)}""")
@@ -744,6 +744,16 @@ def pz(led, pfx, typ, key, a, b, amt, src="BATCH", extra=""):
             f"'[{{\"account_id\":\"{pfx}{a}\",\"amount\":{amt}}},{{\"account_id\":\"{pfx}{b}\",\"amount\":{-amt}}}]'{extra})")
 BO = f", NULL, NULL, '{U1}', '{U2}'"
 def st(ev, s_): return f"SELECT set_event_status('{ev}', '{s_}', '{U1}')"
+# Conditions de clôture (mission 9b, 0083-0084) : relevé PSP qui concorde avant SETTLING, étapes de clôture
+# enregistrées avant REFUND_WINDOW (1 à 3, en SETTLING) et CLOSED (4 à 7, en REFUND_WINDOW).
+def imp(led, acct, closing, tag):
+    return (f"SELECT import_statement_lines(jsonb_build_object('ledger_id','{led}','account_id','{acct}','source','wave',"
+            f"'file_sha256',md5('{tag}')||md5('{tag}x'),'statement_date',(current_date + 1)::text,'closing_balance',{closing},"
+            f"'currency','XOF','imported_by','{U1}'), '[]'::jsonb)")
+def steps_na(ev, names):
+    return "; ".join(f"SELECT record_closing_step('{ev}','{n}','NOT_APPLICABLE','{{}}','{{}}','{U1}')" for n in names)
+S13 = ("PITCH_FEES", "OPERATOR_FEE", "PLATFORM_FEE")
+S47 = ("OPERATOR_FEE_REGULARIZATION", "BREAKAGE", "DEPOSIT_FORFEIT", "PROMO_EXPIRY")
 throws_code(f"UPDATE event SET status = 'LIVE' WHERE id = '{E9}'", "CL018", "statut d'événement modifié hors de set_event_status : refusé")
 throws_code(st(E9, "CLOSING"), "CL018", "passage DRAFT -> CLOSING non prévu")
 lives(st(E9, "LIVE"), "ouverture de l'événement")
@@ -755,12 +765,17 @@ throws_code(pz(L9, P9, "PURCHASE", "z:4", "02", "03", 10, "ONLINE"), "CL004", "c
 lives(st(E9, "RECONCILING"), "rapprochement")
 throws_code(st(E9, "SETTLING"), "CL019", "compte d'attente non soldé : règlement refusé")
 run(pz(L9, P9, "ADJUSTMENT", "z:5", "03", "04", 100, "BACKOFFICE", BO))
-lives(st(E9, "SETTLING"), "compte d'attente soldé : règlement")
+throws_code(st(E9, "SETTLING"), "CL019", "compte PSP sans relevé : règlement refusé")
+run(imp(L9, P9 + "01", 1000, "e9"))
+lives(st(E9, "SETTLING"), "compte d'attente soldé et compte PSP rapproché : règlement")
 throws_code(st(E9, "REFUND_WINDOW"), "CL019", "commerçant non versé : fenêtre de remboursement refusée")
 run(pz(L9, P9, "PAYOUT_INITIATED", "z:6", "03", "05", 400, "BACKOFFICE", BO))
 throws_code(st(E9, "REFUND_WINDOW"), "CL019", "versement initié non confirmé : refusé")
 run(pz(L9, P9, "PAYOUT_CONFIRMED", "z:7", "05", "01", 400, "BACKOFFICE", BO))
-lives(st(E9, "REFUND_WINDOW"), "versements faits : fenêtre de remboursement")
+throws_code(st(E9, "REFUND_WINDOW"), "CL019", "étapes de clôture manquantes : fenêtre refusée")
+run(steps_na(E9, S13))
+lives(st(E9, "REFUND_WINDOW"), "versements faits, étapes 1 à 3 faites : fenêtre de remboursement")
+run(steps_na(E9, S47[:3]))
 throws_code(st(E9, "CLOSED"), "CL019", "casse vers l'organisateur : soldes festivaliers non nuls, clôture refusée")
 def p3(led, pfx, typ, key, lines_, src="BACKOFFICE", extra=BO):
     js = ",".join('{"account_id":"%s%s","amount":%d}' % (pfx, a, m) for a, m in lines_)
@@ -769,12 +784,15 @@ def p3(led, pfx, typ, key, lines_, src="BACKOFFICE", extra=BO):
 run(p3(L9, P9, "BREAKAGE", "z:8", [("02", 600), ("06", -480), ("07", -120)], src="BATCH", extra="")
     + "; " + pz(L9, P9, "PAYOUT_INITIATED", "z:8a", "06", "05", 480, "BACKOFFICE", BO) + "; " + pz(L9, P9, "PAYOUT_CONFIRMED", "z:8b", "05", "01", 480, "BACKOFFICE", BO)
     + "; " + pz(L9, P9, "PAYOUT_INITIATED", "z:8c", "07", "05", 120, "BACKOFFICE", BO) + "; " + pz(L9, P9, "PAYOUT_CONFIRMED", "z:8d", "05", "01", 120, "BACKOFFICE", BO))
-lives(st(E9, "CLOSED"), "casse partagée et versée : tout est soldé, clôture")
+throws_code(st(E9, "CLOSED"), "CL019", "étape 7 manquante : clôture refusée")
+run(steps_na(E9, S47[3:]))
+lives(st(E9, "CLOSED"), "casse partagée et versée, étapes faites, échéance atteinte : clôture")
 is_(f"(SELECT status || ':' || (SELECT count(*) FROM ledger_seal WHERE ledger_id = '{L9}') FROM ledger WHERE id = '{L9}')", "'LOCKED:1'",
     "clôture sans solde restant : grand livre verrouillé et scellement final")
 is_(f"(SELECT count(*) FROM event_status_history WHERE event_id = '{E9}')::int", "6", "historique des six passages")
 run(st(E8, "LIVE") + "; " + pz(L8, P8, "TOPUP", "y:1", "01", "02", 500, "PSP_WEBHOOK") + "; " + st(E8, "CLOSING") + "; "
-    + st(E8, "RECONCILING") + "; " + st(E8, "SETTLING") + "; " + st(E8, "REFUND_WINDOW"))
+    + st(E8, "RECONCILING") + "; " + imp(L8, P8 + "01", 500, "e8") + "; " + st(E8, "SETTLING") + "; "
+    + steps_na(E8, S13) + "; " + st(E8, "REFUND_WINDOW") + "; " + steps_na(E8, S47))
 lives(st(E8, "CLOSED"), "casse NONE : clôture avec soldes festivaliers restants")
 is_(f"(SELECT status FROM ledger WHERE id = '{L8}') || ':' || (SELECT remaining FROM event_status_history WHERE event_id = '{E8}' AND to_status = 'CLOSED')",
     "'CLOSING:500'", "soldes restants : grand livre non verrouillé, relevé de 500")

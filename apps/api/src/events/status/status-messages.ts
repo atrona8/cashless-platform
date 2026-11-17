@@ -116,10 +116,43 @@ const TEXTS: Record<string, Texts> = {
   },
   PSP_RECONCILED: {
     fr: {
-      met: '',
-      unmet: 'Prestataires de paiement rapprochés : pas encore calculable par le système.',
+      met: 'Les comptes des prestataires de paiement sont rapprochés avec leurs relevés.',
+      unmet: 'Des comptes des prestataires de paiement ne sont pas rapprochés avec leurs relevés.',
     },
-    en: { met: '', unmet: 'Payment providers reconciled: not computable by the system yet.' },
+    en: {
+      met: 'Payment provider accounts are reconciled with their statements.',
+      unmet: 'Some payment provider accounts are not reconciled with their statements.',
+    },
+  },
+  NO_OPEN_CASH_SESSION: {
+    fr: {
+      met: 'Aucune session de caisse ouverte.',
+      unmet: 'Une session de caisse est encore ouverte ou en cours de fermeture.',
+    },
+    en: {
+      met: 'No cash session is open.',
+      unmet: 'A cash session is still open or closing.',
+    },
+  },
+  REFUND_DEADLINE_REACHED: {
+    fr: {
+      met: 'La date limite de remboursement est atteinte.',
+      unmet: "La date limite de remboursement n'est pas atteinte.",
+    },
+    en: {
+      met: 'The refund deadline has been reached.',
+      unmet: 'The refund deadline has not been reached yet.',
+    },
+  },
+  CLOSING_STEPS_DONE: {
+    fr: {
+      met: 'Les étapes de clôture de la phase sont faites ou sans objet.',
+      unmet: 'Des étapes de clôture de la phase restent à faire.',
+    },
+    en: {
+      met: 'The closing steps of the phase are done or not applicable.',
+      unmet: 'Some closing steps of the phase are still to do.',
+    },
   },
   DEVICES_REPORTED: {
     fr: { met: '', unmet: 'Terminaux synchronisés : pas encore calculable par le système.' },

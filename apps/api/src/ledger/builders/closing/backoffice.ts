@@ -101,6 +101,9 @@ export function buildBreakage(
   );
   if (config.breakageDestination === 'LEGAL_ACCOUNT') {
     push(lines, legalBreakage(), -total);
+  } else if (config.breakageDestination === 'OPERATOR') {
+    // Décision du porteur : toute la casse au prestataire, `breakage_organizer_bps` ignoré.
+    push(lines, ope('OPE_CASSE'), -total);
   } else {
     const [organizer, operator] = splitShare(total, config.breakageOrganizerBps);
     push(lines, org('ORG_CASSE'), -organizer);

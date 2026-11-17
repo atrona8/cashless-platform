@@ -1,10 +1,13 @@
 // Garde de production du processus `maintenance` (WP10) : refus de démarrer sans DATABASE_URL_MAINT, et aucun faux
-// dans ce processus (`assertProcessIsSafe` passe en production).
+// dans ce processus (`assertProcessIsSafe` passe en production). Mission 9b (WP12) : ce n'est plus vrai de la copie
+// externe des scellements, simulée jusqu'à la mission 12b : le démarrage en production est refusé.
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
 import { DEVICE_IDENTITY } from '../../../src/device-identity/device-identity.port';
 import { KMS_PROVIDER } from '../../../src/kms/kms.module';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
+import { FakeSealCopy } from '../../../src/sealing/fake-seal-copy';
+import { SEAL_COPY } from '../../../src/security/port-tokens';
 import { MaintenanceProcessModule } from '../../../src/processes/maintenance.module';
 import { MAINT_URL } from '../../support/db';
 import { DEVICE_PRODUCTION } from '../../support/tls';
@@ -48,13 +51,24 @@ describe('processus maintenance : garde de production', () => {
     ).rejects.toThrow(/DATABASE_URL_MAINT manquant/);
   });
 
-  it('démarre en production avec DATABASE_URL_MAINT : aucun faux, la garde passe', async () => {
+  // Mission 9b (WP12) : la copie externe des scellements n'a qu'un faux (décision du porteur, jusqu'à la mission 12b).
+  // Le processus `maintenance` refuse donc de démarrer en production : la fabrique refuse de construire le faux.
+  it('refuse de démarrer en production : la copie externe des scellements est un faux', async () => {
     process.env.DATABASE_URL_MAINT = MAINT;
+    await expect(
+      Test.createTestingModule({ imports: [MaintenanceProcessModule] }).compile(),
+    ).rejects.toThrow(/la copie externe des scellements/);
+  });
+
+  it('démarre hors production : le faux est admis, la garde passe, aucun faux terminal ni clé', async () => {
+    process.env.DATABASE_URL_MAINT = MAINT;
+    process.env.NODE_ENV = 'test';
     const moduleRef = await Test.createTestingModule({
       imports: [MaintenanceProcessModule],
     }).compile();
     try {
       expect(() => assertProcessIsSafe(moduleRef as never)).not.toThrow();
+      expect(moduleRef.get(SEAL_COPY, { strict: false })).toBeInstanceOf(FakeSealCopy);
       // Ni faux terminal ni service de clés dans ce processus.
       for (const token of [KMS_PROVIDER, DEVICE_IDENTITY])
         expect(() => moduleRef.get(token, { strict: false })).toThrow();

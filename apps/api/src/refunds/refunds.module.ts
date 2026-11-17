@@ -6,6 +6,8 @@ import { TenantModule } from '../organization/tenant/tenant.module';
 import { ConfigResolverModule } from '../configuration/config-resolver.module';
 import { MyRefundRequestsController } from './my-refund-requests.controller';
 import { RefundApproveController } from './refund-approve.controller';
+import { RefundBackofficeCreateController } from './refund-backoffice-create.controller';
+import { RefundBackofficeCreateService } from './refund-backoffice-create.service';
 import { RefundConfirmService } from './refund-confirm.service';
 import { RefundRequestsController } from './refund-requests.controller';
 import { RefundRequestsService } from './refund-requests.service';
@@ -14,8 +16,18 @@ import { WalletRefundActions } from './wallet-refund-action';
 
 @Module({
   imports: [RefundsHolderModule, CustomerAuthModule, TenantModule, ConfigResolverModule],
-  controllers: [MyRefundRequestsController, RefundRequestsController, RefundApproveController],
-  providers: [RefundRequestsService, RefundConfirmService, WalletRefundActions],
+  controllers: [
+    MyRefundRequestsController,
+    RefundRequestsController,
+    RefundBackofficeCreateController,
+    RefundApproveController,
+  ],
+  providers: [
+    RefundRequestsService,
+    RefundBackofficeCreateService,
+    RefundConfirmService,
+    WalletRefundActions,
+  ],
   exports: [RefundRequestsService],
 })
 export class RefundsModule {}

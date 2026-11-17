@@ -1,7 +1,7 @@
 // Aucun faux en production (règle du porteur du 13/10/2026, NFR-010) : un processus qui porte un faux service de clés,
 // un faux terminal, un faux festivalier, une fausse autorité des terminaux, un faux signataire de jetons ou un faux
-// vérificateur d'attestation refuse de démarrer en configuration de production. Aucun réglage ne désactive cette
-// garde. Chaque point d'entrée l'appelle avant d'écouter.
+// vérificateur d'attestation, ou une fausse copie externe des scellements (mission 9b, WP12) refuse de démarrer en
+// configuration de production. Aucun réglage ne désactive cette garde. Chaque point d'entrée l'appelle avant d'écouter.
 
 export interface MaybeFake {
   readonly isFake?: boolean;

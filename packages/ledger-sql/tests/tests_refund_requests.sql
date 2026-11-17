@@ -173,7 +173,7 @@ SELECT lives_ok($q$SELECT pg_temp.rr(pg_temp.id('81f005'), 'REQUESTED', '{"custo
 INSERT INTO refund_request (id, operator_id, ledger_id, event_id, wallet_id, customer_id, method, msisdn, new_number,
                             status, estimated_amount, fee, currency)
 VALUES (pg_temp.id('81bb01'), pg_temp.id('81a002'), (SELECT lb FROM fx), pg_temp.id('81e002'), pg_temp.id('81f0b1'),
-        pg_temp.id('81c002'), 'WAVE', '+221770000002', false, 'REQUESTED', 500, 5, 'XOF');
+        pg_temp.id('81c002'), 'WAVE', '+221770000002', false, 'CANCELLED', 500, 5, 'XOF');   -- WP06 : créée directement
 SELECT is(refund_request_operator(pg_temp.id('81bb01')), pg_temp.id('81a002'), 'demande de B : prestataire B');
 SELECT is(refund_request_operator(pg_temp.id('81bb99')), NULL, 'demande inconnue : NULL');
 
@@ -189,7 +189,7 @@ VALUES (pg_temp.id('81bb03'), pg_temp.id('81a001'), (SELECT la FROM fx), pg_temp
         pg_temp.id('81c001'), 'WAVE', '+221770000009', true, 'AWAITING_HOLDER', 500, 5, 'XOF',
         clock_timestamp() + interval '1 day');
 -- Une seconde échue, chez B : l'appel couvre tous les prestataires.
-UPDATE refund_request SET status = 'CANCELLED' WHERE id = pg_temp.id('81bb01');
+-- (81bb01 est déjà CANCELLED depuis sa création : REQUESTED -> CANCELLED est refusé par le déclencheur, 0086, WP06.)
 INSERT INTO refund_request (id, operator_id, ledger_id, event_id, wallet_id, customer_id, method, msisdn, new_number,
                             status, estimated_amount, fee, currency, hold_until)
 VALUES (pg_temp.id('81bb04'), pg_temp.id('81a002'), (SELECT lb FROM fx), pg_temp.id('81e002'), pg_temp.id('81f0b1'),

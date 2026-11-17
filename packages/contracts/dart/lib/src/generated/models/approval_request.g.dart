@@ -186,4 +186,5 @@ const _$ProblemCodeEnumMap = {
   ProblemCode.vendorSessionInvalid: 'VENDOR_SESSION_INVALID',
   ProblemCode.vendorPinInvalid: 'VENDOR_PIN_INVALID',
   ProblemCode.saleLinesInvalid: 'SALE_LINES_INVALID',
+  ProblemCode.payoutExceedsEntitlement: 'PAYOUT_EXCEEDS_ENTITLEMENT',
 };

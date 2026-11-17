@@ -71,7 +71,7 @@ export type PspFeeBearer = 'ORGANIZER' | 'OPERATOR' | 'CUSTOMER';
 export type LossBearer = 'ORGANIZER' | 'OPERATOR';
 /** Assiette d'une règle de frais du prestataire : recharges payées de la période, ou nombre de supports activés. */
 export type OperatorFeeBasis = 'TOPUP_AMOUNT' | 'PER_MEDIA';
-export type BreakageDestination = 'ORGANIZER' | 'LEGAL_ACCOUNT' | 'NONE';
+export type BreakageDestination = 'ORGANIZER' | 'OPERATOR' | 'LEGAL_ACCOUNT' | 'NONE';
 
 /** Configuration figée à la date de l'opération (fournie par ConfigResolver, WP09). Montants et taux en bigint. */
 export interface ResolvedConfig {
