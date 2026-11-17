@@ -31,6 +31,11 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
      d'approbation non acceptée ou d'une autre action que `PAYOUT` ; une ligne `payout` exige
      `initiated_tx_id` à l'insertion et `settled_tx_id` au changement de statut.
 
+7. **17/11/2026 (implémentation, constat de WP09)** — `import_statement_lines` (0083) rapprochait
+   automatiquement sur la seule référence, sans comparer signe ni montant. Corrigé dans `0083` par un
+   nouveau cycle de WP02 (pas de nouvelle migration) : rapprochement automatique seulement si le
+   mouvement net de la transaction sur le compte égale le montant de la ligne. Renforcement, à consigner.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse
