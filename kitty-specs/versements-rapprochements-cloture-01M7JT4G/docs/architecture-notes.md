@@ -36,5 +36,5 @@
 Contribue à : `docs/04-architecture-diagram.md`, table « Décisions notables » et ligne de détail de la mission. La vue C4 n'est pas modifiée (aucun conteneur nouveau ; la copie externe simulée relève du système « stockage S3 » déjà au diagramme).
 
 ## Nécessaire pour cette mission ? Oui : décisions de sécurité (droits, borne, verrous, copie simulée, fonctions de maintenance) et sept nouveaux modules, sans nouveau conteneur (réponse proposée par l'Agent le 17/11/2026, à confirmer par le porteur).
-## Complet ? Oui : migrations, chemins et travailleurs recalés sur le code livré (proposition de l'Agent le 17/11/2026, à confirmer par le porteur).
-## Validé par : réponse proposée par l'Agent le 17/11/2026, en attente de confirmation du porteur.
+## Complet ? Oui : migrations, chemins et travailleurs recalés sur le code livré (proposition de l'Agent, confirmée par le porteur le 17/11/2026).
+## Validé par : proposition de l'Agent, confirmée par le porteur le 17/11/2026.

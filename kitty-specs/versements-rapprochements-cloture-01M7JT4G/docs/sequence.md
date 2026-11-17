@@ -39,5 +39,5 @@ Restent en texte : relevés des parties et export comptable (lectures simples), 
 Voir `docs/05-sequence-diagrams.md`, flux : « Double validation au back-office » (les actions `PAYOUT`, `LATE_CLAIM` et `ADJUSTMENT` s'y ajoutent) et « Clôture d'un événement » (conditions de passage nouvelles, étapes, verrouillage).
 
 ## Nécessaire pour cette mission ? Oui : quatre interactions inter-composants nouvelles (clôture, lot à deux, rapprochement, maintenance), régénérées et relues (réponse proposée par l'Agent le 17/11/2026, à confirmer par le porteur).
-## Complet ? Oui : recalé sur le code réel (proposition de l'Agent le 17/11/2026, à confirmer par le porteur).
-## Validé par : réponse proposée par l'Agent le 17/11/2026, en attente de confirmation du porteur.
+## Complet ? Oui : recalé sur le code réel (proposition de l'Agent, confirmée par le porteur le 17/11/2026).
+## Validé par : proposition de l'Agent, confirmée par le porteur le 17/11/2026.

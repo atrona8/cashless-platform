@@ -49,5 +49,5 @@ Hors périmètre : aucun envoi de paiement par l'API (paiement manuel, C-003), a
 Contribue à : `docs/02-use-case-diagram.md`, domaines « Argent réel : PSP, caisses, rapprochements, versements » (versements, rapprochements, relevés, demande de remboursement du back-office) et « Clôture d'un événement » si ce domaine existe au diagramme global, sinon « Administration et exploitation » (étapes de clôture, réclamations tardives, comptabilité). Pas de renommage ni de fusion de cas d'usage globaux.
 
 ## Nécessaire pour cette mission ? Oui : onze acteurs-rôles et seize cas d'usage nouveaux, deux diagrammes régénérés et relus à la review (réponse proposée par l'Agent le 17/11/2026, à confirmer par le porteur).
-## Complet ? Oui : recalé sur le code réel (décisions 7 à 17 reportées) ; scellement, alertes et contrôles restent en séquence, sans cas d'usage utilisateur (proposition de l'Agent le 17/11/2026, à confirmer par le porteur).
-## Validé par : réponse proposée par l'Agent le 17/11/2026, en attente de confirmation du porteur.
+## Complet ? Oui : recalé sur le code réel (décisions 7 à 17 reportées) ; scellement, alertes et contrôles restent en séquence, sans cas d'usage utilisateur (proposition de l'Agent, confirmée par le porteur le 17/11/2026).
+## Validé par : proposition de l'Agent, confirmée par le porteur le 17/11/2026.
