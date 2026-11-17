@@ -149,6 +149,11 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   grand livre LOCKED (OP) ; preuve de bout en bout que ni `approval_request` exposé ni `audit_log`
   (`APPROVAL_*`, `LATE_CLAIM_*`) ne portent d'IBAN ou de numéro après consolidation (test FR-024 de WP10
   réactivé).
+- **WP10 (décisions 12 et 13)** : ADR « réclamation tardive sans frais » ; OP + ADR « mobile money vers
+  un autre numéro sans code de vérification », test qui échoue si l'approbation par une seconde personne
+  disparaît.
+- **WP09 (relecture)** : OP : deux lignes de relevé peuvent être rapprochées à la même anomalie
+  (`explained_by_anomalies` additionne les deux) ; mission qui le lève à proposer au porteur.
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la

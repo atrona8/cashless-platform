@@ -49,6 +49,12 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
 11. **17/11/2026 (WP07)** — `breakage_destination = OPERATOR` : 100 % de la casse au prestataire,
     `breakage_organizer_bps` ignoré.
 
+12. **17/11/2026 (WP10)** — Réclamation tardive sur grand livre `LOCKED` remboursée sans frais (deux lignes
+    seulement, `check_late_claim`) : règle voulue, ADR.
+13. **17/11/2026 (WP10)** — Remboursement tardif en mobile money vers un autre numéro que celui du
+    festivalier : accepté, contrôle par seconde personne et preuve ; OP + ADR + test qui échoue si une
+    seule personne suffit.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse
