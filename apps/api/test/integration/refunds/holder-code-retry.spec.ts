@@ -64,17 +64,56 @@ describe('code du titulaire : réessai après refus, blocage, décisions concurr
     (await rows<{ status: string }>('SELECT status FROM refund_request WHERE id = $1', [id]))[0]!
       .status;
 
+  /**
+   * Remet l'échéance à +1 h seulement si la demande est encore `AWAITING_HOLDER`, en une transaction : le verrou de
+   * ligne sérialise avec `promote_due_refund_requests()`. Renvoie le nombre de codes consommés lu dans la même
+   * transaction (avant la remise), ou `null` si une autre suite a promu la demande entre-temps (irréversible).
+   */
+  const restoreHoldIfPending = (id: string, otp: string): Promise<number | null> =>
+    withOwner(async (db) => {
+      await db.query('BEGIN');
+      try {
+        await db.query("SET LOCAL session_replication_role = 'replica'");
+        const r = await db.query(
+          `UPDATE refund_request SET hold_until = clock_timestamp() + interval '1 hour'
+            WHERE id = $1 AND status = 'AWAITING_HOLDER'`,
+          [id],
+        );
+        const c = await db.query<{ n: number }>(
+          'SELECT count(*)::int AS n FROM otp_challenge WHERE id = $1 AND consumed_at IS NOT NULL',
+          [otp.slice(4)],
+        );
+        await db.query('COMMIT');
+        return r.rowCount === 1 ? c.rows[0]!.n : null;
+      } catch (error) {
+        await db.query('ROLLBACK');
+        throw error;
+      }
+    });
+
   it('décision refusée (409, échue) : le code n’est pas consommé ; il sert quand la demande redevient décidable', async () => {
-    const s = await setup();
-    await withOwner((db) => backdateHold(db, s.req.id, "clock_timestamp() - interval '1 minute'"));
-    const body = { decision: 'CONFIRM', otp_request_id: s.otp, code: s.code };
-    expect((await decide(s.req.id, body)).status).toBe(409);
-    expect((await decide(s.req.id, body)).status).toBe(409);
-    expect((await challenge(s.otp)).consumed).toBe(0);
-    await withOwner((db) => backdateHold(db, s.req.id, "clock_timestamp() + interval '1 hour'"));
-    const ok = await decide(s.req.id, body);
-    expect([ok.status, ok.body.status]).toEqual([200, 'REQUESTED']);
-    expect((await challenge(s.otp)).consumed).toBe(1);
+    // `promote_due_refund_requests()` balaie tous les prestataires : une autre suite en parallèle peut promouvoir la
+    // demande dans la fenêtre où son échéance est reculée (promotion irréversible). Cette fenêtre est réduite à un
+    // aller-retour (refus simultanés, remise conditionnelle atomique) ; si la demande a été promue, on refait
+    // l'enchaînement complet sur une demande neuve. Rien n'est affaibli : le refus et le service du code sont
+    // toujours prouvés sur la même demande, dans l'ordre.
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const s = await setup();
+      await withOwner((db) =>
+        backdateHold(db, s.req.id, "clock_timestamp() - interval '1 minute'"),
+      );
+      const body = { decision: 'CONFIRM', otp_request_id: s.otp, code: s.code };
+      const refused = await Promise.all([decide(s.req.id, body), decide(s.req.id, body)]);
+      expect(refused.map((r) => r.status)).toEqual([409, 409]);
+      const consumedBefore = await restoreHoldIfPending(s.req.id, s.otp);
+      if (consumedBefore === null) continue;
+      expect(consumedBefore).toBe(0);
+      const ok = await decide(s.req.id, body);
+      expect([ok.status, ok.body.status]).toEqual([200, 'REQUESTED']);
+      expect((await challenge(s.otp)).consumed).toBe(1);
+      return;
+    }
+    throw new Error('demande promue par une autre suite à chacun des 30 essais');
   });
 
   it('code faux : essais comptés (422) ; au 5e, 429 puis le bon code est refusé ; rien n’est consommé ni décidé', async () => {
