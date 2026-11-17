@@ -63,6 +63,15 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
     laissent non rapprochée (automatique) une ligne dont la demande est déjà recréditée (`FAILED`).
     Ordre des verrous : la demande de remboursement passe en tête. Renforcement, à consigner.
 
+15. **17/11/2026 (relecture de WP13)** — Relevé de l'organisateur : catégorie « Ventes internes »
+    ajoutée (comptes des participations `INTERNAL` de ses commerçants), conforme à SPECIFICATION §12.3 ;
+    nouveau cycle court de WP13.
+16. **17/11/2026 (WP13)** — `closing_balance` (facultatif) non servi dans le relevé JSON (p95 2,2 s sans
+    index couvrant) : reporté ; point ouvert, index `posting(account_id) INCLUDE (amount)` proposé à une
+    mission ultérieure ; signalé dans la note aux équipes clientes (le CSV porte le solde courant).
+17. **17/11/2026 (WP13)** — Bornes de période de l'export comptable épinglées en UTC : corrigé par WP14
+    en retouche hors carte (`accounting-export.service.ts`), avec un test près de minuit.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse

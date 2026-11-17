@@ -167,6 +167,15 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   échoue si on retire le verrou de `refund_request` dans `match_statement_line`. Consigner le
   renforcement (ADR) et les arbitrages de la route 15 (virement `REQUESTED`, numéro mobile étranger en
   `AWAITING_HOLDER`, `extra_check`). `release-cumul-lock.spec.ts` est sous `refunds/` (pas `media/`).
+- **WP13 (relecture)** : décision 17 : épingler en UTC les bornes de période de l'export comptable
+  (`t.occurred_at >= $3::date` suit le fuseau de session), retouche hors carte de
+  `statements/accounting-export.service.ts`, test d'une écriture à 23:30 UTC et 00:30 UTC sous une
+  session `TimeZone` non UTC. Décision 16 : OP `closing_balance` non servi (index couvrant à proposer).
+  Note aux équipes clientes : ordre des lignes = ordre d'écriture au grand livre ; colonne `sens` de
+  l'export et risque de double compte si les deux côtés d'une transaction sont mappés ; une version de
+  correspondance remplace la précédente (couple absent = non mappé). OP : pagination par numéro
+  d'écriture sur plusieurs grands livres (écriture validée plus tard manquée, théorique) ; relevé et CSV
+  festivalier non tracés (hors FR-024).
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
