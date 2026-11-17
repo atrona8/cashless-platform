@@ -3077,3 +3077,23 @@ Décision de l'orchestrateur du 17/11/2026 (renforcement, règle 1 de `CLAUDE.md
 - **Contexte.** Le masque de WP08 couvrait `payload` mais non `result` : le numéro d'un `WALLET_REFUND` exécuté était en clair dans `GET /approval-requests` et l'audit `APPROVAL_EXECUTED` (FR-024).
 - **Décision.** `approvalRequestDto` applique `maskPaymentData` à `result` ; l'audit recopie ce DTO (même chemin), donc masqué aussi. Retouche hors carte de `approval/approval.mapper.ts`.
 - **Test.** `invariants-cloture/payment-data-exposure.spec.ts` ; `late-claims/late-claim.spec.ts` (FR-024, filtré sur ses objets). **Références.** OP-N147, ADR-204.
+
+## ADR-212 — Mission 9b : ligne de relevé importée après le recrédit d'un `FAILED` (reste d'OP-N126)
+
+Relevé par les relectures de WP11 et de la mission ; consigné le 17/11/2026.
+
+- **Statut** : Acceptée. **Écart accepté (limite structurelle).**
+- **Contexte.** ADR-203 ferme la course entre un rapprochement validé et le `REVERSAL`. Le recrédit reste possible tant qu'aucune ligne n'est importée : la banque n'est pas encore connue.
+- **Décision.** Une ligne importée après le recrédit reste « non rapprochée » (automatique) ou est refusée (manuel) ; seule l'alerte générique `statement-unmatched` est levée. Aucune alerte dédiée « paiement vu à la banque après recrédit » en 9b.
+- **Risque.** Double versement possible, signalé tardivement et sans lien avec la demande.
+- **Mission qui le lève.** 12b (alertes, avec envoi à une personne). **Condition de levée.** Alerte dédiée à l'import.
+- **Test.** `tests_statements.sql` (section 4b) ; `invariants-cloture/consignation.spec.ts`. **Références.** OP-N148, ADR-203, OP-N126.
+
+## ADR-213 — Mission 9b : renommage des enums Dart générés
+
+Décision n° 6 du porteur (17/11/2026) ; consigné le 17/11/2026.
+
+- **Statut** : Acceptée. Changement de contrat de compilation, pas un affaiblissement de sécurité.
+- **Contexte.** Les valeurs ajoutées à `openapi.yaml` par la mission déplacent la numérotation des enums anonymes générés pour Dart.
+- **Décision.** `Event.status` passe de `Status4` à `Status5` et `TokenFamily.status` de `Status5` à `Status6`. Les équipes clientes qui nomment ces types doivent les renommer ; la note `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md` le dit.
+- **Références.** OP-N146 (liste des renforcements et remarques), ADR-200.

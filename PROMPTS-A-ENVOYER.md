@@ -424,7 +424,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > manuel (l'API ne verse rien) ; note aux équipes clientes : `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`. **Levés** : OP-N123,
 > OP-N124, OP-N126, OP-N128, OP-N130, et la partie rapprochement d'OP-N82 (ADR-210). **Écarts acceptés** : copie externe des
 > scellements simulée (OP-N131, ADR-197), alertes sans envoi (OP-N132, ADR-198), remboursement tardif en mobile money vers un
-> autre numéro (OP-N139, ADR-207). **Limites consignées** : OP-N133 à OP-N138, OP-N140 à OP-N145. **Renforcements** : OP-N146.
+> autre numéro (OP-N139, ADR-207). **Limites consignées** : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126, ADR-212), OP-N149 (isolation entre organisateurs, mission 13). **Renforcements** : OP-N146 (dont enums Dart renommés, ADR-213).
 > **Levé en fin de mission** : OP-N147 (masque de `result` dans `approvalRequestDto`, ADR-211).
 
 - [ ] /spec-kitty.specify Versements, rapprochements et clôture d'un événement, plus la demande de remboursement créée par le back-office (virement `BANK_TRANSFER` avec IBAN, opération à ajouter au contrat, reportée de la 9a le 13/11/2026) (SPECIFICATION §11.3, §11.4, §12, §13.7, §14.2 S22, ADR-75, ADR-76 ; les remboursements des festivaliers sont livrés par la mission 9a). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock (faux jusqu'à la 12b) et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
@@ -637,6 +637,10 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 12b — Intégrations réelles (services externes)
 
+> **Hérité de la mission 9b (17/11/2026, OP-N148, ADR-212)** : alerte dédiée « paiement vu à la banque après recrédit » quand une ligne
+> de relevé importée après le recrédit d'un `FAILED` porte la référence de la demande (aujourd'hui : alerte générique
+> `statement-unmatched`), envoyée à une personne (OP-N132) ; test : la ligne tardive lève l'alerte dédiée.
+
 > **Hérité de la mission 8 (porteur, 05/11/2026 ; bloque la production de la passerelle)** : écrire l'adaptateur réel du port
 > de stockage matériel de la passerelle (TPM ou équivalent, clé de signature des snapshots et clé d'accord), choisir le
 > matériel du mini-PC, puis retirer le faux des processus de production.
@@ -684,6 +688,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la mission 9b (17/11/2026, OP-N149)** : balayage d'isolation entre organisateurs d'un même prestataire pour les 20
+> opérations ajoutées au contrat (`isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires) ; mutation : retirer un
+> contrôle applicatif doit faire échouer le balayage.
 
 > **Hérité de la mission 9b (17/11/2026, à proposer au porteur : mission à fixer)** : OP-N134 (`closing_balance` déclaré recoupé
 > avec la somme des lignes) ; OP-N135 (règle « somme des lignes rapprochées <= montant de la transaction sur ce compte », règlement

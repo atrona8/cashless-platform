@@ -321,7 +321,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        et vérification quotidienne, contrôles permanents et alertes. Levés : OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 et la
        partie rapprochement d'OP-N82 (ADR-210). Écarts acceptés : copie externe des scellements simulée (OP-N131, ADR-197),
        alertes sans envoi (OP-N132, ADR-198), remboursement tardif en mobile money vers un autre numéro (OP-N139, ADR-207).
-       Limites consignées : OP-N133 à OP-N138, OP-N140 à OP-N145 ; renforcements : OP-N146 ; OP-N147 levé (ADR-211). Note aux équipes clientes :
+       Limites consignées : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126 : alerte dédiée en 12b, ADR-212), OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire, 13) ; renforcements : OP-N146 (dont le renommage des enums Dart, ADR-213) ; OP-N147 levé (ADR-211). Note aux équipes clientes :
        `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`.
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
@@ -405,7 +405,7 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   d'une demande gardé par l'API seule, ADR-196 : déclencheur de transition en base) en 9b, décidé par le porteur le 16/11/2026 ;
 - mission 9b, suite (17/11/2026) : OP-N123, OP-N124, OP-N126, OP-N128 et OP-N130 levés ; pour la 12b : OP-N131 (copie réelle des
   scellements), OP-N132 (envoi des alertes), OP-N133 (`pg_read_all_stats`, lecture prestataire par prestataire) et OP-N139 (code au
-  numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
+  numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 ; pour la 12b aussi : OP-N148 (alerte dédiée « paiement vu à la banque après recrédit », ADR-212) ; pour la 13 : OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire) ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :

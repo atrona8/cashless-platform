@@ -124,6 +124,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N145 | `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` conservées (mission 9b, WP04, ADR-201) | Non | Non | Mission 11a |
 | OP-N147 | **LEVÉ le 17/11/2026 par la mission 9b (WP14)** : `approvalRequestDto` masque aussi `result` (`maskPaymentData`) ; plus aucun numéro en clair dans `GET /approval-requests` ni dans l'audit `APPROVAL_EXECUTED` (`invariants-cloture/payment-data-exposure.spec.ts`, ADR-211) | Non | Non | Levé |
 | OP-N146 | Renforcements de la mission 9b, faits puis consignés (liste dans la fiche, ADR-200 à ADR-203, ADR-205, ADR-206, ADR-209) | Non | Non | — (clos) |
+| OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` : reste « non rapprochée », seule l'alerte générique `statement-unmatched` ; recrédit possible tant que la ligne n'est pas importée (mission 9b, reste d'OP-N126, ADR-212) | Non | Non | Mission 12b (alertes) |
+| OP-N149 | Aucun balayage d'isolation entre organisateurs d'un même prestataire pour les 20 opérations de la 9b : `isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires (trou dans la preuve, pas un défaut constaté ; mission 9b, relecture) | Non | Non | Mission 13 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -244,6 +246,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N140 | IBAN non masqué par `redact.ts` ; IBAN en clair dans `refund_request.iban` | Un journal de corps de requête ou une lecture directe de la table exposerait l'IBAN | Aucun journal de corps aujourd'hui ; audit et `approval_request` exposé masquent l'IBAN (`maskPaymentData`) | `late-claims/late-claim.spec.ts` (FR-024), `payouts/payout-export.spec.ts` | Mission 11a | Masque dans `redact.ts` avant tout journal de corps ; chiffrement au repos |
 | OP-N141 | Écart explicite de la régularisation `OPERATOR_FEE` non plafonné | Une valeur interne fausse écrirait un écart trop grand ; l'écart est fixé par le seul calculateur | Étape à deux niveaux (aperçu = écriture), `requirePositive` | `closing/closing-variants.spec.ts`, tests des constructeurs | Mission 11a | Plafond = frais bruts |
 | OP-N144 | Recrédit d'un `FAILED` sans voie de contournement quand une ligne de relevé est rapprochée | Une ligne rapprochée à tort bloque le recrédit ; aucun second valideur ne peut le débloquer | `409`, aucune écriture, la demande reste confirmable `PAID` | `refunds/failed-recredit-bound.spec.ts` ; `invariants-cloture/concurrency.spec.ts` (décision 14) | À proposer au porteur | Défaire un rapprochement à deux personnes (pas en 9b) |
+| OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` reste « non rapprochée » ; pas d'alerte dédiée | Un paiement réellement parti, vu à la banque après le recrédit, n'est signalé que par l'alerte générique `statement-unmatched` (double versement possible, non expliqué) | Le recrédit est refusé si la ligne est déjà rapprochée (verrou, ADR-203) ; alerte générique | `tests_statements.sql` (section 4b : ligne laissée non rapprochée) | Mission 12b (alertes) | Alerte dédiée « paiement vu à la banque après recrédit » |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -2118,6 +2121,27 @@ Faits puis consignés (règle 1 de `CLAUDE.md`) ; aucun n'affaiblit la sécurit�
 - `ops_verify_audit_chain` ajoutée pour la chaîne d'audit (WP05, FR-020, ADR-201).
 - Charge du versement et de la réclamation tardive revalidées à l'exécution ; grand livre à portée organisateur refusé sur les sept étapes (WP10, WP07, ADR-205, ADR-206).
 - Bornes de période de l'export comptable en UTC (décision 17, ADR-209, `invariants-cloture/utc-bounds.spec.ts`).
+- Enums Dart générés renommés par l'ajout de valeurs au contrat (décision 6) : `Event.status` passe de `Status4` à `Status5`, `TokenFamily.status` de `Status5` à `Status6` ; casse la compilation des clients qui nomment ces enums, signalé dans `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md` (ADR-213).
+- `apps/api/test/fixtures/edge-vectors/vectors.json` reformaté par Prettier par WP07, hors carte (aucune valeur changée).
+- Tests de borne ajoutés après la mission : `invariants-cloture/limits-9b.spec.ts` (OP-N140 : comportement actuel de `redact.ts` figé ; OP-N145 : seul `cashless_app` a `INSERT` sur `refund_request`, aucun `DELETE`, colonnes d'`UPDATE` bornées).
+
+### OP-N148 — Reste d'OP-N126 : ligne de relevé importée après le recrédit d'un `FAILED` (17 novembre 2026)
+
+Source : relectures de WP11 et de la mission ; décision n° 14 ; ADR-212. **Bloque la production : non.**
+
+- **Constat.** La base ferme la fenêtre de course entre un rapprochement validé et le `REVERSAL` (ADR-203, verrou de `refund_request`). Reste le cas inverse : une ligne de relevé importée **après** le recrédit d'une demande `FAILED` n'est pas rapprochée (le rapprochement automatique la laisse « non rapprochée », le manuel est refusé). Elle ne lève que l'alerte générique `statement-unmatched` ; aucune alerte dédiée « paiement vu à la banque après recrédit ». Le recrédit reste possible tant que la ligne n'est pas importée : structurel, la banque n'est pas encore connue.
+- **Risque.** Un paiement réellement parti puis recrédité (double versement possible) n'est signalé que par une alerte générique, sans lien avec la demande.
+- **Test de la limite.** `tests_statements.sql` (section 4b : demande `FAILED`, ligne laissée non rapprochée) ; `invariants-cloture/consignation.spec.ts` (fiche, ADR, reports).
+- **Mission qui le lève.** Mission 12b (alertes). **Condition de levée.** Alerte dédiée, avec envoi à une personne (OP-N132), à l'import d'une ligne dont la référence est celle d'une demande recréditée.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N149 — Pas de balayage d'isolation entre organisateurs d'un même prestataire (17 novembre 2026)
+
+Source : relecture de WP14 ; **pas un écart accepté** (aucun ADR) : un trou dans la preuve, aucun défaut constaté. **Bloque la production : non.**
+
+- **Constat.** `invariants-cloture/isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires, qui repose aussi sur la RLS : une mutation qui retire un contrôle applicatif reste verte. Aucun balayage entre organisateurs d'un même prestataire n'existe pour les 20 opérations ajoutées au contrat.
+- **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Balayage des 20 opérations avec deux organisateurs du même prestataire, et mutation d'un contrôle applicatif qui le fait échouer.
+- **Report.** `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
 
 ### Levées de la mission 9b (17 novembre 2026)
 
