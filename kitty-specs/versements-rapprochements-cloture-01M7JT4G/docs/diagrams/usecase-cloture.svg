@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1286" viewBox="0 0 1960 1286">
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1446" viewBox="0 0 1960 1446">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(20,50)">
 <ellipse cx="275.0" cy="320.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
@@ -33,7 +33,12 @@
 <text x="1225.0" y="753.5214285714287" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#374151" text-anchor="middle">Voir les soldes restants (CSV)</text>
 <text x="1225.0" y="882.0928571428573" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Proposer une réclamation tardive</text>
 <text x="1225.0" y="1010.6642857142859" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Valider la réclamation (à deux)</text>
-<text x="60" y="1111.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu (plan du 17/11/2026), non servi. Sept étapes dans l’ordre de référence ; un rejeu n’écrit rien. Passage à RECONCILING refusé si une caisse est ouverte.</text>
-<text x="60" y="1143.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Réclamation : annulation de casse puis remboursement, ou apport d’un bénéficiaire ; bornée par la base, validée par une autre personne que l’auteur.</text>
+<text x="60" y="1111.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.</text>
+<text x="60" y="1143.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Sept étapes dans l’ordre de référence ; un rejeu n’écrit rien.</text>
+<text x="60" y="1175.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Passage à RECONCILING refusé si une caisse est ouverte.</text>
+<text x="60" y="1207.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Réclamation : annulation de casse puis remboursement, ou apport d’un bénéficiaire ; bornée par la base, validée par une autre personne que l’auteur.</text>
+<text x="60" y="1239.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Sur grand livre LOCKED : remboursement sans frais.</text>
+<text x="60" y="1271.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Mobile money vers un autre numéro : seconde personne et preuve.</text>
+<text x="60" y="1303.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Casse OPERATOR : 100 % au prestataire.</text>
 </g>
 </svg>

@@ -2795,13 +2795,13 @@
    "updated": 1,
    "link": null,
    "locked": false,
-   "text": "Prévu (plan du 17/11/2026), non servi. Une ligne change d’état une seule fois. Une ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation.",
+   "text": "Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.\nUne ligne change d’état une seule fois.\nUne ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation.",
    "fontSize": 20,
    "fontFamily": 2,
    "textAlign": "left",
    "verticalAlign": "middle",
    "containerId": null,
-   "originalText": "Prévu (plan du 17/11/2026), non servi. Une ligne change d’état une seule fois. Une ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation.",
+   "originalText": "Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.\nUne ligne change d’état une seule fois.\nUne ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation.",
    "lineHeight": 1.25,
    "baseline": 20
   }

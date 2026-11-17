@@ -90,7 +90,7 @@ files=[]
 P=lambda k,l,s='neutral':(k,l,s)
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
-PREVU="Prévu (plan du 17/11/2026), non servi."
+PREVU="Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main."
 BO='Back-office'
 files.append(usecase('usecase-cloture','Clôture et réclamations tardives','Qui lance les étapes, qui passe le statut, qui valide une réclamation',
  [BO,'Second administrateur','Superviseur (lecture)'],
@@ -98,7 +98,7 @@ files.append(usecase('usecase-cloture','Clôture et réclamations tardives','Qui
  [(BO,'Voir les conditions de passage'),(BO,'Aperçu d’une étape de clôture'),(BO,'Exécuter une étape (une seule fois)'),
   (BO,'Passer l’événement en CLOSED'),(BO,'Voir les soldes restants (CSV)'),(BO,'Proposer une réclamation tardive'),
   ('Second administrateur','Valider la réclamation (à deux)'),('Superviseur (lecture)','Voir les conditions de passage')],
- note=PREVU+" Sept étapes dans l’ordre de référence ; un rejeu n’écrit rien. Passage à RECONCILING refusé si une caisse est ouverte.\nRéclamation : annulation de casse puis remboursement, ou apport d’un bénéficiaire ; bornée par la base, validée par une autre personne que l’auteur.",H=900))
+ note=PREVU+"\nSept étapes dans l’ordre de référence ; un rejeu n’écrit rien.\nPassage à RECONCILING refusé si une caisse est ouverte.\nRéclamation : annulation de casse puis remboursement, ou apport d’un bénéficiaire ; bornée par la base, validée par une autre personne que l’auteur.\nSur grand livre LOCKED : remboursement sans frais.\nMobile money vers un autre numéro : seconde personne et preuve.\nCasse OPERATOR : 100 % au prestataire.",H=900))
 PA='Partie concernée'
 files.append(usecase('usecase-versements','Versements, rapprochements et relevés','Qui prépare, valide, confirme, importe, rapproche et obtient un relevé',
  ['Administrateur (auteur du lot)','Administrateur (valideur)','Back-office',PA,'Exploitant'],
@@ -106,18 +106,18 @@ files.append(usecase('usecase-versements','Versements, rapprochements et relevé
  [('Administrateur (auteur du lot)','Voir les droits nets'),('Administrateur (auteur du lot)','Préparer un lot de versements'),('Administrateur (valideur)','Valider le lot (à deux)'),('Administrateur (auteur du lot)','Exporter le lot en CSV'),
   ('Administrateur (auteur du lot)','Confirmer ou déclarer en échec'),('Back-office','Importer un relevé CSV'),('Back-office','Rapprocher une ligne à la main'),('Back-office','Créer une demande de remboursement'),
   (PA,'Obtenir mon relevé (API, CSV)'),('Exploitant','Configurer et exporter la comptabilité')],
- note=PREVU+" Rôle du lot selon le bénéficiaire : organisateur pour les commerçants et l’organisateur, exploitant de la plateforme pour le prestataire et la plateforme.\nPartie : commerçant, festivalier, organisateur, prestataire ou plateforme. Aucun paiement n’est envoyé par l’API : paiement hors système, puis confirmation de chaque ligne. Aucun PDF.",H=1000))
+ note=PREVU+"\nRôle du lot selon le bénéficiaire : organisateur pour les commerçants et l’organisateur, exploitant de la plateforme pour le prestataire et la plateforme.\nPartie : commerçant, festivalier, organisateur, prestataire ou plateforme.\nAucun paiement n’est envoyé par l’API : paiement hors système, puis confirmation de chaque ligne.\nAucun PDF. Export CSV : numéro sans « + ».",H=1000))
 files.append(sequence('sequence-cloture','Clôture par étapes : de SETTLING à CLOSED','Une étape ne s’écrit qu’une fois, dans l’ordre ; le statut exige toutes les conditions',
  [P('b','Back-office','data'),P('a','API','primary'),P('d','Base')],
  [('b','a','Aperçu de l’étape (GET preview)'),('a','d','Calcul sans écriture','self'),('a','b','200 : montants par bénéficiaire','ret'),
   ('b','a','Exécuter l’étape (POST, clé)'),('a','d','Verrou (événement, étape) ; état relu'),
   ('#open','alt étape précédente non faite'),('a','b','409 : condition manquante nommée','bad'),
   ('#else','sinon : étape déjà faite'),('a','b','200 : même réponse, rien écrit','ret'),
-  ('#else','sinon : première exécution'),('a','d','Écritures par le moteur + record_closing_step'),('a','b','200 : transactions écrites','ret'),('#close',),
+  ('#else','sinon : première exécution'),('a','d','Moteur ; régularisation par écart explicite'),('a','b','200 : transactions écrites','ret'),('#close',),
   ('b','a','Passer en CLOSED (status-transitions)'),('a','d','set_event_status : conditions'),
   ('#open','alt toutes les positions soldées'),('d','a','Grands livres LOCKED, scellement final','ret'),
   ('#else','sinon : soldes restants tolérés'),('d','a','Grand livre CLOSING, soldes restants relevés','ret'),('#close',)],
- note=PREVU+" Conditions nouvelles : aucune caisse ouverte, échéance de remboursement atteinte, étapes faites, comptes PSP rapprochés."))
+ note=PREVU+"\nConditions nouvelles : aucune caisse ouverte, échéance de remboursement atteinte, étapes faites, comptes PSP rapprochés."))
 files.append(sequence('sequence-lot-versements','Lot de versements préparé et validé à deux','Le droit net borne chaque ligne ; le paiement est fait hors système puis confirmé',
  [P('p','Administrateur auteur','data'),P('a','API','primary'),P('v','Administrateur valideur','data'),P('d','Base')],
  [('p','a','Droits nets (GET entitlements)'),('p','a','Préparer le lot (lignes ≤ droit net)'),('a','d','Approbation PAYOUT en attente','self'),('a','p','202 : en attente','ret'),
@@ -128,18 +128,18 @@ files.append(sequence('sequence-lot-versements','Lot de versements préparé et 
   ('p','a','Exporter le lot (CSV)'),('a','p','CSV : bénéficiaire, moyen, numéro ou IBAN, montant','ret'),
   ('p','p','Paiement fait hors système','self'),
   ('p','a','Confirmer la ligne (référence) ou échec (motif)'),('a','d','settle_payout : CONFIRMED ou FAILED'),('a','p','200 : FAILED recrédite le droit','ret')],
- note=PREVU+" Une ligne change d’état une seule fois. Une ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation."))
-files.append(sequence('sequence-import-rapprochement','Import d’un relevé et rapprochement','Rapprochement automatique par référence externe, puis à la main pour le reste',
+ note=PREVU+"\nUne ligne change d’état une seule fois.\nUne ligne INITIATED depuis plus de 48 h lève une alerte à l’exploitation."))
+files.append(sequence('sequence-import-rapprochement','Import d’un relevé et rapprochement','Automatique par référence, signe et montant ; manuel pour le reste',
  [P('b','Back-office','data'),P('a','API','primary'),P('d','Base')],
- [('b','a','Importer le relevé CSV d’un compte (A-*)'),('a','d','import_statement_lines'),
+ [('b','a','Importer le relevé CSV d’un compte (A-*)'),('a','d','import_statement_lines'),('d','d','Verrou refund_request, puis lignes','self'),
   ('#open','alt devise ou compte étranger'),('d','a','Refus : 422','bad'),
-  ('#else','sinon'),('d','a','Lignes créées, doublons ignorés','ret'),('d','a','Rapprochement auto par référence externe','ret'),('#close',),
+  ('#else','sinon'),('d','a','Lignes créées, doublons ignorés','ret'),('d','a','Auto : référence, même signe, net ou brut','ret'),('#close',),
   ('a','b','201 : créées, rapprochées, déjà présentes','ret'),
   ('b','a','Lister les lignes non rapprochées'),('b','a','Rapprocher une ligne (transaction ou anomalie)'),
-  ('a','d','match_statement_line : même prestataire, grand livre et compte'),('a','b','200 : ligne rapprochée','ret'),
+  ('a','d','match_statement_line : verrou refund_request d’abord'),('#open','alt demande déjà recréditée (FAILED)'),('d','a','Refus : 409','bad'),('#else','sinon'),('a','b','200 : ligne rapprochée','ret'),('#close',),
   ('b','a','État de rapprochement des comptes'),('a','b','Compte rapproché : lignes toutes rapprochées et soldes concordants','note')],
- note=PREVU+" Les anomalies PSP ouvertes sont représentées dans l’écart, non comptées comme inexpliquées. Une condition « comptes PSP rapprochés » gate le passage à SETTLING."))
-files.append(sequence('sequence-scellement-alertes','Scellement, copie externe, contrôles et alertes','Le processus maintenance scelle toutes les 5 min, vérifie chaque jour et lève une alerte à chaque échec',
+ note=PREVU+"\nLes anomalies PSP ouvertes sont représentées dans l’écart, non comptées comme inexpliquées.\nUne condition « comptes PSP rapprochés » gate le passage à SETTLING."))
+files.append(sequence('sequence-scellement-alertes','Scellement, copie externe, contrôles et alertes','Huit travailleurs du processus maintenance : scellement, vérification, contrôles ; une alerte à chaque échec',
  [P('m','Maintenance','primary'),P('d','Base (ops_*)'),P('c','Copie externe simulée','neutral'),P('x','Exploitation','data')],
  [('m','d','ops_seal_ledger, ops_seal_audit'),('m','c','Copier le scellement hors de la base'),
   ('#open','alt production : copie simulée'),('c','m','Démarrage refusé (règle 2)','bad'),('#close',),
@@ -147,5 +147,5 @@ files.append(sequence('sequence-scellement-alertes','Scellement, copie externe, 
   ('m','d','Contrôles permanents (§12.2)'),
   ('#open','alt un contrôle échoue'),('m','d','ops_raise_alert : audit, journal, alerte'),('m','x','Code d’alarme du processus (7 à 11)','bad'),
   ('#else','sinon'),('d','m','Rien à signaler','ret'),('#close',)],
- note=PREVU+" Scellement toutes les 5 min, y compris LOCKED. Contrôles : sommes nulles, droits = argent, caches, versements > 48 h, transactions > 60 s.\nDette consignée : la copie externe reste simulée et l’alerte n’atteint aucune personne avant la mission 12b."))
+ note=PREVU+"\nScellement toutes les 5 min, y compris LOCKED. Cinq contrôles : sommes nulles, droits = argent, versements > 48 h, relevés non rapprochés, anomalies PSP, transactions > 60 s.\nDette consignée : la copie externe reste simulée et l’alerte n’atteint aucune personne avant la mission 12b."))
 for f in files: print(r.render(f))

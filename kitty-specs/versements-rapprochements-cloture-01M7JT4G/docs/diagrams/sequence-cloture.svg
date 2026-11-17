@@ -27,7 +27,7 @@
 <polyline points="64,942.72 1920.0,942.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="70" y="948.72" width="274" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="966.0,1050.72 1727.0,1050.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1050.72 1707.6931836384117,1061.2673618492925 1707.6931836384117,1040.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1103.5" y="1013.72" width="488.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1113.9" y="1013.72" width="467.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="954.0,1126.72 193.0,1126.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1126.72 212.3068163615882,1116.1726381507076 212.3068163615882,1137.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="427.29999999999995" y="1089.72" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <rect x="64" y="638.72" width="1856.0" height="521.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
@@ -65,7 +65,7 @@
 <text x="572.5" y="879.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : même réponse, rien écrit</text>
 <text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
 <text x="74" y="966.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon : première exécution</text>
-<text x="1347.5" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Écritures par le moteur + record_closing_step</text>
+<text x="1347.5" y="1031.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Moteur ; régularisation par écart explicite</text>
 <text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
 <text x="572.5" y="1107.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : transactions écrites</text>
 <text x="34.0" y="1129.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
@@ -79,6 +79,7 @@
 <text x="74" y="1532.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon : soldes restants tolérés</text>
 <text x="1347.5" y="1598.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Grand livre CLOSING, soldes restants relevés</text>
 <text x="34.0" y="1619.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
-<text x="60" y="1753.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu (plan du 17/11/2026), non servi. Conditions nouvelles : aucune caisse ouverte, échéance de remboursement atteinte, étapes faites, comptes PSP rapprochés.</text>
+<text x="60" y="1741.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.</text>
+<text x="60" y="1766.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Conditions nouvelles : aucune caisse ouverte, échéance de remboursement atteinte, étapes faites, comptes PSP rapprochés.</text>
 </g>
 </svg>

@@ -72,10 +72,10 @@
       "spec_index_a_jour": true
     },
     "versements-rapprochements-cloture-01M7JT4G": {
-      "statut": "planifiée (plan finalisé le 17/11/2026)",
-      "verifie_le": "2026-11-17T12:00:00Z",
+      "statut": "review terminée (14 lots approuvés le 17/11/2026), non acceptée, non consolidée",
+      "verifie_le": "2026-11-17T18:00:00Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }

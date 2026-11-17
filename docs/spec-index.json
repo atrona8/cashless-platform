@@ -1129,7 +1129,7 @@
   {
     "mission": "versements-rapprochements-cloture-01M7JT4G",
     "titre_cas_usage": "Versements, rapprochements et clôture",
-    "statut": "planifiée (plan finalisé le 17/11/2026)",
+    "statut": "review terminée (14 lots approuvés le 17/11/2026, non acceptée)",
     "user_stories": [
       {
         "titre": "Clore dans l'ordre de référence",
@@ -1176,7 +1176,9 @@
       "Format CSV commun d'import (source, référence externe, date de valeur, montant, devise) ; formats Wave, Orange Money et banques en 12b",
       "Alertes par le mécanisme alarm() des processus existants ; envoi réel en 12b",
       "Relevés en données API et CSV, PDF plus tard",
-      "La demande de remboursement du back-office suit le circuit de la 9a (approbation WALLET_REFUND)"
+      "La demande de remboursement du back-office suit le circuit de la 9a (approbation WALLET_REFUND)",
+      "Rapprochement automatique sur le net ou le brut, de même signe (décision 7)",
+      "closing_balance non servi dans le relevé JSON (décision 16)"
     ],
     "contraintes": [
       "Ajouts au contrat openapi.yaml listés au plan et validés par le porteur le 17/11/2026 (20 opérations), rien d'existant modifié",
@@ -1196,7 +1198,10 @@
       "Autorité de débit encore détenue par une passerelle : RECONCILING refusé",
       "Relevé dans une autre devise que le compte : refus",
       "Clôture avec soldes restants : CLOSED avec grand livre CLOSING",
-      "Contestation tardive après verrouillage : même circuit que les réclamations tardives"
+      "Contestation tardive après verrouillage : même circuit que les réclamations tardives",
+      "Réclamation tardive sur grand livre LOCKED : remboursement sans frais",
+      "Remboursement tardif en mobile money vers un autre numéro : seconde personne et preuve",
+      "Ligne de relevé liée à une demande de remboursement déjà recréditée : rapprochement refusé"
     ],
     "fonctionnel": [
       "Conditions de passage visibles, caisse ouverte bloquante, étapes avec aperçu, ordre imposé, droits de place par mode, frais, redevance, régularisation, casse, cautions, crédits offerts, clôture et verrouillage (FR-001 à FR-008)",

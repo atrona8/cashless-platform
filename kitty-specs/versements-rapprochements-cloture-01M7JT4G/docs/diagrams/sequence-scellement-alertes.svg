@@ -32,7 +32,7 @@
 <rect x="355.3333333333333" y="1047.92" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <rect x="64" y="748.92" width="1856.0" height="369.27999999999986" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Scellement, copie externe, contrôles et alertes</text>
-<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Le processus maintenance scelle toutes les 5 min, vérifie chaque jour et lève une alerte à chaque échec</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Huit travailleurs du processus maintenance : scellement, vérification, contrôles ; une alerte à chaque échec</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">Maintenance</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base (ops_*)</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Copie externe simulée</text>
@@ -56,7 +56,8 @@
 <text x="74" y="1000.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon</text>
 <text x="443.3333333333333" y="1066.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rien à signaler</text>
 <text x="34.0" y="1087.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="60" y="1209.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu (plan du 17/11/2026), non servi. Scellement toutes les 5 min, y compris LOCKED. Contrôles : sommes nulles, droits = argent, caches, versements &gt; 48 h, transactions &gt; 60 s.</text>
-<text x="60" y="1234.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Dette consignée : la copie externe reste simulée et l’alerte n’atteint aucune personne avant la mission 12b.</text>
+<text x="60" y="1196.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.</text>
+<text x="60" y="1221.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Scellement toutes les 5 min, y compris LOCKED. Cinq contrôles : sommes nulles, droits = argent, versements &gt; 48 h, relevés non rapprochés, anomalies PSP, transactions &gt; 60 s.</text>
+<text x="60" y="1246.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Dette consignée : la copie externe reste simulée et l’alerte n’atteint aucune personne avant la mission 12b.</text>
 </g>
 </svg>
