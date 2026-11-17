@@ -72,6 +72,14 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
 17. **17/11/2026 (WP13)** — Bornes de période de l'export comptable épinglées en UTC : corrigé par WP14
     en retouche hors carte (`accounting-export.service.ts`), avec un test près de minuit.
 
+18. **17/11/2026 (revue post-fusion, RISK-1)** — Résultat d'un versement : `PAYOUT_FAILED` (qui recrédite le
+    droit) exige une seconde personne, distincte de qui a préparé ou validé le lot ; elle est enregistrée
+    comme valideur de la transaction. `CONFIRMED` reste à une personne. Correctif sur feat (migration
+    `0089`, API, tests), relu par un relecteur distinct ; amende FR-012. Renforcement, à consigner (ADR).
+19. **17/11/2026 (revue post-fusion, notes)** — Corrigés sur feat : `limits-9b` vérifie aussi les droits par
+    colonne ; ligne Test de la fiche OP-N145 ; récapitulatif de `POINTS_OUVERTS.md` complété ; `env.sh`
+    pose `DATABASE_URL_SNAPCONTENT` et `DATABASE_URL_SNAPSIGN`.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse
