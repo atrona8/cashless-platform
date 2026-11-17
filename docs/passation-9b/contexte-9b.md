@@ -43,6 +43,12 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
 9. **17/11/2026 (WP08)** — Export CSV des versements : msisdn en chiffres seuls, sans « + » ; la
    neutralisation des formules de `Csv.write` reste active partout.
 
+10. **17/11/2026 (WP07)** — Régularisation `NET_OF_REFUNDS` : le constructeur `OPERATOR_FEE` accepte, pour
+    la seule variante `REGULARIZATION`, un écart explicite (frais bruts − frais nets, même règle min/max/fixe),
+    en une transaction inversée ; la matrice des statuts n'est pas élargie (retouche hors carte de `fees.ts`).
+11. **17/11/2026 (WP07)** — `breakage_destination = OPERATOR` : 100 % de la casse au prestataire,
+    `breakage_organizer_bps` ignoré.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse
