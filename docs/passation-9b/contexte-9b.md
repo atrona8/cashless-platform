@@ -21,6 +21,16 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
 5. **17/11/2026 (plan)** — Ajouts au contrat de `contracts/contract-additions.md` validés tels quels (20 opérations,
    3 valeurs de condition, code `PAYOUT_EXCEEDS_ENTITLEMENT`).
 
+6. **17/11/2026 (implémentation, phase 1)** :
+   - **Suites générées** : les conditions nouvelles de WP02 sont gardées ; le scénario de référence est adapté
+     par les générateurs (`gen_tests.py`, `gen_golden.py`, au besoin `scenario_reference.json`), `.sql`
+     régénérés, jamais édités à la main ; `tests_event_ledger.sql` adapté. Fait par WP02 (nouveau cycle).
+   - **Dart** : renommage des enums générés accepté (`Event.status` `Status4` → `Status5`,
+     `TokenFamily.status` `Status5` → `Status6`) ; signalé dans la note aux équipes clientes (WP14).
+   - **Versements (renforcements, WP03 nouveau cycle)** : `create_payout_batch` refuse une demande
+     d'approbation non acceptée ou d'une autre action que `PAYOUT` ; une ligne `payout` exige
+     `initiated_tx_id` à l'insertion et `settled_tx_id` au changement de statut.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse

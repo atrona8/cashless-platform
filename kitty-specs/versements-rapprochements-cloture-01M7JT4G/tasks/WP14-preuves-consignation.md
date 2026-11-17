@@ -138,7 +138,9 @@ route, rôle requis (versement : selon le bénéficiaire), corps, réponses et c
 (`PAYOUT_EXCEEDS_ENTITLEMENT`, `CLOSING_CONDITION_NOT_MET`…) ; nouvelles valeurs de
 `StatusCondition.code` et leur texte ; formats CSV (relevés, export du lot, export comptable avec ses
 lignes `NON_MAPPE` et `X-Unmapped-Count`) ; circuit à deux personnes ; ce qui reste simulé (copie,
-alertes). Exemples tirés des tests, aucune donnée réelle, aucun IBAN complet.
+alertes) ; **renommage des enums Dart générés** (`Event.status` `Status4` → `Status5`,
+`TokenFamily.status` `Status5` → `Status6`, `Payout.status` = `Status4`), accepté par le porteur le
+17/11/2026 : les apps Dart ajustent leurs types. Exemples tirés des tests, aucune donnée réelle, aucun IBAN complet.
 
 ## Tests et preuves
 
