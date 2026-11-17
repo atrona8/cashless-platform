@@ -35,6 +35,13 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
    automatiquement sur la seule référence, sans comparer signe ni montant. Corrigé dans `0083` par un
    nouveau cycle de WP02 (pas de nouvelle migration) : rapprochement automatique seulement si le
    mouvement net de la transaction sur le compte égale le montant de la ligne. Renforcement, à consigner.
+   Précisé après relecture (frais PSP portés par l'organisateur ou l'opérateur : +brut −frais sur le même
+   compte) : même signe que le net, et montant égal au net **ou** au brut (somme des postings de ce signe).
+8. **17/11/2026 (WP08)** — Droit disponible : `net_claim` = `party_position + pending_payouts`,
+   `available` = `party_position` ; la formule du contrat devient exacte, `openapi.yaml` inchangé (seule la
+   description de `net_claim` est à préciser).
+9. **17/11/2026 (WP08)** — Export CSV des versements : msisdn en chiffres seuls, sans « + » ; la
+   neutralisation des formules de `Csv.write` reste active partout.
 
 ## Héritages
 

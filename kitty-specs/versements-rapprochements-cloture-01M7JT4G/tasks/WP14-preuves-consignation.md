@@ -137,6 +137,13 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   montant de la ligne (signe et valeur) ; ADR, report `PRD.md`, preuve : `tests_statements.sql` §3b et
   `match-statement-line.spec.ts`. OP : `explained_by_anomalies` calculé en base mais absent
   d'`AccountReconciliation` (contrat figé), exposition à proposer au porteur pour une mission future.
+  Précision : montant égal au net ou au brut (frais PSP sur le même compte), test §3c.
+- **Versements (décisions 8 et 9)** : `net_claim` = `party_position + pending_payouts`, description de
+  `net_claim` dans `openapi.yaml` à préciser (texte seul) ; msisdn exporté sans « + ». Mineurs de la
+  relecture de WP08 en OP : approbateur du mauvais rôle → demande `FAILED` (nuisance), rejet sans rôle
+  par classe, `confirm` rejoué même résultat → 200 sans audit, test d'auto-approbation `[403, 409]`.
+- **WP07** : `breakage_destination = OPERATOR` traité comme `ORGANIZER` (ADR) ; clé de verrou
+  `closing-step:` ; grand livre à portée organisateur refusé sur les sept étapes (renforcement).
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
