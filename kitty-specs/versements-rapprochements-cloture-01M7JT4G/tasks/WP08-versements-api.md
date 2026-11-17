@@ -108,8 +108,11 @@ sans `create_payout_batch` et `settle_payout` (WP03).
 ### T035 : `EntitlementService` et route 5
 
 - `entitlements.ts` : `forLedger(client, ledgerId)` rend, par partie, `net_claim` (`party_position`,
-  S:934-937) et `available = net_claim - sum(payout INITIATED non réglés)`, avec la nature de la
-  partie (`MERCHANT`, `ORGANIZER`, `OPERATOR`, `PLATFORM`) et le nom (`party.legal_name`). Une
+  S:934-937), `available = net_claim` et, à part, `in_progress = sum(payout INITIATED non réglés)`
+  (affiché, **jamais déduit** : `PAYOUT_INITIATED` débite déjà le compte de droits, donc `net_claim`
+  est déjà diminué des versements en cours ; les déduire une seconde fois sous-estime le droit.
+  Constat de la relecture de WP03, approuvée le 17/11/2026 ; `interfaces.md` à lire ainsi), avec la
+  nature de la partie (`MERCHANT`, `ORGANIZER`, `OPERATOR`, `PLATFORM`) et le nom (`party.legal_name`). Une
   requête par page, pas de N+1.
 - Route `GET /ledgers/{ledger_id}/payout-entitlements`, rôles ORGANIZER_ADMIN et OPERATOR_ADMIN,
   portée lue par l'événement du grand livre (`canReadEvent`) ; grand livre d'un autre prestataire :
@@ -181,8 +184,8 @@ depuis ta lane). Cas exigés (chacun nomme son FR ou NFR) :
 
 - FR-009, SC-002 : ligne de 40 000 pour un droit net de 39 225 : `409 PAYOUT_EXCEEDS_ENTITLEMENT` à
   la demande ; droit baissé entre la demande et la validation : demande `FAILED` avec ce code,
-  aucune écriture ; deux lots qui cumulent au-delà : le second `FAILED` ; versements en cours
-  déduits dans la route 5.
+  aucune écriture ; deux lots qui cumulent au-delà : le second `FAILED` ; route 5 : après un lot
+  `INITIATED`, `available` baisse une seule fois (pas de double déduction) et `in_progress` l'affiche.
 - FR-010 : auteur ≠ valideur (refus par le service ET par la base, aucune écriture) ;
   `PAYOUT_INITIATED` unique, une ligne `payout` par bénéficiaire avec `initiated_by`, `approved_by`,
   destination ; rôle `SUPERVISOR` ou `CASHIER` : `403`.

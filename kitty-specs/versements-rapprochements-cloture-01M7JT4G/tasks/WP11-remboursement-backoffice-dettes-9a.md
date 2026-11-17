@@ -81,6 +81,10 @@ son test de borne, puis se consigne dans la note de lane (WP14 en tire les OP et
 
 ## Périmètre et arbitrages
 
+- **Tests de la 9a cassés par WP04** (`hold_until` est devenu immuable, déclencheur OP-N130) : à
+  adapter ici, sans désactiver le déclencheur, en insérant la demande avec une échéance déjà passée :
+  `test/integration/refunds/journey.spec.ts` l. 272, `journey-limits.spec.ts` l. 66,
+  `refund-latency.spec.ts` l. 141 (relevé par l'implémenteur de WP04).
 - Contrat = `contract-additions.md` exactement. Aucune route, aucun champ ni code d'erreur en plus,
   aucune dépendance nouvelle. `createMyRefundRequest` garde son refus de `BANK_TRANSFER`
   (`destination.ts:19-31` ne change pas).

@@ -144,6 +144,13 @@ Sur le modèle de `tests_offline_rights.sql` (BEGIN, `_grants_for_tests.sql`, `n
   liste « exécutables par aucun rôle ». Commentaire : mission 9b, WP06.
 - `tests_offline_rights.sql` : seulement si une de ses listes compte les fonctions de `public` et
   casse ; même règle (ajout exact, commenté).
+- **Retouches hors carte nommées (suites de la 9a cassées par WP04, déclencheur OP-N130 et
+  surcharge de `refund_deposit_for_session`)** : `tests/tests_cash_sessions.sql` tests 9 et 10
+  (comptes de fonctions par nom : la surcharge à quatre arguments en ajoute une ; compter par
+  signature ou relever le compte, avec commentaire) ; `tests/tests_refund_requests.sql` l. 192
+  (fixture qui force `REQUESTED` → `CANCELLED`, désormais refusé : créer la fixture directement
+  dans l'état voulu par `INSERT`, sans désactiver le déclencheur). Chacune listée dans la note de
+  lane. Ne touche pas aux Jest de `test/integration/refunds/` (WP11).
 - `apps/api/test/support/db.ts` : seulement si les tests Jest ont besoin d'un rôle nouveau ou d'un
   droit de fixture (par exemple insérer un `payout` en propriétaire). Sinon, ne le touche pas et dis-le.
 
