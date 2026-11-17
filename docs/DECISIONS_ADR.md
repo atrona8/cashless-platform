@@ -3097,3 +3097,14 @@ Décision n° 6 du porteur (17/11/2026) ; consigné le 17/11/2026.
 - **Contexte.** Les valeurs ajoutées à `openapi.yaml` par la mission déplacent la numérotation des enums anonymes générés pour Dart.
 - **Décision.** `Event.status` passe de `Status4` à `Status5` et `TokenFamily.status` de `Status5` à `Status6`. Les équipes clientes qui nomment ces types doivent les renommer ; la note `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md` le dit.
 - **Références.** OP-N146 (liste des renforcements et remarques), ADR-200.
+
+## ADR-214 — Mission 9b : seconde personne pour `PAYOUT_FAILED` (amende FR-012)
+
+Décision n° 18 du porteur (17/11/2026, revue post-fusion, RISK-1) ; consigné le 17/11/2026.
+
+- **Statut** : Acceptée. **Renforcement** (règle 1 de `CLAUDE.md`) ; amende FR-012.
+- **Contexte.** `settle_payout` (0085) écrivait le résultat d'un versement avec une seule personne et inscrivait comme valideur de la transaction `BACKOFFICE` celui du lot, qui n'avait pas agi. Un `PAYOUT_FAILED` recrédite le droit : une seule personne pouvait faire sortir puis rentrer l'argent (même risque que le `FAILED` d'un remboursement, décision 13 et ADR-191 de la 9a).
+- **Décision.** `PAYOUT_FAILED` exige une personne distincte du préparateur (`payout.initiated_by`, auteur de la demande d'approbation) et du valideur (`payout.approved_by`). Elle est le valideur réel de la transaction ; l'auteur de la transaction est le préparateur. `PAYOUT_CONFIRMED` reste à une seule personne (inchangé). Le refus est `403 FORBIDDEN` côté API (code existant, détail « Un échec ne peut être déclaré par la personne qui a préparé ou validé le lot de versements. ») et `CL041` côté base (code existant, déjà mappé `FORBIDDEN`). Aucun code ajouté au contrat ; `openapi.yaml` inchangé.
+- **Mise en oeuvre.** Migration `0089_payout_failed_second_person.sql` (`CREATE OR REPLACE` de `settle_payout`, 0085 intacte) ; garde dans `payouts.service.ts` avant toute écriture.
+- **Tests.** `tests_payouts.sql` (préparateur refusé, valideur refusé, tiers admis avec valideur enregistré) ; `payouts/payout-confirm.spec.ts` (HTTP et base) ; mutation : sans la garde, ces tests échouent. **Références.** OP-N137, OP-N126, ADR-204, FR-012.
+- **Fichier à faire relire par une personne.** `0089_payout_failed_second_person.sql` (`settle_payout`).

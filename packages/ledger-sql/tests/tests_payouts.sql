@@ -248,7 +248,20 @@ SELECT is((SELECT a.code FROM posting p JOIN account a ON a.id = p.account_id
 
 -- Échec : le droit est recrédité (buildPayoutFailed) et redevient disponible
 SELECT is(pg_temp.net((SELECT la FROM fx), pg_temp.id('85c001')), 0::bigint, 'commerçant : droit net à 0 avant l''échec');
+-- Décision 18 : un échec (qui recrédite) n'est écrit ni par le préparateur (85aaa1) ni par le valideur (85aaa2) du lot
+SELECT throws_ok($$SELECT pg_temp.settle(4, 'FAILED', NULL, 'numéro invalide', '85aaa1')$$, 'CL041', NULL,
+  'échec saisi par le préparateur du lot : refusé');
+SELECT throws_ok($$SELECT pg_temp.settle(4, 'FAILED', NULL, 'numéro invalide', '85aaa2')$$, 'CL041', NULL,
+  'échec saisi par le valideur du lot : refusé');
+SELECT is((SELECT status FROM payout WHERE id = pg_temp.pid(4)), 'INITIATED', 'refus : la ligne reste INITIATED');
+SELECT is((SELECT count(*) FROM journal_transaction WHERE idempotency_key = 'payout:' || pg_temp.pid(4)::text || ':settle')::int, 0,
+  'refus : aucune écriture');
 SELECT lives_ok($$SELECT pg_temp.settle(4, 'FAILED', NULL, 'numéro invalide')$$, 'échec de la ligne 4');
+SELECT is((SELECT created_by::text || '/' || approved_by::text FROM journal_transaction
+            WHERE id = (SELECT settled_tx_id FROM payout WHERE id = pg_temp.pid(4))),
+  pg_temp.id('85aaa1')::text || '/' || pg_temp.id('85aaa3')::text,
+  'échec par une troisième personne : elle est le valideur réel, le préparateur est l''auteur');
+SELECT is((SELECT confirmed_by FROM payout WHERE id = pg_temp.pid(4)), pg_temp.id('85aaa3'), 'ligne échouée : confirmed_by = tiers');
 SELECT is((SELECT status || ':' || failure_reason FROM payout WHERE id = pg_temp.pid(4)), 'FAILED:numéro invalide',
   'ligne échouée : motif porté');
 SELECT is((SELECT array_agg(a.code || ':' || p.amount ORDER BY p.line_no) FROM posting p JOIN account a ON a.id = p.account_id

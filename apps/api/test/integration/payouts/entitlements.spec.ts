@@ -51,7 +51,7 @@ describe('droits nets et liste', () => {
       available: 4_225,
     });
     const p2 = (await p.payoutsOf(second.id))[0]!.id;
-    await p.bo('POST', `/payouts/${p2}/confirm`, p.w.organizerAdminA, {
+    await p.bo('POST', `/payouts/${p2}/confirm`, p.organizerAdmin3, {
       outcome: 'FAILED',
       failure_reason: 'échec',
     });

@@ -198,8 +198,10 @@ export class PayoutsService {
       ledger_id: string;
       status: string;
       kind: PayeeKind;
+      initiated_by: string;
+      approved_by: string;
     }>(
-      `SELECT po.ledger_id, po.status, p.kind::text AS kind
+      `SELECT po.ledger_id, po.status, p.kind::text AS kind, po.initiated_by, po.approved_by
          FROM payout po JOIN party p ON p.id = po.beneficiary_id
         WHERE po.id = $1`,
       [id],
@@ -212,6 +214,14 @@ export class PayoutsService {
     if (missingRole(actor.principal, [current.kind], ledger.chain))
       throw new ProblemException('FORBIDDEN');
     const confirmed = input.outcome === 'CONFIRMED';
+    // Décision 18 : un échec recrédite le droit ; il n'est jamais déclaré par qui a préparé (auteur de la demande) ou
+    // validé le lot (sinon une seule personne ferait sortir puis rentrer l'argent). `CONFIRMED` reste ouvert. La
+    // base refuse aussi (CL041) : ce contrôle donne le refus clair avant toute écriture.
+    if (!confirmed && [current.initiated_by, current.approved_by].includes(actor.principal.userId))
+      throw new ProblemException('FORBIDDEN', {
+        detail:
+          'Un échec ne peut être déclaré par la personne qui a préparé ou validé le lot de versements.',
+      });
     await client.query('SELECT settle_payout($1, $2, $3, $4, $5)', [
       id,
       input.outcome,

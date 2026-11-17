@@ -115,7 +115,7 @@ describe('versements : concurrence (NFR-001) et refus (SC-002)', () => {
     expect(all.filter((r) => r.status !== 200)).toEqual([]);
     expect(await p.txCount('PAYOUT_CONFIRMED')).toBe(before + 1);
     // Un résultat contraire après coup : refusé, état et écritures inchangés.
-    const late = await p.bo('POST', `/payouts/${payout}/confirm`, p.organizerAdmin2, {
+    const late = await p.bo('POST', `/payouts/${payout}/confirm`, p.organizerAdmin3, {
       outcome: 'FAILED',
       failure_reason: 'tardif',
     });
@@ -181,7 +181,7 @@ describe('versements : concurrence (NFR-001) et refus (SC-002)', () => {
       const { id } = await p.batch([p.line(m, 10_000)]);
       legit++;
       const payout = (await p.payoutsOf(id))[0]!.id;
-      const failedRes = await p.bo('POST', `/payouts/${payout}/confirm`, p.w.organizerAdminA, {
+      const failedRes = await p.bo('POST', `/payouts/${payout}/confirm`, p.organizerAdmin3, {
         outcome: 'FAILED',
         failure_reason: 'échec réseau',
       });

@@ -1151,7 +1151,7 @@ Chaque relevé PSP ou bancaire est importé dans `external_statement_line` et ra
 2. Une personne prépare un lot de versements ; une seconde le valide. `PAYOUT_INITIATED` gèle le montant dans `L-VERS-ENCOURS`. Le montant NE DOIT PAS dépasser le droit net.
 3. Le système exporte le lot (CSV : bénéficiaire, moyen, numéro ou IBAN, montant, référence).
 4. Le paiement est fait hors système.
-5. Une personne enregistre le résultat de chaque ligne : `PAYOUT_CONFIRMED` (l'argent sort du pool) ou `PAYOUT_FAILED` (le droit est recrédité ; un nouvel ordre suivra).
+5. Une personne enregistre le résultat de chaque ligne : `PAYOUT_CONFIRMED` (l'argent sort du pool) ou `PAYOUT_FAILED` (le droit est recrédité ; un nouvel ordre suivra). Un `PAYOUT_FAILED` est enregistré par une personne distincte de celle qui a préparé le lot et de celle qui l'a validé (elle devient le valideur de la transaction) ; `PAYOUT_CONFIRMED` reste à une personne (amendé le 17/11/2026, ADR-214).
 
 Table `payout` : bénéficiaire, montant, moyen (`method`, dont `ORANGE_MONEY`), date d'initiation (`initiated_at`), auteur (`initiated_by`) et valideur (`approved_by`, distinct de l'auteur), statut (`INITIATED`, `CONFIRMED`, `FAILED`), référence externe, transactions d'initiation et de règlement. Un versement initié depuis plus de 48 h (`initiated_at`) sans résultat DOIT déclencher une alerte.
 

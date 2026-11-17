@@ -43,6 +43,8 @@ describe('SC-001 : de CLOSING à LOCKED par les routes du back-office', () => {
   let tx: TenantTx;
   let operatorAdmin2: TestPerson;
   let organizerAdmin2: TestPerson;
+  /** Troisième personne : déclare l'échec d'un versement (décision 18). */
+  let organizerAdmin3: TestPerson;
   const op = () => fx.parties.OPE;
   const orgAdmin = () => fx.people.organizerAdmin;
   const opAdmin = () => fx.people.operatorAdmin;
@@ -352,6 +354,10 @@ describe('SC-001 : de CLOSING à LOCKED par les routes du back-office', () => {
         operatorId: op(),
         roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: fx.parties.ORG }],
       });
+      organizerAdmin3 = await idp.createPerson(db, {
+        operatorId: op(),
+        roles: [{ role: 'ORGANIZER_ADMIN', scopeType: 'ORGANIZER', scopeId: fx.parties.ORG }],
+      });
     });
   });
   afterAll(async () => {
@@ -466,7 +472,7 @@ describe('SC-001 : de CLOSING à LOCKED par les routes du back-office', () => {
     );
     await result(
       of(merchants, fx.parties.TEE),
-      orgAdmin(),
+      organizerAdmin3,
       { outcome: 'FAILED', failure_reason: 'numéro refusé par l’opérateur' },
       'TEE (échec)',
     );

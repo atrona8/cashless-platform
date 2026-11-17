@@ -26,6 +26,9 @@ export class PayoutWorld {
   /** Seconds : même rôle que `w.operatorAdminA` / `w.organizerAdminA`, autre personne. */
   operatorAdmin2!: TestPerson;
   organizerAdmin2!: TestPerson;
+  /** Troisième personne : seule habilitée à déclarer un échec (décision 18). */
+  operatorAdmin3!: TestPerson;
+  organizerAdmin3!: TestPerson;
   operatorAdminB!: TestPerson;
   organizerAdminB!: TestPerson;
   platformPartyId = '';
@@ -50,6 +53,8 @@ export class PayoutWorld {
         });
       world.operatorAdmin2 = await person(w.ops.a, 'OPERATOR_ADMIN', w.ops.a);
       world.organizerAdmin2 = await person(w.ops.a, 'ORGANIZER_ADMIN', w.ids.organizerA);
+      world.operatorAdmin3 = await person(w.ops.a, 'OPERATOR_ADMIN', w.ops.a);
+      world.organizerAdmin3 = await person(w.ops.a, 'ORGANIZER_ADMIN', w.ids.organizerA);
       world.operatorAdminB = await person(w.ops.b, 'OPERATOR_ADMIN', w.ops.b);
       world.organizerAdminB = await person(w.ops.b, 'ORGANIZER_ADMIN', w.ids.organizerB);
       await db.query(`SELECT set_config('app.operator_id', $1, false)`, [w.ops.a]);

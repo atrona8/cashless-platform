@@ -1,7 +1,7 @@
 // Mission 9b, WP14 (règle 3 et 4 de CLAUDE.md) : chaque écart accepté ou renforcement de la mission est consigné.
 // Ce test lit les documents du dépôt (aucune base) et échoue si :
 //   - une entrée OP-N131 à OP-N149 manque dans POINTS_OUVERTS.md (tableaux et fiche) ou n'est reprise par aucun ADR ;
-//   - un ADR-197 à ADR-213 manque, ou ne cite aucun OP ;
+//   - un ADR-197 à ADR-214 manque, ou ne cite aucun OP ;
 //   - une dette n'est pas reportée dans PRD.md et PROMPTS-A-ENVOYER.md ;
 //   - un test cité dans ces fiches n'existe plus sous ce nom ;
 //   - le code des alertes d'exploitation envoie quelque chose à une personne (limite d'OP-N132 : à mettre à jour avec
@@ -12,7 +12,7 @@ import { join, relative } from 'node:path';
 const ROOT = join(__dirname, '../../../../..');
 const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
 const OPS = Array.from({ length: 19 }, (_, i) => `OP-N${131 + i}`);
-const ADRS = Array.from({ length: 17 }, (_, i) => `ADR-${197 + i}`);
+const ADRS = Array.from({ length: 18 }, (_, i) => `ADR-${197 + i}`);
 
 const walk = (dir: string, out: string[] = []): string[] => {
   for (const name of readdirSync(dir)) {

@@ -136,9 +136,11 @@ destination).
 versement ne change d'état qu'une fois : le même résultat rejoué rend `200` sans nouvelle écriture ; un résultat contraire
 ensuite : `409`. Un `FAILED` recrédite le droit de la partie, qui peut être reversé par un nouveau lot.
 
+**Règle de deux personnes pour `FAILED` (amendée le 17/11/2026, ADR-214).** Un `FAILED` ne peut être déclaré ni par la personne qui a préparé le lot (auteur de la demande), ni par celle qui l'a validé : il faut une troisième personne, du rôle du lot ; elle est enregistrée comme valideur de la transaction `PAYOUT_FAILED`. Sinon : `403 FORBIDDEN` (« Un échec ne peut être déclaré par la personne qui a préparé ou validé le lot de versements. »), rien n'est écrit, la ligne reste `INITIATED`. `CONFIRMED` reste ouvert à une seule personne du rôle du lot, y compris l'auteur ou le valideur du lot. Les clients doivent prévoir ce `403` sur l'écran de résultat et proposer à l'administrateur concerné de passer la main.
+
 **Codes d'erreur** : `409 PAYOUT_EXCEEDS_ENTITLEMENT` (montant supérieur au droit disponible, à la demande ou à la validation) ;
 `422 VALIDATION_FAILED` (IBAN invalide, devise, montant nul ou décimal, champ inconnu) ; `409 CONFLICT_STATE` ;
-`403`/`404` ; `409 LEDGER_LOCKED` sur un grand livre verrouillé.
+`403` (mauvais rôle, ou `FAILED` déclaré par le préparateur ou le valideur du lot) ; `404` ; `409 LEDGER_LOCKED` sur un grand livre verrouillé.
 
 ## 5. Relevés et rapprochements
 

@@ -60,7 +60,7 @@ describe('versements et concurrence', () => {
     const { id } = await p.batch([p.line(m, 10_000)]);
     const payout = (await p.payoutsOf(id))[0]!.id;
     const [a, b] = await Promise.all([
-      p.bo('POST', `/payouts/${payout}/confirm`, p.w.organizerAdminA, {
+      p.bo('POST', `/payouts/${payout}/confirm`, p.organizerAdmin3, {
         outcome: 'FAILED',
         failure_reason: 'échec réseau',
       }),
