@@ -2,10 +2,9 @@
   "event_count": 163,
   "last_event_id": "01M7N2GR41ZBXKNVJKTDG40ZA6",
   "materialized_at": "2026-11-17T15:37:57.121894+00:00",
-  "mission_number": "5",
+  "mission_number": "",
   "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,484 +20,239 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FFXHXVBJHMXEMM4H59F8",
       "last_transition_at": "2026-11-17T15:37:15.954281+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Lane a, commit 31db669c. Contrat: 20 operations (19 chemins dont POST ajoute a /refund-requests), 19 schemas, 3 codes StatusCondition (description, PSP_RECONCILED passe en calculee), ProblemCode PAYOUT_EXCEEDS_ENTITLEMENT (enum + puce), exportPayoutBatch ajoute a la liste IdempotencyKey; TS et Dart regeneres, check et typecheck verts. CL055 dans sqlstate-map.ts. csv.ts (RFC 4180, anti-injection, delimiter/bom en option, erreur CsvParseError avec ligne), iban.ts (isValidIban, normalizeIban, maskIban). Retouches hors carte: apps/api/test/unit/errors/sqlstate-map.spec.ts (ligne CL055), apps/api/src/http/messages.fr.json et messages.en.json (catalogue exige par le test existant pour tout code du contrat; sans elle la suite sqlstate-map echoue). Aucun import app.module.ts. Ecarts: vocabulaire StatusCondition (codes calcules dans la description, pas d'enum; PSP_RECONCILED sort de EXTERNAL); separateur CSV: defaut ',' et option delimiter ';' pour quickstart; maskIban conserve la longueur (SN08 + 20 etoiles + 3035, l'exemple du prompt est plus court); champs inventes signales: aucun hors data-model/research sauf LateAdjustmentRequest (beneficiary_party_id, amount, currency, reason, deduits de R-09), PartyStatement/AccountMapping/PayoutEntitlement/RemainingBalances (champs deduits, a relire). Aucun ecart de securite. Preuves: jest common+contracts+errors 204 verts; docs+isolation-sweep verts; check contrat vert (TS et Dart).",
-        "Review passed: diff semantique base b537c16d (seuls 4 textes/enum modifies, 20 ops, 19 schemas), jest 204 verts, check contracts vert, typecheck vert. Ecarts a trancher: renommage Dart Status4->Status5, Status5->Status6; champs deduits; HN absent de la table IBAN"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP01-contrat-utilitaires/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP01-contrat-utilitaires/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 15020,
-      "shell_pid_created_at": "1794900021.965183",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done",
-        "T006": "done"
-      }
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 5,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FJY19EGTJTQH9R6M4S54",
       "last_transition_at": "2026-11-17T15:37:19.041302+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Lane-b WP02 pret pour relecture. Commit e6ade9d3 : migrations 0083 (statement_import, gardes external_statement_line, import_statement_lines, match_statement_line, account_reconciliation) et 0084 (closing_step, record_closing_step avec p_actor ajoute, closing_new_conditions, set_event_status et event_transition_conditions redefinies ensemble, search_path public, pg_temp). Suites tests_statements (79) et tests_closing_conditions (76) vertes. Hors carte : aucune (pas d'import app.module). Noms figes : index psp_topup_provider_ref_idx, psp_chargeback_dispute_idx, payout_external_ref_idx, refund_request_external_ref_idx, external_statement_line_unmatched_idx ; cle de verrou 'closing-step:'||event||':'||step. REGRESSIONS signalees, non corrigees (hors carte) : tests_grand_livre_cashless.sql 288-295 et scenario_reference_test.sql 59-64 (le scenario de reference n'enregistre ni etapes de cloture, ni releves PSP, ni echeance atteinte) ; tests_event_ledger.sql 43-46,69,72-73,75 ; tests_definer_trigger_writers 16 et tests_offline_rights 1 (listes figees, WP06). Decisions : signe positif = entree ; compte rapproche = lignes toutes rapprochees ET solde releve = solde GL a la date + anomalies ; compte avec mouvements sans releve = non rapproche ; unicite globale (source, external_ref) conservee ; echeance nulle = non remplie.",
-        "Cycle 2 (decision du porteur du 17/11/2026 : quatre conditions gardees, suites adaptees). Commit de correction sur lane-b. Retouches hors carte autorisees : packages/ledger-sql/gen_tests.py, gen_golden.py (generateurs : releve PSP concordant avant SETTLING, etapes de cloture avant REFUND_WINDOW et CLOSED, echeance atteinte), tests_grand_livre_cashless.sql et scenario_reference_test.sql (regeneres par les generateurs, check-generated.sh vert), tests/tests_event_ledger.sql (codes attendus et fixtures en proprietaire, aucune condition ni declencheur desactive). scenario_reference.json inchange. Preuves pg_prove sur cashless_wp02 : tests_statements, tests_closing_conditions, tests_event_ledger, tests_cash_sessions, tests_definer_search_path, tests_grand_livre_cashless, scenario_reference_test : tous verts. Restent hors carte, WP06 : tests_definer_trigger_writers 16 et tests_offline_rights 1 (listes figees).",
-        "Cycle 3. TROIS RENFORCEMENTS a consigner par WP14 (ADR, POINTS_OUVERTS, correction de la note data-model.md l.51 sur l'unicite) : (1) contrainte globale UNIQUE (source, external_ref) retiree dans 0083 (DoS et fuite inter-prestataires), index unique (account_id, source, external_ref) garde, ON CONFLICT explicite, tests A/B ; aucun code ni suite ne l'utilisait par son nom ; (2) garde closing_step_scope_guard (0084) : les transactions listees doivent appartenir au grand livre EVENT de l'evenement, test ; (3) renforcements de cycle 1 deja signales (4 conditions, CLOSED avant echeance, compte avec mouvements sans releve non rapproche). NON CODE : une transaction rapprochee par plusieurs lignes d'un meme compte reste permise : cas legitime = reglement PSP unique (PSP_SETTLEMENT) verse en deux virements ou plus, donc deux lignes de releve pour une seule ecriture ; a trancher par le porteur. Mineurs transmis : closing_balance jamais recoupe avec la somme des lignes (WP07/WP09/WP14 : l'ecran doit montrer lignes ET solde) ; record_closing_step lit l'evenement en FOR KEY SHARE, statut possiblement perime face a un set_event_status concurrent, sans consequence demontree (WP07). Preuves pg_prove cashless_wp02 : 7 suites vertes + check-generated.sh vert (tests_grand_livre test 297 echoue une fois sur quatre passages, instable, vert aux 3 relances).",
-        "Cycle 3 relu et rejoue sur base dediee : contrainte globale (source, external_ref) retiree, index unique par compte, ON CONFLICT explicite, attaque inter-prestataires echoue (created=2, existing=0 des deux cotes), rapprochement auto toujours borne au compte/prestataire/grand livre ; garde closing_step limitee au grand livre EVENT de l'evenement ; 7 suites pgTAP vertes (tests_grand_livre 403 verte 40 fois), check-generated vert. Mineurs consignes : transaction rapprochee par plusieurs lignes, montant de ligne non compare a la transaction, closing_balance declare non recoupe.",
-        "Cycle 4 : rapprochement automatique d'import_statement_lines (0083, pas de nouvelle migration) exige mouvement net de la transaction sur le compte = amount de la ligne (signe et valeur ; posting + debit = entree ASSET), unicite apres filtre. Tests pgTAP 3b ajoutes (signe oppose, montant different, entree et sortie concordantes) ; ils echouent sans le correctif. NFR-003 : 10 000 lignes, suite entiere en 3,6 s. Renforcement de securite, a consigner. Aucune retouche hors carte. Lanes f, g, h, i a refusionner.",
-        "Cycle 5 : 0083 rapproche automatiquement si la ligne a le signe du mouvement net de la transaction sur le compte et un montant egal au net ou au brut (somme des postings de meme signe sur le compte, frais postes sur le meme compte). Signe contraire ou autre montant : non rapproche ; unicite apres filtre. Tests 3c (+1000/-30 : 1000 et 970 rapprochees, 985 et -1000 non). Renforcement a consigner. Aucune retouche hors carte. Lanes f, g, h, i a refusionner.",
-        "Cycle 5 : predicat signe + (net ou brut) verifie, tests 96/77 PASS, perf ~12 s",
-        "Decision 14 : 0083 (verrou refund_request avant la ligne, manuel et auto, FAILED refuse CL043 / non rapproche) + tests_statements.sql ; aucune retouche hors carte",
-        "Relecture cycle décision 14 : approuvé. Verrou refund_request avant ligne, lecture FAILED dans une instruction séparée (READ COMMITTED), preuve à deux sessions psql manuel et automatique, suites pgTAP vertes."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP02-base-releves-cloture/review-cycle-3.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP02-base-releves-cloture/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 89541,
-      "shell_pid_created_at": "1794919442.694318",
-      "subtasks": {
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done"
-      }
+      "shell_pid": 85449,
+      "shell_pid_created_at": "1794918941.918915"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FNVFE1EXBHJS3DD19XB2",
       "last_transition_at": "2026-11-17T15:37:22.031827+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0085_payouts.sql + tests_payouts.sql (107 tests verts). Hors carte : aucune retouche (liens node_modules ignores). Ecarts signales : (1) origin_account_id ajoute (compte debite, absent de data-model) ; (2) CASH refuse CL047 ; (3) LEGAL admis, ligne portee par la partie prestataire, borne sur L-LEGAL-CASSE, donc OPERATOR+LEGAL impossibles dans un meme lot ; (4) borne = droit net courant relu sous verrou, SANS soustraire les INITIATED (deja debites par PAYOUT_INITIATED : double compte sinon) ; (5) ecritures de resultat : created_by=acteur, approved_by=valideur du lot ou initiateur si acteur=valideur ; (6) verrous FOR NO KEY UPDATE sur account (pas de blocage des FK des ventes) ; (7) CHECK ajoutes NOT VALID ; rejeu avec contenu different : CL002 ; approval_request doit etre du prestataire. Noms figes : create_payout_batch(uuid,uuid,jsonb,uuid,uuid), settle_payout(uuid,text,text,text,uuid), CL055, CL047, CL029, payout_scope_guard/transition_guard/no_delete. Parite avec builders TS dupliquee. A relire : 0085_payouts.sql. Aucun GRANT.",
-        "Relecture WP03 : suites relancees vertes sur cashless_wp03r (tests_payouts, definer_search_path, generees). Ecarts a-h juges acceptables. Recommandations non bloquantes : exiger settled_tx_id/initiated_tx_id dans les gardes, statut APPROVED de la demande, IBAN dans DETAIL des CHECK, REVOKE INSERT/UPDATE payout en WP06.",
-        "Cycle 2 (renforcements du porteur 17/11). (1) create_payout_batch refuse : action autre que PAYOUT (CL001), statut autre qu'APPROVED (CL029 ; APPROVED est le statut porte pendant execute(), avant EXECUTED ; le rejeu d'un lot deja ecrit passe avant ce controle), auteur != demandeur ou valideur != decideur (CL001). (2) CHECK payout_tx_required (initiated_tx_id toujours, settled_tx_id si statut regle) + FK composites (ledger_id, tx) payout_initiated_tx_same_ledger / payout_settled_tx_same_ledger, NOT VALID. 118 tests verts, suites generees vertes. Aucune retouche hors carte.",
-        "x"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP03-base-versements/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP03-base-versements/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 26035,
-      "shell_pid_created_at": "1794901154.508409",
-      "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done"
-      }
+      "shell_pid": 23057,
+      "shell_pid_created_at": "1794901003.823645"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FRW29AW79NVK7QAYTMN4",
       "last_transition_at": "2026-11-17T15:37:25.122270+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Lane-d, commit 8cf44d55. Fichiers : migrations/0086_refund_debts.sql, tests/tests_refund_transitions.sql (169 assertions vertes). Retouches hors carte : aucune (pas d'import app.module.ts). Noms figes : refund_request_transition_guard (fonction + declencheur), refund_deposit(uuid,uuid,uuid,uuid), refund_deposit_for_session(uuid,uuid,uuid,uuid); anciennes signatures conservees et delegantes. Figeage montant/frais apres PROCESSING. Aucun GRANT; REVOKE PUBLIC sur les 2 nouvelles fonctions. Auteur seul accepte; valideur sans auteur ou auteur=valideur : CL001. Suites 9a touchees (hors carte) : tests_refund_requests.sql l.192 (REQUESTED->CANCELLED fixture, suite interrompue; reste verte a 88 assertions avec le declencheur suspendu a cette ligne); tests_cash_sessions.sql tests 9 et 10 (comptes par nom de fonction 14->15, 13->14 a cause de la surcharge); Jest refunds : journey.spec l.272, journey-limits.spec l.66, refund-latency.spec l.141 reculent hold_until (colonne desormais immuable) : 4 tests en echec. Suites generees et definer_search_path/trigger_writers/execute_grants vertes. Garde d'insertion proposee (INSERT direct en PAID possible).",
-        "Review passed: pg_prove refund_transitions 169, definer_search_path 14, grand_livre 400, scenario_reference 64 OK; 5 UPDATE de production OK; echecs attendus: tests_refund_requests l.192, tests_cash_sessions 9-10, 3 Jest (hold_until)"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP04-base-dettes-9a/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP04-base-dettes-9a/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 18685,
-      "shell_pid_created_at": "1794900370.46338",
-      "subtasks": {
-        "T017": "done",
-        "T018": "done",
-        "T019": "done"
-      }
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FW179E32X8XZTHKNJC4H",
       "last_transition_at": "2026-11-17T15:37:28.359505+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "0087: 14 fonctions ops_* (signatures de la prompt, +ops_verify_audit_chain ajoutee: renforce, FR-020 exige les deux chaines). 0088: account_mapping + create_account_mapping_version. PK: pas de PK, index UNIQUE avec coalesce(transaction_type,'*') + CHECK interdisant '*'. ops_unmatched_statements lit matched_tx_id, et matched_anomaly_id seulement si la colonne existe (SQL dynamique a texte fixe, compatible 0083 de WP02); date = value_date. ops_long_transactions: sans pg_read_all_stats du proprietaire, ligne pid nul/usename '?config' (testee via proprietaire non superuser). Aucun GRANT; aucune retouche hors carte, aucun import app.module. Hypothese 0022 (proprietaire ignore RLS forcee) reprise: chaine d'audit plateforme lisible seulement ainsi. Suites vertes: ops_functions 63, account_mapping 26, definer_search_path, generees. tests_offline_rights echoue (account_mapping hors liste, attendu jusqu'a WP06). Notification pg_notify verifiee par le source seulement. A relire: 0087, 0088.",
-        "Review passed: suites WP05 (103 tests), definer_search_path et suites generees vertes sur cashless_wp05r ; LISTEN/NOTIFY prouve ; apres 0083 simule ops_unmatched_statements OK."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP05-base-ops-correspondance/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP05-base-ops-correspondance/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 23050,
-      "shell_pid_created_at": "1794901003.574731",
-      "subtasks": {
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
-      }
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2FZ0C43TD3K4GMRB2RJVP",
       "last_transition_at": "2026-11-17T15:37:31.404971+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP06 pret pour relecture. Commit 594d2c42 (lane f). DROITS FINAUX (post-roles.sql section 12). cashless_app : SELECT seul sur payout, external_statement_line, closing_step, statement_import, account_mapping (aucun INSERT/UPDATE/DELETE/TRUNCATE ni droit par colonne ; ecriture par fonctions DEFINER) ; EXECUTE sur set_event_status, event_transition_conditions (droit survit au CREATE OR REPLACE, repose), record_closing_step, create_payout_batch, settle_payout, import_statement_lines, match_statement_line, account_reconciliation, refund_deposit_for_session(uuid,uuid,uuid,uuid), create_account_mapping_version ; refund_deposit_for_session(uuid,uuid) garde son droit. refund_deposit(4 args) : a personne (aucun code TS ne l'appelle ; appelee par refund_deposit_for_session). Aucun code de apps/api/src n'ecrit payout ni external_statement_line. cashless_maint : EXECUTE sur les 14 ops_* de 0087 et rien d'autre de la mission, aucune lecture de table, ni pg_read_all_stats ni pg_signal_backend. Autres roles cashless_* : rien. Aucune fonction de declencheur/garde/interne (11 + refund_deposit(4) + closing_new_conditions) executable par un role ou PUBLIC. Aucun DELETE pour personne. Aucun ecart de securite, aucun droit hors liste du prompt. REGLAGE DE DEPLOIEMENT (a consigner par WP14) : GRANT pg_read_all_stats TO <proprietaire des migrations> n'est PAS dans post-roles.sql ; sans lui ops_long_transactions rend la ligne ?config (prouve). LIMITE HERITEE prouvee : test echoue si le proprietaire des ops_* n'est ni superuser ni BYPASSRLS ; WP14 consigne OP/ADR. TESTS : tests_9b_rights.sql (101 tests : listes exactes par role via set_eq, ACL de table, appels reels sous cashless_app et cashless_maint, deux prestataires, SUM_ZERO vu, OPS_ALERT ecrite, ?config, app.operator_id inchange, RLS A/B) ; pg_prove des 77 suites ledger-sql vertes (6384 tests) sur cashless_wp06. db.ts non touche. Aucun Jest (aucun test Jest ne touche payout/external_statement_line ; seul webhooks/receive.spec.ts cite le mot). RETOUCHES HORS CARTE : tests_cash_sessions.sql tests 9-10 (compte par signature, exclut la surcharge a 4 args), tests_refund_requests.sql (fixture 81bb01 creee CANCELLED), tests_definer_trigger_writers.sql test 16 (6 gardes ajoutees), tests_offline_rights.sql (3 tables ajoutees a la liste figee). RETOUCHES HORS CARTE NON NOMMEES AU PROMPT (fixtures de test cassees par les contraintes de 0085/0083 sur la lane fusionnee, sans effet sur les droits) : tests_ops_functions.sql (payout sans initiated_tx_id ; ligne de releve rapprochee sans matched_by/matched_at) et tests_statements.sql (payout CONFIRMED sans initiated_tx_id, confirmed_by/at, msisdn). Pas d'import app.module.ts. A FAIRE RELIRE PAR UNE PERSONNE : post-roles.sql section 12 et listes de tests_9b_rights.sql.",
-        "Relecture WP06 : droits post-roles.sql s12 verifies sous SET ROLE (5 tables en lecture seule pour cashless_app, 14 ops_* pour cashless_maint seul, gardes et refund_deposit(4) a personne, set_event_status conservee, aucun PUBLIC, maint sans table ni pg_*); 10 mutations de GRANT/REVOKE toutes detectees par tests_9b_rights.sql; 15 suites vertes (1746 tests) sur cashless_wp06r; retouches de fixtures sans assertion retiree. Mineur : refus de portee teste par IS NOT NULL."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP06-droits-base/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP06-droits-base/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 36561,
-      "shell_pid_created_at": "1794902813.650085",
-      "subtasks": {
-        "T024": "done",
-        "T025": "done",
-        "T026": "done",
-        "T027": "done"
-      }
+      "shell_pid": 33723,
+      "shell_pid_created_at": "1794901892.99646"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2G251D1SE1PVA8M6NN9P9",
       "last_transition_at": "2026-11-17T15:37:34.625898+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Lane g. Hors carte : audit/audit.service.ts (AuditAction CLOSING_STEP_EXECUTED en fin d'union) ; test/integration/events/status.spec.ts (PSP_RECONCILED base, CLOSED avec etapes faites et echeance) ; app.module.ts (ClosingModule, ligne a moi). Noms: ClosingStepService(client,event,step,actor) sans cle d'en-tete (cles closing:<event>:<step>[:<id>] deterministes) ; verrou 'closing-step:<event>:<step>' (meme cle que record_closing_step, migration 0084, et non 'closing:' du prompt). Ecarts/contradictions : (1) RemainingBalances = totaux + CSV par portefeuille (contrat), pas par partie/compte comme T032 ; (2) casse OPERATOR traitee comme ORGANIZER (type TS etendu), rien tranche; (3) grand livre ORGANIZER : 422 sur toutes les etapes (stricter); (4) PER_MEDIA = supports distincts rattaches (media_assignment) des portefeuilles du grand livre (le 6 du scenario est un parametre); (5) source BATCH, createdBy=auteur, sans valideur (aucune regle 12.1 n'exige 2 personnes). Aucun ecart affaiblissant la securite. Typecheck: 2 erreurs preexistantes errors/sqlstate-map.ts (PAYOUT_EXCEEDS_ENTITLEMENT, contrats non reconstruits), hors lot. Tests: test/unit/closing + test/integration/closing + events/status.spec.ts verts sur cashless_wp07.",
-        "Cycle 2. Hors carte (a lister) : ledger/builders/closing/fees.ts (OperatorFeePayload.amount : ecart explicite, variante REGULARIZATION, UNE transaction inversee ; status-matrix.ts inchange) ; ledger/builders/closing/backoffice.ts (breakage OPERATOR = 100 % prestataire, bps ignore, decision porteur) ; audit.service.ts ; status.spec.ts. Corrige : constat 1 (test integration NET_OF_REFUNDS, regle a minimum, ecart 200 = apercu = ecrit, 1 transaction, CLOSED apres versements), PITCH_FEES tout PREPAID garde lignes+reference, tests API RECONCILING avec session CLOSING, casse OPERATOR/LEGAL_ACCOUNT/NONE par le moteur. Fixture : le profil de legislation AA est partage, les tests le restaurent. Aucun ecart affaiblissant. Tests verts sur cashless_wp07 (9 suites, 52 tests).",
-        "Cycle 2 : constats 1 a 3 corriges (regularisation en une transaction a ecart explicite, matrice non elargie ; casse OPERATOR 100 % prestataire ; lignes PREPAID ; tests moteur). 9 suites / 52 tests verts sur cashless_wp07."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP07-etapes-cloture/review-cycle-2.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP07-etapes-cloture/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 69946,
-      "shell_pid_created_at": "1794916282.300239",
-      "subtasks": {
-        "T028": "done",
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done",
-        "T033": "done",
-        "T034": "done"
-      }
+      "shell_pid": 38158,
+      "shell_pid_created_at": "1794903167.666599"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2G58AGD11FE8RPCAXAEZ7",
       "last_transition_at": "2026-11-17T15:37:37.802998+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Retouches hors carte : apps/api/src/app.module.ts (1 import + 1 ligne PayoutsModule, union à la consolidation avec WP07) ; audit/audit.service.ts (6 valeurs AuditAction en fin d'union) ; approval/approval.mapper.ts (maskPaymentData générique : iban via maskIban, msisdn 3 derniers chiffres, récursif, appliqué par approvalRequestDto donc aux routes d'approbation ET à l'audit ; la ligne en base garde la valeur complète). Noms produits : PAYOUT_ROLES_BY_BENEFICIARY, PAYOUT_ROLES, PayoutBatchPayload, EntitlementService (forLedger, forParties), PayoutActions, PayoutsService, maskPaymentData. Signalements : lot mixte exige les deux rôles chez auteur ET valideur ; bénéficiaire hors MERCHANT/ORGANIZER/OPERATOR/PLATFORM refusé 422 (LEGAL non exprimable) ; refus de forme de confirm en 422 selon openapi (le prompt disait 400) ; available = net_claim (non déduit) selon la relecture de WP03 alors que la description openapi dit net_claim - pending_payouts ; confirm : verrou consultatif (le rôle applicatif n'a pas UPDATE sur payout) ; un résultat identique rejoué rend 200 sans écriture ; destination msisdn du CSV neutralisée par Csv.write (préfixe apostrophe car commence par +).",
-        "Revue WP08 : approuve. 34 tests payouts + 85 tests approval/chargebacks/refunds verts sur cashless_wp08r, typecheck et Prettier verts. Mineurs : approbateur de la mauvaise classe peut faire passer la demande FAILED (aucune ecriture) ; rejeu identique d'un confirm rend 200 sans ecriture (settle_payout) ; test auto-approbation accepte 403 ou 409.",
-        "Cycle 2 (décisions 8 et 9 du porteur) : net_claim = party_position + pending_payouts, available = party_position (inchangé en valeur), pending_payouts inchangé ; msisdn exporté en chiffres seuls sans plus, neutralisation Csv.write intacte. openapi.yaml non modifié : la description « Droit net (party_position) » de net_claim est à préciser (consignation WP14). Tests ajoutés : cycle INITIATED/CONFIRMED/FAILED sur net_claim, pending_payouts, available ; CSV msisdn sans plus ni apostrophe, nom en = ou + neutralisé. Retouches hors carte inchangées (app.module.ts, audit.service.ts, approval.mapper.ts).",
-        "Cycle 2 approuve : decisions 8 et 9 conformes, borne SQL CL055 inchangee, 56 tests verts"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP08-versements-api/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP08-versements-api/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 33247,
-      "shell_pid_created_at": "1794910509.275847",
-      "subtasks": {
-        "T035": "done",
-        "T036": "done",
-        "T037": "done",
-        "T038": "done",
-        "T039": "done"
-      }
+      "shell_pid": 28437,
+      "shell_pid_created_at": "1794910327.99514"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2G89NRRFSP0E47YF9YVBA",
       "last_transition_at": "2026-11-17T15:37:40.918090+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte : app.module.ts (import + ligne imports ReconciliationModule), audit.service.ts (AuditAction STATEMENT_IMPORTED, STATEMENT_LINE_MATCHED). Csv admet delimiter ';'. NFR-003 : 10000 lignes en 3.97 s. ATTENDU : match-statement-line.spec.ts 'signe et montant' ECHOUE tant que la correction WP02/0083 (constat 1 : signe et montant non compares par import_statement_lines, decision du porteur) n'est pas refusionnee dans la lane ; 28/29 autres verts. Route 12 : deux cibles, aucune ou champ etranger = 400. Contrat sans explained_by_anomalies (non expose). A relire : statements.service.ts, statements.controller.ts.",
-        "Cycle 2 : (1) caracteres de controle (NUL, tab, 0x01-0x1f, 0x7f) dans external_ref : 422 avant la base, rejeu 422 teste. (2) meme fichier deja importe avec autre source/date/solde : 409 CONFLICT_STATE (declare au contrat), memes parametres : reponse inchangee ; sans SQL ni contrat. (3) commentaires DTO et test mis a jour. Constat 3 laisse a WP14. Jest reconciliation 31 verts (1 latence ignoree). Hors carte inchange : app.module.ts, audit.service.ts.",
-        "Cycle 3 : (1) source refusee avec caracteres de controle (400, comme les autres parametres mal formes). (2) 409 de reimport verifie APRES import_statement_lines (relecture de statement_import par import_id), l'exception annule la transaction ; test 6 imports paralleles : 1 seul 201, 5 x 409, un seul import et une seule ligne. Jest reconciliation 33 verts (1 latence ignoree). Hors carte inchange.",
-        "Relecture cycle 3 : constats 1 et 2 du cycle 2 corriges et sondes rejouees ; 33 tests verts sur cashless_wp09r"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP09-rapprochement-api/review-cycle-3.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP09-rapprochement-api/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 60894,
-      "shell_pid_created_at": "1794911830.353116",
-      "subtasks": {
-        "T040": "done",
-        "T041": "done",
-        "T042": "done"
-      }
+      "shell_pid": 44980,
+      "shell_pid_created_at": "1794911290.751463"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2GBAXMXCWZ4KH3FWXK2NH",
       "last_transition_at": "2026-11-17T15:37:44.029389+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte : app.module.ts (import LateClaimsModule), audit.service.ts (LATE_CLAIM_REQUESTED, LATE_ADJUSTMENT_REQUESTED), debit-authority/debit-paths.ts (postLateClaim ABSENT vers ENGINE), test/support/demo-approval-action.ts + approval/back-office.spec.ts (demo ADJUSTMENT remplacee par ANOMALY_RESOLUTION : conflit d'enregistrement), unit refund-money-account.spec.ts (BANK_TRANSFER servi). refund.ts : moneyAccountFor(method, cashAccount?) + waiveFee (BACKOFFICE). Arbitrages : remboursement tardif sans frais (a confirmer par le porteur), CASH toujours refuse en pratique, destination hors ADR-76, test FR-024 (IBAN/numero absents de l'audit et de GET /approval-requests) suspendu tant que le masque WP08 n'est pas dans la base. Echecs refunds journey/latency : preexistants (refund_request_transition_guard).",
-        "Review passed: late-claims 34/35 (1 skip FR-024 attendu sans WP08), debit-authority, back-office, refund unit, typecheck, prettier verts sur cashless_wp10r. Reserves: rejouer FR-024 apres consolidation WP08; journey/journey-limits/refund-latency a corriger (hold_until immuable, 0086)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP10-reclamations-tardives/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP10-reclamations-tardives/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 39575,
-      "shell_pid_created_at": "1794911088.322755",
-      "subtasks": {
-        "T043": "done",
-        "T044": "done",
-        "T045": "done",
-        "T046": "done"
-      }
+      "shell_pid": 16152,
+      "shell_pid_created_at": "1794909276.639174"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2GHYDF5Q4127RATJHYYR2",
       "last_transition_at": "2026-11-17T15:37:50.797482+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP11 prêt. Commit 5d74c3c1. Route 15 createRefundRequest (OP-N123) ; levées OP-N124 (verifyChallengeOnly + consumeChallenge, journey-limits.spec OP-N124 inversé), OP-N126 (409 si ligne de relevé rapprochée à la transaction, refund-confirm.service refuseIfBankMatched ; question porteur : aucune voie de second valideur, 409 sans contournement), OP-N128 (valideur sur DEPOSIT_REFUNDED, journey.spec inversé ; cumul sous lockWalletPaidBalance, release-cumul-lock.spec), OP-N130 TS (fixtures backdateHold, replica dans la fixture seulement). Retouches hors carte : ledger/db/ledger-queries.ts (refundDeposit actor/approver), ledger/ledger-engine.service.ts (cas refund_deposit), media/lifecycle/deposit.service.ts (paramètre by). Aucune retouche d'app.module.ts ni de migration. Renforcements à consigner : virement REQUESTED avec new_number=true et extra_check au-delà du seuil ; numéro mobile étranger au titulaire vérifié passe par AWAITING_HOLDER. Limite résiduelle : le rapprochement posé en transaction concurrente après la lecture n'est pas vu (FOR SHARE impossible pour cashless_app). IBAN stocké en clair dans refund_request.iban (non masqué au repos). Tests : refunds, customer-auth, media/release-chaining, debit-authority : 28 suites, 228 passés sur cashless_wp11 ; typecheck et prettier verts. Fichiers à relire : customer-auth.service.ts, refund-confirm.service.ts, refund-backoffice-create.service.ts, release.service.ts.",
-        "Review passed: 28 suites/228 tests verts sur cashless_wp11; mutations (verrou du cumul, borne OP-N126, consommation du code, approver) font echouer les tests. Reserve porteur: fenetre de course rapprochement/REVERSAL (structurelle, match_statement_line ne verrouille pas refund_request)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP11-remboursement-backoffice-dettes-9a/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP11-remboursement-backoffice-dettes-9a/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 78256,
-      "shell_pid_created_at": "1794917076.551084",
-      "subtasks": {
-        "T047": "done",
-        "T048": "done",
-        "T049": "done",
-        "T050": "done",
-        "T051": "done"
-      }
+      "shell_pid": 69953,
+      "shell_pid_created_at": "1794916282.904498"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2GEKY55J0S6RCTQH8P4H1",
       "last_transition_at": "2026-11-17T15:37:47.391181+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Prêt: scellement ledger/audit + seal-verify (copie simulée refusée en prod: createSealCopy + assertProcessIsSafe + tests), 5 contrôles + long-transactions, OpsAlerts (audit OPS_ALERT, notify, journal ALERT, dédupliqué 1 h), AlarmLog dans bootstrap (WORKER_ALARM, 1/min, retour à 0 journalisé), codes 7-11. Retouches hors carte: test/integration/maintenance/process-guard.spec.ts (démarrage prod désormais refusé: copie externe des scellements; démarrage hors prod testé) et purge.spec.ts (liste des 12 travailleurs, comparée sans ordre). Aucun import app.module.ts, aucun SQL, aucun droit ajouté. Pour WP14: consigner OP+ADR (copie externe simulée jusqu'à 12b; alertes sans envoi à une personne jusqu'à 12b) + test qui échoue si la limite s'élargit (production-guard.spec.ts, entrée 'la copie externe des scellements'). Fichiers à relire: sealing/*, processes/ops-alerts.ts, bootstrap.ts (AlarmLog, garde), controls/long-transactions.worker.ts, kms/production-guard.ts, security/port-tokens.ts. Remarques: ordre d'enregistrement non garanti par Nest (long-transactions pas en tête, edge-* d'abord); utilise ModuleRef pour OpsAlerts dans CheckWorker; seuil de statement-unmatched fixé à 24 h (choix, non spécifié); long-transactions.useThreshold réservé aux tests; open-anomalies re-signale après redémarrage (mémoire du processus); vérification parcourt ops_seals_since(NULL) (coût linéaire, quotidien); copie manquante > 1 h = écart 8. ops_long_transactions exige pg_read_all_stats pour son propriétaire (sinon alerte de configuration 11). Instabilité: createdb concurrent entre lanes peut faire échouer reset-db.",
-        "Relecture WP12: approuve. Suites relancees (un depassement de crochet 5 s de resetDatabase, passe seule). Mutations des gardes detectees. Mineurs: commentaires 'en premier' faux (long-transactions 4e), seal_hash d'audit non teste, application_name libre dans l'alerte."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP12-scellement-controles-alertes/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP12-scellement-controles-alertes/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 61823,
-      "shell_pid_created_at": "1794911881.389403",
-      "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done",
-        "T056": "done",
-        "T057": "done"
-      }
+      "shell_pid": 33253,
+      "shell_pid_created_at": "1794910509.540602"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2GN0JZG2G12YHX3HHVVJ4",
       "last_transition_at": "2026-11-17T15:37:53.938741+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Routes 16 a 19 servies (apps/api/src/statements/). Retouches hors carte : app.module.ts (une ligne d'import + registre StatementsModule), audit/audit.service.ts (3 actions : PARTY_STATEMENT_EXPORTED, ACCOUNT_MAPPING_VERSION_CREATED, ACCOUNTING_EXPORTED). Format export : CSV ligne,date,transaction_id,transaction_type,purpose,sens,debit_account,credit_account,amount,currency ; lignes NON_MAPPE en tete (type, purpose, total absolu), une ECRITURE par ecriture de l'entite (comptes legaux vides si non mappee), X-Unmapped-Count = nombre de lignes NON_MAPPE ; version en vigueur = valid_from <= date de l'ecriture, version la plus haute ; une version est COMPLETE. Roles figes : MERCHANT=[MERCHANT_ADMIN,ORGANIZER_ADMIN,OPERATOR_ADMIN] ORGANIZER=[ORGANIZER_ADMIN,OPERATOR_ADMIN] OPERATOR=[OPERATOR_ADMIN] PLATFORM=[PLATFORM_ADMIN]. Ecarts : closing_balance (facultatif) non servi en JSON (NFR-004 : somme O(n) sur comptes chauds), le CSV porte le solde courant ; CSV sans colonne devise (exemple du contrat) ; ordre = ordre d'ecriture ; ventes internes du bar absentes du releve organisateur. NFR-004 : p95 270 ms (organisateur), 148 operateur, 94 plateforme, 104 commercant ; 100000 tx, 20 simultanes. Fichiers a faire relire : party-statement-scope.ts, party-statement.service.ts, accounting-export.service.ts.",
-        "Relecture WP13 : approuvé. Isolation par rôle et par partie vérifiée (404 sans oracle, 403 selon le rôle), aucun IBAN ni msisdn, CSV par Csv.write, audit FR-024 de l'export, curseur borné aux comptes de la partie. 33 tests verts sur cashless_wp13, typecheck et Prettier verts. Mineurs reportés à WP14 : (a) test débit = crédit de l'export tautologique, test =HYPERLINK du relevé de partie sans portée (libellé préfixé par la catégorie) ; (b) bornes de période de l'export en fuseau de session alors que le jour est affiché en UTC ; (c) ordre par numéro d'écriture : un curseur peut manquer une écriture validée tardivement entre deux grands livres ; (d) ventes internes absentes du relevé organisateur (§12.3), à trancher par le porteur ; (e) export : une ligne par écriture porte les deux comptes légaux, risque de double compte côté consommateur, à documenter dans la note aux équipes clientes.",
-        "Cycle décision 15 : catégorie « Ventes internes » (organisateur, JSON et CSV), test d'équilibre réel de l'export, test de neutralisation du relevé. Aucune retouche hors carte. p95 organisateur 306 ms (NFR-004).",
-        "Cycle décision 15 approuvé : ventes internes (18 500 recoupé à la main), test d'équilibre mutation-prouvé, neutralisation prouvée sur Csv.write ; 34 tests verts sur cashless_wp13"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP13-releves-export/review-cycle-1.md",
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP13-releves-export/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 93006,
-      "shell_pid_created_at": "1794920617.909058",
-      "subtasks": {
-        "T058": "done",
-        "T059": "done",
-        "T060": "done",
-        "T061": "done"
-      }
+      "shell_pid": 90938,
+      "shell_pid_created_at": "1794920375.462693"
     },
     "WP14": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M7N2GR41ZBXKNVJKTDG40ZA6",
       "last_transition_at": "2026-11-17T15:37:57.121894+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP14 pret (commit 83147fb7, lane-n). Fusion des lanes g,h,i,j,k,l,m,b : unions app.module.ts et audit.service.ts (AuditAction) sans autre conflit ; liens node_modules/@cashless crees ; tsc propre (PAYOUT_EXCEEDS_ENTITLEMENT OK). Hors carte : apps/api/src/statements/accounting-export.service.ts (bornes de periode en UTC, decision 17), test utc-bounds. T062 scenario/closing-journey.spec.ts (CLOSING a LOCKED par HTTP, soldes after_closing, 50 transactions au lieu de 48 : un lot par role). T063 invariants-cloture/concurrency.spec.ts (50x etape, validation de lot, resultat, rejeu ; SC-002 ; decision 14 deterministe + course, mutation du verrou refund_request detectee). T064 OP-N131 a N147, ADR-197 a ADR-210, SPECIFICATION 3.2 amendee, PRD et PROMPTS reportes ; garde consignation.spec.ts. T065 docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md. DEFAUT RELEVE (non corrige, OP-N147) : approval.mapper.ts ne masque pas result : msisdn en clair dans l'audit APPROVAL_EXECUTED et GET /approval-requests pour WALLET_REFUND ; late-claim.spec FR-024 (balayage global audit_log) echoue sur base partagee apres la suite refunds. Preuves : jest closing-journey + invariants-cloture 75 verts, late-claims/closing/payouts/reconciliation/refunds ciblees verts, NFR-004 statements 35 verts sans SKIP_LATENCY, pgTAP 13 suites vertes.",
-        "- 2026-11-17T13:37:58Z – claude – shell_pid=95384 – OP-N147 leve (commit 88832676) : approval.mapper.ts masque result ; payment-data-exposure.spec.ts vert, echoue sans masque ; late-claim.spec FR-024 filtre ; ADR-211.",
-        "Review passed: consignation OP-N131 a N147 / ADR-197 a 211 complete, levees prouvees, mutations (verrou match_statement_line, masque result, bornes UTC) attrapees, parcours HTTP et soldes after_closing verts, 50 tx justifiees. Mineurs consignes dans le compte rendu.",
-        "Cycle batterie, commit 8f7ab233 (lane-n). Retouches hors carte : (1) jest.config.cjs + .github/workflows/ledger-tests.yml : controls-alerts et seal-and-verify (resetDatabase) ecartes de la passe parallele par SKIP_LATENCY, lances seuls en serie sur base recreee (option de repli) ; (2) test/scenario/closing-prep.ts + replay.spec.ts + api-config-replay.spec.ts : sessions de caisse fermees avant RECONCILING, releves PSP en accord avant SETTLING, record_closing_step apres T30-32 et T43-45, echeance avant CLOSED, seuil >40 inchange ; (3) events/participations.spec.ts : etapes sans objet via record_closing_step et echeance, set_event_status non contourne ; (4) support/mission-9b-operations.ts (liste figee des 20 operations), configuration-isolation et media-isolation les ecartent (48 et 47 retrouves), nouveau invariants-cloture/isolation-9b.spec.ts : 20 operations x personnel de B et festivalier de B + 401, etat de A inchange, test d'exhaustivite contre contrat et contract-additions.md, mutation detectee. Autres fragilites corrigees : platform.spec (liste paginee, suit le curseur), payout-export FR-011 et statements-world.counts (balayages globaux filtres sur leur grand livre), purge.spec (timeout 30 s). Aucune condition de la base touchee. Preuve : reset-db puis SKIP_LATENCY=1 npx jest --maxWorkers=2 --forceExit sur cashless_wp14 : 329 suites passees (4 ignorees), 3979 tests passes, 13 ignores, 0 echec ; controls-alerts + seal-and-verify seuls : 40 verts ; tsc et Prettier propres.",
-        "Relecture du cycle batterie (88832676..8f7ab233) : pas CI valide (reset-db puis suites seules, en série, mêmes motifs que le pas voisin), rejeux sans contournement (record_closing_step, NOT_APPLICABLE autorisé par la base), balayage 9b sur 20 opérations vert, mutation sur loadLedger non détectée car la RLS tient seule (mineur). Suites touchées vertes en --runInBand sur cashless_wp14."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP14-preuves-consignation/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
-      "subtasks": {
-        "T062": "done",
-        "T063": "done",
-        "T064": "done",
-        "T065": "done"
-      }
+      "shell_pid": 7802,
+      "shell_pid_created_at": "1794924209.681911"
     }
   }
 }
