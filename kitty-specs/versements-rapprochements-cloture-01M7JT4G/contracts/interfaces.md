@@ -43,5 +43,5 @@ possède pas ; il signale le besoin à l'orchestrateur.
 
 ## Ordre des verrous (éviter les interblocages)
 
-Grand livre (verrou consultatif d'autorité) → événement → étape de clôture (verrou consultatif) → bracelet →
+Demande de remboursement (`refund_request`, ordre des identifiants ; décision 14) → Grand livre (verrou consultatif d'autorité) → événement → étape de clôture (verrou consultatif) → bracelet →
 portefeuilles (ordre des identifiants) → comptes d'un bénéficiaire (ordre des identifiants) → ligne de relevé.

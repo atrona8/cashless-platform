@@ -55,6 +55,14 @@ Mission : versements, rapprochements et clôture (`PROMPTS-A-ENVOYER.md`, sectio
     festivalier : accepté, contrôle par seconde personne et preuve ; OP + ADR + test qui échoue si une
     seule personne suffit.
 
+14. **17/11/2026 (relecture de WP11, OP-N126)** — Fenêtre de course sur le recrédit d'un remboursement en
+    échec (rapprochement bancaire validé entre la lecture et le `REVERSAL`) : fermée par la base. Nouveau
+    cycle de WP02 dans `0083` : `match_statement_line` et le rapprochement automatique
+    d'`import_statement_lines` verrouillent d'abord (`FOR UPDATE`, ordre des identifiants) les
+    `refund_request` liées à la transaction ou à la référence de la ligne, puis refusent (manuel) ou
+    laissent non rapprochée (automatique) une ligne dont la demande est déjà recréditée (`FAILED`).
+    Ordre des verrous : la demande de remboursement passe en tête. Renforcement, à consigner.
+
 ## Héritages
 
 - Mission 6 : OP-N82 (anomalies PSP dans le contrôle « grand livre = relevé »), refus de `RECONCILING` avec une caisse

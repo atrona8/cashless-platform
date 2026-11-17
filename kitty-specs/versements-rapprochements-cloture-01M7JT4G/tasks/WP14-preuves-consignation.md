@@ -162,6 +162,11 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   calculateur) ; à vérifier à la consolidation : `tsc` signalait `PAYOUT_EXCEEDS_ENTITLEMENT` dans
   `errors/sqlstate-map.ts` en lane-g (type généré périmé ?) ; reformatage Prettier de
   `test/fixtures/edge-vectors/vectors.json` hors carte, absent de la note de lane.
+- **Décision 14 (relecture de WP11)** : test Jest concurrent (deux connexions : confirmation `FAILED`
+  d'une demande et rapprochement de sa ligne de relevé) : jamais recrédit + rapprochement ensemble ; il
+  échoue si on retire le verrou de `refund_request` dans `match_statement_line`. Consigner le
+  renforcement (ADR) et les arbitrages de la route 15 (virement `REQUESTED`, numéro mobile étranger en
+  `AWAITING_HOLDER`, `extra_check`). `release-cumul-lock.spec.ts` est sous `refunds/` (pas `media/`).
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
