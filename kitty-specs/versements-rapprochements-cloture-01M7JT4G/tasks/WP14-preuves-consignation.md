@@ -176,6 +176,10 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   correspondance remplace la précédente (couple absent = non mappé). OP : pagination par numéro
   d'écriture sur plusieurs grands livres (écriture validée plus tard manquée, théorique) ; relevé et CSV
   festivalier non tracés (hors FR-024).
+- **WP13 (cycle décision 15)** : « Ventes internes » = comptes `MERCHANT` des participations
+  `INTERNAL` (`payout_to` = organisateur), `PURCHASE`/`REVERSAL` sans règle de frais ; ajouter un cas
+  de vente du bar interne avec commission (le filtre `fee_rule_id IS NULL` n'est exercé par aucun cas
+  réel) ; relancer la suite NFR-004 sans `SKIP_LATENCY` (p95 organisateur annoncé 306 ms).
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
