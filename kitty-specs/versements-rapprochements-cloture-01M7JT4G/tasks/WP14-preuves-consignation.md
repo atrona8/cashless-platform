@@ -154,6 +154,9 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   disparaît.
 - **WP09 (relecture)** : OP : deux lignes de relevé peuvent être rapprochées à la même anomalie
   (`explained_by_anomalies` additionne les deux) ; mission qui le lève à proposer au porteur.
+- **WP11** : OP : `errors/redact.ts` ne masque pas l'IBAN (aucun journal de corps aujourd'hui ; à
+  couvrir avant qu'un tel journal existe) ; OP-N126 tranché par le défaut sûr (refus `409` sans second
+  valideur) et arbitrages de la route 15, tels que listés dans la note de lane de WP11.
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
