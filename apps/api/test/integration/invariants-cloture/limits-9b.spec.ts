@@ -45,6 +45,25 @@ describe('OP-N145 : qui peut écrire dans refund_request', () => {
       .map((g) => g.grantee);
     expect(insertGrantees).toEqual(['cashless_app']);
     expect(grants.filter((g) => ['DELETE', 'TRUNCATE'].includes(g.privilege_type))).toEqual([]);
+    // Décision 19 : un droit par colonne (GRANT INSERT (status) ...) n'apparaît pas dans role_table_grants ;
+    // has_column_privilege le voit, droits hérités compris, pour chaque rôle cashless_* et chaque colonne.
+    const perColumn = await withOwner((db) =>
+      db.query<{ role: string; column_name: string; priv: string }>(
+        `SELECT r.rolname AS role, a.attname AS column_name, priv
+           FROM pg_roles r
+           CROSS JOIN pg_attribute a
+           CROSS JOIN unnest(ARRAY['INSERT', 'DELETE']) AS priv
+          WHERE r.rolname LIKE 'cashless\\_%' AND NOT r.rolsuper
+            AND a.attrelid = 'public.refund_request'::regclass AND a.attnum > 0 AND NOT a.attisdropped
+            AND (   (priv = 'INSERT' AND has_column_privilege(r.rolname, a.attrelid, a.attnum, 'INSERT'))
+                 OR (priv = 'DELETE' AND has_table_privilege(r.rolname, a.attrelid, 'DELETE')))`,
+      ),
+    );
+    const byPriv = (priv: string) => [
+      ...new Set(perColumn.rows.filter((r) => r.priv === priv).map((r) => r.role)),
+    ];
+    expect(byPriv('INSERT')).toEqual(['cashless_app']);
+    expect(byPriv('DELETE')).toEqual([]);
     expect(columns).toEqual(
       [
         'status',
