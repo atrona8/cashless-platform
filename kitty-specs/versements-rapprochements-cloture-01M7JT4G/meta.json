@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-17T15:28:54.789041+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "1786e3ec8d96248068c5f4ce7ace0489a02c664e"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-17T15:28:54.789041+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "1786e3ec8d96248068c5f4ce7ace0489a02c664e",
   "coordination_branch": "kitty/mission-versements-rapprochements-cloture-01M7JT4G",
   "created_at": "2026-11-16T18:32:58.964295+00:00",
   "flattened": false,
