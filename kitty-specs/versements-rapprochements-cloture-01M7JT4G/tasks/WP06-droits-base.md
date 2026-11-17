@@ -131,6 +131,16 @@ Sur le modèle de `tests_offline_rights.sql` (BEGIN, `_grants_for_tests.sql`, `n
   `ledger_seal`, `external_statement_line`, `anomaly` ; chaque `ops_*` s'appelle et rend un résultat
   correct sur une fixture à deux prestataires (le contrôle d'une somme non nulle y est vu) : la
   preuve que les fonctions marchent **sous le rôle réel**, RLS comprise ;
+- **Sous `cashless_maint`, cas demandés par la relecture de WP05** : `ops_seal_ledger` et
+  `ops_seal_audit` (chaîne de la plateforme comprise), `ops_record_seal_copy` (rejeu `false`, autre
+  référence `CL029`), `ops_raise_alert` (ligne `OPS_ALERT` écrite), `ops_long_transactions` (ligne
+  `?config` sans `pg_read_all_stats`) ; `app.operator_id` inchangé après chaque appel ; aucun
+  `INSERT`, `UPDATE`, `DELETE` sur `account_mapping` pour personne (la fonction seule impose la
+  suite des versions).
+- **Limite héritée à prouver, pas à corriger** : les `ops_*` (comme `audit_log_chain`, 0022)
+  supposent un propriétaire qui ignore la RLS forcée (superutilisateur ou `BYPASSRLS`). Un test
+  vérifie que le propriétaire des fonctions `ops_*` a cette propriété (`rolsuper OR rolbypassrls`) et
+  échoue sinon. WP14 consigne la limite (OP, ADR) ; ne change pas les migrations.
 - `pg_read_all_stats`, `pg_signal_backend` : aucun rôle `cashless_*` n'en est membre
   (`pg_auth_members`) ;
 - aucune fonction de déclencheur de la mission exécutable par un rôle quelconque, PUBLIC compris ;

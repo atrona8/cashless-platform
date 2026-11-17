@@ -119,6 +119,10 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   échoue si la limite s'élargit** (nommé : garde de production de WP12, état « copie simulée »).
 - **Réglage de déploiement** : appartenance du propriétaire de `ops_long_transactions` à
   `pg_read_all_stats` (R-13, note de WP06) : OP ou ligne de l'OP de la 12b, selon l'existant.
+- **Limite d'exploitation (relecture de WP05)** : les `ops_*` exigent un propriétaire superutilisateur
+  ou `BYPASSRLS` (hypothèse héritée de 0022, `audit_log_chain`) ; sans cela la chaîne d'audit de la
+  plateforme est invisible et `ops_ledgers_to_seal` échoue. OP + ADR + test de WP06 qui la vérifie ;
+  levée possible en 12b (lecture prestataire par prestataire). Avec le réglage `pg_read_all_stats`.
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
