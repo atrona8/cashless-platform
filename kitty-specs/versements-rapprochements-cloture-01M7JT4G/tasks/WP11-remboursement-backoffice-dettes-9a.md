@@ -85,6 +85,10 @@ son test de borne, puis se consigne dans la note de lane (WP14 en tire les OP et
   adapter ici, sans désactiver le déclencheur, en insérant la demande avec une échéance déjà passée :
   `test/integration/refunds/journey.spec.ts` l. 272, `journey-limits.spec.ts` l. 66,
   `refund-latency.spec.ts` l. 141 (relevé par l'implémenteur de WP04).
+- **Option `waiveFee` de WP10** (`ledger/builders/festival/refund.ts`) : réservée par le constructeur à la
+  source `BACKOFFICE` et émise seulement par `late-claim-action.ts`. Le remboursement du back-office de
+  ce lot écrit aussi en `BACKOFFICE` : il ne l'émet jamais (frais normaux), et un test le prouve. La base
+  ne l'interdit pas sur un grand livre non `LOCKED` : ne pas s'en servir comme garde.
 - Contrat = `contract-additions.md` exactement. Aucune route, aucun champ ni code d'erreur en plus,
   aucune dépendance nouvelle. `createMyRefundRequest` garde son refus de `BANK_TRANSFER`
   (`destination.ts:19-31` ne change pas).
