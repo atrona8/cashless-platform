@@ -123,6 +123,15 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
   ou `BYPASSRLS` (hypothèse héritée de 0022, `audit_log_chain`) ; sans cela la chaîne d'audit de la
   plateforme est invisible et `ops_ledgers_to_seal` échoue. OP + ADR + test de WP06 qui la vérifie ;
   levée possible en 12b (lecture prestataire par prestataire). Avec le réglage `pg_read_all_stats`.
+- **Relevés (relectures de WP02)** : ADR et OP du retrait de l'unicité globale `(source, external_ref)`
+  (déni de service et fuite entre prestataires, remplacée par l'unicité par compte) et correction de la
+  note de `data-model.md` (l. 51) ; OP : `closing_balance` déclaré par l'importeur jamais recoupé avec la
+  somme des lignes ; OP : une transaction peut être rapprochée par plusieurs lignes (règlement PSP en
+  plusieurs virements, non modélisé), règle proposée « somme des lignes rapprochées ≤ montant de la
+  transaction sur ce compte », mission qui la lève à proposer au porteur.
+- **Renforcements de phase 1** : garde de `closing_step` limitée au grand livre de l'événement (WP02) ;
+  `create_payout_batch` limité à une demande `APPROVED` cohérente et lien `payout` ↔ transaction (WP03,
+  décision 6 du porteur).
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
