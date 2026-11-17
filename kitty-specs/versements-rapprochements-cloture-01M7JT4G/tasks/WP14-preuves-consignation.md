@@ -132,6 +132,11 @@ Pour chaque élément, cite la note de lane ou la décision qui le fonde.
 - **Renforcements de phase 1** : garde de `closing_step` limitée au grand livre de l'événement (WP02) ;
   `create_payout_batch` limité à une demande `APPROVED` cohérente et lien `payout` ↔ transaction (WP03,
   décision 6 du porteur).
+- **Renforcement de WP02 (constat de WP09, décision 7 du porteur)** : `import_statement_lines` ne
+  rapproche automatiquement que si la somme des `posting` de la transaction sur le compte égale le
+  montant de la ligne (signe et valeur) ; ADR, report `PRD.md`, preuve : `tests_statements.sql` §3b et
+  `match-statement-line.spec.ts`. OP : `explained_by_anomalies` calculé en base mais absent
+  d'`AccountReconciliation` (contrat figé), exposition à proposer au porteur pour une mission future.
 - **Renforcements** (consignés après coup) : borne du droit net en base (`CL055`, R-07), conditions de
   passage ajoutées (R-05), `ops_verify_audit_chain` (WP05), et tout renforcement des notes de lane.
 - **Levées** OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 (SC-006) : chacune passe à « levé le … par la
