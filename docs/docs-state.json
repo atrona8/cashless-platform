@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-16T11:28:28Z",
+  "derniere_verification_globale": "2026-11-17T20:00:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -72,8 +72,8 @@
       "spec_index_a_jour": true
     },
     "versements-rapprochements-cloture-01M7JT4G": {
-      "statut": "review terminée (14 lots approuvés le 17/11/2026), non acceptée, non consolidée",
-      "verifie_le": "2026-11-17T18:00:00Z",
+      "statut": "mergée sur feat/versements-rapprochements-cloture (acceptée 15f1a19c, squash b4b81d8c, 17/11/2026), PR vers main à venir",
+      "verifie_le": "2026-11-17T20:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

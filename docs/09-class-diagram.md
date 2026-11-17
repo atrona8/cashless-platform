@@ -14,7 +14,7 @@
 > Rendu : Mermaid (aperçu Markdown de VS Code, GitHub). Aucun outil de diagramme de classes n'est prévu dans
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
 > Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Dans `main` par la PR #15 le 16/11/2026.
-> Complément du 17/11/2026 (mission 9b, review terminée le 17/11/2026) : section 4 octies recalée sur le code réel (tables `closing_step`, `statement_import`, `account_mapping` ; colonnes ajoutées à `payout` et `external_statement_line` ; déclencheur de `refund_request`) ; migrations réelles `0083` à `0088` sur la branche de la mission, pas encore dans `main`.
+> Complément du 17/11/2026 (mission 9b, review terminée puis consolidée sur `feat` le 17/11/2026, squash `b4b81d8c`, PR vers `main` à venir ; section 5 complétée : 3 tables, 112 au total) : section 4 octies recalée sur le code réel (tables `closing_step`, `statement_import`, `account_mapping` ; colonnes ajoutées à `payout` et `external_statement_line` ; déclencheur de `refund_request`) ; migrations réelles `0083` à `0088` sur la branche de la mission, pas encore dans `main`.
 
 ## 1. Organisation, événements et identité
 
@@ -650,9 +650,9 @@ classDiagram
 
 Invariants livrés : une demande ouverte au plus par portefeuille (index unique partiel), `PAID` exige une référence, `FAILED` un motif et une contre-passation, `REJECTED` un motif ; `AWAITING_HOLDER` exige `hold_until`, `BLOCKED` exige la décision `BLOCK`, numéro mobile en E.164, demandeur différent du valideur ; isolation par prestataire (RLS) ; aucun `DELETE`.
 
-## 4 octies. Versements, rapprochements et clôture (mission 9b, **implémentée : review terminée le 17/11/2026, non consolidée**)
+## 4 octies. Versements, rapprochements et clôture (mission 9b, ✅ consolidée sur `feat/versements-rapprochements-cloture` le 17/11/2026, squash `b4b81d8c` ; PR vers `main` à venir)
 
-> **Recalée sur les migrations réelles de la lane finale (review du 17/11/2026), pas encore au schéma de `main`.** Source : `kitty-specs/versements-rapprochements-cloture-01M7JT4G/data-model.md`, corrigé par ADR-200 (unicité des lignes de relevé par compte). Migrations `0083` (`statement_import`, colonnes de `external_statement_line`, `import_statement_lines`, `match_statement_line`, `account_reconciliation`), `0084` (`closing_step`, conditions de statut, `record_closing_step`, `set_event_status`), `0085` (colonnes de `payout`, `create_payout_batch`, `settle_payout`, gardes), `0086` (`refund_request_transition_guard`, `refund_deposit*` à quatre arguments), `0087` (fonctions `ops_*`, `ops_raise_alert`), `0088` (`account_mapping`, `create_account_mapping_version`). Trois tables nouvelles. Le plan numérotait autrement (`0083` pour les étapes, `0085` pour le rapprochement). Les verrous du rapprochement prennent `refund_request` en premier (décision 14). Le SQL fait foi.
+> **Recalée sur les migrations réelles de la lane finale (review du 17/11/2026), consolidée sur `feat`, pas encore au schéma de `main` (PR à venir).** Source : `kitty-specs/versements-rapprochements-cloture-01M7JT4G/data-model.md`, corrigé par ADR-200 (unicité des lignes de relevé par compte). Migrations `0083` (`statement_import`, colonnes de `external_statement_line`, `import_statement_lines`, `match_statement_line`, `account_reconciliation`), `0084` (`closing_step`, conditions de statut, `record_closing_step`, `set_event_status`), `0085` (colonnes de `payout`, `create_payout_batch`, `settle_payout`, gardes), `0086` (`refund_request_transition_guard`, `refund_deposit*` à quatre arguments), `0087` (fonctions `ops_*`, `ops_raise_alert`), `0088` (`account_mapping`, `create_account_mapping_version`). Trois tables nouvelles. Le plan numérotait autrement (`0083` pour les étapes, `0085` pour le rapprochement). Les verrous du rapprochement prennent `refund_request` en premier (décision 14). Le SQL fait foi.
 
 ```mermaid
 classDiagram
@@ -676,7 +676,7 @@ Invariants (testés en pgTAP) : une étape de clôture au plus une fois par év�
 
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers »),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -720,8 +720,8 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `journal_transaction` | Écriture comptable : type, clé d'idempotence, source (en ligne, hors ligne…), date, terminal, bracelet, auteur et valideur, écriture contre-passée. | réf. |
 | `posting` | Ligne d'une écriture : compte et montant ; la somme des lignes d'une écriture vaut zéro. | réf. |
 | `ledger_seal` | Scellement périodique de la chaîne des écritures d'un grand livre (empreinte figée, copie externe). | réf. |
-| `payout` | Versement à un bénéficiaire en deux temps (initié puis confirmé ou échoué), validé par une seconde personne. | réf. |
-| `external_statement_line` | Ligne de relevé externe (PSP, banque, mobile money) pour le rapprochement. | réf. |
+| `payout` | Versement à un bénéficiaire en deux temps (initié puis confirmé ou échoué), validé par une seconde personne. Mission 9b : colonnes ajoutées (`approval_request_id` = lot `PAYOUT`, `origin_account_id`, `msisdn` ou `iban`, `failure_reason`, `confirmed_by`, `confirmed_at`) ; contraintes sur la destination (mobile money ou virement), le motif d'échec et la paire de confirmation ; une ligne par bénéficiaire et par lot ; un seul changement d'état. Pas de table `payout_batch` : le lot est la demande d'approbation. | réf. ; 0085 |
+| `external_statement_line` | Ligne de relevé externe (PSP, banque, mobile money) pour le rapprochement. Mission 9b : colonnes ajoutées (`statement_import_id`, `currency`, `matched_anomaly_id`, `matched_by`, `matched_at`) ; unicité par compte, source et référence (plus globale, ADR-200) ; une seule cible (écriture ou anomalie), auteur et date si rapprochée ; montant non nul. | réf. ; 0083 |
 | `payment_request` | Paiement par QR, toujours en ligne : QR du commerçant scanné par l'app, ou QR à usage unique du festivalier lu par le terminal. | réf. |
 
 ### Terminaux, hors ligne et passerelle
@@ -826,6 +826,16 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 | `media_claim` | Demande de rattachement d'un bracelet approvisionné, à confirmer au guichet : 24 h, 5 essais, lecture consommée. | 0010 (+0016) |
 | `claim_attempt` | Trace de chaque essai de code (rattachement ou consultation anonyme), en ajout seul ; sert aux limites d'essais. | 0010 |
 
+### Versements, rapprochements et clôture (mission 9b)
+
+| Table | Rôle | Origine |
+|---|---|---|
+| `statement_import` | Relevé importé pour un compte de la famille `ASSET` : source, empreinte SHA-256 du fichier (un fichier une seule fois par compte), date, solde de clôture, devise, nombre de lignes créées, existantes et rapprochées, auteur. Ajout seul, RLS forcée, garde de périmètre (`CL047`). | 0083 |
+| `closing_step` | Étape de clôture d'un événement faite (`PITCH_FEES`, `OPERATOR_FEE`, `PLATFORM_FEE`, `OPERATOR_FEE_REGULARIZATION`, `BREAKAGE`, `DEPOSIT_FORFEIT`, `PROMO_EXPIRY`) : `DONE` ou `NOT_APPLICABLE`, auteur, date, écritures produites, résumé des montants. Clé primaire (événement, étape) : une fois par événement ; ajout seul ; RLS forcée. | 0084 |
+| `account_mapping` | Table de correspondance comptable versionnée par entité (usage, type de transaction ou tous, compte de débit, compte de crédit, validité), alimente l'export comptable. Index unique sur (prestataire, entité, version, usage, type) ; versions créées par `create_account_mapping_version`. | 0088 |
+
+Les migrations `0084` à `0087` ajoutent aussi des fonctions sans table : conditions de passage de statut et `record_closing_step` (`0084`), `create_payout_batch` et `settle_payout` (`0085`), garde de transition et dépôt de `refund_request` à quatre arguments (`0086`), fonctions `ops_*` en lecture seule pour le processus `maintenance` (`0087`).
+
 ### Contrôle, approbations, audit, API
 
 | Table | Rôle | Origine |
@@ -844,4 +854,4 @@ Ce document décrit le schéma à une date donnée. À régénérer quand une mi
 domaine (prochaine : mission 9, ou le recalage de la section 4 sexies si la consolidation de la mission 8 ajoute une migration). Section 4 sexies (mission 8, passerelle) ajoutée au plan le 05/11/2026, recalée le 12/11/2026 sur `0058` à `0072` : 8 tables (`0058`, `0060`, `0061`, `0063`), 103 au total. Section 4 quinquies (mission 7, hors ligne) ajoutée au plan le 30/10/2026, recalée le 05/11/2026 sur `0043` à `0057` : 10 tables (`0044` à `0048`), les migrations `0049` à `0057` ne créent aucune table. Section 4 quater (mission 6 caisses et PSP) ajoutée au plan le 27/10/2026, recalée le 29/10/2026 : 10 tables (`0036` à `0038`) et la colonne `wallet.other_block` (`0042`). Section 4 ter et tables du domaine « Encaissement en ligne » ajoutées le 26/10/2026 (mission 5b, migrations `0031` à `0034`). Le bloc de chaque diagramme reste du texte :
 une modification se relit dans la revue de code comme le reste.
 
-Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026, recalée à la review et décrite en section 5 le 16/11/2026 après la consolidation (migrations `0081` et `0082` : 1 table, 109 au total avec les 5 tables de `0080`) ; prochaine régénération : mission 9b. Section 4 octies (mission 9b, versements, rapprochements et clôture) ajoutée au plan le 17/11/2026, recalée à la review le 17/11/2026 sur les migrations réelles `0083` à `0088` (`closing_step`, `statement_import`, `account_mapping`) ; description des tables en section 5 et régénération complète à faire à la consolidation.
+Section 4 septies (mission 9a, remboursements) ajoutée au plan le 13/11/2026, recalée à la review et décrite en section 5 le 16/11/2026 après la consolidation (migrations `0081` et `0082` : 1 table, 109 au total avec les 5 tables de `0080`) ; prochaine régénération : mission 9b. Section 4 octies (mission 9b, versements, rapprochements et clôture) ajoutée au plan le 17/11/2026, recalée à la review le 17/11/2026 sur les migrations réelles `0083` à `0088` (`closing_step`, `statement_import`, `account_mapping`) ; description des tables en section 5 le 17/11/2026 après la consolidation sur `feat` (3 tables : `statement_import`, `closing_step`, `account_mapping`, 112 au total ; colonnes ajoutées à `payout` et `external_statement_line`) ; régénération complète à faire quand la mission 10 ajoutera des tables.

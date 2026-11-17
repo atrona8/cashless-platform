@@ -1129,7 +1129,7 @@
   {
     "mission": "versements-rapprochements-cloture-01M7JT4G",
     "titre_cas_usage": "Versements, rapprochements et clôture",
-    "statut": "review terminée (14 lots approuvés le 17/11/2026, non acceptée)",
+    "statut": "mergée sur feat/versements-rapprochements-cloture (acceptée 15f1a19c, squash b4b81d8c, 17/11/2026), PR vers main à venir",
     "user_stories": [
       {
         "titre": "Clore dans l'ordre de référence",
