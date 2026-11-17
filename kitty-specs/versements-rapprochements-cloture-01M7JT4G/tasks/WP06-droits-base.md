@@ -151,6 +151,8 @@ Sur le modèle de `tests_offline_rights.sql` (BEGIN, `_grants_for_tests.sql`, `n
   (fixture qui force `REQUESTED` → `CANCELLED`, désormais refusé : créer la fixture directement
   dans l'état voulu par `INSERT`, sans désactiver le déclencheur). Chacune listée dans la note de
   lane. Ne touche pas aux Jest de `test/integration/refunds/` (WP11).
+- **Autre liste figée hors carte nommée** : `tests/tests_definer_trigger_writers.sql` (test 16, qui voit
+  les nouvelles tables et gardes de `0083` à `0088`) : ajout exact et commenté, comme ci-dessus.
 - `apps/api/test/support/db.ts` : seulement si les tests Jest ont besoin d'un rôle nouveau ou d'un
   droit de fixture (par exemple insérer un `payout` en propriétaire). Sinon, ne le touche pas et dis-le.
 
