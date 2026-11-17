@@ -326,3 +326,20 @@ La rétrospective a été capturée à la consolidation (`kitty-specs/versements
 `39bdb45b`). Pour la revoir : `spec-kitty retrospect summary` (lecture seule) et
 `spec-kitty agent retrospect synthesize --mission versements-rapprochements-cloture-01M7JT4G` (propositions, à blanc par
 défaut).
+
+## Suites données à la revue (17/11/2026)
+
+- **RISK-1 / DRIFT-2 — résolu (décision 18 du porteur).** `PAYOUT_FAILED` exige une personne distincte du
+  préparateur (`initiated_by` = auteur de la demande d'approbation) et du valideur du lot ; elle est enregistrée
+  comme valideur réel de la transaction (`0089_payout_failed_second_person.sql`, garde API `403 FORBIDDEN`,
+  `CL041` en base) ; `CONFIRMED` reste à une personne. ADR-214 ; FR-012 et SPECIFICATION §11.4 amendés ; note
+  aux équipes clientes mise à jour. Commit `b0cc3675`, relu par un relecteur distinct (ACCEPTÉ, mutations faites).
+- **Notes (décision 19) — corrigées.** `limits-9b` vérifie les droits par colonne (mutation `GRANT INSERT (status)`
+  détectée) ; fiche OP-N145 et récapitulatif de `POINTS_OUVERTS.md` complétés ; `env.sh` pose
+  `DATABASE_URL_SNAPCONTENT` et `_SNAPSIGN`. Commit `81234678`.
+- **Batterie complète sur feat (`81234678`, `cashless_test`)** : Jest parallèle 330 suites, 3 991 tests verts,
+  0 échec ; `controls-alerts` et `seal-and-verify` en série 40/40 ; pgTAP 79 fichiers, 6 875 tests, dont
+  `tests_offline_snapshot_source_no_stats.sql` (mesure de temps, mission 7) en dépassement sous charge, vert
+  2 fois sur 2 relancé seul.
+- **Verdict mis à jour : PASS WITH NOTES, aucun constat bloquant ouvert.** Choix laissé au porteur : une phrase
+  rétrocompatible dans la description de `confirmPayout` (`openapi.yaml`) pour rendre la règle visible au contrat.
