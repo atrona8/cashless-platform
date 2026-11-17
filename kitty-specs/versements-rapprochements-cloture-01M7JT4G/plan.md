@@ -138,9 +138,9 @@ kitty-specs/versements-rapprochements-cloture-01M7JT4G/
 ```
 packages/contracts/openapi.yaml               # ajouts seulement (contract-additions.md), types régénérés TS et Dart
 packages/ledger-sql/
-├── migrations/0083_closing_conditions_steps.sql    # set_event_status, event_transition_conditions, closing_step
-├── migrations/0084_payouts.sql                     # colonnes payout, create_payout_batch, settle_payout, CL055
-├── migrations/0085_statements.sql                  # statement_import, external_statement_line, rapprochement
+├── migrations/0083_statements.sql                  # statement_import, external_statement_line, rapprochement
+├── migrations/0084_closing_conditions_steps.sql    # set_event_status, event_transition_conditions, closing_step
+├── migrations/0085_payouts.sql                     # colonnes payout, create_payout_batch, settle_payout, CL055
 ├── migrations/0086_refund_debts.sql                # OP-N128 (refund_deposit_for_session), OP-N130 (déclencheur)
 ├── migrations/0087_ops_functions.sql               # ops_* (scellement, copie, contrôles, alertes, transactions longues)
 ├── migrations/0088_account_mapping.sql             # account_mapping
@@ -221,10 +221,10 @@ Les préoccupations ne sont pas des lots. `/spec-kitty.tasks` les traduit.
 
 ### IC-01 — Conditions de passage et état des étapes
 
-- **Purpose** : migration `0083` (conditions `NO_OPEN_CASH_SESSION`, `REFUND_DEADLINE_REACHED`, `CLOSING_STEPS_DONE`,
+- **Purpose** : migration `0084` (conditions `NO_OPEN_CASH_SESSION`, `REFUND_DEADLINE_REACHED`, `CLOSING_STEPS_DONE`,
   `PSP_RECONCILED` calculée ; table `closing_step`, `record_closing_step`) ; textes fr/en.
 - **Relevant requirements** : FR-001, FR-002, FR-004, FR-008 ; C-004, C-005.
-- **Affected surfaces** : migration `0083`, `post-roles.sql`, `tests/tests_closing_conditions.sql`,
+- **Affected surfaces** : migration `0084`, `post-roles.sql`, `tests/tests_closing_conditions.sql`,
   `events/status/status.service.ts` et `status-messages.ts`.
 - **Sequencing/depends-on** : IC-00, IC-05 (`account_reconciliation`).
 - **Risks** :
@@ -248,10 +248,10 @@ Les préoccupations ne sont pas des lots. `/spec-kitty.tasks` les traduit.
 
 ### IC-03 — Versements
 
-- **Purpose** : migration `0084` (colonnes de `payout`, droits réduits, déclencheur, `create_payout_batch` avec borne
+- **Purpose** : migration `0085` (colonnes de `payout`, droits réduits, déclencheur, `create_payout_batch` avec borne
   `CL055`, `settle_payout`) ; droits nets ; action `PAYOUT` (rôle selon le bénéficiaire) ; routes 5 à 9 ; CSV commun.
 - **Relevant requirements** : FR-009 à FR-012, FR-024 ; NFR-001 ; SC-002.
-- **Affected surfaces** : migration `0084`, `post-roles.sql`, `apps/api/src/payouts/*`, `common/csv.ts`.
+- **Affected surfaces** : migration `0085`, `post-roles.sql`, `apps/api/src/payouts/*`, `common/csv.ts`.
 - **Sequencing/depends-on** : IC-00.
 - **Risks** :
   - droit net relu sous verrou à l'exécution (le droit a pu baisser) ;
@@ -273,10 +273,10 @@ Les préoccupations ne sont pas des lots. `/spec-kitty.tasks` les traduit.
 
 ### IC-05 — Import et rapprochement des relevés
 
-- **Purpose** : migration `0085` (`statement_import`, colonnes, garde de portée, droits, `import_statement_lines`,
+- **Purpose** : migration `0083` (`statement_import`, colonnes, garde de portée, droits, `import_statement_lines`,
   `match_statement_line`, `account_reconciliation`) ; routes 10 à 13 ; anomalies PSP représentées.
 - **Relevant requirements** : FR-013 à FR-015, FR-024 ; NFR-003 ; SC-003.
-- **Affected surfaces** : migration `0085`, `post-roles.sql`, `apps/api/src/reconciliation/*`.
+- **Affected surfaces** : migration `0083`, `post-roles.sql`, `apps/api/src/reconciliation/*`.
 - **Sequencing/depends-on** : IC-00, IC-03 (lien `payout.settled_tx_id`).
 - **Risks** :
   - performance de l'import de 10 000 lignes (jointures sur les tables sources) ;
