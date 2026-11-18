@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "mission_slug": "durcissements-serveur-01M7QAJD",
+  "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+  "mission_branch": "kitty/mission-durcissements-serveur-01M7QAJD",
+  "target_branch": "feat/durcissements-serveur",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0090_sale_attribution_vendor_key.sql",
+        "packages/ledger-sql/migrations/0091_media_batch_functions.sql",
+        "packages/ledger-sql/tests/tests_media_batch_functions.sql",
+        "packages/ledger-sql/tests/tests_vendor_session_key.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0092_refund_request_insert_guard.sql",
+        "packages/ledger-sql/migrations/0093_iban_sealed.sql",
+        "packages/ledger-sql/migrations/0094_register_edge_gateway_ledger.sql",
+        "packages/ledger-sql/migrations/0095_device_app_attest_key.sql",
+        "packages/ledger-sql/tests/tests_cash_sessions.sql",
+        "packages/ledger-sql/tests/tests_device_app_attest.sql",
+        "packages/ledger-sql/tests/tests_edge_gateway.sql",
+        "packages/ledger-sql/tests/tests_iban_sealed.sql",
+        "packages/ledger-sql/tests/tests_refund_insert_guard.sql",
+        "packages/ledger-sql/tests/tests_refund_transitions.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "apps/api/src/config/config.ts",
+        "apps/api/test/unit/config.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/ledger/builders/closing/fees.ts",
+        "apps/api/test/unit/builders/closing/closing-builders.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        ".github/workflows/ledger-tests.yml",
+        "apps/api/src/db/process-db.module.ts",
+        "apps/api/test/support/db.ts",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/roles.sql",
+        "packages/ledger-sql/src/migrate.ts",
+        "packages/ledger-sql/tests/tests_11a_rights.sql",
+        "packages/ledger-sql/tests/tests_9b_rights.sql",
+        "packages/ledger-sql/tests/tests_cash_psp_rights.sql",
+        "packages/ledger-sql/tests/tests_definer_trigger_writers.sql",
+        "packages/ledger-sql/tests/tests_device_rights.sql",
+        "packages/ledger-sql/tests/tests_edge_rights.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql",
+        "packages/ledger-sql/tests/tests_media_api.sql",
+        "packages/ledger-sql/tests/tests_media_reinstate.sql",
+        "packages/ledger-sql/tests/tests_media_roles.sql",
+        "packages/ledger-sql/tests/tests_payment_rights.sql",
+        "tools/dev-db/env.sh"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-d"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/common/iban-vault.ts",
+        "apps/api/src/errors/redact.ts",
+        "apps/api/test/unit/common/iban-vault.spec.ts",
+        "apps/api/test/unit/errors/redact.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/errors/sqlstate-map.ts",
+        "apps/api/src/media/batches/batches.service.ts",
+        "apps/api/test/integration/media/batches.spec.ts",
+        "apps/api/test/integration/media/blacklist.spec.ts",
+        "tools/demo-data/seed-demo.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/package.json",
+        "apps/api/src/main.vendor-pin.ts",
+        "apps/api/src/processes/vendor-pin.module.ts",
+        "apps/api/src/vendor-pin/**",
+        "apps/api/test/integration/vendor-pin/**",
+        "apps/api/test/support/app.ts",
+        "apps/api/test/unit/architecture.spec.ts",
+        "apps/api/test/unit/processes.spec.ts",
+        "apps/api/test/unit/vendor-pin/argon2-supply-chain.spec.ts",
+        "apps/api/test/unit/vendor-pin/vendor-pin.hasher.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/approval.mapper.ts",
+        "apps/api/src/late-claims/**",
+        "apps/api/src/refunds/refund-backoffice-create.service.ts",
+        "apps/api/test/integration/invariants-cloture/limits-9b.spec.ts",
+        "apps/api/test/integration/invariants-cloture/payment-data-exposure.spec.ts",
+        "apps/api/test/integration/late-claims/late-claim.spec.ts",
+        "apps/api/test/integration/refunds/create-backoffice.spec.ts",
+        "apps/api/test/unit/payouts/payout-roles.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-h"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/approval/action-registry.ts",
+        "apps/api/src/approval/approval.service.ts",
+        "apps/api/src/audit/audit.service.ts",
+        "apps/api/src/payouts/**",
+        "apps/api/test/integration/payouts/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-h"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "docs/procedure-site-passerelle.md",
+        "tools/edge-admin/src/commands.ts",
+        "tools/edge-admin/src/db.ts",
+        "tools/edge-admin/test/commands-other.spec.ts",
+        "tools/edge-admin/test/register.spec.ts",
+        "tools/edge-admin/test/support.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "apps/api/src/attestation/**",
+        "apps/api/src/devices/enrollment/enrollment.service.ts",
+        "apps/api/test/integration/attestation/**",
+        "apps/api/test/support/attestation/ios.ts",
+        "apps/api/test/unit/attestation/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "apps/api/jest.config.cjs",
+        "apps/api/src/vendors/**",
+        "apps/api/test/integration/end-to-end/payment-secrets.spec.ts",
+        "apps/api/test/integration/vendors/**",
+        "apps/api/test/unit/vendors/vendor-sessions.service.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-n",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-j",
+        "lane-k",
+        "lane-l",
+        "lane-m"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-18T14:55:36.750685+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "8fe32af280f09757bf2643d161c8f2eb0e389e33"
+}
