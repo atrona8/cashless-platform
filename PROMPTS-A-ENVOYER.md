@@ -570,7 +570,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > OP-N145 (garde d'insertion de `refund_request` et retrait des anciennes signatures `refund_deposit(uuid, uuid)` et
 > `refund_deposit_for_session(uuid, uuid)`, ADR-201).
 
-- [ ] /spec-kitty.specify Durcissements serveur hérités : OP-N60 (lots de bracelets et statut d'un bracelet par fonctions seulement), OP-N79 (`vendor_id` dans la clé composite de session des ventes), OP-N76 (vérification du PIN des vendeurs dans un processus séparé, seul détenteur de `VENDOR_PIN_SECRET`), côté serveur d'OP-N64 (stockage du `keyId` App Attest), chacun avec son test et la levée du point.
+- [ ] /spec-kitty.specify Durcissements serveur hérités : OP-N60 (lots de bracelets et statut d'un bracelet par fonctions seulement), OP-N79 (`vendor_id` dans la clé composite de session des ventes), OP-N76 (vérification du PIN des vendeurs dans un processus séparé, seul détenteur de `VENDOR_PIN_SECRET`), côté serveur d'OP-N64 (stockage du `keyId` App Attest), OP-N116 (inscription des passerelles : grand livre vérifié contre l'événement), et les héritages de la 9b : OP-N137 (mineurs des versements, ADR-204), OP-N140 (masque de l'IBAN dans `errors/redact.ts`, IBAN au repos, ADR-203), OP-N141 (plafond de l'écart de régularisation `OPERATOR_FEE`, ADR-205), OP-N145 (garde d'insertion de `refund_request`, anciennes signatures de `refund_deposit` retirées, ADR-201), chacun avec son test et la levée du point.
 - [ ] /spec-kitty.plan Migrations sans affaiblir aucun contrôle ; tests de borne inversés ; `tests_definer_trigger_writers.sql` mis à jour.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission durcissements-serveur
