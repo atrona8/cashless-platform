@@ -1,4 +1,6 @@
 {
+  "contracts": "none",
+  "contracts_rationale": "Aucune interface ajoutée ni modifiée : aucune route du contrat openapi.yaml ne change (C-002) ; les appels internes au processus vendor-pin ne sont pas exposés et la vérification App Attest n'est branchée sur aucune route.",
   "coordination_branch": "kitty/mission-durcissements-serveur-01M7QAJD",
   "created_at": "2026-11-18T12:37:09.842388+00:00",
   "flattened": false,
@@ -14,6 +16,6 @@
   "slug": "durcissements-serveur-01M7QAJD",
   "target_branch": "feat/durcissements-serveur",
   "topology": "coord",
-  "contracts": "none",
-  "contracts_rationale": "Aucune interface ajoutée ni modifiée : aucune route du contrat openapi.yaml ne change (C-002) ; les appels internes au processus vendor-pin ne sont pas exposés et la vérification App Attest n'est branchée sur aucune route."
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-18T15:11:21.729651+00:00"
 }
