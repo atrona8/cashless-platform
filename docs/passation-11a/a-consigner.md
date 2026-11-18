@@ -16,3 +16,7 @@
    espaces insécables, deux IBAN collés. Les champs `iban` (JSON, `iban=`) restent masqués par nom. Correction légère
    possible (séparateur `[  -]?`). Le numéro de mobile money (`msisdn`) n'est pas masqué : question posée au
    porteur le 18/11/2026.
+7. **Audit de `cashless_pin` (WP03, relecture).** `INSERT` sur `audit_log` borné par le prestataire (RLS), non restreint
+   aux actions `VENDOR_*` par une politique dédiée (comme `cashless_tagkeys`). Réduction de surface possible.
+8. **Mot de passe de `cashless_pin` (WP03).** Absent en production : rôle sans mot de passe, comme les autres rôles de
+   processus (seuls les rôles de la passerelle refusent) ; comportement existant.
