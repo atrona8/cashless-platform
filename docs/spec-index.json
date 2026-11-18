@@ -1219,5 +1219,88 @@
       "Alerte au plus une période de contrôle après l'échec (NFR-006)"
     ],
     "source": "kitty-specs/versements-rapprochements-cloture-01M7JT4G/spec.md"
+  },
+  {
+    "mission": "durcissements-serveur-01M7QAJD",
+    "titre_cas_usage": "Durcissements serveur hérités",
+    "statut": "planifiée (plan finalisé le 18/11/2026, trois décisions en attente du porteur)",
+    "user_stories": [
+      {
+        "titre": "Bracelets par fonctions contrôlées",
+        "detail": "Une connexion de l'API compromise ne peut plus créer un lot directement en ACTIVE ou CLOSED, ni changer quantité, clé, événement ou statut d'un lot, ni le statut d'un bracelet sans motif ; les routes du back-office marchent comme avant (OP-N60)."
+      },
+      {
+        "titre": "PIN des vendeurs hors de l'API",
+        "detail": "Un processus séparé, seul détenteur du secret des PIN, vérifie le PIN et ouvre la session ; l'API ne peut plus le faire, et la base refuse une vente attribuée à un autre vendeur que celui de la session (OP-N76, OP-N79)."
+      },
+      {
+        "titre": "IBAN protégé",
+        "detail": "L'IBAN n'apparaît en clair dans aucun journal ; son chiffrement en base aux trois endroits où il est gardé attend la décision du porteur sur la clé (OP-N140)."
+      },
+      {
+        "titre": "Demande de remboursement à son état initial",
+        "detail": "L'API ne peut insérer une demande de remboursement qu'à son état initial ; l'ancienne signature accordée à l'API est retirée (OP-N145)."
+      },
+      {
+        "titre": "Versements et régularisations sans angle mort",
+        "detail": "Mauvais rôle : 403 sans toucher la demande ; refus contrôlé par classe ; rejeu de confirmation audité ; écart de régularisation des frais plafonné aux frais bruts (OP-N137, OP-N141)."
+      },
+      {
+        "titre": "App Attest prêt côté serveur",
+        "detail": "Le serveur garde la clé App Attest d'un iPhone et sait vérifier ses assertions ; borne iOS gardée jusqu'à la mission 12 ; droits en attente du porteur (OP-N64)."
+      },
+      {
+        "titre": "Inscription de passerelle",
+        "detail": "L'inscription d'une passerelle trouve et rend le grand livre de l'événement ; l'argument manuel est refusé (OP-N116)."
+      }
+    ],
+    "entites_cles": [
+      "Lot de bracelets",
+      "Session de vendeur",
+      "Attribution de vente",
+      "Processus du PIN",
+      "Demande de remboursement",
+      "Versement",
+      "Terminal (clé App Attest)",
+      "Inscription de passerelle"
+    ],
+    "resultat_mesurable": "100 % des écritures directes des fiches d'OP-N60, N76, N79 et N145 refusées depuis une API compromise ; 100 % des parcours existants inchangés ; 0 IBAN en clair au journal ; 8 points levés et OP-N64 côté serveur prêt, chacun avec un test qui échoue si la limite revient ; 0 droit de table ajouté à l'API",
+    "hypotheses": [
+      "Le processus du PIN suit le modèle des processus de clés (rôle propre, secret hors base)",
+      "Plafond d'OP-N141 : frais bruts du prestataire pour l'événement",
+      "Aucune donnée réelle avant la production : pas de reprise d'IBAN existants"
+    ],
+    "contraintes": [
+      "Aucune route du contrat openapi.yaml ne change",
+      "Aucun contrôle affaibli ; écarts de sécurité soumis avant d'être codés",
+      "Aucun .sql généré modifié ; migrations nouvelles seulement",
+      "Un rôle par processus ; aucun faux nouveau en production"
+    ],
+    "cas_limites": [
+      "Processus du PIN arrêté : refus sans repli",
+      "Événement à plusieurs grands livres : inscription refusée",
+      "Assertion App Attest au compteur égal : refusée",
+      "Lot en cours de personnalisation pendant la migration : état gardé"
+    ],
+    "fonctionnel": [
+      "Lots et statut des bracelets par fonctions (FR-001 à FR-004)",
+      "Processus du PIN, API sans droit, parcours inchangé (FR-005 à FR-007)",
+      "Vendeur dans la clé de session (FR-008)",
+      "IBAN masqué et chiffré (FR-009, FR-010)",
+      "Demande à son état initial, anciennes signatures (FR-011, FR-012)",
+      "Décisions de lot gardées, rejeu audité, code exact (FR-013 à FR-016)",
+      "Plafond de régularisation (FR-017)",
+      "App Attest (FR-018, FR-019)",
+      "Grand livre rendu par l'inscription (FR-020)",
+      "Levées consignées (FR-021)"
+    ],
+    "non_fonctionnel": [
+      "Ouverture de session de vendeur p95 ≤ 300 ms, p99 ≤ 600 ms (NFR-001)",
+      "Export de 500 virements en moins de 2 s (NFR-002)",
+      "0 droit de table ajouté à l'API (NFR-003)",
+      "100 % des tests de borne inversés, mutation vérifiée (NFR-004)",
+      "0 IBAN en clair après migration (NFR-005)"
+    ],
+    "source": "kitty-specs/durcissements-serveur-01M7QAJD/spec.md"
   }
 ]

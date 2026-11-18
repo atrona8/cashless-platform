@@ -674,6 +674,25 @@ classDiagram
 
 Invariants (testés en pgTAP) : une étape de clôture au plus une fois par événement (clé primaire, ajout seul) ; versements `INITIATED` non réglés ≤ droit net à l'initiation (`CL055`) ; une ligne `payout` change d'état une seule fois ; une ligne de relevé rapprochée au plus une fois, au même prestataire, grand livre et compte ; `refund_request` ne suit que son graphe, montant et frais figés après `PROCESSING` ; `cashless_app` sans `DELETE` ni `UPDATE` direct sur ces tables ; `cashless_maint` sans lecture de table. Isolation par prestataire (RLS `ENABLE` et `FORCE`).
 
+## 4 nonies. Durcissements serveur (mission 11a, 📐 plan finalisé le 18/11/2026, non implémentée)
+
+> **Prévu au plan du 18/11/2026, non implémenté.** Source : `kitty-specs/durcissements-serveur-01M7QAJD/data-model.md`. Migrations prévues `0090` à `0095`.
+
+- `vendor_session` : contrainte `UNIQUE (id, vendor_id)` ; `sale_attribution` : clé étrangère `(vendor_session_id, vendor_id)` vers elle (OP-N79).
+- `media_batch` et `media` : aucune colonne nouvelle ; écriture par les fonctions `create_media_batch` et `update_media_batch` (OP-N60).
+- `refund_request` : déclencheur `BEFORE INSERT` (état initial seulement pour l'API) ; si la décision 1 retient le chiffrement, `refund_request.iban` et `payout.iban` portent une valeur chiffrée (`CHECK … LIKE 'enc:v1:%'`) (OP-N145, OP-N140).
+- Si la décision 3 est oui : table nouvelle `device_app_attest_key` (appareil, identifiant de clé, clé publique, dernier compteur), liée à `device` (OP-N64).
+
+```mermaid
+classDiagram
+  class vendor_session { id; vendor_id; UNIQUE(id, vendor_id) }
+  class sale_attribution { vendor_session_id; vendor_id }
+  class device { id }
+  class device_app_attest_key { device_id; key_id; public_key; counter }
+  sale_attribution --> vendor_session : (vendor_session_id, vendor_id)
+  device_app_attest_key --> device : si décision 3
+```
+
 ## 5. Description des tables
 
 Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`),

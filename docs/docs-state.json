@@ -77,6 +77,13 @@
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true
+    },
+    "durcissements-serveur-01M7QAJD": {
+      "statut": "planifiée (plan finalisé 18/11/2026)",
+      "verifie_le": "2026-11-18T15:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
+      "spec_index_a_jour": true
     }
   }
 }
