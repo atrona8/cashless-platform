@@ -1,6 +1,6 @@
 # Séquences : mission versements-rapprochements-cloture-01M7JT4G
 
-> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), non acceptée, non consolidée**. Quatre diagrammes `/illustre` régénérés à la review, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Flux servis sur la branche de la mission.
+> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), acceptée le 17/11/2026 (`15f1a19c`), consolidée sur `feat` (squash `b4b81d8c`), dans `main` par la PR #18 le 18/11/2026**. Quatre diagrammes `/illustre` régénérés à la review, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Flux servis dans `main` depuis la PR #18.
 
 ## Flux internes propres à cette mission
 

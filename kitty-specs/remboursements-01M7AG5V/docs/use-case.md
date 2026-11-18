@@ -1,6 +1,6 @@
 # Cas d'usage : mission remboursements-01M7AG5V
 
-> État : **review terminée le 16/11/2026 (sept lots approuvés), acceptation à venir, non fusionnée** (mission 9a « Remboursements des festivaliers »).
+> État : **review terminée le 16/11/2026 (sept lots approuvés), acceptée le 16/11/2026 (`8cd5ae97`), dans `main` par la PR #15 le 16/11/2026** (mission 9a « Remboursements des festivaliers »).
 > Recalé sur le code livré (branche `kitty/mission-remboursements-01M7AG5V-lane-g`) et sur les décisions 11 à 15 du porteur. Source : `spec.md`
 > (4 user stories, 20 FR, 5 NFR, 8 contraintes, FR-012 amendée), `plan.md`, `research.md`, `data-model.md`, `contracts/`. Diagrammes
 > `/illustre` (préférence du porteur du 13/10/2026), police sans empattement, rendus relus ; sources et générateur dans

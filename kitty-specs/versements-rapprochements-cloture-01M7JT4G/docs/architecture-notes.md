@@ -1,6 +1,6 @@
 # Notes d'architecture : mission versements-rapprochements-cloture-01M7JT4G
 
-> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), non acceptée, non consolidée**. Recalé sur le code de la lane finale le 17/11/2026. Sources : `plan.md`, `research.md`, `data-model.md`, `contracts/`, code réel. Aucun conteneur
+> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), acceptée le 17/11/2026 (`15f1a19c`), consolidée sur `feat` (squash `b4b81d8c`), dans `main` par la PR #18 le 18/11/2026**. Recalé sur le code de la lane finale le 17/11/2026. Sources : `plan.md`, `research.md`, `data-model.md`, `contracts/`, code réel. Aucun conteneur
 > nouveau : tout vit dans l'API centrale, le processus `maintenance` et la base existants. Seule « intégration » nouvelle : la copie externe des scellements, **simulée** jusqu'à la 12b.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
