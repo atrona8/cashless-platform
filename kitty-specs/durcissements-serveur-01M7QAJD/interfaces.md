@@ -29,7 +29,7 @@ propriétaire ; une fois fusionnées, **les signatures réelles font foi** sur c
 |---|---|---|
 | `vendor_session_id_vendor_key` | `UNIQUE (id, vendor_id)` sur `vendor_session` | WP01 |
 | `sale_attribution_session_vendor_fkey` | `FOREIGN KEY (vendor_session_id, vendor_id) REFERENCES vendor_session (id, vendor_id)` | WP01 |
-| `create_media_batch(...) RETURNS uuid` | `DEFINER`, statut `ORDERED` imposé ; douze paramètres dans l'ordre de `research/R-N60-lots-bracelets.md` §5.2, dont `p_kind` et `p_key_mode` (colonnes `NOT NULL` de `media_batch`) et `p_actor` ; types alignés sur `media_batch` et `batches.service.ts:95`. Signature réelle : note de lane de WP01 | WP01 |
+| `create_media_batch(p_organizer uuid, p_event uuid, p_kind text, p_quantity int, p_key_index int, p_print_order_ref text, p_preload_promo_amount bigint, p_deposit_amount bigint, p_deposit_mode text, p_key_mode text, p_reuse_policy text, p_actor uuid) RETURNS uuid` | `DEFINER`, statut `ORDERED` imposé ; `p_actor` obligatoire (`media_set_actor`, CL001 si nul) : l'historique `→ORDERED` porte l'auteur (signature réelle, WP01 `e4d3d620`) | WP01 |
 | `update_media_batch(p_batch uuid, p_changes jsonb, p_actor uuid) RETURNS void` | `DEFINER` ; clés permises : `quantity`, `print_order_ref`, `preload_promo_amount`, `deposit_amount`, `deposit_mode`, `reuse_policy` ; toute autre clé : `CL056` | WP01 |
 | `set_media_batch_status`, `media_set_status`, `issue_claim_codes` | même signature, passent `DEFINER` ; `media_set_status` : `p_to` ∈ {`SUSPENDED`, `BLACKLISTED`}, sinon `CL020` | WP01 |
 | `refund_request_insert_guard()` | déclencheur `BEFORE INSERT` ; session `cashless_app` : état initial seulement, colonnes de transition nulles, sinon `CL057` | WP02 |
@@ -93,6 +93,7 @@ consommée par WP06. En production, `loadConfig` exige `VENDOR_PIN_CALL_KEY` et 
   règle dans un fichier de test à lui.
 - `apps/api/src/errors/sqlstate-map.ts` : WP05 ; les autres lots y ajoutent **une ligne** hors carte, signalée.
 - `apps/api/src/approval/approval.mapper.ts` : WP09.
+- `packages/ledger-sql/tests/tests_media_claims.sql` (test 9 : `issue_claim_codes` passe `DEFINER`) : retouche hors carte de WP03.
 - `apps/api/test/support/db.ts`, `tools/dev-db/env.sh`, `.github/workflows/ledger-tests.yml`, `apps/api/src/db/process-db.module.ts` : WP03.
 - `apps/api/test/support/app.ts` : WP06. `apps/api/src/config/config.ts` : WP04 (WP07 y retire `vendorPinSecret`, hors carte).
 - `apps/api/src/approval/action-registry.ts` (`ApprovalActionDefinition`), `apps/api/src/audit/audit.service.ts` (`AuditAction`) : WP10.
