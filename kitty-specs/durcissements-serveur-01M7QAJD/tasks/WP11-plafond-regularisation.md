@@ -6,6 +6,9 @@ requirement_refs: [FR-017]
 planning_base_branch: feat/durcissements-serveur
 merge_target_branch: feat/durcissements-serveur
 branch_strategy: Planning artifacts for this mission were generated on feat/durcissements-serveur. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/durcissements-serveur unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-durcissements-serveur-01M7QAJD
+base_commit: f3cfd183b91f8df9c584791e849f8d88c3d26914
+created_at: '2026-11-18T15:13:23.848599+00:00'
 subtasks: [T043, T044, T045]
 phase: Phase 2 - API et processus
 agent: claude
