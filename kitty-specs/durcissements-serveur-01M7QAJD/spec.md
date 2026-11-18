@@ -197,8 +197,8 @@ l'événement ; l'ancien argument est refusé.
   les chemins d'écriture changent.
 - Un vendeur au milieu d'un essai de PIN au moment du passage au processus dédié : l'essai en cours expire normalement,
   aucune session n'est ouverte par l'ancien chemin.
-- Des demandes de remboursement existantes avec un IBAN en clair : elles sont chiffrées par la migration, aucune ne
-  reste en clair.
+- Des lignes existantes avec un IBAN en clair (bases de développement seulement, aucune donnée réelle avant la
+  production) : elles ne sont pas reprises ; la base refuse toute nouvelle écriture en clair (amendé au plan).
 - Une assertion App Attest dont le compteur est égal au dernier vu : refusée (rejeu).
 - Un événement sans grand livre (configuration incomplète) : l'inscription d'une passerelle est refusée avec la raison.
 - Un processus du PIN qui démarre sans son secret : refus de démarrer.
@@ -239,7 +239,7 @@ l'événement ; l'ancien argument est refusé.
 | NFR-002 | Export d'un lot de virements | L'export d'un lot de 500 lignes avec IBAN chiffrés se fait en moins de 2 s. | Performance | Medium | Open |
 | NFR-003 | Aucun droit élargi | 0 droit de table ou de colonne ajouté à `cashless_app` ; les seuls `EXECUTE` ajoutés portent sur des fonctions `SECURITY DEFINER` qui remplacent un droit retiré ou contrôlent elles-mêmes l'écriture, listés au plan et figés dans la liste des droits d'exécution (amendé au plan le 18/11/2026). | Security | High | Open |
 | NFR-004 | Tests de borne inversés | 100 % des tests de borne des 9 points sont inversés ou remplacés par un test de levée qui échoue si la limite revient (mutation vérifiée pour chacun). | Security | High | Open |
-| NFR-005 | Rien en clair après migration | 0 ligne de `refund_request` avec un IBAN lisible en clair après la migration, sur une base qui en contenait. | Security | High | Open |
+| NFR-005 | Rien en clair après migration | 100 % des écritures d'IBAN en clair refusées par la base après la migration, sur `refund_request` et `payout` (contrôle en base), et 0 IBAN en clair dans le contenu des demandes d'approbation écrites ensuite ; aucune reprise de lignes (aucune donnée réelle avant la production ; amendé au plan le 18/11/2026). | Security | High | Open |
 
 ### Constraints
 
@@ -250,7 +250,7 @@ l'événement ; l'ancien argument est refusé.
 | C-003 | Aucun contrôle affaibli | Règle du porteur du 13/10/2026 (`CLAUDE.md`) : tout écart qui affaiblit la sécurité est soumis avant d'être codé ; chaque écart accepté a une entrée OP, un ADR et un test. | Security | High | Open |
 | C-004 | Fichiers générés intacts | Aucun `.sql` généré de `packages/ledger-sql/` n'est modifié ; les migrations sont nouvelles, les anciennes ne sont pas retouchées. | Technical | High | Open |
 | C-005 | Droits gardés | Ne pas rouvrir les droits de `cashless_app` sur les historiques, les règles de passage, `media_assignment` et `device_config_served` ; `log_media_status` et `log_batch_status` restent `SECURITY DEFINER` ; `tests_definer_trigger_writers.sql` est mis à jour. | Security | High | Open |
-| C-006 | Aucun faux en production | Le processus du PIN refuse de démarrer sans son secret ; le chiffrement de l'IBAN utilise le service de clés existant, dont le faux refuse déjà la production (OP-N41) ; aucun faux nouveau. | Security | High | Open |
+| C-006 | Aucun faux en production | Le processus du PIN refuse de démarrer sans son secret ; la clé de chiffrement de l'IBAN est lue en configuration de l'API et le démarrage en production est refusé sans elle (décision du porteur du 18/11/2026) ; aucun faux nouveau. | Security | High | Open |
 | C-007 | Chemins du monorepo | Code dans `apps/api/`, `packages/ledger-sql/` et `tools/edge-admin/` ; tests dans `apps/api/test/`, `packages/ledger-sql/tests/` et `tools/edge-admin/`. | Technical | Medium | Open |
 | C-008 | Un rôle par processus | Le processus du PIN a son propre rôle de base ; aucun autre rôle n'exécute la lecture d'empreinte ni l'ouverture de session. | Security | High | Open |
 
@@ -277,7 +277,7 @@ l'événement ; l'ancien argument est refusé.
 - **SC-003** : 0 IBAN en clair dans les journaux et dans la table après migration. — build · no-op passable: no
 - **SC-004** : 8 points ouverts levés (OP-N60, N76, N79, N116, N137, N140, N141, N145) et OP-N64 « côté serveur
   prêt », chacun avec un test qui échoue si la limite revient. — build · no-op passable: no
-- **SC-005** : 0 droit ajouté à `cashless_app`. — ratchet · no-op passable: yes (contrôle positif : liste figée des
+- **SC-005** : 0 droit de table ou de colonne ajouté à `cashless_app` ; `EXECUTE` ajoutés seulement ceux de la liste figée du plan. — ratchet · no-op passable: yes (contrôle positif : liste figée des
   droits comparée, mutation d'un `GRANT` détectée)
 
 ## Assumptions
@@ -285,8 +285,8 @@ l'événement ; l'ancien argument est refusé.
 - Le processus du PIN suit le modèle des processus de clés de la mission 4 (rôle propre, secret hors base, appel par
   l'API) ; son déploiement s'ajoute à ceux qui existent.
 - Le plafond d'OP-N141 est celui de sa fiche : les frais bruts du prestataire pour l'événement.
-- Le chiffrement de l'IBAN réutilise le service de clés des bracelets et des snapshots ; sa vraie implémentation vient
-  en 12b avec OP-N41.
+- Le chiffrement de l'IBAN utilise une clé lue en configuration de l'API (décision du porteur du 18/11/2026) ; limite
+  résiduelle : la clé est dans le processus public, levée avec le vrai KMS (12b).
 - La vérification des assertions App Attest suit la documentation d'Apple ; l'app iOS (mission 12) devra envoyer les
   assertions pour que la borne iOS soit retirée.
 - Aucun appelant des anciennes signatures de `refund_deposit` ne reste dans le code ; le plan le vérifie.
@@ -295,6 +295,8 @@ l'événement ; l'ancien argument est refusé.
 
 Décisions du porteur du 18/11/2026 (Decision Moments de cette mission) : OP-N64 : le serveur garde l'identifiant de
 clé App Attest et vérifie les assertions, la borne iOS reste jusqu'à la mission 12, le point passe « côté serveur
-prêt » sans être levé ; OP-N140 : masque dans les journaux et chiffrement au repos par le service de clés existant ;
+prêt » sans être levé ; OP-N140 : masque dans les journaux et chiffrement au repos (au plan, faute d'accès du processus public au service de
+clés : clé de configuration dans l'API, aux trois emplacements de l'IBAN) ; au plan aussi : `refund_deposit(uuid, uuid)`
+gardée interne et exécutable par personne, `EXECUTE` étroit du compteur App Attest accordé à l'API ;
 OP-N116 : grand livre rendu par l'inscription, argument manuel refusé, aucune lecture nouvelle pour
 `cashless_edgeadmin`. Résumé d'intention confirmé le même jour.
