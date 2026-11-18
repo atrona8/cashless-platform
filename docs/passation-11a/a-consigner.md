@@ -12,3 +12,7 @@
 4. **Historique de création des lots (WP01).** `create_media_batch` exige un acteur (renforcement d'audit).
 5. **Déploiement (WP04).** En production, tout processus qui appelle `loadConfig` exige `VENDOR_PIN_CALL_KEY`,
    `IBAN_KEYRING` et `IBAN_ACTIVE_KID`.
+6. **Masque d'IBAN en texte libre (WP08, relecture).** Non masqués en texte libre : IBAN à tirets (`FR76-3000-…`),
+   espaces insécables, deux IBAN collés. Les champs `iban` (JSON, `iban=`) restent masqués par nom. Correction légère
+   possible (séparateur `[  -]?`). Le numéro de mobile money (`msisdn`) n'est pas masqué : question posée au
+   porteur le 18/11/2026.
