@@ -144,7 +144,7 @@ de bornes.
    `403`.
 3. **Given** un versement déjà confirmé, **When** la même confirmation est rejouée, **Then** `200` sans écriture, avec
    une ligne d'audit du rejeu.
-4. **Given** l'auteur d'un lot, **When** il le valide lui-même, **Then** exactement `403`.
+4. **Given** l'auteur d'un lot, **When** il le valide lui-même, **Then** exactement `409 APPROVAL_INVALID`.
 5. **Given** une régularisation `OPERATOR_FEE`, **When** l'écart demandé dépasse les frais bruts, **Then** refus sans
    écriture.
 
@@ -218,13 +218,13 @@ l'événement ; l'ancien argument est refusé.
 | FR-007 | Parcours PIN inchangé | En tant que terminal, je veux que l'ouverture d'une session de vendeur garde ses réponses, son décompte d'essais et son audit. | High | Open | ratchet | yes — contrôle positif : parcours PIN juste et PIN faux sur la même fixture que FR-006 |
 | FR-008 | Vendeur dans la clé de session | En tant que plateforme, je veux que la base refuse une attribution de vente dont le vendeur n'est pas celui de la session désignée (OP-N79). | High | Open | build | no |
 | FR-009 | IBAN masqué au journal | En tant que plateforme, je veux qu'un IBAN ne paraisse jamais en clair dans un journal d'erreur ou de requête (OP-N140). | High | Open | build | no |
-| FR-010 | IBAN chiffré au repos | En tant que plateforme, je veux que l'IBAN d'une demande de remboursement soit chiffré en base par le service de clés existant, les demandes existantes comprises, et déchiffré seulement pour l'export du lot de virements (OP-N140). | High | Open | build | no |
+| FR-010 | IBAN chiffré au repos | En tant que plateforme, je veux que l'IBAN soit chiffré en base aux trois endroits où il est gardé (demande de remboursement, versement, contenu des demandes d'approbation), et déchiffré seulement pour l'export du lot de virements (OP-N140 ; moyen de chiffrement différé au plan, décision 1). | High | Open | build | no |
 | FR-011 | Demande née à son état initial | En tant que plateforme, je veux que `cashless_app` ne puisse insérer une demande de remboursement qu'à son état initial (OP-N145). | High | Open | build | no |
 | FR-012 | Anciennes signatures retirées | En tant que plateforme, je veux que `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` n'existent plus, sans appelant cassé (OP-N145). | Medium | Open | build | no |
 | FR-013 | Mauvais rôle sans effet | En tant qu'administrateur, je veux qu'un approbateur du mauvais rôle reçoive `403` et que la demande de lot reste en attente (OP-N137 a). | Medium | Open | build | no |
 | FR-014 | Refus par rôle de classe | En tant qu'administrateur, je veux qu'un refus de lot exige le même rôle de classe de bénéficiaire que la validation (OP-N137 b). | Medium | Open | build | no |
 | FR-015 | Rejeu de confirmation audité | En tant qu'auditeur, je veux qu'une confirmation de versement rejouée laisse une ligne d'audit, sans écriture au grand livre (OP-N137 c). | Medium | Open | build | no |
-| FR-016 | Auto-approbation : 403 exact | En tant que plateforme, je veux que la validation d'un lot par son auteur rende exactement `403`, et le test l'exige (OP-N137 d). | Low | Open | build | no |
+| FR-016 | Auto-approbation : code exact | En tant que plateforme, je veux que la validation d'un lot par son auteur rende exactement `409 APPROVAL_INVALID`, sa réponse actuelle, et que le test n'accepte plus que celle-là (OP-N137 d ; amendé au plan le 18/11/2026, `403` changerait la route). | Low | Open | build | no |
 | FR-017 | Plafond de régularisation | En tant que plateforme, je veux que l'écart de régularisation `OPERATOR_FEE` ne puisse dépasser les frais bruts du prestataire (OP-N141). | Medium | Open | build | no |
 | FR-018 | Clé App Attest gardée | En tant que plateforme, je veux que l'enrôlement d'un iPhone garde l'identifiant de sa clé App Attest (OP-N64). | Low | Open | build | no |
 | FR-019 | Assertions vérifiées | En tant que plateforme, je veux vérifier une assertion App Attest : clé de l'appareil, compteur strictement croissant, lien avec la requête ; borne iOS gardée tant que l'app n'en envoie pas (OP-N64, mission 12). | Low | Open | build | no |
@@ -237,7 +237,7 @@ l'événement ; l'ancien argument est refusé.
 |----|-------|-------------|----------|----------|--------|
 | NFR-001 | Ouverture de session de vendeur | p95 de l'ouverture de session (PIN juste) ≤ 300 ms et p99 ≤ 600 ms sur 200 essais en série, processus dédié compris. | Performance | High | Open |
 | NFR-002 | Export d'un lot de virements | L'export d'un lot de 500 lignes avec IBAN chiffrés se fait en moins de 2 s. | Performance | Medium | Open |
-| NFR-003 | Aucun droit élargi | 0 droit de table, de colonne ou d'exécution ajouté à `cashless_app` par la mission, vérifié par la comparaison des listes figées de droits avant et après. | Security | High | Open |
+| NFR-003 | Aucun droit élargi | 0 droit de table ou de colonne ajouté à `cashless_app` ; les seuls `EXECUTE` ajoutés portent sur des fonctions `SECURITY DEFINER` qui remplacent un droit retiré ou contrôlent elles-mêmes l'écriture, listés au plan et figés dans la liste des droits d'exécution (amendé au plan le 18/11/2026). | Security | High | Open |
 | NFR-004 | Tests de borne inversés | 100 % des tests de borne des 9 points sont inversés ou remplacés par un test de levée qui échoue si la limite revient (mutation vérifiée pour chacun). | Security | High | Open |
 | NFR-005 | Rien en clair après migration | 0 ligne de `refund_request` avec un IBAN lisible en clair après la migration, sur une base qui en contenait. | Security | High | Open |
 

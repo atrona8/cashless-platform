@@ -13,5 +13,7 @@
   "purpose_tldr": "Lever les dettes de sécurité serveur héritées des missions 4, 5a, 5b, 8 et 9b, chacune prouvée par un test.",
   "slug": "durcissements-serveur-01M7QAJD",
   "target_branch": "feat/durcissements-serveur",
-  "topology": "coord"
+  "topology": "coord",
+  "contracts": "none",
+  "contracts_rationale": "Aucune interface ajoutée ni modifiée : aucune route du contrat openapi.yaml ne change (C-002) ; les appels internes au processus vendor-pin ne sont pas exposés et la vérification App Attest n'est branchée sur aucune route."
 }

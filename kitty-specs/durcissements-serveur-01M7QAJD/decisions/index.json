@@ -72,6 +72,78 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:10:54.540534Z",
+      "decision_id": "01M7QCG7ACJ66PAZVWBX406P0N",
+      "final_answer": null,
+      "input_key": "iban_key_location",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Cl\u00e9 de configuration dans l API (recommand\u00e9)",
+        "Masque seul, chiffrement report\u00e9 au vrai KMS (12b)",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N140 : le processus public n'a pas de service de cl\u00e9s et l'export CSV qui doit d\u00e9chiffrer l'IBAN est public. Chiffrer l'IBAN (3 emplacements) avec une cl\u00e9 AES-256-GCM lue dans la configuration de l'API (production refus\u00e9e sans cl\u00e9), ou garder le masque seul et laisser le chiffrement \u00e0 l'arriv\u00e9e d'un vrai KMS ?",
+      "rationale": "Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; \u00e9cart de s\u00e9curit\u00e9 ou \u00e9cart \u00e0 une d\u00e9cision du porteur (r\u00e8gle du 13/10/2026) : soumis, codage du lot concern\u00e9 en attente de sa r\u00e9ponse.",
+      "resolved_at": "2026-11-18T13:11:19.532712Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.iban-key",
+      "status": "deferred",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:11:02.260148Z",
+      "decision_id": "01M7QCGEVM562A0K8X9W456TMF",
+      "final_answer": null,
+      "input_key": "refund_deposit_legacy",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "La garder interne, ex\u00e9cutable par personne (recommand\u00e9)",
+        "La retirer (g\u00e9n\u00e9rateur et sch\u00e9ma de r\u00e9f\u00e9rence modifi\u00e9s)",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N145 : retirer refund_deposit(uuid, uuid), appel\u00e9e par refund_deposit_from_balance et par le g\u00e9n\u00e9rateur gen_tests.py (et d\u00e9finie dans le sch\u00e9ma de r\u00e9f\u00e9rence), ou la garder interne, ex\u00e9cutable par aucun r\u00f4le ?",
+      "rationale": "Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; \u00e9cart de s\u00e9curit\u00e9 ou \u00e9cart \u00e0 une d\u00e9cision du porteur (r\u00e8gle du 13/10/2026) : soumis, codage du lot concern\u00e9 en attente de sa r\u00e9ponse.",
+      "resolved_at": "2026-11-18T13:11:28.366119Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.refund-deposit-legacy",
+      "status": "deferred",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:11:10.226295Z",
+      "decision_id": "01M7QCGPMJE5K4FGCYTEH01MFD",
+      "final_answer": null,
+      "input_key": "app_attest_grants",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Oui, un seul EXECUTE nouveau et \u00e9troit (recommand\u00e9)",
+        "Non, reporter tout OP-N64 c\u00f4t\u00e9 serveur \u00e0 la mission 12",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N64 : garder la cl\u00e9 App Attest \u00e0 l'enr\u00f4lement (nouvelle version d'enroll_device, m\u00eame droit) et donner \u00e0 cashless_app l'EXECUTE d'une fonction \u00e9troite advance_app_attest_counter (compteur strictement croissant, refus sinon) ?",
+      "rationale": "Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; \u00e9cart de s\u00e9curit\u00e9 ou \u00e9cart \u00e0 une d\u00e9cision du porteur (r\u00e8gle du 13/10/2026) : soumis, codage du lot concern\u00e9 en attente de sa r\u00e9ponse.",
+      "resolved_at": "2026-11-18T13:11:36.369160Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.app-attest-grants",
+      "status": "deferred",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
