@@ -406,6 +406,11 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 9b, suite (17/11/2026) : OP-N123, OP-N124, OP-N126, OP-N128 et OP-N130 levés ; pour la 12b : OP-N131 (copie réelle des
   scellements), OP-N132 (envoi des alertes), OP-N133 (`pg_read_all_stats`, lecture prestataire par prestataire) et OP-N139 (code au
   numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 ; pour la 12b aussi : OP-N148 (alerte dédiée « paiement vu à la banque après recrédit », ADR-212) ; pour la 13 : OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire) ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
+- mission 11a, spécifiée le 18/11/2026 (`durcissements-serveur-01M7QAJD`) : OP-N60, OP-N76, OP-N79, OP-N116, OP-N137,
+  OP-N140, OP-N141 et OP-N145 levés, OP-N64 « côté serveur prêt ». Décisions du porteur du 18/11/2026 : le serveur
+  garde l'identifiant de clé App Attest et vérifie les assertions, borne iOS gardée jusqu'à la mission 12 ; IBAN
+  masqué dans les journaux et chiffré au repos par le service de clés existant ; grand livre d'une passerelle rendu par
+  son inscription (argument manuel refusé) ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
