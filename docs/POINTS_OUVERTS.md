@@ -60,7 +60,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
 | OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
 | OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026 |
-| OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur), sinon mission 9 |
+| OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur). **Partie rapprochement levée le 17/11/2026 par la mission 9b** (anomalies PSP prises en compte par le contrôle « grand livre = relevé », ADR-210) |
 | OP-N83 | Cause d'un blocage de portefeuille : corrigée par la migration `0042` (WP14 cycle 2, décision du porteur du 29/10/2026) ; reste : un chemin qui écrit lui-même `ACTIVE` lève aussi la cause de contestation | Non | Non | Levé pour l'ordre des événements ; ADR-134 |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2) : `take_deposit`, `refund_deposit`, `refund_cash_due` ne sont plus accordées à `cashless_app` | Non | Non | Levé ; ADR-135 |
 | OP-N85 | Caution due non prise si le processus s'arrête entre le COMMIT du crédit et l'appel qui la prend (fenêtre étroite, reprise au rejeu d'une autre notification seulement) | Non | Non | Mission 13 (recette V1) ou lot de reprise ; ADR-135 |
@@ -99,14 +99,33 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
 | OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Mission 12b |
-| OP-N123 | Demande de remboursement créée par le back-office (virement `BANK_TRANSFER`) : opération absente du contrat, reportée de la 9a (décision du 13/11/2026) | Non | Non | Mission 9b |
-| OP-N124 | Remboursement : le code du titulaire est consommé avant l'écriture de sa décision (mission 9a, décision 12a du 16/11/2026, ADR-192) | Non | Non | Mission 9b (confirmé par le porteur le 16/11/2026) |
+| OP-N123 | **LEVÉ le 17/11/2026 par la mission 9b** : création par le back-office d'une demande `BANK_TRANSFER` avec IBAN (`createRefundRequest`, `create-backoffice.spec.ts`, ADR-210) (avant : Demande de remboursement créée par le back-office) | Non | Non | Levé
+| OP-N124 | **LEVÉ le 17/11/2026 par la mission 9b** : code consommé seulement si la décision est écrite (`journey-limits.spec.ts` OP-N124 inversé, `verify-then-consume.spec.ts`, ADR-210) (avant : Remboursement : le code du titulaire est consommé avant l'écriture de sa décision) | Non | Non | Levé
 | OP-N125 | Remboursement : quota de codes par numéro commun à tous les usages ; alerte de `BLOCK` réduite à une ligne d'audit (mission 9a, décision 12b du 16/11/2026, ADR-193) | Non | Non | Mission 12b (confirmé par le porteur le 16/11/2026) |
-| OP-N126 | Remboursement : une seule personne habilitée recrédite un `FAILED` ; il faut un troisième administrateur sur l'événement (mission 9a, décision 13 du 16/11/2026, ADR-191) | Non | Non | Mission 9b (rapprochements Wave/Orange Money), à confirmer par le porteur |
+| OP-N126 | **LEVÉ le 17/11/2026 par la mission 9b** : recrédit d'un `FAILED` borné par le rapprochement bancaire, verrou de `refund_request` en base (`failed-recredit-bound.spec.ts`, `concurrency.spec.ts` décision 14, `tests_statements.sql`, ADR-203, ADR-210) (avant : Remboursement : une seule personne habilitée recrédite un `FAILED` ; il faut un troisième administrateur sur l'événement) | Non | Non | Levé
 | OP-N127 | Contradiction C-001 : FR-012 / scénario 5 « sans titulaire vérifié → REQUESTED » — **clos** le 16/11/2026 (décision 15 du porteur, ADR-194 : spec amendée, comportement strict gardé : `422 REFUND_NOT_ALLOWED`) | Non | Non | — |
-| OP-N128 | Guichet enchaîné : `approved_by` nul sur la caution seule au-dessus du seuil ; cumul lu sous le verrou du bracelet (mission 9a, relecture de WP06, ADR-195) | Non | Non | Mission 9b (confirmé par le porteur le 16/11/2026) |
+| OP-N128 | **LEVÉ le 17/11/2026 par la mission 9b** : `approved_by` porté par l'écriture, cumul sous verrou du portefeuille (`journey.spec.ts` OP-N128 (a), `release-cumul-lock.spec.ts`, ADR-210) (avant : Guichet enchaîné : `approved_by` nul sur la caution seule au-dessus du seuil ; cumul lu sous le verrou du bracelet) | Non | Non | Levé
 | OP-N129 | Décision du titulaire : lien du contrat (`otp_request_id`, `refund_request_id`) — **levé** le 16/11/2026 par la mission 9a (décision 14 : l'envoyeur de codes les reçoit ; `holder-link.spec.ts`, `journey.spec.ts`) | Non | Non | — |
-| OP-N130 | Remboursement : l'ordre des états d'une demande n'est gardé que par l'API ; la base laisse `cashless_app` modifier les colonnes de transition (revue post-fusion de la mission 9a, décision du porteur du 16/11/2026, ADR-196) | Non | Non | Mission 9b |
+| OP-N130 | **LEVÉ le 17/11/2026 par la mission 9b** : déclencheur `refund_request_transition_guard`, montant et frais figés après `PROCESSING` (`tests_refund_transitions.sql`, 169 assertions ; ADR-210) (avant : Remboursement : l'ordre des états d'une demande n'est gardé que par l'API ; la base laisse `cashless_app` modifier les colonnes de transition) | Non | Non | Levé
+| OP-N131 | Copie externe des scellements simulée jusqu'à la 12b : un scellement et sa copie sont dans la même base (mission 9b, WP12, décision du porteur du 17/11/2026, ADR-197) | Non | Oui (le faux refuse le démarrage en production) | Mission 12b |
+| OP-N132 | Alertes d'exploitation sans envoi à une personne : audit, `pg_notify` et journal seulement (mission 9b, WP12, C-010, ADR-198) | Non | Oui | Mission 12b |
+| OP-N133 | Propriétaire des fonctions `ops_*` : superutilisateur ou `BYPASSRLS` exigé ; `pg_read_all_stats` à lui accorder (mission 9b, WP05 et WP06, ADR-199) | Non | Oui (réglage de déploiement) | Mission 12b |
+| OP-N134 | Relevé importé : `closing_balance` déclaré jamais recoupé avec la somme des lignes (mission 9b, WP02, ADR-200) | Non | Non | À proposer au porteur |
+| OP-N135 | Une transaction peut être rapprochée par plusieurs lignes de relevé (règlement PSP en plusieurs virements, non modélisé) (mission 9b, WP02) | Non | Non | À proposer au porteur |
+| OP-N136 | `explained_by_anomalies` calculé en base mais absent d'`AccountReconciliation` ; deux lignes de relevé rapprochées à la même anomalie (mission 9b, WP09) | Non | Non | À proposer au porteur |
+| OP-N137 | Versements : approbateur du mauvais rôle fait passer la demande en `FAILED` ; rejet sans rôle par classe ; `confirm` rejoué sans audit ; test d'auto-approbation `[403, 409]` (mission 9b, WP08, ADR-204) | Non | Non | Mission 11a |
+| OP-N138 | Réclamation tardive en `CASH` inatteignable sur un grand livre `LOCKED` (mission 9b, WP10, ADR-206) | Non | Non | — (règle voulue, consignée) |
+| OP-N139 | Remboursement tardif en mobile money vers un autre numéro que celui du festivalier : accepté, sans code de vérification (mission 9b, WP10, décision 13 du 17/11/2026, ADR-207) | Non | Non | Mission 12b (envoi réel du code) |
+| OP-N140 | `errors/redact.ts` ne masque pas l'IBAN ; IBAN de `refund_request.iban` stocké en clair au repos (mission 9b, WP11, ADR-203) | Non | Oui (avant tout journal de corps de requête) | Mission 11a |
+| OP-N141 | Régularisation `OPERATOR_FEE` : l'écart `amount` n'est borné que par `requirePositive` (mission 9b, WP07, ADR-205) | Non | Non | Mission 11a |
+| OP-N142 | Relevés et export comptable : pagination par numéro d'écriture sur plusieurs grands livres ; relevé et CSV festivalier non tracés ; risque de double compte de l'export (mission 9b, WP13, ADR-209) | Non | Non | À proposer au porteur |
+| OP-N143 | `closing_balance` non servi dans le relevé JSON (index couvrant `posting(account_id) INCLUDE (amount)` à proposer) (mission 9b, WP13, décision 16 du 17/11/2026, ADR-209) | Non | Non | Mission ultérieure, à proposer au porteur |
+| OP-N144 | Recrédit d'un `FAILED` refusé `409` si une ligne de relevé est rapprochée : aucune voie de contournement (mission 9b, WP11, ADR-203) | Non | Non | À proposer au porteur |
+| OP-N145 | `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` conservées (mission 9b, WP04, ADR-201) | Non | Non | Mission 11a |
+| OP-N147 | **LEVÉ le 17/11/2026 par la mission 9b (WP14)** : `approvalRequestDto` masque aussi `result` (`maskPaymentData`) ; plus aucun numéro en clair dans `GET /approval-requests` ni dans l'audit `APPROVAL_EXECUTED` (`invariants-cloture/payment-data-exposure.spec.ts`, ADR-211) | Non | Non | Levé |
+| OP-N146 | Renforcements de la mission 9b, faits puis consignés (liste dans la fiche, ADR-200 à ADR-203, ADR-205, ADR-206, ADR-209) | Non | Non | — (clos) |
+| OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` : reste « non rapprochée », seule l'alerte générique `statement-unmatched` ; recrédit possible tant que la ligne n'est pas importée (mission 9b, reste d'OP-N126, ADR-212) | Non | Non | Mission 12b (alertes) |
+| OP-N149 | Aucun balayage d'isolation entre organisateurs d'un même prestataire pour les 20 opérations de la 9b : `isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires (trou dans la preuve, pas un défaut constaté ; mission 9b, relecture) | Non | Non | Mission 13 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -216,6 +235,25 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N126 | Une seule personne habilitée, étrangère au remboursement, recrédite un `FAILED` | Recrédit sans échec réel du paiement (double versement), visible seulement au rapprochement | `FAILED` refusé au proposant et à l'exécutant ; audit ; test `journey-limits.spec.ts` (OP-N126) | Mission 9b (à confirmer par le porteur) | Rapprochement avec les relevés Wave/Orange Money, ou second valideur au contrat |
 | OP-N128 | Guichet enchaîné : `approved_by` nul sur `DEPOSIT_REFUNDED` seule ; cumul lu sous le verrou du bracelet | Trace de la seconde personne moins directe ; dépassement rare du seuil cumulé par un événement concurrent, borné par `refund_cash_due` | Jeton d'approbation dans l'audit ; test `journey.spec.ts` (OP-N128 (a)) | Mission 9b (confirmé par le porteur le 16/11/2026) | `approved_by` porté par l'écriture ; cumul relu sous verrou du portefeuille |
 | OP-N130 | Ordre des états d'une demande de remboursement gardé par l'API seule (`UPDATE` des colonnes de transition accordé à `cashless_app`) | Un défaut de l'API ou un accès au rôle ramène une demande `PAID`/`FAILED` à `REQUESTED` ou change son montant après approbation : seconde approbation possible, bornée par le solde payé restant du grand livre (pas de découvert) | Droits par colonne (identité de la demande non modifiable), CHECK jumelés, une demande ouverte par portefeuille, contrôle à deux de chaque `WALLET_REFUND` ; test `tests_refund_requests.sql` (liste exacte des colonnes modifiables : échoue si elle s'élargit) | Mission 9b | Déclencheur de base qui refuse toute transition hors du graphe de `data-model.md` (et `estimated_amount`/`fee` figés après `REQUESTED`) |
+| OP-N131 | Copie externe des scellements simulée (`FakeSealCopy`) | Une compromission de la base permet de réécrire un scellement et sa copie ensemble : la chaîne d'audit n'est pas défendue contre un administrateur de la base | Le faux refuse le démarrage en production ; la vérification quotidienne contrôle la chaîne locale | `unit/production-guard.spec.ts` (« faux de la copie externe des scellements »), `integration/maintenance/process-guard.spec.ts`, `invariants-cloture/consignation.spec.ts` | Mission 12b | Copie réelle vers un stockage à verrou d'objet sous un compte distinct |
+| OP-N132 | Alertes d'exploitation sans envoi à une personne | Une alerte (somme non nulle, scellement, versement vieilli, transaction longue) n'atteint personne sans lecteur du journal ou de `ops_alert` | Une alerte = une ligne d'audit `OPS_ALERT`, `pg_notify`, journal `ALERT` écrit avant la base ; dédoublonnage 1 h | `integration/controls/controls-alerts.spec.ts` ; `invariants-cloture/consignation.spec.ts` (aucun envoi dans le code des alertes : échoue aussi à la levée, à mettre à jour) | Mission 12b | Notificateur réel branché sur `ops_alert` |
+| OP-N133 | `ops_*` : le propriétaire des fonctions doit être superutilisateur ou `BYPASSRLS` ; sans `pg_read_all_stats`, `ops_long_transactions` rend la ligne `?config` | Propriétaire ordinaire : chaîne d'audit de la plateforme invisible, `ops_ledgers_to_seal` en échec ; sans le droit de lecture : alerte de configuration 11 | Test de droits par rôle ; alerte de configuration | `tests_9b_rights.sql` (liste des droits, ligne `?config`), `tests_ops_functions.sql` | Mission 12b (lecture prestataire par prestataire) | `GRANT pg_read_all_stats` au propriétaire dans la procédure de déploiement ; fonctions par prestataire |
+| OP-N134 | `closing_balance` déclaré jamais recoupé avec la somme des lignes importées | Un solde faux avec des lignes justes rend un compte « rapproché » si le solde du grand livre concorde | L'écran montre lignes et solde ; rapproché = lignes toutes rapprochées ET solde = grand livre | `tests_statements.sql` | À proposer au porteur | Contrôle somme des lignes = variation de solde entre deux relevés |
+| OP-N135 | Une transaction rapprochée par plusieurs lignes d'un même compte | Règlement PSP en plusieurs virements : la somme des lignes peut dépasser le montant de la transaction sans refus | Rapprochement automatique seulement si le net ou le brut égale la ligne ; manuel libre | `tests_statements.sql` §3b, §3c, `match-statement-line.spec.ts` | À proposer au porteur | Règle « somme des lignes rapprochées <= montant de la transaction sur ce compte » |
+| OP-N136 | `explained_by_anomalies` absent du contrat ; deux lignes sur la même anomalie | Un écart peut paraître expliqué deux fois | `explained_by_anomalies` additionne les deux ; rapproché seulement si le solde concorde | `reconciliation-state.spec.ts` (OP-N82) | À proposer au porteur | Une ligne par anomalie, ou champ exposé au contrat |
+| OP-N137 | Mineurs de la relecture de WP08 (liste en détail) | Nuisance (demande `FAILED`), absence d'audit sur un rejeu identique | Aucune écriture dans ces cas | `payouts/payout-batch.spec.ts`, `payout-confirm.spec.ts` | Mission 11a | Voir détail |
+| OP-N138 | Réclamation tardive en `CASH` inatteignable sur un grand livre `LOCKED` | Un remboursement tardif en espèces est refusé `422 REFUND_NOT_ALLOWED` quand aucune session de caisse n'est ouverte ; `LEGAL` non exprimable | Règle voulue : session de caisse ouverte par l'auteur exigée | `late-claims/money-account.spec.ts` (« CASH sans session de caisse ouverte par l'auteur ») | — (règle voulue, consignée) | Sans objet |
+| OP-N139 | Remboursement tardif en mobile money vers un autre numéro, sans code de vérification | Un remboursement tardif part vers un numéro que le festivalier n'a pas vérifié | Réclamation à deux personnes, preuve (`proof`), bornes de `check_late_claim`, destination absente de l'audit | `late-claims/late-claim.spec.ts` (« deux personnes : l'auteur ne valide pas sa demande ») ; `consignation.spec.ts` | Mission 12b (code envoyé au nouveau numéro) | Code à usage unique au numéro de destination |
+| OP-N140 | IBAN non masqué par `redact.ts` ; IBAN en clair dans `refund_request.iban` | Un journal de corps de requête ou une lecture directe de la table exposerait l'IBAN | Aucun journal de corps aujourd'hui ; audit et `approval_request` exposé masquent l'IBAN (`maskPaymentData`) | `late-claims/late-claim.spec.ts` (FR-024), `payouts/payout-export.spec.ts` | Mission 11a | Masque dans `redact.ts` avant tout journal de corps ; chiffrement au repos |
+| OP-N141 | Écart explicite de la régularisation `OPERATOR_FEE` non plafonné | Une valeur interne fausse écrirait un écart trop grand ; l'écart est fixé par le seul calculateur | Étape à deux niveaux (aperçu = écriture), `requirePositive` | `closing/closing-variants.spec.ts`, tests des constructeurs | Mission 11a | Plafond = frais bruts |
+| OP-N142 | Relevés et export comptable : pagination multi-grands livres, relevé et CSV non tracés, double compte possible de l'export | Une écriture validée tard manquée entre deux pages (théorique) ; lecture du relevé non tracée ; un consommateur qui additionne les deux comptes légaux d'une écriture compte deux fois | Pagination par numéro d'écriture ; chaque écriture porte ses deux comptes (`sens`) | `statements/accounting-export.spec.ts`, `party-statement.spec.ts` | À proposer au porteur | Pagination stable, traçage de la lecture, note aux équipes clientes sur le double compte |
+| OP-N143 | `closing_balance` non servi dans le relevé JSON | Le champ facultatif du `PartyStatement` manque ; le CSV porte le solde courant | Somme O(n) évitée (p95 2,2 s sans index couvrant) ; NFR-004 tenu sans lui | `statements/party-statement.spec.ts`, `statement-latency.spec.ts` | Mission ultérieure, à proposer au porteur | Index `posting(account_id) INCLUDE (amount)` |
+| OP-N144 | Recrédit d'un `FAILED` sans voie de contournement quand une ligne de relevé est rapprochée | Une ligne rapprochée à tort bloque le recrédit ; aucun second valideur ne peut le débloquer | `409`, aucune écriture, la demande reste confirmable `PAID` | `refunds/failed-recredit-bound.spec.ts` ; `invariants-cloture/concurrency.spec.ts` (décision 14) | À proposer au porteur | Défaire un rapprochement à deux personnes (pas en 9b) |
+| OP-N145 | `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures de `refund_deposit` conservées | Un défaut du rôle applicatif écrirait une demande déjà `PAID` sans passer par les deux personnes | `INSERT` réservé à `cashless_app` (droits de table et de colonne), aucun `DELETE`, `UPDATE` borné aux colonnes de transition | `invariants-cloture/limits-9b.spec.ts` (`has_column_privilege` par rôle `cashless_*` et par colonne ; mutation `GRANT INSERT (status)` : échoue) | Mission 11a | Garde d'insertion et retrait des anciennes signatures |
+| OP-N146 | Renforcements de la mission 9b, faits puis consignés | Aucun : aucun n'affaiblit la sécurité | Liste dans la fiche (ADR-200 à ADR-203, ADR-205, ADR-206, ADR-209) | Voir la fiche | — (clos) | Sans objet |
+| OP-N147 | LEVÉ le 17/11/2026 : numéro de paiement en clair dans le résultat d'une approbation `WALLET_REFUND` | Numéro de mobile money lisible dans `GET /approval-requests` et l'audit (FR-024) | `approvalRequestDto` masque `result` (`maskPaymentData`) | `invariants-cloture/payment-data-exposure.spec.ts` (ADR-211) | Levé | Sans objet |
+| OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` reste « non rapprochée » ; pas d'alerte dédiée | Un paiement réellement parti, vu à la banque après le recrédit, n'est signalé que par l'alerte générique `statement-unmatched` (double versement possible, non expliqué) | Le recrédit est refusé si la ligne est déjà rapprochée (verrou, ADR-203) ; alerte générique | `tests_statements.sql` (section 4b : ligne laissée non rapprochée) | Mission 12b (alertes) | Alerte dédiée « paiement vu à la banque après recrédit » |
+| OP-N149 | Aucun balayage d'isolation entre organisateurs d'un même prestataire pour les 20 opérations de la 9b | Trou dans la preuve (pas un défaut constaté) : une mutation qui retire un contrôle applicatif reste verte | Isolation entre prestataires prouvée (RLS) | `invariants-cloture/isolation-9b.spec.ts` (prestataires seulement) | Mission 13 | Balayage des 20 opérations avec deux organisateurs du même prestataire, et mutation qui le fait échouer |
 
 **Levés le 21/10/2026 par la mission 5a (identite-enrolement-terminaux).**
 - **OP-N42** : `DeviceIdentityPort` vérifie ensemble le jeton d'appareil lié, le certificat client (mTLS) et la
@@ -1925,3 +1963,194 @@ Revue post-fusion de la mission 9a ; ADR-196 ; **décision du porteur du 16/11/2
 - **Garde en place.** Identité de la demande non modifiable (droits par colonne), aucun `DELETE`, une demande ouverte par portefeuille, contrôle à deux de chaque `WALLET_REFUND`, parcours et concurrence testés (`journey.spec.ts`, `concurrency.spec.ts`).
 - **Test de la limite.** `packages/ledger-sql/tests/tests_refund_requests.sql` : liste exacte des colonnes modifiables par `cashless_app` (échoue si elle s'élargit) et refus de l'`UPDATE` des colonnes d'identité.
 - **Mission qui le lève.** Mission 9b. **Condition de levée.** Déclencheur qui refuse toute transition hors du graphe de `data-model.md`, et `estimated_amount`/`fee` figés après `REQUESTED` ; test pgTAP de chaque transition interdite.
+
+
+## 10. Mission 9b (versements, rapprochements, clôture) : consignation du 17 novembre 2026
+
+Écrit par WP14 à partir des notes de lane de WP01 à WP13 et des décisions 1 à 17 du porteur
+(`docs/passation-9b/contexte-9b.md`). Chaque entrée cite sa source et son test. « Bloque la production » : voir la ligne du
+tableau de la section 2.
+
+### OP-N131 — Copie externe des scellements simulée jusqu'à la 12b (17 novembre 2026)
+
+Source : note de lane de WP12 ; décision du porteur n° 3 du 17/11/2026 ; ADR-197. **Bloque le code : non. Bloque la production : oui, mais le faux refuse déjà le démarrage.**
+
+- **Constat.** `createSealCopy` rend un `FakeSealCopy` hors production ; en production, la construction et le démarrage du processus `maintenance` sont refusés (« la copie externe des scellements est un faux »).
+- **Risque.** Tant que la copie réelle manque, un scellement et sa copie vivent dans la même base : un administrateur de la base peut réécrire les deux. La vérification quotidienne (`ops_verify_audit_chain`) ne protège que contre une erreur, pas contre ce cas.
+- **Test de la limite.** `apps/api/test/unit/production-guard.spec.ts` (« faux de la copie externe des scellements : construction refusée en production » ; « la garde de démarrage nomme le faux ») et `integration/maintenance/process-guard.spec.ts` (« refuse de démarrer en production : la copie externe des scellements est un faux »). Ces tests échouent si le faux est admis en production.
+- **Mission qui le lève.** Mission 12b. **Condition de levée.** Adaptateur de copie réel (stockage à verrou d'objet, compte distinct) essayé contre le service ; le faux reste refusé en production.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N132 — Alertes d'exploitation sans envoi à une personne (17 novembre 2026)
+
+Source : note de lane de WP12 ; C-010 ; décision du porteur n° 3 ; ADR-198. **Bloque la production : oui (à lever avant l'exploitation réelle).**
+
+- **Constat.** Une alerte (codes 7 à 11 : scellement, intégrité, contrôles du grand livre, contrôles d'exploitation, transaction longue) est une ligne d'audit `OPS_ALERT`, un `pg_notify('ops_alert', …)` et un journal `ALERT`, dédoublonnés à 1 h. Rien n'est envoyé à une personne. Choix d'exploitation de WP12 : seuil `statement-unmatched` à 24 h (non spécifié), `open-anomalies` re-signale après redémarrage (mémoire du processus), l'ordre d'enregistrement des travailleurs n'est pas garanti par Nest.
+- **Risque.** Une alerte n'est vue que si quelqu'un lit le journal ou écoute `ops_alert` : un écart (somme non nulle, versement vieilli de 48 h) peut rester sans réponse.
+- **Test de la limite.** `integration/controls/controls-alerts.spec.ts` (une alerte par contrôle, jamais le silence) et `invariants-cloture/consignation.spec.ts` (le code des alertes n'importe aucun envoyeur ; il échoue aussi quand la 12b ajoute l'envoi : à mettre à jour avec la levée).
+- **Mission qui le lève.** Mission 12b. **Condition de levée.** Notificateur réel branché sur `ops_alert`, essayé, avec accusé de réception.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N133 — Propriétaire des `ops_*` et `pg_read_all_stats` (17 novembre 2026)
+
+Source : notes de lane de WP05 (hypothèse de 0022) et WP06 (réglage de déploiement) ; R-13 ; ADR-199. **Bloque la production : oui (réglage de déploiement à faire).**
+
+- **Constat.** Les 14 fonctions `ops_*` (0087) lisent des tables à sécurité par ligne forcée : elles ne voient la chaîne d'audit de la plateforme que si leur propriétaire est superutilisateur ou `BYPASSRLS` (hypothèse héritée de 0022, `audit_log_chain`). `ops_long_transactions` rend la ligne `?config` (pid nul) si le propriétaire n'est pas membre de `pg_read_all_stats` ; ce `GRANT` n'est pas dans `post-roles.sql`.
+- **Risque.** Un propriétaire ordinaire rend la chaîne d'audit de la plateforme invisible et fait échouer `ops_ledgers_to_seal` ; sans `pg_read_all_stats`, la surveillance des transactions longues est aveugle (alerte de configuration 11).
+- **Test de la limite.** `packages/ledger-sql/tests/tests_9b_rights.sql` (droits exacts de `cashless_maint`, ligne `?config`, appels réels) et `tests_ops_functions.sql` (63 tests, propriétaire non superutilisateur).
+- **Mission qui le lève.** Mission 12b (lecture prestataire par prestataire, sans propriétaire privilégié). **Condition de levée.** Fonctions qui lisent par prestataire ; `pg_read_all_stats` inscrit à la procédure de déploiement et vérifié au démarrage.
+- **Fichier à faire relire par une personne.** `post-roles.sql` section 12.
+
+### OP-N134 — `closing_balance` déclaré jamais recoupé avec la somme des lignes (17 novembre 2026)
+
+Source : relecture de WP02 (cycle 3) ; ADR-200. **Bloque la production : non.**
+
+- **Constat.** Le solde de clôture est déclaré par l'importeur. « Rapproché » vaut : toutes les lignes rapprochées ET solde du relevé = solde du grand livre à la date (+ anomalies).
+- **Risque.** Un solde déclaré faux avec des lignes justes passe si le solde du grand livre concorde.
+- **Test de la limite.** `tests_statements.sql` (famille « rapproché »).
+- **Mission qui le lève.** À proposer au porteur. **Condition de levée.** Contrôle : somme des lignes = variation du solde entre deux relevés du compte.
+
+### OP-N135 — Une transaction rapprochée par plusieurs lignes (17 novembre 2026)
+
+Source : relecture de WP02 (cycles 3 et 5) ; décision du porteur n° 7 (rapprochement automatique par signe et montant). **Bloque la production : non.**
+
+- **Constat.** Un règlement PSP unique (`PSP_SETTLEMENT`) versé en deux virements ou plus donne deux lignes pour une écriture ; le modèle ne les représente pas. Le rapprochement manuel d'une seconde ligne à la même transaction est permis ; l'automatique exige que le montant égale le net ou le brut de la transaction sur le compte.
+- **Risque.** La somme des lignes rapprochées à une transaction peut dépasser son montant sans refus.
+- **Règle proposée.** « Somme des lignes rapprochées <= montant de la transaction sur ce compte ». **Mission qui le lève.** À proposer au porteur.
+- **Test de la limite.** `tests_statements.sql` §3b et §3c, `reconciliation/match-statement-line.spec.ts`.
+
+### OP-N136 — `explained_by_anomalies` non exposé ; deux lignes pour une anomalie (17 novembre 2026)
+
+Source : notes de lane de WP09 et relecture. **Bloque la production : non.**
+
+- **Constat.** La base calcule `explained_by_anomalies` (utilisé dans « rapproché ») mais `AccountReconciliation` du contrat figé ne le porte pas. Deux lignes de relevé peuvent être rapprochées à la même anomalie : l'écart expliqué additionne les deux.
+- **Risque.** L'écran du back-office ne montre pas pourquoi un compte est rapproché ; un écart peut être « expliqué » deux fois.
+- **Mission qui le lève.** À proposer au porteur (exposer le champ par ajout rétrocompatible, ou une ligne par anomalie).
+- **Test.** `reconciliation/reconciliation-state.spec.ts` (« FR-015, OP-N82 : un paiement non crédité rapproché à son anomalie explique l'écart »).
+
+### OP-N137 — Mineurs de la relecture de WP08 (17 novembre 2026)
+
+Source : relecture de WP08 (cycle 1). **Bloque la production : non.**
+
+- **(a)** Un approbateur du mauvais rôle fait passer la demande en `FAILED` (aucune écriture) : nuisance possible.
+- **(b)** Refus sans rôle par classe de bénéficiaire (même `403` pour tous).
+- **(c)** `confirm` rejoué avec le même résultat : `200` sans écriture ni audit (`settle_payout` idempotent).
+- **(d)** Le test d'auto-approbation accepte `403` ou `409`.
+- **Tests.** `payouts/payout-batch.spec.ts`, `payout-confirm.spec.ts`. **Mission qui le lève.** 11a.
+
+### OP-N138 — Réclamation tardive en `CASH` inatteignable sur un grand livre `LOCKED` (17 novembre 2026)
+
+Source : note de lane de WP10 ; ADR-206. **Bloque la production : non.**
+
+- **Constat.** Un remboursement tardif en espèces exige une session de caisse ouverte par l'auteur ; sur un grand livre `LOCKED`, aucune session n'est ouverte : `422 REFUND_NOT_ALLOWED`. Règle voulue, consignée. `LEGAL` est refusé (non exprimable).
+- **Test.** `late-claims/money-account.spec.ts` (« CASH sans session de caisse ouverte par l'auteur »).
+
+### OP-N139 — Remboursement tardif en mobile money vers un autre numéro (17 novembre 2026)
+
+Source : décision du porteur n° 13 du 17/11/2026 ; note de lane de WP10 ; ADR-207. **Bloque la production : non.**
+
+- **Constat.** Une réclamation tardive de `WALLET_REFUND` peut payer en Wave ou Orange Money vers un numéro autre que celui du festivalier, sans code envoyé à ce numéro (contrairement à l'ADR-76 en ligne). Accepté par le porteur : contrôle par une seconde personne, preuve (`proof`) et bornes de `check_late_claim`.
+- **Risque.** Un administrateur et son valideur complices peuvent faire partir un remboursement tardif vers un numéro qui n'est pas celui du titulaire ; la destination n'est pas dans l'audit (masquée).
+- **Test de la limite.** `late-claims/late-claim.spec.ts` (« deux personnes : l'auteur ne valide pas sa demande », destination Wave autre numéro) : il échoue si une seule personne suffit ; la base refuse aussi `created_by = approved_by`.
+- **Mission qui le lève.** Mission 12b. **Condition de levée.** Code à usage unique envoyé au numéro de destination avant paiement.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N140 — IBAN non masqué par `redact.ts`, IBAN en clair au repos (17 novembre 2026)
+
+Source : note de lane de WP11 ; ADR-203. **Bloque la production : oui si un journal de corps de requête est ajouté.**
+
+- **Constat.** `errors/redact.ts` ne masque pas l'IBAN (aucun journal de corps aujourd'hui). `refund_request.iban` est stocké en clair (nécessaire au paiement manuel). L'audit et `GET /approval-requests` masquent l'IBAN et le numéro (`maskPaymentData`, WP08) ; la ligne de la base garde la valeur complète pour l'export.
+- **Test.** `late-claims/late-claim.spec.ts` (« FR-024 : ni IBAN ni numéro dans l'audit ni dans GET /approval-requests », réactivé par la consolidation) et `payouts/payout-export.spec.ts`.
+- **Mission qui le lève.** 11a. **Condition de levée.** Masque d'IBAN dans `redact.ts`, couvert avant tout journal de corps ; chiffrement au repos à décider.
+- **Fichier à faire relire par une personne.** `errors/redact.ts`.
+
+### OP-N141 — Écart explicite de la régularisation `OPERATOR_FEE` (17 novembre 2026)
+
+Source : relecture de WP07 (cycle 2) ; décision n° 10 ; ADR-205. **Bloque la production : non.**
+
+- **Constat.** Pour `NET_OF_REFUNDS`, `OperatorFeePayload.amount` (frais bruts − frais nets) n'est borné que par `requirePositive`, sans plafond aux frais bruts ; la valeur est fixée par le seul calculateur interne.
+- **Mission qui le lève.** 11a. **Condition de levée.** Plafond = frais bruts, avec test.
+- **Test.** `closing/closing-variants.spec.ts`.
+
+### OP-N142 — Relevés et export comptable : limites relevées en relecture de WP13 (17 novembre 2026)
+
+Source : relecture de WP13 (cycle 1) ; ADR-209. **Bloque la production : non.**
+
+- **(a)** Pagination par numéro d'écriture sur plusieurs grands livres : une écriture validée plus tard peut être manquée entre deux pages (théorique).
+- **(b)** Le relevé et le CSV du festivalier ne sont pas tracés dans l'audit (hors FR-024).
+- **(c)** Export comptable : chaque écriture porte ses deux comptes légaux (`sens`) ; si les deux côtés d'une transaction sont mappés, un consommateur qui additionne tout compte deux fois. À documenter (note aux équipes clientes).
+- **Mission qui les lève.** À proposer au porteur. **Tests.** `statements/accounting-export.spec.ts`, `party-statement.spec.ts`.
+
+### OP-N143 — `closing_balance` non servi dans le relevé JSON (17 novembre 2026)
+
+Source : décision du porteur n° 16 du 17/11/2026 ; note de lane de WP13 ; ADR-209. **Bloque la production : non.**
+
+- **Constat.** Le champ facultatif `closing_balance` du `PartyStatement` n'est pas servi (somme O(n) sur comptes chauds : p95 de 2,2 s sans index couvrant). Le CSV porte le solde courant. NFR-004 : p95 270 ms organisateur, 148 ms prestataire, 94 ms plateforme, 104 ms commerçant (100 000 transactions, 20 simultanés).
+- **Mission qui le lève.** Mission ultérieure, à proposer au porteur : index `posting(account_id) INCLUDE (amount)`.
+- **Test.** `statements/party-statement.spec.ts`, `statement-latency.spec.ts`.
+
+### OP-N144 — Recrédit d'un `FAILED` sans voie de contournement (17 novembre 2026)
+
+Source : note de lane de WP11 (question au porteur) ; décisions n° 13 (16/11) et n° 14 (17/11) ; ADR-203. **Bloque la production : non.**
+
+- **Constat.** Si une ligne de relevé est rapprochée à la sortie d'argent d'une demande `PROCESSING`, `confirm FAILED` répond `409` : le paiement est visible à la banque. Aucun second valideur ne peut passer outre (défaut sûr). La demande reste confirmable `PAID`.
+- **Risque.** Un rapprochement posé à tort bloque le recrédit ; un rapprochement ne se défait pas en 9b (data-model, invariant 4).
+- **Mission qui le lève.** À proposer au porteur. **Condition de levée.** Défaire un rapprochement à deux personnes, ou second valideur au contrat.
+- **Test.** `refunds/failed-recredit-bound.spec.ts`.
+
+### OP-N145 — `refund_request` : `INSERT` direct et anciennes signatures (17 novembre 2026)
+
+Source : en-tête de `0086_refund_debts.sql` (WP04). **Bloque la production : non.**
+
+- **Constat.** `refund_request_transition_guard` est `BEFORE UPDATE` : un `INSERT` direct en `PAID` reste possible sous les CHECK (aucune garde d'insertion ajoutée ; `cashless_app` n'a pas `INSERT` direct sur les colonnes de transition au-delà des droits de `post-roles.sql`). Les signatures `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` sont conservées et délèguent avec `NULL, NULL` ; l'appel TypeScript passe aux signatures à quatre arguments (WP11).
+- **Mission qui le lève.** 11a (proposition, à confirmer par le porteur) : garde d'insertion et retrait des anciennes signatures.
+- **Test.** `invariants-cloture/limits-9b.spec.ts` : seul `cashless_app` a `INSERT` sur `refund_request` (droits de table et de colonne, `has_column_privilege` pour chaque rôle `cashless_*` et chaque colonne), aucun `DELETE`, colonnes d'`UPDATE` bornées ; mutation `GRANT INSERT (status) ... TO cashless_platform` : le test échoue.
+- **Fichiers à faire relire par une personne.** `0086_refund_debts.sql` (`refund_request_transition_guard`, `refund_deposit` à quatre arguments).
+
+### OP-N147 — Numéro de paiement en clair dans le résultat d'une approbation `WALLET_REFUND` (17 novembre 2026) — LEVÉ
+
+Relevé par WP14 en rejouant la preuve FR-024 de WP10 après consolidation ; ADR-204. **Levé le 17/11/2026 par la mission 9b (WP14), sur décision de l'orchestrateur (renforcement, règle 1) : `approvalRequestDto` applique `maskPaymentData` à `result` comme à `payload` ; test `invariants-cloture/payment-data-exposure.spec.ts` (mutation : sans le masque, il échoue), ADR-211.** Constat d'origine ci-dessous.
+
+- **Constat.** `approvalRequestDto` (`approval/approval.mapper.ts`, WP08) masque `payload` par `maskPaymentData` mais recopie `result` tel quel. Le `result` d'une demande `WALLET_REFUND` exécutée est la demande de remboursement : `destination: { method, msisdn }`. Le numéro est donc en clair dans `GET /approval-requests` et dans les lignes d'audit `APPROVAL_EXECUTED` (9a, `wallet-refund-action.ts`). Aucun IBAN n'y figure (le DTO ne porte pas `iban`). Conséquence de test : `late-claims/late-claim.spec.ts` (« FR-024 », balayage de tout `audit_log`) échoue sur une base où la suite des remboursements a tourné avant, avec le numéro `+221770000099` ; il passe sur une base neuve.
+- **Risque.** Donnée personnelle (numéro de mobile money) lisible par les rôles qui lisent les demandes et par quiconque lit l'audit ; contraire à FR-024.
+- **Options pour le porteur.** (1) Appliquer `maskPaymentData` à `result` dans `approvalRequestDto` (correction d'une ligne, lot WP08, renforcement) ; (2) ne pas inclure la destination dans le `result` d'une approbation.
+- **Test.** `invariants-cloture/payment-data-exposure.spec.ts` ; le balayage de `late-claim.spec.ts` est filtré sur ses propres objets.
+- **Fichier à faire relire par une personne.** `approval/approval.mapper.ts`.
+
+### OP-N146 — Renforcements de la mission 9b (17 novembre 2026) — CLOS
+
+Faits puis consignés (règle 1 de `CLAUDE.md`) ; aucun n'affaiblit la sécurité.
+
+- Garde de `closing_step` limitée au grand livre de l'événement (WP02, ADR-201) ; conditions de passage ajoutées (`NO_OPEN_CASH_SESSION`, `PSP_RECONCILED` calculée, `CLOSING_STEPS_DONE`, `REFUND_DEADLINE_REACHED`, R-05, ADR-201).
+- `create_payout_batch` limité à une demande `APPROVED` d'action `PAYOUT`, auteur ≠ demandeur, valideur ≠ décideur ; `payout` exige `initiated_tx_id` (et `settled_tx_id` au règlement) ; borne du droit net en base `CL055` (WP03, décision 6, R-07, ADR-201).
+- Unicité globale `(source, external_ref)` retirée au profit de l'unicité par compte (WP02, ADR-200).
+- Rapprochement automatique par signe et montant (net ou brut) (WP02, décision 7, ADR-202).
+- Verrou de `refund_request` au rapprochement (décision 14, ADR-203) ; arbitrages de la route 15 (virement `REQUESTED`, numéro étranger en `AWAITING_HOLDER`, `extra_check`).
+- `ops_verify_audit_chain` ajoutée pour la chaîne d'audit (WP05, FR-020, ADR-201).
+- Charge du versement et de la réclamation tardive revalidées à l'exécution ; grand livre à portée organisateur refusé sur les sept étapes (WP10, WP07, ADR-205, ADR-206).
+- Bornes de période de l'export comptable en UTC (décision 17, ADR-209, `invariants-cloture/utc-bounds.spec.ts`).
+- Enums Dart générés renommés par l'ajout de valeurs au contrat (décision 6) : `Event.status` passe de `Status4` à `Status5`, `TokenFamily.status` de `Status5` à `Status6` ; casse la compilation des clients qui nomment ces enums, signalé dans `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md` (ADR-213).
+- `apps/api/test/fixtures/edge-vectors/vectors.json` reformaté par Prettier par WP07, hors carte (aucune valeur changée).
+- Tests de borne ajoutés après la mission : `invariants-cloture/limits-9b.spec.ts` (OP-N140 : comportement actuel de `redact.ts` figé ; OP-N145 : seul `cashless_app` a `INSERT` sur `refund_request`, aucun `DELETE`, colonnes d'`UPDATE` bornées).
+
+### OP-N148 — Reste d'OP-N126 : ligne de relevé importée après le recrédit d'un `FAILED` (17 novembre 2026)
+
+Source : relectures de WP11 et de la mission ; décision n° 14 ; ADR-212. **Bloque la production : non.**
+
+- **Constat.** La base ferme la fenêtre de course entre un rapprochement validé et le `REVERSAL` (ADR-203, verrou de `refund_request`). Reste le cas inverse : une ligne de relevé importée **après** le recrédit d'une demande `FAILED` n'est pas rapprochée (le rapprochement automatique la laisse « non rapprochée », le manuel est refusé). Elle ne lève que l'alerte générique `statement-unmatched` ; aucune alerte dédiée « paiement vu à la banque après recrédit ». Le recrédit reste possible tant que la ligne n'est pas importée : structurel, la banque n'est pas encore connue.
+- **Risque.** Un paiement réellement parti puis recrédité (double versement possible) n'est signalé que par une alerte générique, sans lien avec la demande.
+- **Test de la limite.** `tests_statements.sql` (section 4b : demande `FAILED`, ligne laissée non rapprochée) ; `invariants-cloture/consignation.spec.ts` (fiche, ADR, reports).
+- **Mission qui le lève.** Mission 12b (alertes). **Condition de levée.** Alerte dédiée, avec envoi à une personne (OP-N132), à l'import d'une ligne dont la référence est celle d'une demande recréditée.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N149 — Pas de balayage d'isolation entre organisateurs d'un même prestataire (17 novembre 2026)
+
+Source : relecture de WP14 ; **pas un écart accepté** (aucun ADR) : un trou dans la preuve, aucun défaut constaté. **Bloque la production : non.**
+
+- **Constat.** `invariants-cloture/isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires, qui repose aussi sur la RLS : une mutation qui retire un contrôle applicatif reste verte. Aucun balayage entre organisateurs d'un même prestataire n'existe pour les 20 opérations ajoutées au contrat.
+- **Mission qui le lève.** Mission 13 (recette V1). **Condition de levée.** Balayage des 20 opérations avec deux organisateurs du même prestataire, et mutation d'un contrôle applicatif qui le fait échouer.
+- **Report.** `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
+
+### Levées de la mission 9b (17 novembre 2026)
+
+OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 et la partie « rapprochement » d'OP-N82 passent à « levé le 17/11/2026 par la mission 9b » (ADR-210). Pour chacun : test de levée dans la ligne du tableau de la section 1. OP-N3 reste ouvert (aucun jeu de correspondance SYSCOHADA livré, `account_mapping` vide).

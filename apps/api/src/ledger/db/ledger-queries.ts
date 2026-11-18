@@ -257,16 +257,19 @@ export async function takeDeposit(
   return rows[0]!.outcome;
 }
 
+/** OP-N128 : avec une session, l'auteur et le valideur vont jusqu'à `post_transaction` (migration 0086). */
 export async function refundDeposit(
   client: Queryable,
   mediaId: string,
   sessionId: string | null = null,
+  actor: string | null = null,
+  approver: string | null = null,
 ): Promise<void> {
   await client.query(
     sessionId === null
       ? 'SELECT refund_deposit_from_balance($1)'
-      : 'SELECT refund_deposit_for_session($1, $2)',
-    sessionId === null ? [mediaId] : [mediaId, sessionId],
+      : 'SELECT refund_deposit_for_session($1, $2, $3::uuid, $4::uuid)',
+    sessionId === null ? [mediaId] : [mediaId, sessionId, actor, approver],
   );
 }
 

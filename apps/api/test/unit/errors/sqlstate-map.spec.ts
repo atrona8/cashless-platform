@@ -73,6 +73,8 @@ const TABLE: [string, ProblemCode, number][] = [
   ['CL052', 'CONFLICT_STATE', 409],
   ['CL053', 'CONFLICT_STATE', 409],
   ['CL054', 'CONFLICT_STATE', 409],
+  // mission 9b
+  ['CL055', 'PAYOUT_EXCEEDS_ENTITLEMENT', 409],
   ['P0002', 'NOT_FOUND', 404],
   ['42501', 'DEVICE_REVOKED', 403],
   ['P0001', 'INTERNAL_ERROR', 500],

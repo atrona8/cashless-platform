@@ -1,7 +1,9 @@
-// Action à deux personnes de démonstration (tests seulement) : prouve le mécanisme générique sans action métier.
-// `ADJUSTMENT` exigé de l'ORGANIZER_ADMIN de l'organisateur du payload ; l'exécution écrit une ligne témoin
-// (config_version, note) et rend `{ done: true }` ; avec `fail: true`, elle échoue APRÈS avoir écrit (preuve du
-// ROLLBACK TO SAVEPOINT). Route : POST /v1/__test/demo-adjustments → 202 avec la demande.
+// Action à deux personnes de démonstration (tests seulement) : prouve le mécanisme générique sans
+// action métier. `ANOMALY_RESOLUTION` (action du contrat sans définition métier ; `ADJUSTMENT` est
+// celle de la 9b, WP10) exigé de l'ORGANIZER_ADMIN de l'organisateur du payload ; l'exécution écrit
+// une ligne témoin (config_version, note) et rend `{ done: true }` ; avec `fail: true`, elle échoue
+// APRÈS avoir écrit (preuve du ROLLBACK TO SAVEPOINT). Route : POST /v1/__test/demo-adjustments →
+// 202 avec la demande.
 import { Body, Controller, Inject, Module, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import type { ApprovalActionDefinition } from '../../src/approval/action-registry';
@@ -26,7 +28,7 @@ export interface DemoPayload {
 }
 
 export const demoAdjustment: ApprovalActionDefinition<DemoPayload> = {
-  action: 'ADJUSTMENT',
+  action: 'ANOMALY_RESOLUTION',
   requiredRole: 'ORGANIZER_ADMIN',
   scopeOf: (payload) => ({ type: 'ORGANIZER', id: payload.organizer_id }),
   validate(raw) {
@@ -81,7 +83,7 @@ class DemoAdjustmentController {
       const created = await this.approvals.request(
         client,
         operatorId,
-        { action: 'ADJUSTMENT', targetId: body.organizer_id ?? null, payload: body },
+        { action: 'ANOMALY_RESOLUTION', targetId: body.organizer_id ?? null, payload: body },
         actor,
       );
       return respondAccepted(res, created);

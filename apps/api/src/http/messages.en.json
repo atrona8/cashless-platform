@@ -382,5 +382,9 @@
   "SALE_LINES_INVALID": {
     "title": "Sale lines refused",
     "detail": "The sale lines do not match the point of sale catalogue; resynchronise the device."
+  },
+  "PAYOUT_EXCEEDS_ENTITLEMENT": {
+    "title": "Payout exceeds entitlement",
+    "detail": "The payout amount exceeds the beneficiary's available net entitlement, pending payouts deducted."
   }
 }

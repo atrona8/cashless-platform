@@ -17,15 +17,33 @@ export interface WalletRefundPayload {
   amount: bigint;
   /** Compte d'argent de sortie : `A-BANQUE`, `A-PSP-<canal>` ou `A-CAISSE-<caisse>`. */
   moneyAccount: string;
+  /**
+   * Réclamation tardive (mission 9b, WP10) : remboursement SANS frais, `BACKOFFICE` seulement. Sur
+   * un grand livre `LOCKED`, la base n'admet que « portefeuille débité, compte d'argent crédité »
+   * (`check_late_claim`, CL024) : une ligne de frais serait refusée. Le montant est alors rendu en
+   * entier.
+   */
+  waiveFee?: boolean;
 }
 
 /**
  * Compte d'argent de sortie d'un remboursement manuel, par canal (mission 9a, WP05 ; comptes de
- * `0037_psp_configurations.sql`). Le virement (`BANK_TRANSFER`) n'est pas servi en 9a ; aucun compte de caisse ici.
+ * `0037_psp_configurations.sql`) : `WAVE` et `ORANGE_MONEY` (comptes PSP), `BANK_TRANSFER`
+ * (`A-BANQUE`, ouvert à l'ouverture du grand livre ; mission 9b, WP10), `CASH` (compte
+ * `A-CAISSE-<n>` de la session ouverte, à fournir).
  */
-export function moneyAccountFor(method: string): string {
+export function moneyAccountFor(method: string, cashAccount?: string): string {
   if (method === 'WAVE') return 'A-PSP-WAVE';
   if (method === 'ORANGE_MONEY') return 'A-PSP-OM';
+  if (method === 'BANK_TRANSFER') return 'A-BANQUE';
+  if (method === 'CASH') {
+    if (cashAccount === undefined || cashAccount === '')
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'remboursement en espèces : compte de caisse requis',
+      );
+    return cashAccount;
+  }
   throw new BuildError('VALIDATION_FAILED', `remboursement : canal ${method} non pris en charge`);
 }
 
@@ -34,12 +52,14 @@ export function buildWalletRefund(
   command: LedgerCommand<'WALLET_REFUND', WalletRefundPayload>,
   ctx: BuildContext,
 ): Line[] {
-  const { walletId, amount, moneyAccount } = command.payload;
+  const { walletId, amount, moneyAccount, waiveFee } = command.payload;
   requireId(walletId, 'portefeuille');
   requirePositive(amount, 'remboursement');
+  if (waiveFee === true && command.source !== 'BACKOFFICE')
+    throw new BuildError('VALIDATION_FAILED', 'remboursement sans frais : back-office seulement');
   const { config } = ctx;
   const { org } = partyAccounts(config);
-  const refundFee = fee(amount, config.refundFee);
+  const refundFee = waiveFee === true ? 0n : fee(amount, config.refundFee);
   if (refundFee >= amount)
     throw new BuildError(
       'VALIDATION_FAILED',
@@ -48,7 +68,7 @@ export function buildWalletRefund(
   const lines: Line[] = [];
   push(lines, wallet(walletId, 'P'), refundFee);
   creditWithTax(lines, refundFee, config.taxBps, org('ORG_FFEST'), org('ORG_TAX'));
-  tagFee(lines, 0, config.refundFee);
+  if (waiveFee !== true) tagFee(lines, 0, config.refundFee);
   push(lines, wallet(walletId, 'P'), amount - refundFee);
   push(lines, money(requireId(moneyAccount, "compte d'argent")), -(amount - refundFee));
   return balanced(lines);

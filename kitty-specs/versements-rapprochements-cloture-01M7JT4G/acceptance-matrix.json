@@ -1,0 +1,418 @@
+{
+  "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 (Conditions de passage visibles) : En tant que back-office, je veux voir pour chaque statut de cl\u00f4ture la liste des conditions et leur \u00e9tat, et que tout passage soit refus\u00e9 tant qu'une condition manque (\u00a712.1).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (e6ade9d3, 12996600) et WP07 (f889db85), approuv\u00e9s : closing/status-conditions.spec.ts (PSP_RECONCILED, CLOSING_STEPS_DONE, REFUND_DEADLINE_REACHED : textes fr/en, remplie ou non), closing/closing-order.spec.ts (passages refus\u00e9s tant qu'une condition manque, 'FR-001'), pgTAP tests_closing_conditions.sql et tests_event_ledger.sql (conditions de RECONCILING, SETTLING, CLOSED). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 (Caisse ouverte bloquante) : En tant qu'op\u00e9rateur, je veux que le passage \u00e0 `RECONCILING` soit refus\u00e9 tant qu'une session de caisse de l'\u00e9v\u00e9nement est ouverte (h\u00e9ritage mission 6, A32).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 et WP07, approuv\u00e9s : closing/closing-order.spec.ts 'FR-001 : RECONCILING refus\u00e9 avec une session de caisse ouverte (texte en fran\u00e7ais et en anglais)' ; scenario/closing-journey.spec.ts 'RECONCILING : refus tant qu'une caisse est ouverte' ; pgTAP tests_closing_conditions.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 (\u00c9tapes de cl\u00f4ture avec aper\u00e7u) : En tant que back-office, je veux lancer chaque \u00e9tape de cl\u00f4ture (droits de place, frais du prestataire, redevance, casse, cautions acquises, expiration des cr\u00e9dits offerts) avec un aper\u00e7u calcul\u00e9 qui n'\u00e9crit rien, puis l'ex\u00e9cuter.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (f889db85, cycle 2 : 3f390a22) : closing/closing-steps.spec.ts 'FR-003' (sept \u00e9tapes \u00e0 faire, aper\u00e7u sans aucune \u00e9criture) et 'FR-003, FR-005' (l'ex\u00e9cution \u00e9crit ce que l'aper\u00e7u annon\u00e7ait : 25 000, 6 000, 1 017) ; closing/closing-variants.spec.ts (l'aper\u00e7u \u00e9gale l'ex\u00e9cution). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 (Ordre de cl\u00f4ture impos\u00e9) : En tant qu'op\u00e9rateur, je veux qu'une \u00e9tape soit refus\u00e9e tant que les pr\u00e9c\u00e9dentes de l'ordre de r\u00e9f\u00e9rence (\u00a712.1) ne sont pas faites, et que chaque \u00e9tape n'\u00e9crive qu'une fois (rejeu sans effet).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (0084) et WP07, approuv\u00e9s : closing/closing-order.spec.ts 'FR-004' (hors phase, hors ordre : 409, rien d'\u00e9crit) ; closing/closing-replay.spec.ts (deux cl\u00e9s diff\u00e9rentes : aucune \u00e9criture, une \u00e9tape faite le reste apr\u00e8s la suivante) ; closing/closing-concurrency.spec.ts et invariants-cloture/concurrency.spec.ts (50 ex\u00e9cutions, une seule s\u00e9rie d'\u00e9critures). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 (Droits de place par mode) : En tant qu'organisateur, je veux que le droit de place suive le mode de chaque participation (`DEDUCT_OR_DEBT` avec transfert de dette, `DEDUCT_CAPPED`, `PREPAID` avec r\u00e9f\u00e9rence enregistr\u00e9e).",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (f889db85, 3f390a22) : closing/closing-steps.spec.ts 'FR-005 \u00e0 FR-007' ; closing/closing-variants.spec.ts ; unit/closing/calculators.spec.ts (25 000 = 15 000 + 10 000, droit PREPAID non compt\u00e9) ; unit/builders/closing/closing-builders.spec.ts (DEDUCT_OR_DEBT, MERCHANT_DEBT_TRANSFER, DEDUCT_CAPPED, PREPAID). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 (Frais, redevance et r\u00e9gularisation) : En tant que prestataire, je veux que frais du prestataire et redevance de la plateforme soient \u00e9crits selon le contrat, avec la r\u00e9gularisation `NET_OF_REFUNDS` \u00e0 l'\u00e9ch\u00e9ance (\u00a75.6).",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (f889db85, cycle 2 3f390a22 : r\u00e9gularisation en une transaction \u00e0 \u00e9cart explicite, d\u00e9cision 10) : closing/closing-variants.spec.ts 'FR-005 : r\u00e9gularisation NET_OF_REFUNDS avec r\u00e8gle \u00e0 minimum' (\u00e9cart 200, une transaction, puis CLOSED) ; closing/closing-steps.spec.ts (OPERATOR_FEE 6 000, PLATFORM_FEE 1 017, r\u00e9gularisation sans objet en GROSS). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 (Casse, cautions acquises, cr\u00e9dits offerts) : En tant qu'op\u00e9rateur, je veux qu'\u00e0 la date limite de remboursement la casse soit partag\u00e9e selon la configuration, les cautions non rendues acquises et les cr\u00e9dits offerts expir\u00e9s.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (d\u00e9cision 11 : casse OPERATOR 100 % prestataire) : closing/closing-steps.spec.ts 'FR-005 \u00e0 FR-007 : phase de remboursement, casse, caution, cr\u00e9dits offerts' ; closing/closing-variants.spec.ts it.each des destinations de casse ; scenario/closing-journey.spec.ts 'REFUND_WINDOW, remboursements, \u00e9tapes de casse, de caution et de promotion'. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 (Cl\u00f4ture et verrouillage) : En tant que back-office, je veux faire passer l'\u00e9v\u00e9nement en `CLOSED` et que chaque grand livre soit verrouill\u00e9 si ses positions sont sold\u00e9es, ou reste `CLOSING` avec un relev\u00e9 des soldes restants, puis soit verrouill\u00e9 plus tard.",
+      "proof_type": "automated_test",
+      "evidence": "WP02 et WP07, approuv\u00e9s : closing/remaining-balances.spec.ts 'FR-008' (relev\u00e9 des soldes restants JSON et CSV) ; closing/closing-order.spec.ts 'FR-008' (grand livre LOCKED) ; scenario/closing-journey.spec.ts (CLOSED puis LOCKED) ; pgTAP tests_closing_conditions.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 (Pr\u00e9paration d'un lot de versements) : En tant qu'administrateur selon le b\u00e9n\u00e9ficiaire (`ORGANIZER_ADMIN` pour les commer\u00e7ants et l'organisateur, `OPERATOR_ADMIN` pour le prestataire et la plateforme ; d\u00e9cision du porteur du 17/11/2026, SPECIFICATION \u00a73.2 amend\u00e9e), je veux pr\u00e9parer un lot de versements \u00e0 partir des droits nets, chaque montant born\u00e9 par le droit net.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (1ce975cc, fdba9ea0) et WP08 (0db83065, a913d4dc), approuv\u00e9s : payouts/payout-batch.spec.ts 'FR-009, SC-002' (40 000 pour un droit de 39 225 : 409 PAYOUT_EXCEEDS_ENTITLEMENT), r\u00f4le selon le b\u00e9n\u00e9ficiaire, lot mixte, deux lots en parall\u00e8le ; payouts/entitlements.spec.ts ; pgTAP tests_payouts.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Amendement de SPECIFICATION \u00a73.2 (r\u00f4le selon le b\u00e9n\u00e9ficiaire, d\u00e9cision du 17/11/2026) couvert par le test 'r\u00f4le selon le b\u00e9n\u00e9ficiaire'."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 (Validation \u00e0 deux du lot) : En tant que second administrateur, distinct de l'auteur, je veux valider le lot par le circuit d'approbation existant (action `PAYOUT`) ; la validation \u00e9crit `PAYOUT_INITIATED` et g\u00e8le les montants.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 et WP08, approuv\u00e9s : payouts/payout-batch.spec.ts 'FR-010' (PAYOUT_INITIATED, auteur = valideur refus\u00e9, charge sans IBAN) ; payouts/payout-concurrency.spec.ts 'NFR-001' et 'FR-010 : la base refuse auteur = valideur et une charge modifi\u00e9e' ; pgTAP tests_payouts.sql (demande accept\u00e9e et action PAYOUT exig\u00e9es, d\u00e9cision 6). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 (Export du lot) : En tant qu'administrateur, je veux exporter un lot valid\u00e9 en CSV (b\u00e9n\u00e9ficiaire, moyen, num\u00e9ro ou IBAN, montant, r\u00e9f\u00e9rence).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (31db669c, csv.ts), WP08 approuv\u00e9s : payouts/payout-export.spec.ts 'FR-011' (CSV complet, nom '=' neutralis\u00e9, export audit\u00e9, lot inconnu ou non valid\u00e9 404) ; payouts/entitlements.spec.ts 'FR-011' (liste sans IBAN ni num\u00e9ro) ; invariants-cloture/payment-data-exposure.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 (R\u00e9sultat de chaque versement) : En tant qu'administrateur, je veux enregistrer `PAYOUT_CONFIRMED` (r\u00e9f\u00e9rence) ou `PAYOUT_FAILED` (motif, droit recr\u00e9dit\u00e9) pour chaque ligne.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 et WP08, approuv\u00e9s : payouts/payout-confirm.spec.ts 'FR-012' (CONFIRMED \u00e9crit une fois ; FAILED recr\u00e9dite le droit net ; second r\u00e9sultat diff\u00e9rent : 409 ; cl\u00f4ture refus\u00e9e tant qu'une ligne est INITIATED) ; payouts/payout-concurrency.spec.ts ; pgTAP tests_payouts.sql (settle_payout). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 (Import des relev\u00e9s) : En tant que back-office, je veux importer en CSV un relev\u00e9 par compte d'argent, sans doublon au r\u00e9import, avec refus d'une devise ou d'un compte \u00e9tranger.",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (e6ade9d3, a54564a9, a8e2e8c0) et WP09 (97140dd0, 885a3585, 72c5bc5b), approuv\u00e9s : reconciliation/import-statement.spec.ts 'FR-013, SC-003' (r\u00e9import et recouvrement sans doublon, fichier refus\u00e9 entier, compte \u00e9tranger ou non d'argent refus\u00e9) ; pgTAP tests_statements.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 (Rapprochement) : En tant que back-office, je veux que les lignes soient rapproch\u00e9es automatiquement par r\u00e9f\u00e9rence externe, puis \u00e0 la main pour le reste, et voir l'\u00e9tat de rapprochement de chaque compte.",
+      "proof_type": "automated_test",
+      "evidence": "WP02 et WP09, approuv\u00e9s : reconciliation/match-statement-line.spec.ts 'FR-014' (quatre sources automatiques, signe et montant, manuel, double rapprochement 409) ; reconciliation/reconciliation-state.spec.ts (\u00e9tat par compte) ; reconciliation/statement-lines.spec.ts ; pgTAP tests_statements.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 (Anomalies PSP dans le rapprochement) : En tant qu'op\u00e9rateur, je veux que le contr\u00f4le \u00ab grand livre = relev\u00e9 \u00bb repr\u00e9sente les anomalies `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes (OP-N82).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 et WP09, approuv\u00e9s : reconciliation/match-statement-line.spec.ts 'FR-015 : rapprochement \u00e0 une anomalie PSP ouverte' ; reconciliation/reconciliation-state.spec.ts 'FR-015, OP-N82' ; closing/status-conditions.spec.ts (PSP_RECONCILED) ; pgTAP tests_statements.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 (R\u00e9clamations tardives) : En tant que back-office, je veux proposer puis faire valider par une seconde personne une r\u00e9clamation tardive : `postLateClaim` du contrat (annulation de casse puis remboursement du festivalier) et l'apport d'un b\u00e9n\u00e9ficiaire (`ADJUSTMENT`, op\u00e9ration ajout\u00e9e au contrat), born\u00e9s par `check_late_claim` ; la contestation tardive reste celle de la mission 6 (d\u00e9cision du porteur du 17/11/2026).",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuv\u00e9 (7e1cfb8f) : late-claims/late-claim.spec.ts 'FR-016' (deux transactions, solde 0, droits au prorata, tout ou rien, 20 approbations : une \u00e9criture) ; late-claims/late-adjustment.spec.ts (ADJUSTMENT born\u00e9 par la casse annul\u00e9e et par la base, CL024) ; late-claims/late-claim-proof.spec.ts ; late-claims/money-account.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "La contestation tardive reste celle de la mission 6 (hors p\u00e9rim\u00e8tre, d\u00e9cision du 17/11/2026)."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 (Demande de remboursement du back-office) : En tant que back-office, je veux cr\u00e9er une demande de remboursement par virement (`BANK_TRANSFER`, IBAN) pour un festivalier, avec `requested_by` renseign\u00e9, qui suit le circuit \u00e0 deux de la 9a (OP-N123).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (contrat) et WP11 (5d74c3c1), approuv\u00e9s : refunds/create-backoffice.spec.ts 'FR-017' (virement cr\u00e9\u00e9 par A, requested_by = A, propos\u00e9 par B, ex\u00e9cut\u00e9 par C, PAID ; le demandeur ne valide pas ; IBAN absent de la r\u00e9ponse et de l'audit ; IBAN mal form\u00e9 422 ; REFUND_ALREADY_OPEN ; extra_check_required). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 (Transitions d'une demande gard\u00e9es par la base) : En tant qu'op\u00e9rateur, je veux que la base refuse toute transition d'une demande de remboursement hors du graphe pr\u00e9vu, et fige montant et frais apr\u00e8s `PROCESSING` (l'approbation les recalcule au passage `REQUESTED` \u2192 `PROCESSING`) (OP-N130).",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 (8cf44d55 : migration 0086, d\u00e9clencheur refund_request_transition_guard) : pgTAP tests_refund_transitions.sql (169 assertions d'apr\u00e8s OP-N130 : graphe des transitions, montant et frais fig\u00e9s apr\u00e8s PROCESSING, recalcul au passage REQUESTED vers PROCESSING) ; refunds/approve-refund.spec.ts et refunds/journey.spec.ts rejou\u00e9s dans la batterie. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "OP-N130 lev\u00e9 le 17/11/2026 (docs/POINTS_OUVERTS.md)."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 (Limites de la 9a lev\u00e9es) : En tant qu'op\u00e9rateur, je veux lever OP-N124 (code du titulaire consomm\u00e9 seulement si la d\u00e9cision est \u00e9crite), OP-N126 (recr\u00e9dit d'un `FAILED` born\u00e9 par le rapprochement ou un second valideur) et OP-N128 (`approved_by` port\u00e9 par l'\u00e9criture de caution, cumul relu sous verrou du portefeuille).",
+      "proof_type": "automated_test",
+      "evidence": "WP04 (OP-N128 c\u00f4t\u00e9 base) et WP11 (5d74c3c1), approuv\u00e9s : OP-N124 refunds/journey-limits.spec.ts 'OP-N124 (lev\u00e9e)' ; OP-N126 refunds/failed-recredit-bound.spec.ts (409 si ligne rapproch\u00e9e \u00e0 la sortie d'argent) et journey-limits.spec.ts 'OP-N126 (d\u00e9cision 13)' ; OP-N128 refunds/release-cumul-lock.spec.ts (approved_by port\u00e9 par l'\u00e9criture, cumul sous verrou) ; d\u00e9cision 14 invariants-cloture/concurrency.spec.ts et pgTAP tests_statements.sql section 4b. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "OP-N124, OP-N126, OP-N128 lev\u00e9s ; OP-N144 (aucune voie de contournement si ligne rapproch\u00e9e) consign\u00e9."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 (Scellement et v\u00e9rification) : En tant qu'op\u00e9rateur, je veux un scellement de chaque grand livre (y compris `LOCKED`) et du journal d'audit toutes les 5 minutes, copi\u00e9 hors de la base, et une v\u00e9rification quotidienne des deux cha\u00eenes.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 (3c1e5213) et WP12 (616ed91e), approuv\u00e9s : sealing/seal-and-verify.spec.ts (un scellement par grand livre LOCKED compris, cha\u00eenes d'audit dont la plateforme, copie simul\u00e9e, NFR-005, SC-004, copie qui \u00e9choue reprise au passage suivant, r\u00f4le cashless_maint limit\u00e9 aux ops_*, --list huit travailleurs) ; pgTAP tests_ops_functions.sql ; unit/production-guard.spec.ts (faux de la copie refus\u00e9 en production). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Copie hors base simul\u00e9e jusqu'\u00e0 la 12b (OP-N131, ADR-197)."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 (Contr\u00f4les permanents) : En tant qu'exploitant, je veux les contr\u00f4les du \u00a712.2 (sommes nulles, droits = argent, caches, comptes chauds, relev\u00e9s, versements > 48 h, anomalies ouvertes, transactions > 60 s) avec une alerte \u00e0 chaque \u00e9chec.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 et WP12, approuv\u00e9s : controls/controls-alerts.spec.ts (somme non nulle et droits diff\u00e9rents de l'argent, caches et comptes chauds, versement INITIATED de plus de 48 h, ligne de relev\u00e9 non rapproch\u00e9e, anomalie ouverte, transaction de plus de 60 s sans texte de requ\u00eate, un contr\u00f4le en panne l\u00e8ve l'alerte) ; pgTAP tests_ops_functions.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Alerte = audit + journal ALERT + pg_notify, sans envoi \u00e0 une personne (OP-N132, ADR-198)."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022 (Relev\u00e9s des parties) : En tant que partie (commer\u00e7ant, festivalier, organisateur, prestataire, plateforme), je veux mon relev\u00e9 par l'API et en CSV, limit\u00e9 \u00e0 mon p\u00e9rim\u00e8tre (\u00a712.3).",
+      "proof_type": "automated_test",
+      "evidence": "WP13 approuv\u00e9 (755d22df, dc49c4fb : ventes internes, d\u00e9cision 15) : statements/party-statement.spec.ts 'FR-022' (commer\u00e7ant, organisateur, prestataire, plateforme ; r\u00f4les par nature fig\u00e9s ; autre prestataire 404 ; CSV et JSON de m\u00eames totaux ; pagination) ; statements/my-wallet-statement.spec.ts (relev\u00e9 du festivalier) ; pgTAP tests_statements.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "closing_balance non servi en JSON (d\u00e9cision 16, OP-N143)."
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023 (Export comptable configurable) : En tant qu'exploitant, je veux un export comptable par entit\u00e9 selon une correspondance (`account_mapping`) configurable, jamais cod\u00e9e en dur, qui signale les types non mapp\u00e9s.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 (0088) et WP13, approuv\u00e9s : statements/accounting-export.spec.ts 'FR-023' (versions ajout\u00e9es, jamais modifi\u00e9es ; couples non mapp\u00e9s list\u00e9s en t\u00eate et compt\u00e9s dans X-Unmapped-Count ; version en vigueur \u00e0 la date de l'\u00e9criture ; \u00e9quilibre par transaction ; neutralisation de formule ; bornes UTC d\u00e9cision 17) ; invariants-cloture/utc-bounds.spec.ts ; pgTAP tests_account_mapping.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Aucun jeu de comptes livr\u00e9 : la correspondance SYSCOHADA reste \u00e0 valider (OP-N3, C-007)."
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024 (Journal d'audit) : En tant qu'auditeur, je veux que chaque \u00e9tape de cl\u00f4ture, pr\u00e9paration, validation, export, r\u00e9sultat de versement, import, rapprochement et r\u00e9clamation soit trac\u00e9 avec son auteur.",
+      "proof_type": "automated_test",
+      "evidence": "Audit par action : closing/closing-steps.spec.ts 'FR-024' (\u00e9tapes) ; reconciliation/import-statement.spec.ts 'FR-024' (import, sans contenu du relev\u00e9) ; payouts/payout-confirm.spec.ts (audit PAYOUT_CONFIRMED) ; payouts/payout-export.spec.ts (export audit\u00e9) ; late-claims/late-claim.spec.ts et late-adjustment.spec.ts (LATE_CLAIM_REQUESTED et APPROVAL_EXECUTED, une ligne chacun) ; statements/accounting-export.spec.ts et party-statement.spec.ts (export trac\u00e9 sans montant) ; reconciliation/match-statement-line.spec.ts (rapprochement) ; invariants-cloture/payment-data-exposure.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Pr\u00e9paration et validation d'un lot : trac\u00e9es par l'audit des demandes d'approbation, prouv\u00e9es par payment-data-exposure (audit d'un lot) et non par une assertion d\u00e9di\u00e9e du nombre de lignes. Relev\u00e9 JSON d'une partie non trac\u00e9, CSV trac\u00e9 ; relev\u00e9 du festivalier non trac\u00e9 (OP-N142)."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 (Pas de double \u00e9criture) : 0 \u00e9criture en double sur 50 ex\u00e9cutions concurrentes d'une m\u00eame \u00e9tape de cl\u00f4ture, d'une m\u00eame validation de lot ou d'un m\u00eame r\u00e9sultat de versement, et sur 50 rejeux d'une m\u00eame cl\u00e9 d'idempotence.",
+      "proof_type": "automated_test",
+      "evidence": "WP14 (83147fb7, 88832676, 8f7ab233) : invariants-cloture/concurrency.spec.ts (50 ex\u00e9cutions d'une m\u00eame \u00e9tape, 50 rejeux de cl\u00e9, 50 validations d'un m\u00eame lot, 50 r\u00e9sultats d'un m\u00eame versement, 50 rejeux de la cl\u00e9 de demande) ; closing/closing-concurrency.spec.ts ; payouts/payout-concurrency.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 (Grand livre juste \u00e0 la cl\u00f4ture) : Sur le sc\u00e9nario de r\u00e9f\u00e9rence, apr\u00e8s cl\u00f4ture compl\u00e8te : chaque transaction \u00e0 somme nulle, soldes finaux \u00e9gaux aux valeurs attendues, droits nets = argent d\u00e9tenu \u00e0 chaque \u00e9tape.",
+      "proof_type": "automated_test",
+      "evidence": "WP14 : scenario/closing-journey.spec.ts (CLOSING \u00e0 LOCKED par les seules routes du back-office ; apr\u00e8s chaque \u00e9tape : somme nulle par transaction, ledger_invariant.must_be_zero = 0, argent d\u00e9tenu = droits ; soldes finaux = expected.after_closing ; rejeu complet sans \u00e9criture) ; statements/party-statement.spec.ts (grand livre \u00e9gal au sc\u00e9nario apr\u00e8s cl\u00f4ture). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 (Import des relev\u00e9s) : Un relev\u00e9 de 10 000 lignes est import\u00e9 et rapproch\u00e9 automatiquement en moins de 60 s.",
+      "proof_type": "automated_test",
+      "evidence": "WP09 (97140dd0) : reconciliation/statement-import-latency.spec.ts (10 000 lignes import\u00e9es et rapproch\u00e9es, suite isol\u00e9e \u00e9cart\u00e9e par SKIP_LATENCY) ; mesure de WP09 : 10 000 lignes en 3,97 s (seuil 60 s) ; WP02 : 3,6 s. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3). ; remesur\u00e9 par l'orchestrateur le 17/11/2026 sur le code int\u00e9gr\u00e9 (lane-n 8e5b702f, apr\u00e8s les verrous de la d\u00e9cision 14) : statement-import-latency.spec.ts seule, 10 000 lignes import\u00e9es et rapproch\u00e9es en 13,58 s (objectif < 60 s ; 3,97 s \u00e0 WP09).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Mesure faite par le lot WP09 ; non relanc\u00e9e depuis la d\u00e9cision 14 (verrous FOR UPDATE sur refund_request ajout\u00e9s \u00e0 0083) ni dans la batterie finale (SKIP_LATENCY). \u00c0 relancer seule si le porteur le souhaite."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 (R\u00e9ponses du back-office) : 95 % des aper\u00e7us d'\u00e9tape, listes de versements et relev\u00e9s d'une partie r\u00e9pondent en moins de 1 s sur un \u00e9v\u00e9nement de 100 000 transactions.",
+      "proof_type": "automated_test",
+      "evidence": "WP13 et WP14 : statements/statement-latency.spec.ts (100 000 transactions, 20 relev\u00e9s simultan\u00e9s par partie) relanc\u00e9e sans SKIP_LATENCY par WP14 : p95 de 306 ms pour le relev\u00e9 de l'organisateur (270 ms avant la d\u00e9cision 15 ; 148, 94, 104 ms pour prestataire, plateforme, commer\u00e7ant), sous 1 s ; payouts/entitlements.spec.ts (pas de N+1 sur les routes 5 et 7). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Port\u00e9e de la preuve : le temps n'est mesur\u00e9 que pour les relev\u00e9s de partie. Aper\u00e7us d'\u00e9tape et listes de versements ne sont prouv\u00e9s que par le nombre de requ\u00eates constant, sans chronom\u00e9trage sur 100 000 transactions."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 (Fra\u00eecheur du scellement) : Aucune \u00e9criture d'un grand livre ne reste non scell\u00e9e plus de 10 minutes (copie externe comprise) en fonctionnement normal.",
+      "proof_type": "automated_test",
+      "evidence": "WP12 : sealing/seal-and-verify.spec.ts 'NFR-005 : \u00e9criture de 5 min 30 s scell\u00e9e ET copi\u00e9e, bien avant 10 minutes (dur\u00e9e mesur\u00e9e par la base)' ; copie qui \u00e9choue reprise au passage suivant (alarme 7). Suites controls-alerts et seal-and-verify relanc\u00e9es en s\u00e9rie le 17/11/2026 : 40 / 40. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 (D\u00e9lai d'alerte) : Un \u00e9chec d'un contr\u00f4le permanent l\u00e8ve une alerte au plus tard une p\u00e9riode de contr\u00f4le apr\u00e8s sa survenue (5 min, horaire ou quotidien selon le contr\u00f4le).",
+      "proof_type": "automated_test",
+      "evidence": "WP12 : controls/controls-alerts.spec.ts (chaque contr\u00f4le en \u00e9chec l\u00e8ve son alerte au passage suivant : codes 9, 10, 11, retour \u00e0 0 une fois r\u00e9par\u00e9 ; panne du contr\u00f4le elle-m\u00eame alert\u00e9e) ; sealing/seal-and-verify.spec.ts (alarme 8 \u00e0 la v\u00e9rification). S\u00e9rie le 17/11/2026 : 40 / 40. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Le d\u00e9lai est celui d'un passage des travailleurs, observ\u00e9 par appel direct du contr\u00f4le, pas par l'horloge r\u00e9elle de 5 min, horaire ou quotidienne."
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001 : le sc\u00e9nario de r\u00e9f\u00e9rence se cl\u00f4t de bout en bout (`CLOSING` \u2192 `CLOSED` \u2192 `LOCKED`) par les seules op\u00e9rations du back-office, et ses soldes finaux \u00e9galent les valeurs attendues.",
+      "proof_type": "automated_test",
+      "evidence": "WP14 (83147fb7) : scenario/closing-journey.spec.ts, CLOSING, CLOSED, LOCKED par les seules routes du back-office, soldes finaux \u00e9gaux \u00e0 expected.after_closing. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002 : 100 % des versements tent\u00e9s au-del\u00e0 du droit net, ou valid\u00e9s par leur auteur, sont refus\u00e9s.",
+      "proof_type": "automated_test",
+      "evidence": "WP08 et WP14 : invariants-cloture/concurrency.spec.ts 'SC-002 : au-del\u00e0 du droit net, seul, par cumul de deux lots, apr\u00e8s un FAILED recr\u00e9dit\u00e9, ou par son auteur : 100 % refus\u00e9s, aucune \u00e9criture' ; payouts/payout-batch.spec.ts 'FR-009, SC-002' et 'FR-010 : auteur = valideur refus\u00e9' ; pgTAP tests_payouts.sql. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003 : sur un relev\u00e9 o\u00f9 80 % des lignes portent une r\u00e9f\u00e9rence connue, 100 % de ces lignes sont rapproch\u00e9es sans intervention.",
+      "proof_type": "automated_test",
+      "evidence": "WP09 : reconciliation/import-statement.spec.ts 'FR-013, SC-003 : 10 lignes dont 8 connues, 8 rapproch\u00e9es' (80 % de lignes \u00e0 r\u00e9f\u00e9rence connue, toutes rapproch\u00e9es sans intervention) ; match-statement-line.spec.ts ('signe et montant'). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004 : toute alt\u00e9ration d'une \u00e9criture scell\u00e9e est d\u00e9tect\u00e9e \u00e0 la v\u00e9rification suivante.",
+      "proof_type": "automated_test",
+      "evidence": "WP12 : sealing/seal-and-verify.spec.ts 'SC-004' (ligne scell\u00e9e modifi\u00e9e, ligne d'audit d'un prestataire modifi\u00e9e, cha\u00eene d'audit de la plateforme alt\u00e9r\u00e9e, seal_hash falsifi\u00e9 : d\u00e9tect\u00e9s \u00e0 la v\u00e9rification suivante, alarme 8 avec OPS_ALERT, notification et journal ALERT). S\u00e9rie 17/11/2026 : 40 / 40. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-005",
+      "description": "SC-005 : chaque contr\u00f4le permanent du \u00a712.2 a un test qui le fait \u00e9chouer et observe l'alerte.",
+      "proof_type": "automated_test",
+      "evidence": "WP12 et WP14 : controls/controls-alerts.spec.ts, un test par contr\u00f4le du \u00a712.2 qui le fait \u00e9chouer et observe l'alerte (sommes nulles et droits = argent, caches et comptes chauds, relev\u00e9s, versements de plus de 48 h, anomalies ouvertes, transactions de plus de 60 s) ; sealing/seal-and-verify.spec.ts pour les cha\u00eenes. S\u00e9rie 17/11/2026 : 40 / 40. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-006",
+      "description": "SC-006 : les dettes OP-N123, OP-N124, OP-N126, OP-N128 et OP-N130 sont lev\u00e9es, chacune avec son test de lev\u00e9e.",
+      "proof_type": "automated_test",
+      "evidence": "WP04, WP11 et WP14 : OP-N130 pgTAP tests_refund_transitions.sql ; OP-N128 refunds/release-cumul-lock.spec.ts ; OP-N126 refunds/failed-recredit-bound.spec.ts, journey-limits.spec.ts et invariants-cloture/concurrency.spec.ts (d\u00e9cision 14) ; OP-N124 refunds/journey-limits.spec.ts ; OP-N123 refunds/create-backoffice.spec.ts. Entr\u00e9es lev\u00e9es dans docs/POINTS_OUVERTS.md ; invariants-cloture/consignation.spec.ts v\u00e9rifie que les tests cit\u00e9s dans les fiches existent. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3).",
+      "pass_fail": "pass",
+      "verified_by": "claude (impl\u00e9menteurs et relecteurs distincts des lots, orchestrateur)",
+      "verified_at": "2026-11-17",
+      "notes": "Preuves des lots cit\u00e9es ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun double versement ni double \u00e9criture sous concurrence ou rejeu (NFR-001) : \u00e9tape de cl\u00f4ture, validation de lot, r\u00e9sultat de versement, cl\u00e9 d'idempotence",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/invariants-cloture/concurrency test/integration/payouts/payout-concurrency test/integration/closing/closing-concurrency",
+      "result": "confirmed_absent",
+      "evidence": "invariants-cloture/concurrency.spec.ts, payout-concurrency.spec.ts, closing-concurrency.spec.ts (50 ex\u00e9cutions ou rejeux : une seule s\u00e9rie d'\u00e9critures, aucun 500). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun recr\u00e9dit d'un paiement d\u00e9j\u00e0 rapproch\u00e9, ni rapprochement d'une demande d\u00e9j\u00e0 recr\u00e9dit\u00e9e (d\u00e9cision 14, OP-N126)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/invariants-cloture/concurrency test/integration/refunds/failed-recredit-bound ; puis, apr\u00e8s reset-db, pgTAP tests_statements.sql (pg_prove)",
+      "result": "confirmed_absent",
+      "evidence": "invariants-cloture/concurrency.spec.ts (d\u00e9terministe et course r\u00e9elle de 8 demandes : jamais recr\u00e9dit ET rapprochement), failed-recredit-bound.spec.ts, pgTAP tests_statements.sql section 4b (CL043). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucune fuite entre prestataires : les 20 op\u00e9rations ajout\u00e9es refusent le personnel et le festivalier d'un autre prestataire, sans donn\u00e9e ni modification",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/invariants-cloture/isolation-9b",
+      "result": "confirmed_absent",
+      "evidence": "invariants-cloture/isolation-9b.spec.ts (20 op\u00e9rations recoup\u00e9es avec le contrat et contract-additions.md, 403 ou 404, 401 sans jeton, t\u00e9moin du personnel de A). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucune donn\u00e9e de paiement en clair (IBAN, num\u00e9ro) dans les r\u00e9ponses, l'audit, les listes et les approbations (OP-N147)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/invariants-cloture/payment-data-exposure test/integration/payouts/payout-export",
+      "result": "confirmed_absent",
+      "evidence": "payment-data-exposure.spec.ts, payout-export.spec.ts (IBAN et num\u00e9ro en clair seulement dans le CSV d'export), late-claim.spec.ts ; OP-N147 lev\u00e9 par 88832676 (approvalRequestDto masque result). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Aucun faux en production : la copie simul\u00e9e des scellements refuse le d\u00e9marrage ; les alertes sans envoi n'ajoutent aucun envoi \u00e0 une personne",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit/production-guard test/integration/invariants-cloture/consignation",
+      "result": "confirmed_absent",
+      "evidence": "unit/production-guard.spec.ts (createSealCopy en production : FakeInProductionError ; assertProcessIsSafe nomme le faux) ; consignation.spec.ts 'OP-N132 : le code des alertes ne contient aucun envoi \u00e0 une personne'. Les alertes sans envoi (C-010) ne font PAS refuser le d\u00e9marrage : ce n'est pas un faux mais une limite consign\u00e9e (OP-N132, ADR-198), lev\u00e9e par la 12b. Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    },
+    {
+      "invariant_id": "NI-006",
+      "description": "Une seule personne ne suffit jamais pour un lot de versements, ni pour un remboursement tardif vers un autre num\u00e9ro (d\u00e9cision 13), ni pour un recr\u00e9dit FAILED",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/payouts/payout-batch test/integration/late-claims/late-claim test/integration/refunds/journey-limits test/integration/refunds/create-backoffice",
+      "result": "confirmed_absent",
+      "evidence": "payout-batch.spec.ts 'FR-010 : auteur = valideur refus\u00e9' ; late-claim.spec.ts 'deux personnes : l'auteur ne valide pas sa demande' ; journey-limits.spec.ts 'OP-N126 (d\u00e9cision 13) : deux administrateurs seuls ne le peuvent pas' ; create-backoffice.spec.ts (demandeur ne valide pas) ; pgTAP tests_payouts.sql (auteur = valideur refus\u00e9 par la base). Batterie du code int\u00e9gr\u00e9 (lane-n 8e5b702f) relanc\u00e9e par l'orchestrateur le 17/11/2026 : pgTAP 79 fichiers / 6 872 PASS ; Jest 3 977 / 3 992 (2 \u00e9checs de fragilit\u00e9, vertes seules 3 fois sur 3)."
+    }
+  ]
+}

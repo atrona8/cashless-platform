@@ -428,6 +428,11 @@ describe('central : aucun faux en production', () => {
       edgeProcess: false,
       suite: 'test/unit/production-guard.spec.ts',
     },
+    // Mission 9b (WP12, OP-N131, ADR-197) : copie externe des scellements simulée jusqu'à la 12b.
+    'la copie externe des scellements': {
+      edgeProcess: false,
+      suite: 'test/unit/production-guard.spec.ts',
+    },
   };
 
   it('chaque faux du central est rattaché à un démarrage réel ou à une suite qui existe', () => {

@@ -25,6 +25,22 @@ export class RecordingSender implements OtpSender {
   }
 }
 
+/**
+ * Ramène l'échéance d'une demande `AWAITING_HOLDER` dans le passé (`hold_until` est immuable pour l'application,
+ * OP-N130). Fixture seulement : le propriétaire désactive les déclencheurs le temps de l'`UPDATE`, jamais le code.
+ */
+export async function backdateHold(db: Client, id: string, sql: string): Promise<void> {
+  await db.query('BEGIN');
+  try {
+    await db.query("SET LOCAL session_replication_role = 'replica'");
+    await db.query(`UPDATE refund_request SET hold_until = ${sql} WHERE id = $1`, [id]);
+    await db.query('COMMIT');
+  } catch (error) {
+    await db.query('ROLLBACK');
+    throw error;
+  }
+}
+
 export const wrongCode = (code: string): string => (code === '000000' ? '000001' : '000000');
 
 export interface Holder {

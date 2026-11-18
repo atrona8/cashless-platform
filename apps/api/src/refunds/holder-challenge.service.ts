@@ -121,8 +121,9 @@ export class HolderChallengeService {
       return rows[0]?.phone ? rows[0].phone : null;
     });
     if (!holderPhone) throw otpInvalid();
-    // 3. Le code, dans la transaction propre de `verifyChallenge` (essais et blocage survivent à l'erreur).
-    await this.auth.verifyChallenge({
+    // 3. Le code est VÉRIFIÉ sans être consommé (OP-N124) : les essais et le blocage survivent à l'erreur ; la
+    // consommation se fait dans la transaction de la décision, avec l'`UPDATE` de la demande.
+    await this.auth.verifyChallengeOnly({
       otpRequestId: input.otpRequestId,
       code: input.code,
       expectedPhone: holderPhone,
@@ -143,7 +144,15 @@ export class HolderChallengeService {
         [refundRequestId, input.decision],
       );
       const row = rows[0];
+      // Rien à écrire (échu, déjà décidé) : la transaction s'annule, le code reste utilisable.
       if (!row) throw new ProblemException('CONFLICT_STATE');
+      await this.auth.consumeChallenge(client, {
+        otpRequestId: input.otpRequestId,
+        expectedPhone: holderPhone,
+        purpose: 'REFUND_HOLDER',
+        subjectId: refundRequestId,
+        operatorId,
+      });
       // `BLOCK` : c'est l'alerte du contrat pour le back-office (aucune autre infrastructure d'alerte).
       await this.audit.record(client, {
         ...audit,

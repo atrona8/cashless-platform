@@ -193,6 +193,9 @@ SELECT is((SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.
               'begin_cash_close','finish_cash_close','attach_cash_tx','open_cash_due_anomaly',
               'take_deposit_for_session','refund_deposit_for_session',
               'refund_cash_due_for_session','posting_cash_desk_guard','account_purpose_guard')
+              -- mission 9b (WP04, 0086) : la surcharge à quatre arguments de refund_deposit_for_session est
+              -- comptée par tests_9b_rights.sql ; ici seule la signature de la mission 6 (comptage par signature)
+              AND p.oid::regprocedure::text <> 'refund_deposit_for_session(uuid,uuid,uuid,uuid)'
               AND NOT (has_function_privilege('public', p.oid, 'EXECUTE'))), 14,
           'EXECUTE retiré à PUBLIC sur les 14 fonctions');
 SELECT is((SELECT count(*)::int FROM pg_proc p
@@ -200,6 +203,8 @@ SELECT is((SELECT count(*)::int FROM pg_proc p
               'open_cash_session','count_cash_session','begin_cash_close','finish_cash_close',
               'attach_cash_tx','open_cash_due_anomaly','take_deposit_for_session',
               'refund_deposit_for_session','refund_cash_due_for_session','posting_cash_desk_guard')
+              -- mission 9b (WP06) : sans la surcharge à quatre arguments (comptage par signature)
+              AND p.oid::regprocedure::text <> 'refund_deposit_for_session(uuid,uuid,uuid,uuid)'
               AND p.prosecdef
               AND coalesce(p.proconfig, '{}') @> ARRAY['search_path=public, pg_temp']), 13,
           'les 13 fonctions SECURITY DEFINER fixent search_path = public, pg_temp');

@@ -188,19 +188,14 @@ describe('statuts d’un événement', () => {
         'DEVICES_CAUGHT_UP',
         'DEBIT_AUTHORITY_CENTRAL',
         'SUSPENSE_ZERO',
+        // Mission 9b : calculée par la base (account_reconciliation), plus externe.
+        'PSP_RECONCILED',
       ]);
       expect(settling.filter((c) => c.source === 'EXTERNAL')).toEqual([
         {
           code: 'CASH_DESKS_COUNTED',
           met: null,
           detail: expect.stringContaining('Caisses'),
-          source: 'EXTERNAL',
-          owner_mission: 'Recharges, caisses et PSP',
-        },
-        {
-          code: 'PSP_RECONCILED',
-          met: null,
-          detail: expect.any(String),
           source: 'EXTERNAL',
           owner_mission: 'Recharges, caisses et PSP',
         },
@@ -431,7 +426,26 @@ describe('statuts d’un événement', () => {
     it('jusqu’à CLOSED : le grand livre soldé est verrouillé ; plus aucun passage ensuite', async () => {
       const eventId = await newEvent();
       await goLive(eventId);
+      // Mission 9b : les étapes de clôture sont faites (ou sans objet) et l'échéance de remboursement atteinte.
+      const step = (name: string) =>
+        send('post', organizerAdmin, `${EVENTS()}/${eventId}/closing-steps/${name}`);
       for (const to of ['CLOSING', 'RECONCILING', 'SETTLING', 'REFUND_WINDOW', 'CLOSED']) {
+        if (to === 'REFUND_WINDOW')
+          for (const name of ['PITCH_FEES', 'OPERATOR_FEE', 'PLATFORM_FEE'])
+            expect([name, (await step(name)).status]).toEqual([name, 200]);
+        if (to === 'CLOSED') {
+          await rows(
+            `UPDATE event SET refund_deadline = clock_timestamp() - interval '1 minute' WHERE id = $1`,
+            [eventId],
+          );
+          for (const name of [
+            'OPERATOR_FEE_REGULARIZATION',
+            'BREAKAGE',
+            'DEPOSIT_FORFEIT',
+            'PROMO_EXPIRY',
+          ])
+            expect([name, (await step(name)).status]).toEqual([name, 200]);
+        }
         expect([to, (await transition(organizerAdmin, eventId, to)).status]).toEqual([to, 200]);
       }
       expect(

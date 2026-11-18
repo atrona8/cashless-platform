@@ -11,6 +11,7 @@ import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import { isSqlError } from '../../errors/sqlstate-map';
 import type { Language } from '../../http/language';
+import { lockWalletPaidBalance } from '../../ledger/db/ledger-queries';
 import { LedgerEngineService } from '../../ledger/ledger-engine.service';
 import type { CashDueService } from './cash-due.service';
 import { requireCashSession, type CounterActor } from './counter-access';
@@ -208,6 +209,14 @@ export class ReleaseService {
     const rank = media.assignments;
     let cash = 0n;
     const settleable = wallets.filter((w) => w.ledger_id === actor.ledgerId);
+    // OP-N128 (b) : le solde payé de chaque portefeuille est verrouillé AVANT la lecture du cumul, dans l'ordre
+    // des identifiants et après le verrou du bracelet (ordre : bracelet puis portefeuilles) : une dépense
+    // concurrente est attendue, puis le cumul lu est le cumul réel.
+    for (const w of [...settleable].sort((a, b) => (a.wallet_id < b.wallet_id ? -1 : 1)))
+      await lockWalletPaidBalance(client, {
+        occurredAt: new Date(),
+        payload: { walletId: w.wallet_id },
+      });
 
     // Seuil de la seconde personne sur le CUMUL des espèces qui sortent de la caisse pour cette restitution (décision
     // du porteur, 16/11/2026) : caution rendue en espèces + montant brut du solde payé + espèces dues. Calculé et
@@ -250,6 +259,8 @@ export class ReleaseService {
         mediaId,
         chain.refundDepositBy ?? chain.settleBalance,
         new Date(),
+        // OP-N128 : l'auteur et, au-delà du seuil, le valideur du jeton vont jusqu'à `DEPOSIT_REFUNDED`.
+        { actor: actor.userId, approver },
       );
       done.deposit_refund_transaction_id = refunded.transactionId;
       if (refunded.state.mode === 'SEPARATE') cash += BigInt(refunded.state.amount);

@@ -310,7 +310,19 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        (ADR-191 à ADR-193, ADR-195) ; C-001 (FR-012) tranchée : comportement strict, OP-N127 clos (ADR-194) ; lien du titulaire (OP-N129) levé par la 9a ; `REVERSAL` d'un `WALLET_REFUND`
        `BACKOFFICE` admis (ADR-189). Mesures : NFR-004 p95 sous 500 ms, NFR-005 promotion sous 5 min, NFR-001 et
        NFR-002 par 100 et 50 requêtes simultanées.
-   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés
+   9b. Versements aux parties, rapprochements, clôture, réclamations tardives, scellement externe, relevés. Décisions du porteur du 17/11/2026 : mission gardée entière ; opérations absentes ajoutées au contrat, listées au plan et validées avant l'implémentation.
+       **Périmètre réel livré (état du 17/11/2026, WP01 à WP14).** Paiement manuel : l'API ne verse rien. 20 opérations ajoutées au
+       contrat : étapes de clôture (aperçu puis exécution des sept étapes, soldes restants), versements (droits nets, lot demandé
+       puis validé par une autre personne, rôle selon le bénéficiaire, export CSV, résultat `CONFIRMED` ou `FAILED`, borne
+       `PAYOUT_EXCEEDS_ENTITLEMENT`), relevés importés en CSV (rapprochement automatique par signe et montant puis manuel, état
+       par compte, condition `PSP_RECONCILED` calculée), réclamations tardives (`ADJUSTMENT` ajouté), demande de remboursement
+       créée par le back-office (OP-N123 levé), relevés des parties et export comptable (`account_mapping` configurable, couples
+       non mappés listés). Passages `CLOSING` à `LOCKED` prouvés par les routes (`scenario/closing-journey.spec.ts`). Scellement
+       et vérification quotidienne, contrôles permanents et alertes. Levés : OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 et la
+       partie rapprochement d'OP-N82 (ADR-210). Écarts acceptés : copie externe des scellements simulée (OP-N131, ADR-197),
+       alertes sans envoi (OP-N132, ADR-198), remboursement tardif en mobile money vers un autre numéro (OP-N139, ADR-207).
+       Limites consignées : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126 : alerte dédiée en 12b, ADR-212), OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire, 13) ; renforcements : OP-N146 (dont le renommage des enums Dart, ADR-213) ; OP-N147 levé (ADR-211). Note aux équipes clientes :
+       `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`.
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
@@ -391,6 +403,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   personne), réclamations tardives de `WALLET_REFUND`, OP-N124 et OP-N128 (confirmé par le porteur le 16/11/2026) ; OP-N125
   en 12b (confirmé par le porteur le 16/11/2026) ; OP-N127 clos (décision 15 du 16/11/2026, FR-012 amendée) et OP-N129 levé (décision 14) ; OP-N130 (ordre des états
   d'une demande gardé par l'API seule, ADR-196 : déclencheur de transition en base) en 9b, décidé par le porteur le 16/11/2026 ;
+- mission 9b, suite (17/11/2026) : OP-N123, OP-N124, OP-N126, OP-N128 et OP-N130 levés ; pour la 12b : OP-N131 (copie réelle des
+  scellements), OP-N132 (envoi des alertes), OP-N133 (`pg_read_all_stats`, lecture prestataire par prestataire) et OP-N139 (code au
+  numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 ; pour la 12b aussi : OP-N148 (alerte dédiée « paiement vu à la banque après recrédit », ADR-212) ; pour la 13 : OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire) ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :

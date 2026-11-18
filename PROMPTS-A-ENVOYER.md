@@ -401,6 +401,10 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 9b — Versements, rapprochements et clôture
 
+> **Décisions du porteur du 17/11/2026** : mission gardée entière (pas de découpage 9b/9c) ; ajouts au contrat
+> `openapi.yaml` autorisés pour les opérations absentes, listés au plan et validés par le porteur avant l'implémentation,
+> sans modification de l'existant (`docs/passation-9b/contexte-9b.md`).
+
 > **Hérité de la mission 6 (27/10/2026)** : (1) un paiement réussi chez le PSP mais non crédité n'a aucune écriture
 > (OP-N82) : le contrôle « grand livre = relevé » et le rapprochement doivent exclure les anomalies
 > `PSP_TOPUP_OVER_LIMIT` et `PSP_TOPUP_NOT_CREDITED` ouvertes, ou les représenter (constat A16) ; (2) refuser le passage
@@ -410,8 +414,18 @@ vendeurs et le catalogue : la mission les ajoute.
 > (`BANK_TRANSFER`, IBAN) ; la 9a répond `422 REFUND_NOT_ALLOWED` à `BANK_TRANSFER` à la création ; test de levée
 > inchangé. (2) **Réclamations tardives de `WALLET_REFUND`** (R-03, « hors périmètre » de la 9a). (3) **OP-N126** (ADR-191) :
 > une seule personne habilitée recrédite un `FAILED` ; levée par les rapprochements avec les relevés Wave et Orange Money
-> (ou un second valideur au contrat). (4) **`requested_by`** jamais écrit en 9a : à rouvrir. (5) Propositions, **à confirmer
-> par le porteur** : OP-N124 (ADR-192) et OP-N128 (ADR-195). OP-N125 (ADR-193) est proposé à la 12b.
+> (ou un second valideur au contrat). (4) **`requested_by`** jamais écrit en 9a : à rouvrir. (5) **Confirmé par le porteur le 16/11/2026** : OP-N124
+> (ADR-192, code consommé seulement si la décision est écrite) et OP-N128 (ADR-195, `approved_by` porté par l'écriture,
+> cumul relu sous verrou du portefeuille) ; OP-N125 (ADR-193) va à la 12b. (6) **OP-N130** (ADR-196, revue post-fusion) :
+> déclencheur de transition d'état sur `refund_request`, montant et frais figés après `REQUESTED`.
+
+> **État au 17/11/2026 (WP14, consignation)** : implémentation des 14 lots livrée sur `feat/versements-rapprochements-cloture`
+> (revue post-fusion à faire). 20 opérations ajoutées au contrat (`contract-additions.md`, validé le 17/11/2026) ; paiement
+> manuel (l'API ne verse rien) ; note aux équipes clientes : `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`. **Levés** : OP-N123,
+> OP-N124, OP-N126, OP-N128, OP-N130, et la partie rapprochement d'OP-N82 (ADR-210). **Écarts acceptés** : copie externe des
+> scellements simulée (OP-N131, ADR-197), alertes sans envoi (OP-N132, ADR-198), remboursement tardif en mobile money vers un
+> autre numéro (OP-N139, ADR-207). **Limites consignées** : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126, ADR-212), OP-N149 (isolation entre organisateurs, mission 13). **Renforcements** : OP-N146 (dont enums Dart renommés, ADR-213).
+> **Levé en fin de mission** : OP-N147 (masque de `result` dans `approvalRequestDto`, ADR-211).
 
 - [ ] /spec-kitty.specify Versements, rapprochements et clôture d'un événement, plus la demande de remboursement créée par le back-office (virement `BANK_TRANSFER` avec IBAN, opération à ajouter au contrat, reportée de la 9a le 13/11/2026) (SPECIFICATION §11.3, §11.4, §12, §13.7, §14.2 S22, ADR-75, ADR-76 ; les remboursements des festivaliers sont livrés par la mission 9a). Versements manuels (droit net `party_position`, lot préparé et validé à deux, `PAYOUT_INITIATED`, export CSV, `PAYOUT_CONFIRMED`/`FAILED`, alerte à 48 h). Rapprochement des relevés (`external_statement_line`). Clôture : droits de place selon `pitch_fee_mode`, transfert de dette, frais du prestataire et redevance (régularisation `NET_OF_REFUNDS`), casse partagée, cautions acquises, expiration des crédits offerts, `set_event_status` jusqu'à `CLOSED`, clôture avec soldes restants, `lock_settled_ledger`. Réclamations tardives (`BREAKAGE_REVERSAL`, `ADJUSTMENT`, `WALLET_REFUND`, `LATE_CHARGEBACK`) à deux, bornées par `check_late_claim`. Scellement toutes les 5 min avec copie S3 Object Lock (faux jusqu'à la 12b) et vérification quotidienne, surveillance des transactions de plus de 60 s, contrôles permanents §12.2 avec alertes. Relevés (commerçant, festivalier, organisateur, prestataire, plateforme) et export comptable par `account_mapping` configurable.
 - [ ] /spec-kitty.plan Ordre de clôture de référence du scénario (§12.1). Les tâches d'exploitation (scellement, exports) utilisent un rôle distinct qui n'écrit pas au grand livre. Correspondance SYSCOHADA indicative, à faire valider (OP-N3) : configurable, jamais codée en dur. Copie des scellements sous un compte AWS distinct. Scellement : la tâche planifiée et la copie hors de la base (S3 Object Lock, compte distinct) couvrent aussi les scellements du journal d'audit (`audit_seal`, fonctions de scellement et de vérification livrées par la mission 2), avec vérification quotidienne de leur chaîne.
@@ -550,6 +564,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > borner `UPDATE` de `media_batch`, faire de `media_set_status` le seul chemin du statut d'un bracelet ; test depuis
 > `cashless_app` : ces écritures directes refusées. Mettre à jour la section 4 de `tests/tests_definer_trigger_writers.sql`.
 
+> **Hérité de la mission 9b (17/11/2026)** : OP-N137 (mineurs de la relecture de WP08 : approbateur du mauvais rôle, rejet par
+> classe, rejeu de `confirm`, test d'auto-approbation, ADR-204) ; OP-N140 (masque d'IBAN dans `errors/redact.ts` avant tout
+> journal de corps ; IBAN en clair au repos, ADR-203) ; OP-N141 (plafond de l'écart de régularisation `OPERATOR_FEE`, ADR-205) ;
+> OP-N145 (garde d'insertion de `refund_request` et retrait des anciennes signatures `refund_deposit(uuid, uuid)` et
+> `refund_deposit_for_session(uuid, uuid)`, ADR-201).
+
 - [ ] /spec-kitty.specify Durcissements serveur hérités : OP-N60 (lots de bracelets et statut d'un bracelet par fonctions seulement), OP-N79 (`vendor_id` dans la clé composite de session des ventes), OP-N76 (vérification du PIN des vendeurs dans un processus séparé, seul détenteur de `VENDOR_PIN_SECRET`), côté serveur d'OP-N64 (stockage du `keyId` App Attest), chacun avec son test et la levée du point.
 - [ ] /spec-kitty.plan Migrations sans affaiblir aucun contrôle ; tests de borne inversés ; `tests_definer_trigger_writers.sql` mis à jour.
 - [ ] /spec-kitty.tasks
@@ -617,6 +637,10 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 12b — Intégrations réelles (services externes)
 
+> **Hérité de la mission 9b (17/11/2026, OP-N148, ADR-212)** : alerte dédiée « paiement vu à la banque après recrédit » quand une ligne
+> de relevé importée après le recrédit d'un `FAILED` porte la référence de la demande (aujourd'hui : alerte générique
+> `statement-unmatched`), envoyée à une personne (OP-N132) ; test : la ligne tardive lève l'alerte dédiée.
+
 > **Hérité de la mission 8 (porteur, 05/11/2026 ; bloque la production de la passerelle)** : écrire l'adaptateur réel du port
 > de stockage matériel de la passerelle (TPM ou équivalent, clé de signature des snapshots et clé d'accord), choisir le
 > matériel du mini-PC, puis retirer le faux des processus de production.
@@ -632,6 +656,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > levé le 11/11/2026 par WP25 de la mission 8, ADR-187). OP-N115 (curseur dans `edge_media_to_pack` et alerte au
 > central : une page de 200 bracelets illisibles arrête le service des colis, ADR-184). À soumettre au porteur avant le codage de la mission 8 :
 > valeurs des plafonds de rejeu `EDGE_ONLINE` (OP-N104) et délai avant l'envoi des mots de passe (OP-N105).
+
+> **Hérité de la mission 9b (17/11/2026, écarts de sécurité acceptés ; bloquent la production)** : OP-N131 (copie réelle des
+> scellements vers un stockage à verrou d'objet, sous un compte distinct ; le faux reste refusé en production, ADR-197) ; OP-N132
+> (notificateur réel branché sur `ops_alert`, avec accusé de réception, ADR-198) ; OP-N133 (`GRANT pg_read_all_stats` au
+> propriétaire des migrations dans la procédure de déploiement, et lecture des `ops_*` prestataire par prestataire sans
+> propriétaire privilégié, ADR-199) ; OP-N139 (code à usage unique envoyé au numéro de destination d'un remboursement tardif en
+> mobile money, ADR-207).
 
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
 > avant la recette. Prérequis : accès de test PSP (action 11), devis et comptes OTP (action 10), compte AWS et région
@@ -657,6 +688,17 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la mission 9b (17/11/2026, OP-N149)** : balayage d'isolation entre organisateurs d'un même prestataire pour les 20
+> opérations ajoutées au contrat (`isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires) ; mutation : retirer un
+> contrôle applicatif doit faire échouer le balayage.
+
+> **Hérité de la mission 9b (17/11/2026, à proposer au porteur : mission à fixer)** : OP-N134 (`closing_balance` déclaré recoupé
+> avec la somme des lignes) ; OP-N135 (règle « somme des lignes rapprochées <= montant de la transaction sur ce compte », règlement
+> PSP en plusieurs virements) ; OP-N136 (`explained_by_anomalies` exposé au contrat, une ligne par anomalie) ; OP-N142 (pagination
+> par numéro d'écriture sur plusieurs grands livres, traçage du relevé festivalier, double compte de l'export comptable) ;
+> OP-N143 (`closing_balance` du relevé JSON, index couvrant `posting(account_id) INCLUDE (amount)`) ; OP-N144 (défaire un
+> rapprochement à deux personnes, aucune voie de contournement du recrédit d'un `FAILED`) ; OP-N138 (règle voulue, rien à lever).
 
 > **Hérité de la mission 7 (tâches du 30/10/2026, ADR-139, ADR-140)** : OP-N90 (trace `offline_batch_retry` : vérifier
 > en recette qu'aucune trace ne reste ouverte plus de 24 h) et OP-N91 (droits ajoutés : `discard_offline_snapshot_draft`

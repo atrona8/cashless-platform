@@ -214,15 +214,17 @@ SELECT throws_ok($$SELECT open_participation_account('00000000-0000-0000-0000-00
 -- 4. event_transition_conditions : codes rendus par statut visé -------------------------------------------------------
 SELECT is(pg_temp.codes('LIVE'), 'TRANSITION_ALLOWED', 'vers LIVE : passage seul');
 SELECT is(pg_temp.codes('CLOSING'), 'TRANSITION_ALLOWED', 'vers CLOSING : passage seul');
-SELECT is(pg_temp.codes('RECONCILING'), 'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL', 'vers RECONCILING : autorité de débit');
-SELECT is(pg_temp.codes('SETTLING'), 'TRANSITION_ALLOWED,DEVICES_CAUGHT_UP,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO',
-  'vers SETTLING : terminaux, autorité de débit, compte d''attente');
+SELECT is(pg_temp.codes('RECONCILING'), 'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL,NO_OPEN_CASH_SESSION',
+  'vers RECONCILING : autorité de débit et sessions de caisse (0084)');
+SELECT is(pg_temp.codes('SETTLING'), 'TRANSITION_ALLOWED,DEVICES_CAUGHT_UP,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO,PSP_RECONCILED',
+  'vers SETTLING : terminaux, autorité de débit, compte d''attente, comptes PSP rapprochés (0084)');
 SELECT is(pg_temp.codes('REFUND_WINDOW'),
-  'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO,PARTY_POSITIONS_ZERO,PAYOUT_PENDING_ZERO',
-  'vers REFUND_WINDOW : positions des parties et versements en cours');
+  'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO,PARTY_POSITIONS_ZERO,PAYOUT_PENDING_ZERO,CLOSING_STEPS_DONE',
+  'vers REFUND_WINDOW : positions des parties, versements en cours, étapes de clôture (0084)');
 SELECT is(pg_temp.codes('CLOSED'),
-  'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO,PARTY_POSITIONS_ZERO,PAYOUT_PENDING_ZERO,POSITIONS_SETTLED',
-  'vers CLOSED : toutes les positions');
+  'TRANSITION_ALLOWED,DEBIT_AUTHORITY_CENTRAL,SUSPENSE_ZERO,PARTY_POSITIONS_ZERO,PAYOUT_PENDING_ZERO,POSITIONS_SETTLED,'
+  || 'CLOSING_STEPS_DONE,REFUND_DEADLINE_REACHED',
+  'vers CLOSED : toutes les positions, étapes de clôture, échéance (0084)');
 SELECT is((SELECT count(*)::int FROM event_transition_conditions('00000000-0000-0000-0000-00000008a061', 'CLOSED')
             WHERE source <> 'DATABASE' OR detail IS NULL OR met IS NULL), 0, 'source DATABASE, détail et résultat toujours posés');
 
@@ -264,6 +266,12 @@ SELECT throws_like($$SELECT pg_temp.go('SETTLING')$$, 'Compte d''attente non sol
 SELECT lives_ok($$SELECT pg_temp.post('t5', 'L-ORG-PERTES', 'S-ATTENTE', 300)$$, 'anomalie soldée en perte de l''organisateur');
 SELECT is(pg_temp.unmet('SETTLING'), '', 'attente soldée : conditions remplies');
 SELECT is(pg_temp.go('SETTLING'), 'SETTLING'::event_status, 'RECONCILING -> SETTLING passe');
+-- 0084 : étapes de clôture 1 à 3 (sans objet) et échéance de remboursement atteinte, posées en propriétaire.
+RESET ROLE;
+SELECT record_closing_step('00000000-0000-0000-0000-00000008a061', s, 'NOT_APPLICABLE', '{}', '{}', '00000000-0000-0000-0000-00000008a0ff')
+  FROM unnest(ARRAY['PITCH_FEES', 'OPERATOR_FEE', 'PLATFORM_FEE']) s;
+UPDATE event SET refund_deadline = clock_timestamp() - interval '1 day' WHERE id = '00000000-0000-0000-0000-00000008a061';
+SET LOCAL ROLE cashless_app;
 
 -- Date limite de synchronisation dépassée : un terminal en retard ne bloque plus (événement de B, sans écriture).
 RESET ROLE;
@@ -287,6 +295,12 @@ SELECT throws_like($$SELECT pg_temp.go('REFUND_WINDOW')$$, 'Versements initiés 
 SELECT lives_ok($$SELECT pg_temp.post('t7', 'L-VERS-ENCOURS', 'A-BANQUE', 200)$$, 'versement confirmé');
 SELECT is(pg_temp.unmet('REFUND_WINDOW'), '', 'conditions remplies');
 SELECT is(pg_temp.go('REFUND_WINDOW'), 'REFUND_WINDOW'::event_status, 'SETTLING -> REFUND_WINDOW passe');
+-- 0084 : étapes 4 à 7 (sans objet), posées en propriétaire ; sans elles, CLOSED reste refusé (CLOSING_STEPS_DONE).
+SELECT is(pg_temp.unmet('CLOSED'), 'POSITIONS_SETTLED,CLOSING_STEPS_DONE', 'organisateur non soldé et étapes 4 à 7 manquantes');
+RESET ROLE;
+SELECT record_closing_step('00000000-0000-0000-0000-00000008a061', s, 'NOT_APPLICABLE', '{}', '{}', '00000000-0000-0000-0000-00000008a0ff')
+  FROM unnest(ARRAY['OPERATOR_FEE_REGULARIZATION', 'BREAKAGE', 'DEPOSIT_FORFEIT', 'PROMO_EXPIRY']) s;
+SET LOCAL ROLE cashless_app;
 
 -- CLOSED : l'organisateur a encore un droit net (1300 de commissions - 300 de pertes - 200 versés = 800).
 SELECT is(pg_temp.unmet('CLOSED'), 'POSITIONS_SETTLED', 'organisateur non soldé');

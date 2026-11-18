@@ -139,6 +139,8 @@ import 'package:json_annotation/json_annotation.dart';
 /// - `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre.
 ///   point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se.
 ///   resynchroniser.
+/// - `PAYOUT_EXCEEDS_ENTITLEMENT` (409, `CL055`) : montant d'un versement supérieur au droit net disponible du.
+///   bénéficiaire, versements en cours déduits (mission 9b).
 ///
 @JsonEnum()
 enum ProblemCode {
@@ -333,7 +335,9 @@ enum ProblemCode {
   @JsonValue('VENDOR_PIN_INVALID')
   vendorPinInvalid('VENDOR_PIN_INVALID'),
   @JsonValue('SALE_LINES_INVALID')
-  saleLinesInvalid('SALE_LINES_INVALID');
+  saleLinesInvalid('SALE_LINES_INVALID'),
+  @JsonValue('PAYOUT_EXCEEDS_ENTITLEMENT')
+  payoutExceedsEntitlement('PAYOUT_EXCEEDS_ENTITLEMENT');
 
   const ProblemCode(this.json);
 

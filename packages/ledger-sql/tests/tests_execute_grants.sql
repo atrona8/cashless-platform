@@ -191,7 +191,15 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   -- fonctions du kit sans enveloppe (assert_tenant) et exposition des jetons d'appareil (0064, décision 23)
   'edge_grant_authority(uuid,uuid,uuid)', 'get_debit_authority(uuid)', 'fail_edge_release(uuid,uuid)',
   'force_central_authority_approved(uuid,uuid,text)', 'request_edge_release(uuid,uuid)',
-  'fail_edge_grant(uuid,uuid,text)', 'edge_expose_device_token_families(uuid)'
+  'fail_edge_grant(uuid,uuid,text)', 'edge_expose_device_token_families(uuid)',
+  -- Mission 9b, lot WP06 (post-roles.sql §12a ; 0083 à 0088) : versements, rapprochements, clôture, remboursement de
+  -- caution (quatre arguments) et correspondance de comptes ; set_event_status et event_transition_conditions
+  -- existaient déjà (redéfinies par 0084, droit conservé). refund_deposit à quatre arguments : à personne.
+  'record_closing_step(uuid,text,text,uuid[],jsonb,uuid)', 'create_payout_batch(uuid,uuid,jsonb,uuid,uuid)',
+  'settle_payout(uuid,text,text,text,uuid)', 'import_statement_lines(jsonb,jsonb)',
+  'match_statement_line(bigint,uuid,uuid,uuid)', 'account_reconciliation(uuid)',
+  'refund_deposit_for_session(uuid,uuid,uuid,uuid)',
+  'create_account_mapping_version(uuid,uuid,timestamptz,jsonb,uuid)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -257,7 +265,21 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'edge_ref_emit_many(uuid,text,uuid[])', 'edge_bind_gateway(uuid,boolean)',
                     'edge_lock_handover(uuid,uuid)', 'edge_event_lock(uuid)',
                     -- mission 9a, lot WP01 : fonction de déclencheur de refund_request (0081)
-                    'refund_request_scope_guard()']) f;
+                    'refund_request_scope_guard()',
+                    -- mission 9b, lot WP06 (0083 à 0088) : internes, gardes et fonctions de déclencheur ; les
+                    -- quatorze ops_* vont à cashless_maint seul (post-roles.sql §12)
+                    'refund_deposit(uuid,uuid,uuid,uuid)', 'closing_new_conditions(uuid,event_status)',
+                    'statement_import_scope_guard()', 'external_statement_line_scope_guard()',
+                    'external_statement_line_update_guard()', 'closing_step_scope_guard()',
+                    'payout_scope_guard()', 'payout_transition_guard()', 'payout_no_delete()',
+                    'refund_request_transition_guard()', 'account_mapping_scope_guard()',
+                    'account_mapping_append_only()', 'ops_seal_ledger(uuid)', 'ops_seal_audit(uuid)',
+                    'ops_ledgers_to_seal()', 'ops_audit_chains_to_seal()',
+                    'ops_record_seal_copy(text,uuid,integer,text)', 'ops_seals_since(interval)',
+                    'ops_verify_ledger_seals(uuid,integer)', 'ops_verify_audit_chain(uuid,timestamptz)',
+                    'ops_ledger_controls(text)', 'ops_overdue_payouts(interval)',
+                    'ops_unmatched_statements(interval)', 'ops_new_open_anomalies(timestamptz)',
+                    'ops_raise_alert(integer,jsonb)', 'ops_long_transactions(interval)']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
   'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
 ]::text[]::regprocedure[]),
@@ -314,10 +336,16 @@ SELECT is(pg_temp.fns('cashless_maint'), pg_temp.sigs(ARRAY[
   'mark_edge_gateways_silent(interval)', 'edge_stuck_handovers(interval)',
   'edge_log_release_stuck(uuid)',
   -- mission 9a, lot WP01 (§9f) : promotion des demandes de remboursement échues
-  'promote_due_refund_requests()'
+  'promote_due_refund_requests()',
+  -- mission 9b, lot WP06 (§12c) : les quatorze fonctions d'exploitation de 0087, rien d'autre de la mission
+  'ops_ledgers_to_seal()', 'ops_seal_ledger(uuid)', 'ops_audit_chains_to_seal()', 'ops_seal_audit(uuid)',
+  'ops_record_seal_copy(text,uuid,integer,text)', 'ops_seals_since(interval)',
+  'ops_verify_ledger_seals(uuid,integer)', 'ops_verify_audit_chain(uuid,timestamptz)',
+  'ops_ledger_controls(text)', 'ops_overdue_payouts(interval)', 'ops_unmatched_statements(interval)',
+  'ops_new_open_anomalies(timestamptz)', 'ops_raise_alert(integer,jsonb)', 'ops_long_transactions(interval)'
 ]::text[]::regprocedure[]),
-  'cashless_maint : les deux purges (OP-N75), les trois fonctions de la passerelle et la promotion des demandes de '
-  'remboursement, rien d''autre');
+  'cashless_maint : les deux purges (OP-N75), les trois fonctions de la passerelle, la promotion des demandes de '
+  'remboursement et les quatorze ops_* (mission 9b), rien d''autre');
 -- Passerelle locale (WP09, post-roles.sql §9d et §9e). Listes figées, nommées, jamais ALL.
 SELECT is(pg_temp.fns('cashless_edge'), pg_temp.sigs(ARRAY[
   'identify_edge_gateway(bytea)', 'touch_edge_gateway(uuid)', 'get_current_edge_handover(uuid)',

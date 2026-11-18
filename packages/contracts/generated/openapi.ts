@@ -2458,7 +2458,14 @@ export type paths = {
         /** Lister les demandes de remboursement (back-office) */
         get: operations["listRefundRequests"];
         put?: never;
-        post?: never;
+        /**
+         * Créer une demande de remboursement (back-office)
+         * @description Crée, pour un portefeuille, une demande directement en `REQUESTED` (numéro non vérifié par l'app : le back-office
+         *     engage sa responsabilité). Destinations : `WAVE`, `ORANGE_MONEY` (avec `msisdn`) ou `BANK_TRANSFER` (avec `iban`,
+         *     validé ISO 13616 et normalisé ; masqué dans l'audit et les journaux). `requested_by` est l'auteur. La demande suit
+         *     ensuite `approveRefundRequest`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["createRefundRequest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4431,6 +4438,410 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/operators/{operator_id}/events/{event_id}/closing-steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les sept étapes de clôture d'un événement et leur état
+         * @description Rend les sept étapes (`PITCH_FEES`, `OPERATOR_FEE`, `PLATFORM_FEE`, `OPERATOR_FEE_REGULARIZATION`, `BREAKAGE`,
+         *     `DEPOSIT_FORFEIT`, `PROMO_EXPIRY`) dans l'ordre de clôture, chacune à faire, faite ou sans objet. Lecture seule.
+         *     Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`, `SUPERVISOR` (lecture).
+         */
+        get: operations["listEventClosingSteps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/closing-steps/{step}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Aperçu d'une étape de clôture (rien n'est écrit)
+         * @description Calcule les montants que l'étape écrirait, avec le même calcul que l'exécution, sans ouvrir de transaction d'écriture.
+         *     Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["previewEventClosingStep"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/closing-steps/{step}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exécuter une étape de clôture
+         * @description Écrit les transactions de l'étape, une seule fois par événement : une étape déjà faite renvoie le même résultat, sans
+         *     nouvelle écriture. Une étape est refusée (`409 CLOSING_CONDITION_NOT_MET`, le `detail` nomme la condition) si une étape
+         *     précédente n'est ni faite ni sans objet, ou si le statut de l'événement ne la permet pas.
+         *     Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["executeEventClosingStep"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/remaining-balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Soldes restants des portefeuilles d'un événement
+         * @description Totaux des soldes non dépensés par nature (payé, espèces dues, offert) et nombre de portefeuilles concernés ; avec
+         *     `format=csv`, une ligne par portefeuille en `text/csv`. Lecture seule. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["getEventRemainingBalances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/payout-entitlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Droits nets des parties, moins les versements en cours
+         * @description Pour chaque partie du grand livre : droit net (`party_position`), versements `INITIATED` non réglés, et montant
+         *     disponible pour un nouveau versement. Lecture seule. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["listPayoutEntitlements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/payout-batches/approval-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander l'approbation d'un lot de versements (deux personnes)
+         * @description Prépare un lot : crée une demande d'approbation (action `PAYOUT`) dont la charge (bénéficiaires, montants, moyens,
+         *     destinations) est figée, et répond `202` ; rien n'est écrit. Une seconde personne (≠ appelant) l'approuve par
+         *     `approveApprovalRequest` : le droit net de chaque bénéficiaire est alors relu sous verrou, puis une transaction
+         *     `PAYOUT_INITIATED` et une ligne `Payout` par bénéficiaire sont écrites. Un montant supérieur au droit net disponible
+         *     est refusé (`409 PAYOUT_EXCEEDS_ENTITLEMENT`, `CL055`). IBAN invalide : `422 VALIDATION_FAILED`.
+         *     Rôle selon le bénéficiaire : `ORGANIZER_ADMIN` (commerçants, organisateur), `OPERATOR_ADMIN` (prestataire,
+         *     plateforme). Le paiement lui-même se fait hors système (l'API ne verse rien) ; le résultat s'enregistre par
+         *     `confirmPayout`.
+         */
+        post: operations["requestPayoutBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les versements
+         * @description Versements du grand livre, filtrables par statut et par lot. Ne porte jamais l'IBAN ni le numéro de destination.
+         *     Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["listPayouts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/payout-batches/{approval_request_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exporter un lot de versements en CSV
+         * @description Fichier à utiliser pour payer hors système : bénéficiaire, moyen, numéro ou IBAN, montant, référence. C'est le seul
+         *     endroit où le numéro ou l'IBAN sortent de l'API. Journalisé (nombre de lignes, jamais les destinations). Réponse non
+         *     rejouée. Rôle : celui du lot (voir `requestPayoutBatch`).
+         */
+        get: operations["exportPayoutBatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payouts/{payout_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enregistrer le résultat d'un versement
+         * @description Après le paiement hors système : `CONFIRMED` avec `external_reference`, ou `FAILED` avec `failure_reason`. Écrit une
+         *     transaction `PAYOUT_CONFIRMED` ou `PAYOUT_FAILED`. Un versement change de statut une seule fois ; un second résultat
+         *     reçoit `409 CONFLICT_STATE`. Rôle : celui du lot (voir `requestPayoutBatch`).
+         */
+        post: operations["confirmPayout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/accounts/{account_id}/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Importer un relevé d'un compte d'argent (CSV)
+         * @description Corps `text/csv` : `external_ref;value_date;amount;currency` (une ligne d'en-tête). Une devise ou un compte
+         *     étrangers au grand livre sont refusés (`422 VALIDATION_FAILED`). Un réimport ne crée aucune ligne en double. Les lignes
+         *     sont rapprochées automatiquement par la table source (recharge PSP, litige, remboursement, versement) ; le résultat
+         *     compte les lignes créées, rapprochées et déjà présentes. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["importAccountStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/statement-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les lignes de relevé
+         * @description Lignes importées, filtrables par compte et par état de rapprochement. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        get: operations["listStatementLines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/statement-lines/{statement_line_id}/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rapprocher une ligne de relevé à la main
+         * @description Rattache la ligne à une transaction (`transaction_id`) ou à une anomalie ouverte (`anomaly_id`), exactement l'une des
+         *     deux : même prestataire, même grand livre, et une transaction qui mouvemente le compte de la ligne. Un rapprochement posé
+         *     ne se défait pas. Ligne déjà rapprochée : `409 CONFLICT_STATE`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["matchStatementLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * État du rapprochement par compte d'argent
+         * @description Par compte d'argent : lignes, lignes non rapprochées, solde du relevé, solde du grand livre à la même date, et
+         *     rapproché oui ou non (toutes les lignes rapprochées et soldes égaux). Lecture seule.
+         *     Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`, `SUPERVISOR`.
+         */
+        get: operations["getLedgerReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ledgers/{ledger_id}/late-adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apport d'un bénéficiaire après une réclamation tardive (deux personnes)
+         * @description Un bénéficiaire de la casse rapporte sa part après une annulation de casse (`postLateClaim`). Opération à deux
+         *     personnes du back-office : crée une demande d'approbation (action `ADJUSTMENT`) et répond `202` ; rien n'est exécuté
+         *     avant l'approbation. À l'exécution, une écriture `ADJUSTMENT` est écrite sur le grand livre `LOCKED`, bornée par la base :
+         *     l'apport ne dépasse pas ce qui a été annulé sur le compte de casse du bénéficiaire (`409 LATE_CLAIM_INVALID`, `CL024`).
+         *     Autres refus : grand livre non `LOCKED` (`409 CONFLICT_STATE`), `late_claims_until` dépassée (`409 LEDGER_LOCKED`),
+         *     `DEBIT_AUTHORITY_EDGE`. Rôles : `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`.
+         */
+        post: operations["postLateAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/events/{event_id}/statements/{party_kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Relevé d'une partie pour un événement
+         * @description Relevé des écritures d'une partie (`party_kind` : `MERCHANT`, `ORGANIZER`, `OPERATOR`, `PLATFORM`) pour un événement,
+         *     paginé en JSON ou en `text/csv` (`format=csv`). `party_id` désigne le commerçant ou l'organisateur ; il est omis pour le
+         *     prestataire et la plateforme. Rôles : `MERCHANT_ADMIN` (son commerçant seulement), `ORGANIZER_ADMIN`, `OPERATOR_ADMIN`,
+         *     `PLATFORM_ADMIN`, selon `party_kind` et `party_id` (sinon `403`).
+         */
+        get: operations["getPartyStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/wallets/{wallet_id}/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Relevé CSV de mon portefeuille
+         * @description Relevé des mouvements du portefeuille du festivalier authentifié, en `text/csv`. Un portefeuille d'une autre personne
+         *     répond `404 NOT_FOUND`. Lecture seule.
+         */
+        get: operations["getMyWalletStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/account-mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les correspondances comptables
+         * @description Correspondances entre les comptes de l'application et les comptes légaux de l'entité, par version et date d'effet.
+         *     Aucun jeu de comptes n'est livré par défaut. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` (lecture).
+         */
+        get: operations["listAccountMappings"];
+        put?: never;
+        /**
+         * Publier une nouvelle version de correspondances comptables
+         * @description Une nouvelle version remplace la précédente à partir de `valid_from` ; les versions passées ne changent pas.
+         *     Rôle : `OPERATOR_ADMIN`.
+         */
+        post: operations["createAccountMappingVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operators/{operator_id}/accounting-exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exporter les écritures pour la comptabilité (CSV)
+         * @description Écritures de l'entité sur la période, traduites par les correspondances en vigueur, en `text/csv`. Les couples non
+         *     mappés sont listés en tête de fichier et comptés dans l'en-tête `X-Unmapped-Count` (ils ne sont jamais omis en
+         *     silence). Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` (son entité).
+         */
+        get: operations["exportAccounting"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = {
     paymentIntentSucceeded: {
@@ -4698,9 +5109,11 @@ export type components = {
          *     - `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre
          *       point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se
          *       resynchroniser.
+         *     - `PAYOUT_EXCEEDS_ENTITLEMENT` (409, `CL055`) : montant d'un versement supérieur au droit net disponible du
+         *       bénéficiaire, versements en cours déduits (mission 9b).
          * @enum {string}
          */
-        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "PAYLOAD_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE" | "ENROLLMENT_EVENT_CLOSED" | "VENDOR_SESSION_INVALID" | "VENDOR_PIN_INVALID" | "SALE_LINES_INVALID";
+        ProblemCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "IDEMPOTENCY_KEY_REQUIRED" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_IN_PROGRESS" | "ENROLLMENT_CODE_INVALID" | "ENROLLMENT_CODE_EXPIRED" | "ATTESTATION_FAILED" | "REFRESH_TOKEN_INVALID" | "DEVICE_SUSPENDED" | "DEVICE_REVOKED" | "DEVICE_NOT_ASSIGNED" | "DEVICE_MODE_NOT_ALLOWED" | "CLOCK_SKEW_TOO_LARGE" | "CURRENCY_MISMATCH" | "AMOUNT_OUT_OF_RANGE" | "INSUFFICIENT_FUNDS" | "WALLET_BLOCKED" | "WALLET_LIMIT_EXCEEDED" | "MONTHLY_TOPUP_LIMIT_EXCEEDED" | "MEDIA_UNKNOWN" | "MEDIA_BLOCKED" | "MEDIA_NOT_ACTIVATED" | "MEDIA_RETIRED" | "MEDIA_REPLACED" | "MEDIA_RELEASED" | "MEDIA_UID_MISMATCH" | "MEDIA_CLONE_SUSPECTED" | "MEDIA_SIGNATURE_MISMATCH" | "MEDIA_SIGNATURE_MISSING" | "MEDIA_STATE_INVALID" | "MEDIA_WRONG_EVENT" | "MEDIA_BATCH_INACTIVE" | "MEDIA_CLAIM_INVALID" | "TAP_EXPIRED" | "TAP_ALREADY_USED" | "TAP_UNUSABLE" | "ACTIVATION_MODE_NOT_ALLOWED" | "ACCOUNT_REQUIRED" | "DEPOSIT_OUTSTANDING" | "BALANCE_OUTSTANDING" | "DEPOSIT_PAYMENT_REQUIRED" | "EVENT_CLOSING" | "LEDGER_LOCKED" | "PERIOD_CLOSED" | "DEBIT_AUTHORITY_EDGE" | "DEBIT_AUTHORITY_MOVING" | "STALE_AUTHORITY_EPOCH" | "HANDOVER_INVALID_STATE" | "EDGE_NOT_CAUGHT_UP" | "REVERSAL_NOT_ALLOWED" | "REVERSAL_WINDOW_EXPIRED" | "ALREADY_REVERSED" | "OFFLINE_NOT_ALLOWED" | "SNAPSHOT_VERSION_UNKNOWN" | "BATCH_IN_PROGRESS" | "BATCH_TOO_LARGE" | "PAYLOAD_TOO_LARGE" | "BATCH_SIGNATURE_INVALID" | "CHAIN_BROKEN" | "SEQ_OUT_OF_ORDER" | "SEQ_GAP_NOT_FOUND" | "SEQ_OUT_OF_RANGE" | "PAYMENT_REQUEST_EXPIRED" | "PAYMENT_REQUEST_NOT_PENDING" | "QR_TOKEN_INVALID" | "PAYMENT_INTENT_INVALID_STATE" | "PAYMENT_INTENT_EXPIRED" | "PSP_UNAVAILABLE" | "PSP_NOT_CONFIGURED" | "PSP_REJECTED" | "WEBHOOK_SIGNATURE_INVALID" | "WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE" | "REFUND_NOT_ALLOWED" | "REFUND_WINDOW_CLOSED" | "REFUND_ALREADY_OPEN" | "OTP_INVALID" | "OTP_RATE_LIMITED" | "CONFLICT_STATE" | "EVENT_TRANSITION_INVALID" | "CLOSING_CONDITION_NOT_MET" | "APPROVAL_REQUIRED" | "APPROVAL_INVALID" | "LATE_CLAIM_INVALID" | "CARD_DAILY_LIMIT" | "DEVICE_SIGNATURE_INVALID" | "DEVICE_SERIAL_IN_USE" | "ENROLLMENT_EVENT_CLOSED" | "VENDOR_SESSION_INVALID" | "VENDOR_PIN_INVALID" | "SALE_LINES_INVALID" | "PAYOUT_EXCEEDS_ENTITLEMENT";
         PageMeta: {
             next_cursor: string | null;
             has_more: boolean;
@@ -8038,9 +8451,11 @@ export type components = {
         StatusCondition: {
             /**
              * @description Identifiant stable. `DATABASE` : `TRANSITION_ALLOWED`, `DEVICES_CAUGHT_UP`, `DEBIT_AUTHORITY_CENTRAL`,
-             *     `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`. `CONFIGURATION` :
+             *     `SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`,
+             *     `NO_OPEN_CASH_SESSION`, `REFUND_DEADLINE_REACHED`, `CLOSING_STEPS_DONE`, `PSP_RECONCILED` (calculée depuis
+             *     la mission 9b : tous les comptes d'argent du PSP rapprochés). `CONFIGURATION` :
              *     `FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`, `JURISDICTION_SET`, `LEDGER_OPEN`. `EXTERNAL` :
-             *     `CASH_DESKS_COUNTED`, `PSP_RECONCILED`, `DEVICES_REPORTED`.
+             *     `CASH_DESKS_COUNTED`, `DEVICES_REPORTED`.
              */
             code: string;
             /** @description `null` : condition externe, pas encore calculable. */
@@ -8494,6 +8909,321 @@ export type components = {
              */
             pwd_pack: components["schemas"]["EncryptedBlob"];
         };
+        /**
+         * @description Étape de clôture d'un événement, dans l'ordre d'exécution (SPECIFICATION §12.1). `PITCH_FEES`, `OPERATOR_FEE`
+         *     et `PLATFORM_FEE` se font en `SETTLING` ; les quatre suivantes en `REFUND_WINDOW`, après `refund_deadline`.
+         *     `OPERATOR_FEE_REGULARIZATION` n'a d'objet que si `operator_fee_basis = NET_OF_REFUNDS`.
+         * @enum {string}
+         */
+        ClosingStep: "PITCH_FEES" | "OPERATOR_FEE" | "PLATFORM_FEE" | "OPERATOR_FEE_REGULARIZATION" | "BREAKAGE" | "DEPOSIT_FORFEIT" | "PROMO_EXPIRY";
+        /** @description État d'une étape de clôture pour un événement. */
+        ClosingStepState: {
+            step: components["schemas"]["ClosingStep"];
+            /**
+             * @description `TODO` : aucune ligne `closing_step` ; `DONE` : écritures faites ; `NOT_APPLICABLE` : sans objet.
+             * @enum {string}
+             */
+            status: "TODO" | "DONE" | "NOT_APPLICABLE";
+            /** Format: uuid */
+            done_by?: string | null;
+            /** Format: date-time */
+            done_at?: string | null;
+            /** @description Écritures produites (vide si l'étape est sans objet ou à faire). */
+            transaction_ids?: string[];
+            /** @description Montants par bénéficiaire, tels qu'écrits. */
+            summary?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Ce qu'une étape écrirait, sans rien écrire. */
+        ClosingStepPreview: {
+            /** Format: uuid */
+            event_id: string;
+            step: components["schemas"]["ClosingStep"];
+            currency: components["schemas"]["Currency"];
+            /** @description `false` : l'exécution marquerait l'étape sans objet. */
+            applicable: boolean;
+            lines: {
+                /**
+                 * Format: uuid
+                 * @description Bénéficiaire (ou partie débitée).
+                 */
+                party_id: string;
+                label?: string;
+                amount: components["schemas"]["SignedAmount"];
+                /** @description Référence sans écriture (droit de place `PREPAID`). */
+                reference?: string | null;
+            }[];
+            total: components["schemas"]["SignedAmount"];
+        };
+        /** @description Résultat d'une étape exécutée ; identique si l'étape était déjà faite. */
+        ClosingStepResult: {
+            /** Format: uuid */
+            event_id: string;
+            step: components["schemas"]["ClosingStep"];
+            /** @enum {string} */
+            status: "DONE" | "NOT_APPLICABLE";
+            transaction_ids: string[];
+            summary?: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            done_by?: string;
+            /** Format: date-time */
+            done_at?: string;
+        };
+        /** @description Soldes restants des portefeuilles d'un événement, par nature. Le détail par portefeuille est en CSV. */
+        RemainingBalances: {
+            /** Format: uuid */
+            event_id: string;
+            currency: components["schemas"]["Currency"];
+            /** Format: date-time */
+            as_of: string;
+            /** @description Portefeuilles à solde non nul. */
+            wallet_count: number;
+            /** Format: int64 */
+            paid_total: number;
+            /** Format: int64 */
+            cash_due_total: number;
+            /** Format: int64 */
+            promo_total: number;
+        };
+        /** @description Droit net d'une partie, moins ses versements en cours. */
+        PayoutEntitlement: {
+            /** Format: uuid */
+            party_id: string;
+            /** @enum {string} */
+            party_kind: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "MERCHANT" | "CUSTOMER" | "THIRD_PARTY";
+            currency: components["schemas"]["Currency"];
+            /**
+             * Format: int64
+             * @description Droit net (`party_position`).
+             */
+            net_claim: number;
+            /**
+             * Format: int64
+             * @description Versements `INITIATED` non réglés.
+             */
+            pending_payouts: number;
+            /**
+             * Format: int64
+             * @description `net_claim` − `pending_payouts` : plafond d'un nouveau versement.
+             */
+            available: number;
+        };
+        /** @description Lot de versements à faire approuver. La charge est figée à la création de la demande. */
+        PayoutBatchRequest: {
+            lines: components["schemas"]["PayoutLine"][];
+        };
+        /**
+         * @description Un versement du lot. `msisdn` est exigé pour `WAVE` et `ORANGE_MONEY`, `iban` pour `BANK_TRANSFER` (validé
+         *     ISO 13616) ; `CASH` n'en porte aucun. Ces destinations ne sont jamais rendues par les lectures.
+         */
+        PayoutLine: {
+            /** Format: uuid */
+            beneficiary_party_id: string;
+            amount: components["schemas"]["Amount"];
+            currency: components["schemas"]["Currency"];
+            /** @enum {string} */
+            method: "BANK_TRANSFER" | "WAVE" | "ORANGE_MONEY" | "CASH";
+            msisdn?: string;
+            iban?: string;
+        };
+        /** @description Versement. Ne porte jamais l'IBAN ni le numéro : ils ne sortent que du CSV d'`exportPayoutBatch`. */
+        Payout: {
+            /** Format: uuid */
+            payout_id: string;
+            /** Format: uuid */
+            ledger_id: string;
+            /**
+             * Format: uuid
+             * @description Lot (demande d'approbation `PAYOUT`).
+             */
+            approval_request_id: string;
+            /** Format: uuid */
+            beneficiary_party_id: string;
+            amount: components["schemas"]["Amount"];
+            currency: components["schemas"]["Currency"];
+            /** @enum {string} */
+            method: "BANK_TRANSFER" | "WAVE" | "ORANGE_MONEY" | "CASH";
+            /** @enum {string} */
+            status: "INITIATED" | "CONFIRMED" | "FAILED";
+            external_reference?: string | null;
+            failure_reason?: string | null;
+            /** Format: date-time */
+            initiated_at: string;
+            /** Format: uuid */
+            initiated_by: string;
+            /** Format: uuid */
+            approved_by: string;
+            /** Format: uuid */
+            confirmed_by?: string | null;
+            /** Format: date-time */
+            confirmed_at?: string | null;
+            /** Format: uuid */
+            initiated_transaction_id?: string | null;
+            /** Format: uuid */
+            settled_transaction_id?: string | null;
+        };
+        /**
+         * @description Résultat d'un versement payé hors système. `CONFIRMED` exige `external_reference` ; `FAILED` exige
+         *     `failure_reason` (sinon `422 VALIDATION_FAILED`).
+         */
+        PayoutConfirm: {
+            /** @enum {string} */
+            outcome: "CONFIRMED" | "FAILED";
+            external_reference?: string;
+            failure_reason?: string;
+        };
+        /** @description Résultat d'un import de relevé. */
+        StatementImportResult: {
+            /** Format: uuid */
+            statement_import_id: string;
+            /** Format: uuid */
+            account_id: string;
+            lines_created: number;
+            /** @description Lignes créées puis rapprochées automatiquement. */
+            lines_matched: number;
+            /** @description Lignes déjà présentes (réimport), ignorées. */
+            lines_existing: number;
+        };
+        /** @description Ligne d'un relevé de PSP, de banque ou de mobile money. */
+        StatementLine: {
+            /** Format: int64 */
+            statement_line_id: number;
+            /** Format: uuid */
+            ledger_id: string;
+            /** Format: uuid */
+            account_id: string;
+            /** Format: uuid */
+            statement_import_id?: string | null;
+            source: string;
+            external_ref: string;
+            /** Format: date */
+            value_date: string;
+            amount: components["schemas"]["SignedAmount"];
+            currency: components["schemas"]["Currency"];
+            matched: boolean;
+            /** Format: uuid */
+            matched_transaction_id?: string | null;
+            /** Format: uuid */
+            matched_anomaly_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Auteur du rapprochement manuel ; nul pour un rapprochement automatique.
+             */
+            matched_by?: string | null;
+            /** Format: date-time */
+            matched_at?: string | null;
+        };
+        /** @description Cible d'un rapprochement manuel. Exactement l'un des deux champs (sinon `422 VALIDATION_FAILED`). */
+        StatementLineMatch: {
+            /**
+             * Format: uuid
+             * @description Transaction du même prestataire et du même grand livre qui mouvemente le compte de la ligne.
+             */
+            transaction_id?: string;
+            /**
+             * Format: uuid
+             * @description Anomalie ouverte (`PSP_TOPUP_OVER_LIMIT`, `PSP_TOPUP_NOT_CREDITED`, `PSP_MISMATCH`) qui explique l'écart.
+             */
+            anomaly_id?: string;
+        };
+        /** @description État du rapprochement d'un compte d'argent. */
+        AccountReconciliation: {
+            /** Format: uuid */
+            account_id: string;
+            currency: components["schemas"]["Currency"];
+            lines_total: number;
+            lines_unmatched: number;
+            /**
+             * Format: date
+             * @description Date du dernier relevé importé.
+             */
+            statement_date?: string | null;
+            /**
+             * Format: int64
+             * @description Solde de clôture du dernier relevé ; nul sans relevé.
+             */
+            statement_balance?: number | null;
+            /**
+             * Format: int64
+             * @description Solde du compte au grand livre à la date du relevé.
+             */
+            ledger_balance: number;
+            /** @description Toutes les lignes rapprochées, et solde du relevé égal au solde du grand livre. */
+            reconciled: boolean;
+        };
+        /** @description Apport d'un bénéficiaire de la casse après une réclamation tardive (action `ADJUSTMENT`). */
+        LateAdjustmentRequest: {
+            /** Format: uuid */
+            beneficiary_party_id: string;
+            amount: components["schemas"]["Amount"];
+            currency: components["schemas"]["Currency"];
+            reason: string;
+        };
+        /** @description Demande de remboursement créée par le back-office, directement `REQUESTED`. */
+        RefundRequestBackofficeCreate: {
+            /** Format: uuid */
+            wallet_id: string;
+            /** @description `msisdn` pour `WAVE` et `ORANGE_MONEY` ; `iban` pour `BANK_TRANSFER` (ISO 13616, modulo 97). */
+            destination: {
+                /** @enum {string} */
+                method: "WAVE" | "ORANGE_MONEY" | "BANK_TRANSFER";
+                msisdn?: string;
+                iban?: string;
+            };
+            reason: string;
+        };
+        /** @description Relevé d'une partie pour un événement, paginé. */
+        PartyStatement: {
+            /** @enum {string} */
+            party_kind: "MERCHANT" | "ORGANIZER" | "OPERATOR" | "PLATFORM";
+            /** Format: uuid */
+            party_id?: string;
+            /** Format: uuid */
+            event_id: string;
+            currency: components["schemas"]["Currency"];
+            /**
+             * Format: int64
+             * @description Solde à la date de la requête.
+             */
+            closing_balance?: number;
+            data: {
+                /** Format: uuid */
+                transaction_id: string;
+                /** Format: date-time */
+                occurred_at: string;
+                type: string;
+                label?: string;
+                amount: components["schemas"]["SignedAmount"];
+            }[];
+            next_cursor: string | null;
+            has_more: boolean;
+        };
+        /** @description Correspondance entre un compte de l'application (objet et type de transaction) et deux comptes légaux. */
+        AccountMapping: {
+            /** @description Objet du compte de l'application (`purpose`). */
+            purpose: string;
+            /** @description Type de transaction ; nul = tous. */
+            transaction_type?: string | null;
+            /** @description Compte légal débité. */
+            debit_account: string;
+            /** @description Compte légal crédité. */
+            credit_account: string;
+        };
+        /** @description Version des correspondances d'une entité ; remplace la précédente à partir de `valid_from`. */
+        AccountMappingVersion: {
+            /** Format: uuid */
+            entity_party_id: string;
+            /** @description Attribuée par le serveur (croissante). */
+            readonly version?: number;
+            /** Format: date */
+            valid_from: string;
+            /** Format: uuid */
+            readonly created_by?: string;
+            mappings: components["schemas"]["AccountMapping"][];
+        };
     };
     responses: {
         /** @description Requête invalide (`VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REQUIRED`…). */
@@ -8738,7 +9468,7 @@ export type components = {
          *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
          *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
          *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-         *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+         *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
          *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
          */
         IdempotencyKey: string;
@@ -8928,7 +9658,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -9689,7 +10419,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -9749,7 +10479,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -9809,7 +10539,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -9869,7 +10599,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -9921,7 +10651,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10113,7 +10843,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10297,7 +11027,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10387,7 +11117,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10477,7 +11207,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10587,7 +11317,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10668,7 +11398,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10780,7 +11510,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -10895,7 +11625,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11037,7 +11767,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11186,7 +11916,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11295,7 +12025,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11352,7 +12082,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11476,7 +12206,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11586,7 +12316,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11657,7 +12387,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11758,7 +12488,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -11948,7 +12678,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12023,7 +12753,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12124,7 +12854,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12211,7 +12941,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12374,7 +13104,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12436,7 +13166,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12531,7 +13261,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12652,7 +13382,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12760,7 +13490,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12827,7 +13557,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12883,7 +13613,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -12930,7 +13660,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -13112,7 +13842,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -13214,7 +13944,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -13314,7 +14044,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -13413,7 +14143,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -13773,7 +14503,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14040,7 +14770,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14169,7 +14899,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14229,7 +14959,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14380,7 +15110,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14484,7 +15214,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14655,7 +15385,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -14719,7 +15449,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15211,7 +15941,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15297,7 +16027,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15386,7 +16116,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15435,7 +16165,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15544,7 +16274,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15646,6 +16376,60 @@ export interface operations {
             403: components["responses"]["Forbidden"];
         };
     };
+    createRefundRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundRequestBackofficeCreate"];
+            };
+        };
+        responses: {
+            /** @description Demande créée (`REQUESTED`). */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundRequest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
     decideRefundRequestAsHolder: {
         parameters: {
             query?: never;
@@ -15708,7 +16492,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15762,7 +16546,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15848,7 +16632,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -15909,7 +16693,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16046,7 +16830,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16130,7 +16914,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16233,7 +17017,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16512,7 +17296,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16606,7 +17390,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16700,7 +17484,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16752,7 +17536,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16812,7 +17596,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -16943,7 +17727,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17034,7 +17818,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17134,7 +17918,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17224,7 +18008,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17323,7 +18107,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17382,7 +18166,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17483,7 +18267,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17582,7 +18366,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17684,7 +18468,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17786,7 +18570,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17881,7 +18665,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -17984,7 +18768,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18090,7 +18874,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18151,7 +18935,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18255,7 +19039,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18350,7 +19134,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18455,7 +19239,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18550,7 +19334,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18693,7 +19477,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18798,7 +19582,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -18897,7 +19681,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19002,7 +19786,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19100,7 +19884,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19193,7 +19977,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19257,7 +20041,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19319,7 +20103,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19384,7 +20168,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19484,7 +20268,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19593,7 +20377,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19653,7 +20437,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19758,7 +20542,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19842,7 +20626,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19885,7 +20669,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -19971,7 +20755,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20115,7 +20899,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20209,7 +20993,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20267,7 +21051,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20360,7 +21144,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20415,7 +21199,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20475,7 +21259,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20527,7 +21311,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20662,7 +21446,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20719,7 +21503,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20766,7 +21550,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20823,7 +21607,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20875,7 +21659,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20932,7 +21716,7 @@ export interface operations {
                  *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
                  *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
                  *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
-                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
                  *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
@@ -20972,6 +21756,905 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+        };
+    };
+    listEventClosingSteps: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Étapes dans l'ordre. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ClosingStepState"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    previewEventClosingStep: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+                /** @description Étape de clôture (`ClosingStep`). */
+                step: components["schemas"]["ClosingStep"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aperçu de l'étape. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosingStepPreview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    executeEventClosingStep: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+                /** @description Étape de clôture (`ClosingStep`). */
+                step: components["schemas"]["ClosingStep"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Étape faite (ou sans objet). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosingStepResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getEventRemainingBalances: {
+        parameters: {
+            query?: {
+                /** @description Format de la réponse : `json` (défaut) ou `text/csv`. */
+                format?: "json" | "csv";
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Totaux (`format=json`) ou une ligne par portefeuille (`format=csv`, `text/csv`). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemainingBalances"];
+                    /**
+                     * @example wallet_id,paid,cash_due,promo
+                     *     3f2a6c1e-8b4d-4e7a-9c21-5d0b7e6a1f90,1500,0,0
+                     */
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listPayoutEntitlements: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Droits nets par partie. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageMeta"] & {
+                        data: components["schemas"]["PayoutEntitlement"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    requestPayoutBatch: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayoutBatchRequest"];
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listPayouts: {
+        parameters: {
+            query?: {
+                /** @description Filtre par statut. */
+                status?: "INITIATED" | "CONFIRMED" | "FAILED";
+                /** @description Filtre par lot (identifiant de la demande d'approbation). */
+                approval_request_id?: string;
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de versements. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageMeta"] & {
+                        data: components["schemas"]["Payout"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    exportPayoutBatch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+                /** @description Lot de versements (demande d'approbation `PAYOUT` exécutée). */
+                approval_request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Une ligne par versement. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example beneficiary,method,destination,amount,currency,reference
+                     *     Stand Bissap,WAVE,+221770000002,45000,XOF,PAYOUT-0001
+                     */
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    confirmPayout: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Versement. */
+                payout_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayoutConfirm"];
+            };
+        };
+        responses: {
+            /** @description Versement mis à jour. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Payout"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    importAccountStatement: {
+        parameters: {
+            query: {
+                /** @description Origine du relevé (PSP, banque, mobile money). */
+                source: string;
+                /** @description Date du relevé. */
+                statement_date: string;
+                /** @description Solde de clôture du relevé, en unités mineures. */
+                closing_balance: number;
+            };
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+                /** @description Compte d'argent (famille `ASSET`) du grand livre. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example external_ref;value_date;amount;currency
+                 *     WAVE-8841;2026-12-14;25000;XOF
+                 */
+                "text/csv": string;
+            };
+        };
+        responses: {
+            /** @description Relevé importé. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementImportResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    listStatementLines: {
+        parameters: {
+            query?: {
+                /** @description Filtre par compte d'argent. */
+                account_id?: string;
+                /** @description `true` : rapprochées ; `false` : non rapprochées. */
+                matched?: boolean;
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de lignes de relevé. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageMeta"] & {
+                        data: components["schemas"]["StatementLine"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    matchStatementLine: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Ligne de relevé. */
+                statement_line_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementLineMatch"];
+            };
+        };
+        responses: {
+            /** @description Ligne rapprochée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementLine"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getLedgerReconciliation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description État par compte. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AccountReconciliation"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    postLateAdjustment: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                ledger_id: components["parameters"]["LedgerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LateAdjustmentRequest"];
+            };
+        };
+        responses: {
+            202: components["responses"]["ApprovalRequestAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getPartyStatement: {
+        parameters: {
+            query?: {
+                /** @description Commerçant ou organisateur visé (inutile pour `OPERATOR` et `PLATFORM`). */
+                party_id?: string;
+                /** @description Format de la réponse : `json` (défaut) ou `text/csv`. */
+                format?: "json" | "csv";
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+                /** @description Nature de la partie. */
+                party_kind: "MERCHANT" | "ORGANIZER" | "OPERATOR" | "PLATFORM";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Relevé (`format=json`) ou en CSV (`format=csv`, `text/csv`). */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyStatement"];
+                    /**
+                     * @example occurred_at,type,label,amount,balance
+                     *     2026-12-12T20:05:01Z,SALE,Vente,4500,4500
+                     */
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getMyWalletStatement: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                wallet_id: components["parameters"]["WalletId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mouvements du portefeuille. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example occurred_at,type,label,amount,balance
+                     *     2026-12-12T20:05:01Z,TOPUP,Recharge,10000,10000
+                     */
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAccountMappings: {
+        parameters: {
+            query?: {
+                /** @description Filtre par entité (organisateur ou prestataire). */
+                entity_party_id?: string;
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versions de correspondances. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageMeta"] & {
+                        data: components["schemas"]["AccountMappingVersion"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createAccountMappingVersion: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountMappingVersion"];
+            };
+        };
+        responses: {
+            /** @description Version créée. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountMappingVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    exportAccounting: {
+        parameters: {
+            query: {
+                /** @description Entité (organisateur ou prestataire) exportée. */
+                entity: string;
+                /** @description Début de période (inclus). */
+                from: string;
+                /** @description Fin de période (incluse). */
+                to: string;
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Prestataire visé ; celui de la personne, sauf pour un `PLATFORM_ADMIN` (sinon `404`). */
+                operator_id: components["parameters"]["OperatorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Export comptable. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    /** @description Nombre de couples non mappés listés en tête de fichier. */
+                    "X-Unmapped-Count"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example # non mappé : TOPUP / A-PSP-WAVE
+                     *     date,debit_account,credit_account,amount
+                     *     2026-12-12,521,411,10000
+                     */
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     onPaymentIntentSucceeded: {

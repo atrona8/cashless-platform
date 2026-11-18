@@ -1,0 +1,37 @@
+{
+  "accept_commit": "15f1a19c62cf62377e979f2c74a6337030265bb2",
+  "acceptance_history": [
+    {
+      "accept_commit": "15f1a19c62cf62377e979f2c74a6337030265bb2",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-17T15:28:54.789041+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "1786e3ec8d96248068c5f4ce7ace0489a02c664e"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-17T15:28:54.789041+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "1786e3ec8d96248068c5f4ce7ace0489a02c664e",
+  "baseline_merge_commit": "e817b56c95849894785518cc45253f77d3fc5ccc",
+  "coordination_branch": "kitty/mission-versements-rapprochements-cloture-01M7JT4G",
+  "created_at": "2026-11-16T18:32:58.964295+00:00",
+  "flattened": false,
+  "friendly_name": "Versements, rapprochements et clôture",
+  "merged_at": "2026-11-17T15:38:10.104024+00:00",
+  "merged_commit": "b4b81d8cb883585e12332a04cccab66765bc062f",
+  "mid8": "01M7JT4G",
+  "mission_id": "01M7JT4GPZBGJHSPDC3XGECZZW",
+  "mission_number": 5,
+  "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Mission 9b, suite de la 9a (remboursements) : versements manuels aux parties validés à deux, rapprochement avec les relevés externes, clôture ordonnée d'un événement (droits de place, frais, redevance, casse, cautions acquises, crédits offerts expirés), réclamations tardives, scellement externe, contrôles permanents, relevés et export comptable, demande de remboursement créée par le back-office. Lève aussi les dettes héritées de la 9a (OP-N123, N124, N126, N128, N130). Décisions du porteur du 17/11/2026 : mission entière, ajouts au contrat listés au plan.",
+  "purpose_tldr": "Verser à chaque partie ce qui lui revient, rapprocher le grand livre des relevés et clore un événement proprement.",
+  "slug": "versements-rapprochements-cloture-01M7JT4G",
+  "status_phase": "1",
+  "target_branch": "feat/versements-rapprochements-cloture",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-17T07:04:05.193700+00:00"
+}

@@ -149,9 +149,32 @@ t(f"SELECT is((SELECT count(*) FROM journal_transaction WHERE ledger_id = '{LEDG
 
 # Clôture complète du scénario (revue 2, DB-B1) : les comptes d'une même partie se compensent (L-ORG-COM,
 # L-ORG-VERS...) ; la clôture doit aboutir et verrouiller le grand livre avec son scellement final.
+# Conditions de passage (mission 9b, 0083-0084) : relevé qui concorde pour chaque compte A-PSP-* avant SETTLING ;
+# étapes de clôture (1 à 3 en SETTLING, 4 à 7 en REFUND_WINDOW) rattachées aux écritures du scénario, ou sans objet ;
+# échéance de remboursement atteinte avant CLOSED.
+STEPS = {"PITCH_FEES": "PITCH_FEE", "OPERATOR_FEE": "OPERATOR_FEE", "PLATFORM_FEE": "PLATFORM_FEE",
+         "OPERATOR_FEE_REGULARIZATION": None, "BREAKAGE": "BREAKAGE", "DEPOSIT_FORFEIT": "DEPOSIT_FORFEITED",
+         "PROMO_EXPIRY": "PROMO_EXPIRY"}
+def steps_sql(names):
+    rows = ", ".join(f"({lit(n)}, {lit(STEPS[n]) if STEPS[n] else 'NULL'})" for n in names)
+    return (f"DO $R$ DECLARE r record; ids uuid[]; BEGIN FOR r IN SELECT * FROM (VALUES {rows}) v(step, typ) LOOP "
+            f"SELECT coalesce(array_agg(id), '{{}}') INTO ids FROM journal_transaction WHERE ledger_id = '{LEDGER}' AND type = r.typ; "
+            f"PERFORM record_closing_step('{EVENT}', r.step, CASE WHEN cardinality(ids) > 0 THEN 'DONE' ELSE 'NOT_APPLICABLE' END, "
+            f"ids, '{{}}'::jsonb, '{USER1}'); END LOOP; END $R$;")
+PSP_STATEMENTS = (f"DO $R$ DECLARE a record; BEGIN FOR a IN SELECT id, code FROM account WHERE ledger_id = '{LEDGER}' "
+                  f"AND code LIKE 'A-PSP-%' LOOP PERFORM import_statement_lines(jsonb_build_object('ledger_id', '{LEDGER}', "
+                  f"'account_id', a.id, 'source', a.code, 'file_sha256', md5(a.code) || md5(a.code || 'x'), "
+                  f"'statement_date', (current_date + 1)::text, 'closing_balance', "
+                  f"(SELECT coalesce(sum(p.amount), 0) FROM posting p WHERE p.account_id = a.id), 'currency', 'XOF', "
+                  f"'imported_by', '{USER1}'), '[]'::jsonb); END LOOP; END $R$;")
 for st in ("LIVE", "CLOSING", "RECONCILING", "SETTLING", "REFUND_WINDOW", "CLOSED"):
+    if st == "SETTLING": out.append(PSP_STATEMENTS)
+    if st == "CLOSED":
+        out.append(steps_sql(list(STEPS)[3:]))
+        out.append(f"UPDATE event SET refund_deadline = now() - interval '1 second' WHERE id = '{EVENT}';")
     call = f"SELECT set_event_status('{EVENT}', '{st}', '{USER1}')"
     t(f"SELECT lives_ok({q(call)}, {q('statut de l événement : ' + st)});")
+    if st == "SETTLING": out.append(steps_sql(list(STEPS)[:3]))
 t(f"SELECT is((SELECT status FROM ledger WHERE id = '{LEDGER}'), 'LOCKED', 'scénario clos : grand livre verrouillé');")
 t(f"SELECT is((SELECT bool_and(ok) FROM verify_ledger_seals('{LEDGER}')), true, 'scellement final vérifié');")
 t(f"SELECT is((SELECT remaining FROM event_status_history WHERE event_id = '{EVENT}' AND to_status = 'CLOSED'), 0::bigint, 'aucun solde restant à la clôture');")

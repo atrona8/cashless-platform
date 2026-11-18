@@ -512,10 +512,20 @@ describe('routes de plateforme', () => {
       expect(
         (await patch(admin1, `/v1/operators/${randomUUID()}`, { legal_name: 'X' })).status,
       ).toBe(404);
-      const list = await get(admin1, '/v1/operators?limit=200');
-      expect(list.body.data.map((o: { operator_id: string }) => o.operator_id)).toEqual(
-        expect.arrayContaining([operatorId, ops.a, ops.b]),
-      );
+      // La liste est paginée par ordre de création : sur une base partagée par toute la batterie, les prestataires de
+      // ce test ne sont pas dans la première page ; on suit le curseur.
+      const seen: string[] = [];
+      let cursor: string | null = null;
+      for (let guard = 0; guard < 100; guard += 1) {
+        const page = await get(
+          admin1,
+          `/v1/operators?limit=200${cursor ? `&cursor=${cursor}` : ''}`,
+        );
+        seen.push(...page.body.data.map((o: { operator_id: string }) => o.operator_id));
+        cursor = page.body.next_cursor as string | null;
+        if (!page.body.has_more) break;
+      }
+      expect(seen).toEqual(expect.arrayContaining([operatorId, ops.a, ops.b]));
     });
 
     it('un OPERATOR_ADMIN lit sa fiche, jamais celle d’un autre', async () => {

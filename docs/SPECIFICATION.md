@@ -157,7 +157,7 @@ Chaque ligne métier DOIT porter `operator_id`. Les conditions d'un commerçant 
 | Rôle | Peut |
 |---|---|
 | `PLATFORM_ADMIN` | Gérer les prestataires, les contrats plateforme–prestataire, la redevance, la supervision globale |
-| `OPERATOR_ADMIN` | Gérer ses organisateurs, les contrats, les index de clés, les plafonds maximaux, les profils de législation |
+| `OPERATOR_ADMIN` | Gérer ses organisateurs, les contrats, les index de clés, les plafonds maximaux, les profils de législation ; demander et valider les versements dont il est le rôle (prestataire, plateforme : tableau ci-dessous) |
 | `ORGANIZER_ADMIN` | Gérer ses événements, commerçants, catalogues, terminaux, politique hors ligne ; valider les versements ; consulter les relevés |
 | `SUPERVISOR` | Sur un événement : lever un trou de séquence, valider une annulation hors délai, sortir un bracelet de la liste noire (avec un second valideur) |
 | `CASHIER` | Au guichet : recharges en espèces, cautions, restitutions, remplacements, remboursements en espèces, identification d'un festivalier (KYC, §6.3) |
@@ -193,7 +193,7 @@ Chaque ligne métier DOIT porter `operator_id`. Les conditions d'un commerçant 
 
 | Action | Opération | Rôle exigé (auteur et valideur) |
 |---|---|---|
-| `PAYOUT` | Versement : initiation et confirmation manuelle | `ORGANIZER_ADMIN` |
+| `PAYOUT` | Versement : initiation et confirmation manuelle | Selon le bénéficiaire (amendé le 17/11/2026, ADR-204) : `ORGANIZER_ADMIN` pour les commerçants et l'organisateur, `OPERATOR_ADMIN` pour le prestataire et la plateforme ; un lot mixte exige les deux rôles chez l'auteur et chez le valideur |
 | `ADJUSTMENT`, `ANOMALY_RESOLUTION` | Écriture manuelle (`source = BACKOFFICE`), indemnisation d'un commerçant | Rôle de l'opération (back-office, à ajouter au contrat) |
 | `LATE_CLAIM` | Réclamation tardive (`postLateClaim`) | Rôle de l'opération (back-office) |
 | `LATE_CHARGEBACK` | Écriture d'une contestation carte reçue après le verrouillage (ADR-77) | Rôle de l'opération (back-office) |
@@ -1151,7 +1151,7 @@ Chaque relevé PSP ou bancaire est importé dans `external_statement_line` et ra
 2. Une personne prépare un lot de versements ; une seconde le valide. `PAYOUT_INITIATED` gèle le montant dans `L-VERS-ENCOURS`. Le montant NE DOIT PAS dépasser le droit net.
 3. Le système exporte le lot (CSV : bénéficiaire, moyen, numéro ou IBAN, montant, référence).
 4. Le paiement est fait hors système.
-5. Une personne enregistre le résultat de chaque ligne : `PAYOUT_CONFIRMED` (l'argent sort du pool) ou `PAYOUT_FAILED` (le droit est recrédité ; un nouvel ordre suivra).
+5. Une personne enregistre le résultat de chaque ligne : `PAYOUT_CONFIRMED` (l'argent sort du pool) ou `PAYOUT_FAILED` (le droit est recrédité ; un nouvel ordre suivra). Un `PAYOUT_FAILED` est enregistré par une personne distincte de celle qui a préparé le lot et de celle qui l'a validé (elle devient le valideur de la transaction) ; `PAYOUT_CONFIRMED` reste à une personne (amendé le 17/11/2026, ADR-214).
 
 Table `payout` : bénéficiaire, montant, moyen (`method`, dont `ORANGE_MONEY`), date d'initiation (`initiated_at`), auteur (`initiated_by`) et valideur (`approved_by`, distinct de l'auteur), statut (`INITIATED`, `CONFIRMED`, `FAILED`), référence externe, transactions d'initiation et de règlement. Un versement initié depuis plus de 48 h (`initiated_at`) sans résultat DOIT déclencher une alerte.
 

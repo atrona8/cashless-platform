@@ -7,6 +7,7 @@ import { OTP_PHONE_MAX } from '../../../src/customer-auth/customer-auth.service'
 import { freshPhone, requestOtp } from '../../support/customer-auth';
 import { withOwner } from '../../support/db';
 import { ownerRows as rows } from '../../support/media-fixtures';
+import { backdateHold } from './holder-fixtures';
 import { holderLinkFor } from './refund-invariants';
 import { codeFor, fundedCustomer, postRefund } from './create-fixtures';
 import {
@@ -58,28 +59,34 @@ describe('limites consignées (OP-N124 à OP-N126) et comportement strict (ADR-1
       )
     )[0]!;
 
-  it('OP-N124 (décision 12a) : le code du titulaire est consommé même si sa décision n’est pas écrite (409) ; un BLOCK perdu laisse la demande passer REQUESTED', async () => {
+  it('OP-N124 (levée) : une décision refusée (409) ne consomme pas le code ; le titulaire réessaie avec le même code', async () => {
     const h = await awaiting();
+    const consumed = async () =>
+      (
+        await rows<{ consumed: boolean }>(
+          'SELECT consumed_at IS NOT NULL AS consumed FROM otp_challenge WHERE id = $1',
+          [h.otp.slice(4)],
+        )
+      )[0]!.consumed;
     // La demande est échue avant la décision : la décision est refusée (409) avec un code pourtant valide.
-    await withOwner((db) =>
-      db.query(
-        `UPDATE refund_request SET hold_until = clock_timestamp() - interval '1 minute' WHERE id = $1`,
-        [h.id],
-      ),
-    );
-    await withOwner((db) => db.query('SELECT promote_due_refund_requests()'));
+    await withOwner((db) => backdateHold(db, h.id, "clock_timestamp() - interval '1 minute'"));
     const lost = await decide(h.id, { decision: 'BLOCK', otp_request_id: h.otp, code: h.code });
     expect(lost.status).toBe(409);
-    // Limite : le code est consommé, le titulaire ne peut pas réessayer avec lui.
+    // Levée : le code n'est pas consommé ; un second refus ne le consomme pas non plus.
+    expect(await consumed()).toBe(false);
+    expect(
+      (await decide(h.id, { decision: 'BLOCK', otp_request_id: h.otp, code: h.code })).status,
+    ).toBe(409);
+    expect(await consumed()).toBe(false);
+    expect(await holderState(h.id)).toEqual({ status: 'AWAITING_HOLDER', holder_decision: null });
+    // Le titulaire réessaie avec le MÊME code une fois la demande de nouveau décidable : la décision est écrite.
+    await withOwner((db) => backdateHold(db, h.id, "clock_timestamp() + interval '1 hour'"));
     const retry = await decide(h.id, { decision: 'BLOCK', otp_request_id: h.otp, code: h.code });
-    expect([retry.status, retry.body.code]).toEqual([422, 'OTP_INVALID']);
-    const [challenge] = await rows<{ consumed: boolean }>(
-      'SELECT consumed_at IS NOT NULL AS consumed FROM otp_challenge WHERE id = $1',
-      [h.otp.slice(4)],
-    );
-    expect(challenge!.consumed).toBe(true);
-    // Borne : la décision perdue n'est écrite nulle part ; la demande est approuvable sans la décision du titulaire.
-    expect(await holderState(h.id)).toEqual({ status: 'REQUESTED', holder_decision: null });
+    expect([retry.status, retry.body.status]).toEqual([200, 'BLOCKED']);
+    expect(await consumed()).toBe(true);
+    // Un second usage du même code est refusé (consommé avec la décision).
+    const again = await decide(h.id, { decision: 'BLOCK', otp_request_id: h.otp, code: h.code });
+    expect([again.status, again.body.code]).toEqual([422, 'OTP_INVALID']);
   });
 
   it('OP-N125 (décision 12b) : le quota de codes par numéro est commun à tous les usages ; le BLOCK du titulaire ne produit qu’une ligne d’audit', async () => {

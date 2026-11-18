@@ -10,6 +10,7 @@ import type { EventStatus } from '../../src/ledger/status-matrix';
 import { createTestApp } from '../support/app';
 import { withOwner } from '../support/db';
 import { expectedLines, scenario } from '../unit/builders/support/scenario-lines';
+import { closingPrep } from './closing-prep';
 import { FINAL_STATUS, STEPS, type ScenarioStep } from './commands';
 import { createScenarioFixture, type ScenarioFixture } from './fixture';
 import { scenarioConfigResolver } from './scenario-config';
@@ -27,6 +28,7 @@ describe('scénario de référence rejoué par le moteur', () => {
   let fx: ScenarioFixture;
   let engine: LedgerEngineService;
   let tx: TenantTx;
+  let prep: ReturnType<typeof closingPrep>;
   /** Transaction écrite à la première passe, par numéro du scénario. */
   const written = new Map<number, string>();
 
@@ -42,6 +44,7 @@ describe('scénario de référence rejoué par le moteur', () => {
     });
     engine = app.get(LedgerEngineService);
     tx = app.get(TenantTx);
+    prep = closingPrep(fx, tx);
   });
 
   afterAll(async () => {
@@ -62,6 +65,9 @@ describe('scénario de référence rejoué par le moteur', () => {
 
   /** Passage de statut par la connexion applicative ; un refus (CL019…) fait échouer le test avec sa condition. */
   const setStatus = async (status: EventStatus, before: string): Promise<void> => {
+    // Conditions réelles de la mission versements-rapprochements-cloture (voir `closing-prep.ts`).
+    await prep.beforeStatus(status);
+    if (status === FINAL_STATUS) await prep.beforeClosed();
     try {
       await tx.run(fx.parties.OPE, (client) =>
         client.query('SELECT set_event_status($1, $2, $3)', [fx.eventId, status, fx.users.author]),
@@ -129,6 +135,7 @@ describe('scénario de référence rejoué par le moteur', () => {
         lines: expectedLines(s.no),
       });
       written.set(s.no, result.transactionId);
+      await prep.afterStep(s.no, result.transactionId);
     }
   }
 

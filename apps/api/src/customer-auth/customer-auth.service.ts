@@ -64,6 +64,8 @@ interface Binding {
   purpose: ChallengePurpose;
   subjectId: string | null;
   expectedPhone: string | null;
+  /** `false` : le code est vérifié (essais comptés) mais pas consommé ; la consommation vient après. */
+  consume?: boolean;
 }
 type Renewal = { kind: 'OK'; tokens: TokenResponse } | { kind: 'REFUSED' };
 
@@ -300,6 +302,73 @@ export class CustomerAuthService {
     if (outcome.kind === 'INVALID') throw otpInvalid();
   }
 
+  /**
+   * Vérifie un code SANS le consommer (OP-N124, mission 9b). Transaction propre : l'essai faux compté et le blocage
+   * survivent à l'erreur. La consommation se fait ensuite par `consumeChallenge`, dans la transaction de l'appelant.
+   */
+  async verifyChallengeOnly(input: {
+    otpRequestId: string;
+    code: string;
+    expectedPhone: string;
+    purpose: ChallengePurpose;
+    subjectId?: string;
+    operatorId?: string;
+  }): Promise<void> {
+    const challengeId = this.parseRequestId(input.otpRequestId);
+    const operatorId = await this.challengeOperator(challengeId);
+    if (input.operatorId !== undefined && input.operatorId !== operatorId) throw otpInvalid();
+    const outcome = await this.tx.run(operatorId, (client) =>
+      this.checkCode(client, operatorId, challengeId, input.code, {
+        purpose: input.purpose,
+        subjectId: input.subjectId ?? null,
+        expectedPhone: input.expectedPhone,
+        consume: false,
+      }),
+    );
+    if (outcome.kind === 'BLOCKED') throw rateLimited(outcome.retryAfter);
+    if (outcome.kind === 'INVALID') throw otpInvalid();
+  }
+
+  /**
+   * Consomme un code déjà vérifié, dans la transaction de l'appelant (client). Verrou `FOR UPDATE` du défi, relecture
+   * « utilisable » (non consommé, non invalidé, non expiré), liaison usage + sujet + numéro revérifiée, puis
+   * `consumed_at`. Un défi déjà consommé ou invalidé entre-temps : `422 OTP_INVALID`.
+   */
+  async consumeChallenge(
+    client: TxClient,
+    input: {
+      otpRequestId: string;
+      expectedPhone: string;
+      purpose: ChallengePurpose;
+      subjectId?: string;
+      operatorId: string;
+    },
+  ): Promise<void> {
+    const challengeId = this.parseRequestId(input.otpRequestId);
+    const { rows } = await client.query<{
+      phone: string;
+      purpose: string;
+      subject_id: string | null;
+    }>(
+      `SELECT phone, purpose, subject_id FROM otp_challenge
+        WHERE id = $1 AND operator_id = $2
+          AND consumed_at IS NULL AND invalidated_at IS NULL AND expires_at > clock_timestamp()
+        FOR UPDATE`,
+      [challengeId, input.operatorId],
+    );
+    const challenge = rows[0];
+    if (
+      !challenge ||
+      challenge.purpose !== input.purpose ||
+      (challenge.subject_id ?? null) !== (input.subjectId ?? null) ||
+      challenge.phone !== input.expectedPhone
+    )
+      throw otpInvalid();
+    await client.query('UPDATE otp_challenge SET consumed_at = clock_timestamp() WHERE id = $1', [
+      challengeId,
+    ]);
+  }
+
   private parseRequestId(requestId: string): string {
     const match = REQUEST_ID.exec(requestId);
     if (!match) throw otpInvalid();
@@ -414,6 +483,7 @@ export class CustomerAuthService {
       return { kind: 'BLOCKED', retryAfter: OTP_BLOCK_MINUTES * 60 };
     }
 
+    if (binding.consume === false) return { kind: 'CONSUMED', phone };
     await client.query('UPDATE otp_challenge SET consumed_at = clock_timestamp() WHERE id = $1', [
       challengeId,
     ]);

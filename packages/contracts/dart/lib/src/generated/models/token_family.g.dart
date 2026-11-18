@@ -8,7 +8,7 @@ part of 'token_family.dart';
 
 TokenFamily _$TokenFamilyFromJson(Map<String, dynamic> json) => TokenFamily(
   fid: json['fid'] as String,
-  status: $enumDecode(_$Status5EnumMap, json['status']),
+  status: $enumDecode(_$Status6EnumMap, json['status']),
   refreshTokenSha256Current: json['refresh_token_sha256_current'] as String,
 );
 
@@ -19,4 +19,4 @@ Map<String, dynamic> _$TokenFamilyToJson(TokenFamily instance) =>
       'refresh_token_sha256_current': instance.refreshTokenSha256Current,
     };
 
-const _$Status5EnumMap = {Status5.active: 'ACTIVE', Status5.revoked: 'REVOKED'};
+const _$Status6EnumMap = {Status6.active: 'ACTIVE', Status6.revoked: 'REVOKED'};

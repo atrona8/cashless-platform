@@ -15,6 +15,7 @@ import { withOwner } from '../support/db';
 import { FakeIdp } from '../support/fake-idp';
 import { expectedLines, scenario } from '../unit/builders/support/scenario-lines';
 import { createApiConfigFixture, type ApiConfigFixture } from './api-config-fixture';
+import { closingPrep } from './closing-prep';
 import { FINAL_STATUS, STEPS, type ScenarioStep } from './commands';
 import { MERCHANTS } from './fixture';
 import { scenarioResolvedConfig } from './scenario-config';
@@ -32,6 +33,7 @@ describe('scénario de référence rejoué sur une configuration construite par 
   let fx: ApiConfigFixture;
   let engine: LedgerEngineService;
   let tx: TenantTx;
+  let prep: ReturnType<typeof closingPrep>;
   const written = new Map<number, string>();
 
   beforeAll(async () => {
@@ -40,6 +42,7 @@ describe('scénario de référence rejoué sur une configuration construite par 
     fx = await createApiConfigFixture(app, idp);
     engine = app.get(LedgerEngineService);
     tx = app.get(TenantTx);
+    prep = closingPrep(fx, tx);
   });
 
   afterAll(async () => {
@@ -57,6 +60,9 @@ describe('scénario de référence rejoué sur une configuration construite par 
     return row.id;
   };
   const setStatus = async (status: EventStatus, before: string): Promise<void> => {
+    // Conditions réelles de la mission versements-rapprochements-cloture (voir `closing-prep.ts`).
+    await prep.beforeStatus(status);
+    if (status === FINAL_STATUS) await prep.beforeClosed();
     try {
       await tx.run(fx.parties.OPE, (client) =>
         client.query('SELECT set_event_status($1, $2, $3)', [fx.eventId, status, fx.users.author]),
@@ -138,6 +144,7 @@ describe('scénario de référence rejoué sur une configuration construite par 
         lines: expectedLines(s.no),
       });
       written.set(s.no, result.transactionId);
+      await prep.afterStep(s.no, result.transactionId);
     }
   }
 

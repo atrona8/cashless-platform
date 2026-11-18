@@ -9,6 +9,8 @@ import { createDeviceIdentity } from '../../src/device-identity/device-identity.
 import { FakeDeviceIdentity } from '../../src/device-identity/fake-device-identity';
 import { RealDeviceIdentity } from '../../src/device-identity/real-device-identity';
 import { FakeKms } from '../../src/kms/fake-kms';
+import { FakeSealCopy } from '../../src/sealing/fake-seal-copy';
+import { createSealCopy } from '../../src/sealing/sealing.module';
 import { FakeOperationProcessor } from '../../src/offline/batches/fake-operation-processor';
 import { OFFLINE_OPERATION_PROCESSOR } from '../../src/offline/batches/batch.types';
 import { createEntryEncryptor } from '../../src/snapshots-content/entry-encryptor';
@@ -28,6 +30,7 @@ import {
   ATTESTATION_VERIFIER,
   DEVICE_CA,
   EDGE_CA,
+  SEAL_COPY,
   TOKEN_SIGNER,
 } from '../../src/security/port-tokens';
 import { FakeEdgeCa } from '../../src/edge/ca/fake-edge-ca';
@@ -123,8 +126,28 @@ describe('aucun faux en production', () => {
     expect(() => assertProcessIsSafe(processWith(true, OTP_SENDER, {}) as never)).not.toThrow();
   });
 
+  // Copie externe des scellements (9b, WP12 ; décision du porteur : simulée jusqu'à la mission 12b).
+  it('faux de la copie externe des scellements : construction refusée en production', () => {
+    expect(() => createSealCopy(PRODUCTION)).toThrow(FakeInProductionError);
+    expect(() => createSealCopy(PRODUCTION)).toThrow(/la copie externe des scellements/);
+    expect(createSealCopy(LOCAL)).toBeInstanceOf(FakeSealCopy);
+    expect((createSealCopy(LOCAL) as { isFake?: boolean }).isFake).toBe(true);
+  });
+
+  it("copie externe des scellements : la garde de démarrage nomme le faux, et rien d'autre ne passe", () => {
+    expect(() =>
+      assertProcessIsSafe(processWith(true, SEAL_COPY, new FakeSealCopy()) as never),
+    ).toThrow(/la copie externe des scellements est un faux/);
+    expect(() =>
+      assertProcessIsSafe(processWith(false, SEAL_COPY, new FakeSealCopy()) as never),
+    ).not.toThrow();
+    // Un port réel (sans `isFake`) passe : la garde refuse le faux, pas la copie.
+    expect(() => assertProcessIsSafe(processWith(true, SEAL_COPY, {}) as never)).not.toThrow();
+  });
+
   it.each([
     ['le service de clés', new FakeKms()],
+    ['la copie externe des scellements', new FakeSealCopy()],
     ['l’identité du terminal', new FakeDeviceIdentity()],
     ['l’identité du festivalier', new FakeCustomerIdentity()],
     ['les adaptateurs PSP', new PspAdapterRegistry([new FakePspAdapter('WAVE')], true)],

@@ -10,6 +10,7 @@ import request from 'supertest';
 import { parse } from 'yaml';
 import { createApiConfigFixture, type ApiConfigFixture } from '../../scenario/api-config-fixture';
 import { createTestApp } from '../../support/app';
+import { MISSION_9B_OPERATIONS } from '../../support/mission-9b-operations';
 import { withOwner } from '../../support/db';
 import { FakeIdp, type TestPerson } from '../../support/fake-idp';
 import { createOperators, type Operators } from '../transverse/fixtures';
@@ -34,6 +35,8 @@ function missionRoutes(): Route[] {
       .filter((method) => operations[method] && MISSION_TAGS.includes(operations[method]!.tags[0]!))
       // Configurations PSP (mission 6, WP10) : leur balayage est dans test/integration/psp-configurations/isolation.
       .filter((method) => !/PspConfiguration|PspSelection/.test(operations[method]!.operationId))
+      // Mission 9b : balayage dédié (`invariants-cloture/isolation-9b.spec.ts`), liste figée.
+      .filter((method) => !MISSION_9B_OPERATIONS.includes(operations[method]!.operationId))
       .map((method) => ({ method, path, operationId: operations[method]!.operationId })),
   );
 }

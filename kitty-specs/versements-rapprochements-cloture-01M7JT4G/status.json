@@ -1,0 +1,258 @@
+{
+  "event_count": 163,
+  "last_event_id": "01M7N2GR41ZBXKNVJKTDG40ZA6",
+  "materialized_at": "2026-11-17T15:37:57.121894+00:00",
+  "mission_number": "",
+  "mission_slug": "versements-rapprochements-cloture-01M7JT4G",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 14,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FFXHXVBJHMXEMM4H59F8",
+      "last_transition_at": "2026-11-17T15:37:15.954281+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP01-contrat-utilitaires/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP01-contrat-utilitaires/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 5,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FJY19EGTJTQH9R6M4S54",
+      "last_transition_at": "2026-11-17T15:37:19.041302+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP02-base-releves-cloture/review-cycle-3.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP02-base-releves-cloture/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 85449,
+      "shell_pid_created_at": "1794918941.918915"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FNVFE1EXBHJS3DD19XB2",
+      "last_transition_at": "2026-11-17T15:37:22.031827+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP03-base-versements/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP03-base-versements/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 23057,
+      "shell_pid_created_at": "1794901003.823645"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FRW29AW79NVK7QAYTMN4",
+      "last_transition_at": "2026-11-17T15:37:25.122270+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP04-base-dettes-9a/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP04-base-dettes-9a/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FW179E32X8XZTHKNJC4H",
+      "last_transition_at": "2026-11-17T15:37:28.359505+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP05-base-ops-correspondance/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP05-base-ops-correspondance/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3652,
+      "shell_pid_created_at": "1794899033.649833"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2FZ0C43TD3K4GMRB2RJVP",
+      "last_transition_at": "2026-11-17T15:37:31.404971+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP06-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP06-droits-base/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 33723,
+      "shell_pid_created_at": "1794901892.99646"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2G251D1SE1PVA8M6NN9P9",
+      "last_transition_at": "2026-11-17T15:37:34.625898+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP07-etapes-cloture/review-cycle-2.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP07-etapes-cloture/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 38158,
+      "shell_pid_created_at": "1794903167.666599"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2G58AGD11FE8RPCAXAEZ7",
+      "last_transition_at": "2026-11-17T15:37:37.802998+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP08-versements-api/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP08-versements-api/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 28437,
+      "shell_pid_created_at": "1794910327.99514"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2G89NRRFSP0E47YF9YVBA",
+      "last_transition_at": "2026-11-17T15:37:40.918090+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP09-rapprochement-api/review-cycle-3.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP09-rapprochement-api/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44980,
+      "shell_pid_created_at": "1794911290.751463"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2GBAXMXCWZ4KH3FWXK2NH",
+      "last_transition_at": "2026-11-17T15:37:44.029389+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP10-reclamations-tardives/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP10-reclamations-tardives/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16152,
+      "shell_pid_created_at": "1794909276.639174"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2GHYDF5Q4127RATJHYYR2",
+      "last_transition_at": "2026-11-17T15:37:50.797482+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP11-remboursement-backoffice-dettes-9a/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP11-remboursement-backoffice-dettes-9a/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 69953,
+      "shell_pid_created_at": "1794916282.904498"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2GEKY55J0S6RCTQH8P4H1",
+      "last_transition_at": "2026-11-17T15:37:47.391181+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP12-scellement-controles-alertes/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP12-scellement-controles-alertes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 33253,
+      "shell_pid_created_at": "1794910509.540602"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2GN0JZG2G12YHX3HHVVJ4",
+      "last_transition_at": "2026-11-17T15:37:53.938741+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/versements-rapprochements-cloture-01M7JT4G-coord/kitty-specs/versements-rapprochements-cloture-01M7JT4G/tasks/WP13-releves-export/review-cycle-1.md",
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP13-releves-export/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 90938,
+      "shell_pid_created_at": "1794920375.462693"
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7N2GR41ZBXKNVJKTDG40ZA6",
+      "last_transition_at": "2026-11-17T15:37:57.121894+00:00",
+      "review_result": {
+        "reference": "review-cycle://versements-rapprochements-cloture-01M7JT4G/WP14-preuves-consignation/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7802,
+      "shell_pid_created_at": "1794924209.681911"
+    }
+  }
+}

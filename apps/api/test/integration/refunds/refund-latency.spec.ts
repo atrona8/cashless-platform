@@ -12,6 +12,7 @@ import { MaintenanceProcessModule } from '../../../src/processes/maintenance.mod
 import { MAINT_URL, withOwner } from '../../support/db';
 import { freshPhone } from '../../support/customer-auth';
 import { ownerRows as rows } from '../../support/media-fixtures';
+import { backdateHold } from './holder-fixtures';
 import { holderLinkFor } from './refund-invariants';
 import { codeFor, fundedCustomer, postRefund, type FundedCustomer } from './create-fixtures';
 import {
@@ -136,10 +137,7 @@ describe('NFR-005 : promotion des demandes échues', () => {
     expect(res.body.status).toBe('AWAITING_HOLDER');
     return { c, id: res.body.refund_request_id as string };
   };
-  const setHold = (id: string, sql: string) =>
-    withOwner((db) =>
-      db.query(`UPDATE refund_request SET hold_until = ${sql} WHERE id = $1`, [id]),
-    );
+  const setHold = (id: string, sql: string) => withOwner((db) => backdateHold(db, id, sql));
   const state = async (id: string) =>
     (
       await rows<{ status: string; lag: number }>(

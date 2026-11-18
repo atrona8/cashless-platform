@@ -257,6 +257,14 @@ jobs:
           npm run reset-db -w @cashless/ledger-sql
           npm test -w @cashless/api -- --runInBand snapshot-keys/rotation snapshot-keys/key-admin-worker
 
+      # Mission versements-rapprochements-cloture (WP12) : les contrôles permanents et le scellement lisent tous les
+      # grands livres et toutes les chaînes d'audit, et recréent la base (`resetDatabase()`) ; écartées de la passe
+      # parallèle, lancées seules, en série, sur base recréée.
+      - name: Contrôles permanents et scellement (suites seules, en série, base recréée)
+        run: |
+          npm run reset-db -w @cashless/ledger-sql
+          npm test -w @cashless/api -- --runInBand controls/controls-alerts sealing/seal-and-verify
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 

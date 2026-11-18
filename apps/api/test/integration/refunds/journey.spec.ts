@@ -32,6 +32,7 @@ import {
   type MiniFixture,
 } from '../engine/mini-fixture';
 import { codeFor, fundedCustomer, postRefund, type FundedCustomer } from './create-fixtures';
+import { backdateHold } from './holder-fixtures';
 import {
   call,
   confirm,
@@ -267,12 +268,7 @@ describe('SC-001 à SC-003, SC-005 : parcours du festivalier et du back-office',
     expect((await proposeApproval(r, s.adminA, b.id)).status).toBe(409);
     // Échéance : l'horloge de la base (jamais celle de Node) ; la promotion rend la demande approuvable.
     const d = await newRequest();
-    await withOwner((db) =>
-      db.query(
-        `UPDATE refund_request SET hold_until = clock_timestamp() - interval '1 minute' WHERE id = $1`,
-        [d.id],
-      ),
-    );
+    await withOwner((db) => backdateHold(db, d.id, "clock_timestamp() - interval '1 minute'"));
     await withOwner((db) => db.query('SELECT promote_due_refund_requests()'));
     expect((await requestState(d.id)).status).toBe('REQUESTED');
     expect((await proposeApproval(r, s.adminA, d.id)).status).toBe(202);
@@ -415,8 +411,8 @@ describe('SC-004 : guichet enchaîné, de l’activation à la restitution', () 
   });
 });
 
-describe('OP-N128 (a) : caution seule au-dessus du seuil rendue avec jeton, sans approbateur sur l’écriture', () => {
-  it('DEPOSIT_REFUNDED porte approved_by nul ; l’approbateur n’est que dans l’audit du jeton (limite consignée)', async () => {
+describe('OP-N128 (a, levée) : caution seule au-dessus du seuil rendue avec jeton, approbateur sur l’écriture', () => {
+  it('DEPOSIT_REFUNDED porte approved_by = valideur du jeton, auteur = le caissier (OP-N128)', async () => {
     const w = await createMediaWorld();
     const app = await createTestApp({ identity: w.idp });
     try {
@@ -512,8 +508,8 @@ describe('OP-N128 (a) : caution seule au-dessus du seuil rendue avec jeton, sans
         `SELECT approved_by FROM journal_transaction WHERE id = $1`,
         [ok.body.deposit_refund_transaction_id],
       );
-      // Limite : l'approbateur n'est pas porté par l'écriture de la caution.
-      expect(tx!.approved_by).toBeNull();
+      // OP-N128 (levée) : l'approbateur du jeton est porté par l'écriture de la caution.
+      expect(tx!.approved_by).toBe(supervisor.userId);
     } finally {
       await app.close();
     }

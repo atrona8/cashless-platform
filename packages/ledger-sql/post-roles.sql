@@ -1079,3 +1079,61 @@ REVOKE EXECUTE ON FUNCTION refund_request_operator(uuid), promote_due_refund_req
   refund_request_scope_guard() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION refund_request_operator(uuid), promote_due_refund_requests() TO cashless_app;
 REVOKE EXECUTE ON FUNCTION refund_request_scope_guard() FROM cashless_app;
+
+-- 12. Versements, rapprochements et clôture (migrations 0083 à 0088 ; mission 9b, WP06). Rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (CLAUDE.md, règle 4) : droits de la base de la mission. Principe : lecture seule
+-- des tables nouvelles ou modifiées, écriture par les seules fonctions SECURITY DEFINER nommées ; liste nommée,
+-- jamais ALL ; une fonction de déclencheur n'est exécutable par aucun rôle. Section 0 a déjà retiré EXECUTE à PUBLIC
+-- et à cashless_app sur toute fonction : les REVOKE ci-dessous sont redits pour qu'un oubli de section 0 ne rouvre rien.
+--   Tables : payout et external_statement_line (modifiées), closing_step, statement_import, account_mapping (neuves).
+--   Aucune écriture de ces tables dans apps/api/src (recherche faite au lot) : tout passe par les fonctions.
+REVOKE ALL ON payout, external_statement_line, closing_step, statement_import, account_mapping
+  FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin;
+GRANT SELECT ON payout, external_statement_line, closing_step, statement_import, account_mapping TO cashless_app;
+
+-- 12a. cashless_app (API publique) : routes de versement, de rapprochement, de clôture, de remboursement de caution
+-- et de correspondance de comptes. set_event_status et event_transition_conditions sont redéfinies par 0084 (le droit
+-- survit au CREATE OR REPLACE ; reposé ici, sans élargissement). refund_deposit_for_session à deux arguments garde son
+-- droit actuel (section 4) : WP11 bascule l'appel. refund_deposit (quatre arguments) n'est appelée par aucun code
+-- TypeScript : appelée seulement par refund_deposit_for_session, elle n'est accordée à personne.
+GRANT EXECUTE ON FUNCTION
+  set_event_status(uuid, event_status, uuid), event_transition_conditions(uuid, event_status),
+  record_closing_step(uuid, text, text, uuid[], jsonb, uuid),
+  create_payout_batch(uuid, uuid, jsonb, uuid, uuid), settle_payout(uuid, text, text, text, uuid),
+  import_statement_lines(jsonb, jsonb), match_statement_line(bigint, uuid, uuid, uuid),
+  account_reconciliation(uuid),
+  refund_deposit_for_session(uuid, uuid, uuid, uuid),
+  create_account_mapping_version(uuid, uuid, timestamptz, jsonb, uuid)
+  TO cashless_app;
+
+-- 12b. Jamais exécutables par l'API ni par PUBLIC : internes, gardes et fonctions de déclencheur de 0083 à 0088.
+REVOKE EXECUTE ON FUNCTION
+  refund_deposit(uuid, uuid, uuid, uuid), closing_new_conditions(uuid, event_status),
+  statement_import_scope_guard(), external_statement_line_scope_guard(), external_statement_line_update_guard(),
+  closing_step_scope_guard(), payout_scope_guard(), payout_transition_guard(), payout_no_delete(),
+  refund_request_transition_guard(), account_mapping_scope_guard(), account_mapping_append_only()
+  FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin;
+
+-- 12c. Les quatorze fonctions d'exploitation ops_* (0087) : cashless_maint seul (travailleur d'exploitation :
+-- scellement, copie des scellements, alertes). Jamais l'API. cashless_maint n'a AUCUN droit de table, ni
+-- pg_read_all_stats, ni pg_signal_backend : ops_long_transactions ne lit que ses propres sessions sauf si le
+-- propriétaire de la fonction est membre de pg_read_all_stats (réglage de DÉPLOIEMENT, WP14 ; rien ici).
+-- Limite héritée : les ops_* supposent un propriétaire qui ignore la RLS forcée (superutilisateur ou BYPASSRLS),
+-- comme audit_log_chain (0022) ; prouvée par tests_9b_rights.sql.
+REVOKE EXECUTE ON FUNCTION
+  ops_ledgers_to_seal(), ops_seal_ledger(uuid), ops_audit_chains_to_seal(), ops_seal_audit(uuid),
+  ops_record_seal_copy(text, uuid, integer, text), ops_seals_since(interval),
+  ops_verify_ledger_seals(uuid, integer), ops_verify_audit_chain(uuid, timestamptz),
+  ops_ledger_controls(text), ops_overdue_payouts(interval), ops_unmatched_statements(interval),
+  ops_new_open_anomalies(timestamptz), ops_raise_alert(integer, jsonb), ops_long_transactions(interval)
+  FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_edge, cashless_edgeadmin;
+GRANT EXECUTE ON FUNCTION
+  ops_ledgers_to_seal(), ops_seal_ledger(uuid), ops_audit_chains_to_seal(), ops_seal_audit(uuid),
+  ops_record_seal_copy(text, uuid, integer, text), ops_seals_since(interval),
+  ops_verify_ledger_seals(uuid, integer), ops_verify_audit_chain(uuid, timestamptz),
+  ops_ledger_controls(text), ops_overdue_payouts(interval), ops_unmatched_statements(interval),
+  ops_new_open_anomalies(timestamptz), ops_raise_alert(integer, jsonb), ops_long_transactions(interval)
+  TO cashless_maint;

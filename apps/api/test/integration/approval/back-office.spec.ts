@@ -107,7 +107,7 @@ describe('demandes d’approbation au back-office', () => {
       `/v1/approval-requests/${created.body.approval_request_id}`,
     );
     expect(created.body).toMatchObject({
-      action: 'ADJUSTMENT',
+      action: 'ANOMALY_RESOLUTION',
       status: 'PENDING',
       requested_by: author.userId,
       decided_by: null,
@@ -272,7 +272,7 @@ describe('demandes d’approbation au back-office', () => {
     const seen: string[] = [];
     let cursor: string | null = null;
     do {
-      const path: string = `/v1/approval-requests?status=PENDING&action=ADJUSTMENT&limit=1${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
+      const path: string = `/v1/approval-requests?status=PENDING&action=ANOMALY_RESOLUTION&limit=1${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
       const page = await get(approver, path);
       expect(page.status).toBe(200);
       expect(page.body.data.length).toBeLessThanOrEqual(1);

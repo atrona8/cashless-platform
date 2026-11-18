@@ -306,7 +306,14 @@ export class LedgerEngineService {
       }
       case 'refund_deposit':
       case 'forfeit_deposit': {
-        if (fn === 'refund_deposit') await refundDeposit(client, mediaId, session);
+        if (fn === 'refund_deposit')
+          await refundDeposit(
+            client,
+            mediaId,
+            session,
+            command.createdBy ?? null,
+            command.approvedBy ?? null,
+          );
         else await forfeitDeposit(client, mediaId);
         const transactionId =
           (await findTransactionId(client, command.ledgerId, internalKey)) ?? null;

@@ -147,7 +147,26 @@ export type AuditAction =
   | 'REFUND_APPROVAL_REQUESTED'
   | 'REFUND_REQUEST_PROCESSING'
   | 'REFUND_REQUEST_PAID'
-  | 'REFUND_REQUEST_FAILED';
+  | 'REFUND_REQUEST_FAILED'
+  // Mission versements-rapprochements-cloture (lot WP07)
+  | 'CLOSING_STEP_EXECUTED'
+  // Mission 9b (lot WP08) : lots de versements (jamais d'IBAN ni de numéro)
+  | 'PAYOUT_BATCH_REQUESTED'
+  | 'PAYOUT_BATCH_EXECUTED'
+  | 'PAYOUT_BATCH_CLOSED'
+  | 'PAYOUT_BATCH_EXPORTED'
+  | 'PAYOUT_CONFIRMED'
+  | 'PAYOUT_FAILED'
+  // Mission 9b (lot WP09) : import d'un relevé et rapprochement manuel d'une ligne
+  | 'STATEMENT_IMPORTED'
+  | 'STATEMENT_LINE_MATCHED'
+  // Mission 9b (lot WP10) : réclamations tardives
+  | 'LATE_CLAIM_REQUESTED'
+  | 'LATE_ADJUSTMENT_REQUESTED'
+  // Mission 9b (lot WP13) : relevés exportés, correspondance comptable et export comptable (jamais de montant)
+  | 'PARTY_STATEMENT_EXPORTED'
+  | 'ACCOUNT_MAPPING_VERSION_CREATED'
+  | 'ACCOUNTING_EXPORTED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

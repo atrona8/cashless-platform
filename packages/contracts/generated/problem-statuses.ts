@@ -100,4 +100,5 @@ export const PROBLEM_STATUSES: Readonly<Record<components['schemas']['ProblemCod
   VENDOR_SESSION_INVALID: [409],
   VENDOR_PIN_INVALID: [401],
   SALE_LINES_INVALID: [422],
+  PAYOUT_EXCEEDS_ENTITLEMENT: [409],
 };

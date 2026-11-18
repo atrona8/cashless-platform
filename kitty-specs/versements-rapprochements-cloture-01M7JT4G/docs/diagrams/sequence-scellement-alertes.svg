@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1364" viewBox="0 0 2066 1364">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="60.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1176" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1176" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1176" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="1735.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1176" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 693.6666666666666,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,290.72 674.3598503050785,301.2673618492925 674.3598503050785,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="272.1333333333333" y="253.72000000000003" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,366.72 1210.3333333333333,366.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,366.72 1191.026516971745,377.2673618492925 1191.026516971745,356.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="504.4666666666666" y="329.72" width="394.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="416.71999999999997" width="314" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,518.72 193.0,518.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="556.4666666666666" y="481.72" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="410.71999999999997" width="1856.0" height="141.28000000000003" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,628.9200000000001 693.6666666666666,628.9200000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,628.9200000000001 674.3598503050785,639.4673618492925 674.3598503050785,618.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="126.5333333333333" y="591.9200000000001" width="633.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,704.9200000000001 693.6666666666666,704.9200000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,704.9200000000001 674.3598503050785,715.4673618492925 674.3598503050785,694.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="287.73333333333335" y="667.9200000000001" width="311.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="754.92" width="234" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,856.92 693.6666666666666,856.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,856.92 674.3598503050785,867.4673618492924 674.3598503050785,846.3726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="225.33333333333331" y="819.92" width="436.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,932.92 1727.0,932.92" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1727.0,932.92 1707.6931836384117,943.4673618492924 1707.6931836384117,922.3726381507075" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="768.0" y="895.92" width="384.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="64,976.92 1920.0,976.92" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="70" y="982.92" width="64" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,1084.92 193.0,1084.92" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1084.92 212.3068163615882,1074.3726381507076 212.3068163615882,1095.4673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="355.3333333333333" y="1047.92" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="748.92" width="1856.0" height="369.27999999999986" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Scellement, copie externe, contrôles et alertes</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Huit travailleurs du processus maintenance : scellement, vérification, contrôles ; une alerte à chaque échec</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">Maintenance</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base (ops_*)</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Copie externe simulée</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Exploitation</text>
+<text x="443.3333333333333" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">ops_seal_ledger, ops_seal_audit</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="701.6666666666666" y="347.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Copier le scellement hors de la base</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="74" y="434.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt production : copie simulée</text>
+<text x="701.6666666666666" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Démarrage refusé (règle 2)</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="443.3333333333333" y="610.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Vérification quotidienne : chaînes de scellement et d’audit</text>
+<text x="34.0" y="631.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="443.3333333333333" y="686.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Contrôles permanents (§12.2)</text>
+<text x="34.0" y="707.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="74" y="772.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt un contrôle échoue</text>
+<text x="443.3333333333333" y="838.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">ops_raise_alert : audit, journal, alerte</text>
+<text x="34.0" y="859.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="960.0" y="914.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Code d’alarme du processus (7 à 11)</text>
+<text x="34.0" y="935.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="74" y="1000.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon</text>
+<text x="443.3333333333333" y="1066.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rien à signaler</text>
+<text x="34.0" y="1087.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="60" y="1196.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Implémenté (review du 17/11/2026), servi sur la branche de la mission, 404 dans feat et main.</text>
+<text x="60" y="1221.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Scellement toutes les 5 min, y compris LOCKED. Cinq contrôles : sommes nulles, droits = argent, versements &gt; 48 h, relevés non rapprochés, anomalies PSP, transactions &gt; 60 s.</text>
+<text x="60" y="1246.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Dette consignée : la copie externe reste simulée et l’alerte n’atteint aucune personne avant la mission 12b.</text>
+</g>
+</svg>

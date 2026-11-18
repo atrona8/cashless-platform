@@ -57,6 +57,9 @@ export DATABASE_URL_MAINT="${DATABASE_URL_MAINT:-postgres://cashless_maint:$CASH
 # Mission passerelle-locale : processus `edge` (cashless_edge) et outil d'administration (cashless_edgeadmin).
 export DATABASE_URL_EDGE="${DATABASE_URL_EDGE:-postgres://cashless_edge:$CASHLESS_EDGE_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_EDGEADMIN="${DATABASE_URL_EDGEADMIN:-postgres://cashless_edgeadmin:$CASHLESS_EDGEADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+# Mission hors-ligne-snapshots-lots : processus de contenu et de signature des instantanés (roles.sql).
+export DATABASE_URL_SNAPCONTENT="${DATABASE_URL_SNAPCONTENT:-postgres://cashless_snapcontent:$CASHLESS_SNAPCONTENT_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+export DATABASE_URL_SNAPSIGN="${DATABASE_URL_SNAPSIGN:-postgres://cashless_snapsign:$CASHLESS_SNAPSIGN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 
 # Mission identite-enrolement-terminaux : VALEURS DE TEST seulement (publiques), identiques aux défauts hors
 # production de apps/api/src/config/config.ts ; refusées en production même posées (secrets de test). En production,

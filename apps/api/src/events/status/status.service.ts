@@ -34,10 +34,7 @@ export interface StatusCondition {
 /** Conditions tenues par une autre mission (§12.1) : nommées, pas encore calculables. */
 const EXTERNAL: Partial<Record<EventStatus, Array<{ code: string; owner: string }>>> = {
   RECONCILING: [{ code: 'DEVICES_REPORTED', owner: 'Terminaux' }],
-  SETTLING: [
-    { code: 'CASH_DESKS_COUNTED', owner: 'Recharges, caisses et PSP' },
-    { code: 'PSP_RECONCILED', owner: 'Recharges, caisses et PSP' },
-  ],
+  SETTLING: [{ code: 'CASH_DESKS_COUNTED', owner: 'Recharges, caisses et PSP' }],
 };
 
 /** Statut suivant du diagramme de §12.1 ; `null` après `CLOSED`. */

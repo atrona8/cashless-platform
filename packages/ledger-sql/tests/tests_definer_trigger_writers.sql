@@ -127,17 +127,19 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
              FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_class c ON c.oid = t.tgrelid
             WHERE NOT t.tgisinternal AND p.prosecdef AND c.relnamespace = 'public'::regnamespace
               AND p.proname <> 'edge_ref_trigger'),
-  'account:account_hot_switch anomaly:anomaly_cash_due_guard app_user:app_user_guard audit_log:audit_log_chain '
-  'config_version:config_version_assign contract:contract_version_assign '
+  'account:account_hot_switch account_mapping:account_mapping_scope_guard anomaly:anomaly_cash_due_guard app_user:app_user_guard audit_log:audit_log_chain '
+  'closing_step:closing_step_scope_guard config_version:config_version_assign contract:contract_version_assign '
   'device_seq_registry:close_offline_batch_retry event:event_jurisdiction_bounds '
-  'event:event_references_guard event_psp_selection:event_psp_selection_guard fee_rule:fee_rule_guard '
+  'event:event_references_guard event_psp_selection:event_psp_selection_guard '
+  'external_statement_line:external_statement_line_scope_guard '
+  'external_statement_line:external_statement_line_update_guard fee_rule:fee_rule_guard '
   'media:log_media_status media_batch:log_batch_status '
   'merchant_participation:participation_guard '
   -- Mission hors-ligne-snapshots-lots (WP08) : log_offline_policy passe en DEFINER (0043, OP-N58),
   -- offline_policy_scope_guard (0043, contrôle de portée) et log_wallet_status (0047, AFTER UPDATE et
   -- AFTER INSERT avec WHEN : deux déclencheurs, une fonction)
   'offline_policy:log_offline_policy offline_policy:offline_policy_scope_guard '
-  'point_of_sale:point_of_sale_guard '
+  'payout:payout_scope_guard point_of_sale:point_of_sale_guard '
   -- Mission passerelle-locale (WP13, 0066, décision 38 du porteur) : check_balanced (déclencheur de contrainte
   -- différé posting_balanced) passe en DEFINER pour que le COMMIT d'une écriture sous cashless_edge lise `posting`
   -- sans droit de table. Sans paramètre, ne rend rien, ne lit que les lignes de la transaction et ne fait que
@@ -151,6 +153,11 @@ SELECT is((SELECT string_agg(c.relname || ':' || p.proname, ' ' ORDER BY c.relna
   -- customer_identity pour refuser une demande qui vise un autre prestataire ; elle n'écrit rien : aucun nouvel
   -- écrivain. Fonction à faire relire par une personne (0081).
   'refund_request:refund_request_scope_guard role_assignment:role_assignment_guard '
+  -- Mission 9b (WP06 ; 0083 à 0088) : les gardes de portée de account_mapping, closing_step,
+  -- external_statement_line (insertion et mise à jour), payout et statement_import ne font que lire tenant_of_*()
+  -- et refuser ; elles n'écrivent rien : aucun nouvel écrivain. Ajout exact de six entrées (une par table, deux
+  -- pour external_statement_line), à leur place alphabétique dans la liste ci-dessus.
+  'statement_import:statement_import_scope_guard '
   'wallet:log_wallet_status wallet:log_wallet_status',
   'fonctions de déclencheur SECURITY DEFINER : liste exacte (une nouvelle impose de revoir ses écrivains)');
 -- Mission passerelle-locale (WP08, 0063) : edge_ref_trigger, déclencheur du journal de réplication (écrit au COMMIT).

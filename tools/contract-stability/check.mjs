@@ -4,6 +4,8 @@
 // Compare `packages/contracts/openapi.yaml` à la référence épinglée (commit d2a7c538, SHA-256 dans
 // `contract-baseline.json`) et n'admet que les ajouts facultatifs listés dans ce même fichier, à leurs pointeurs
 // EXACTS et avec l'empreinte de leur contenu. Liste blanche stricte : dans le doute, REFUSÉE.
+// Seules exceptions aux « ajouts » : un relâchement épinglé (ADR-187) et une description réécrite épinglée
+// (ADR-215), chacun à son pointeur exact, avec le texte ou la valeur d'avant et l'empreinte d'après.
 //
 // Codes de sortie (seul 2 prouve un refus) :
 //   0  aucune différence refusée
@@ -151,6 +153,19 @@ export function classify(baseline, candidate, whitelist) {
       return same
         ? { ...base, verdict: 'ADMISE', reason: 'liste blanche (relaxation)' }
         : { ...base, verdict: 'REFUSÉE', reason: 'relâchement différent de celui épinglé' };
+    }
+    // Description réécrite (ADR-215, mission 9b) : UN seul pointeur finissant par `/description`, texte d'avant
+    // égal à celui épinglé et empreinte du texte d'après épinglée. Aucun autre champ ne peut changer ainsi.
+    if (d.kind === 'CHANGE' && relax?.kind === 'description') {
+      const same =
+        d.pointer.endsWith('/description') &&
+        typeof d.before === 'string' &&
+        typeof d.after === 'string' &&
+        d.before === relax.before &&
+        subtreeHash(d.after) === relax.sha256;
+      return same
+        ? { ...base, verdict: 'ADMISE', reason: 'liste blanche (description)' }
+        : { ...base, verdict: 'REFUSÉE', reason: 'description différente de celle épinglée' };
     }
     if (d.kind !== 'ADD') {
       return { ...base, verdict: 'REFUSÉE', reason: `${d.kind} : seul un ajout est admis` };
