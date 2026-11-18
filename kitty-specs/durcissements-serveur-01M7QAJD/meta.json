@@ -1,0 +1,17 @@
+{
+  "coordination_branch": "kitty/mission-durcissements-serveur-01M7QAJD",
+  "created_at": "2026-11-18T12:37:09.842388+00:00",
+  "flattened": false,
+  "friendly_name": "Durcissements serveur hérités",
+  "mid8": "01M7QAJD",
+  "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+  "mission_number": null,
+  "mission_slug": "durcissements-serveur-01M7QAJD",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Plusieurs missions ont accepté des limites de sécurité côté serveur (écritures directes de l'application sur des tables gardées par des fonctions, PIN des vendeurs vérifié dans l'API, vendeur absent de la clé des sessions de vente, IBAN non masqué, garde-fous manquants sur les remboursements et versements). Cette mission les lève sans affaiblir aucun contrôle existant, avant la mise en production.",
+  "purpose_tldr": "Lever les dettes de sécurité serveur héritées des missions 4, 5a, 5b, 8 et 9b, chacune prouvée par un test.",
+  "slug": "durcissements-serveur-01M7QAJD",
+  "target_branch": "feat/durcissements-serveur",
+  "topology": "coord"
+}
