@@ -410,7 +410,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   OP-N140, OP-N141 et OP-N145 levés, OP-N64 « côté serveur prêt ». Décisions du porteur du 18/11/2026 : le serveur
   garde l'identifiant de clé App Attest et vérifie les assertions, borne iOS gardée jusqu'à la mission 12 ; IBAN
   masqué dans les journaux et chiffré au repos par le service de clés existant ; grand livre d'une passerelle rendu par
-  son inscription (argument manuel refusé) ;
+  son inscription (argument manuel refusé) ; au plan (18/11/2026) : IBAN chiffré aux trois emplacements par une clé de
+  configuration de l'API (limite : clé dans le processus public, levée avec le vrai KMS), `refund_deposit(uuid, uuid)`
+  gardée interne et exécutable par personne, droit d'exécution étroit du compteur App Attest accordé à l'API ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :

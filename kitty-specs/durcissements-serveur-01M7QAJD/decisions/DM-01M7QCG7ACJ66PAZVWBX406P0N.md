@@ -4,9 +4,9 @@
 - **Origin flow:** `plan`
 - **Slot key:** `plan.security.iban-key`
 - **Input key:** `iban_key_location`
-- **Status:** `deferred`
+- **Status:** `resolved`
 - **Created:** `2026-11-18T13:10:54.540534+00:00`
-- **Resolved:** `2026-11-18T13:11:19.532712+00:00`
+- **Resolved:** `2026-11-18T14:37:15.158941+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,13 +22,13 @@ OP-N140 : le processus public n'a pas de service de clés et l'export CSV qui do
 
 ## Final answer
 
-_(none)_
+Clé de configuration dans l'API : AES-256-GCM, anneau de clés en configuration, production refusée sans clé ; chiffrement aux trois emplacements (refund_request.iban, payout.iban, approval_request.payload avec iban_mask) ; CHECK NOT VALID ; limite résiduelle (clé dans le processus public) consignée, levée avec le vrai KMS
 
 ## Rationale
 
-Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; écart de sécurité ou écart à une décision du porteur (règle du 13/10/2026) : soumis, codage du lot concerné en attente de sa réponse.
+_(none)_
 
 ## Change log
 
 - `2026-11-18T13:10:54.540534+00:00` — opened
-- `2026-11-18T13:11:19.532712+00:00` — deferred
+- `2026-11-18T14:37:15.158941+00:00` — resolved (final_answer="Clé de configuration dans l'API : AES-256-GCM, anneau de clés en configuration, production refusée sans clé ; chiffrement aux trois emplacements (refund_request.iban, payout.iban, approval_request.payload avec iban_mask) ; CHECK NOT VALID ; limite résiduelle (clé dans le processus public) consignée, levée avec le vrai KMS")

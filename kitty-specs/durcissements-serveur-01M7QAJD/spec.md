@@ -121,7 +121,7 @@ anciennes signatures n'existent plus ; les parcours de la 9a et de la 9b passent
 
 1. **Given** le rôle `cashless_app`, **When** il insère une demande à un autre état que l'état initial, **Then** refus.
 2. **Given** la base, **When** on cherche `refund_deposit(uuid, uuid)` ou `refund_deposit_for_session(uuid, uuid)`,
-   **Then** elles n'existent plus et aucun appelant n'en dépend.
+   **Then** la première n'existe plus, la seconde n'est exécutable par aucun rôle.
 
 ---
 
@@ -220,7 +220,7 @@ l'événement ; l'ancien argument est refusé.
 | FR-009 | IBAN masqué au journal | En tant que plateforme, je veux qu'un IBAN ne paraisse jamais en clair dans un journal d'erreur ou de requête (OP-N140). | High | Open | build | no |
 | FR-010 | IBAN chiffré au repos | En tant que plateforme, je veux que l'IBAN soit chiffré en base aux trois endroits où il est gardé (demande de remboursement, versement, contenu des demandes d'approbation), et déchiffré seulement pour l'export du lot de virements (OP-N140 ; moyen de chiffrement différé au plan, décision 1). | High | Open | build | no |
 | FR-011 | Demande née à son état initial | En tant que plateforme, je veux que `cashless_app` ne puisse insérer une demande de remboursement qu'à son état initial (OP-N145). | High | Open | build | no |
-| FR-012 | Anciennes signatures retirées | En tant que plateforme, je veux que `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` n'existent plus, sans appelant cassé (OP-N145). | Medium | Open | build | no |
+| FR-012 | Anciennes signatures fermées | En tant que plateforme, je veux que `refund_deposit_for_session(uuid, uuid)` n'existe plus et que `refund_deposit(uuid, uuid)`, gardée pour ses appelants internes, ne soit exécutable par aucun rôle (OP-N145 ; amendé le 18/11/2026, décision du porteur). | Medium | Open | build | no |
 | FR-013 | Mauvais rôle sans effet | En tant qu'administrateur, je veux qu'un approbateur du mauvais rôle reçoive `403` et que la demande de lot reste en attente (OP-N137 a). | Medium | Open | build | no |
 | FR-014 | Refus par rôle de classe | En tant qu'administrateur, je veux qu'un refus de lot exige le même rôle de classe de bénéficiaire que la validation (OP-N137 b). | Medium | Open | build | no |
 | FR-015 | Rejeu de confirmation audité | En tant qu'auditeur, je veux qu'une confirmation de versement rejouée laisse une ligne d'audit, sans écriture au grand livre (OP-N137 c). | Medium | Open | build | no |

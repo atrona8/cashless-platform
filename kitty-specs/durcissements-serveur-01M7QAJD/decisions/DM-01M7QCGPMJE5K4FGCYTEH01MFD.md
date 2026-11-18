@@ -4,9 +4,9 @@
 - **Origin flow:** `plan`
 - **Slot key:** `plan.security.app-attest-grants`
 - **Input key:** `app_attest_grants`
-- **Status:** `deferred`
+- **Status:** `resolved`
 - **Created:** `2026-11-18T13:11:10.226295+00:00`
-- **Resolved:** `2026-11-18T13:11:36.369160+00:00`
+- **Resolved:** `2026-11-18T14:37:30.181624+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,13 +22,13 @@ OP-N64 : garder la clé App Attest à l'enrôlement (nouvelle version d'enroll_d
 
 ## Final answer
 
-_(none)_
+Oui : un seul EXECUTE nouveau pour cashless_app sur advance_app_attest_counter (mise à jour seulement si le compteur croît), figé dans tests_execute_grants.sql ; clé gardée par une nouvelle version d'enroll_device ; risque de déni de service des assertions consigné
 
 ## Rationale
 
-Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; écart de sécurité ou écart à une décision du porteur (règle du 13/10/2026) : soumis, codage du lot concerné en attente de sa réponse.
+_(none)_
 
 ## Change log
 
 - `2026-11-18T13:11:10.226295+00:00` — opened
-- `2026-11-18T13:11:36.369160+00:00` — deferred
+- `2026-11-18T14:37:30.181624+00:00` — resolved (final_answer="Oui : un seul EXECUTE nouveau pour cashless_app sur advance_app_attest_counter (mise à jour seulement si le compteur croît), figé dans tests_execute_grants.sql ; clé gardée par une nouvelle version d'enroll_device ; risque de déni de service des assertions consigné")

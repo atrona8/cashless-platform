@@ -4,9 +4,9 @@
 - **Origin flow:** `plan`
 - **Slot key:** `plan.security.refund-deposit-legacy`
 - **Input key:** `refund_deposit_legacy`
-- **Status:** `deferred`
+- **Status:** `resolved`
 - **Created:** `2026-11-18T13:11:02.260148+00:00`
-- **Resolved:** `2026-11-18T13:11:28.366119+00:00`
+- **Resolved:** `2026-11-18T14:37:22.642965+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,13 +22,13 @@ OP-N145 : retirer refund_deposit(uuid, uuid), appelée par refund_deposit_from_b
 
 ## Final answer
 
-_(none)_
+Garder refund_deposit(uuid, uuid) interne, exécutable par aucun rôle, prouvé par test ; écart à FR-012 neutre, consigné ; refund_deposit_for_session(uuid, uuid) retirée
 
 ## Rationale
 
-Porteur indisponible le 18/11/2026 (consigne : continuer en autonomie) ; écart de sécurité ou écart à une décision du porteur (règle du 13/10/2026) : soumis, codage du lot concerné en attente de sa réponse.
+_(none)_
 
 ## Change log
 
 - `2026-11-18T13:11:02.260148+00:00` — opened
-- `2026-11-18T13:11:28.366119+00:00` — deferred
+- `2026-11-18T14:37:22.642965+00:00` — resolved (final_answer="Garder refund_deposit(uuid, uuid) interne, exécutable par aucun rôle, prouvé par test ; écart à FR-012 neutre, consigné ; refund_deposit_for_session(uuid, uuid) retirée")

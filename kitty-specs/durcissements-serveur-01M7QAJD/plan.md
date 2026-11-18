@@ -62,7 +62,7 @@ s'appliquent à la place : `CLAUDE.md` (règle du porteur du 13/10/2026 sur les 
 - 18/11/2026, specify : OP-N64 côté serveur prêt (keyId gardé, assertions vérifiées, borne iOS gardée) ; OP-N140 masque
   et chiffrement au repos ; OP-N116 grand livre rendu par l'inscription.
 
-### Décisions différées (porteur indisponible le 18/11/2026)
+### Décisions différées le 18/11/2026, tranchées par le porteur à son retour le même jour
 
 1. **Clé de chiffrement de l'IBAN (OP-N140).** La décision de la spec supposait le service de clés existant ; or le
    processus public n'en a aucun port (`test/unit/architecture.spec.ts:158-170` l'interdit), seul un faux existe, et
@@ -71,19 +71,19 @@ s'appliquent à la place : `CLAUDE.md` (règle du porteur du 13/10/2026 sur les 
    emplacements de l'IBAN (`refund_request.iban`, `payout.iban`, `approval_request.payload`). Limite résiduelle : la clé
    est dans le processus public (gain : base, sauvegardes, réplicas, autres rôles, injection SQL en lecture). Alternative :
    masque seul, chiffrement reporté au vrai KMS (12b). Le masque dans les journaux (FR-009) n'en dépend pas et avance.
-   [NEEDS CLARIFICATION: clé de configuration dans l'API ou chiffrement reporté au vrai KMS] <!-- decision_id: 01M7QCG7ACJ66PAZVWBX406P0N -->
+   **Tranché par le porteur le 18/11/2026 : clé de configuration dans l'API** (aux trois emplacements ; limite résiduelle consignée).
 2. **Ancienne signature `refund_deposit(uuid, uuid)` (OP-N145).** Elle est appelée par `refund_deposit_from_balance`
    (0041), par le générateur `gen_tests.py` (l. 407 et 918) et définie dans le schéma de référence ; elle n'est
    exécutable par aucun rôle applicatif. La retirer impose de modifier le générateur et le schéma de référence.
    Proposition : la garder interne (écart à FR-012, neutre pour la sécurité, consigné) ; `refund_deposit_for_session(uuid, uuid)`,
    seule accordée à l'API et appelée par aucun code TypeScript, est retirée.
-   [NEEDS CLARIFICATION: garder refund_deposit(uuid, uuid) interne ou la retirer avec le générateur] <!-- decision_id: 01M7QCGEVM562A0K8X9W456TMF -->
+   **Tranché par le porteur le 18/11/2026 : la garder interne**, exécutable par aucun rôle (test), écart à FR-012 consigné.
 3. **Droits pour App Attest (OP-N64).** Garder la clé à l'enrôlement se fait dans une nouvelle version
    d'`enroll_device` (même droit qu'aujourd'hui). Faire avancer le compteur exige un `EXECUTE` nouveau pour
    `cashless_app` sur une fonction étroite (`advance_app_attest_counter` : mise à jour seulement si le compteur
    croît). Risque : une API compromise peut faire avancer un compteur (déni de service des assertions de cet appareil,
    aucun accès gagné). Alternative : reporter tout OP-N64 côté serveur à la mission 12.
-   [NEEDS CLARIFICATION: EXECUTE nouveau et étroit pour le compteur App Attest ou report à la mission 12] <!-- decision_id: 01M7QCGPMJE5K4FGCYTEH01MFD -->
+   **Tranché par le porteur le 18/11/2026 : oui**, un seul `EXECUTE` nouveau et étroit, figé ; risque de déni de service consigné.
 
 ### Écarts de sécurité
 
@@ -93,9 +93,9 @@ s'appliquent à la place : `CLAUDE.md` (règle du porteur du 13/10/2026 sur les 
 | `set_media_batch_status`, `media_set_status`, `issue_claim_codes` passent `SECURITY DEFINER` (corps identique) | Renforcement : permettent de retirer `UPDATE (status)` sur `media` et `UPDATE` sur `media_batch` | Fait puis consigné |
 | `media_set_status` limité à `SUSPENDED` et `BLACKLISTED` | Renforcement | Fait puis consigné |
 | L'API voit toujours le PIN en transit (OP-N76) ; création et changement de PIN restent appelés par l'API | Limite résiduelle, inchangée | Nommée dans l'ADR de levée |
-| Clé de l'IBAN dans le processus public | Écart à la décision du porteur | **Différé** (décision 1) |
-| `refund_deposit(uuid, uuid)` gardée | Écart à FR-012, neutre | **Différé** (décision 2) |
-| `EXECUTE` nouveau pour le compteur App Attest | Capacité nouvelle, étroite | **Différé** (décision 3) |
+| Clé de l'IBAN dans le processus public | Écart à la décision initiale du porteur | Accepté par le porteur (décision 1) : OP, ADR, test de borne |
+| `refund_deposit(uuid, uuid)` gardée | Écart à FR-012, neutre | Accepté par le porteur (décision 2) : ADR, test « exécutable par personne » |
+| `EXECUTE` nouveau pour le compteur App Attest | Capacité nouvelle, étroite | Accepté par le porteur (décision 3) : OP, ADR, liste figée |
 
 ### Amendements de la spec (faits avec ce plan)
 
