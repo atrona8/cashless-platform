@@ -67,6 +67,8 @@ LANG=C`**.
   précédent ne vaut pas : l'état du shell ne persiste pas. `PGDATABASE` seul ne suffit pas
   (`test/support/db.ts` retombe sur `cashless_test`). Toutes les URL doivent viser ta base. Après un
   Jest, refais `reset-db`.
+- Jamais `pg_prove tests/*.sql` ni aucun pg_prove en tâche de fond (deadlocks dans le conteneur partagé, incident du
+  18/11/2026) : suites nommées, au premier plan.
 - Jamais de batterie complète (l'orchestrateur la passe en série, `--maxWorkers=2`) ; toujours
   `--runInBand`.
 - **API partagée du porteur (ngrok, `exports/cashless-api`, port 80, base Docker `cashless-api-db-1`
@@ -80,9 +82,9 @@ LANG=C`**.
    le message par `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`). Jamais de push.
 2. `LC_ALL=C LANG=C spec-kitty agent tasks mark-status <Txxx…> --status done --mission
    durcissements-serveur-01M7QAJD`.
-3. Si `docs/passation-11a/scripts/align-lane.sh` existe, lance-le avant `move-task` (réalignement des
-   artefacts `kitty-specs`). Sinon, si un garde `kitty-specs` bloque : **pas de `--force`**,
-   signale-le.
+3. Lance `bash /Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/docs/passation-11a/scripts/align-lane.sh
+   <lettre de ta lane>` (le script est dans le **dépôt principal**, pas dans la lane) avant `move-task`. Si un garde
+   `kitty-specs` bloque encore : **pas de `--force`**, signale-le.
 4. `LC_ALL=C LANG=C spec-kitty agent tasks move-task WPxx --to for_review --mission
    durcissements-serveur-01M7QAJD --note "…"` : la note de lane liste les retouches hors
    carte (dont l'import d'`app.module.ts`), les écarts, les noms figés produits. La commande lance
