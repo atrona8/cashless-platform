@@ -57,6 +57,7 @@ export function parseStatementHeader(query: Record<string, unknown>): StatementH
     typeof source !== 'string' ||
     source.trim() === '' ||
     source.length > 64 ||
+    // eslint-disable-next-line no-control-regex -- refuser les caractères de contrôle est le but du test
     /[\u0000-\u001f\u007f]/.test(source)
   )
     throw bad('source : texte de 1 à 64 caractères, sans caractère de contrôle, attendu.');
@@ -88,6 +89,7 @@ export function parseStatementFile(text: string): ParsedLine[] {
   return rows.map((row, k) => {
     const n = k + 1;
     const ref = String(row.external_ref);
+    // eslint-disable-next-line no-control-regex -- refuser les caractères de contrôle est le but du test
     if (ref.trim() === '' || ref.length > 255 || /[\u0000-\u001f\u007f]/.test(ref))
       throw unprocessable(
         `Ligne ${n} : external_ref de 1 à 255 caractères, sans caractère de contrôle, attendu.`,

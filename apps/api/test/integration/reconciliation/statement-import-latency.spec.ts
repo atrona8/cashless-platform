@@ -65,7 +65,6 @@ describe('NFR-003 : import de 10 000 lignes', () => {
         closing: 1,
       });
       const seconds = (Date.now() - started) / 1000;
-      // eslint-disable-next-line no-console
       console.log(`NFR-003 : ${total} lignes importées et rapprochées en ${seconds.toFixed(2)} s`);
       expect(res.status).toBe(201);
       expect(res.body).toMatchObject({ lines_created: total, lines_matched: total });

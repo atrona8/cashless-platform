@@ -384,7 +384,7 @@ describe('relevés des parties : scénario de référence rejoué par le moteur'
 
   describe('JSON et CSV', () => {
     it('CSV : en-têtes, type, UTF-8 ; mêmes totaux que le JSON ; nombre de lignes identique', async () => {
-      const { first, lines } = await pages('ORGANIZER', w.fx.parties.ORG);
+      const { lines } = await pages('ORGANIZER', w.fx.parties.ORG);
       const res = await w
         .get(path('ORGANIZER', `?party_id=${w.fx.parties.ORG}&format=csv`))
         .buffer(true);

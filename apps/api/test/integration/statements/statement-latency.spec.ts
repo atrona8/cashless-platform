@@ -117,7 +117,6 @@ suite('NFR-004 : relevés d’une partie sur 100 000 transactions', () => {
       );
     }
     const sortedAll = all.sort((a, b) => a - b);
-    // eslint-disable-next-line no-console
     console.log(
       `NFR-004 (${TRANSACTIONS} transactions, ${CONCURRENT} simultanés par partie)\n${report.join('\n')}\n` +
         `TOUTES    min ${sortedAll[0]!.toFixed(0)} ms, médiane ${percentile(sortedAll, 0.5).toFixed(0)} ms, ` +
