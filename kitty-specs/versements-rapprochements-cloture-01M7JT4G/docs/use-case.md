@@ -1,6 +1,6 @@
 # Cas d'usage : mission versements-rapprochements-cloture-01M7JT4G
 
-> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), non acceptée, non consolidée** (mission 9b « Versements, rapprochements et clôture »). Routes servies sur la branche de la mission (lane finale), `404` dans `feat` et `main` jusqu'à la consolidation. Document recalé sur le code réel le 17/11/2026.
+> État : **review terminée le 17/11/2026 (14 lots sur 14 approuvés), acceptée le 17/11/2026 (`15f1a19c`), consolidée sur `feat` (squash `b4b81d8c`), dans `main` par la PR #18 le 18/11/2026** (mission 9b « Versements, rapprochements et clôture »). Routes servies dans `main` depuis la PR #18. Document recalé sur le code réel le 17/11/2026.
 > Source : `spec.md` (7 user stories, 24 FR, 6 NFR, 11 contraintes), `plan.md`, `research.md` (R-01 à R-16), `data-model.md`, `contracts/` et
 > `docs/passation-9b/contexte-9b.md` (décisions 1 à 17 du porteur du 17/11/2026) et `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`. Diagrammes `/illustre` (préférence du porteur du 13/10/2026), police sans empattement,
 > rendus relus ; sources et générateur dans [`diagrams/`](diagrams/) (`generate.py`).

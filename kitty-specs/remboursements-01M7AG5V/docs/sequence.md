@@ -1,6 +1,6 @@
 # Séquences : mission remboursements-01M7AG5V
 
-> État : **review terminée le 16/11/2026, acceptation à venir, non fusionnée**. Flux recalés sur le code livré (lane-g) et les décisions 11 à 15 ;
+> État : **review terminée le 16/11/2026, acceptée le 16/11/2026 (`8cd5ae97`), dans `main` par la PR #15 le 16/11/2026**. Flux recalés sur le code livré (lane-g) et les décisions 11 à 15 ;
 > les trois diagrammes ont été régénérés à la review. Diagrammes `/illustre`, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`).
 
 ## Flux internes propres à cette mission

@@ -1,6 +1,6 @@
 # Notes d'architecture : mission remboursements-01M7AG5V
 
-> État : **review terminée le 16/11/2026 (sept lots approuvés), acceptation à venir, non fusionnée**, recalé sur le code livré (lane-g). Sources : `plan.md`, `research.md` (R-01 à R-12), `data-model.md`, `contracts/`. Aucun
+> État : **review terminée le 16/11/2026 (sept lots approuvés), acceptée le 16/11/2026 (`8cd5ae97`), dans `main` par la PR #15 le 16/11/2026**, recalé sur le code livré (lane-g). Sources : `plan.md`, `research.md` (R-01 à R-12), `data-model.md`, `contracts/`. Aucun
 > conteneur nouveau : tout vit dans l'API centrale et la base existantes.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
