@@ -153,6 +153,219 @@
       "kind": "relaxation",
       "before": 1,
       "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+    },
+    {
+      "pointer": "/paths/~1refund-requests/post",
+      "kind": "operation",
+      "sha256": "9c3811caf0fc39ce5d6467250ea1220720a76aaec21a72873aaf6b14e6eb0a5a"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps",
+      "kind": "path",
+      "sha256": "8c73a1fcf7ef9bd2a4bab7436cb5201acf89e168da088a82726ddf471fdadaf9"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps~1{step}~1preview",
+      "kind": "path",
+      "sha256": "c042585953395b9b470d2ab4e83082ab57b4e97021d2fc9d820f365d1ed229e7"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps~1{step}",
+      "kind": "path",
+      "sha256": "8a4c68c5a217a0ccd2a19a7a9f868136448747e66bb6b8483a55e2fa0425c38a"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1remaining-balances",
+      "kind": "path",
+      "sha256": "6f755323b714e32969e2b293d85b7cba6bc0364451890f0add13e885e37475c1"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-entitlements",
+      "kind": "path",
+      "sha256": "64290e41904f975ea4254bff08fa72e35a9f8ee6cf273fa7fed21bc744cd7bf2"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-batches~1approval-requests",
+      "kind": "path",
+      "sha256": "6ddaf4cc4fcb03780a8d9e38d589d1599eb634c46d2ca9e582fddd43f8c979cb"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1payouts",
+      "kind": "path",
+      "sha256": "4f126b1933f458d6709016bec8cbd89e7ec0f6590fe2beae7bb5c5143cca95da"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-batches~1{approval_request_id}~1export",
+      "kind": "path",
+      "sha256": "9f43af94737565cf5187a2fcb8c5f537d9e41b044acb6d637387091cf48a2d4e"
+    },
+    {
+      "pointer": "/paths/~1payouts~1{payout_id}~1confirm",
+      "kind": "path",
+      "sha256": "cd968f5f3494291616dd751d182f9de220166cbe6e449ca9f97ebd8e278aacf8"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1accounts~1{account_id}~1statements",
+      "kind": "path",
+      "sha256": "9f4138bec723e3f378cf34f0b0c66ab63403625438632489ef4301183911ba03"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1statement-lines",
+      "kind": "path",
+      "sha256": "399a9b7c251405ad2751f3b4c8c980e15074672a745c3589635ae8100ef1e1ee"
+    },
+    {
+      "pointer": "/paths/~1statement-lines~1{statement_line_id}~1match",
+      "kind": "path",
+      "sha256": "ca593cda1249d9246df9c8adbac2cdb095a22650df4d1e8e2bf34745abb92914"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1reconciliation",
+      "kind": "path",
+      "sha256": "7a1381c8c158a3891017b5d38a793d46b68f4d29b0a329fe51f2c9438704303e"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1late-adjustments",
+      "kind": "path",
+      "sha256": "694e93549f1e482a9ee505f4f20cf5fb98f50d1a57b14b5de6c3cc8bed79c1c3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1statements~1{party_kind}",
+      "kind": "path",
+      "sha256": "fb004b1c51e20d296551342c09ddb6781d70aa2430db011685470280f1a5c9fb"
+    },
+    {
+      "pointer": "/paths/~1me~1wallets~1{wallet_id}~1statement",
+      "kind": "path",
+      "sha256": "3843628ab97cd92d0fa0a214bc40d9c77b7e809e3951e163929aadc2b707f5e9"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1account-mappings",
+      "kind": "path",
+      "sha256": "f1f72ec2cf6a3c7faba2799fc7cbd8f7c042b5ccf08c42d52ede18dd5c07f1b1"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1accounting-exports",
+      "kind": "path",
+      "sha256": "21e25e847eefe97ea74b6248159f78250826954c36ff27945786f94647f54269"
+    },
+    {
+      "pointer": "/components/parameters/IdempotencyKey/description",
+      "kind": "description",
+      "before": "Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.\nConservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).\nTerminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`\nsans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`\nne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.\nException : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée\n`device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du\nterminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).\nRoutes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,\n`createCustomerQrToken`, `createDeviceEnrollmentCode`) : aucune réponse n'est enregistrée ; un renvoi de la\nmême clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.\n",
+      "sha256": "ff9cb5fba1f5a0810db8053013a6ecb540c146d821b663e8135be7a4cc44f73c"
+    },
+    {
+      "pointer": "/components/schemas/ProblemCode/description",
+      "kind": "description",
+      "before": "Codes métier stables (ne jamais renommer ; en ajouter est une évolution compatible). La traduction\nSQLSTATE → code suit SPECIFICATION §5.7 (jamais le texte du message SQL). Sens de chaque code :\n- `VALIDATION_FAILED` (400, ou 422 pour une valeur bien formée mais non prise en charge) : requête ou donnée invalide, y compris tout refus `CL001` de la base.\n- `UNAUTHENTICATED` (401) : jeton ou certificat absent, expiré ou invalide.\n- `FORBIDDEN` (403) : rôle insuffisant (y compris le valideur d'une demande d'approbation), ou refus de la\n  base faute de seconde personne distincte de l'auteur (`23514`).\n- `APPROVAL_REQUIRED` (403) : opération de guichet qui exige une seconde personne, sans en-tête\n  `X-Approval-Token` (ADR-74).\n- `APPROVAL_INVALID` : seconde validation refusée (ADR-74). Règle : `403` pour un jeton d'approbation sur\n  place (invalide, expiré, déjà utilisé, d'une autre action ou de la même personne que l'appelant, rôle\n  du valideur insuffisant) ; `409` (`CL023`) pour une demande d'approbation du back-office (expirée, déjà\n  décidée, ou décidée par son auteur). 403 = la preuve jointe à la requête ne vaut rien ; 409 = l'état\n  de la demande enregistrée ne permet plus la décision.\n- `NOT_FOUND` (404) : objet inexistant ou d'un autre prestataire (réponse neutre).\n- `RATE_LIMITED` (429) : trop de requêtes ou d'essais ; voir `Retry-After`.\n- `INTERNAL_ERROR` (500) : erreur interne ; réessayer avec la même clé d'idempotence.\n- `SERVICE_UNAVAILABLE` (503) : service momentanément indisponible ; réessayer avec la même clé.\n- `IDEMPOTENCY_KEY_REQUIRED` (400) : écriture sans en-tête `Idempotency-Key`.\n- `IDEMPOTENCY_KEY_REUSED` (409, `CL002`) : même clé, contenu différent.\n- `IDEMPOTENCY_KEY_IN_PROGRESS` (409) : requête concurrente avec la même clé encore en cours.\n- `ENROLLMENT_CODE_INVALID` (422) : code d'enrôlement inconnu ou déjà utilisé.\n- `ENROLLMENT_CODE_EXPIRED` (422) : code d'enrôlement expiré.\n- `ATTESTATION_FAILED` (422) : attestation de clé Android non conforme (clé hors du matériel sécurisé,\n  bootloader déverrouillé, application non signée ou modifiée). Pas de MDM (ADR-69).\n- `REFRESH_TOKEN_INVALID` (401) : jeton de rafraîchissement inconnu, déjà consommé (la famille est\n  révoquée) ou preuve de possession invalide.\n- `DEVICE_SUSPENDED` (403) : terminal suspendu.\n- `DEVICE_REVOKED` (403) : terminal révoqué (SQLSTATE `42501`).\n- `DEVICE_NOT_ASSIGNED` (409) : terminal sans affectation (événement, point de vente) pour cette action.\n- `DEVICE_MODE_NOT_ALLOWED` (422) : mode d'application non permis ; en V1, tout usage de `PAIRED_TPE`\n  ou de `payment_intent_id` (V2, ADR-43).\n- `CLOCK_SKEW_TOO_LARGE` (400) : horloge du terminal hors de la tolérance (`clock_tolerance_seconds`).\n  Sur une route de terminal, l'heure du serveur est renvoyée dans l'en-tête `Date`.\n- `DEVICE_SIGNATURE_INVALID` (401) : signature de la requête du terminal absente, invalide ou rejouée\n  (`deviceSignature`) ; la réponse ne dit pas quel élément a échoué.\n- `DEVICE_SERIAL_IN_USE` (409) : `serial` déjà porté par un terminal non révoqué du même prestataire.\n- `CURRENCY_MISMATCH` (422) : devise différente de celle de l'événement.\n- `AMOUNT_OUT_OF_RANGE` (422) : montant hors des bornes permises pour l'opération.\n- `INSUFFICIENT_FUNDS` (422, `CL007`) : solde disponible insuffisant (refus en ligne définitif).\n- `WALLET_BLOCKED` (422, `CL039`) : portefeuille bloqué ou clos (à l'initiation d'une recharge PSP et à la\n  notification).\n- `WALLET_LIMIT_EXCEEDED` (422, `CL008`) : plafond de solde dépassé.\n- `MONTHLY_TOPUP_LIMIT_EXCEEDED` (422, `CL009`) : plafond mensuel de recharge dépassé.\n- `MEDIA_UNKNOWN` (404) : UID ou bracelet inconnu (chemin en ligne ; dans un lot :\n  `MEDIA_NOT_IN_SNAPSHOT`).\n- `MEDIA_BLOCKED` (422, `CL038`) : bracelet `SUSPENDED` ou `BLACKLISTED`.\n- `MEDIA_NOT_ACTIVATED` (422) : bracelet `PERSONALIZED` ou `ISSUED`, pas encore rattaché.\n- `MEDIA_RETIRED` (422) : bracelet `RETIRED` ou `DESTROYED`.\n- `MEDIA_REPLACED` (422) : bracelet remplacé par un autre.\n- `MEDIA_RELEASED` (422) : bracelet restitué.\n- `MEDIA_UID_MISMATCH` (422) : identité lue incohérente avec l'UID enregistré.\n- `MEDIA_CLONE_SUSPECTED` (422) : compteur déjà vu ou identité retirée ; bracelet mis en liste noire.\n- `MEDIA_SIGNATURE_MISMATCH` (422) : signature d'originalité différente de celle de la personnalisation\n  (résultat `SIGNATURE_MISMATCH`) ; bracelet mis en liste noire (ADR-59).\n- `MEDIA_SIGNATURE_MISSING` (422) : signature d'originalité absente alors que la puce en a une enregistrée\n  (résultat `SIGNATURE_MISSING`) ; relire le bracelet. Pas de liste noire.\n- `MEDIA_STATE_INVALID` (409, `CL020`) : bracelet ou lot dans un état qui ne permet pas l'action\n  (remplacement, restitution avec espèces dues, rendu d'espèces sans somme due, lot, caution).\n- `MEDIA_WRONG_EVENT` (422) : bracelet d'un lot d'un autre événement.\n- `MEDIA_BATCH_INACTIVE` (422) : lot du bracelet non `ACTIVE`.\n- `MEDIA_CLAIM_INVALID` (422) : code de rattachement inconnu ou déjà utilisé (réponse identique).\n- `TAP_EXPIRED` (422) : `tap_id` au-delà de `tap_replay_window_seconds` (défaut 120 s), contrôle de l'API\n  avant écriture ; relire le bracelet.\n- `TAP_ALREADY_USED` (409) : `tap_id` déjà consommé par une autre opération, ou présenté par un autre\n  terminal (contrôle de l'API avant écriture).\n- `TAP_UNUSABLE` (409, `CL022`) : refus de `consume_tap` : passage déjà utilisé par une autre écriture, ou\n  par une demande de rattachement (lecture qui a confirmé un rattachement, `consume_tap_for_claim`), ou\n  écriture en ligne plus de `tap_replay_window_seconds` après la lecture ; relire le bracelet.\n- `ACTIVATION_MODE_NOT_ALLOWED` (422) : mode d'activation absent de `event.activation_modes`.\n- `ACCOUNT_REQUIRED` (422) : `identity_mode = ACCOUNT_REQUIRED` et aucun compte client fourni.\n- `DEPOSIT_OUTSTANDING` (409) : caution encore `HELD` ; la rendre avant la restitution.\n- `BALANCE_OUTSTANDING` (409) : portefeuille non soldé ; restitution impossible.\n- `DEPOSIT_PAYMENT_REQUIRED` (422) : caution `SEPARATE` sans moyen de paiement (`deposit_payment`).\n- `EVENT_CLOSING` (409, `CL004`) : grand livre en clôture ; recharges et ventes en ligne refusées.\n- `LEDGER_LOCKED` (409, `CL003`) : grand livre verrouillé.\n- `PERIOD_CLOSED` (409, `CL005`) : date dans une période close.\n- `DEBIT_AUTHORITY_EDGE` (409, `CL006`) : débits autorisés par la passerelle ; rejouer la même requête\n  (même clé) vers `edge_base_url`. Pas un refus.\n- `DEBIT_AUTHORITY_MOVING` (409) : bascule d'autorité en cours (passerelle en `RELEASING`). Pas un\n  refus définitif : garder la même clé, passer hors ligne si la politique le permet, puis rejouer vers\n  la nouvelle autorité (sync_protocol.md §5.1, §9.3).\n- `STALE_AUTHORITY_EPOCH` (409, `CL015`) : époque d'autorité périmée ; l'émetteur cesse de débiter.\n- `HANDOVER_INVALID_STATE` (409, `CL013`) : action de bascule impossible dans l'état du handover.\n- `EDGE_NOT_CAUGHT_UP` (409, `CL014`) : passerelle en retard (filigrane non atteint, `edge_seq` manquants).\n- `REVERSAL_NOT_ALLOWED` (422, `CL036`) : transaction non annulable (type, vendeur ou terminal différent).\n- `REVERSAL_WINDOW_EXPIRED` (409) : délai d'annulation dépassé.\n- `ALREADY_REVERSED` (409, `CL035`) : transaction déjà annulée (contrainte\n  `journal_transaction_reverses_once`).\n- `OFFLINE_NOT_ALLOWED` (403) : hors ligne désactivé pour ce terminal (seul nom de ce refus).\n- `SNAPSHOT_VERSION_UNKNOWN` (409) : version de snapshot inconnue pour ce grand livre ; demander un FULL.\n- `BATCH_IN_PROGRESS` (409, `CL010`) : un lot est déjà en cours pour ce terminal ; attendre son résultat.\n- `BATCH_TOO_LARGE` (413, `CL011`) : lot vide ou de plus de 500 opérations ou 1 Mio.\n- `PAYLOAD_TOO_LARGE` (413) : notification de PSP de plus de 64 Kio ; rien n'est conservé.\n- `BATCH_SIGNATURE_INVALID` (400) : signature de l'en-tête du lot invalide ; lot non traité.\n- `CHAIN_BROKEN` (409, `CL017`) : chaîne de hachage rompue (terminal ou passerelle) ; alerte, examen manuel.\n- `SEQ_OUT_OF_ORDER` (400 pour un lot de terminal non continu ; 409, `CL016`, pour un `edge_seq`\n  qui n'est pas le suivant attendu).\n- `SEQ_GAP_NOT_FOUND` (409, `CL012`) : le numéro à lever n'est pas un trou connu.\n- `SEQ_OUT_OF_RANGE` (409, `CL021`) : numéro ou lot au-delà de `contiguous_acked_seq + 10 000`\n  (`max_seq_jump`) ; refusé sans anomalie.\n- `PAYMENT_REQUEST_EXPIRED` (409) : demande de paiement QR expirée.\n- `PAYMENT_REQUEST_NOT_PENDING` (409, `CL037`) : demande de paiement QR déjà payée, annulée ou expirée, ou\n  jeton inconnu ; réponse unique, sans dire lequel des cas.\n- `QR_TOKEN_INVALID` (422) : jeton de QR client inconnu, expiré ou déjà utilisé.\n- `PAYMENT_INTENT_INVALID_STATE` (409, V2) : intention dans un état qui ne permet pas l'action.\n- `PAYMENT_INTENT_EXPIRED` (409, V2) : intention expirée.\n- `PSP_UNAVAILABLE` (503) : PSP injoignable ; réessayer avec la même clé. Inclut un fournisseur\n  indisponible en production tant que les adaptateurs réels ne sont pas livrés (OP-N81).\n- `PSP_NOT_CONFIGURED` (409) : aucune configuration PSP valide pour ce moyen et cet événement (S26b ou défaut de l'organisateur, titulaire = détenteur des fonds, ADR-72) ; le titulaire est contrôlé à la résolution.\n- `PSP_REJECTED` (422) : paiement refusé par le PSP.\n- `WEBHOOK_SIGNATURE_INVALID` (401) : signature HMAC du webhook entrant invalide.\n- `WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE` (401) : horodatage du webhook hors tolérance (rejeu suspect).\n- `REFUND_NOT_ALLOWED` (422) : remboursement impossible (solde payé nul, destination non vérifiée…).\n- `REFUND_WINDOW_CLOSED` (422) : fenêtre de remboursement close.\n- `REFUND_ALREADY_OPEN` (409) : une demande de remboursement est déjà ouverte pour ce portefeuille.\n- `OTP_INVALID` (422) : code à usage unique faux, expiré ou déjà utilisé.\n- `CARD_DAILY_LIMIT` (422) : plafond de recharge par carte et par jour atteint (ADR-77). Contrôlé à la\n  notification, jamais à l'initiation : c'est le motif d'échec d'une recharge (`failure_reason`).\n- `OTP_RATE_LIMITED` (429) : trop de demandes ou d'essais de code à usage unique (défauts : 3 envois par\n  numéro sur 15 min, 10 demandes par IP et par heure, 5 essais par code puis blocage du numéro 30 min).\n- `CONFLICT_STATE` (409) : objet dans un état qui ne permet pas l'action (ex. demande de\n  remboursement qui n'est pas `REQUESTED` à l'approbation ; opération en espèces sans session de caisse\n  ouverte pour le terminal, ADR-89).\n- `EVENT_TRANSITION_INVALID` (409, `CL018`) : passage de statut d'événement non prévu (ADR-51).\n- `CLOSING_CONDITION_NOT_MET` (409, `CL019`) : condition de clôture calculable non remplie ; le détail nomme la condition (ADR-51).\n- `ENROLLMENT_EVENT_CLOSED` (422, `CL031`) : création d'un code d'enrôlement ou enrôlement refusé pour un\n  événement `CLOSED` ou un point de vente supprimé, ou, dès `CLOSING`, pour les modes `CATALOG_POS` et\n  `KEYPAD_TPE` (OP-N74) ; rien n'est écrit.\n- `VENDOR_SESSION_INVALID` (409, `CL032`) : session de vendeur absente, close, expirée, d'un autre terminal\n  ou autre que celle désignée, ou vendeur désactivé ou bloqué ; ouvrir une nouvelle session.\n- `VENDOR_PIN_INVALID` (401, `CL033`) : ouverture de session refusée ; réponse unique (même statut, même\n  corps) pour un PIN faux, un vendeur inconnu, bloqué, désactivé ou d'un autre commerçant (NFR-004).\n- `SALE_LINES_INVALID` (422, `CL034`) : lignes de vente refusées (article inconnu, inactif ou d'un autre\n  point de vente, prix ou taux ni courant ni servi au terminal, somme différente du montant) ; se\n  resynchroniser.\n",
+      "sha256": "2216926350d566b0f2bc6398dbc4ba427d0684be1288dc44f8a975398347a922"
+    },
+    {
+      "pointer": "/components/schemas/ProblemCode/enum/96",
+      "kind": "enum-value",
+      "sha256": "8512175f11105fe848e9bf63969a38e96faae6b8f2ddc0ea1963b3ceaa082c0d"
+    },
+    {
+      "pointer": "/components/schemas/StatusCondition/properties/code/description",
+      "kind": "description",
+      "before": "Identifiant stable. `DATABASE` : `TRANSITION_ALLOWED`, `DEVICES_CAUGHT_UP`, `DEBIT_AUTHORITY_CENTRAL`,\n`SUSPENSE_ZERO`, `PARTY_POSITIONS_ZERO`, `PAYOUT_PENDING_ZERO`, `POSITIONS_SETTLED`. `CONFIGURATION` :\n`FUNDS_HOLDER_SET`, `CONTRACT_IN_FORCE`, `JURISDICTION_SET`, `LEDGER_OPEN`. `EXTERNAL` :\n`CASH_DESKS_COUNTED`, `PSP_RECONCILED`, `DEVICES_REPORTED`.\n",
+      "sha256": "f36df6741bfc6e20c81b569affc6b486db1745a336473646124cb907ff955d13"
+    },
+    {
+      "pointer": "/components/schemas/ClosingStep",
+      "kind": "schema",
+      "sha256": "b65a5c4a2a2bbc8370a4e412e1134847c63dd1ba1f2ad01312ed5d49befaf75e"
+    },
+    {
+      "pointer": "/components/schemas/ClosingStepState",
+      "kind": "schema",
+      "sha256": "f936715d3d8a49ed6e9a133afd562c36a170db36fb4b05a112c5f6c9bad0234a"
+    },
+    {
+      "pointer": "/components/schemas/ClosingStepPreview",
+      "kind": "schema",
+      "sha256": "895cb69129b49ef132065974325f325d5fbb8e77e4ee0b45e48caa3e0611ea8b"
+    },
+    {
+      "pointer": "/components/schemas/ClosingStepResult",
+      "kind": "schema",
+      "sha256": "ce9f817cbe9e11f98c8226b3e757fc40b963c38e52d4532234ae5c7e3679f678"
+    },
+    {
+      "pointer": "/components/schemas/RemainingBalances",
+      "kind": "schema",
+      "sha256": "e5fe3a0962bd939b1b1460d6314082c0edfdc5b5d59d8d793f21b82dda9648b0"
+    },
+    {
+      "pointer": "/components/schemas/PayoutEntitlement",
+      "kind": "schema",
+      "sha256": "0f88ff57bc238a5190f5d39110e61e4f04d223843f7add18e7a73e3af6e018d2"
+    },
+    {
+      "pointer": "/components/schemas/PayoutBatchRequest",
+      "kind": "schema",
+      "sha256": "e7fb5b5ad9c3d7d509bc65d725aeedbf197cf2a1f59c87fc268b8b4110080e0e"
+    },
+    {
+      "pointer": "/components/schemas/PayoutLine",
+      "kind": "schema",
+      "sha256": "aa66ad86994691a19c3f9d15b538db0756fae2e5a233037ad73d60197e4c90e3"
+    },
+    {
+      "pointer": "/components/schemas/Payout",
+      "kind": "schema",
+      "sha256": "cc87409188b4c477ea405e74e1f35dbf6d817ebb390ebeb8c65ed56e40575cff"
+    },
+    {
+      "pointer": "/components/schemas/PayoutConfirm",
+      "kind": "schema",
+      "sha256": "a629234e2194cacb5acd1e31115d1e7968faf8ac025ac66bf986683888e18192"
+    },
+    {
+      "pointer": "/components/schemas/StatementImportResult",
+      "kind": "schema",
+      "sha256": "e138792dd931f41d60786b97fae172a0d33bd960d2d1c9091ab0041d3f33e485"
+    },
+    {
+      "pointer": "/components/schemas/StatementLine",
+      "kind": "schema",
+      "sha256": "767bc573194643a0475e7e111809e6d4a3a5b29c07dff5017c3484629b4ff75f"
+    },
+    {
+      "pointer": "/components/schemas/StatementLineMatch",
+      "kind": "schema",
+      "sha256": "9f7309b85286a7cf0f37c00624bc2fefd6cb970fdc5fc8de9eb7ca6ce2562317"
+    },
+    {
+      "pointer": "/components/schemas/AccountReconciliation",
+      "kind": "schema",
+      "sha256": "7013554d2861e7ae1b3c418ac6279c4026b3f47374016c5b4f9941d46ab74918"
+    },
+    {
+      "pointer": "/components/schemas/LateAdjustmentRequest",
+      "kind": "schema",
+      "sha256": "a0ea07b1e3ac97d00fe98f199a9cdb202bae873142ec89a62adc0600cab88e90"
+    },
+    {
+      "pointer": "/components/schemas/RefundRequestBackofficeCreate",
+      "kind": "schema",
+      "sha256": "26b4897e85cd756627c7bb764567d073fc96b841c66e206d61b37faf5b9e9b90"
+    },
+    {
+      "pointer": "/components/schemas/PartyStatement",
+      "kind": "schema",
+      "sha256": "fa0ea19607a5cb5ca66f1cd4ed54aecfd3826334cb10d4a897c3c5eb22a32178"
+    },
+    {
+      "pointer": "/components/schemas/AccountMapping",
+      "kind": "schema",
+      "sha256": "1ca86df24ce9921f068c652e8dbf665c69254e32356059d39565067aadc31fd4"
+    },
+    {
+      "pointer": "/components/schemas/AccountMappingVersion",
+      "kind": "schema",
+      "sha256": "76851e0b506a3b0b9a96ddb6d0eb0350e924f4c0d84867e5c8fbd2fac525e17e"
     }
   ]
 }

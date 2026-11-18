@@ -3108,3 +3108,32 @@ Décision n° 18 du porteur (17/11/2026, revue post-fusion, RISK-1) ; consigné 
 - **Mise en oeuvre.** Migration `0089_payout_failed_second_person.sql` (`CREATE OR REPLACE` de `settle_payout`, 0085 intacte) ; garde dans `payouts.service.ts` avant toute écriture.
 - **Tests.** `tests_payouts.sql` (préparateur refusé, valideur refusé, tiers admis avec valideur enregistré) ; `payouts/payout-confirm.spec.ts` (HTTP et base) ; mutation : sans la garde, ces tests échouent. **Références.** OP-N137, OP-N126, ADR-204, FR-012.
 - **Fichier à faire relire par une personne.** `0089_payout_failed_second_person.sql` (`settle_payout`).
+
+## ADR-215 — Mission 9b : ajouts du contrat admis par le contrôle de stabilité, descriptions réécrites épinglées
+
+Décision du porteur : 18/11/2026 ADR-215
+
+- **Statut** : Acceptée. Changement d'un garde-fou de la mission 8 (NFR-012, A23), resserré au pointeur près ; pas
+  un affaiblissement : aucune différence non épinglée n'est admise.
+- **Contexte.** La CI de la PR #18 refusait le contrat de la 9b : `tools/contract-stability/check.mjs` compare
+  `openapi.yaml` à la référence `d2a7c538` et n'admet que les ajouts de `contract-baseline.json`, où les 20
+  opérations validées par le porteur (décision 5 du 17/11/2026) n'avaient jamais été inscrites. Trois descriptions
+  sont aussi réécrites : `IdempotencyKey` (`exportPayoutBatch` ajouté à la liste des réponses non conservées),
+  `ProblemCode` (ligne de `PAYOUT_EXCEEDS_ENTITLEMENT`) et `StatusCondition.code` (trois valeurs de condition
+  nouvelles, `PSP_RECONCILED` calculée). `code` étant une chaîne libre, cette description est la seule déclaration
+  de ces valeurs dans le contrat : les retirer n'était pas neutre.
+- **Décision.** (1) Les 39 ajouts de la 9b (18 chemins, 1 opération, 19 schémas, 1 valeur de `ProblemCode`) sont
+  inscrits à leur pointeur exact avec l'empreinte de leur contenu. (2) `check.mjs` admet une entrée `description` :
+  un `CHANGE` n'est admis que si le pointeur finit par `/description`, si le texte d'avant égale le texte épinglé et
+  si l'empreinte du texte d'après égale celle épinglée. Les 3 descriptions sont épinglées ainsi. La référence
+  `d2a7c538` reste la même ; décompte `x-edge-available` inchangé (16).
+- **Risque.** Une description épinglée peut décrire un comportement qui change sans que l'outil le voie ; c'est
+  déjà le cas de tout ajout épinglé.
+- **Tests.** `check.test.mjs` : texte exact admis ; autre texte au même pointeur refusé ; entrée `description`
+  sur un `operationId` refusée (mutation : sans la restriction à `/description`, ce test échoue) ; texte d'avant
+  différent refusé ; T6 (description d'une route de la passerelle) toujours refusé ; 71 différences admises sur le
+  contrat réel.
+- **Suite.** Chaque mission qui ajoute au contrat doit inscrire ses ajouts dans `contract-baseline.json`, avec une
+  décision du porteur, avant sa PR vers `main`.
+- **Fichiers à faire relire par une personne.** `tools/contract-stability/check.mjs`,
+  `tools/contract-stability/contract-baseline.json`.

@@ -10,7 +10,7 @@ import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parse, stringify } from 'yaml';
-import { canonical } from './check.mjs';
+import { canonical, subtreeHash } from './check.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -149,7 +149,8 @@ test('T11 les seuls ajouts de l extrait : code 0, uniquement ADMISE', () => {
 test('T11 bis : le openapi.yaml réel du dépôt est admis', () => {
   const { code, out } = runTool(['--candidate', REAL]);
   assert.equal(code, 0, out);
-  assert.match(out, /29 admise\(s\), 0 refusée/);
+  // 29 ajouts de la mission 8, puis 42 de la mission 9b (ADR-215).
+  assert.match(out, /71 admise\(s\), 0 refusée/);
 });
 test('T12 SHA-256 épinglée fausse : code 1', () => {
   const wrong = join(TMP, 'baseline-wrong.json');
@@ -340,4 +341,65 @@ test('WP25 le texte de x-empty-batch et spend_order sont épinglés (contenu mod
   ]);
   assert.equal(b.code, 2, b.out);
   assert.match(b.out, /ReplicationPage\/properties\/edge_terms/);
+});
+
+// ADR-215 (mission 9b) : description réécrite admise seulement au pointeur épinglé, avec le texte épinglé.
+const IDEM = '/components/parameters/IdempotencyKey/description';
+test('ADR-215 description épinglée : le texte exact du dépôt est admis', () => {
+  const real = parse(readFileSync(REAL, 'utf8'));
+  const { code, out } = runTool([
+    '--candidate',
+    candidate((d) => {
+      d.components.parameters.IdempotencyKey.description =
+        real.components.parameters.IdempotencyKey.description;
+    }),
+  ]);
+  assert.equal(code, 0, out);
+  assert.ok(out.includes(`ADMISE CHANGE ${IDEM} (liste blanche (description))`), out);
+});
+test('ADR-215 description épinglée : un autre texte au même pointeur est refusé', () => {
+  expectRefused((d) => {
+    d.components.parameters.IdempotencyKey.description += ' x';
+  }, IDEM);
+});
+test('ADR-215 une entrée description ne vaut que pour une clé description (operationId refusé)', () => {
+  const pointer = '/paths/~1payments/post/operationId';
+  const forged = join(TMP, 'baseline-description-ailleurs.json');
+  const before = fresh().paths['/payments'].post.operationId;
+  writeFileSync(
+    forged,
+    JSON.stringify({
+      ...PINNED,
+      admitted_additions: [
+        ...PINNED.admitted_additions,
+        { pointer, kind: 'description', before, sha256: subtreeHash('createPaymentX') },
+      ],
+    }),
+  );
+  const file = candidate((d) => {
+    d.paths['/payments'].post.operationId = 'createPaymentX';
+  });
+  const { code, out } = runTool(['--candidate', file, '--baseline-json', forged]);
+  assert.equal(code, 2, out);
+  assert.ok(out.includes(`Pointeur refusé : ${pointer}`), out);
+});
+test('ADR-215 description épinglée : texte d avant différent, refusé', () => {
+  const real = parse(readFileSync(REAL, 'utf8'));
+  const forged = join(TMP, 'baseline-description-avant.json');
+  writeFileSync(
+    forged,
+    JSON.stringify({
+      ...PINNED,
+      admitted_additions: PINNED.admitted_additions.map((w) =>
+        w.pointer === IDEM ? { ...w, before: `${w.before} autre` } : w,
+      ),
+    }),
+  );
+  const file = candidate((d) => {
+    d.components.parameters.IdempotencyKey.description =
+      real.components.parameters.IdempotencyKey.description;
+  });
+  const { code, out } = runTool(['--candidate', file, '--baseline-json', forged]);
+  assert.equal(code, 2, out);
+  assert.ok(out.includes(`Pointeur refusé : ${IDEM}`), out);
 });
