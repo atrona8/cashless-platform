@@ -2,7 +2,13 @@
 work_package_id: WP10
 title: 'Versements : IBAN chiffré et décisions gardées (OP-N140, OP-N137)'
 dependencies: [WP03, WP08]
-requirement_refs: [FR-013, FR-014, FR-015, FR-016, NFR-002]
+requirement_refs:
+- FR-013
+- FR-014
+- FR-015
+- FR-016
+- NFR-002
+- FR-010
 planning_base_branch: feat/durcissements-serveur
 merge_target_branch: feat/durcissements-serveur
 branch_strategy: Planning artifacts for this mission were generated on feat/durcissements-serveur. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/durcissements-serveur unless the human explicitly redirects the landing branch.
