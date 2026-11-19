@@ -22,7 +22,7 @@
   correcteur ; seul échec `exclusion-under-load` (débit 89/s < 100/s, identique sur la base : limite du poste).
 
 ## Suite (dans l'ordre)
-1. `spec-kitty accept --mission durcissements-serveur-01M7QAJD` (si pas déjà fait).
+1. ~~accept~~ FAIT le 19/11/2026 à 16:10Z (commit d'acceptation `ef1d3504`, 14 lots, merge en attente).
 2. Consolidation : appliquer la séquence de la mémoire « Pièges de consolidate » (9a/9b) — comptes rendus de
    relecture recopiés sur feat, `align-lane.sh` de chaque lane, feat fusionnée dans la coordination
    (`git merge --no-ff`), lanes chaînées en `--no-ff` dans l'ordre de consolidation (code = tête TESTÉE de la
