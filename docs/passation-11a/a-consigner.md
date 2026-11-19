@@ -97,3 +97,14 @@
    (404 sans donnée ni écriture ; clé de verrou préfixée et propre au lot), CL057 dans `sqlstate-map.spec.ts`.
    Mutations détectées sauf N160(a) (non faite). Non figé : le retard du PATCH de B (limite ouverte) ; CL058 absent de
    `sqlstate-map.ts` (levé seulement par `register_edge_gateway` via `edge-admin`, hors API).
+25. **Bornes vendor-pin (lane n, `d7d1d139`, 19/11/2026).** OP-N151 (scan base + journaux, 5 PIN absents ; contrôle
+   d'architecture), OP-N158 (409 au renvoi, processus non rappelé, un seul essai), OP-N159 (23505 → 409 CONCURRENT →
+   429 `Retry-After: 1` ; route non marquée = 404 exact), anti-rejeu figé (30 s, garde 70 s, 20 000). `PIN_PATTERN`
+   dans `common/pin-pattern.ts`. Correction du point 20 : argon2 reste chargé par l'API via
+   `idempotency/idempotency.interceptor.ts` (dérivé d'idempotence ADR-126, usage légitime, exemption nommée) ; seul le
+   chargement via `vendors/` est supprimé. Précision OP-N158 : si l'API tombe ENTRE l'appel au processus et la
+   validation de la clé, la clé est relâchée et le renvoi ouvre une nouvelle session comptée qui remplace l'ancienne
+   (non figé, à préciser dans l'ADR).
+26. **Contradiction `interfaces.md` l. 44** : le mappage HTTP de `CL058` y est attribué à WP12 dans `sqlstate-map.ts`,
+   mais `CL058` n'est levé que par `register_edge_gateway` via `edge-admin` (traduit par `main.ts` de l'outil). Proposé
+   au porteur : corriger `interfaces.md` (pas de ligne inutile dans l'API).
