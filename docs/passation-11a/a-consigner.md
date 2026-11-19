@@ -114,3 +114,7 @@
    `redact.ts` et à OP-N156) ; faux positifs hérités côté sûr (`ab12cd34ef56`) ; le scan statique du PIN ne voit pas
    un alias, rattrapé par le scan de journaux de `vendor-pin-bounds`. À relire par une personne : `tests_11a_bounds.sql`,
    `redact.ts`, `architecture.spec.ts` (exemption `idempotency.interceptor.ts`).
+28. **Décisions du porteur du 19/11/2026 (fin de relecture de WP14).** OP-N155 : condition bloquante de passage en
+   production, portée par la mission 12b (purge/chiffrement des lignes anciennes puis `VALIDATE CONSTRAINT`). OP-N153 :
+   mission 13 confirmée. CL058 : `interfaces.md` corrigé (CL058 traduit par edge-admin ; CL059 par le vérificateur
+   App Attest ; aucun des deux dans `sqlstate-map.ts`).
