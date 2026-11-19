@@ -28,6 +28,7 @@
   "purpose_context": "Plusieurs missions ont accepté des limites de sécurité côté serveur (écritures directes de l'application sur des tables gardées par des fonctions, PIN des vendeurs vérifié dans l'API, vendeur absent de la clé des sessions de vente, IBAN non masqué, garde-fous manquants sur les remboursements et versements). Cette mission les lève sans affaiblir aucun contrôle existant, avant la mise en production.",
   "purpose_tldr": "Lever les dettes de sécurité serveur héritées des missions 4, 5a, 5b, 8 et 9b, chacune prouvée par un test.",
   "slug": "durcissements-serveur-01M7QAJD",
+  "status_phase": "1",
   "target_branch": "feat/durcissements-serveur",
   "topology": "coord",
   "vcs": "git",
