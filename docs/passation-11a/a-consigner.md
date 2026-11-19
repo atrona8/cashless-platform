@@ -82,3 +82,11 @@
 22. **Revue WP14 cycle 1 (rejet).** Dates : seuls OP-N79 et OP-N141 levés le 18/11 ; OP-N60, N76, N116, N137, N140,
    N145 levés le 19/11. Reports manquants : OP-N160 (aucun report), N155, N156, N161, N162 (pas de ligne Report), N153
    (report vers « 11a, clos »).
+23. **Tests de borne base (lane n, `bde1d13b`, 19/11/2026).** `tests_11a_bounds.sql`, 46/46 : OP-N155b (13), OP-N157
+   (20), OP-N8 (2), OP-N152 (13) ; 12 mutations détectées. À consigner : (a) la garde de `refund_request` ne vise que
+   les membres de `cashless_app`, pas tout non-superutilisateur : `cashless_platform` et `cashless_pin` ne sont arrêtés
+   que par l'absence de droit INSERT (figée) ; (b) le second contrôle REVOKED (dans l'UPDATE) d'
+   `advance_app_attest_counter` est une défense en double non figée séparément ; (c) mot de passe de `cashless_pin` non
+   testable en base de test ; (d) piège : les attributs de rôle survivent à `reset-db` (rôles du cluster), une mutation
+   sur un rôle se défait à la main (vérifié propre le 19/11) ; (e) `tests_11a_bounds.sql` à faire relire par une
+   personne (listes attendues = source des bornes).
