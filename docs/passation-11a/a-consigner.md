@@ -51,3 +51,7 @@
    amélioration possible. `device-auth-matrix` et les tests qui ouvrent une session par `POST /vendor-sessions`
    (`payments-*`, `payment-journey`, `payment-isolation`, `offline-secrets`) : 403 depuis WP03 (OP-N76, voulu), levée
    attendue par WP07 ; ces fichiers ne sont dans aucun `owned_files` : à relancer en série après WP07.
+17. **Lots de bracelets (WP05, relecture cycle 2 du 19/11/2026).** Le verrou consultatif (`hashtextextended('media-batch:'
+   || id)`) est pris avant le contrôle RLS : un prestataire qui connaît l'UUID d'un lot d'un autre peut retarder son PATCH
+   le temps de sa propre transaction (aucun accès aux données). Renforcement d'audit : l'historique `→ORDERED` porte le
+   motif « Création du lot » (au lieu de NULL), non noté dans une note de lane.
