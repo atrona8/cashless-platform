@@ -108,3 +108,9 @@
 26. **Contradiction `interfaces.md` l. 44** : le mappage HTTP de `CL058` y est attribué à WP12 dans `sqlstate-map.ts`,
    mais `CL058` n'est levé que par `register_edge_gateway` via `edge-admin` (traduit par `main.ts` de l'outil). Proposé
    au porteur : corriger `interfaces.md` (pas de ligne inutile dans l'API).
+27. **Relecture des tests de borne (19/11/2026) : OK.** 46/46 pgTAP, 308 Jest, tsc, check.mjs 0 refus ; 14 mutations sur
+   15 détectées (survivante : borne haute de `INTL_PHONE`, masque seulement plus). ReDoS : 12 chaînes de 100 Ko en
+   2 à 4 ms. Mineurs : un numéro dans un CHEMIN d'URL (`/p/221771234567`) n'est pas masqué (à ajouter à l'en-tête de
+   `redact.ts` et à OP-N156) ; faux positifs hérités côté sûr (`ab12cd34ef56`) ; le scan statique du PIN ne voit pas
+   un alias, rattrapé par le scan de journaux de `vendor-pin-bounds`. À relire par une personne : `tests_11a_bounds.sql`,
+   `redact.ts`, `architecture.spec.ts` (exemption `idempotency.interceptor.ts`).
