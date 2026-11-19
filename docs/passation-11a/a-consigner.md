@@ -40,6 +40,8 @@
 14. **App Attest, vecteurs locaux (WP13, R1).** Les vecteurs d'assertion sont générés localement : une erreur de double
    hachage ECDSA y serait invisible. Un vecteur réel d'Apple est exigé avant la mission 12. Déni de service : une API
    compromise peut faire avancer le compteur d'un appareil (le bloquer) ; test de borne à écrire par WP14.
+   Relecture du 19/11/2026 : code conforme à la procédure Apple (lu contre la spécification) ; le vérificateur n'a aucun
+   appelant en production (voulu, gardé par un test d'architecture).
 15. **Versements (WP10).** Export illisible (enveloppe altérée, autre prestataire, clair ancien) : 500 sans CSV ni
    valeur. `canSee` montre encore un lot mixte à un détenteur d'une seule classe (lecture seule). Contradiction
    prompt/`interfaces.md` sur `guardDecision` : `interfaces.md` suivi. Renforcement FR-014 : le refus exige aussi la
