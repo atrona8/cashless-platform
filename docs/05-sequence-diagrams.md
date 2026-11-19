@@ -10,7 +10,7 @@
 > Flux **cibles**, tirés de `SPECIFICATION.md` et `sync_protocol.md`.
 > Complément du 16/11/2026 : mission 9a (remboursements), review terminée, non fusionnée : trois diagrammes locaux `/illustre` régénérés sur le code livré (confirmeur tiers du `FAILED`, lien du titulaire, cumul du guichet) ; images globales non redessinées.
 > Complément du 17/11/2026 : mission 9b (versements, rapprochements, clôture), review terminée puis mergée sur feat le 17/11/2026 (dans main par la PR #18 le 18/11/2026), **flux implémentés** (servis dans `main` depuis la PR #18 du 18/11/2026), décrits par quatre diagrammes locaux `/illustre` régénérés ; images globales non redessinées.
-> Complément du 18/11/2026 : mission 11a (durcissements serveur), plan finalisé le 18/11/2026, non implémentée : un flux interne nouveau, l'ouverture d'une session de vendeur passe par le processus `vendor-pin` (diagramme local `sequence-pin-vendeur`) ; flux global « Paiement en ligne » inchangé vu du terminal. Aucun flux global à redessiner au plan.
+> Complément du 18/11/2026 : mission 11a (durcissements serveur), relue le 19/11/2026, non fusionnée : un flux interne nouveau, l'ouverture d'une session de vendeur passe par le processus `vendor-pin` avec appel signé et rejeu refusé (diagramme local `sequence-pin-vendeur`, recalé le 19/11/2026) ; flux global « Paiement en ligne » inchangé vu du terminal. Aucun flux global à redessiner au plan.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
 
@@ -109,7 +109,7 @@ Sources et autres flux de la mission (session de vendeur, paiement par bracelet,
 | Clôture d'un événement | Back-office, API, base | `fondations-grand-livre-01M4AY8M` (passages de statut exercés par le rejeu du scénario, tous acceptés sans `CL019` ; pas encore de back-office) ; `configuration-parties-evenements-01M4GCJ9` (✅ mergée le 13/10/2026 : conditions et passages de statut servis par l'API, `LIVE` à deux par `EVENT_GO_LIVE`) |
 | Remboursement d'un festivalier (demande, approbation à deux, confirmation, guichet de retour) | App festivalier, API, base, back-office, caissier | `remboursements-01M7AG5V` (✅ acceptée le 16/11/2026, dans `main` par la PR #15 le 16/11/2026) : trois diagrammes locaux `/illustre` |
 | Versements, rapprochements et clôture (clôture par étapes, lot à deux, import et rapprochement, scellement et alertes) | Back-office, API, base, processus maintenance, copie externe simulée | `versements-rapprochements-cloture-01M7JT4G` (✅ **mergée sur feat le 17/11/2026, dans main par la PR #18 le 18/11/2026**) : quatre diagrammes locaux régénérés `/illustre` |
-| Ouverture d'une session de vendeur par le processus du PIN ; lot de bracelets par fonction contrôlée | Terminal, back-office, API, processus `vendor-pin`, base | `durcissements-serveur-01M7QAJD` (📐 plan finalisé le 18/11/2026, non implémentée) : diagrammes locaux dans `kitty-specs/durcissements-serveur-01M7QAJD/docs/sequence.md` |
+| Ouverture d'une session de vendeur par le processus du PIN ; lot de bracelets par fonction contrôlée | Terminal, back-office, API, processus `vendor-pin`, base | `durcissements-serveur-01M7QAJD` (🔎 relue le 19/11/2026, non fusionnée) : diagrammes locaux dans `kitty-specs/durcissements-serveur-01M7QAJD/docs/sequence.md` |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.
