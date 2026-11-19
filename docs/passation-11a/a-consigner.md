@@ -31,7 +31,8 @@
 11. **Rejeu de l'appel signé vendor-pin (WP06, relecture du 19/11/2026).** Ni nonce ni cache de signatures : un appel
    signé rejoué dans la fenêtre de ±30 s est accepté ; `interfaces.md` ne l'exige pas. Le corps porte le PIN en clair
    (limite connue d'OP-N76). Sécurité de l'appel = secret partagé + écoute loopback (TLS 1.3 exigé hors loopback en
-   production). Question posée au porteur le 19/11/2026.
+   production). **Décision du porteur (19/11/2026) : cache de signatures vues, rejeu refusé en 401**, confié à WP07
+   (retouche hors carte autorisée de `vendor-pin-call.guard.ts`), avec le refus d'un corps sans `rawBody` (point 12).
 12. **Corps brut absent (WP06, mineur).** La garde signe `req.rawBody ?? Buffer.alloc(0)` : sans `rawBody`, le corps
    n'est plus couvert (fail-open latent, non exploitable : `rawBody: true` partout). Durcissement proposé : 401 si un
    corps est présent sans `rawBody`.
@@ -60,5 +61,5 @@
 18. **`checkSealed` à l'exécution d'un versement non prouvé (WP10, relecture du 19/11/2026).** La mutation qui retire
    l'ouverture de l'enveloppe dans `execute` laisse les 39 tests verts : aucun test ne forge une enveloppe altérée ou
    d'un autre prestataire avant l'approbation (le seul test de forge, en clair, est arrêté par `validatePayload`).
-   Risque faible (l'export échoue fermé). Correction : un test dans `payout-batch.spec.ts`. Question posée au porteur
-   (consigner ou cycle court) le 19/11/2026.
+   Risque faible (l'export échoue fermé). Correction : un test dans `payout-batch.spec.ts`. **Décision du porteur
+   (19/11/2026) : ajouter le test** (correctif court dans la lane j, sans nouveau cycle).
