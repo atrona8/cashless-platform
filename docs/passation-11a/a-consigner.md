@@ -37,3 +37,13 @@
    corps est présent sans `rawBody`.
 13. **Tests faibles WP06.** Cas concurrent 23505→409 `CONCURRENT` non testé ; « route non marquée refusée » accepte
    401 ou 404.
+14. **App Attest, vecteurs locaux (WP13, R1).** Les vecteurs d'assertion sont générés localement : une erreur de double
+   hachage ECDSA y serait invisible. Un vecteur réel d'Apple est exigé avant la mission 12. Déni de service : une API
+   compromise peut faire avancer le compteur d'un appareil (le bloquer) ; test de borne à écrire par WP14.
+15. **Versements (WP10).** Export illisible (enveloppe altérée, autre prestataire, clair ancien) : 500 sans CSV ni
+   valeur. `canSee` montre encore un lot mixte à un détenteur d'une seule classe (lecture seule). Contradiction
+   prompt/`interfaces.md` sur `guardDecision` : `interfaces.md` suivi. Renforcement FR-014 : le refus exige aussi la
+   classe de bénéficiaire.
+16. **Régression `closing-journey.spec.ts` (constatée le 19/11/2026).** 8/8 sur la branche de base, 5 échecs dès la
+   lane c (WP01+WP02+WP03+WP04) : payout `FAILED`, CL023 « décidée par son auteur ». Diagnostic en cours ; à lever avant
+   la fusion. `device-auth-matrix` : 13/13 en échec depuis WP03 (session vendeur 403), levée attendue par WP07.
