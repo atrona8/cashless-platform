@@ -28,3 +28,12 @@
 10. **Casse de compilation WP06 → WP07.** Après WP06, `tsc` échoue dans `src/vendors/` tant que WP07 n'est pas fusionné
    (l'API n'a plus `hash`/`verify`) ; `config.ts` lit encore `VENDOR_PIN_SECRET` côté API jusqu'à WP07 (exemption
    nommée du test d'architecture). WP06 et WP07 se fusionnent ensemble. Cas concurrent 23505→409 de vendor-pin non testé.
+11. **Rejeu de l'appel signé vendor-pin (WP06, relecture du 19/11/2026).** Ni nonce ni cache de signatures : un appel
+   signé rejoué dans la fenêtre de ±30 s est accepté ; `interfaces.md` ne l'exige pas. Le corps porte le PIN en clair
+   (limite connue d'OP-N76). Sécurité de l'appel = secret partagé + écoute loopback (TLS 1.3 exigé hors loopback en
+   production). Question posée au porteur le 19/11/2026.
+12. **Corps brut absent (WP06, mineur).** La garde signe `req.rawBody ?? Buffer.alloc(0)` : sans `rawBody`, le corps
+   n'est plus couvert (fail-open latent, non exploitable : `rawBody: true` partout). Durcissement proposé : 401 si un
+   corps est présent sans `rawBody`.
+13. **Tests faibles WP06.** Cas concurrent 23505→409 `CONCURRENT` non testé ; « route non marquée refusée » accepte
+   401 ou 404.
