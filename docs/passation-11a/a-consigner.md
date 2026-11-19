@@ -44,6 +44,10 @@
    valeur. `canSee` montre encore un lot mixte à un détenteur d'une seule classe (lecture seule). Contradiction
    prompt/`interfaces.md` sur `guardDecision` : `interfaces.md` suivi. Renforcement FR-014 : le refus exige aussi la
    classe de bénéficiaire.
-16. **Régression `closing-journey.spec.ts` (constatée le 19/11/2026).** 8/8 sur la branche de base, 5 échecs dès la
-   lane c (WP01+WP02+WP03+WP04) : payout `FAILED`, CL023 « décidée par son auteur ». Diagnostic en cours ; à lever avant
-   la fusion. `device-auth-matrix` : 13/13 en échec depuis WP03 (session vendeur 403), levée attendue par WP07.
+16. **Scénario de clôture et matrice d'authentification (diagnostic du 19/11/2026).** `closing-journey.spec.ts` échoue
+   (5/8) dans toute lane qui a WP02 sans WP10 : `0093` (`payout_iban_sealed`) refuse l'IBAN en clair que l'API écrit
+   avant WP10 (23514 dans `create_payout_batch`). État intermédiaire voulu ; 8/8 dans la lane j (WP10). Pas une
+   régression. Défaut de rapport : 23514 classé `VALIDATION_FAILED` sans motif (`payout-action.ts`, `SQL_FAILURES`),
+   amélioration possible. `device-auth-matrix` et les tests qui ouvrent une session par `POST /vendor-sessions`
+   (`payments-*`, `payment-journey`, `payment-isolation`, `offline-secrets`) : 403 depuis WP03 (OP-N76, voulu), levée
+   attendue par WP07 ; ces fichiers ne sont dans aucun `owned_files` : à relancer en série après WP07.
