@@ -1,11 +1,14 @@
 ---
 work_package_id: WP13
-title: 'App Attest côté API : clé gardée à l''enrôlement, assertions vérifiées (OP-N64)'
+title: "App Attest côté API : clé gardée à l'enrôlement, assertions vérifiées (OP-N64)"
 dependencies: [WP03]
 requirement_refs: [FR-018, FR-019]
 planning_base_branch: feat/durcissements-serveur
 merge_target_branch: feat/durcissements-serveur
 branch_strategy: Planning artifacts for this mission were generated on feat/durcissements-serveur. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/durcissements-serveur unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-durcissements-serveur-01M7QAJD
+base_commit: 3c3cef2296f9f9c971366402b37f6c276a897085
+created_at: '2026-11-19T09:45:49.980239+00:00'
 subtasks: [T049, T050, T051, T052]
 phase: Phase 2 - API et processus
 agent: claude
