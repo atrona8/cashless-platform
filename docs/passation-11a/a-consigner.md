@@ -74,3 +74,11 @@
    `vendor-pin/vendor-pin.hasher` : le module argon2 est chargé dans l'API sans être utilisé (le secret n'est pas lu).
    Correction proposée : constante dans un module neutre + contrôle d'architecture. Deux instances d'API qui signent le
    même corps à la même milliseconde : le second appel est refusé (`INTERNAL_ERROR`), échec sûr, négligeable.
+21. **Décisions du porteur du 19/11/2026 (à consigner par WP14).** (a) Colima/Docker trouvé arrêté : relance autorisée
+   par le porteur (conteneur de test `cashless-platform-pg17` seulement ; `cashless-api-db-1`, base de l'API partagée
+   sur 5434, laissé arrêté, à relancer par le porteur). (b) Tests de borne manquants écrits AVANT la fusion (règle 3),
+   dans la lane n. (c) `msisdn` masqué dans les journaux (`redact.ts`), ainsi que les IBAN libres à tirets, espaces
+   insécables et collés : OP-N156 levé par renforcement, pas en point ouvert.
+22. **Revue WP14 cycle 1 (rejet).** Dates : seuls OP-N79 et OP-N141 levés le 18/11 ; OP-N60, N76, N116, N137, N140,
+   N145 levés le 19/11. Reports manquants : OP-N160 (aucun report), N155, N156, N161, N162 (pas de ligne Report), N153
+   (report vers « 11a, clos »).
