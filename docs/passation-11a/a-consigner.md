@@ -64,3 +64,9 @@
    Risque faible (l'export échoue fermé). Correction : un test dans `payout-batch.spec.ts`. **Décision du porteur
    (19/11/2026) : ajouter le test** (correctif court dans la lane j, sans nouveau cycle). **Levé** : commit `414e35f2` (enveloppe altérée et
    d'un autre prestataire forgées en base → `FAILED`, rien au grand livre ; mutation `checkSealed` retiré → rouge).
+19. **Session de vendeur par le processus (WP07, 19/11/2026).** La session est ouverte par le processus vendor-pin hors
+   de la transaction de l'API : si l'API tombe avant de répondre, le renvoi de la clé d'idempotence reçoit 409 et le
+   nouvel essai est compté (à mettre dans l'ADR). `writes:false` incompatible avec `transient` : la route appelle le
+   processus hors transaction puis ouvre une `tx.run` vide pour le refus de rejeu (à reporter au plan). `x-pin-ts` en
+   millisecondes (code de WP06) alors que le prompt de WP07 disait secondes. Latence NFR-001 : p50 163 ms, p95 211 ms,
+   p99 249 ms sur 200 ouvertures. Cache anti-rejeu : 20 000 entrées, plein = 401.
