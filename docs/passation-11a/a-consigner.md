@@ -70,3 +70,7 @@
    processus hors transaction puis ouvre une `tx.run` vide pour le refus de rejeu (à reporter au plan). `x-pin-ts` en
    millisecondes (code de WP06) alors que le prompt de WP07 disait secondes. Latence NFR-001 : p50 163 ms, p95 211 ms,
    p99 249 ms sur 200 ouvertures. Cache anti-rejeu : 20 000 entrées, plein = 401.
+20. **Relecture de WP07 (19/11/2026), mineurs.** `vendors/vendors.dto.ts` importe `PIN_PATTERN` de
+   `vendor-pin/vendor-pin.hasher` : le module argon2 est chargé dans l'API sans être utilisé (le secret n'est pas lu).
+   Correction proposée : constante dans un module neutre + contrôle d'architecture. Deux instances d'API qui signent le
+   même corps à la même milliseconde : le second appel est refusé (`INTERNAL_ERROR`), échec sûr, négligeable.
