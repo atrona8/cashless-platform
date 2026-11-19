@@ -62,4 +62,5 @@
    l'ouverture de l'enveloppe dans `execute` laisse les 39 tests verts : aucun test ne forge une enveloppe altérée ou
    d'un autre prestataire avant l'approbation (le seul test de forge, en clair, est arrêté par `validatePayload`).
    Risque faible (l'export échoue fermé). Correction : un test dans `payout-batch.spec.ts`. **Décision du porteur
-   (19/11/2026) : ajouter le test** (correctif court dans la lane j, sans nouveau cycle).
+   (19/11/2026) : ajouter le test** (correctif court dans la lane j, sans nouveau cycle). **Levé** : commit `414e35f2` (enveloppe altérée et
+   d'un autre prestataire forgées en base → `FAILED`, rien au grand livre ; mutation `checkSealed` retiré → rouge).
