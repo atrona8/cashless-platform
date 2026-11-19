@@ -57,3 +57,8 @@
    || id)`) est pris avant le contrôle RLS : un prestataire qui connaît l'UUID d'un lot d'un autre peut retarder son PATCH
    le temps de sa propre transaction (aucun accès aux données). Renforcement d'audit : l'historique `→ORDERED` porte le
    motif « Création du lot » (au lieu de NULL), non noté dans une note de lane.
+18. **`checkSealed` à l'exécution d'un versement non prouvé (WP10, relecture du 19/11/2026).** La mutation qui retire
+   l'ouverture de l'enveloppe dans `execute` laisse les 39 tests verts : aucun test ne forge une enveloppe altérée ou
+   d'un autre prestataire avant l'approbation (le seul test de forge, en clair, est arrêté par `validatePayload`).
+   Risque faible (l'export échoue fermé). Correction : un test dans `payout-batch.spec.ts`. Question posée au porteur
+   (consigner ou cycle court) le 19/11/2026.
