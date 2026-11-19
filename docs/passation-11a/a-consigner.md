@@ -90,3 +90,10 @@
    testable en base de test ; (d) piège : les attributs de rôle survivent à `reset-db` (rôles du cluster), une mutation
    sur un rôle se défait à la main (vérifié propre le 19/11) ; (e) `tests_11a_bounds.sql` à faire relire par une
    personne (listes attendues = source des bornes).
+24. **Masquage et bornes API (lane n, 19/11/2026).** `redact.ts` renforcé : IBAN à tirets, espaces insécables, collés ;
+   `msisdn`/`phone`/`mobile` par nom de champ (préfixes, `_number`) et E.164 `+` 7 à 15 chiffres en texte libre ;
+   exclusion UUID. Faux positif accepté : nombre signé de 7 chiffres ou plus (`+1250000`). Numéros nationaux sans `+`
+   masqués seulement par nom de champ. Tests OP-N160 (export multi-lignes altéré, lot mixte en lecture seule), OP-N161
+   (404 sans donnée ni écriture ; clé de verrou préfixée et propre au lot), CL057 dans `sqlstate-map.spec.ts`.
+   Mutations détectées sauf N160(a) (non faite). Non figé : le retard du PATCH de B (limite ouverte) ; CL058 absent de
+   `sqlstate-map.ts` (levé seulement par `register_edge_gateway` via `edge-admin`, hors API).
