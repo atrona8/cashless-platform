@@ -20,3 +20,11 @@
    aux actions `VENDOR_*` par une politique dédiée (comme `cashless_tagkeys`). Réduction de surface possible.
 8. **Mot de passe de `cashless_pin` (WP03).** Absent en production : rôle sans mot de passe, comme les autres rôles de
    processus (seuls les rôles de la passerelle refusent) ; comportement existant.
+9. **`--ledger` refusé par `edge-admin register` (WP12, relecture du 19/11/2026).** Le grand livre est rendu par la base
+   (`register_edge_gateway`), l'option est refusée même vide ou identique. Un script de site qui la passe encore casse
+   volontairement (procédure §2 à jour). `CL058` prouvé côté SQL par le seul pgTAP de WP02 ; côté outil sur le faux.
+   Écart de périmètre accepté : 5 lignes de `commands-other.spec.ts` au lieu de 3 (signature de `registerReal`), plus
+   l'assertion « grand livre écrit = `identify_edge_gateway` » (T047 §5).
+10. **Casse de compilation WP06 → WP07.** Après WP06, `tsc` échoue dans `src/vendors/` tant que WP07 n'est pas fusionné
+   (l'API n'a plus `hash`/`verify`) ; `config.ts` lit encore `VENDOR_PIN_SECRET` côté API jusqu'à WP07 (exemption
+   nommée du test d'architecture). WP06 et WP07 se fusionnent ensemble. Cas concurrent 23505→409 de vendor-pin non testé.
