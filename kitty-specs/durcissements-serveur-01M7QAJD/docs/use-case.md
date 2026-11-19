@@ -26,6 +26,6 @@ Hors diagramme (sans cas d'usage utilisateur) : vendeur dans la clé de session 
 
 Contribue à : `docs/02-use-case-diagram.md`, domaines « Bracelets NFC : format, clés, lots, cycle de vie » (lots), « Argent réel : PSP, caisses, rapprochements, versements » (demande de remboursement, décision de lot) et « Administration et exploitation » (inscription d'une passerelle, session de vendeur). Aucun domaine « Sécurité du serveur central » n'existe dans ce fichier ; les rattachements ci-dessus suffisent, sauf avis contraire du porteur. Pas de renommage ni de fusion de cas d'usage globaux. Références par nom de domaine, jamais par numéro.
 
-## Nécessaire pour cette mission ? Oui : cinq cas d'usage conservés (garanties changées) et trois tentatives refusées par la menace « API compromise » (réponse proposée par l'agent le 19/11/2026, à confirmer).
-## Complet ? Oui, recalé sur la réalisation ; OP-N79 et OP-N64 restent hors diagramme faute de cas d'usage utilisateur (réponse proposée par l'agent, à confirmer).
-## Validé par : en attente de validation humaine, réponses proposées par l'agent.
+## Nécessaire pour cette mission ? Oui : cinq cas d'usage conservés (garanties changées) et trois tentatives refusées par la menace « API compromise » (réponse du porteur, 19/11/2026).
+## Complet ? Oui, recalé sur la réalisation ; OP-N79 et OP-N64 restent hors diagramme faute de cas d'usage utilisateur (réponse du porteur, 19/11/2026).
+## Validé par : le porteur, 19/11/2026.

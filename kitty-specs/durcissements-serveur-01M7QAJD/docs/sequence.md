@@ -1,6 +1,6 @@
 # Séquences : mission durcissements-serveur-01M7QAJD
 
-> État : **relue le 19/11/2026**, non acceptée, non fusionnée. Deux diagrammes `/illustre` recalés et relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les flux IBAN, App Attest et inscription de passerelle sont décrits en prose ci-dessous, sans diagramme.
+> État : **relue le 19/11/2026**, non acceptée, non fusionnée. Trois diagrammes `/illustre` (deux recalés, un ajouté le 19/11/2026) relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les flux App Attest et inscription de passerelle sont décrits en prose, sans diagramme ; le cycle de vie de l'IBAN a le sien.
 
 ## Flux internes propres à cette mission
 
@@ -18,7 +18,14 @@ Le terminal appelle `POST /vendor-sessions` ; l'API appelle le processus `vendor
 Sources : [`sequence-lot-bracelets.excalidraw`](diagrams/sequence-lot-bracelets.excalidraw), [`sequence-lot-bracelets.svg`](diagrams/sequence-lot-bracelets.svg).
 Le back-office crée un lot ; l'API appelle `create_media_batch` (`DEFINER`, statut `ORDERED` imposé, auteur obligatoire), même réponse qu'avant. Le `PATCH` d'un lot prend un verrou consultatif, avant le contrôle `RLS` (OP-N161). Une API compromise qui tente un `INSERT` direct reçoit `42501`.
 
-### IBAN d'une demande de remboursement ou d'un versement (prose)
+### Cycle de vie de l'IBAN d'un versement
+
+![Cycle de vie de l'IBAN](diagrams/sequence-iban.png)
+
+Sources : [`sequence-iban.excalidraw`](diagrams/sequence-iban.excalidraw), [`sequence-iban.svg`](diagrams/sequence-iban.svg). Rendu `/illustre`, relu.
+Saisie : l'API valide l'IBAN, calcule `iban_mask`, puis `IbanVault.seal` le chiffre (`enc:v1:`) ; la charge ne porte que l'enveloppe et le masque. Décision : `guardDecision` exige le rôle de classe, approbation comme refus. Exécution : `checkSealed` ouvre chaque enveloppe pour le prestataire de la demande ; illisible ou d'un autre prestataire, le versement passe `FAILED`, rien au grand livre. Écriture : `create_payout_batch` écrit l'enveloppe telle quelle, le `CHECK enc:v1:` refuse le clair. Export : seul endroit où l'enveloppe est rouverte ; illisible, 500 sans CSV ni valeur (OP-N160). Audit et journaux : le masque seulement.
+
+### IBAN, résumé (prose)
 L'API normalise l'IBAN, le chiffre avec le coffre (`enc:v1:<kid>:…`, lié au prestataire) avant toute écriture, aux trois emplacements ; la base refuse une écriture en clair (`CHECK … NOT VALID`, donc sans effet sur les lignes anciennes, OP-N155). Le déchiffrement n'a lieu que pour l'export du lot de virements ; une enveloppe altérée ou d'un autre prestataire fait échouer le versement (`FAILED`, rien au grand livre) ou l'export (500 sans valeur, OP-N160). Au journal, `redact.ts` masque IBAN et numéros de mobile money.
 
 ### Inscription d'une passerelle (prose)
@@ -30,6 +37,6 @@ Le vérificateur d'assertions interne appelle `advance_app_attest_counter` (vrai
 ## Flux transverses auxquels cette mission participe (référence, pas dupliqué)
 Voir `docs/05-sequence-diagrams.md`, flux : « Enrôlement et requête signée d'un terminal » (session de vendeur, côté terminal), « Double validation au back-office » (décision de lot de versements) et « Versements, rapprochements et clôture » (lot, régularisation). Le flux « Paiement en ligne par bracelet » n'est pas modifié.
 
-## Nécessaire pour cette mission ? Oui : un premier appel inter-processus et un refus de base sont introduits (réponse proposée par l'agent le 19/11/2026, à confirmer).
-## Complet ? Oui pour la session de vendeur et les lots ; IBAN, passerelle et App Attest en prose seulement (un diagramme de l'IBAN serait possible, non jugé nécessaire) (réponse proposée par l'agent, à confirmer).
-## Validé par : en attente de validation humaine, réponses proposées par l'agent.
+## Nécessaire pour cette mission ? Oui : un premier appel inter-processus et un refus de base sont introduits (réponse du porteur, 19/11/2026).
+## Complet ? Oui avec le diagramme du cycle de vie de l'IBAN ; passerelle et App Attest restent en prose, décision du porteur du 19/11/2026.
+## Validé par : le porteur, 19/11/2026.

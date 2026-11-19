@@ -115,4 +115,19 @@ files.append(sequence('sequence-lot-bracelets','Lot de bracelets : fonction cont
   ('d','d','Verrou consultatif, ORDERED imposé, auteur noté','self'),('d','a','Lot créé','ret'),('a','b','201 : même réponse qu’avant','ret'),
   ('x','d','INSERT direct dans media_batch'),('d','x','Refus 42501 : droit retiré','bad')],
  note="Relue le 19/11/2026, non fusionnée. Mêmes garde-fous pour la modification d’un lot (colonnes en liste blanche, lot ORDERED seulement),\nle changement de statut et l’émission des codes de réclamation."))
+files.append(sequence('sequence-iban','Cycle de vie de l’IBAN d’un versement','L’IBAN n’existe en clair que dans la requête et à l’export ; partout ailleurs : enveloppe enc:v1: ou masque',
+ [P('b','Back-office','data'),P('a','API','primary'),P('c','Coffre IbanVault','accent'),P('d','Base')],
+ [('b','a','Demande de lot (IBAN en clair)'),('a','a','Valider, masquer : iban_mask','self'),
+  ('a','c','seal(IBAN, prestataire)'),('c','a','enc:v1:… (AES-256-GCM)','ret'),
+  ('a','d','Demande : enveloppe + iban_mask'),
+  ('b','a','Décision (approuver ou refuser)'),
+  ('#open','alt mauvais rôle de classe'),('a','b','403 : demande en attente','bad'),
+  ('#else','sinon rôle exigé'),('a','c','checkSealed : open (prestataire de la demande)'),
+  ('#open','alt enveloppe illisible ou autre prestataire'),('a','d','Versement FAILED, rien au grand livre','bad'),
+  ('#else','sinon enveloppe lisible'),('a','d','create_payout_batch (enveloppe telle quelle)'),
+  ('d','d','CHECK : clair refusé','self'),('#close',),('#close',),
+  ('b','a','Export du lot'),('a','c','open : seul endroit où l’IBAN se rouvre'),
+  ('#open','alt enveloppe illisible'),('a','b','500 : aucun CSV, aucune valeur','bad'),
+  ('#else','sinon'),('a','d','Audit : nombre de lignes seulement'),('a','b','CSV','ret'),('#close',)],
+ note="Relue le 19/11/2026, non fusionnée. L’audit et les journaux ne portent que le masque (redact.ts) ; la clé est dans le processus de l’API (OP-N150, vrai KMS en 12b).\nLa demande de remboursement suit le même scellement à sa création (refund_request.iban) ; les lignes anciennes en clair ne sont pas reprises (OP-N155)."))
 for f in files: print(r.render(f))

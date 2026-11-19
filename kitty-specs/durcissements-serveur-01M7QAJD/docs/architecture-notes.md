@@ -44,6 +44,6 @@ Voir `docs/passation-11a/a-consigner.md` (28 points). Les principaux : anti-reje
 ## Lien avec la synthèse globale
 Contribue à : `docs/04-architecture-diagram.md`, table « Décisions notables » (processus `vendor-pin`, appel interne signé sans repli et anti-rejeu, lots par fonctions `DEFINER`, coffre d'IBAN) et vue C4 (conteneur `vendor-pin`, redessiné).
 
-## Nécessaire pour cette mission ? Oui : un processus, un premier appel interne, un coffre de clés et des droits de base changent (réponse proposée par l'agent, à confirmer).
-## Complet ? Oui, recalé sur le code de la lane `n` ; reste la relecture humaine des fichiers de clés, de droits et de cryptographie (réponse proposée par l'agent, à confirmer).
-## Validé par : en attente de validation humaine, réponses proposées par l'agent le 19/11/2026.
+## Nécessaire pour cette mission ? Oui : un processus, un premier appel interne, un coffre de clés et des droits de base changent (réponse du porteur, 19/11/2026).
+## Complet ? Oui, recalé sur le code de la lane `n` ; reste la relecture humaine des fichiers de clés, de droits et de cryptographie (réponse du porteur, 19/11/2026).
+## Validé par : le porteur, 19/11/2026.
