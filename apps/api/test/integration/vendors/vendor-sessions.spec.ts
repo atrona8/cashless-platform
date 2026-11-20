@@ -856,9 +856,12 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
     );
   const openedAudits = async (): Promise<number> =>
     Number(
+      // Limité au prestataire du test : une autre suite peut ouvrir des sessions en parallèle (CI).
       (
         await ownerRows<{ n: string }>(
-          `SELECT count(*) AS n FROM audit_log WHERE action = 'VENDOR_SESSION_OPENED'`,
+          `SELECT count(*) AS n FROM audit_log
+            WHERE action = 'VENDOR_SESSION_OPENED' AND operator_id = $1`,
+          [w.ops.a],
         )
       )[0]!.n,
     );
