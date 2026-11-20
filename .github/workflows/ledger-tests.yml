@@ -215,6 +215,9 @@ jobs:
         run: npm test -w @cashless/gateway -- --runInBand --forceExit
 
       - name: Suites pgTAP (référence, scénario, S21, suites du dépôt dont celles des terminaux)
+        # Délai du test « statistiques absentes » (mission 7) : 15 s en CI, 5 s en local (porteur, 20/11/2026).
+        env:
+          PGOPTIONS: "-c cashless.no_stats_timeout=15s"
         run: npm run test:pgtap -w @cashless/ledger-sql
 
       # Intégration en HTTPS réel (terminal de test, identité réelle) comprise : certificats générés
