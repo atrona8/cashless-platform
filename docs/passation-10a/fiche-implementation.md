@@ -26,8 +26,8 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   compte et de `app_user.phone` de l'agent (limite consignée : agent sans numéro ou autre numéro) ;
   rotation **immédiate** du secret des codes de rattachement, version du secret sur chaque
   empreinte ; réémission par commande d'exploitation (rôle `cashless_claimadmin`, jamais
-  `cashless_app`) ; code OTP gardé **en mémoire du processus seulement** pendant la chaîne (30 s au
-  plus), jamais en base ni dans un journal ; `printed_number` en 3e colonne facultative du fichier
+  `cashless_app`) ; code OTP gardé **en mémoire du processus seulement** pendant la chaîne (35 s au
+  plus, effacé dès le dernier envoi), jamais en base ni dans un journal ; `printed_number` en 3e colonne facultative du fichier
   de l'imprimeur.
 - **Aucun faux en production** : les trois faux fournisseurs (WhatsApp, SMS principal, SMS de
   repli) refusent le démarrage en production ; un test le prouve et `production-refusals.spec.ts`
@@ -36,9 +36,10 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
   mission, `interfaces.md` (noms, signatures, propriétaires, codes) fait foi sur tout prompt,
   `research.md` et `data-model.md`. Un manque ou une contradiction se signale, jamais tranché en
   silence.
-- **Contrat** : seul ajout permis, la description du corps `text/csv` d'`importClaimCodeAssociations`
-  (colonne `printed_number`, WP09) et son entrée dans `contract-baseline.json`. Aucune autre route,
-  aucun champ, aucun code d'erreur exposé nouveau. `node tools/contract-stability/check.mjs` à 0 refus.
+- **Contrat** : seuls ajouts permis (WP09) : la description du corps `text/csv`
+  d'`importClaimCodeAssociations` (colonne `printed_number`) et les motifs `BAD_PRINTED_NUMBER`,
+  `PRINTED_NUMBER_TAKEN` de `ClaimCodeAssociationResult.reason` (ADR-225), inscrits dans
+  `contract-baseline.json`. Aucune autre route, aucun champ, aucun code d'erreur exposé nouveau. `node tools/contract-stability/check.mjs` à 0 refus.
 - **Jamais** modifier un `.sql` généré de `packages/ledger-sql/`, `schema_grand_livre_cashless.sql`
   ni une migration existante : migrations `0096` à `0099` seulement.
 - **Aucune dépendance nouvelle**. Lignes de 100 caractères au plus.
