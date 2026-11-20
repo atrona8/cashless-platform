@@ -228,40 +228,45 @@ describe('lot de versements', () => {
     ).rejects.toMatchObject({ code: '23514', constraint: 'payout_iban_sealed' });
   });
 
-  it('OP-N140 : enveloppe altérée ou scellée pour un autre prestataire, forgée en base : FAILED, rien écrit, aucun fragment d’IBAN', async () => {
+  it('OP-N140 : enveloppe altérée ou scellée pour un autre prestataire, masque falsifié, forgés en base : FAILED, rien écrit, aucun fragment d’IBAN', async () => {
     // `guardDecision` ne relit que la forme (`validatePayload`) : la forge le franchit et atteint
     // `execute`, où seule l'ouverture de l'enveloppe pour CE prestataire (`checkSealed`) l'arrête.
+    // Masque falsifié (revue post-fusion de la mission 11a, B-1) : l'enveloppe est authentique mais
+    // le masque affiché au valideur n'est pas celui de l'IBAN payé.
     const vault = p.api.app.get(IbanVault);
-    const forgeries: Array<[string, (genuine: string) => string]> = [
+    const forgeries: Array<[string, 'iban' | 'iban_mask', (genuine: string) => string]> = [
       [
         'altérée',
+        'iban',
         (genuine) => {
           const at = genuine.length - 30;
           return `${genuine.slice(0, at)}${genuine[at] === 'A' ? 'B' : 'A'}${genuine.slice(at + 1)}`;
         },
       ],
-      ['autre prestataire', () => vault.seal(IBAN, p.w.ops.b)],
+      ['autre prestataire', 'iban', () => vault.seal(IBAN, p.w.ops.b)],
+      ['masque falsifié', 'iban_mask', () => maskIban('FR7630006000011234567890189')],
     ];
-    for (const [label, forge] of forgeries) {
+    for (const [label, field, forge] of forgeries) {
       const m = await p.merchant(5_000);
       const asked = await p.request([
         p.line(m, 100, { method: 'BANK_TRANSFER', msisdn: undefined, iban: IBAN }),
       ]);
       expect(asked.status).toBe(202);
       const id = String(asked.body.approval_request_id);
-      const [stored] = await ownerRows<{ iban: string }>(
-        `SELECT payload->'lines'->0->>'iban' AS iban FROM approval_request WHERE id = $1`,
-        [id],
+      const [stored] = await ownerRows<{ value: string }>(
+        `SELECT payload->'lines'->0->>$2 AS value FROM approval_request WHERE id = $1`,
+        [id, field],
       );
-      const forged = forge(stored!.iban);
-      expect(forged).not.toBe(stored!.iban);
+      const forged = forge(stored!.value);
+      expect(forged).not.toBe(stored!.value);
       await withOwner(async (db) => {
         await db.query('BEGIN');
         await db.query("SET LOCAL session_replication_role = 'replica'");
         await db.query(
           `UPDATE approval_request
-              SET payload = jsonb_set(payload, '{lines,0,iban}', to_jsonb($2::text)) WHERE id = $1`,
-          [id, forged],
+              SET payload = jsonb_set(payload, ARRAY['lines', '0', $3], to_jsonb($2::text))
+            WHERE id = $1`,
+          [id, forged, field],
         );
         await db.query('COMMIT');
       });
@@ -276,7 +281,10 @@ describe('lot de versements', () => {
       expect([label, res.body.status]).toEqual([label, 'FAILED']);
       expect(await p.payoutsOf(id)).toHaveLength(0);
       expect([label, await txs()]).toEqual([label, before]);
-      for (const fragment of [IBAN, IBAN.slice(0, 12), IBAN.slice(-8), forged]) {
+      // Un masque est fait pour être affiché : seule une enveloppe forgée est un fragment interdit.
+      const fragments = [IBAN, IBAN.slice(0, 12), IBAN.slice(-8)];
+      if (field === 'iban') fragments.push(forged);
+      for (const fragment of fragments) {
         expect(res.text).not.toContain(fragment);
       }
     }

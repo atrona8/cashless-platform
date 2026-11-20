@@ -319,8 +319,10 @@ export class PayoutActions {
   }
 
   /**
-   * Chaque enveloppe doit s'ouvrir pour CE prestataire et donner un IBAN valide ; le clair ouvert
-   * n'est ni conservé ni réécrit (la ligne SQL reçoit l'enveloppe telle quelle).
+   * Chaque enveloppe doit s'ouvrir pour CE prestataire et donner un IBAN valide dont le masque est
+   * celui de la charge (le masque affiché au valideur doit être celui de l'IBAN payé : revue
+   * post-fusion de la mission 11a, B-1) ; le clair ouvert n'est ni conservé ni réécrit (la ligne SQL
+   * reçoit l'enveloppe telle quelle).
    */
   private checkSealed(batch: PayoutBatchPayload, operatorId: string): void {
     for (const line of batch.lines) {
@@ -332,6 +334,8 @@ export class PayoutActions {
         throw unprocessable('iban : enveloppe illisible pour ce prestataire.');
       }
       if (!isValidIban(clear)) throw unprocessable('iban : IBAN valide (ISO 13616) attendu.');
+      if (line.iban_mask !== maskIban(clear))
+        throw unprocessable('iban_mask : ne correspond pas à l’IBAN chiffré.');
     }
   }
 

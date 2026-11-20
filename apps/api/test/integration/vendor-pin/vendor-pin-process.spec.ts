@@ -9,7 +9,6 @@ import { OPEN_SESSION_INDEX } from '../../../src/vendor-pin/vendor-pin-open.serv
 import { signCall } from '../../../src/vendor-pin/vendor-pin-call-signature';
 import { PIN_URL, withOwner } from '../../support/db';
 import {
-  OPEN_PATH,
   HASH_PATH,
   PIN,
   WRONG,

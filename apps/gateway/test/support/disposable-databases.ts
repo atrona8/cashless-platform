@@ -87,6 +87,7 @@ export interface CentralUrls {
   keyadmin: string;
   snapcontent: string;
   snapsign: string;
+  pin: string;
 }
 
 export function centralUrls(database: string, c: Cluster = cluster()): CentralUrls {
@@ -106,6 +107,9 @@ export function centralUrls(database: string, c: Cluster = cluster()): CentralUr
     keyadmin: url('cashless_keyadmin'),
     snapcontent: url('cashless_snapcontent'),
     snapsign: url('cashless_snapsign'),
+    // Processus vendor-pin (mission 11a) : sans son mot de passe, la migration d'un cluster neuf
+    // (CI) laisse `cashless_pin` sans mot de passe et l'ouverture de session échoue en 28P01.
+    pin: url('cashless_pin'),
   };
 }
 
@@ -125,6 +129,7 @@ export function centralEnv(database: string, c: Cluster = cluster()): Record<str
     'maint',
     'edge',
     'edgeadmin',
+    'pin',
   ]) {
     passwords[`CASHLESS_${role.toUpperCase()}_PASSWORD`] = roleLocalPassword(
       `cashless_${role}`,
@@ -152,6 +157,7 @@ export function centralEnv(database: string, c: Cluster = cluster()): Record<str
     DATABASE_URL_KEYADMIN: u.keyadmin,
     DATABASE_URL_SNAPCONTENT: u.snapcontent,
     DATABASE_URL_SNAPSIGN: u.snapsign,
+    DATABASE_URL_PIN: u.pin,
   };
 }
 
