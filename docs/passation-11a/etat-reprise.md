@@ -23,12 +23,11 @@
 
 ## Suite (dans l'ordre)
 1. ~~accept~~ FAIT le 19/11/2026 à 16:10Z (commit d'acceptation `ef1d3504`, 14 lots, merge en attente).
-2. Consolidation : appliquer la séquence de la mémoire « Pièges de consolidate » (9a/9b) — comptes rendus de
-   relecture recopiés sur feat, `align-lane.sh` de chaque lane, feat fusionnée dans la coordination
-   (`git merge --no-ff`), lanes chaînées en `--no-ff` dans l'ordre de consolidation (code = tête TESTÉE de la
-   lane n), puis `consolidate --keep-branch --keep-worktree --yes`. Fichiers modifiés à la fois sur feat et dans
-   les lanes : `docs/POINTS_OUVERTS.md` etc. sont seulement dans la lane n ; vérifier `PRD.md`/`PROMPTS`.
-3. Après fusion : `git diff --stat 63b1526b HEAD -- apps packages tools .github` doit être vide (hors docs).
+2. ~~Consolidation~~ FAITE le 20/11/2026 (2e essai) : comptes rendus recopiés sur feat (`3f7741f6`),
+   `align-lane.sh` des 14 lanes, feat fusionnée dans la coordination ; 1er essai refusé « lane-i stale »
+   (`sqlstate-map.ts`) ; lanes chaînées en `--no-ff` (i…n, code de lane-i pris sur la lane n) ; squash `cdedcd48`.
+3. ~~Contrôle~~ FAIT : `git diff --stat 63b1526b HEAD -- apps packages tools .github` vide ; `check.mjs`
+   0 refusée ; tests de `tools/contract-stability` 42/42.
 4. PR vers main ; CI ; fusion `--admin` sur accord du porteur pour CETTE PR.
 
 ## Pour le porteur
