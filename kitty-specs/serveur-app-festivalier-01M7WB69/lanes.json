@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "mission_slug": "serveur-app-festivalier-01M7WB69",
+  "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+  "mission_branch": "kitty/mission-serveur-app-festivalier-01M7WB69",
+  "target_branch": "feat/serveur-app-festivalier",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0096_kyc_functions.sql",
+        "packages/ledger-sql/tests/tests_kyc_functions.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0097_claim_code_key_version.sql",
+        "packages/ledger-sql/tests/tests_claim_key_version.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0098_pending_offline_notice.sql",
+        "packages/ledger-sql/migrations/0099_otp_channel_attempt.sql",
+        "packages/ledger-sql/tests/tests_otp_channel_attempt.sql",
+        "packages/ledger-sql/tests/tests_pending_offline_notice.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        ".github/workflows/ledger-tests.yml",
+        "apps/api/test/support/db.ts",
+        "apps/gateway/test/support/disposable-databases.ts",
+        "packages/ledger-sql/post-roles.sql",
+        "packages/ledger-sql/roles.sql",
+        "packages/ledger-sql/src/migrate.ts",
+        "packages/ledger-sql/tests/tests_10a_rights.sql",
+        "packages/ledger-sql/tests/tests_11a_rights.sql",
+        "packages/ledger-sql/tests/tests_9b_rights.sql",
+        "packages/ledger-sql/tests/tests_execute_grants.sql",
+        "tools/dev-db/env.sh"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/errors/sqlstate-map.ts",
+        "apps/api/src/kyc/kyc.controller.ts",
+        "apps/api/src/kyc/kyc.module.ts",
+        "apps/api/src/kyc/kyc.service.ts",
+        "apps/api/test/integration/kyc/create.spec.ts",
+        "apps/api/test/integration/kyc/limits.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "apps/api/src/config/config.ts",
+        "apps/api/src/kms/claim-hash.ts",
+        "apps/api/src/media/batches/claim-codes.service.ts",
+        "apps/api/src/media/claims/claims.service.ts",
+        "apps/api/src/media/personalization/personalization.service.ts",
+        "apps/api/test/integration/media/claim-rotation.spec.ts",
+        "apps/api/test/unit/config.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/kyc/kyc-revocation-action.ts",
+        "apps/api/src/kyc/kyc-revocation.controller.ts",
+        "apps/api/test/integration/kyc/revoke.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/cli/reissue-claim-codes.ts",
+        "apps/api/test/integration/cli/reissue-claim-codes.spec.ts",
+        "docs/procedure-rotation-codes-rattachement.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/customer-app/me.service.ts",
+        "apps/api/test/integration/customer-app/me-10a.spec.ts",
+        "packages/contracts/openapi.yaml",
+        "tools/contract-stability/contract-baseline.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-g"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/customer-auth/customer-auth.module.ts",
+        "apps/api/src/customer-auth/customer-auth.service.ts",
+        "apps/api/src/customer-auth/otp-chain.ts",
+        "apps/api/src/customer-auth/otp-providers.ts",
+        "apps/api/src/customer-auth/otp-sender.ts",
+        "apps/api/src/processes/bootstrap.ts",
+        "apps/api/test/integration/customer-auth/otp-chain.spec.ts",
+        "apps/api/test/unit/customer-auth/otp-chain.spec.ts",
+        "apps/gateway/test/e2e/production-refusals.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-g"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md",
+        "docs/passation-10a/preuves.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-j"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-20T13:11:24.988618+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "6774a24b4d40677f0ff08bc7f6eb8d5dfd82db4f"
+}
