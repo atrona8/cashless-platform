@@ -1,6 +1,6 @@
 # Cas d'usage : mission durcissements-serveur-01M7QAJD
 
-> État : **relue le 19/11/2026** (14 lots sur 14 approuvés), non acceptée, non fusionnée (mission 11a « Durcissements serveur hérités »).
+> État : **relue le 19/11/2026** (14 lots sur 14 approuvés), acceptée le 19/11/2026, dans `main` par la PR #20 le 20/11/2026 (`27d0ec50`) (mission 11a « Durcissements serveur hérités »).
 > Source : `spec.md`, `plan.md`, `interfaces.md`, code de la lane `n`. Diagramme `/illustre` (police sans empattement, rendu relu le 19/11/2026) ; source et générateur dans [`diagrams/`](diagrams/) (`generate.py`).
 
 ## Cas d'usage propres à cette mission

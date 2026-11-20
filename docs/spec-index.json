@@ -1223,7 +1223,7 @@
   {
     "mission": "durcissements-serveur-01M7QAJD",
     "titre_cas_usage": "Durcissements serveur hérités",
-    "statut": "relue (14 lots sur 14 approuvés le 19/11/2026), non acceptée, non fusionnée",
+    "statut": "mergée : acceptée le 19/11/2026 (ef1d3504), consolidée le 20/11/2026 (squash cdedcd48), dans main par la PR #20 le 20/11/2026 (27d0ec50)",
     "user_stories": [
       {
         "titre": "Bracelets par fonctions contrôlées",

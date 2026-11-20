@@ -1,6 +1,6 @@
 # Séquences : mission durcissements-serveur-01M7QAJD
 
-> État : **relue le 19/11/2026**, non acceptée, non fusionnée. Trois diagrammes `/illustre` (deux recalés, un ajouté le 19/11/2026) relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les flux App Attest et inscription de passerelle sont décrits en prose, sans diagramme ; le cycle de vie de l'IBAN a le sien.
+> État : **relue le 19/11/2026**, acceptée le 19/11/2026, dans `main` par la PR #20 le 20/11/2026 (`27d0ec50`) ; diagramme de l'IBAN complété le 20/11/2026 (masque recoupé, B-1). Trois diagrammes `/illustre` (deux recalés, un ajouté le 19/11/2026) relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`). Les flux App Attest et inscription de passerelle sont décrits en prose, sans diagramme ; le cycle de vie de l'IBAN a le sien.
 
 ## Flux internes propres à cette mission
 

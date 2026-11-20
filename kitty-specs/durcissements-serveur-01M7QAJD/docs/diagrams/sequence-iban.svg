@@ -28,7 +28,7 @@
 <rect x="70" y="872.72" width="174" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="707.6666666666666,974.72 1210.3333333333333,974.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,974.72 1191.026516971745,985.2673618492925 1191.026516971745,964.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="710.8" y="937.72" width="498.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="70" y="1024.72" width="454" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="1024.72" width="804" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="707.6666666666666,1126.72 1727.0,1126.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="1727.0,1126.72 1707.6931836384117,1137.2673618492925 1707.6931836384117,1116.1726381507076" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
 <rect x="1015.9333333333333" y="1089.72" width="404.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="64,1170.72 1920.0,1170.72" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
@@ -54,7 +54,7 @@
 <rect x="64" y="1619.12" width="1856.0" height="369.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Cycle de vie de l’IBAN d’un versement</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">L’IBAN n’existe en clair que dans la requête et à l’export ; partout ailleurs : enveloppe enc:v1: ou masque</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 19/11/2026 — non fusionné</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Dans main le 20/11/2026 (PR #20)</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Back-office</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Coffre IbanVault</text>
@@ -77,7 +77,7 @@
 <text x="74" y="890.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon rôle exigé</text>
 <text x="960.0" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">checkSealed : open (prestataire de la demande)</text>
 <text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="74" y="1042.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt enveloppe illisible ou autre prestataire</text>
+<text x="74" y="1042.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt enveloppe illisible, autre prestataire ou masque ≠ IBAN ouvert (B-1, 20/11)</text>
 <text x="1218.3333333333335" y="1107.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Versement FAILED, rien au grand livre</text>
 <text x="34.0" y="1129.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
 <text x="74" y="1194.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">sinon enveloppe lisible</text>
@@ -97,7 +97,7 @@
 <text x="34.0" y="1882.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">15</text>
 <text x="443.3333333333333" y="1936.395" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">CSV</text>
 <text x="34.0" y="1958.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">16</text>
-<text x="60" y="2085.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relue le 19/11/2026, non fusionnée. L’audit et les journaux ne portent que le masque (redact.ts) ; la clé est dans le processus de l’API (OP-N150, vrai KMS en 12b).</text>
+<text x="60" y="2085.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Dans main le 20/11/2026 (PR #20). L’audit et les journaux ne portent que le masque (redact.ts) ; la clé est dans le processus de l’API (OP-N150, vrai KMS en 12b).</text>
 <text x="60" y="2110.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">La demande de remboursement suit le même scellement à sa création (refund_request.iban) ; les lignes anciennes en clair ne sont pas reprises (OP-N155).</text>
 </g>
 </svg>

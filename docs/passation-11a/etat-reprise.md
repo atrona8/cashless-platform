@@ -28,7 +28,9 @@
    (`sqlstate-map.ts`) ; lanes chaînées en `--no-ff` (i…n, code de lane-i pris sur la lane n) ; squash `cdedcd48`.
 3. ~~Contrôle~~ FAIT : `git diff --stat 63b1526b HEAD -- apps packages tools .github` vide ; `check.mjs`
    0 refusée ; tests de `tools/contract-stability` 42/42.
-4. PR vers main ; CI ; fusion `--admin` sur accord du porteur pour CETTE PR.
+4. ~~PR~~ FAIT : PR #20 fusionnée le 20/11/2026 (`--admin`, accord du porteur), commit `27d0ec50`. Revue
+   post-fusion PASS WITH NOTES après correctif B-1 (`ae432316`) ; CI verte (pgTAP
+   `tests_offline_snapshot_source_no_stats.sql` rouge une fois, vert au rejeu). **Mission 11a close.**
 
 ## Pour le porteur
 - Relecture humaine : liste en §11 de `docs/POINTS_OUVERTS.md` (clés, droits de base, cryptographie,

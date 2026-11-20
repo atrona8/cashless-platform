@@ -43,7 +43,7 @@
 <rect x="64" y="410.71999999999997" width="1856.0" height="1053.28" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Ouverture d’une session de vendeur</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Seul le processus vendor-pin vérifie le PIN ; sans lui, l’API refuse, aucun repli</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 19/11/2026 — non fusionné</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Dans main le 20/11/2026 (PR #20)</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Processus vendor-pin</text>
@@ -76,7 +76,7 @@
 <text x="34.0" y="1357.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
 <text x="443.3333333333333" y="1411.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Refus : même réponse qu’avant</text>
 <text x="34.0" y="1433.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
-<text x="60" y="1549.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relue le 19/11/2026, non fusionnée. Le rôle cashless_pin est le seul à lire l’empreinte ; l’API n’exécute plus ces fonctions.</text>
+<text x="60" y="1549.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Dans main le 20/11/2026 (PR #20). Le rôle cashless_pin est le seul à lire l’empreinte ; l’API n’exécute plus ces fonctions.</text>
 <text x="60" y="1574.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Cache des signatures vues (20 000 entrées, plein = 401). Limite nommée : l’API voit le PIN en transit (OP-N151).</text>
 </g>
 </svg>
