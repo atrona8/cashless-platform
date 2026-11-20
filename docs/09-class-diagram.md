@@ -694,6 +694,27 @@ classDiagram
   device_app_attest_key --> device : device_id
 ```
 
+## 4 decies. Serveur de l'app festivalier (mission 10a, 📝 plan finalisé le 20/11/2026, non implémentée)
+
+> **Prévu, non réalisé.** Source : `kitty-specs/serveur-app-festivalier-01M7WB69/data-model.md` (migrations `0096` à `0099` à venir).
+
+- `kyc_verification` : table existante (schéma de référence), aucune colonne nouvelle ; écrite par `create_kyc_verification` et `revoke_kyc_verification` (`0096`, `SECURITY DEFINER`).
+- `media.claim_key_version`, `claim_code.key_version`, `media_claim.key_version` : version du secret de l'empreinte, défaut 1 (`0097`) ; fonction `reissue_claim_codes` (rôle `cashless_claimadmin`).
+- `media.printed_number` : texte facultatif `[A-Z0-9-]{1,32}`, unique par prestataire quand non NULL (`0098`) ; fonction `wallet_pending_offline_notice`.
+- Table nouvelle `otp_channel_attempt` (défi, canal `WHATSAPP`, `SMS_PRIMARY` ou `SMS_FALLBACK`, fournisseur, envoi, confirmation, motif d'échec ; jamais de code) (`0099`).
+
+```mermaid
+classDiagram
+  class media { claim_key_version; printed_number }
+  class claim_code { key_version }
+  class media_claim { key_version }
+  class otp_challenge { id }
+  class otp_channel_attempt { challenge_id; channel; provider; sent_at; confirmed_at; failed_reason }
+  class kyc_verification { status; id_expires_on; revoked_by }
+  otp_channel_attempt --> otp_challenge : challenge_id
+  media_claim --> media : media_id
+```
+
 ## 5. Description des tables
 
 Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`, 113 avec la mission « Durcissements serveur » : `device_app_attest_key`),

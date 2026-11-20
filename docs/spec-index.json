@@ -1305,5 +1305,77 @@
       "0 IBAN en clair après migration (NFR-005)"
     ],
     "source": "kitty-specs/durcissements-serveur-01M7QAJD/spec.md"
+  },
+  {
+    "mission": "serveur-app-festivalier-01M7WB69",
+    "titre_cas_usage": "Serveur de l'app festivalier",
+    "statut": "plan finalisé le 20/11/2026, non implémentée",
+    "user_stories": [
+      {
+        "titre": "Identifier au guichet",
+        "detail": "En tant que caissier ou ORGANIZER_ADMIN, je veux enregistrer la pièce d'identité d'un festivalier au compte vérifié (type, pays, 4 derniers caractères, expiration) afin que tous ses portefeuilles passent VERIFIED et que les plafonds des identifiés s'appliquent ; refus 422 ACCOUNT_REQUIRED sans client, 403 si l'agent est le titulaire du numéro, 403 sans rôle."
+      },
+      {
+        "titre": "Révoquer à deux personnes",
+        "detail": "En tant qu'administrateur, je veux demander la révocation d'une identification avec un motif (202, KYC_REVOCATION PENDING) qu'une autre personne habilitée approuve, afin de corriger une fraude sans modifier l'historique ; l'auteur ne peut pas s'approuver, une identification déjà révoquée donne 409."
+      },
+      {
+        "titre": "Rotation immédiate du secret",
+        "detail": "En tant qu'exploitant, je veux une procédure testée de rotation du secret des codes de rattachement après laquelle tout code émis avant est refusé comme inconnu, et réémettre de nouveaux codes par un nouveau fichier de l'imprimeur (OP-N47)."
+      },
+      {
+        "titre": "/me complet pour l'app",
+        "detail": "En tant que festivalier, je veux voir le numéro imprimé de mes bracelets (null si inconnu) et être prévenu (pending_offline_notice) quand des terminaux hors ligne peuvent encore remonter des achats sur mon portefeuille."
+      },
+      {
+        "titre": "Code même si WhatsApp échoue",
+        "detail": "En tant que festivalier, je veux que mon code parte par WhatsApp puis par le SMS principal (10 s ou sans WhatsApp) puis par le SMS de repli (20 s), ou directement par SMS ; un seul code valide par défi, bascules hors des limites d'envoi (ADR-66)."
+      }
+    ],
+    "entites_cles": [
+      "Identification (kyc_verification)",
+      "Demande de révocation (KYC_REVOCATION)",
+      "Code de rattachement",
+      "Défi de code (otp_challenge)",
+      "Bracelet du festivalier"
+    ],
+    "resultat_mesurable": "100 % des festivaliers identifiés rechargent au-delà du plafond non identifié et 0 identification pour un portefeuille anonyme ou par l'agent titulaire ; après rotation 100 % des anciens codes refusés et 100 % des codes réémis rattachent ; bascules WhatsApp, SMS principal, SMS de repli à 11 s et 21 s au plus (tolérance 1 s) ; getMe et listMyWallets p95 sous 300 ms pour 5 portefeuilles ; 0 code en clair en base, journaux, audit ou registre d'idempotence",
+    "hypotheses": [
+      "Le numéro imprimé arrive par une colonne facultative du fichier de l'imprimeur ; sinon printed_number vaut null (ajout validé par le porteur le 20/11/2026)",
+      "Les nouveaux codes après rotation passent par la commande d'exploitation de réémission, contrat inchangé",
+      "Les délais de 10 s et de 20 s sont réglables par la plateforme",
+      "La relecture humaine des fichiers hérités de la mission hors Spec Kitty reste à la charge du porteur"
+    ],
+    "contraintes": [
+      "openapi.yaml fait foi : aucune route modifiée, un seul ajout rétrocompatible",
+      "Révocation : le contrat (deux personnes) prime sur SPECIFICATION §6.3 ; contradiction signalée",
+      "Fournisseurs WhatsApp et SMS simulés jusqu'à la mission 12b, refusés en production",
+      "Règle de l'agent titulaire limitée à l'égalité du numéro vérifié et du téléphone de l'agent (C-005)",
+      "Plafonds du Sénégal provisoires ; .sql générés jamais modifiés à la main"
+    ],
+    "cas_limites": [
+      "Deux caissiers identifient le même client en même temps",
+      "Agent sans téléphone ou avec un autre numéro : non détecté (limite consignée)",
+      "Pièce déjà expirée à la saisie : 422",
+      "Rotation du secret pendant un rattachement en attente de confirmation",
+      "Toute la chaîne d'envoi échoue : défi valide jusqu'à son expiration",
+      "Fournisseur qui confirme après la bascule : même code, rien n'est invalidé"
+    ],
+    "fonctionnel": [
+      "Identification au guichet par fonction contrôlée de la base",
+      "Compte exigé et agent titulaire refusé",
+      "Révocation à deux (KYC_REVOCATION) et niveau calculé à la date de l'opération",
+      "Rotation immédiate du secret et réémission des codes",
+      "printed_number et pending_offline_notice dans /me",
+      "Chaîne d'envoi WhatsApp, SMS principal, SMS de repli ; SMS direct ; un seul code par défi"
+    ],
+    "non_fonctionnel": [
+      "Bascules à l'heure (11 s et 21 s)",
+      "Aucun code en clair",
+      "Pièce minimale (4 derniers caractères)",
+      "Lecture /me p95 sous 300 ms",
+      "Faux fournisseurs refusés en production"
+    ],
+    "source": "kitty-specs/serveur-app-festivalier-01M7WB69/spec.md"
   }
 ]
