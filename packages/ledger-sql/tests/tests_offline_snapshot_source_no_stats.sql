@@ -61,7 +61,13 @@ DELETE FROM pg_statistic
  WHERE starelid IN ('offline_snapshot_state'::regclass, 'media'::regclass, 'media_assignment'::regclass,
                     'media_status_history'::regclass);
 
-SET LOCAL statement_timeout = '5s';
+-- 5 s par défaut (poste local) ; la CI pose 15 s par PGOPTIONS (`cashless.no_stats_timeout`, décision du porteur du
+-- 20/11/2026 : trois dépassements à 5 s sur les machines de CI, PR #19, #20 et #22, sans régression de la fonction).
+-- Le cas pathologique visé (boucle imbriquée) dépasse 60 s : 15 s le détecte toujours.
+DO $$ BEGIN
+  PERFORM set_config('statement_timeout',
+                     coalesce(nullif(current_setting('cashless.no_stats_timeout', true), ''), '5s'), true);
+END $$;
 
 -- Appels directs, sans lives_ok : lives_ok exécute dans une sous-transaction (bloc EXCEPTION) qui, sur les lignes non
 -- validées de cette transaction, ralentit tout d'un facteur 100 sans rapport avec la production (le travailleur appelle
@@ -79,7 +85,7 @@ SELECT is((SELECT count(*)::int FROM offline_snapshot_source_rows(pg_temp.lg(), 
 INSERT INTO media_status_history (operator_id, media_id, from_status, to_status, at)
 SELECT pg_temp.id('55a001'), mid, 'ISSUED', 'SUSPENDED', now() FROM bulk55;
 SELECT is((SELECT count(*)::int FROM offline_snapshot_source_rows(pg_temp.lg(), now() - interval '3 seconds')), 20005,
-          'DELTA fenêtre pleine sans statistiques : 20 000 vivants + 5 orphelins, avant 5 s');
+          'DELTA fenêtre pleine sans statistiques : 20 000 vivants + 5 orphelins, dans le délai');
 
 SELECT * FROM finish();
 ROLLBACK;
