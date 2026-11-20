@@ -79,8 +79,8 @@
       "spec_index_a_jour": true
     },
     "durcissements-serveur-01M7QAJD": {
-      "statut": "relue (14 lots sur 14 approuvés le 19/11/2026), non acceptée, non fusionnée",
-      "verifie_le": "2026-11-19T18:00:00Z",
+      "statut": "mergée : acceptée le 19/11/2026 (ef1d3504), consolidée le 20/11/2026 (squash cdedcd48), dans main par la PR #20 le 20/11/2026 (27d0ec50)",
+      "verifie_le": "2026-11-20T13:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

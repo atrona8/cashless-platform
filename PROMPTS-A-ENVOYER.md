@@ -40,7 +40,7 @@ Deux principes, décidés le 29/10/2026 au lancement de la mission 7 :
 | 9a | Remboursements (festivalier, back-office, guichet) — découpée le 13/11/2026 | nous | en cours (16/11/2026) : WP01 à WP06 approuvés, WP07 (preuves, consignation) en relecture ; reste review, accept, merge |
 | 9b | Versements, rapprochements et clôture | nous | après la fusion de 9a |
 | 10a | Serveur de l'app festivalier (comptes par numéro, code à usage unique simulé, `/me`) | nous | après 9 |
-| 11a | Durcissements serveur hérités (back-office et terminaux) | nous | implémentée le 19/11/2026 (`durcissements-serveur-01M7QAJD`) : WP01 à WP13 approuvés, WP14 (consignation) en relecture ; reste review, accept, merge ; OP-N64 côté serveur prêt, reports en 12, 12b et 13 |
+| 11a | Durcissements serveur hérités (back-office et terminaux) | nous | **close le 20/11/2026** (`durcissements-serveur-01M7QAJD`, PR #20, `27d0ec50`) ; OP-N64 côté serveur prêt, reports en 12, 12b et 13 |
 | 10c | Gestion des clients par une application cliente (décidée le 05/11/2026) | nous | après 10a |
 | 10b | App festivalier (Flutter) | **déléguée** | contrat simulé maintenant ; routes réelles après 10a |
 | 11 | Back-office web (Next.js) | **déléguée** | maintenant (routes des missions 1 à 6 servies) ; écrans 7 à 9 au fil de l'eau |

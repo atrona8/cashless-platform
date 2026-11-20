@@ -28,7 +28,7 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 19/11/2026 — non fusionné','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Dans main le 20/11/2026 (PR #20)','decision','rectangle',20)
     ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
@@ -48,7 +48,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
 def sequence(name,title,sub,parts,msgs,note=None):
     # Styles de message : call, ret (pointillé), bad, self (action interne), note (Note over, a..b),
     # et cadres : ('#open', libellé) / ('#else', libellé) / ('#close',) (loop, alt).
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 19/11/2026 — non fusionné','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Dans main le 20/11/2026 (PR #20)','decision','rectangle',20)
     n=len(parts); pw=250; gap=(1800-pw)/(n-1) if n>1 else 0; top=160
     rows=sum(1 for m in msgs if m[0]!='#close'); step=max(min((1000-top-110)/max(rows,1),104),76)
     cx={k:60+pw/2+i*gap for i,(k,_,_) in enumerate(parts)}
@@ -99,7 +99,7 @@ files.append(usecase('usecase-durcissements','Durcissements serveur hérités','
  [T,B,S,X],
  [(U1,'primary'),(U2,'primary'),(U3,'primary'),(U4,'primary'),(U5,'primary'),(R1,'warn'),(R2,'warn'),(R3,'warn')],
  [(T,U1),(B,U2),(B,U3),(B,U4),(S,U5),(X,R1,RED),(X,R2,RED),(X,R3,RED)],
- note="Mission relue le 19/11/2026 (14 lots sur 14 approuvés), non fusionnée. Flèches rouges pointillées : tentatives refusées par la base.\nLe PIN n’est vérifié que par le processus vendor-pin ; les lots passent par des fonctions contrôlées.\nUne demande de remboursement ne naît qu’à son état initial ; l’IBAN est chiffré en base et masqué au journal.\nL’inscription d’une passerelle rend le grand livre de l’événement (l’option --ledger est refusée) ; les routes et réponses restent celles d’avant.",H=880))
+ note="Mission dans main le 20/11/2026 (PR #20, 14 lots sur 14 approuvés). Flèches rouges pointillées : tentatives refusées par la base.\nLe PIN n’est vérifié que par le processus vendor-pin ; les lots passent par des fonctions contrôlées.\nUne demande de remboursement ne naît qu’à son état initial ; l’IBAN est chiffré en base et masqué au journal.\nL’inscription d’une passerelle rend le grand livre de l’événement (l’option --ledger est refusée) ; les routes et réponses restent celles d’avant.",H=880))
 files.append(sequence('sequence-pin-vendeur','Ouverture d’une session de vendeur','Seul le processus vendor-pin vérifie le PIN ; sans lui, l’API refuse, aucun repli',
  [P('t','Terminal','data'),P('a','API','primary'),P('p','Processus vendor-pin','accent'),P('d','Base')],
  [('t','a','POST /vendor-sessions (PIN)'),('a','p','Appel signé (HMAC, horodatage, fenêtre 30 s)'),
@@ -108,13 +108,13 @@ files.append(sequence('sequence-pin-vendeur','Ouverture d’une session de vende
   ('#else','sinon PIN juste'),('p','d','begin_vendor_pin_check (essai compté)'),('d','p','Empreinte du PIN','ret'),
   ('p','p','Vérification argon2','self'),('p','d','open_vendor_session + audit'),('p','a','Session ouverte','ret'),('a','t','200 : jeton de session','ret'),
   ('#else','sinon PIN faux'),('p','d','Essai compté, audit'),('a','t','Refus : même réponse qu’avant','bad'),('#close',)],
- note="Relue le 19/11/2026, non fusionnée. Le rôle cashless_pin est le seul à lire l’empreinte ; l’API n’exécute plus ces fonctions.\nCache des signatures vues (20 000 entrées, plein = 401). Limite nommée : l’API voit le PIN en transit (OP-N151)."))
+ note="Dans main le 20/11/2026 (PR #20). Le rôle cashless_pin est le seul à lire l’empreinte ; l’API n’exécute plus ces fonctions.\nCache des signatures vues (20 000 entrées, plein = 401). Limite nommée : l’API voit le PIN en transit (OP-N151)."))
 files.append(sequence('sequence-lot-bracelets','Lot de bracelets : fonction contrôlée ou refus','L’API n’écrit plus la table du lot ; une API compromise se heurte au refus de la base',
  [P('b','Back-office','data'),P('a','API','primary'),P('d','Base'),P('x','API compromise','neutral')],
  [('b','a','Créer un lot de bracelets'),('a','d','create_media_batch (DEFINER)'),
   ('d','d','Verrou consultatif, ORDERED imposé, auteur noté','self'),('d','a','Lot créé','ret'),('a','b','201 : même réponse qu’avant','ret'),
   ('x','d','INSERT direct dans media_batch'),('d','x','Refus 42501 : droit retiré','bad')],
- note="Relue le 19/11/2026, non fusionnée. Mêmes garde-fous pour la modification d’un lot (colonnes en liste blanche, lot ORDERED seulement),\nle changement de statut et l’émission des codes de réclamation."))
+ note="Dans main le 20/11/2026 (PR #20). Mêmes garde-fous pour la modification d’un lot (colonnes en liste blanche, lot ORDERED seulement),\nle changement de statut et l’émission des codes de réclamation."))
 files.append(sequence('sequence-iban','Cycle de vie de l’IBAN d’un versement','L’IBAN n’existe en clair que dans la requête et à l’export ; partout ailleurs : enveloppe enc:v1: ou masque',
  [P('b','Back-office','data'),P('a','API','primary'),P('c','Coffre IbanVault','accent'),P('d','Base')],
  [('b','a','Demande de lot (IBAN en clair)'),('a','a','Valider, masquer : iban_mask','self'),
@@ -123,11 +123,11 @@ files.append(sequence('sequence-iban','Cycle de vie de l’IBAN d’un versement
   ('b','a','Décision (approuver ou refuser)'),
   ('#open','alt mauvais rôle de classe'),('a','b','403 : demande en attente','bad'),
   ('#else','sinon rôle exigé'),('a','c','checkSealed : open (prestataire de la demande)'),
-  ('#open','alt enveloppe illisible ou autre prestataire'),('a','d','Versement FAILED, rien au grand livre','bad'),
+  ('#open','alt enveloppe illisible, autre prestataire ou masque ≠ IBAN ouvert (B-1, 20/11)'),('a','d','Versement FAILED, rien au grand livre','bad'),
   ('#else','sinon enveloppe lisible'),('a','d','create_payout_batch (enveloppe telle quelle)'),
   ('d','d','CHECK : clair refusé','self'),('#close',),('#close',),
   ('b','a','Export du lot'),('a','c','open : seul endroit où l’IBAN se rouvre'),
   ('#open','alt enveloppe illisible'),('a','b','500 : aucun CSV, aucune valeur','bad'),
   ('#else','sinon'),('a','d','Audit : nombre de lignes seulement'),('a','b','CSV','ret'),('#close',)],
- note="Relue le 19/11/2026, non fusionnée. L’audit et les journaux ne portent que le masque (redact.ts) ; la clé est dans le processus de l’API (OP-N150, vrai KMS en 12b).\nLa demande de remboursement suit le même scellement à sa création (refund_request.iban) ; les lignes anciennes en clair ne sont pas reprises (OP-N155)."))
+ note="Dans main le 20/11/2026 (PR #20). L’audit et les journaux ne portent que le masque (redact.ts) ; la clé est dans le processus de l’API (OP-N150, vrai KMS en 12b).\nLa demande de remboursement suit le même scellement à sa création (refund_request.iban) ; les lignes anciennes en clair ne sont pas reprises (OP-N155)."))
 for f in files: print(r.render(f))

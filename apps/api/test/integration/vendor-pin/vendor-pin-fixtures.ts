@@ -130,5 +130,12 @@ export const vendorAudit = (vendorId: string) =>
     [vendorId],
   );
 
-export const auditCount = async (): Promise<number> =>
-  Number((await ownerRows<{ n: string }>('SELECT count(*) AS n FROM audit_log'))[0]!.n);
+/** Lignes d'audit du prestataire du test : jamais toute la base (suites parallèles en CI, voir PR #21). */
+export const auditCount = async (operatorId: string): Promise<number> =>
+  Number(
+    (
+      await ownerRows<{ n: string }>('SELECT count(*) AS n FROM audit_log WHERE operator_id = $1', [
+        operatorId,
+      ])
+    )[0]!.n,
+  );

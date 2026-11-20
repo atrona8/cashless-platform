@@ -674,9 +674,9 @@ classDiagram
 
 Invariants (testés en pgTAP) : une étape de clôture au plus une fois par événement (clé primaire, ajout seul) ; versements `INITIATED` non réglés ≤ droit net à l'initiation (`CL055`) ; une ligne `payout` change d'état une seule fois ; une ligne de relevé rapprochée au plus une fois, au même prestataire, grand livre et compte ; `refund_request` ne suit que son graphe, montant et frais figés après `PROCESSING` ; `cashless_app` sans `DELETE` ni `UPDATE` direct sur ces tables ; `cashless_maint` sans lecture de table. Isolation par prestataire (RLS `ENABLE` et `FORCE`).
 
-## 4 nonies. Durcissements serveur (mission 11a, 🔎 relue le 19/11/2026, non fusionnée)
+## 4 nonies. Durcissements serveur (mission 11a, ✅ consolidée le 20/11/2026, squash `cdedcd48` ; dans `main` par la PR #20 le 20/11/2026 (`27d0ec50`))
 
-> **Réalisé et relu, non fusionné.** Sources : `kitty-specs/durcissements-serveur-01M7QAJD/data-model.md` et migrations `0090` à `0095`.
+> **Réalisé, dans `main` par la PR #20 le 20/11/2026 (`27d0ec50`).** Sources : `kitty-specs/durcissements-serveur-01M7QAJD/data-model.md` et migrations `0090` à `0095`.
 
 - `vendor_session` : contrainte `UNIQUE (id, vendor_id)` ; `sale_attribution` : clé étrangère `(vendor_session_id, vendor_id)` vers elle (`0090`, OP-N79).
 - `media_batch` et `media` : aucune colonne nouvelle ; écriture par les fonctions `SECURITY DEFINER` `create_media_batch` et `update_media_batch` ; `cashless_app` perd `INSERT` et `UPDATE` sur `media_batch` (`0091`, OP-N60).
