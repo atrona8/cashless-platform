@@ -1,6 +1,6 @@
 # Notes d'architecture : mission durcissements-serveur-01M7QAJD
 
-> État : **relue le 19/11/2026** (14 lots sur 14 approuvés), **non acceptée, non fusionnée** ; code dans les lanes de la mission. Recalé sur l'implémentation (lane `n`, qui contient toute la mission) le 19/11/2026. Pas de diagramme dans ce fichier (routage `.docmeta/diagram-style-routing.md`). Dettes et décisions : `docs/POINTS_OUVERTS.md` (OP-N150 à OP-N162) et `docs/DECISIONS_ADR.md` (ADR-216 à ADR-224), déjà à jour.
+> État : **relue le 19/11/2026** (14 lots sur 14 approuvés), **acceptée le 19/11/2026, dans `main` par la PR #20 le 20/11/2026 (`27d0ec50`)** ; revue post-fusion PASS WITH NOTES (B-1 corrigé : masque d'IBAN des versements recoupé à l'exécution, `ae432316`). Recalé sur l'implémentation (lane `n`, qui contient toute la mission) le 19/11/2026. Pas de diagramme dans ce fichier (routage `.docmeta/diagram-style-routing.md`). Dettes et décisions : `docs/POINTS_OUVERTS.md` (OP-N150 à OP-N162) et `docs/DECISIONS_ADR.md` (ADR-216 à ADR-224), déjà à jour.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
 - **Processus `vendor-pin`** (`main.vendor-pin.ts`, dossier `apps/api/src/vendor-pin/`, **port 3003 en loopback**) : rôle de base `cashless_pin` (`DATABASE_URL_PIN`), seul détenteur de `VENDOR_PIN_SECRET` (il refuse de démarrer sans lui). Routes internes : ouvrir une session (essai compté, argon2, `open_vendor_session`, audits) et hacher un PIN. **L'API ne voit plus ni l'empreinte ni le secret du PIN** ; elle voit encore le PIN en transit (OP-N151).
