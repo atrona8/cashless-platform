@@ -1,0 +1,224 @@
+schema_version: 1
+mission_id: 01M7QAJDZWVP1GG5NT4DDYWD37
+mission_slug: durcissements-serveur-01M7QAJD
+mission_number: 6
+friendly_name: Durcissements serveur hérités
+mission_type: software-dev
+target_branch: feat/durcissements-serveur
+created_at: '2026-11-20T09:45:40.487262+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-20T09:45:40.487262+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-005
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-006
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-007
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-008
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-009
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-010
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-011
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-019
+- id: h-012
+  category: implementation
+  summary: WP13 completed without rejection cycles
+  evidence_refs:
+  - e-019
+not_helpful:
+- id: n-005
+  category: doc
+  summary: analysis-report.md records 2 finding(s)
+  evidence_refs:
+  - e-024
+  details: The analysis-report.md artifact for this mission records 2 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-003
+  category: process
+  summary: WP10 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-022
+  details: WP WP10 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-004
+  category: process
+  summary: WP14 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-023
+  details: WP WP14 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-020
+  details: WP WP05 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP14 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-021
+  details: WP WP14 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP01-base-vendeur-lots.md
+- id: e-006
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP02-base-remboursements-passerelles-app-attest.md
+- id: e-007
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP03-droits-base.md
+- id: e-008
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP04-configuration.md
+- id: e-009
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP05-lots-bracelets-api.md
+- id: e-010
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP06-processus-vendor-pin.md
+- id: e-011
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP07-session-vendeur-client.md
+- id: e-012
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP08-coffre-masque-iban.md
+- id: e-013
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP09-remboursements-iban.md
+- id: e-014
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP10-versements-iban-decisions.md
+- id: e-015
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP11-plafond-regularisation.md
+- id: e-016
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP12-inscription-passerelles.md
+- id: e-017
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP13-app-attest.md
+- id: e-018
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP14-preuves-consignation.md
+- id: e-019
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/status.events.jsonl
+- id: e-020
+  kind: event_range
+  path: kitty-specs/durcissements-serveur-01M7QAJD/status.events.jsonl
+  range: 01M7SK0MS816DHMCR8P77QSWDR
+- id: e-021
+  kind: event_range
+  path: kitty-specs/durcissements-serveur-01M7QAJD/status.events.jsonl
+  range: 01M7SP23PFTD5RVQX6DHX5A8QT
+- id: e-022
+  kind: event_range
+  path: kitty-specs/durcissements-serveur-01M7QAJD/status.events.jsonl
+  range: 01M7T8ESXPCVQN9HBGAT40V5XG
+- id: e-023
+  kind: event_range
+  path: kitty-specs/durcissements-serveur-01M7QAJD/status.events.jsonl
+  range: 01M7T8G963CDPGBF66927EK7M6
+- id: e-024
+  kind: file
+  path: kitty-specs/durcissements-serveur-01M7QAJD/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
