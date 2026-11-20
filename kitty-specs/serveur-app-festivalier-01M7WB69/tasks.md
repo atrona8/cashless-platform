@@ -16,7 +16,7 @@ Les lignes `Txxx` sont des références ; l'avancement s'enregistre par `spec-ki
 | T004 | pgTAP `tests_kyc_functions.sql` (règles, niveau calculé, expiration, isolation) | WP01 | |
 | T005 | Test de borne C-005 (agent sans téléphone ou autre numéro : accepté) | WP01 | |
 | T006 | Colonnes de version et `CHECK` de cohérence | WP02 | [P] |
-| T007 | Fonctions versionnées (6) et retrait des anciennes signatures | WP02 | |
+| T007 | Fonctions versionnées (5) et retrait des anciennes signatures (`register_personalized_media` inchangée) | WP02 | |
 | T008 | `claim_key_version_max` et `reissue_claim_codes` | WP02 | |
 | T009 | `media.printed_number`, unicité, `associate_claim_code` étendue | WP02 | |
 | T010 | pgTAP `tests_claim_key_version.sql` (ancienne version absente, réémission, lots clos, numéro imprimé) | WP02 | |
@@ -40,7 +40,7 @@ Les lignes `Txxx` sont des références ; l'avancement s'enregistre par `spec-ki
 | T028 | `ClaimHasher.keyVersion` ; refus de démarrage si version < `claim_key_version_max()` | WP07 | |
 | T029 | `claims.service.ts` et consultation anonyme : signatures versionnées | WP07 | |
 | T030 | `claim-codes.service.ts` : commande et import versionnés, 3e colonne `printed_number`, deux motifs nouveaux | WP07 | |
-| T031 | `personalization.service.ts` : `register_personalized_media` versionnée | WP07 | |
+| T031 | `personalization.service.ts` : `associateClaimCode` versionnée (`register_personalized_media` inchangée) | WP07 | |
 | T032 | Intégration `media/claim-rotation.spec.ts` (code ancien refusé partout comme inconnu ; import accepté) | WP07 | |
 | T033 | `cli/reissue-claim-codes.ts` (fichier 0600, refus d'écraser, stdout = nombre) | WP08 | |
 | T034 | Connexion `DATABASE_URL_CLAIMADMIN`, codes de sortie | WP08 | |
@@ -77,7 +77,7 @@ Les lignes `Txxx` sont des références ; l'avancement s'enregistre par `spec-ki
 - **Subtasks**: T006, T007, T008, T009, T010.
 - **Dependencies**: none.
 - **Prompt**: `tasks/WP02-base-version-codes.md` (~250 lignes).
-- **Risks**: six fonctions remplacées ; les suites pgTAP existantes qui les appellent passent à la nouvelle signature
+- **Risks**: cinq fonctions remplacées (`register_personalized_media` inchangée) ; les suites pgTAP existantes qui les appellent passent à la nouvelle signature
   (retouches hors carte listées : `tests_media_claims.sql`, `tests_personalization*.sql`, etc.).
 
 ### WP03 — Base : avis hors ligne et canaux d'envoi
@@ -113,7 +113,7 @@ Les lignes `Txxx` sont des références ; l'avancement s'enregistre par `spec-ki
 
 - **Subtasks**: T027, T028, T029, T030, T031, T032. **Dependencies**: WP04.
 - **Prompt**: `tasks/WP07-codes-versionnes-api.md` (~260 lignes).
-- **Risks**: tout appelant des six fonctions doit passer la version ; l'adresse de consultation anonyme dérive du même
+- **Risks**: tout appelant des cinq fonctions doit passer la version ; l'adresse de consultation anonyme dérive du même
   secret (compteurs remis à zéro à la rotation, accepté).
 
 ### WP08 — Réémission et procédure de rotation

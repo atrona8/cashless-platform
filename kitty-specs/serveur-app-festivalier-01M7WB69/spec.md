@@ -223,7 +223,7 @@ seul code est valide par défi, quel que soit le canal.
 
 - Le numéro imprimé d'un bracelet n'existe dans aucune donnée aujourd'hui (le fichier de l'imprimeur ne porte que la
   correspondance code ↔ UID). Hypothèse : il arrive par une colonne facultative du fichier de l'imprimeur ; s'il n'est
-  pas fourni, `printed_number` vaut `null`. À confirmer au plan, ajout rétrocompatible soumis au porteur (C-001).
+  pas fourni, `printed_number` vaut `null`. Confirmé au plan le 20/11/2026 (troisième colonne facultative), ajout rétrocompatible validé par le porteur (C-001).
 - Les nouveaux codes après rotation passent par l'émission et l'import de codes existants (mission 4), sans route
   nouvelle.
 - Le délai de 10 s et de 20 s est réglable par la plateforme (§8.5) ; les valeurs par défaut sont 10 s et 20 s.

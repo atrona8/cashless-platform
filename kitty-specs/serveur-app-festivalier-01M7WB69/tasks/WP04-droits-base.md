@@ -135,8 +135,8 @@ Chaque liste élargie ou réduite est **nommée** et commentée « mission 10a, 
 par un compte).
 - `tests_execute_grants.sql` : l. 72, 74, 75, 88, 95 (signatures versionnées de `cashless_app`) ;
   ajoute les quatre fonctions nouvelles à la liste de `cashless_app` (l. 117-121, avec le
-  commentaire) ; l. 214 (liste « non exécutable » : `register_personalized_media` à la signature
-  nouvelle, plus `reissue_claim_codes(...)` et `reissuable_media(...)`) ; l. 306-309 (liste de
+  commentaire) ; l. 214 (liste « non exécutable » : `register_personalized_media` garde sa
+  signature actuelle, inchangée ; ajoute `reissue_claim_codes(...)` et `reissuable_media(...)`) ; l. 306-309 (liste de
   `cashless_perso`) ; nouvelle liste figée de `cashless_claimadmin` (exactement trois fonctions)
   après l. 380 ; `cashless_claimadmin` dans les tableaux de rôles l. 61, 393, 413, 462 et la sonde
   de fonction future l. 472. Ne change **aucune** autre liste.

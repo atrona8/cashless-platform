@@ -36,14 +36,14 @@ propriétaire ; une fois fusionnées, **les signatures réelles font foi** sur c
 | `wallet_pending_offline_notice(p_wallet uuid) RETURNS boolean` | `STABLE`, `SECURITY INVOKER` ; vrai si événement du grand livre non `CLOSED` et au moins un terminal non révoqué avec un `offline_snapshot_ack` sur ce grand livre plus récent que son dernier `offline_batch` (ou sans lot) ; index si besoin | WP03 |
 | `otp_channel_attempt` | `id uuid PK`, `operator_id`, `challenge_id → otp_challenge`, `channel ∈ {WHATSAPP, SMS_PRIMARY, SMS_FALLBACK}`, `provider text`, `sent_at`, `confirmed_at NULL`, `failed_reason NULL` ; **aucun code ni empreinte** ; RLS forcée | WP03 |
 | Rôle `cashless_claimadmin` | connexion ; `EXECUTE` de `reissue_claim_codes`, `reissuable_media` et `claim_key_version_max` seulement ; aucun droit de table (rôle créé en `post-roles.sql` §14, comme `cashless_pin` en §8b) | WP04 |
-| `post-roles.sql` : signatures | les lignes existantes qui nomment les signatures retirées (six fonctions de codes) passent aux signatures versionnées : **retouche commitée de WP02**, hors carte et déclarée, pour que `reset-db.sh` passe ; WP04 (qui dépend de WP02) écrit tout le reste du §14 | WP02 |
+| `post-roles.sql` : signatures | les lignes existantes qui nomment les signatures retirées (cinq fonctions de codes) passent aux signatures versionnées : **retouche commitée de WP02**, hors carte et déclarée, pour que `reset-db.sh` passe ; WP04 (qui dépend de WP02) écrit tout le reste du §14 | WP02 |
 | Codes `SQLSTATE` | `CL060` compte exigé ; `CL061` agent titulaire ; `CL062` donnée de pièce ou motif invalide ; `CL063` identification déjà révoquée ; `CL064` bracelet non réémissible ; `CL065` numéro imprimé déjà pris | WP01, WP02 (mappage HTTP dans `errors/sqlstate-map.ts` : `CL060` → `422 ACCOUNT_REQUIRED`, `CL061` → `403 FORBIDDEN`, `CL062` → `422 VALIDATION_FAILED`, `CL063` → `409 CONFLICT_STATE` : WP05 ; `CL064` traduit par la commande (WP08) ; `CL065` devient un motif de ligne refusée `PRINTED_NUMBER_TAKEN` (WP07), jamais une erreur HTTP) |
 
 `EXECUTE` de `cashless_app` après la mission : liste d'avant, signatures versionnées à la place des anciennes,
 **plus** `create_kyc_verification`, `revoke_kyc_verification`, `wallet_pending_offline_notice`,
 `claim_key_version_max` ; **jamais** `reissue_claim_codes` ni `reissuable_media`. Table `otp_channel_attempt` : `INSERT`, `UPDATE (confirmed_at, failed_reason)`, `SELECT`. Le
 processus public garde l'`EXECUTE` de `public_balance_lookup` (nouvelle signature). Le processus de personnalisation
-garde celui de `register_personalized_media` (nouvelle signature).
+garde celui de `register_personalized_media` (signature inchangée).
 
 ## Configuration (WP07)
 

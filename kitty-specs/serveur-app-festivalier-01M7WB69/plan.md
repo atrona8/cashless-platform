@@ -34,14 +34,17 @@ horloge simulée) ; Jest unitaire (expéditeur composite, horloges) ; garde du c
 
 **Constraints**:
 - C-001 à C-007 de la spec ;
-- contrat : un seul ajout, la colonne facultative `printed_number` du fichier de l'imprimeur (`importClaimCodeAssociations`,
-  description du corps `text/csv`), validé par le porteur le 20/11/2026 et inscrit dans `contract-baseline.json` ;
+- contrat : deux ajouts rétrocompatibles, la colonne facultative `printed_number` du fichier de l'imprimeur (`importClaimCodeAssociations`,
+  description du corps `text/csv`), et les motifs `BAD_PRINTED_NUMBER` et `PRINTED_NUMBER_TAKEN` de
+  `ClaimCodeAssociationResult.reason` (ADR-225) ; validés par le porteur le 20/11/2026 et inscrits dans
+  `contract-baseline.json` ;
   les routes KYC sont servies telles que déclarées ;
 - aucun code (OTP ou rattachement) en clair hors mémoire du processus, jamais en base ni dans les journaux (NFR-002) ;
 - un rôle par processus ; la réémission des codes n'est **pas** ouverte à `cashless_app`.
 
 **Scale/Scope**: 13 FR, 5 NFR, 7 contraintes ; 4 migrations ; 1 rôle de base nouveau ; 1 commande d'exploitation ;
-0 route ajoutée ; 1 ajout au contrat (colonne facultative).
+0 route ajoutée ; 2 ajouts au contrat (colonne facultative ; motifs `BAD_PRINTED_NUMBER` et
+`PRINTED_NUMBER_TAKEN` de `ClaimCodeAssociationResult.reason`, décision du porteur du 20/11/2026, ADR-225).
 
 ## Charter Check
 
@@ -167,7 +170,7 @@ flowchart LR
 - **Purpose**: action d'approbation `KYC_REVOCATION` (déjà dans l'énumération de la base) et route
   `revokeKycVerification` (`202`, exécution à l'approbation).
 - **Relevant requirements**: FR-005, FR-006, C-002.
-- **Affected surfaces**: `apps/api/src/kyc/kyc-revocation-action.ts`, registre des actions (`approval/action-registry.ts`),
+- **Affected surfaces**: `apps/api/src/kyc/kyc-revocation-action.ts`, registre des actions (`approval/action-registry.ts`, consommé sans modification),
   `0096_kyc_functions.sql` (`revoke_kyc_verification`).
 - **Sequencing/depends-on**: IC-01.
 - **Risks**: `409 CONFLICT_STATE` à la demande et à l'exécution ; auteur ≠ valideur ; contradiction §6.3 consignée.
