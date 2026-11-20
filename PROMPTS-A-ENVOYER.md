@@ -486,7 +486,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > derrière le port d'identité du festivalier : il devient utilisable en production quand l'identité réelle remplace le
 > faux (OP-N43 complété).
 
-- [ ] /spec-kitty.specify Serveur de l'app festivalier (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques.
+> **Specify fait le 20/11/2026** (`serveur-app-festivalier-01M7WB69`, branche `feat/serveur-app-festivalier`). Décisions
+> du porteur : périmètre = KYC au guichet, OP-N47, `printed_number` et `pending_offline_notice`, chaîne d'envoi des
+> codes ; agent titulaire détecté par numéro vérifié identique au téléphone de l'agent (limite consignée) ; OP-N47 en
+> rotation **immédiate**, sans période (codes réémis par un nouveau fichier de l'imprimeur). Hypothèse à trancher au
+> plan : origine du numéro imprimé (colonne facultative du fichier de l'imprimeur, ajout soumis au porteur).
+
+- [x] /spec-kitty.specify Serveur de l'app festivalier (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques.
 - [ ] /spec-kitty.plan Port `OtpSender` avec faux fournisseurs seulement (adaptateurs réels en 12b, action 10 de POINTS_OUVERTS). Routes servies conformes à `openapi.yaml` : l'équipe de l'app 10b code contre ce contrat.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission serveur-app-festivalier

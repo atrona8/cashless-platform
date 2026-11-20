@@ -141,6 +141,13 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   cashless. Cloisonnement entre applications et entre prestataires. Risque à trancher au cadrage : l'application devient
   garante de l'identité de comptes qui portent de l'argent ; identification du client à soumettre au juriste.
   Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : connexion par numéro et code à usage unique, jetons d'accès et de renouvellement, déclaration de perte ; l'envoi réel du code (12b) et l'identification au guichet restent à faire (OP-N120, ADR-180).
+  Mission 10a (`serveur-app-festivalier-01M7WB69`, specify du 20/11/2026, décisions du porteur) : identification au
+  guichet (pièce : type, pays, 4 derniers caractères, expiration ; compte au numéro vérifié exigé ; refus de l'agent
+  dont le téléphone est le numéro vérifié du compte, limite consignée pour un agent sans numéro ou avec un autre) ;
+  révocation à deux personnes (contrat) ; rotation **immédiate** du secret des codes de rattachement, sans période de
+  double empreinte (OP-N47 : les codes émis avant sont refusés, nouveaux codes par un nouveau fichier de l'imprimeur) ;
+  `printed_number` et `pending_offline_notice` dans `/me` ; chaîne d'envoi WhatsApp puis SMS principal (10 s) puis SMS
+  de repli (20 s), avec faux fournisseurs jusqu'à la 12b.
   Recharge PSP testable de bout en bout en développement (10/11/2026) : configurations de démo, secrets de démo du faux coffre, route de simulation du paiement hors contrat, absente en production ; levée par la 12b (OP-N121, ADR-181).
 
 ### 2.6 En ligne, hors ligne, passerelle locale (§9, `sync_protocol.md`)
@@ -460,9 +467,9 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   traduit par edge-admin, absent de l'API) ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
-- mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
-  rotation du secret d'empreinte des codes imprimés (`CLAIM_CODE_HMAC_KEY`) sans réimpression, par
-  une double empreinte pendant une période bornée (OP-N47, ADR-104) ;
+- mission 10a (décision du porteur du 20/11/2026) : rotation **immédiate** du secret d'empreinte des codes imprimés
+  (`CLAIM_CODE_HMAC_KEY`), sans période de double empreinte ; les codes émis avant sont refusés et réémis par un
+  nouveau fichier de l'imprimeur (OP-N47, ADR-104) ;
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
   ADR-94) ; OP-N60 (lots de bracelets par fonctions) et OP-N79 (`vendor_id` dans la clé composite de
