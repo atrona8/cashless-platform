@@ -13,6 +13,7 @@ import { DbModule } from './db/db.module';
 import { PublicDeviceIdentityModule } from './device-identity/device-identity.module';
 import { DevicesModule } from './devices/devices.module';
 import { DebitAuthorityModule } from './debit-authority/debit-authority.module';
+import { IbanVaultModule } from './common/iban-vault';
 import { ProblemFilter } from './errors/problem.filter';
 import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.controller';
@@ -51,6 +52,8 @@ import { WorkerRegistry } from './processes/worker';
 @Module({
   imports: [
     DbModule,
+    // Mission durcissements-serveur (WP08) : coffre d'IBAN, anneau de clés lu en configuration.
+    IbanVaultModule,
     HealthModule,
     IdempotencyModule,
     IdentityModule,

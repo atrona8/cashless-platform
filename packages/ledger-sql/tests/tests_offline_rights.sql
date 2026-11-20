@@ -104,7 +104,9 @@ SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FR
  'refund_request',
  -- 0083 à 0088 : mission 9b, lot WP06 (droits bornés par tests_9b_rights.sql ; payout et external_statement_line
  -- étaient déjà listées)
- 'account_mapping', 'closing_step', 'statement_import'])), '',
+ 'account_mapping', 'closing_step', 'statement_import',
+ -- 0095 : mission 11a, WP02 (droits bornés par tests_11a_rights.sql : lecture seule pour cashless_app)
+ 'device_app_attest_key'])), '',
   'aucune table de public hors de la liste d''avant 0043 et des dix tables de la mission');
 SELECT is((SELECT count(*)::int FROM new_tables n JOIN pg_class c ON c.relname = n.t
             AND c.relnamespace = 'public'::regnamespace), 10, 'les dix tables nouvelles existent');

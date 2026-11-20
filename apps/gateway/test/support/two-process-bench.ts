@@ -339,8 +339,6 @@ export class TwoProcessBench {
         this.operatorId,
         '--event',
         this.eventId,
-        '--ledger',
-        this.ledgerId,
         '--serial',
         serial,
         '--role',

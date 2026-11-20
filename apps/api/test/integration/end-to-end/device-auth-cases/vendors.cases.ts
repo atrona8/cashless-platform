@@ -2,7 +2,7 @@
 // T043 ; C-003). Amorçage : le terminal de la matrice est affecté à un point de vente d'un
 // commerçant du prestataire A, qui a un vendeur au PIN connu. L'ouverture de session est appelée
 // avec le BON PIN (`201`) : un `401` métier se confondrait avec un refus de preuve.
-import { VendorPinHasher } from '../../../../src/vendor-pin/vendor-pin.hasher';
+import { testPinDigester } from '../../../support/app';
 import { withOwner } from '../../../support/db';
 import { asOperator, assignPos, seedPos, seedVendor } from '../../vendors/vendor-fixtures';
 import type { CaseContext, CaseFile, RouteCase } from './registry';
@@ -15,7 +15,7 @@ export function cases(_ctx: CaseContext): Record<string, RouteCase> {
   let vendorId = '';
   const prepare = async (ctx: CaseContext): Promise<void> => {
     if (vendorId !== '') return;
-    const hasher = ctx.api.app.get(VendorPinHasher, { strict: false });
+    const hasher = testPinDigester();
     const pinHash = await hasher.hash(PIN);
     vendorId = await withOwner(async (db) => {
       const pos = await seedPos(db, { operatorId: ctx.w.ops.a, eventId: ctx.w.ids.eventA });

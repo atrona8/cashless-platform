@@ -21,7 +21,7 @@
   "friendly_name": "Durcissements serveur hérités",
   "mid8": "01M7QAJD",
   "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
-  "mission_number": null,
+  "mission_number": 6,
   "mission_slug": "durcissements-serveur-01M7QAJD",
   "mission_type": "software-dev",
   "pr_bound": true,

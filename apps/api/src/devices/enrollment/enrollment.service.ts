@@ -93,6 +93,10 @@ interface CodeRow {
 }
 
 const attestationFailed = () => new ProblemException('ATTESTATION_FAILED');
+/** Clé App Attest déjà enrôlée (`key_id` unique) : une attestation rejouée. */
+const isAppAttestKeyReplay = (error: unknown): boolean =>
+  (error as { code?: string; constraint?: string } | null)?.code === '23505' &&
+  (error as { constraint?: string }).constraint === 'device_app_attest_key_key_id_key';
 
 @Injectable()
 export class EnrollmentService {
@@ -121,7 +125,12 @@ export class EnrollmentService {
     };
     try {
       return await this.steps(raw, attempt, context);
-    } catch (error) {
+    } catch (caught) {
+      let error = caught;
+      if (isAppAttestKeyReplay(caught)) {
+        attempt.reason = 'clé App Attest déjà enrôlée';
+        error = attestationFailed();
+      }
       await this.recordRefusal(error, attempt, context);
       throw error;
     }
@@ -167,7 +176,7 @@ export class EnrollmentService {
       const enrolled = (
         await client.query<{ device_id: string; next_seq: bigint }>(
           `SELECT device_id, next_seq
-             FROM enroll_device($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+             FROM enroll_device($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
           [
             attempt.codeHash,
             input.serial,
@@ -182,6 +191,8 @@ export class EnrollmentService {
             refreshTokenHash(refreshToken),
             new Date(now.getTime() + this.config.deviceRefreshTokenTtlDays * DAY_MS),
             deviceId,
+            verified.appAttestKey?.keyId ?? null,
+            verified.appAttestKey?.publicKey ?? null,
           ],
         )
       ).rows[0]!;
@@ -222,6 +233,10 @@ export class EnrollmentService {
           attestation_security_level: verified.securityLevel,
           cert_not_after: certificate.notAfter.toISOString(),
           next_seq: nextSeq,
+          // Identifiant seul (jamais la clé publique ni le compteur).
+          ...(verified.appAttestKey
+            ? { app_attest_key_id: verified.appAttestKey.keyId.toString('hex') }
+            : {}),
         },
       });
       return {

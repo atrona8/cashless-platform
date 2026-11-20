@@ -10,6 +10,8 @@ import { ApprovalActionRegistry, type ApprovalActionDefinition } from '../approv
 import type { ApprovalRequestDto } from '../approval/approval.mapper';
 import { ApprovalService, type ApprovalActor } from '../approval/approval.service';
 import { AuditService } from '../audit/audit.service';
+import { IbanVault, IbanVaultError } from '../common/iban-vault';
+import { maskIban } from '../common/iban';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { resolveProblem } from '../errors/problem.filter';
@@ -40,7 +42,8 @@ export interface LateClaimPayload {
   amount: number;
   currency: string;
   proof: { kind: 'MEDIA_TAP'; tap_id: number } | { kind: 'CUSTOMER_ACCOUNT' };
-  destination: { method: string; msisdn?: string; iban?: string };
+  /** `iban` : enveloppe `enc:v1:` du coffre (jamais le clair) ; `iban_mask` : `maskIban`. */
+  destination: { method: string; msisdn?: string; iban?: string; iban_mask?: string };
   reason: string;
   /** `bo:` + clé d'idempotence de l'appel : la paire d'écritures n'est écrite qu'une fois. */
   idempotency_key: string;
@@ -186,6 +189,7 @@ export class LateClaimActions {
     private readonly engine: LedgerEngineService,
     private readonly approvals: ApprovalService,
     private readonly audit: AuditService,
+    private readonly vault: IbanVault,
   ) {
     registry.register(this.definition() as ApprovalActionDefinition);
   }
@@ -239,7 +243,7 @@ export class LateClaimActions {
       amount: Number(claim.amount),
       currency: claim.currency,
       proof: claim.proof,
-      destination: claim.destination,
+      destination: this.sealDestination(claim.destination, operatorId),
       reason: claim.reason,
       idempotency_key: `bo:${input.idempotencyKey}`,
       scope_type: 'EVENT',
@@ -269,12 +273,65 @@ export class LateClaimActions {
     return dto;
   }
 
+  /** IBAN chiffré + masque dans la charge ; Wave et Orange Money : inchangés (aucun `iban`). */
+  private sealDestination(
+    destination: LateClaimInput['destination'],
+    operatorId: string,
+  ): LateClaimPayload['destination'] {
+    if (destination.method !== 'BANK_TRANSFER' || destination.iban === undefined)
+      return destination;
+    return {
+      method: destination.method,
+      iban: this.vault.seal(destination.iban, operatorId),
+      iban_mask: maskIban(destination.iban),
+    };
+  }
+
+  /**
+   * Forme de la charge (création et exécution, sans prestataire) : un IBAN en clair, un
+   * `iban_mask` hors virement ou un champ en trop sont refusés, sans écho de la valeur.
+   */
+  private validatePayload = (raw: unknown): LateClaimPayload => {
+    const payload = validateShape(raw);
+    const d = payload.destination;
+    if (d.method === 'BANK_TRANSFER') {
+      if (
+        typeof d.iban !== 'string' ||
+        !this.vault.isSealed(d.iban) ||
+        typeof d.iban_mask !== 'string'
+      )
+        throw unprocessable('destination.iban : enveloppe chiffrée et iban_mask attendus.');
+    } else if (d.iban !== undefined || d.iban_mask !== undefined)
+      throw unprocessable('destination : ni iban ni iban_mask pour ce moyen.');
+    return payload;
+  };
+
+  /** À l'exécution : enveloppe ouverte pour le prestataire de la demande, sans réécriture. */
+  private openClaim(payload: LateClaimPayload, operatorId: string): LateClaimInput {
+    const d = payload.destination;
+    let destination: Record<string, unknown> = { ...d };
+    if (d.method === 'BANK_TRANSFER') {
+      try {
+        const iban = this.vault.open(d.iban!, operatorId);
+        // Masque falsifié : refus (le masque affiché doit être celui de l'IBAN chiffré).
+        if (d.iban_mask !== maskIban(iban)) throw new IbanVaultError('IBAN_VAULT_OPEN_FAILED');
+        destination = { method: d.method, iban };
+      } catch (error) {
+        if (!(error instanceof IbanVaultError)) throw error;
+        throw new ProblemException('APPROVAL_INVALID', {
+          detail: 'IBAN de la charge utile illisible pour ce prestataire.',
+        });
+      }
+    }
+    return parseLateClaimBody({ ...claimBody(payload), destination });
+  }
+
   private definition(): ApprovalActionDefinition<LateClaimPayload> {
     return {
       action: 'LATE_CLAIM',
       requiredRole: LATE_CLAIM_ROLES,
       scopeOf: (payload) => ({ type: 'EVENT', id: payload.scope_id }),
-      validate: validatePayload,
+      validate: this.validatePayload,
       execute: async (client, { request, payload, requestedBy, approvedBy }) => {
         if (request.target_id !== payload.wallet_id)
           throw new ProblemException('APPROVAL_INVALID', {
@@ -283,8 +340,8 @@ export class LateClaimActions {
         try {
           // Charge relue de la base : revalidée à l'exécution (champ ajouté ou valeur modifiée :
           // refus, rien d'écrit).
-          validatePayload(payload);
-          const claim = parseLateClaimBody(claimBody(payload));
+          this.validatePayload(payload);
+          const claim = this.openClaim(payload, request.operator_id);
           // Verrous (ordre de `interfaces.md`) : réclamation du portefeuille, puis solde payé du
           // portefeuille.
           await lockKey(client, `late-claim:${payload.wallet_id}`);
@@ -404,7 +461,7 @@ function failure(error: unknown): unknown {
   });
 }
 
-function validatePayload(raw: unknown): LateClaimPayload {
+function validateShape(raw: unknown): LateClaimPayload {
   const p = (typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? raw : {}) as Record<
     string,
     unknown
@@ -419,21 +476,39 @@ function validatePayload(raw: unknown): LateClaimPayload {
     !p.idempotency_key.startsWith('bo:')
   )
     throw unprocessable('ledger_id, scope_type (EVENT), scope_id et idempotency_key attendus.');
+  // Forme chiffrée : l'IBAN n'est jamais revalidé ici (clair seulement à l'ouverture, à
+  // l'exécution). Les autres champs passent par `parseLateClaimBody` avec un moyen neutre.
+  const dest = (
+    typeof p.destination === 'object' && p.destination !== null ? p.destination : {}
+  ) as Record<string, unknown>;
+  let destination: LateClaimPayload['destination'] | undefined;
+  if (dest.method === 'BANK_TRANSFER') {
+    const extra = Object.keys(dest).filter((k) => !['method', 'iban', 'iban_mask'].includes(k));
+    if (extra.length > 0) throw unprocessable('destination : champ hors de l’action.');
+    destination = {
+      method: 'BANK_TRANSFER',
+      iban: typeof dest.iban === 'string' ? dest.iban : undefined,
+      iban_mask: typeof dest.iban_mask === 'string' ? dest.iban_mask : undefined,
+    };
+  } else if (dest.iban !== undefined || dest.iban_mask !== undefined) {
+    throw unprocessable('destination : ni iban ni iban_mask pour ce moyen.');
+  }
   const claim = parseLateClaimBody({
     wallet_id: p.wallet_id,
     amount: p.amount,
     currency: p.currency,
     proof: p.proof,
-    destination: p.destination,
+    destination: dest.method === 'BANK_TRANSFER' ? { method: 'CASH' } : p.destination,
     reason: p.reason,
   });
+  destination ??= claim.destination;
   return {
     ledger_id: p.ledger_id,
     wallet_id: claim.walletId,
     amount: Number(claim.amount),
     currency: claim.currency,
     proof: claim.proof,
-    destination: claim.destination,
+    destination,
     reason: claim.reason,
     idempotency_key: p.idempotency_key,
     scope_type: 'EVENT',

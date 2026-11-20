@@ -48,6 +48,8 @@ export function presentedStatus(
     : row.status;
 }
 
+const REDACTED = '[masqué]';
+
 /** Numéro réduit à ses 3 derniers chiffres (`+221770000002` → `*********002`). */
 function maskMsisdn(value: string): string {
   const digits = value.replace(/\D/g, '');
@@ -56,18 +58,22 @@ function maskMsisdn(value: string): string {
 
 /**
  * Charge d'une action avec les données de paiement masquées (récursif, toute action) : `iban`
- * (`maskIban`) et
- * `msisdn` (3 derniers chiffres). La ligne en base garde la valeur complète ; `execute` la lit
- * depuis la ligne.
- * Les routes d'approbation et l'audit (qui recopie ce DTO) ne portent donc jamais une destination
- * en clair.
+ * et `msisdn` (3 derniers chiffres). Un `iban` en enveloppe `enc:v1:` rend la valeur de la clé
+ * sœur `iban_mask` (chaîne), sinon `[masqué]` : jamais l'enveloppe. Un `iban` en clair (ancienne
+ * ligne) passe par `maskIban`. Pur : aucun coffre. Les routes d'approbation et l'audit (qui
+ * recopie ce DTO) ne portent donc jamais une destination en clair ni chiffrée.
  */
 export function maskPaymentData(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(maskPaymentData);
   if (typeof value !== 'object' || value === null) return value;
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
-    if (key === 'iban' && typeof item === 'string') out[key] = maskIban(item);
+    if (key === 'iban' && typeof item === 'string')
+      out[key] = item.startsWith('enc:v1:')
+        ? typeof (value as Record<string, unknown>).iban_mask === 'string'
+          ? (value as Record<string, unknown>).iban_mask
+          : REDACTED
+        : maskIban(item);
     else if (key === 'msisdn' && typeof item === 'string') out[key] = maskMsisdn(item);
     else out[key] = maskPaymentData(item);
   }

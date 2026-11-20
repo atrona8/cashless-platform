@@ -157,6 +157,7 @@ export type AuditAction =
   | 'PAYOUT_BATCH_EXPORTED'
   | 'PAYOUT_CONFIRMED'
   | 'PAYOUT_FAILED'
+  | 'PAYOUT_CONFIRM_REPLAYED'
   // Mission 9b (lot WP09) : import d'un relevé et rapprochement manuel d'une ligne
   | 'STATEMENT_IMPORTED'
   | 'STATEMENT_LINE_MATCHED'

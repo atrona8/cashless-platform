@@ -90,7 +90,6 @@ describe('OP-N112 : ordres à deux personnes, bornes de l’outil d’enrôlemen
       request: join(bench.dir, 'request.json'),
       operator: bench.operatorId,
       event: bench.eventId,
-      ledger: bench.ledgerId,
       serial,
       role: 'PRIMARY',
       'lan-url': `https://127.0.0.1:${bench.gwPort}`,

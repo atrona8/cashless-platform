@@ -8,7 +8,9 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { ownerRows } from '../../support/media-fixtures';
 import { PayoutWorld, IBAN, MSISDN } from '../payouts/payout-fixtures';
+import { fundedCustomer } from '../refunds/create-fixtures';
 import {
+  call,
   createRefundWorld,
   createStaff,
   openRequest,
@@ -72,5 +74,52 @@ describe('remboursement WALLET_REFUND : numéro dans le résultat de la demande 
       [req.id],
     );
     expect(audit[0]!.n).toBe(0);
+  });
+});
+
+describe('remboursement du back-office : aucun IBAN en clair en base (NFR-005, SC-003)', () => {
+  let r: RefundWorld;
+  let s: Staff;
+  beforeAll(async () => {
+    r = await createRefundWorld();
+    s = await createStaff(r.w);
+  }, 300_000);
+  afterAll(async () => r.app.close());
+
+  it('refund_request.iban chiffré ; audit_log et réponses sans IBAN ni fragment', async () => {
+    const iban = 'FR1420041010050500013M02606';
+    const fragment = '20041010050500';
+    const c = await fundedCustomer(r.w, 25_000);
+    const created = await call(
+      r.app,
+      s.adminA,
+      '/refund-requests',
+      {
+        wallet_id: c.walletId,
+        destination: { method: 'BANK_TRANSFER', iban },
+        reason: 'Virement demandé par le festivalier au guichet',
+      },
+      randomUUID(),
+    );
+    expect(created.status).toBe(201);
+    expect(JSON.stringify(created.body)).not.toContain(fragment);
+    const stored = await ownerRows<{ iban: string }>(
+      'SELECT iban FROM refund_request WHERE wallet_id = $1',
+      [c.walletId],
+    );
+    expect(stored).toHaveLength(1);
+    expect(stored[0]!.iban.startsWith('enc:v1:')).toBe(true);
+    for (const table of ['refund_request', 'approval_request', 'audit_log']) {
+      const [hit] = await ownerRows<{ n: number }>(
+        `SELECT count(*)::int AS n FROM ${table} t WHERE to_jsonb(t)::text LIKE ANY($1)`,
+        [[`%${iban}%`, `%${fragment}%`]],
+      );
+      expect([table, hit!.n]).toEqual([table, 0]);
+    }
+    const list = await request(r.app.getHttpServer())
+      .get('/v1/approval-requests')
+      .set('Authorization', `Bearer ${s.adminB.token}`)
+      .set('X-Test', randomUUID());
+    expect(JSON.stringify(list.body)).not.toContain(fragment);
   });
 });

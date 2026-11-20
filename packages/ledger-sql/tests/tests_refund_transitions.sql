@@ -290,12 +290,19 @@ SELECT has_function('refund_deposit', ARRAY['uuid', 'uuid', 'uuid', 'uuid'], 're
 SELECT has_function('refund_deposit', ARRAY['uuid', 'uuid'], 'refund_deposit à deux arguments conservée');
 SELECT has_function('refund_deposit_for_session', ARRAY['uuid', 'uuid', 'uuid', 'uuid'],
   'refund_deposit_for_session à quatre arguments présente');
-SELECT has_function('refund_deposit_for_session', ARRAY['uuid', 'uuid'], 'refund_deposit_for_session à deux arguments conservée');
+-- Mission durcissements-serveur (WP02, 0092) : la surcharge à deux arguments est retirée ; refund_deposit(uuid, uuid)
+-- reste en base, interne (sa non-exécution par cashless_app est prouvée plus bas et par WP03).
+SELECT hasnt_function('refund_deposit_for_session', ARRAY['uuid', 'uuid'],
+  'refund_deposit_for_session à deux arguments retirée');
+SELECT ok(NOT has_function_privilege('cashless_app', 'refund_deposit(uuid, uuid)', 'EXECUTE')
+          AND NOT has_function_privilege('public', 'refund_deposit(uuid, uuid)', 'EXECUTE'),
+  'refund_deposit(uuid, uuid) existe, interne : ni cashless_app ni PUBLIC ne l''exécutent');
 SELECT is((SELECT count(*)::int FROM pg_proc p
             WHERE p.proname IN ('refund_deposit', 'refund_deposit_for_session') AND p.prosecdef
               AND NOT has_function_privilege('public', p.oid, 'EXECUTE')
-              AND coalesce(p.proconfig, '{}') @> ARRAY['search_path=public, pg_temp']), 4,
-  'les quatre signatures : DEFINER, search_path = public, pg_temp, EXECUTE retiré à PUBLIC');
+              AND coalesce(p.proconfig, '{}') @> ARRAY['search_path=public, pg_temp']), 3,
+  -- trois depuis 0092 : refund_deposit (2 et 4 arguments) et refund_deposit_for_session (4 arguments)
+  'les trois signatures : DEFINER, search_path = public, pg_temp, EXECUTE retiré à PUBLIC');
 
 -- Quatre arguments : created_by et approved_by portés par DEPOSIT_REFUNDED, source ONLINE.
 SELECT lives_ok(format($q$SELECT refund_deposit_for_session(%L, %L, %L, %L)$q$, pg_temp.id('82ae01'),
@@ -314,9 +321,9 @@ SELECT lives_ok(format($q$SELECT refund_deposit_for_session(%L, %L, %L, %L)$q$, 
     (SELECT id FROM sess), pg_temp.id('82e0a1'), pg_temp.id('82e0a2')), 'rejeu : sans effet (caution déjà rendue)');
 SELECT is((SELECT c FROM pg_temp.dr(1) LIMIT 1), 1, 'rejeu : une seule transaction DEPOSIT_REFUNDED');
 
--- Deux arguments : comportement d'avant (NULL, NULL).
-SELECT lives_ok(format($q$SELECT refund_deposit_for_session(%L, %L)$q$, pg_temp.id('82ae02'), (SELECT id FROM sess)),
-  'refund_deposit_for_session à deux arguments : rendu');
+-- Auteur et valideur nuls : comportement d'avant (ancienne forme à deux arguments, retirée en 0092).
+SELECT lives_ok(format($q$SELECT refund_deposit_for_session(%L, %L, NULL, NULL)$q$, pg_temp.id('82ae02'),
+  (SELECT id FROM sess)), 'refund_deposit_for_session à quatre arguments (NULL, NULL) : rendu');
 SELECT is((SELECT created_by FROM pg_temp.dr(2)), NULL, 'deux arguments : created_by nul');
 SELECT is((SELECT approved_by FROM pg_temp.dr(2)), NULL, 'deux arguments : approved_by nul');
 SELECT is((SELECT deposit_status FROM media WHERE id = pg_temp.id('82ae02')), 'REFUNDED', 'deux arguments : caution REFUNDED');
@@ -363,8 +370,8 @@ SELECT pg_temp.b();
 SELECT throws_ok(format($q$SELECT refund_deposit_for_session(%L, %L, %L, %L)$q$, pg_temp.id('82ae03'),
     (SELECT id FROM sess), pg_temp.id('82e0a1'), pg_temp.id('82e0a2')), 'P0002', NULL,
   'B : refund_deposit_for_session à quatre arguments sur un bracelet de A : P0002');
-SELECT throws_ok(format($q$SELECT refund_deposit_for_session(%L, %L)$q$, pg_temp.id('82ae03'), (SELECT id FROM sess)),
-  'P0002', NULL, 'B : refund_deposit_for_session à deux arguments : P0002');
+SELECT throws_ok(format($q$SELECT refund_deposit_for_session(%L, %L, NULL, NULL)$q$, pg_temp.id('82ae03'),
+  (SELECT id FROM sess)), 'P0002', NULL, 'B : refund_deposit_for_session (NULL, NULL) sur un bracelet de A : P0002');
 SELECT throws_ok(format($q$SELECT refund_deposit(%L, NULL, %L, %L)$q$, pg_temp.id('82ae03'), pg_temp.id('82e0a1'),
     pg_temp.id('82e0a2')), 'P0002', NULL, 'B : refund_deposit à quatre arguments : P0002');
 SELECT throws_ok(format($q$SELECT refund_deposit(%L, NULL)$q$, pg_temp.id('82ae03')), 'P0002', NULL,

@@ -194,20 +194,22 @@ SELECT is((SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.
               'take_deposit_for_session','refund_deposit_for_session',
               'refund_cash_due_for_session','posting_cash_desk_guard','account_purpose_guard')
               -- mission 9b (WP04, 0086) : la surcharge à quatre arguments de refund_deposit_for_session est
-              -- comptée par tests_9b_rights.sql ; ici seule la signature de la mission 6 (comptage par signature)
+              -- comptée par tests_9b_rights.sql (comptage par signature). Mission durcissements-serveur (WP02,
+              -- 0092) : la surcharge à deux arguments est retirée ; il reste 13 signatures de la mission 6.
               AND p.oid::regprocedure::text <> 'refund_deposit_for_session(uuid,uuid,uuid,uuid)'
-              AND NOT (has_function_privilege('public', p.oid, 'EXECUTE'))), 14,
-          'EXECUTE retiré à PUBLIC sur les 14 fonctions');
+              AND NOT (has_function_privilege('public', p.oid, 'EXECUTE'))), 13,
+          'EXECUTE retiré à PUBLIC sur les 13 signatures restantes');
 SELECT is((SELECT count(*)::int FROM pg_proc p
             WHERE p.proname IN ('cash_actor_allowed','cash_session_usable','cash_session_attach_own',
               'open_cash_session','count_cash_session','begin_cash_close','finish_cash_close',
               'attach_cash_tx','open_cash_due_anomaly','take_deposit_for_session',
               'refund_deposit_for_session','refund_cash_due_for_session','posting_cash_desk_guard')
-              -- mission 9b (WP06) : sans la surcharge à quatre arguments (comptage par signature)
+              -- mission 9b (WP06) : sans la surcharge à quatre arguments (comptage par signature) ; mission
+              -- durcissements-serveur (WP02, 0092) : la surcharge à deux arguments est retirée, 12 signatures.
               AND p.oid::regprocedure::text <> 'refund_deposit_for_session(uuid,uuid,uuid,uuid)'
               AND p.prosecdef
-              AND coalesce(p.proconfig, '{}') @> ARRAY['search_path=public, pg_temp']), 13,
-          'les 13 fonctions SECURITY DEFINER fixent search_path = public, pg_temp');
+              AND coalesce(p.proconfig, '{}') @> ARRAY['search_path=public, pg_temp']), 12,
+          'les 12 signatures SECURITY DEFINER fixent search_path = public, pg_temp');
 SELECT ok((SELECT NOT prosecdef FROM pg_proc WHERE proname = 'account_purpose_guard'),
           'account_purpose_guard est SECURITY INVOKER');
 SELECT is((SELECT count(*)::int FROM pg_trigger
@@ -515,7 +517,7 @@ SELECT is((SELECT count(*)::int FROM cash_session_tx x JOIN journal_transaction 
           'la variante rattache elle-même sa transaction');
 SELECT lives_ok($$SELECT take_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$,
   'seconde prise : sans effet (HELD), sans conflit de rattachement');
-SELECT lives_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$,
+SELECT lives_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'), NULL, NULL)$$,
   'caution rendue sur la caisse de la session');
 SELECT is((SELECT count(*)::int FROM cash_session_tx x JOIN journal_transaction t ON t.id = x.tx_id
             WHERE x.cash_session_id = pg_temp.sess('06') AND t.type = 'DEPOSIT_REFUNDED'), 1,
@@ -558,7 +560,7 @@ SELECT throws_ok($$SELECT take_deposit_for_session(pg_temp.id('36f102'), pg_temp
   'bracelet d''un autre grand livre : CL029');
 SELECT throws_ok($$SELECT take_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('17'))$$, 'CL029', NULL,
   'session CLOSING : CL029');
-SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('11'))$$, 'CL029', NULL,
+SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('11'), NULL, NULL)$$, 'CL029', NULL,
   'session CLOSED : CL029');
 -- Zéro écriture de caisse sans rattachement (R-02), sur le scénario caution / rendu / recharge
 -- découpée / espèces dues de la caisse 06.
@@ -584,7 +586,7 @@ SELECT throws_ok($$SELECT finish_cash_close(pg_temp.sess('17'), pg_temp.id('36e0
 SELECT throws_ok($$SELECT attach_cash_tx(pg_temp.sess('20'), gen_random_uuid())$$, 'P0002', NULL, 'B : attach_cash_tx');
 SELECT throws_ok($$SELECT open_cash_due_anomaly(pg_temp.lg('36d001'), pg_temp.id('36f101'), 400, gen_random_uuid())$$, 'P0002', NULL, 'B : open_cash_due_anomaly');
 SELECT throws_ok($$SELECT take_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$, 'P0002', NULL, 'B : take_deposit_for_session');
-SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$, 'P0002', NULL, 'B : refund_deposit_for_session');
+SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'), NULL, NULL)$$, 'P0002', NULL, 'B : refund_deposit_for_session');
 SELECT throws_ok($$SELECT refund_cash_due_for_session(pg_temp.id('36f101'), pg_temp.sess('06'), 'X', pg_temp.id('36e011'))$$, 'P0002', NULL, 'B : refund_cash_due_for_session');
 SELECT pg_temp.none();
 SELECT throws_ok($$SELECT cash_session_id FROM open_cash_session(pg_temp.dev('12'), pg_temp.id('36e001'))$$, 'P0002', NULL, 'sans prestataire : open_cash_session');
@@ -594,7 +596,7 @@ SELECT throws_ok($$SELECT finish_cash_close(pg_temp.sess('17'), pg_temp.id('36e0
 SELECT throws_ok($$SELECT attach_cash_tx(pg_temp.sess('20'), gen_random_uuid())$$, 'P0002', NULL, 'sans prestataire : attach_cash_tx');
 SELECT throws_ok($$SELECT open_cash_due_anomaly(pg_temp.lg('36d001'), pg_temp.id('36f101'), 400, gen_random_uuid())$$, 'P0002', NULL, 'sans prestataire : open_cash_due_anomaly');
 SELECT throws_ok($$SELECT take_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$, 'P0002', NULL, 'sans prestataire : take_deposit_for_session');
-SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'))$$, 'P0002', NULL, 'sans prestataire : refund_deposit_for_session');
+SELECT throws_ok($$SELECT refund_deposit_for_session(pg_temp.id('36f101'), pg_temp.sess('06'), NULL, NULL)$$, 'P0002', NULL, 'sans prestataire : refund_deposit_for_session');
 SELECT throws_ok($$SELECT refund_cash_due_for_session(pg_temp.id('36f101'), pg_temp.sess('06'), 'X', pg_temp.id('36e001'))$$, 'P0002', NULL, 'sans prestataire : refund_cash_due_for_session');
 SELECT pg_temp.a();
 

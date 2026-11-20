@@ -22,6 +22,7 @@ import {
 } from './attestation.port';
 import { FakeAttestation } from './fake-attestation';
 import { IosAppAttestVerifier } from './ios-app-attest';
+import { IosAppAttestAssertionVerifier } from './ios-app-attest-assertion';
 import {
   GoogleRevocationCache,
   httpRevocationSource,
@@ -140,7 +141,17 @@ function readRoots(path: string, name: string, config: Pick<AppConfig, 'producti
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig) => createAttestationVerifier(config),
     },
+    // WP13 : fourni et exporté, injecté nulle part (aucune route ; test d'architecture dédié).
+    {
+      provide: IosAppAttestAssertionVerifier,
+      inject: [APP_CONFIG],
+      useFactory: (config: AppConfig) =>
+        new IosAppAttestAssertionVerifier({
+          teamId: config.iosTeamId,
+          bundleId: config.iosBundleId,
+        }),
+    },
   ],
-  exports: [ATTESTATION_VERIFIER],
+  exports: [ATTESTATION_VERIFIER, IosAppAttestAssertionVerifier],
 })
 export class AttestationModule {}

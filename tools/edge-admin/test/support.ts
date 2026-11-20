@@ -101,14 +101,20 @@ export interface Recorded {
   operator: string;
 }
 
-export function mockDb(calls: Recorded[], failWith?: { code: string; message: string }): AdminDb {
+export function mockDb(
+  calls: Recorded[],
+  failWith?: { code: string; message: string },
+  registerRow?: unknown,
+): AdminDb {
   return {
     async withOperator(operator, work) {
       const session: AdminSession = {
         async call(fn, args) {
           calls.push({ fn, args, operator });
           if (failWith) throw Object.assign(new Error(failWith.message), { code: failWith.code });
-          return fn === 'register_edge_gateway' ? randomUUID() : undefined;
+          return fn === 'register_edge_gateway'
+            ? (registerRow ?? { gateway_id: randomUUID(), ledger_id: LEDGER })
+            : undefined;
         },
       };
       return work(session);
@@ -150,7 +156,6 @@ export async function registerArgv(
     request: join(dir, 'request.json'),
     operator: OPERATOR,
     event: EVENT,
-    ledger: LEDGER,
     serial: 'GW-001',
     role: 'PRIMARY',
     'lan-url': 'https://192.168.1.10:8443',

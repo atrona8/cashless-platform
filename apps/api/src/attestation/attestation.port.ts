@@ -31,6 +31,11 @@ export interface AttestationInput {
 export interface AttestationResult {
   kind: AttestationKind;
   securityLevel: AttestationSecurityLevel | null;
+  /**
+   * iOS réel seulement : clé App Attest attestée (WP13, OP-N64). `keyId` = SHA-256 du point non
+   * compressé (32 octets) ; `publicKey` = SPKI DER. Absente : Android, faux.
+   */
+  appAttestKey?: { keyId: Buffer; publicKey: Buffer };
 }
 
 export interface AttestationVerifier {

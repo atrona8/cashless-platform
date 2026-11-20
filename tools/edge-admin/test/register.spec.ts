@@ -8,6 +8,7 @@ import {
   capture,
   fileDeps,
   mockDb,
+  LEDGER,
   OPERATOR,
   readIfExists,
   registerArgv,
@@ -17,10 +18,15 @@ import {
 
 const ENV = { EDGE_CA: 'fake', DATABASE_URL_EDGEADMIN: 'postgres://cashless_edgeadmin:x@h/db' };
 
-async function run(argv: string[], env: NodeJS.ProcessEnv = ENV) {
+async function run(
+  argv: string[],
+  env: NodeJS.ProcessEnv = ENV,
+  fail?: { code: string; message: string },
+  row?: unknown,
+) {
   const calls: Recorded[] = [];
   const { io, got } = capture();
-  const code = await main(argv, env, io, (e, i) => fileDeps(e, i, () => mockDb(calls)));
+  const code = await main(argv, env, io, (e, i) => fileDeps(e, i, () => mockDb(calls, fail, row)));
   return { code, calls, got };
 }
 
@@ -104,5 +110,61 @@ describe('edge-admin register', () => {
     );
     expect(code).toBe(1);
     expect(got.err.join('\n')).not.toContain('pw@');
+  });
+
+  it('grand livre du fichier = grand livre rendu par la base, neuf arguments sans grand livre', async () => {
+    const dir = tmp();
+    const { code, calls } = await run(await registerArgv(dir));
+    expect(code).toBe(0);
+    const register = calls.find((c) => c.fn === 'register_edge_gateway')!;
+    expect(register.args).toHaveLength(9);
+    expect(register.args).not.toContain(LEDGER);
+    const other = '44444444-4444-4444-8444-444444444444';
+    const dir2 = tmp();
+    const row = { gateway_id: '55555555-5555-4555-8555-555555555555', ledger_id: other };
+    const again = await run(await registerArgv(dir2), ENV, undefined, row);
+    expect(again.code).toBe(0);
+    const file = JSON.parse(readIfExists(join(dir2, 'enrolment.json'))!);
+    expect(file.ledger_id).toBe(other);
+    expect(file.gateway_id).toBe(row.gateway_id);
+    expect(JSON.parse(readIfExists(join(dir, 'enrolment.json'))!).ledger_id).toBe(LEDGER);
+  });
+
+  it.each([
+    ['autre UUID', '66666666-6666-4666-8666-666666666666'],
+    ['même UUID que la base', LEDGER],
+    ['vide', ''],
+  ])('--ledger fourni (%s) : refus, aucune écriture', async (_name, value) => {
+    const dir = tmp();
+    const { code, calls, got } = await run(await registerArgv(dir, {}, { ledger: value }));
+    expect(code).toBe(1);
+    expect(got.err.join('\n')).toMatch(/--ledger/);
+    expect(calls).toEqual([]);
+    expect(readIfExists(join(dir, 'enrolment.json'))).toBeNull();
+  });
+
+  it('grand livre introuvable ou ambigu (CL058) : rien écrit, aucune alerte, aucun secret', async () => {
+    const dir = tmp();
+    const fail = { code: 'CL058', message: "Inscription : grand livre de l'événement introuvable" };
+    const { code, got } = await run(await registerArgv(dir), ENV, fail);
+    expect(code).toBe(2);
+    const all = [...got.out, ...got.err].join('\n');
+    expect(all).toMatch(/CL058/);
+    expect(all).not.toMatch(/EDGE_REGISTERED/);
+    expect(all).not.toMatch(/PRIVATE KEY/);
+    expect(readIfExists(join(dir, 'enrolment.json'))).toBeNull();
+  });
+
+  it.each([
+    ['aucune ligne', undefined, null],
+    ['ledger_id nul', { gateway_id: '55555555-5555-4555-8555-555555555555', ledger_id: null }, 1],
+    ['non-UUID', { gateway_id: '55555555-5555-4555-8555-555555555555', ledger_id: 'abc' }, 1],
+    ['gateway_id absent', { ledger_id: LEDGER }, 1],
+  ])('retour de la base mal formé (%s) : refus, aucun fichier', async (_n, row, _x) => {
+    const dir = tmp();
+    const { code, got } = await run(await registerArgv(dir), ENV, undefined, row ?? {});
+    expect(code).toBe(1);
+    expect(got.out.join('\n')).not.toMatch(/EDGE_REGISTERED/);
+    expect(readIfExists(join(dir, 'enrolment.json'))).toBeNull();
   });
 });

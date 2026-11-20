@@ -55,6 +55,9 @@ export const EDGEADMIN_URL = roleUrl(
   'CASHLESS_EDGEADMIN_PASSWORD',
 );
 
+/** Processus vendor-pin (mission 11a, WP03, post-roles.sql § 13). */
+export const PIN_URL = roleUrl('DATABASE_URL_PIN', 'cashless_pin', 'CASHLESS_PIN_PASSWORD');
+
 const REPO_ROOT = join(__dirname, '../../../..');
 
 /** Recrée la base de test par les migrations (packages/ledger-sql/scripts/reset-db.sh). */

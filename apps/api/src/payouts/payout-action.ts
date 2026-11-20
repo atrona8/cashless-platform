@@ -21,7 +21,8 @@ import { ApprovalActionRegistry, type ApprovalActionDefinition } from '../approv
 import type { ApprovalRequestDto } from '../approval/approval.mapper';
 import { ApprovalService, type ApprovalActor } from '../approval/approval.service';
 import { AuditService } from '../audit/audit.service';
-import { isValidIban, normalizeIban } from '../common/iban';
+import { isValidIban, maskIban, normalizeIban } from '../common/iban';
+import { IbanVault } from '../common/iban-vault';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { resolveProblem } from '../errors/problem.filter';
@@ -54,6 +55,8 @@ export const PAYOUT_ROLES: readonly StaffRole[] = ['ORGANIZER_ADMIN', 'OPERATOR_
 
 export const PAYOUT_METHODS = ['WAVE', 'ORANGE_MONEY', 'BANK_TRANSFER'] as const;
 export type PayoutMethod = (typeof PAYOUT_METHODS)[number];
+/** Forme d'enveloppe du coffre (`IbanVault.isSealed`) ; l'ouverture se fait à l'exécution. */
+const SEALED_IBAN = /^enc:v1:/;
 const MSISDN = /^\+[1-9][0-9]{6,14}$/;
 
 export interface PayoutLinePayload {
@@ -64,8 +67,13 @@ export interface PayoutLinePayload {
   amount: number;
   method: PayoutMethod;
   msisdn?: string;
-  /** IBAN normalisé (sans espaces, majuscules). */
+  /**
+   * Enveloppe `enc:v1:…` de l'IBAN normalisé (OP-N140) : jamais le clair, ni en base ni dans la
+   * demande. Chiffré une seule fois, à la demande.
+   */
   iban?: string;
+  /** Masque de l'IBAN (`SN08************3035`), calculé sur le clair avant le chiffrement. */
+  iban_mask?: string;
 }
 
 /** Charge figée de la demande. Le prestataire n'y figure pas : il vient de la demande. */
@@ -88,6 +96,7 @@ const LINE_FIELDS = new Set([
   'method',
   'msisdn',
   'iban',
+  'iban_mask',
 ]);
 
 /** Ligne d'un corps de demande (contrat `PayoutLine`), avant résolution du bénéficiaire. */
@@ -188,6 +197,7 @@ export class PayoutActions {
     private readonly approvals: ApprovalService,
     private readonly entitlements: EntitlementService,
     private readonly audit: AuditService,
+    private readonly vault: IbanVault,
   ) {
     registry.register(this.definition() as ApprovalActionDefinition);
   }
@@ -213,7 +223,7 @@ export class PayoutActions {
       });
     const scope = ledgerScope(ledger);
     const chain = await resolveChain(client, scope);
-    const lines = await this.resolve(client, ledger, input.lines);
+    const lines = await this.resolve(client, ledger, input.lines, operatorId);
     const absent = missingRole(
       actor.principal,
       lines.map((l) => l.beneficiary_kind),
@@ -257,6 +267,7 @@ export class PayoutActions {
     client: TxClient,
     ledger: LedgerRow,
     inputs: BatchLineInput[],
+    operatorId: string,
   ): Promise<PayoutLinePayload[]> {
     const ids = inputs.map((line) => line.beneficiaryPartyId);
     if (new Set(ids).size !== ids.length)
@@ -288,8 +299,15 @@ export class PayoutActions {
         amount: line.amount,
         method: line.method as PayoutMethod,
         ...(line.msisdn !== undefined ? { msisdn: line.msisdn } : {}),
-        ...(line.iban !== undefined ? { iban: line.iban } : {}),
       };
+      if (line.iban !== undefined) {
+        // Valider et masquer sur le clair, puis chiffrer UNE fois (forme normalisée) : le clair ne
+        // survit dans aucune variable transmise plus loin (demande, audit, base).
+        if (!isValidIban(line.iban)) throw unprocessable('iban : IBAN valide (ISO 13616) attendu.');
+        const clear = normalizeIban(line.iban);
+        out.iban_mask = maskIban(clear);
+        out.iban = this.vault.seal(clear, operatorId);
+      }
       if (kind === 'MERCHANT') {
         const participation = participations.get(line.beneficiaryPartyId);
         if (!participation)
@@ -298,6 +316,23 @@ export class PayoutActions {
       }
       return out;
     });
+  }
+
+  /**
+   * Chaque enveloppe doit s'ouvrir pour CE prestataire et donner un IBAN valide ; le clair ouvert
+   * n'est ni conservé ni réécrit (la ligne SQL reçoit l'enveloppe telle quelle).
+   */
+  private checkSealed(batch: PayoutBatchPayload, operatorId: string): void {
+    for (const line of batch.lines) {
+      if (line.iban === undefined) continue;
+      let clear: string;
+      try {
+        clear = this.vault.open(line.iban, operatorId);
+      } catch {
+        throw unprocessable('iban : enveloppe illisible pour ce prestataire.');
+      }
+      if (!isValidIban(clear)) throw unprocessable('iban : IBAN valide (ISO 13616) attendu.');
+    }
   }
 
   /**
@@ -328,11 +363,26 @@ export class PayoutActions {
       action: 'PAYOUT',
       requiredRole: PAYOUT_ROLES,
       scopeOf: (payload) => ({ type: payload.scope_type, id: payload.scope_id }) as ScopeRef,
-      validate: validatePayload,
+      validate: (raw) => validatePayload(raw),
+      guardDecision: async ({ client, payload, actor }) => {
+        // Avant `decide` (approuver comme refuser) : un mauvais rôle laisse la demande PENDING.
+        const scope = { type: payload.scope_type, id: payload.scope_id } as ScopeRef;
+        const chain = await resolveChain(client, scope);
+        const absent = missingRole(
+          actor.principal,
+          payload.lines.map((l) => l.beneficiary_kind),
+          chain,
+        );
+        if (absent)
+          throw new ProblemException('FORBIDDEN', {
+            detail: `Le rôle ${absent} est exigé pour les bénéficiaires de ce lot.`,
+          });
+      },
       execute: async (client, { request, payload, requestedBy, approvedBy }) => {
         try {
           // La charge est relue comme à la demande : une charge modifiée en base est refusée ici.
           const batch = validatePayload(payload);
+          this.checkSealed(batch, request.operator_id);
           if (request.target_id !== batch.ledger_id)
             throw unprocessable(
               'Le grand livre visé par la demande n’est pas celui de sa charge utile.',
@@ -345,6 +395,9 @@ export class PayoutActions {
             throw new ProblemException('LEDGER_LOCKED', {
               detail: 'Grand livre verrouillé : versement impossible.',
             });
+          // Défense en profondeur : `guardDecision` a déjà contrôlé le rôle de l'approbateur avant
+          // la décision ; ce contrôle ne sert plus que si une attribution est révoquée entre la
+          // décision et l'exécution (seul cas où un refus de rôle fait encore passer FAILED).
           // Auteur et valideur tiennent le rôle de chaque classe du lot (attributions lues en
           // base).
           const chain = await resolveChain(client, scope);
@@ -471,11 +524,16 @@ function validateLine(raw: unknown): PayoutLinePayload {
   if (typeof l.participation_id === 'string') out.participation_id = l.participation_id;
   if (method === 'BANK_TRANSFER') {
     if (l.msisdn !== undefined) throw unprocessable('msisdn : interdit pour un virement bancaire.');
-    if (typeof l.iban !== 'string' || !isValidIban(l.iban))
-      throw unprocessable('iban : IBAN valide (ISO 13616) attendu.');
-    out.iban = normalizeIban(l.iban);
+    // Seule une enveloppe est admise : un IBAN en clair dans la charge est refusé (422).
+    if (typeof l.iban !== 'string' || !SEALED_IBAN.test(l.iban))
+      throw unprocessable('iban : enveloppe chiffrée attendue.');
+    if (typeof l.iban_mask !== 'string' || l.iban_mask.length === 0)
+      throw unprocessable('iban_mask : masque attendu.');
+    out.iban = l.iban;
+    out.iban_mask = l.iban_mask;
   } else {
-    if (l.iban !== undefined) throw unprocessable('iban : interdit pour ce moyen.');
+    if (l.iban !== undefined || l.iban_mask !== undefined)
+      throw unprocessable('iban : interdit pour ce moyen.');
     if (typeof l.msisdn !== 'string' || !MSISDN.test(l.msisdn))
       throw unprocessable('msisdn : numéro international (+…) attendu.');
     out.msisdn = l.msisdn;

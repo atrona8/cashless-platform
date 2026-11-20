@@ -1,0 +1,479 @@
+{
+  "event_count": 114,
+  "last_event_id": "01M7W5HAN8YXF7GNS224X0FNSN",
+  "materialized_at": "2026-11-20T09:45:22.857121+00:00",
+  "mission_number": "6",
+  "mission_slug": "durcissements-serveur-01M7QAJD",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 14,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5G6ZYD0P1T1RJ92SKMW8Z",
+      "last_transition_at": "2026-11-20T09:44:46.334664+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP01 pret. Fichiers: migrations 0090, 0091, tests_vendor_session_key.sql (11 tests), tests_media_batch_functions.sql (79 tests). Hors carte: aucune (pas d'app.module). ECART interfaces.md: create_media_batch(p_organizer uuid, p_event uuid, p_kind text, p_quantity int, p_key_index int, p_print_order_ref text, p_preload_promo_amount bigint, p_deposit_amount bigint, p_deposit_mode text, p_key_mode text, p_reuse_policy text, p_actor uuid) RETURNS uuid (kind et key_mode ajoutes, R-N60 5.2): corriger interfaces.md, WP05 appelle cette signature. Auteur d'historique: media_set_actor(p_actor,'Creation du lot'); media_set_actor leve CL001 si acteur nul (strict, renforcement d'audit): test attendu ->ORDERED:- de tests_media_reinstate a ajuster par WP03. Corps DEFINER relus: set_media_batch_status, issue_claim_codes filtrent par media_session_operator()/claim_session_operator(), aucune lecture dependant de la RLS. Mutations: (1) DROP sale_attribution_session_vendor_fk -> cas (session A, vendeur B) passe (le test 23503 echouerait); (2) retrait de la limite p_to de media_set_status -> RETIRED passe (le test CL020 echouerait); les deux rejouees dans les suites, retablies. Suites figees a ajuster par WP03: tests_media_api test 1 (8 devient 6), tests_media_claims test 9 (5 devient 4: issue_claim_codes DEFINER). Nouveau code CL056. Aucun GRANT/REVOKE hors FROM PUBLIC.",
+        "Relecture WP01 : approuve. 11 mutations sur 0091 et la FK 0090 rejouees, toutes detectees (sauf operator_id redondant de l'event). Mineurs : lignes >100 car. ; create_media_batch refuse un acteur nul (CL001)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP01-base-vendeur-lots/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP01-base-vendeur-lots/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42079,
+      "shell_pid_created_at": "1795015185.740805",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5G9RJJZAPQ25SYS6VDP75",
+      "last_transition_at": "2026-11-20T09:44:49.170725+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP02 pret. Migrations 0092-0095 (CL057 garde d'insertion sauf superuser ; CHECK iban NOT VALID x2 ; register_edge_gateway -> (gateway_id, ledger_id), CL058 ; device_app_attest_key + enroll_device 15 args (13 retiree) + advance_app_attest_counter CL059). refund_deposit_for_session(uuid,uuid) retiree, refund_deposit(uuid,uuid) intacte. post-roles.sql retouche LOCALEMENT (enroll_device 15 args, l.711 retiree) pour les preuves, NON commite : WP03 en depend. Retouches hors carte (tests uniquement, signalees): tests_payouts.sql l.105 (iban enc:v1:), tests_refund_requests.sql l.135 (iban enc:v1:), tests_device_enrollment.sql et tests_enrollment_event_state.sql (signature enroll_device 15 args, LIKE des arguments). Retouches dans la carte: tests_cash_sessions.sql l.194-207 (comptes 14->13 et 13->12 par signature) et l.518,561,587,597 (4 args NULL,NULL) ; tests_refund_transitions.sql l.293-296 (hasnt_function 2 args + refund_deposit(uuid,uuid) non executable), l.318-320 et 366-367 (4 args NULL,NULL), compte 4->3 signatures ; tests_edge_gateway.sql l.68,194 (SELECT gateway_id FROM register...) + cas CL058 (aucun livre, deux devises), ledger_id = identify. Pas d'import app.module.ts. SQLSTATE obtenus: CL057 pour PAID/CANCELLED/FAILED/REJECTED/PROCESSING/BLOCKED et colonnes de transition (le declencheur BEFORE parle avant les CHECK) ; 23514 refund_request_iban_sealed/payout_iban_sealed ; CL058 ; CL059 ; CL001 ; 23505 key_id. Mutations: T005 trigger desactive -> CANCELLED passe (dans la suite) ; T006 DROP CONSTRAINT -> IBAN clair passe sur les 2 tables (dans la suite) ; T007 IF v_n=0 neutralise -> tests 29-31 echouent (rejouee a la main puis reset) ; T008 < remplace par <= -> meme compteur rendu true (dans la suite). Ecart: pg_has_role rend vrai pour tout superuser -> le trigger exclut les superusers (rolsuper) sinon les fixtures du proprietaire etaient refusees (renforce/neutre). Limite NOT VALID: un UPDATE reevalue le CHECK, donc une ligne ancienne a IBAN en clair ne peut plus changer d'etat (a signaler au porteur).",
+        "Review passed. enroll_device (diff -w vs 0035: only 2 args, checks, step 6b), register_edge_gateway (vs 0058: ledger lookup/CL058 only), advance_app_attest_counter, insert guard, IBAN CHECK verified; 10 pgTAP suites green; 6 mutations all caught. Note: tests do not cover a real login role member of cashless_app (pg_has_role MEMBER is transitive, OK); NOT VALID: old plaintext rows cannot change state (accepted pre-prod)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP02-base-remboursements-passerelles-app-attest/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP02-base-remboursements-passerelles-app-attest/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 45894,
+      "shell_pid_created_at": "1795015346.309383",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GHZF4ES4TDSWEHXMWYRD",
+      "last_transition_at": "2026-11-20T09:44:57.583903+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP03 (cd0420bc) : post-roles.sql section 13 (13a cashless_pin, 13b retraits, 13c EXECUTE), lignes enroll_device 15 args et refund_deposit_for_session corrigées ; roles.sql inchangé ; migrate.ts CASHLESS_PIN_PASSWORD, env.sh, ledger-tests.yml, test/support/db.ts PIN_URL, process-db.module.ts vendor-pin. tests_11a_rights.sql 69 tests ; 83 suites pgTAP vertes sur cashless_wp03 ; mutations a-d détectées. Hors carte : env.test.example, SERVICES-EXTERNES.md, tests_media_claims t9, tests_media_batch_functions t76 (42501), tests_offline_rights t1, tests_refund_requests t62, tests_refund_insert_guard (GRANT INSERT limité à la transaction de test, ROLLBACK : à valider par le relecteur). Réalignement kitty-specs par l'orchestrateur (b1bbf87d).",
+        "Relecture WP03 : EXECUTE de cashless_app conforme a interfaces.md (verifie sur pg_proc), cashless_pin borne, refund_deposit/guard a personne, 589+ tests de droits rejoues, 3 mutations detectees, post-roles rejouable a l'identique. Mineur : audit_log INSERT de cashless_pin non restreint aux actions VENDOR_*."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP03-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP03-droits-base/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 60490,
+      "shell_pid_created_at": "1795016557.888992",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GCFZCD3AJAQ9DY2867S0",
+      "last_transition_at": "2026-11-20T09:44:51.967726+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Lane d. Fichiers: config.ts, config.spec.ts + hors carte test/support/tls.ts (DEVICE_PRODUCTION: VENDOR_PIN_CALL_KEY='3c'x32 car '06' deja pris par CUSTOMER_AUTH_HMAC_KEY, IBAN_KEYRING k1, IBAN_ACTIVE_KID); app.module.ts non touche. Noms exposes: vendorPinCallKey, vendorPinUrl, pinDatabaseUrl, ibanKeyring, ibanActiveKid, vendorPinSettings(env); vendorPinSecret garde (tampon vide en prod si absent -> le hacheur actuel refuse, aucun secret de test substitue; WP07 le retire). VENDOR_PIN_IDEMPOTENCY_SECRET inchange (rien a ajouter a interfaces.md). Retire VENDOR_PIN_SECRET de DeviceSettings et du controle de distinction de loadConfig (distinction dans vendorPinSettings seulement si les variables sont dans l'env; limite pour WP14). Consequence deploiement: tous les processus loadConfig exigent en prod VENDOR_PIN_CALL_KEY, IBAN_KEYRING, IBAN_ACTIVE_KID. VENDOR_PIN_URL rend l'origine (sans / final), refuse identifiants/fragment en plus. Mutations: retrait garde prod sans IBAN_KEYRING -> 2 tests echouent; retrait refus cle de test -> 1 test echoue; remises. tsc 0 erreur; jest config/config-device-authorities/production-guard/processes 188 verts; contract-stability 0 refus.",
+        "Approuve. Gardes verifiees par sondes et 5 mutations tuees (cle IBAN de test, https, liste TEST_HMAC_KEYS, 32 octets exacts, kid actif). Ecart declare (distinction VENDOR_PIN_SECRET plus verifiee dans loadConfig) : prevu par la carte ; transition couverte par VendorPinHasher (secret != idempotence) ; limite permanente (reutilisation entre processus separes non detectable) a consigner par WP14 (POINTS_OUVERTS + ADR) et a signaler au porteur. tls.ts 3c au lieu de 06 : correct (06 = CUSTOMER_AUTH)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP04-configuration/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP04-configuration/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42541,
+      "shell_pid_created_at": "1795015232.398119",
+      "subtasks": {
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GQF8FHARDQMYM3YWBP5H",
+      "last_transition_at": "2026-11-20T09:45:03.208646+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "T018-T021 faits. Hors carte: test/unit/errors/sqlstate-map.spec.ts (ligne CL056). Aucun import app.module. Ecarts interfaces.md: aucun (create_media_batch prend kind/key_mode, relecture par row()). Renforcement: auteur+motif 'Creation du lot' dans l'historique ->ORDERED (batches.spec mis a jour). row(lock) = pg_advisory_xact_lock au lieu de FOR UPDATE. Mutations NFR-004: GRANT UPDATE(status) ON media puis GRANT INSERT ON media_batch -> test OP-N60 levee echoue (Expected 42501, Received null), REVOKE faits. seed-demo.ts inchange (proprietaire), lance sur cashless_wp05 OK (tsx --tsconfig apps/api/tsconfig.json). Jest 3 suites 197 OK; claims+closing 42 OK; check.mjs 0 refus.",
+        "Cycle 2. Corrige: tsc propre (2 destructurations), lignes <=100 (Prettier + noms de tests + commentaire CL056 + pg_advisory_xact_lock). Test des deux PATCH renforce: le proprietaire tient le verrou consultatif du lot, un PATCH doit s'y bloquer (session cashless_app en attente advisory) puis passer; mutation 'if (false && lock)' dans batches.service.ts row(): le test ECHOUE, verrou remis. Mutations NFR-004 sur cashless_wp05: GRANT UPDATE(status) ON media -> test 'OP-N60 levee' echoue (attendu 42501, recu null); GRANT INSERT ON media_batch -> echoue idem; base remise a zero. Preuves: batches+blacklist 49/49; claims*+closing: 135 verts, 5 echecs tous dans test/scenario/closing-journey.spec.ts (payout FAILED au lieu de EXECUTED, REFUND_WINDOW PARTY_POSITIONS_ZERO), sans lien media/lots, probablement IBAN/WP04 ou WP06, a verifier par l'orchestrateur; seed-demo.ts inchange (tourne en proprietaire, withOwner), lance sur cashless_wp05 avec --tsconfig apps/api/tsconfig.json: OK (2 lots, 26 bracelets). Constat 4: la ligne d'historique ->ORDERED passe reason NULL -> 'Creation du lot' en plus de l'auteur: RENFORCEMENT d'audit, signale. Note: pg_stat_activity d'un serveur en attente de verrou montre l'ancien texte de requete, le test filtre donc sur usename. Hors carte: aucune nouvelle; app.module.ts non touche.",
+        "Cycle 2 OK: tsc propre, lignes <=100, mutation verrou (1 echec) et 2 mutations de droits (echecs) rejouees, batches+blacklist 49 verts, check.mjs 0 refus"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP05-lots-bracelets-api/review-cycle-2.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP05-lots-bracelets-api/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 32302,
+      "shell_pid_created_at": "1795082456.145441",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GT76H32ZY0Z37JW29SZF",
+      "last_transition_at": "2026-11-20T09:45:06.022455+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP06 lane-f commit 2cd15d4f. HORS CARTE (ligne chacune): apps/api/src/processes/bootstrap.ts (option host de serve: ecoute 127.0.0.1 par defaut pour vendor-pin, aucun elargissement); test/integration/end-to-end/device-auth-cases/{payments,vendors}.cases.ts et test/integration/payments/payments-fixtures.ts (testPinDigester au lieu du hacheur d'API). app.module.ts NON touche (VendorPinModule garde son nom). package.json: seulement start:vendor-pin. CASSE ATTENDU, WP07: src/vendors/{vendor-sessions.service,vendors.controller}.ts et test/integration/vendors/vendor-sessions.spec.ts n'ont plus hash/verify cote API (tsc). FIGE: POST /v1/internal/vendor-pin/open {vendorId,deviceId,operatorId,pin} (+X-Request-Id), 200 {vendor_session_id,vendor_id,vendor_display_name,expires_at}, 403 {outcome:PIN_REFUSED}, 409 {outcome:CONCURRENT}->429, 401 signature, 422 charge, 5xx; POST /hash {pin}->{pin_hash}. signCall(key,ts,method,path,body) dans vendor-pin-call-signature.ts, chemin=originalUrl avec /v1, en-tetes x-pin-ts (ms) x-pin-sig (hex), fenetre 30 s. Port 3003, VENDOR_PIN_HOST defaut 127.0.0.1; prevoir UV_THREADPOOL_SIZE pour argon2. DETTE: config/config.ts lit encore VENDOR_PIN_SECRET pour AppConfig jusqu'a WP07 (test d'architecture l'exempte nommement). Concurrence 23505 -> 409 non testee. MUTATIONS NFR-004: garde HMAC+fenetre rendue vraie -> 2 tests en echec; fenetre retiree -> 1 echec; VENDOR_PIN_SECRET lu dans errors/problem.ts -> 2 echecs architecture; tous restaures. Preuves: jest integration/vendor-pin 13/13, unit/processes+architecture+vendor-pin verts, check.mjs 0 refus. A relire par une personne: vendor-pin.digester.ts, vendor-pin-call*.ts.",
+        "Review WP06 OK. Tests relances sur cashless_wp06: vendor-pin integration+unit, processes, architecture = 114 verts; mutation (fenetre ts retiree) fait echouer 1 test; check.mjs 0 refusee. Mineurs consignes: (1) pas de rejeu refuse dans la fenetre de 30 s (aucun nonce, non exige par interfaces.md); (2) garde: rawBody absent => corps vide signe (fail-open latent, serve et createVendorPinProcess activent rawBody); (3) cas 23505->409 CONCURRENT non teste; (4) test 'route non marquee' accepte 401 ou 404; (5) tsc en echec dans vendors/ jusqu'a WP07 (prevu par le prompt WP07). Exemption config.ts etroite (un fichier) + test de dette. A relire par une personne: vendor-pin.digester.ts, vendor-pin-call-signature.ts, vendor-pin-call.guard.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP06-processus-vendor-pin/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP06-processus-vendor-pin/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 14680,
+      "shell_pid_created_at": "1795081748.757561",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done",
+        "T026": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5H7YA665VJ52EHYHXDK5S",
+      "last_transition_at": "2026-11-20T09:45:20.075240+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP07 prêt. Retouches hors carte: config/config.ts (retrait vendorPinSecret d'AppConfig/loadConfig); vendor-pin/vendor-pin-call.guard.ts (autorisé par le porteur 19/11: cache anti-rejeu borné fail-closed, refus 401 d'un corps sans rawBody); test/support/app.ts (startVendorPinServer, option vendorPin, startHttpsApp démarre un vrai processus); test/unit/architecture.spec.ts, config.spec.ts (exemption levée, secret lu par vendorPinSettings seul). Aucun import app.module. Écart: writes:false INCOMPATIBLE avec transient (completeAlone enregistre la réponse réelle: renvoi d'une clé réussie rend 201 au lieu de 409, vérifié par test); route gardée en tx.run vide après l'appel (aucune tx pendant argon2), même comportement. x-pin-ts en ms (code WP06), pas en s. Client: ts strictement croissant. Atomicité: session ouverte par le processus hors tx API; si l'API tombe avant réponse, renvoi=409, nouvel essai compté (ADR WP14). Latence NFR-001: p50=163 p95=211 p99=249 ms (seuils 300/600). SKIP_LATENCY: vendors/vendor-pin-latency. Mutations: repli (catch -> session ouverte) fait échouer 5 cas FR-006; +400ms client fait échouer latence (p95 582); sans cache anti-rejeu 2 tests échouent; sans refus rawBody 1 test échoue. A relire par une personne: vendors/vendor-pin.client.ts, vendor-pin/vendor-pin-call.guard.ts. Preuves: tsc 0 erreur, check.mjs 0 refus, jest unit + vendors + vendor-pin + payment-secrets + device-auth-matrix 1720 verts; payments, payment-journey, payment-isolation verts.",
+        "Review passed (claude): tsc 0; vendors+vendor-pin 55/55; payment-secrets, device-auth-matrix, payment-journey, payment-isolation, offline-secrets, architecture, config 274/274; latence p95 139 ms; check.mjs 0 refus. Mutations: sans cache anti-rejeu -> 2 echecs; repli qui ouvre -> 7 echecs. Mineur: vendors.dto.ts importe PIN_PATTERN du module vendor-pin.hasher (charge argon2 sans l'utiliser) ; x-pin-ts en ms a consigner."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP07-session-vendeur-client/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP07-session-vendeur-client/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42776,
+      "shell_pid_created_at": "1795083213.969281",
+      "subtasks": {
+        "T027": "done",
+        "T028": "done",
+        "T029": "done",
+        "T030": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GMR1F4CH8M1F5XRVYMBH",
+      "last_transition_at": "2026-11-20T09:45:00.417346+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP08 commit 0ffa0873. Retouche hors carte: apps/api/src/app.module.ts (1 import + 1 ligne IbanVaultModule, processus public seul). Aucun port KMS, aucune dependance. msisdn NON ajoute a REDACTED_FIELDS (a trancher par le porteur). Echec attendu hors lot: limits-9b.spec.ts jusqu'a WP09. A faire relire par une personne: redact.ts, iban-vault.ts (crypto). Noms figes: IbanVault(keyring, activeKid), IbanVaultError.code (IBAN_VAULT_CONFIG|ALREADY_SEALED|BAD_FORMAT|UNKNOWN_KID|OPEN_FAILED), IbanVaultModule global. Regex IBAN nu: spaced groups de 4 + dernier groupe court avec chiffre; tirets non toleres; faux positifs: identifiant alnum 2L+2C+11..30. Mutations NFR-004: sans setAAD -> 2 tests echouent; sans setAuthTag -> 2 echouent; sans passe par valeur -> 6 echouent; controles remis, 184/184 verts. tsc, prettier, architecture.spec, contract-stability 0 refus OK.",
+        "WP08 approuve: AES-256-GCM (IV aleatoire, tag 16 verifie, AAD liee au prestataire, kid inconnu/altérations refuses), 7 mutations sur 8 tuees, redact OK. Minor: tirets/NBSP/IBAN colles non masques en texte libre (a consigner WP14); controle longueur min redondant."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP08-coffre-masque-iban/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP08-coffre-masque-iban/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 53712,
+      "shell_pid_created_at": "1795015912.489799",
+      "subtasks": {
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GWZ2PR1NYVX258MGMWRT",
+      "last_transition_at": "2026-11-20T09:45:08.834567+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP09 commit c7443062. Hors carte : apps/api/src/errors/sqlstate-map.ts (ligne CL057 -> CONFLICT_STATE 409, code existant). Pas d'import app.module (IbanVaultModule global). Forme figee pour WP10 : destination/ligne { iban: 'enc:v1:...', iban_mask: maskIban(...) } au meme niveau d'objet ; maskPaymentData rend iban_mask, [masque] sans masque, maskIban pour un clair. Ecarts : aucun affaiblissement ; renfort : masque falsifie refuse a l'execution. Anciennes demandes PENDING avec IBAN en clair : non executables (dev seulement). Mutations NFR-004 : (a) sans seal -> create-backoffice echoue (7 cas dont NFR-005 CHECK 23514) ; (b) mapper rend l'enveloppe -> payout-roles et late-claim echouent ; (c) GRANT INSERT(status, external_reference) -> limits-9b echoue (3) ; (d) DISABLE TRIGGER refund_request_insert_guard -> 4 cas PAID/CANCELLED/PROCESSING/REJECTED echouent ; tout remis. Preuves : jest refunds+late-claims+limits-9b+payment-data-exposure+unit/payouts 24 suites 178 ok 1 skipped ; check.mjs 0 refusee ; tsc ok ; prettier ok.",
+        "Review passed: aucun IBAN en clair (refund_request, approval_request, audit_log, reponses); ouverture avec request.operator_id, masque falsifie et enveloppe illisible refuses (APPROVAL_INVALID); maskPaymentData jamais l'enveloppe; CL057->CONFLICT_STATE; tsc OK, 24 suites Jest OK, check.mjs 0 refus; 6 mutations rejouees detectees. Mineur: test liste late-claim ne distingue pas maskIban(enveloppe) (couvert par le test unitaire)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP09-remboursements-iban/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP09-remboursements-iban/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 19332,
+      "shell_pid_created_at": "1795081909.642124",
+      "subtasks": {
+        "T034": "done",
+        "T035": "done",
+        "T036": "done",
+        "T037": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GZP2JSXKHMYW72ZK69TG",
+      "last_transition_at": "2026-11-20T09:45:11.618399+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "- 2026-11-19T09:43:23Z – claude – shell_pid=2212 – Blocked: Docker/colima arrete, cashless-platform-pg17 (5433) indisponible; implementation non commencee",
+        "WP10: IBAN scelle (seal a la demande, open seulement dans exportBatch), guardDecision(ctx, decision) avant decide (approve+reject), PAYOUT_CONFIRM_REPLAYED, auto-approbation 409 strict. Hors carte: aucune (app.module inchange, IbanVaultModule deja global). Resserrement signale: un refus exige maintenant la classe de beneficiaire (FR-014). Signatures: guardDecision recoit ctx={client,request,payload,actor} (interfaces.md, pas client en 1er arg); validatePayload garde 1 argument (payout-roles.spec hors lot inchange), l'ouverture de l'enveloppe se fait dans execute. Export illisible: IbanVaultError nu -> 500, sans valeur. Charge forgee en clair: 422 des le crochet, demande PENDING. NFR-002: 500 lignes exportees en 90 ms. Mutations: M1 clair dans payload (2 tests rouges), M2 repli sur brut a l export (rouge), M3 crochet retire (4 rouges), M4 audit rejeu retire (rouge); toutes restaurees. canSee montre encore le lot mixte a une seule classe (lecture).",
+        "Review passed. tsc 0; jest payouts 39/39; unit payouts+approval+architecture 49/49; check.mjs 0 refus. Mutations M1 (guardDecision retire) 4 echecs, M2 (repli clair export) 1 echec, M4 (audit rejeu) 1 echec. Mineur consigne: retirer checkSealed (execute) ne fait echouer aucun test (enveloppe d'un autre prestataire a l'execution non testee ; echec ferme quand meme a l'export).",
+        "- 2026-11-19T10:10:09Z – claude – shell_pid=32306 – Correctif relecture 19/11 (414e35f2) : test OP-N140 forge en base (enveloppe alteree, enveloppe d'un autre prestataire) -> FAILED, aucun payout ni ecriture ; mutation retrait de checkSealed : test echoue (EXECUTED), code remis.",
+        "Relecture distincte post-approbation (19/11/2026) : commit 414e35f2 = test seul (payout-batch.spec.ts, +55 lignes, enveloppe forgée -> FAILED, mutation checkSealed détectée), décidé par le porteur ; aucun code de production, aucun droit. Verdict du relecteur distinct : OK.",
+        "Relecture distincte post-approbation (19/11/2026) : commit 414e35f2 = test seul (payout-batch.spec.ts, +55 lignes, enveloppe forgée -> FAILED, mutation checkSealed détectée), décidé par le porteur ; aucun code de production, aucun droit. Verdict du relecteur distinct : OK."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "auto-approval:WP10:20261119",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 32306,
+      "shell_pid_created_at": "1795082456.920117",
+      "subtasks": {
+        "T038": "done",
+        "T039": "done",
+        "T040": "done",
+        "T041": "done",
+        "T042": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5GF81ZTAD49ADTDNAVFPF",
+      "last_transition_at": "2026-11-20T09:44:54.785649+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Lane-k. Hors carte: apps/api/src/closing/calculators/operator-fee.ts (feeTotal delegue a operatorFeeTotal; import de fees.ts). Interface: operatorFeeTotal(config, bases): bigint exportee de ledger/builders/closing/fees.ts. Branche normale non factorisee (lignes par regle conservees). Mutation 1 (retrait du controle): 8 tests en echec (brut+1 x3 assiettes, code VALIDATION_FAILED, enorme, bases vides x2, regles absentes). Mutation 2 (> -> >=): 3 en echec (brut accepte x3 assiettes). Remis. Unitaires 70 verts, closing-variants 5 verts sur cashless_wp11, contract-stability 0 refus. Aucun ecart securite, pas d'app.module, pas de migration.",
+        "Relecture WP11: approuve. Preuves relancees (unit closing 70/70, closing-variants 5/5 sur cashless_wp11, contrat 0 refus). 3 mutations (retrait du controle: 8 echecs; > vers >=: 3 echecs; plafond +1: 7 echecs). Seul ecrivain OPERATOR_FEE: buildOperatorFee. Retouche operator-fee.ts conforme. Branche normale non factorisee: acceptable (lignes par regle + tagFee)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP11-plafond-regularisation/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP11-plafond-regularisation/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 37187,
+      "shell_pid_created_at": "1795015023.228719",
+      "subtasks": {
+        "T043": "done",
+        "T044": "done",
+        "T045": "done"
+      }
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5H2DQFJ2N937HNQ0736XZ",
+      "last_transition_at": "2026-11-20T09:45:14.424176+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP12: db.ts lit TABLE(gateway_id, ledger_id) (ROW_FUNCTIONS, requete parametree); register refuse --ledger (meme vide/identique) avant base et fichier; fichier ecrit avec ledger_id rendu; CL058 passe par report() existant de main.ts (code 2, rien ecrit). Hors carte: commands-other.spec.ts, 5 lignes ledger retirees (l.34,45,142 + 2 appels registerReal avec otherLedgerId l.61,73 imposes par tsc); main.ts et FORMATS.md intacts. Mutation NFR-004: retrait du refus + lecture args.ledger -> 3 tests register.spec echouent, restaure. Tests vraie base commands-other NON lances (Docker/colima arrete, 5433 refuse): a rejouer apres merge WP02/WP03. Aucun ecart securite.",
+        "- 2026-11-19T09:46:53Z – claude – shell_pid=2216 – Preuve vraie base (cashless_wp12, 0094+droits WP03 presents dans la lane): edge-admin 4 suites, 38 tests verts en serie. commands-other.spec.ts: assertion ajoutee (fichier ledger_id = identify_edge_gateway = world.otherLedgerId). Mutation base (ledger_id fige dans le fichier) -> 1 echec, restaure -> 6/6. Commit de test supplementaire dans commands-other.spec.ts.",
+        "Review passed: tsc 0; 4 suites edge-admin vertes (commands-other sur cashless_wp12); contract-stability 0 refus; mutation (retrait du refus --ledger) fait echouer 3 tests. Ecart commands-other: 5 lignes (2 appels imposes par la signature + assertion ledger = identify_edge_gateway, permise par T047-5), acceptable. main.ts/FORMATS.md intacts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP12-inscription-passerelles/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP12-inscription-passerelles/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 11190,
+      "shell_pid_created_at": "1795081632.92931",
+      "subtasks": {
+        "T046": "done",
+        "T047": "done",
+        "T048": "done"
+      }
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5H56G1ATNBMBJ2HS4GK8G",
+      "last_transition_at": "2026-11-20T09:45:17.264919+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP13 prêt. Commit 4bdd6430. Fichiers: attestation/{attestation.port,ios-app-attest,ios-app-attest-assertion(nouveau),attestation.module}.ts, enrollment.service.ts, test/support/attestation/ios.ts (appAssertion), tests unit+integration attestation. Retouches hors carte: aucune (app.module.ts et sqlstate-map intacts). Signature reelle: IosAppAttestAssertionVerifier(settings{teamId,bundleId}).verify({deviceId,assertion,clientDataHash}, client: TxClient dans TenantTx.run): Promise<void>, leve AttestationError; fourni+exporte par AttestationModule. AttestationResult.appAttestKey?{keyId,publicKey SPKI}. enroll_device 14e/15e args. Ajout hors prompt (renforce): 23505 sur device_app_attest_key_key_id_key converti en 422 ATTESTATION_FAILED (au lieu de 500). Audit: app_attest_key_id hex seul. LIMITE R1: vecteurs generes localement (signeur ecrit d'apres Apple, pas d'apres le verificateur); un vecteur REEL d'Apple est exige avant la mission 12 (a reporter dans la fiche WP14). A faire relire par une personne: ios-app-attest-assertion.ts et fonction SQL advance_app_attest_counter. DoS accepte (EXECUTE advance par cashless_app): test de borne a WP14. Mutations (toutes echouent puis remises): cle non passee a enroll_device (3 echecs enrollment), signCount non controle (2 echecs unit), retour advance ignore (2 echecs unit+integ concurrence), controleur importe le verificateur (3 echecs architecture). Suites: unit/attestation + integration/attestation + devices/enrollment + media-port-swap verts (207); device-auth-matrix: 13 echecs deja presents sans WP13 (session vendeur 403, attend WP05/06), borne iOS verifiee via media-port-swap. contract-stability 0 refus.",
+        "Relecture WP13: approuve. Crypto conforme a Apple (nonce=SHA256(authData||clientDataHash), ECDSA-SHA256 sur nonce, rpIdHash, signCount strict, avance atomique en UPDATE conditionnel); seul EXECUTE nouveau advance_app_attest_counter, aucun droit de table; 23505 -> 422 ATTESTATION_FAILED (renforcement), contrat inchange (check.mjs 0 refus). tsc OK; 207 tests passes (attestation, enrollment, media-port-swap). Mutations: rpIdHash retire, compteur >=, cle non passee, hachage triple: tous detectes. device-auth-matrix 13/13 en echec aussi sur lane c (WP03, begin_vendor_pin_check 42501), non lie. Limites: vecteurs locaux, vecteur reel Apple exige avant mission 12; cryptographie a faire relire par une personne."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/durcissements-serveur-01M7QAJD-coord/kitty-specs/durcissements-serveur-01M7QAJD/tasks/WP13-app-attest/review-cycle-1.md",
+        "reference": "review-cycle://durcissements-serveur-01M7QAJD/WP13-app-attest/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 32325,
+      "shell_pid_created_at": "1795082458.118007",
+      "subtasks": {
+        "T049": "done",
+        "T050": "done",
+        "T051": "done",
+        "T052": "done"
+      }
+    },
+    "WP14": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7W5HAN8YXF7GNS224X0FNSN",
+      "last_transition_at": "2026-11-20T09:45:22.857121+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP14 (bed81935) : POINTS_OUVERTS (8 levees avec preuves et mutations, OP-N64 cote serveur pret, OP-N150 a N162, section 11 avec fichiers a relire et tests de borne manquants), DECISIONS_ADR (ADR-216 a 224, mises a jour d'ADR-97/106/121/127/201/203/204/205), PROMPTS-A-ENVOYER (11a, 12, 12b, 13), PRD. 4 fichiers seulement, aucun code. Retouche de lane : fusions manuelles lane-f/e/i/j/l/m/g dans lane-n (conflits kitty-specs et sqlstate-map CL056+CL057 gardes). Question au porteur : msisdn (OP-N156). Tests de borne manquants : OP-N151, N154, N155(b), N156, N157, N158, N159, N160, N161.",
+        "Cycle 2 : dates (18/11 N79 et N141, 19/11 les six autres), reports N153 (mission 13, proposée) N155 N156 N160 N161 N162, décisions du 19/11 (Colima, bornes avant fusion, N156 levé par renforcement), bornes réelles (bde1d13b, 3c112821, d7d1d139), ADR-217 limite du renvoi, ADR-224 détaillé, CL058 signalée non tranchée. Quatre fichiers seulement, aucun test lancé.",
+        "Cycle 2 : 3 bloquants leves (dates verifiees contre le journal d'etats, reports regle 3, Colima en ADR-223/OP/PRD/PROMPTS) ; points 21-27 consignes, tests cites existent. Mineurs : 2 lignes >100 car. (OP-N156) ; questions au porteur : OP-N155 sans mission, OP-N153 mission 13 proposee.",
+        "Relecture distincte post-approbation (19/11/2026) : 02b5b5f8 (docs, décisions du porteur OP-N155 12b, OP-N153 13, CL058), 0233f74a (consignation.spec.ts parcourt tools/edge-admin/test, mutation faux nom -> échec), 63b1526b (bancs edge/passerelle sans --ledger suivant WP12, DATABASE_URL_PIN de test dans env-setup.cjs). Tests et docs seulement. Verdict du relecteur distinct : OK.",
+        "Relecture distincte post-approbation (19/11/2026) : 02b5b5f8 (docs, décisions du porteur OP-N155 12b, OP-N153 13, CL058), 0233f74a (consignation.spec.ts parcourt tools/edge-admin/test, mutation faux nom -> échec), 63b1526b (bancs edge/passerelle sans --ledger suivant WP12, DATABASE_URL_PIN de test dans env-setup.cjs). Tests et docs seulement. Verdict du relecteur distinct : OK."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "reference": "auto-approval:WP14:20261119",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 61252,
+      "shell_pid_created_at": "1795085555.965937",
+      "subtasks": {
+        "T053": "done",
+        "T054": "done",
+        "T055": "done",
+        "T056": "done"
+      }
+    }
+  }
+}

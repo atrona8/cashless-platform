@@ -74,10 +74,22 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   règle en espèces ; la mission 6 ne l'ouvre pas au mobile money ni à la carte (sa restitution exigerait un
   remboursement PSP, absent en V1 ; décision de spécification du 27/10/2026, à confirmer par le porteur). Les routes back-office des lots, des clés, de la
   personnalisation et de la liste noire sont à ajouter au contrat.
+- Lots de bracelets créés et modifiés par des fonctions seulement (`create_media_batch`,
+  `update_media_batch`), statut d'un bracelet par `media_set_status` (`SUSPENDED` et `BLACKLISTED`
+  avec motif) : `cashless_app` n'a plus aucun droit d'écriture direct sur `media_batch` ni sur le
+  statut ; la vente est attribuée au vendeur de sa session par clé étrangère (mission 11a, OP-N60 et
+  OP-N79 levés, ADR-216).
 
 ### 2.5 Terminaux et encaissement (§8)
 - Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` (`PAIRED_TPE` refusé en V1). Catalogue à prix TTC fixe. (§8.1)
 - Enrôlement sans MDM par code à usage unique ; clés dans le Keystore ; vendeurs par code PIN ; révocation. (§8.2)
+- Ouverture de session de vendeur par un **processus séparé** `vendor-pin` (processus et rôle de
+  base `cashless_pin` de plus), seul détenteur du secret des PIN : l'API lui passe le PIN par un
+  appel interne signé (HMAC, loopback, rejeu refusé) et ne lit plus les empreintes (mission 11a,
+  OP-N76 levé, ADR-217). Limite nommée : l'API voit le PIN en transit (OP-N151, levée par la preuve
+  du PIN en missions 12 et 12b). Enrôlement iOS : la clé App Attest est gardée par le serveur, qui
+  sait vérifier une assertion ; borne iOS gardée tant que l'app n'en envoie pas, vecteur réel
+  d'Apple exigé avant la mission 12 (OP-N64 « côté serveur prêt », ADR-222).
 - Paiement par QR (`MERCHANT_QR`, `CUSTOMER_QR`), toujours en ligne. (§8.3)
 - Découpage (16/10/2026) : la mission 5a livre l'identité réelle du terminal (jeton d'appareil, mTLS, requêtes signées),
   les codes d'enrôlement (S5), l'enrôlement, la révocation, la configuration servie et le battement de cœur ; la
@@ -112,13 +124,14 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   réaffectation directe d'un terminal retirées à l'API. Passe contradictoire (27 constats, tous traités) : registre des
   numéros des terminaux, PIN « compté d'abord », annulation par un `SUPERVISOR` au terminal (jeton sur place) ou au
   back-office (demande à deux). Limite acceptée : OP-N76 / ADR-121 (la base croit l'API pour la vérification du PIN),
-  levée avec OP-N56 en mission 11.
+  levée par la mission 11a (processus `vendor-pin`, ADR-217).
 - Livraison de la mission 5b (état au 26/10/2026, lot WP14) : parcours complet prouvé par l'API
   (`payment-journey.spec.ts` : vendeurs, catalogue, enrôlement d'une caisse, paiement en un aller-retour et en deux
   temps, QR commerçant et client, annulation par le vendeur puis par un `SUPERVISOR`, blocage d'un vendeur sur tous les
   terminaux et déblocage, changement de prix) ; isolation des routes (lues du contrat) et des tables, secrets absents
   de toute table, de tout journal et de toute réponse, latence du paiement p95 ≤ 200 ms et p99 ≤ 500 ms, 20 envois
-  simultanés → une vente. OP-N74 levé (migration 0035). Dettes héritées : OP-N76 et OP-N79 (mission 11), OP-N77, OP-N78
+  simultanés → une vente. OP-N74 levé (migration 0035). Dettes héritées : OP-N76 et OP-N79 (levés
+  par la mission 11a), OP-N77, OP-N78
   et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
@@ -175,7 +188,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   levé le 11/11/2026 par WP25 : lot de la passerelle sans opération accepté s'il porte des ordres locaux. Reprise forcée
   bornée en haut (`OP-N117`, levé par WP25). Restent consignés : page de 200 bracelets illisibles qui arrête le service
   des colis (`OP-N115`, `ADR-184`, mission 12b) ; grand livre passé à la main non vérifié par l'outil d'inscription
-  (`OP-N116`, mission 11a).
+  (`OP-N116`, levé par la mission 11a : l'inscription rend le grand livre, ADR-221).
 
 ### 2.7 API (§10, `openapi.yaml`)
 - `/v1`, problem+json, pagination par curseur, `Idempotency-Key` obligatoire sur toute écriture. (§10.1, §10.2)
@@ -191,6 +204,15 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
+- IBAN (remboursements et versements) masqué dans les journaux et **chiffré au repos** (AES-256-GCM,
+  enveloppe `enc:v1:`) aux trois emplacements où il est gardé (`refund_request`, `payout`, contenu
+  des demandes d'approbation) ; la base refuse tout IBAN en clair ; seul l'export du lot de
+  virements l'ouvre. Clé en configuration de l'API (écart accepté par le porteur le 18/11/2026,
+  levée avec le vrai KMS en 12b : OP-N150, ADR-218). Une demande de remboursement ne naît qu'à son
+  état initial ; `refund_deposit(uuid, uuid)` reste interne (OP-N145 levé, OP-N153, ADR-219).
+  Versements : refus et approbation par rôle de classe, rejeu de confirmation audité,
+  auto-approbation `409 APPROVAL_INVALID`, plafond de la régularisation `OPERATOR_FEE` (OP-N137,
+  OP-N141 levés, ADR-220).
 
 ### 2.9 Cycle de l'événement et clôture (§12)
 - `DRAFT` → `LIVE` → `CLOSING` → `RECONCILING` → `SETTLING` → `REFUND_WINDOW` → `CLOSED`, par `set_event_status` seulement. (§12.1)
@@ -212,6 +234,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 
 ### 2.11 Sécurité et données personnelles (§13)
 - RLS par prestataire, `assert_tenant`, clés dans KMS, journal d'audit, scellement du journal toutes les 5 min.
+- Durcissement serveur de la mission 11a : droits de `cashless_app` réduits (aucun droit de table ou
+  de colonne ajouté, un seul `EXECUTE` nouveau hors lots : `advance_app_attest_counter`, OP-N152),
+  rôle `cashless_pin`, inscription d'une passerelle qui rend son grand livre (OP-N116 levé, ADR-221)
+  ; aucun faux en production (processus `vendor-pin` et anneau de clés d'IBAN refusent le démarrage
+  sans leur secret).
 
 ## 3. Hors périmètre (V1)
 
@@ -270,6 +297,10 @@ interface commune ; types TypeScript et Dart générés depuis `openapi.yaml`.
 8. Clôture d'un événement jusqu'à `CLOSED` et `LOCKED`, puis réclamations tardives. (§12.1)
 9. Double validation back-office : demande puis approbation. (§3.2)
 10. Enrôlement d'un terminal. (§8.2)
+11. Ouverture de session de vendeur par le processus `vendor-pin` (appel interne signé, décompte
+    d'essais, audit), sans repli si le processus est absent. (§8.2, ADR-217)
+12. Export du lot de virements : ouverture de l'IBAN chiffré par la seule route d'export, avec refus
+    fermé si l'enveloppe est illisible. (§11.4, ADR-218)
 
 ## 7. Glossaire métier
 
@@ -405,14 +436,28 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   d'une demande gardé par l'API seule, ADR-196 : déclencheur de transition en base) en 9b, décidé par le porteur le 16/11/2026 ;
 - mission 9b, suite (17/11/2026) : OP-N123, OP-N124, OP-N126, OP-N128 et OP-N130 levés ; pour la 12b : OP-N131 (copie réelle des
   scellements), OP-N132 (envoi des alertes), OP-N133 (`pg_read_all_stats`, lecture prestataire par prestataire) et OP-N139 (code au
-  numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 ; pour la 12b aussi : OP-N148 (alerte dédiée « paiement vu à la banque après recrédit », ADR-212) ; pour la 13 : OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire) ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
-- mission 11a, spécifiée le 18/11/2026 (`durcissements-serveur-01M7QAJD`) : OP-N60, OP-N76, OP-N79, OP-N116, OP-N137,
-  OP-N140, OP-N141 et OP-N145 levés, OP-N64 « côté serveur prêt ». Décisions du porteur du 18/11/2026 : le serveur
-  garde l'identifiant de clé App Attest et vérifie les assertions, borne iOS gardée jusqu'à la mission 12 ; IBAN
-  masqué dans les journaux et chiffré au repos par le service de clés existant ; grand livre d'une passerelle rendu par
-  son inscription (argument manuel refusé) ; au plan (18/11/2026) : IBAN chiffré aux trois emplacements par une clé de
-  configuration de l'API (limite : clé dans le processus public, levée avec le vrai KMS), `refund_deposit(uuid, uuid)`
-  gardée interne et exécutable par personne, droit d'exécution étroit du compteur App Attest accordé à l'API ;
+  numéro de destination d'un remboursement tardif) ; pour la 11a : OP-N137, OP-N140, OP-N141, OP-N145 (tous levés par la 11a, voir ci-dessous) ; pour la 12b aussi : OP-N148 (alerte dédiée « paiement vu à la banque après recrédit », ADR-212) ; pour la 13 : OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire) ; à fixer avec le porteur : OP-N134, OP-N135, OP-N136, OP-N142, OP-N143, OP-N144 ;
+- mission 11a, implémentée le 19/11/2026 (`durcissements-serveur-01M7QAJD`, lots WP01 à WP13
+  approuvés) : OP-N79 et OP-N141 **levés le 18/11/2026** ; OP-N60, OP-N76, OP-N116, OP-N137, OP-N140
+  et OP-N145 **levés le 19/11/2026** (ADR-216 à ADR-221) ; **OP-N64 « côté serveur prêt », non
+  levé** : le serveur garde l'identifiant
+  de clé App Attest et vérifie les assertions (vérificateur non branché), borne iOS gardée jusqu'à
+  la mission 12, **vecteur réel d'Apple exigé avant la 12** (ADR-222). Décisions du porteur du
+  18/11/2026 : IBAN masqué dans les journaux et chiffré au repos aux trois emplacements par une clé
+  de configuration de l'API (limite : clé dans le processus public, levée avec le vrai KMS en 12b,
+  OP-N150), `refund_deposit(uuid, uuid)` gardée interne et exécutable par personne (OP-N153), un
+  seul droit d'exécution nouveau hors lots pour `cashless_app` : le compteur App Attest (OP-N152,
+  déni de service accepté) ; grand livre d'une passerelle rendu par son inscription (argument manuel
+  refusé). Décisions du 19/11/2026 : cache anti-rejeu de l'appel signé vers `vendor-pin` ; test
+  d'ouverture de l'enveloppe à l'exécution des versements ; relance de Colima (conteneur de test
+  seulement) ; tests de borne écrits avant la fusion ; `msisdn` et IBAN libres masqués, **OP-N156
+  levé le 19/11/2026 par renforcement**. Limites nommées et reportées : PIN en transit (OP-N151,
+  missions 12 et 12b), OP-N154 (12b), OP-N157 (12b), OP-N158, OP-N159 et OP-N161 (13), OP-N160
+  (mission 11), OP-N153 (mission 13, confirmée par le porteur le 19/11/2026), OP-N162 (voulu),
+  OP-N155 (mission
+  12b : condition bloquante de passage en production, décision du porteur du 19/11/2026) (ADR-224).
+  Contradiction CL058 tranchée par le porteur le 19/11/2026 : `interfaces.md` corrigé (CL058
+  traduit par edge-admin, absent de l'API) ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
 - mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
@@ -420,9 +465,10 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   une double empreinte pendant une période bornée (OP-N47, ADR-104) ;
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
-  ADR-94) ; lots de bracelets créés et modifiés par des fonctions seulement, sans `INSERT`/`UPDATE` direct de l'API
-  sur `media_batch` ni statut de bracelet sans motif (OP-N60, ADR-97, bloque la production) ; `vendor_id` dans la
-  clé composite de session référencée par les ventes (OP-N79, ADR-127, durcissement reporté le 26/10/2026) ;
+  ADR-94) ; OP-N60 (lots de bracelets par fonctions) et OP-N79 (`vendor_id` dans la clé composite de
+  session) levés par la mission 11a (ADR-216) ; hérité de la 11a (OP-N160, ADR-220) : `canSee` ne
+  doit pas montrer un lot de versements mixte à un détenteur d'une seule classe (aujourd'hui lecture
+  seule, test de borne `payout-mixed-visibility.spec.ts`) ;
 - mission 12 : signature d'originalité NXP vérifiée aussi par le serveur à la personnalisation, avec la clé publique
   NXP et les signatures réelles de la validation de la puce (OP-N46) ;
 - mission 12, suite : activation et remplacement envoient la lecture complète du bracelet dans la
@@ -430,7 +476,20 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
 - mission 12, héritée de la mission 5a : sur iOS, signer les requêtes par assertion App Attest (ou preuve
   équivalente) pour prouver la clé de signature dans la Secure Enclave ; d'ici là iOS reste borné au QR (OP-N64,
   ADR-106, décision du porteur du 19/10/2026) ; le port d'attestation iOS renvoie le `keyId` App Attest, stocké par le
-  serveur, et l'app passe `iosClientDataHash` tel quel à `attestKey` ;
+  serveur (fait par la mission 11a, ADR-222), et l'app passe `iosClientDataHash` tel quel à
+  `attestKey` ; hérité de la 11a : envoyer les assertions (transport ajouté au contrat, soumis au
+  porteur avant), brancher le vérificateur, retirer la borne iOS de `/media/auth-keys`, fournir un
+  vecteur d'assertion réel d'Apple, avec le PIN en transit (OP-N151) et le compteur (OP-N152) ;
+- mission 12b, héritée de la 11a : vrai KMS pour la clé de l'IBAN (OP-N150, ADR-218), secrets
+  distincts par rôle (OP-N154), politique `VENDOR_*` sur l'audit de `cashless_pin` (OP-N157) ;
+  **condition bloquante de passage en production (OP-N155, décision du porteur du 19/11/2026)** :
+  purger ou chiffrer les lignes anciennes de `refund_request` et `payout`, puis `VALIDATE
+  CONSTRAINT` des deux `CHECK` d'IBAN avant la première donnée réelle, et réexaminer le statut des
+  superutilisateurs exclus de la garde ;
+- mission 13, héritée de la 11a : atomicité de la session de vendeur après une API tombée (OP-N158),
+  tests faibles de `vendor-pin` (OP-N159), verrou des lots avant la RLS (OP-N161),
+  retrait de `refund_deposit(uuid, uuid)` avec le remaniement du générateur et du schéma (OP-N153,
+  confirmé par le porteur le 19/11/2026) ;
 - mission 13 : purge du registre des essais de PIN des vendeurs (OP-N78, ADR-127, décision du porteur du
   26/10/2026) ; preuve que la clôture d'un lot, le rattrapage du préchargement et le rechiffrement vont au bout sur un
   lot de 5 000 bracelets (NFR-008, OP-N61, ADR-98, décision du porteur du 15/10/2026, bloque la production) ;

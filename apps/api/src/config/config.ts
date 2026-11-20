@@ -115,10 +115,27 @@ export interface AppConfig {
   /** Secret de l'empreinte des codes d'enrôlement (`ENROLLMENT_CODE_HMAC_KEY`, 32 octets au moins, R-13). */
   enrollmentCodeHmacKey: Buffer;
   /**
-   * Secret argon2 de l'empreinte des PIN des vendeurs (`VENDOR_PIN_SECRET`, 32 octets au moins,
-   * research R-10) : hors de la base, jamais journalisé. Une rotation invalide toutes les empreintes.
+   * Clé de l'appel interne API vers processus `vendor-pin` (`VENDOR_PIN_CALL_KEY`, 32 octets au
+   * moins).
    */
-  vendorPinSecret: Buffer;
+  vendorPinCallKey: Buffer;
+  /**
+   * Adresse du processus `vendor-pin` (`VENDOR_PIN_URL`) : origine seule ; `''` en production si
+   * absente.
+   */
+  vendorPinUrl: string;
+  /**
+   * Chaîne de connexion du rôle `cashless_pin` (`DATABASE_URL_PIN`) ; `''` en production si
+   * absente.
+   */
+  pinDatabaseUrl: string;
+  /**
+   * Anneau de clés d'IBAN (`IBAN_KEYRING`, `kid:base64(32 octets)`, séparés par des virgules).
+   * Jamais journalisé.
+   */
+  ibanKeyring: ReadonlyMap<string, Buffer>;
+  /** `kid` de l'anneau qui chiffre les nouveaux IBAN (`IBAN_ACTIVE_KID`). */
+  ibanActiveKid: string;
   /**
    * Secret argon2 du dérivé du PIN dans l'empreinte d'idempotence (`VENDOR_PIN_IDEMPOTENCY_SECRET`, 32 octets
    * au moins, ADR-126) : distinct de `VENDOR_PIN_SECRET`, pour qu'un registre d'idempotence volé ne serve pas
@@ -216,6 +233,7 @@ const LOCAL_TAG_URLS = {
   DATABASE_URL_EDGE: 'postgres://cashless_edge:cashless_edge_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_SNAPSIGN:
     'postgres://cashless_snapsign:cashless_snapsign_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_PIN: 'postgres://cashless_pin:cashless_pin_local@127.0.0.1:5433/cashless_test',
 } as const;
 
 /** Secret de test, hors production seulement : sa valeur est publique. */
@@ -246,6 +264,12 @@ const TEST_CUSTOMER_AUTH_HMAC_KEY = Buffer.from(
   'cashless-customer-auth-hmac-key-de-test-uniquement-0',
   'utf8',
 );
+const TEST_VENDOR_PIN_CALL_KEY = Buffer.from(
+  'cashless-vendor-pin-call-key-de-test-uniquement-000',
+  'utf8',
+);
+/** Clé d'IBAN de test (32 octets), hors production seulement : sa valeur est publique. */
+const TEST_IBAN_KEY = Buffer.from('cashless-iban-key-de-test-uniq-0', 'utf8');
 
 /** Les secrets de test : refusés en production même posés explicitement (ex. `env.sh` sourcé par erreur). */
 const TEST_HMAC_KEYS = [
@@ -255,6 +279,7 @@ const TEST_HMAC_KEYS = [
   TEST_VENDOR_PIN_SECRET,
   TEST_VENDOR_PIN_IDEMPOTENCY_SECRET,
   TEST_CUSTOMER_AUTH_HMAC_KEY,
+  TEST_VENDOR_PIN_CALL_KEY,
 ];
 
 /**
@@ -620,6 +645,153 @@ function assertDistinctHmacKeys(keys: Record<string, Buffer>): void {
         throw new Error(`${entries[i]![0]} et ${entries[j]![0]} : secrets distincts attendus`);
 }
 
+/**
+ * `VENDOR_PIN_CALL_KEY` : clé de l'appel interne vers le processus `vendor-pin` (API et processus,
+ * même clé).
+ */
+function vendorPinCallKeyOf(env: NodeJS.ProcessEnv, production: boolean): Buffer {
+  return hmacKey(
+    env,
+    'VENDOR_PIN_CALL_KEY',
+    'de l’appel interne vers le processus du PIN des vendeurs',
+    production,
+    TEST_VENDOR_PIN_CALL_KEY,
+  );
+}
+
+/**
+ * `VENDOR_PIN_URL` : origine du processus `vendor-pin`, sans chemin, requête, fragment ni
+ * identifiants. Hors
+ * production, défaut local ; en production, absente : `''` (le client refuse de démarrer) et
+ * `https:` seul accepté
+ * (le PIN voyage dans le corps de l'appel).
+ */
+function vendorPinUrl(value: string | undefined, production: boolean): string {
+  if (value === undefined || value === '') return production ? '' : 'http://127.0.0.1:3003';
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('VENDOR_PIN_URL : URL invalide');
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:')
+    throw new Error('VENDOR_PIN_URL : http ou https attendu');
+  if (production && url.protocol !== 'https:')
+    throw new Error('VENDOR_PIN_URL : https obligatoire en production');
+  if (url.username || url.password)
+    throw new Error('VENDOR_PIN_URL : aucun identifiant attendu dans l’URL');
+  if (url.pathname !== '/' || url.search || url.hash || /[?#]/.test(value))
+    throw new Error('VENDOR_PIN_URL : origine seule attendue (ni chemin, requête, ni fragment)');
+  return url.origin;
+}
+
+const IBAN_KID = /^[A-Za-z0-9_-]{1,32}$/;
+const STRICT_BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
+/**
+ * Anneau de clés d'IBAN (`IBAN_KEYRING` : `kid:base64(32 octets)[,…]`, `IBAN_ACTIVE_KID`).
+ * Décodage strict (32 octets
+ * exactement, ré-encodage identique) ; en production, anneau et `kid` actif obligatoires, clé de
+ * test refusée même
+ * posée. Aucun message ne reproduit une clé ni un élément de l'anneau.
+ */
+function ibanKeyring(
+  env: NodeJS.ProcessEnv,
+  production: boolean,
+): { ibanKeyring: ReadonlyMap<string, Buffer>; ibanActiveKid: string } {
+  const raw = env.IBAN_KEYRING;
+  const ring = new Map<string, Buffer>();
+  if (!raw) {
+    if (production)
+      throw new Error('IBAN_KEYRING manquant : anneau de clés d’IBAN obligatoire en production');
+    ring.set('test', TEST_IBAN_KEY);
+  } else {
+    raw.split(',').forEach((item, index) => {
+      const at = `IBAN_KEYRING : élément ${index + 1}`;
+      const colon = item.indexOf(':');
+      if (colon < 0) throw new Error(`${at} sans « : » (attendu kid:clé en base64)`);
+      const kid = item.slice(0, colon);
+      const encoded = item.slice(colon + 1);
+      if (!IBAN_KID.test(kid))
+        throw new Error(`${at} : kid invalide (1 à 32 caractères parmi A-Z a-z 0-9 _ -)`);
+      if (ring.has(kid)) throw new Error(`${at} : kid en double`);
+      const key = STRICT_BASE64.test(encoded) ? Buffer.from(encoded, 'base64') : Buffer.alloc(0);
+      if (
+        key.length !== 32 ||
+        key.toString('base64').replace(/=+$/, '') !== encoded.replace(/=+$/, '')
+      )
+        throw new Error(`${at} : clé de 32 octets en base64 attendue`);
+      if (production && key.equals(TEST_IBAN_KEY))
+        throw new Error('IBAN_KEYRING : clé de test refusée en production');
+      ring.set(kid, key);
+    });
+  }
+  const active = env.IBAN_ACTIVE_KID;
+  if (!active) {
+    if (raw || production)
+      throw new Error('IBAN_ACTIVE_KID manquant : kid actif de l’anneau d’IBAN obligatoire');
+  }
+  const ibanActiveKid = active || 'test';
+  if (!ring.has(ibanActiveKid))
+    throw new Error('IBAN_ACTIVE_KID : doit désigner un kid de IBAN_KEYRING');
+  return { ibanKeyring: ring, ibanActiveKid };
+}
+
+const PIN_PROCESS_OTHER_SECRETS = [
+  'VENDOR_PIN_IDEMPOTENCY_SECRET',
+  'CLAIM_CODE_HMAC_KEY',
+  'IDEMPOTENCY_HMAC_KEY',
+  'ENROLLMENT_CODE_HMAC_KEY',
+  'CUSTOMER_AUTH_HMAC_KEY',
+] as const;
+
+/**
+ * Réglages du processus `vendor-pin` (WP06) : seul lecteur de `VENDOR_PIN_SECRET`. Ne charge rien
+ * d'autre (ni OIDC,
+ * ni certificats, ni anneau d'IBAN). Les autres secrets, s'ils figurent dans l'environnement (une
+ * seule machine),
+ * doivent être distincts.
+ */
+export function vendorPinSettings(env: NodeJS.ProcessEnv = process.env): {
+  production: boolean;
+  port: number;
+  vendorPinSecret: Buffer;
+  vendorPinCallKey: Buffer;
+  pinDatabaseUrl: string;
+} {
+  const production = nodeEnv(env.NODE_ENV) === 'production';
+  const vendorPinSecret = hmacKey(
+    env,
+    'VENDOR_PIN_SECRET',
+    'de l’empreinte des PIN des vendeurs',
+    production,
+    TEST_VENDOR_PIN_SECRET,
+  );
+  const vendorPinCallKey = vendorPinCallKeyOf(env, production);
+  const others: Record<string, Buffer> = {};
+  for (const name of PIN_PROCESS_OTHER_SECRETS)
+    if (env[name]) others[name] = hmacKey(env, name, '', production, Buffer.alloc(0));
+  assertDistinctHmacKeys({
+    VENDOR_PIN_SECRET: vendorPinSecret,
+    VENDOR_PIN_CALL_KEY: vendorPinCallKey,
+    ...others,
+  });
+  const pinDatabaseUrl =
+    env.DATABASE_URL_PIN || (production ? '' : LOCAL_TAG_URLS.DATABASE_URL_PIN);
+  if (!pinDatabaseUrl)
+    throw new Error(
+      'DATABASE_URL_PIN manquant : chaîne de connexion du rôle cashless_pin ' +
+        'obligatoire en production',
+    );
+  return {
+    production,
+    port: positiveInt('VENDOR_PIN_PORT', env.VENDOR_PIN_PORT, 3003),
+    vendorPinSecret,
+    vendorPinCallKey,
+    pinDatabaseUrl,
+  };
+}
+
 /** Réglages ajoutés par la mission des terminaux. */
 type DeviceSettings = Pick<
   AppConfig,
@@ -641,7 +813,7 @@ type DeviceSettings = Pick<
   | 'iosAppAttestEnvironment'
   | 'idempotencyHmacKey'
   | 'enrollmentCodeHmacKey'
-  | 'vendorPinSecret'
+  | 'vendorPinCallKey'
   | 'vendorPinIdempotencySecret'
   | 'customerAuthHmacKey'
   | 'customerOtpIpHourlyMax'
@@ -668,14 +840,7 @@ function deviceSettings(
     production,
     TEST_ENROLLMENT_CODE_HMAC_KEY,
   );
-  // Mission 5b (research R-10) : secret argon2 des PIN des vendeurs, même règle que les secrets HMAC.
-  const vendorPinSecret = hmacKey(
-    env,
-    'VENDOR_PIN_SECRET',
-    'de l’empreinte des PIN des vendeurs',
-    production,
-    TEST_VENDOR_PIN_SECRET,
-  );
+  const vendorPinCallKey = vendorPinCallKeyOf(env, production);
   // ADR-126 : second secret argon2, pour le dérivé du PIN de l'empreinte d'idempotence.
   const vendorPinIdempotencySecret = hmacKey(
     env,
@@ -696,7 +861,7 @@ function deviceSettings(
     CLAIM_CODE_HMAC_KEY: claimKey,
     IDEMPOTENCY_HMAC_KEY: idempotencyHmacKey,
     ENROLLMENT_CODE_HMAC_KEY: enrollmentCodeHmacKey,
-    VENDOR_PIN_SECRET: vendorPinSecret,
+    VENDOR_PIN_CALL_KEY: vendorPinCallKey,
     VENDOR_PIN_IDEMPOTENCY_SECRET: vendorPinIdempotencySecret,
   });
   const deviceTokenIssuer = required(
@@ -730,7 +895,7 @@ function deviceSettings(
     ...attestationSettings(env, production),
     idempotencyHmacKey,
     enrollmentCodeHmacKey,
-    vendorPinSecret,
+    vendorPinCallKey,
     vendorPinIdempotencySecret,
     customerAuthHmacKey,
     customerOtpIpHourlyMax: customerOtpIpHourlyMax(env.CUSTOMER_OTP_IP_HOURLY_MAX),
@@ -846,6 +1011,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     claimCodeDomain: claimCodeDomain(env.CLAIM_CODE_DOMAIN, production),
     trustProxyHops: trustProxyHops(env.TRUST_PROXY_HOPS, production),
     ...deviceSettings(env, production, claimKey),
+    vendorPinUrl: vendorPinUrl(env.VENDOR_PIN_URL, production),
+    pinDatabaseUrl: tagUrl('DATABASE_URL_PIN'),
+    ...ibanKeyring(env, production),
   };
 }
 

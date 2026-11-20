@@ -7,6 +7,11 @@
 // Écritures directes en base (amorçage, signalées) : commerçants, points de vente, vendeurs par
 // `create_vendor` ; expiration d'une session simulée en reculant `opened_at`/`expires_at` (12 h) ;
 // verrou d'essai tenu par le propriétaire pour prouver le `429` sans dépendre du hasard.
+//
+// Mission 11a (WP07) : l'API ne vérifie plus le PIN. Elle appelle le VRAI processus `vendor-pin`
+// (démarré ici sur un port libre, base `cashless_pin`) ; les retenues des cas de verrou se posent sur
+// le digesteur de CE processus de test (jamais sur le code de production). Les amorçages hachent
+// le PIN avec le digesteur du processus (même secret de test, jamais recopié en clair).
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { loadConfig } from '../../../src/config/config';
@@ -18,9 +23,16 @@ import { FakeDeviceCa } from '../../../src/device-ca/fake-device-ca';
 import { TenantTx } from '../../../src/db/tenant-tx';
 import { DeviceTokenService } from '../../../src/device-tokens/device-token.service';
 import { VendorPinHasher } from '../../../src/vendor-pin/vendor-pin.hasher';
+import { VendorPinDigester } from '../../../src/vendor-pin/vendor-pin.digester';
 import { PIN_ATTEMPT_LOCK_KEY } from '../../../src/vendors/pin-attempt-lock';
 import { VendorSessionGuard } from '../../../src/vendors/vendor-session-guard';
-import { createTestApp, startHttpsApp, type HttpsTestApp } from '../../support/app';
+import {
+  createTestApp,
+  startHttpsApp,
+  startVendorPinServer,
+  testPinDigester,
+  type HttpsTestApp,
+} from '../../support/app';
 import { contractViolations } from '../../support/contract-schema';
 import { connect, OWNER_URL, withOwner } from '../../support/db';
 import { createMediaWorld, ownerRows, type MediaWorld } from '../../support/media-fixtures';
@@ -51,6 +63,9 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
   let ca: FakeDeviceCa;
   let tokens: DeviceTokenService;
   let hasher: VendorPinHasher;
+  let digester: VendorPinDigester;
+  let pin: Awaited<ReturnType<typeof startVendorPinServer>>;
+  let pinDigester: VendorPinDigester;
   let posA: SeededPos;
   let posA2: SeededPos;
 
@@ -74,7 +89,7 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
     displayName = `Vendeur ${randomUUID().slice(0, 8)}`,
     pin = PIN,
   ): Promise<string> => {
-    const pinHash = await hasher.hash(pin);
+    const pinHash = await digester.hash(pin);
     return withOwner((db) =>
       seedVendor(db, {
         operatorId: w.ops.a,
@@ -174,8 +189,11 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
         name: 'Commerçant A2',
       });
     });
-    api = await startHttpsApp(undefined, { identity: w.idp });
-    app = await createTestApp({ identity: w.idp });
+    pin = await startVendorPinServer();
+    pinDigester = pin.app.get(VendorPinDigester, { strict: false });
+    digester = testPinDigester();
+    api = await startHttpsApp(undefined, { identity: w.idp, vendorPinUrl: pin.url });
+    app = await createTestApp({ identity: w.idp, vendorPin: true });
     ca = await FakeDeviceCa.fromFiles({
       certFile: api.tls.deviceCaCertFile,
       keyFile: api.tls.deviceCaFakeKeyFile,
@@ -187,6 +205,7 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
   afterAll(async () => {
     await app?.close();
     await api?.close();
+    await pin?.close();
   });
 
   // ------------------------------------------------------------------ T041 : ouverture
@@ -311,7 +330,7 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
     try {
       await holder.query(`SELECT pg_advisory_lock(${PIN_ATTEMPT_LOCK_KEY})`, [t.deviceId]);
       const derive = jest.spyOn(hasher, 'idempotencyBody');
-      const verify = jest.spyOn(hasher, 'verify');
+      const verify = jest.spyOn(pinDigester, 'verify');
       const res = await open(t, v);
       // Refusé avant tout argon2 : ni dérivé d'empreinte ni vérification du PIN.
       expect([derive.mock.calls.length, verify.mock.calls.length]).toEqual([0, 0]);
@@ -350,12 +369,12 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
   it('un essai à la fois par terminal : un essai en cours retenu dans argon2 → le second reçoit 429, la clé du 429 reste rejouable', async () => {
     const t = await enrolled();
     const v = await vendor();
-    const original = hasher.verify.bind(hasher);
+    const original = pinDigester.verify.bind(pinDigester);
     let release!: () => void;
     let entered!: () => void;
     const gate = new Promise<void>((resolve) => (release = resolve));
     const inside = new Promise<void>((resolve) => (entered = resolve));
-    const spy = jest.spyOn(hasher, 'verify').mockImplementationOnce(async (digest, pin) => {
+    const spy = jest.spyOn(pinDigester, 'verify').mockImplementationOnce(async (digest, pin) => {
       entered();
       await gate;
       return original(digest, pin);
@@ -404,7 +423,7 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
         await gate;
         return original(body, fields, scope, key);
       });
-    const verify = jest.spyOn(hasher, 'verify');
+    const verify = jest.spyOn(pinDigester, 'verify');
     try {
       const first = open(t, v, WRONG);
       await inside; // le premier essai attend DANS le calcul du dérivé de l'empreinte
@@ -427,7 +446,9 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
     const v = await vendor();
     expect((await open(t, v, WRONG)).status).toBe(401);
     expect(await attemptLockFree(t)).toBe(true);
-    const spy = jest.spyOn(hasher, 'verify').mockRejectedValueOnce(new Error('argon2 en panne'));
+    const spy = jest
+      .spyOn(pinDigester, 'verify')
+      .mockRejectedValueOnce(new Error('argon2 en panne'));
     try {
       expect((await open(t, v)).status).toBe(500);
     } finally {
@@ -813,5 +834,158 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
     expect((await list(t)).body).toEqual({ data: [] });
     expect((await open(t, v)).status).toBe(401);
     expect((await vendorRow(v)).failed_attempts).toBe(0);
+  });
+
+  // ------------------------------------------------------------------ WP07 : sans repli (FR-006)
+
+  const openOn = (target: HttpsTestApp, t: TestTerminal, vendorId: string, pinValue = PIN) =>
+    t.request(target.baseUrl, target.tls.serverCaPem, {
+      method: 'POST',
+      path: '/vendor-sessions',
+      body: { vendor_id: vendorId, pin: pinValue },
+      idempotencyKey: randomUUID(),
+    });
+  const checksOf = async (vendorId: string): Promise<number> =>
+    Number(
+      (
+        await ownerRows<{ n: string }>(
+          'SELECT count(*) AS n FROM vendor_pin_check WHERE vendor_id = $1',
+          [vendorId],
+        )
+      )[0]!.n,
+    );
+  const openedAudits = async (): Promise<number> =>
+    Number(
+      (
+        await ownerRows<{ n: string }>(
+          `SELECT count(*) AS n FROM audit_log WHERE action = 'VENDOR_SESSION_OPENED'`,
+        )
+      )[0]!.n,
+    );
+
+  /** Une API qui vise une adresse donnée du processus (ou une clé d'appel erronée). */
+  const apiWith = async (vendorPinUrl: string, callKeyHex?: string): Promise<HttpsTestApp> => {
+    const saved = process.env.VENDOR_PIN_CALL_KEY;
+    if (callKeyHex) process.env.VENDOR_PIN_CALL_KEY = callKeyHex;
+    try {
+      return await startHttpsApp(undefined, { identity: w.idp, vendorPinUrl });
+    } finally {
+      if (saved === undefined) delete process.env.VENDOR_PIN_CALL_KEY;
+      else process.env.VENDOR_PIN_CALL_KEY = saved;
+    }
+  };
+  const noSession = async (t: TestTerminal, v: string, audits: number): Promise<void> => {
+    expect(await sessionsOf(t.deviceId)).toEqual([]);
+    expect(await openedAudits()).toBe(audits);
+    // Rien n'a été compté : l'API n'exécute plus begin_vendor_pin_check ni open_vendor_session.
+    expect(await checksOf(v)).toBe(0);
+    expect((await vendorRow(v)).failed_attempts).toBe(0);
+  };
+
+  it('FR-006 : processus arrêté → erreur de service sans détail, aucune session, aucun essai, aucun repli', async () => {
+    const t = await enrolled();
+    const v = await vendor();
+    // Adresse d'un processus réel puis arrêté : connexion refusée.
+    const stopped = await startVendorPinServer();
+    const deadUrl = stopped.url;
+    await stopped.close();
+    const down = await apiWith(deadUrl);
+    try {
+      const audits = await openedAudits();
+      const res = await openOn(down, t, v);
+      expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
+      expect(res.text).not.toMatch(new RegExp(`${PIN}|\\$argon2|127\\.0\\.0\\.1|ECONN`));
+      await noSession(t, v, audits);
+      expect(await attemptLockFree(t)).toBe(true);
+      // Le même terminal, sur l'API reliée au processus vivant, ouvre normalement.
+      expect((await open(t, v)).status).toBe(201);
+    } finally {
+      await down.close();
+    }
+  });
+
+  it('FR-006 : adresse du processus absente de la configuration → même refus, rien d’écrit', async () => {
+    const t = await enrolled();
+    const v = await vendor();
+    const unset = await apiWith('');
+    try {
+      const audits = await openedAudits();
+      const res = await openOn(unset, t, v);
+      expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
+      await noSession(t, v, audits);
+    } finally {
+      await unset.close();
+    }
+  });
+
+  it('FR-006 : clé d’appel erronée côté API (signature refusée par le processus) → refus, rien d’écrit', async () => {
+    const t = await enrolled();
+    const v = await vendor();
+    const wrongKey = await apiWith(pin.url, '7e'.repeat(32));
+    try {
+      const audits = await openedAudits();
+      const res = await openOn(wrongKey, t, v);
+      expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
+      expect(res.text).not.toMatch(new RegExp(`${PIN}|signature|401`, 'i'));
+      await noSession(t, v, audits);
+    } finally {
+      await wrongKey.close();
+    }
+  });
+
+  it('FR-006 : processus en erreur (500) → erreur de service, verrou libre, essai déjà compté reste compté', async () => {
+    const t = await enrolled();
+    const v = await vendor();
+    const spy = jest.spyOn(pinDigester, 'verify').mockRejectedValueOnce(new Error('panne'));
+    const key = randomUUID();
+    try {
+      const res = await open(t, v, PIN, key);
+      expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
+      expect(res.text).not.toMatch(new RegExp(`${PIN}|panne`));
+    } finally {
+      spy.mockRestore();
+    }
+    // Échec sûr voulu : l'essai compté avant la panne reste compté, aucune session.
+    expect((await vendorRow(v)).failed_attempts).toBe(1);
+    expect(await sessionsOf(t.deviceId)).toEqual([]);
+    expect(await attemptLockFree(t)).toBe(true);
+    // Renvoi de la même clé (route `writes: false` + `transient`) : ni 500 « sans transaction »
+    // ni clé restée prise ; l'essai est un nouvel essai.
+    const retry = await open(t, v, PIN, key);
+    expect([retry.status, retry.headers['idempotency-replayed']]).toEqual([201, undefined]);
+  });
+
+  it('FR-006 : processus trop lent (délai de 2 s dépassé) → erreur de service, aucune session, verrou libre', async () => {
+    const t = await enrolled();
+    const v = await vendor();
+    const original = pinDigester.verify.bind(pinDigester);
+    const spy = jest.spyOn(pinDigester, 'verify').mockImplementationOnce(async (hash, value) => {
+      await new Promise((resolve) => setTimeout(resolve, 2_600));
+      return original(hash, value);
+    });
+    try {
+      const started = Date.now();
+      const res = await open(t, v);
+      expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
+      expect(Date.now() - started).toBeLessThan(2_600);
+      expect(await attemptLockFree(t)).toBe(true);
+      // Le processus finit son travail après le départ de l'API : l'essai compté reste compté.
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('création de vendeur et nouveau PIN : l’empreinte vient du processus et ouvre la session', async () => {
+    const t = await enrolled();
+    const created = await asAdmin(`/merchants/${posA.merchantId}/vendors`, {
+      display_name: 'Via processus',
+      pin: '161803',
+    }).expect(201);
+    const id = created.body.vendor_id as string;
+    expect((await open(t, id, '161803')).status).toBe(201);
+    await asAdmin(`/vendors/${id}/pin`, { pin: NEW_PIN }).expect(200);
+    expect((await open(t, id, '161803')).status).toBe(401);
+    expect((await open(t, id, NEW_PIN)).status).toBe(201);
   });
 });

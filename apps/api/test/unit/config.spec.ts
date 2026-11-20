@@ -1,5 +1,5 @@
 // Configuration lue dans l'environnement : pools applicatif et de plateforme (contrat platform-access).
-import { loadConfig } from '../../src/config/config';
+import { loadConfig, vendorPinSettings } from '../../src/config/config';
 import { DEVICE_PRODUCTION } from '../support/tls';
 
 const PRODUCTION = {
@@ -20,6 +20,13 @@ const PRODUCTION = {
 
 /** Hors production : `NODE_ENV` reste obligatoire (RISK-3). */
 const LOCAL = { NODE_ENV: 'test' };
+
+const PIN_PRODUCTION = {
+  NODE_ENV: 'production',
+  VENDOR_PIN_SECRET: '04'.repeat(32),
+  VENDOR_PIN_CALL_KEY: '3c'.repeat(32),
+  DATABASE_URL_PIN: 'postgres://cashless_pin:secret@db.internal:5432/cashless',
+};
 
 describe('loadConfig', () => {
   it('hors production : défauts locaux des deux pools', () => {
@@ -185,7 +192,8 @@ describe('loadConfig', () => {
 
   // ----- Mission identite-enrolement-terminaux (T036) -----
 
-  it.each(Object.keys(DEVICE_PRODUCTION))(
+  // `VENDOR_PIN_SECRET` n'est plus exigé de l'API (WP04) : il l'est de `vendorPinSettings`.
+  it.each(Object.keys(DEVICE_PRODUCTION).filter((name) => name !== 'VENDOR_PIN_SECRET'))(
     'production : %s obligatoire, absent ou vide refusé',
     (name) => {
       const { [name]: _omitted, ...without } = PRODUCTION as Record<string, string>;
@@ -219,7 +227,9 @@ describe('loadConfig', () => {
     });
     expect(config.idempotencyHmacKey.equals(Buffer.alloc(32, 0x01))).toBe(true);
     expect(config.enrollmentCodeHmacKey.equals(Buffer.alloc(32, 0x02))).toBe(true);
-    expect(config.vendorPinSecret.equals(Buffer.alloc(32, 0x04))).toBe(true);
+    expect(vendorPinSettings(PIN_PRODUCTION).vendorPinSecret.equals(Buffer.alloc(32, 0x04))).toBe(
+      true,
+    );
   });
 
   it('hors production : valeurs de test, aucun certificat (écoute en clair permise)', () => {
@@ -240,7 +250,7 @@ describe('loadConfig', () => {
     });
     expect(config.idempotencyHmacKey.length).toBeGreaterThanOrEqual(32);
     expect(config.enrollmentCodeHmacKey.length).toBeGreaterThanOrEqual(32);
-    expect(config.vendorPinSecret.length).toBeGreaterThanOrEqual(32);
+    expect(vendorPinSettings(LOCAL).vendorPinSecret.length).toBeGreaterThanOrEqual(32);
   });
 
   it('production : la clé de l’autorité DE TEST des terminaux fait refuser le démarrage', () => {
@@ -308,7 +318,7 @@ describe('loadConfig', () => {
   it.each([
     'IDEMPOTENCY_HMAC_KEY',
     'ENROLLMENT_CODE_HMAC_KEY',
-    'VENDOR_PIN_SECRET',
+    'VENDOR_PIN_CALL_KEY',
     'VENDOR_PIN_IDEMPOTENCY_SECRET',
   ])('%s : 32 octets au moins, hexadécimal ou base64', (name) => {
     for (const env of [PRODUCTION, LOCAL]) {
@@ -319,7 +329,7 @@ describe('loadConfig', () => {
     const key = {
       IDEMPOTENCY_HMAC_KEY: config.idempotencyHmacKey,
       ENROLLMENT_CODE_HMAC_KEY: config.enrollmentCodeHmacKey,
-      VENDOR_PIN_SECRET: config.vendorPinSecret,
+      VENDOR_PIN_CALL_KEY: config.vendorPinCallKey,
       VENDOR_PIN_IDEMPOTENCY_SECRET: config.vendorPinIdempotencySecret,
     }[name]!;
     expect(key.equals(Buffer.alloc(48, 9))).toBe(true);
@@ -349,34 +359,342 @@ describe('loadConfig', () => {
 
   // ----- Mission 5b (lot WP08, T033 ; NFR-009, research R-10) -----
 
-  it('NFR-009 : production, VENDOR_PIN_SECRET égal à un autre secret → démarrage refusé', () => {
-    for (const other of [
-      'CLAIM_CODE_HMAC_KEY',
-      'IDEMPOTENCY_HMAC_KEY',
-      'ENROLLMENT_CODE_HMAC_KEY',
-    ]) {
-      const value = (PRODUCTION as Record<string, string>)[other]!;
-      expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_SECRET: value })).toThrow(
-        new RegExp(`${other} et VENDOR_PIN_SECRET : secrets distincts`),
-      );
-    }
+  it('WP04 : loadConfig de production sans VENDOR_PIN_SECRET réussit, sans substituer le secret de test', () => {
+    const { VENDOR_PIN_SECRET: _omitted, ...without } = PRODUCTION;
+    const config = loadConfig(without);
+    expect(config.production).toBe(true);
+    // Le champ n'existe plus dans `AppConfig` (WP07) ; seul `vendorPinSettings` lit le secret.
+    expect('vendorPinSecret' in config).toBe(false);
+    expect(vendorPinSettings(LOCAL).vendorPinSecret.toString('utf8')).toMatch(/de-test-uniquement/);
+  });
+
+  it('VENDOR_PIN_CALL_KEY : manquante en production → refus ; défaut de test hors production, distinct des autres', () => {
+    const { VENDOR_PIN_CALL_KEY: _omitted, ...without } = PRODUCTION;
+    expect(() => loadConfig(without)).toThrow(/VENDOR_PIN_CALL_KEY manquant/);
+    expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_CALL_KEY: '' })).toThrow(
+      /VENDOR_PIN_CALL_KEY manquant/,
+    );
     const local = loadConfig(LOCAL);
+    expect(local.vendorPinCallKey.toString('utf8')).toBe(
+      'cashless-vendor-pin-call-key-de-test-uniquement-000',
+    );
     for (const key of [
       local.claimCodeHmacKey,
       local.idempotencyHmacKey,
       local.enrollmentCodeHmacKey,
+      vendorPinSettings(LOCAL).vendorPinSecret,
+      local.vendorPinIdempotencySecret,
+      local.customerAuthHmacKey,
     ])
-      expect(local.vendorPinSecret.equals(key)).toBe(false);
+      expect(local.vendorPinCallKey.equals(key)).toBe(false);
+    expect(loadConfig(PRODUCTION).vendorPinCallKey.equals(Buffer.alloc(32, 0x3c))).toBe(true);
   });
 
-  it('NFR-009 : production sans VENDOR_PIN_SECRET → démarrage refusé ; hors production → secret de test', () => {
-    const { VENDOR_PIN_SECRET: _omitted, ...without } = PRODUCTION;
-    expect(() => loadConfig(without)).toThrow(/VENDOR_PIN_SECRET manquant/);
-    expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_SECRET: '' })).toThrow(
-      /VENDOR_PIN_SECRET manquant/,
+  it('VENDOR_PIN_CALL_KEY : distincte de chaque autre secret, même écrite en base64', () => {
+    for (const other of [
+      'CLAIM_CODE_HMAC_KEY',
+      'IDEMPOTENCY_HMAC_KEY',
+      'ENROLLMENT_CODE_HMAC_KEY',
+      'CUSTOMER_AUTH_HMAC_KEY',
+      'VENDOR_PIN_IDEMPOTENCY_SECRET',
+    ]) {
+      const value = (PRODUCTION as Record<string, string>)[other]!;
+      expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_CALL_KEY: value })).toThrow(
+        new RegExp(
+          `(${other} et VENDOR_PIN_CALL_KEY|VENDOR_PIN_CALL_KEY et ${other}) : secrets distincts`,
+        ),
+      );
+      const asBase64 = Buffer.from(value, 'hex').toString('base64');
+      expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_CALL_KEY: asBase64 })).toThrow(
+        new RegExp(
+          `(${other} et VENDOR_PIN_CALL_KEY|VENDOR_PIN_CALL_KEY et ${other}) : secrets distincts`,
+        ),
+      );
+    }
+  });
+
+  describe('VENDOR_PIN_URL', () => {
+    it('défaut local hors production ; absente en production : chaîne vide', () => {
+      expect(loadConfig(LOCAL).vendorPinUrl).toBe('http://127.0.0.1:3003');
+      expect(loadConfig(PRODUCTION).vendorPinUrl).toBe('');
+      expect(loadConfig({ ...PRODUCTION, VENDOR_PIN_URL: '' }).vendorPinUrl).toBe('');
+    });
+
+    it('https accepté en production ; http refusé en production, accepté hors production', () => {
+      expect(
+        loadConfig({ ...PRODUCTION, VENDOR_PIN_URL: 'https://pin.internal:3003' }).vendorPinUrl,
+      ).toBe('https://pin.internal:3003');
+      expect(
+        loadConfig({ ...PRODUCTION, VENDOR_PIN_URL: 'https://pin.internal:3003/' }).vendorPinUrl,
+      ).toBe('https://pin.internal:3003');
+      expect(() =>
+        loadConfig({ ...PRODUCTION, VENDOR_PIN_URL: 'http://pin.internal:3003' }),
+      ).toThrow(/VENDOR_PIN_URL : https obligatoire en production/);
+      expect(loadConfig({ ...LOCAL, VENDOR_PIN_URL: 'http://pin:3003' }).vendorPinUrl).toBe(
+        'http://pin:3003',
+      );
+    });
+
+    it.each([
+      ['un chemin', 'https://pin.internal/v1/pin'],
+      ['une requête', 'https://pin.internal/?a=1'],
+      ['une requête vide', 'https://pin.internal/?'],
+      ['un fragment', 'https://pin.internal/#x'],
+      ['des identifiants', 'https://user:pass@pin.internal'],
+      ['un schéma inattendu', 'ftp://pin.internal'],
+      ['une URL illisible', 'pas une url'],
+    ])('refuse %s, en production comme hors production', (_label, value) => {
+      for (const env of [PRODUCTION, LOCAL])
+        expect(() => loadConfig({ ...env, VENDOR_PIN_URL: value })).toThrow(/VENDOR_PIN_URL/);
+    });
+
+    it('le message ne reproduit pas les identifiants posés', () => {
+      let message = '';
+      try {
+        loadConfig({ ...PRODUCTION, VENDOR_PIN_URL: 'https://user:s3cr3t@pin.internal' });
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toMatch(/VENDOR_PIN_URL/);
+      expect(message).not.toContain('s3cr3t');
+    });
+  });
+
+  it('DATABASE_URL_PIN : défaut local hors production, vide en production si absente, sinon lue', () => {
+    expect(loadConfig(LOCAL).pinDatabaseUrl).toBe(
+      'postgres://cashless_pin:cashless_pin_local@127.0.0.1:5433/cashless_test',
     );
-    const local = loadConfig(LOCAL);
-    expect(local.vendorPinSecret.toString('utf8')).toMatch(/de-test-uniquement/);
+    expect(loadConfig(PRODUCTION).pinDatabaseUrl).toBe('');
+    expect(
+      loadConfig({ ...PRODUCTION, DATABASE_URL_PIN: 'postgres://cashless_pin:x@db/c' })
+        .pinDatabaseUrl,
+    ).toBe('postgres://cashless_pin:x@db/c');
+  });
+
+  describe('IBAN_KEYRING', () => {
+    const key = (byte: number, length = 32): string =>
+      Buffer.alloc(length, byte).toString('base64');
+    const ring = (value: string, active?: string) => ({
+      ...PRODUCTION,
+      IBAN_KEYRING: value,
+      ...(active === undefined ? {} : { IBAN_ACTIVE_KID: active }),
+    });
+
+    it('fixture de production : un kid, clé de 32 octets, kid actif désigné', () => {
+      const config = loadConfig(PRODUCTION);
+      expect([...config.ibanKeyring.keys()]).toEqual(['k1']);
+      expect(config.ibanKeyring.get('k1')!.equals(Buffer.alloc(32, 0x08))).toBe(true);
+      expect(config.ibanActiveKid).toBe('k1');
+    });
+
+    it('rotation : deux kid, le kid actif est celui désigné', () => {
+      const value = `k1:${key(1)},k2:${key(2)}`;
+      const first = loadConfig(ring(value, 'k1'));
+      const second = loadConfig(ring(value, 'k2'));
+      expect([...second.ibanKeyring.keys()]).toEqual(['k1', 'k2']);
+      expect(first.ibanActiveKid).toBe('k1');
+      expect(second.ibanActiveKid).toBe('k2');
+      expect(second.ibanKeyring.get('k2')!.equals(Buffer.alloc(32, 2))).toBe(true);
+    });
+
+    it('hors production : sans anneau, clé de test et kid « test »', () => {
+      const local = loadConfig(LOCAL);
+      expect([...local.ibanKeyring.keys()]).toEqual(['test']);
+      expect(local.ibanKeyring.get('test')!.length).toBe(32);
+      expect(local.ibanActiveKid).toBe('test');
+    });
+
+    it('production sans anneau (absent ou vide) → refus', () => {
+      const { IBAN_KEYRING: _omitted, ...without } = PRODUCTION;
+      expect(() => loadConfig(without)).toThrow(
+        'IBAN_KEYRING manquant : anneau de clés d’IBAN obligatoire en production',
+      );
+      expect(() => loadConfig({ ...PRODUCTION, IBAN_KEYRING: '' })).toThrow(
+        /IBAN_KEYRING manquant/,
+      );
+    });
+
+    it('clé de test posée en production → refus, même avec une autre clé valide dans l’anneau', () => {
+      const testKey = loadConfig(LOCAL).ibanKeyring.get('test')!.toString('base64');
+      expect(() => loadConfig(ring(`test:${testKey}`, 'test'))).toThrow(
+        'IBAN_KEYRING : clé de test refusée en production',
+      );
+      expect(() => loadConfig(ring(`k1:${key(1)},k2:${testKey}`, 'k1'))).toThrow(
+        'IBAN_KEYRING : clé de test refusée en production',
+      );
+      // Hors production, la même valeur posée est acceptée.
+      expect(
+        loadConfig({ NODE_ENV: 'test', IBAN_KEYRING: `test:${testKey}`, IBAN_ACTIVE_KID: 'test' })
+          .ibanActiveKid,
+      ).toBe('test');
+    });
+
+    it.each([
+      ['31 octets', `k1:${key(1, 31)}`],
+      ['33 octets', `k1:${key(1, 33)}`],
+      ['64 octets', `k1:${key(1, 64)}`],
+      ['base64 invalide', 'k1:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@='],
+      ['base64 non canonique (bits résiduels)', `k1:${key(1).slice(0, 42)}B=`],
+      ['clé vide', 'k1:'],
+      ['sans kid', `:${key(1)}`],
+      ['sans « : »', key(1)],
+      ['élément vide', `k1:${key(1)},`],
+      ['kid trop long', `${'a'.repeat(33)}:${key(1)}`],
+      ['kid avec un caractère interdit', `k 1:${key(1)}`],
+      ['kid en double', `k1:${key(1)},k1:${key(2)}`],
+    ])('anneau invalide (%s) → refus, en production comme hors production', (_label, value) => {
+      for (const env of [ring(value, 'k1'), { NODE_ENV: 'test', IBAN_KEYRING: value }])
+        expect(() => loadConfig({ ...env, IBAN_ACTIVE_KID: 'k1' })).toThrow(/IBAN_KEYRING/);
+    });
+
+    it('IBAN_ACTIVE_KID : absent en production, absent de l’anneau, ou sans anneau → refus', () => {
+      const { IBAN_ACTIVE_KID: _omitted, ...without } = PRODUCTION;
+      expect(() => loadConfig(without)).toThrow(/IBAN_ACTIVE_KID manquant/);
+      expect(() => loadConfig({ ...PRODUCTION, IBAN_ACTIVE_KID: 'k9' })).toThrow(
+        /IBAN_ACTIVE_KID : doit désigner un kid/,
+      );
+      expect(() => loadConfig({ NODE_ENV: 'test', IBAN_KEYRING: `k1:${key(1)}` })).toThrow(
+        /IBAN_ACTIVE_KID manquant/,
+      );
+      expect(() => loadConfig({ NODE_ENV: 'test', IBAN_ACTIVE_KID: 'k9' })).toThrow(
+        /IBAN_ACTIVE_KID : doit désigner un kid/,
+      );
+    });
+
+    it('aucun message d’erreur ne contient la clé posée', () => {
+      const secret = key(0x5a);
+      const secretHex = Buffer.alloc(32, 0x5a).toString('hex');
+      const cases = [
+        ring(`k1:${key(0x5a, 31)}`, 'k1'),
+        ring(`k1:${key(0x5a, 33)}`, 'k1'),
+        ring(`${secret}`, 'k1'),
+        ring(`k 1:${secret}`, 'k1'),
+        ring(`k1:${secret},k1:${secret}`, 'k1'),
+        ring(`k1:${secret}`, 'k9'),
+        ring(`k1:${secret}@`, 'k1'),
+      ];
+      for (const env of cases) {
+        let message = '';
+        try {
+          loadConfig(env);
+        } catch (error) {
+          message = (error as Error).message;
+        }
+        expect(message).toMatch(/IBAN_/);
+        expect(message).not.toContain(secret);
+        expect(message).not.toContain(secret.slice(0, 20));
+        expect(message).not.toContain(secretHex);
+      }
+      const testKey = loadConfig(LOCAL).ibanKeyring.get('test')!;
+      let message = '';
+      try {
+        loadConfig(ring(`test:${testKey.toString('base64')}`, 'test'));
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).not.toContain(testKey.toString('base64'));
+    });
+  });
+
+  describe('vendorPinSettings (processus vendor-pin)', () => {
+    it('production complète acceptée, sans OIDC, certificats ni anneau d’IBAN', () => {
+      const settings = vendorPinSettings(PIN_PRODUCTION);
+      expect(settings.production).toBe(true);
+      expect(settings.port).toBe(3003);
+      expect(settings.vendorPinSecret.equals(Buffer.alloc(32, 0x04))).toBe(true);
+      expect(settings.vendorPinCallKey.equals(Buffer.alloc(32, 0x3c))).toBe(true);
+      expect(settings.pinDatabaseUrl).toBe(PIN_PRODUCTION.DATABASE_URL_PIN);
+      expect(vendorPinSettings({ ...PIN_PRODUCTION, VENDOR_PIN_PORT: '4100' }).port).toBe(4100);
+    });
+
+    it('production : sans secret, sans clé d’appel, sans DATABASE_URL_PIN → refus', () => {
+      for (const name of ['VENDOR_PIN_SECRET', 'VENDOR_PIN_CALL_KEY', 'DATABASE_URL_PIN']) {
+        const without = { ...PIN_PRODUCTION } as Record<string, string>;
+        delete without[name];
+        expect(() => vendorPinSettings(without)).toThrow(new RegExp(`${name} manquant`));
+        expect(() => vendorPinSettings({ ...without, [name]: '' })).toThrow(
+          new RegExp(`${name} manquant`),
+        );
+      }
+      expect(() => vendorPinSettings({ ...PIN_PRODUCTION, DATABASE_URL_PIN: '' })).toThrow(
+        'DATABASE_URL_PIN manquant : chaîne de connexion du rôle cashless_pin obligatoire en production',
+      );
+    });
+
+    it('production : secrets de test refusés même posés', () => {
+      const local = vendorPinSettings({ NODE_ENV: 'test' });
+      expect(() =>
+        vendorPinSettings({
+          ...PIN_PRODUCTION,
+          VENDOR_PIN_SECRET: local.vendorPinSecret.toString('hex'),
+        }),
+      ).toThrow(/VENDOR_PIN_SECRET : secret de test refusé en production/);
+      expect(() =>
+        vendorPinSettings({
+          ...PIN_PRODUCTION,
+          VENDOR_PIN_CALL_KEY: local.vendorPinCallKey.toString('hex'),
+        }),
+      ).toThrow(/VENDOR_PIN_CALL_KEY : secret de test refusé en production/);
+    });
+
+    it('secret égal à la clé d’appel, en hexadécimal comme en base64 → refus', () => {
+      expect(() =>
+        vendorPinSettings({ ...PIN_PRODUCTION, VENDOR_PIN_SECRET: '3c'.repeat(32) }),
+      ).toThrow(/VENDOR_PIN_SECRET et VENDOR_PIN_CALL_KEY : secrets distincts/);
+      expect(() =>
+        vendorPinSettings({
+          ...PIN_PRODUCTION,
+          VENDOR_PIN_SECRET: Buffer.alloc(32, 0x3c).toString('base64'),
+        }),
+      ).toThrow(/secrets distincts/);
+    });
+
+    it('secret égal à un autre secret posé dans l’environnement → refus ; autre secret absent → sans effet', () => {
+      for (const other of [
+        'VENDOR_PIN_IDEMPOTENCY_SECRET',
+        'CLAIM_CODE_HMAC_KEY',
+        'IDEMPOTENCY_HMAC_KEY',
+        'ENROLLMENT_CODE_HMAC_KEY',
+        'CUSTOMER_AUTH_HMAC_KEY',
+      ]) {
+        const value = (PRODUCTION as Record<string, string>)[other]!;
+        expect(() =>
+          vendorPinSettings({ ...PIN_PRODUCTION, [other]: value, VENDOR_PIN_SECRET: value }),
+        ).toThrow(
+          new RegExp(
+            `(VENDOR_PIN_SECRET et ${other}|${other} et VENDOR_PIN_SECRET) : secrets distincts`,
+          ),
+        );
+        expect(() =>
+          vendorPinSettings({ ...PIN_PRODUCTION, [other]: value, VENDOR_PIN_CALL_KEY: value }),
+        ).toThrow(
+          new RegExp(
+            `(VENDOR_PIN_CALL_KEY et ${other}|${other} et VENDOR_PIN_CALL_KEY) : secrets distincts`,
+          ),
+        );
+        // Posé et distinct : accepté.
+        expect(vendorPinSettings({ ...PIN_PRODUCTION, [other]: value }).production).toBe(true);
+      }
+    });
+
+    it('hors production : valeurs de test, port 3003, base locale ; port invalide refusé', () => {
+      const local = vendorPinSettings({ NODE_ENV: 'test' });
+      expect(local.production).toBe(false);
+      expect(local.port).toBe(3003);
+      expect(local.vendorPinSecret.toString('utf8')).toMatch(/de-test-uniquement/);
+      expect(local.vendorPinCallKey.equals(loadConfig(LOCAL).vendorPinCallKey)).toBe(true);
+      expect(local.vendorPinSecret.equals(local.vendorPinCallKey)).toBe(false);
+      expect(local.pinDatabaseUrl).toBe(loadConfig(LOCAL).pinDatabaseUrl);
+      for (const bad of ['abc', '0', '-3'])
+        expect(() => vendorPinSettings({ NODE_ENV: 'test', VENDOR_PIN_PORT: bad })).toThrow(
+          /VENDOR_PIN_PORT : entier positif attendu/,
+        );
+    });
+
+    it('NODE_ENV manquant ou inconnu : même refus que loadConfig', () => {
+      expect(() => vendorPinSettings({})).toThrow();
+      expect(() => loadConfig({})).toThrow();
+    });
   });
 
   it('ADR-126 : VENDOR_PIN_IDEMPOTENCY_SECRET distinct de tous les autres secrets, refusé sinon', () => {
@@ -384,11 +702,13 @@ describe('loadConfig', () => {
       'CLAIM_CODE_HMAC_KEY',
       'IDEMPOTENCY_HMAC_KEY',
       'ENROLLMENT_CODE_HMAC_KEY',
-      'VENDOR_PIN_SECRET',
+      'VENDOR_PIN_CALL_KEY',
     ]) {
       const value = (PRODUCTION as Record<string, string>)[other]!;
       expect(() => loadConfig({ ...PRODUCTION, VENDOR_PIN_IDEMPOTENCY_SECRET: value })).toThrow(
-        new RegExp(`${other} et VENDOR_PIN_IDEMPOTENCY_SECRET : secrets distincts`),
+        new RegExp(
+          `(${other} et VENDOR_PIN_IDEMPOTENCY_SECRET|VENDOR_PIN_IDEMPOTENCY_SECRET et ${other}) : secrets distincts`,
+        ),
       );
     }
     const local = loadConfig(LOCAL);
@@ -396,7 +716,7 @@ describe('loadConfig', () => {
       local.claimCodeHmacKey,
       local.idempotencyHmacKey,
       local.enrollmentCodeHmacKey,
-      local.vendorPinSecret,
+      local.vendorPinCallKey,
     ])
       expect(local.vendorPinIdempotencySecret.equals(key)).toBe(false);
   });
@@ -417,13 +737,20 @@ describe('loadConfig', () => {
       ['CLAIM_CODE_HMAC_KEY', local.claimCodeHmacKey],
       ['IDEMPOTENCY_HMAC_KEY', local.idempotencyHmacKey],
       ['ENROLLMENT_CODE_HMAC_KEY', local.enrollmentCodeHmacKey],
-      ['VENDOR_PIN_SECRET', local.vendorPinSecret],
+      ['VENDOR_PIN_CALL_KEY', local.vendorPinCallKey],
       ['VENDOR_PIN_IDEMPOTENCY_SECRET', local.vendorPinIdempotencySecret],
     ] as const) {
       expect(() => loadConfig({ ...PRODUCTION, [name]: key.toString('hex') })).toThrow(
         new RegExp(`${name} : secret de test refusé en production`),
       );
     }
+    // `VENDOR_PIN_SECRET` n'est plus lu par l'API (WP07) : le processus `vendor-pin` le refuse.
+    expect(() =>
+      vendorPinSettings({
+        ...PIN_PRODUCTION,
+        VENDOR_PIN_SECRET: vendorPinSettings(LOCAL).vendorPinSecret.toString('hex'),
+      }),
+    ).toThrow(/VENDOR_PIN_SECRET/);
   });
 
   it('CUSTOMER_AUTH_HMAC_KEY : obligatoire en production, distinct des autres, secret de test refusé', () => {

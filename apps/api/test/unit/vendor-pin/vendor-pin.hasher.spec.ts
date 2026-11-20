@@ -1,8 +1,10 @@
 // Empreinte du PIN des vendeurs et test d'argon2 au démarrage (mission 5b, lot WP08, T033 ; FR-003,
 // NFR-002, NFR-004, NFR-009 ; A16 ; contracts/vendors.md). Vrai binaire argon2 ; binaires faux
-// simulés pour prouver que le test au démarrage refuse le démarrage.
+// simulés pour prouver que le test au démarrage refuse le démarrage. Mission 11a, WP06 : le hacheur
+// est scindé : `VendorPinDigester` (hash, verify, factice : processus `vendor-pin`) et
+// `VendorPinHasher` (dérivé d'idempotence, API).
 import * as argon2 from 'argon2';
-import { loadConfig } from '../../../src/config/config';
+import { vendorPinSettings } from '../../../src/config/config';
 import { ProblemException } from '../../../src/errors/problem';
 import {
   Argon2SelfTestError,
@@ -10,6 +12,7 @@ import {
   RFC9106_ARGON2ID_TAG,
   runArgon2SelfTest,
 } from '../../../src/vendor-pin/argon2-self-test';
+import { VendorPinDigester } from '../../../src/vendor-pin/vendor-pin.digester';
 import { VendorPinModule } from '../../../src/vendor-pin/vendor-pin.module';
 import {
   PIN_PATTERN,
@@ -24,8 +27,8 @@ const SECRET = Buffer.alloc(32, 0x5a);
 const IDEM_SECRET = Buffer.alloc(32, 0x6b);
 const PIN = '246813';
 
-describe('VendorPinHasher', () => {
-  const hasher = new VendorPinHasher(SECRET, IDEM_SECRET);
+describe('VendorPinDigester', () => {
+  const hasher = new VendorPinDigester(SECRET);
 
   it('empreinte PHC argon2id, paramètres figés lus dans l’empreinte, sel de 16 octets', async () => {
     const digest = await hasher.hash(PIN);
@@ -44,9 +47,7 @@ describe('VendorPinHasher', () => {
     const digest = await hasher.hash(PIN);
     expect(await hasher.verify(digest, PIN)).toBe(true);
     expect(await hasher.verify(digest, '135792')).toBe(false);
-    expect(await new VendorPinHasher(Buffer.alloc(32, 0x5b), IDEM_SECRET).verify(digest, PIN)).toBe(
-      false,
-    );
+    expect(await new VendorPinDigester(Buffer.alloc(32, 0x5b)).verify(digest, PIN)).toBe(false);
   });
 
   it('le secret est appliqué : une empreinte calculée sans secret est refusée', async () => {
@@ -72,7 +73,7 @@ describe('VendorPinHasher', () => {
 
   it('verify d’un PIN hors motif : faux, après un vrai calcul', async () => {
     const impl = spyImpl();
-    const spied = new VendorPinHasher(SECRET, IDEM_SECRET, impl);
+    const spied = new VendorPinDigester(SECRET, impl);
     const digest = await spied.hash(PIN);
     expect(await spied.verify(digest, '12345')).toBe(false);
     expect(impl.verify).toHaveBeenCalled();
@@ -80,7 +81,7 @@ describe('VendorPinHasher', () => {
 
   it('NFR-004 : verify(null, …) faux, toujours calculé contre l’empreinte factice, et non instantané', async () => {
     const impl = spyImpl();
-    const spied = new VendorPinHasher(SECRET, IDEM_SECRET, impl);
+    const spied = new VendorPinDigester(SECRET, impl);
     await spied.ready();
     const digest = await spied.hash(PIN);
     // L'empreinte factice : mêmes paramètres, même secret, entrée de 32 octets (jamais un PIN).
@@ -115,7 +116,7 @@ describe('VendorPinHasher', () => {
         throw new Error('empreinte $argon2id$v=19$secret');
       },
     };
-    const broken = new VendorPinHasher(SECRET, IDEM_SECRET, failing);
+    const broken = new VendorPinDigester(SECRET, failing);
     const hashError = (await broken.hash(PIN).catch((e: unknown) => e)) as Error;
     expect(hashError).toBeInstanceOf(VendorPinHashError);
     expect(hashError.message).not.toContain(PIN);
@@ -127,11 +128,10 @@ describe('VendorPinHasher', () => {
   });
 
   it('secret de moins de 32 octets refusé', () => {
-    expect(() => new VendorPinHasher(Buffer.alloc(31), IDEM_SECRET)).toThrow(/32 octets/);
-    expect(() => new VendorPinHasher(SECRET, Buffer.alloc(31))).toThrow(
+    expect(() => new VendorPinDigester(Buffer.alloc(31))).toThrow(/32 octets/);
+    expect(() => new VendorPinHasher(Buffer.alloc(31))).toThrow(
       /VENDOR_PIN_IDEMPOTENCY_SECRET : 32 octets/,
     );
-    expect(() => new VendorPinHasher(SECRET, Buffer.from(SECRET))).toThrow(/secrets distincts/);
   });
 });
 
@@ -159,11 +159,9 @@ describe('test d’argon2 au démarrage (A16, NFR-009)', () => {
   });
 
   it('auto-test complet avec le vrai binaire et le secret de test : passe', async () => {
-    const config = loadConfig({ NODE_ENV: 'test' });
+    const settings = vendorPinSettings({ NODE_ENV: 'test' });
     await expect(
-      runArgon2SelfTest(
-        new VendorPinHasher(config.vendorPinSecret, config.vendorPinIdempotencySecret),
-      ),
+      runArgon2SelfTest(new VendorPinDigester(settings.vendorPinSecret)),
     ).resolves.toBeUndefined();
   });
 
@@ -177,7 +175,7 @@ describe('test d’argon2 au démarrage (A16, NFR-009)', () => {
     };
     await expect(checkRfc9106Vector(wrong)).rejects.toBeInstanceOf(Argon2SelfTestError);
     await expect(
-      runArgon2SelfTest(new VendorPinHasher(SECRET, IDEM_SECRET, wrong), wrong),
+      runArgon2SelfTest(new VendorPinDigester(SECRET, wrong), wrong),
     ).rejects.toBeInstanceOf(Argon2SelfTestError);
   });
 
@@ -202,7 +200,7 @@ describe('test d’argon2 au démarrage (A16, NFR-009)', () => {
       verify: ignoresSecret.verify,
     };
     await expect(
-      runArgon2SelfTest(new VendorPinHasher(SECRET, IDEM_SECRET, passesVector), passesVector),
+      runArgon2SelfTest(new VendorPinDigester(SECRET, passesVector), passesVector),
     ).rejects.toThrow(/empreinte sans secret acceptée/);
   });
 
@@ -212,26 +210,29 @@ describe('test d’argon2 au démarrage (A16, NFR-009)', () => {
       verify: async () => true,
     };
     await expect(
-      runArgon2SelfTest(new VendorPinHasher(SECRET, IDEM_SECRET, acceptsAll), acceptsAll),
+      runArgon2SelfTest(new VendorPinDigester(SECRET, acceptsAll), acceptsAll),
     ).rejects.toThrow(/autre PIN accepté/);
   });
 
-  it('VendorPinModule.onModuleInit : échec du test → exception (démarrage refusé)', async () => {
-    const wrong: Argon2Impl = {
-      hash: (async () => '$argon2id$v=19$m=1,t=1,p=1$AAAA$AAAA') as unknown as Argon2Impl['hash'],
+  it('VendorPinModule (API) : vecteur RFC et dérivé d’essai au démarrage, sans secret des PIN', async () => {
+    await expect(
+      new VendorPinModule(new VendorPinHasher(IDEM_SECRET)).onModuleInit(),
+    ).resolves.toBe(undefined);
+    // Le dérivé d'essai échoue proprement si le binaire est faux (erreur d'argon2 sans message).
+    const failing: Argon2Impl = {
+      hash: (async () => {
+        throw new Error('panne');
+      }) as Argon2Impl['hash'],
       verify: async () => false,
     };
     await expect(
-      new VendorPinModule(new VendorPinHasher(SECRET, IDEM_SECRET, wrong)).onModuleInit(),
-    ).rejects.toBeInstanceOf(Argon2SelfTestError);
-    await expect(
-      new VendorPinModule(new VendorPinHasher(SECRET, IDEM_SECRET)).onModuleInit(),
-    ).resolves.toBeUndefined();
+      new VendorPinModule(new VendorPinHasher(IDEM_SECRET, failing)).onModuleInit(),
+    ).rejects.toBeInstanceOf(VendorPinHashError);
   });
 
   // ADR-126 : le PIN n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 déterministe.
   describe('idempotencyBody (ADR-126)', () => {
-    const hasher = new VendorPinHasher(SECRET, IDEM_SECRET);
+    const hasher = new VendorPinHasher(IDEM_SECRET);
     const body = { vendor_id: 'v', pin: PIN };
 
     it('remplace le PIN par un dérivé argon2 déterministe, sans le PIN en clair', async () => {
@@ -253,37 +254,36 @@ describe('test d’argon2 au démarrage (A16, NFR-009)', () => {
       expect(await pinOf(hasher, '000000', 'bo:', 'k')).not.toBe(ref);
       expect(await pinOf(hasher, PIN, 'bo:', 'k2')).not.toBe(ref);
       expect(await pinOf(hasher, PIN, 'device:d:', 'k')).not.toBe(ref);
-      expect(
-        await pinOf(new VendorPinHasher(SECRET, Buffer.alloc(32, 0x01)), PIN, 'bo:', 'k'),
-      ).not.toBe(ref);
+      expect(await pinOf(new VendorPinHasher(Buffer.alloc(32, 0x01)), PIN, 'bo:', 'k')).not.toBe(
+        ref,
+      );
     });
 
-    it('le dérivé dépend de VENDOR_PIN_IDEMPOTENCY_SECRET et pas de VENDOR_PIN_SECRET', async () => {
-      const derived = async (secret: Buffer, idempotencySecret: Buffer) =>
+    it('le dérivé dépend du seul secret d’idempotence, et l’API ne sait plus hacher ni vérifier', async () => {
+      const derived = async (idempotencySecret: Buffer) =>
         (
-          (await new VendorPinHasher(secret, idempotencySecret).idempotencyBody(
+          (await new VendorPinHasher(idempotencySecret).idempotencyBody(
             { pin: PIN },
             ['pin'],
             'bo:',
             'k',
           )) as { pin: string }
         ).pin;
-      const ref = await derived(SECRET, IDEM_SECRET);
-      // Autre VENDOR_PIN_SECRET, même secret d'idempotence : dérivé inchangé.
-      expect(await derived(Buffer.alloc(32, 0x7c), IDEM_SECRET)).toBe(ref);
-      // Autre secret d'idempotence : dérivé différent.
-      expect(await derived(SECRET, Buffer.alloc(32, 0x7d))).not.toBe(ref);
-      // Et l'empreinte du PIN (hash/verify) ne dépend, elle, que de VENDOR_PIN_SECRET.
-      const phc = await new VendorPinHasher(SECRET, IDEM_SECRET).hash(PIN);
-      expect(await new VendorPinHasher(SECRET, Buffer.alloc(32, 0x7d)).verify(phc, PIN)).toBe(true);
-      expect(await new VendorPinHasher(Buffer.alloc(32, 0x7c), IDEM_SECRET).verify(phc, PIN)).toBe(
-        false,
-      );
+      const ref = await derived(IDEM_SECRET);
+      expect(await derived(Buffer.from(IDEM_SECRET))).toBe(ref);
+      expect(await derived(Buffer.alloc(32, 0x7d))).not.toBe(ref);
+      // L'empreinte du PIN n'est plus produite côté API (OP-N76) : ni `hash` ni `verify`.
+      expect(hasher).not.toHaveProperty('hash');
+      expect(hasher).not.toHaveProperty('verify');
+      // Et l'empreinte du PIN ne dépend que du secret des PIN.
+      const phc = await new VendorPinDigester(SECRET).hash(PIN);
+      expect(await new VendorPinDigester(SECRET).verify(phc, PIN)).toBe(true);
+      expect(await new VendorPinDigester(Buffer.alloc(32, 0x7c)).verify(phc, PIN)).toBe(false);
     });
 
     it('valeur qui n’est pas un PIN : repère constant sans argon2 ; corps non objet inchangé', async () => {
       const impl = { hash: jest.fn(), verify: jest.fn() } as unknown as Argon2Impl;
-      const guarded = new VendorPinHasher(SECRET, IDEM_SECRET, impl);
+      const guarded = new VendorPinHasher(IDEM_SECRET, impl);
       expect(await guarded.idempotencyBody({ pin: '12' }, ['pin'], 's', 'k')).toEqual({
         pin: 'pin-invalide',
       });

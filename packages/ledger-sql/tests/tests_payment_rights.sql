@@ -313,14 +313,22 @@ SELECT lives_ok($$SELECT set_config('wp07.va', create_vendor(pg_temp.id('52b101'
                     '$argon2id$v=19$m=19456,t=2,p=1$c2VsMDA1Mg$djE', pg_temp.id('52e001'))::text,
                     true)$$,
   'vendeurs : create_vendor exécutable');
+-- Mission 11a, WP03 (OP-N76 levée) : les deux fonctions du PIN ne sont plus exécutables par cashless_app (refus
+-- 42501) ; elles s'exécutent sous cashless_pin (processus vendor-pin), le temps de poser la session de la suite.
+SELECT throws_ok($$SELECT * FROM begin_vendor_pin_check(pg_temp.g('va'), pg_temp.id('52aa01'))$$, '42501', NULL,
+  'vendeurs : begin_vendor_pin_check refusée à cashless_app (OP-N76 levée)');
+SELECT throws_ok($$SELECT * FROM open_vendor_session(pg_temp.g('va'), pg_temp.id('52aa01'))$$, '42501', NULL,
+  'vendeurs : open_vendor_session refusée à cashless_app (OP-N76 levée)');
+SET LOCAL ROLE cashless_pin;
 SELECT lives_ok($$SELECT set_config('wp07.ca', (SELECT check_id FROM begin_vendor_pin_check(
                     pg_temp.g('va'), pg_temp.id('52aa01')))::text, true)$$,
-  'vendeurs : begin_vendor_pin_check exécutable (premier temps)');
+  'vendeurs : begin_vendor_pin_check exécutable par cashless_pin (premier temps)');
 SELECT isnt((SELECT pin_hash FROM begin_vendor_pin_check(pg_temp.g('va'), pg_temp.id('52aa02'))),
-  NULL, 'vendeurs : l''empreinte n''est rendue que par la fonction (vérification par l''API)');
+  NULL, 'vendeurs : l''empreinte n''est rendue que par la fonction (vérification par vendor-pin)');
 SELECT lives_ok($$SELECT set_config('wp07.sa', (SELECT vendor_session_id FROM open_vendor_session(
                     pg_temp.g('ca'), pg_temp.id('52aa01')))::text, true)$$,
-  'vendeurs : open_vendor_session exécutable (second temps)');
+  'vendeurs : open_vendor_session exécutable par cashless_pin (second temps)');
+SET LOCAL ROLE cashless_app;
 SELECT is(assert_vendor_session(pg_temp.id('52aa01'), pg_temp.g('sa')), pg_temp.g('va'),
   'vendeurs : assert_vendor_session exécutable, rend le vendeur de la session');
 -- Catalogue : une écriture crée une version ; version servie à la caisse.
@@ -373,10 +381,9 @@ SELECT is((SELECT count(*)::int FROM vendor_public), 0,
 SELECT pg_temp.a();
 RESET ROLE;
 
--- 5. Borne d'OP-N76 (ADR-121, limite acceptée, dette nommée) -------------------------------------
--- Seul cashless_app exécute begin_vendor_pin_check et open_vendor_session. Si ce test échoue, un
--- autre rôle (ou PUBLIC) a reçu ces fonctions : voir docs/POINTS_OUVERTS.md OP-N76 avant tout
--- élargissement (porteur, règle 1 de CLAUDE.md).
+-- 5. Levée d'OP-N76 (ADR-121 ; mission 11a, WP03) --------------------------------------------------
+-- Seul cashless_pin exécute begin_vendor_pin_check et open_vendor_session. Si ce test échoue, un autre rôle (ou
+-- PUBLIC), cashless_app compris, a reçu ces fonctions : règle 1 de CLAUDE.md (porteur), pas de ménage en silence.
 SELECT is((SELECT array_agg(g ORDER BY g)
              FROM (SELECT DISTINCT CASE a.grantee WHEN 0 THEN 'PUBLIC'
                                                   ELSE a.grantee::regrole::text END AS g
@@ -384,20 +391,18 @@ SELECT is((SELECT array_agg(g ORDER BY g)
                           aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
                     WHERE p.oid = f::regprocedure AND a.grantee <> p.proowner
                       AND a.privilege_type = 'EXECUTE') x),
-  ARRAY['cashless_app'],
-  'OP-N76, ADR-121 : ' || f || ' accordée à cashless_app seul (droits déclarés ; '
-  || 'docs/POINTS_OUVERTS.md OP-N76)')
+  ARRAY['cashless_pin'],
+  'OP-N76 levée : ' || f || ' accordée à cashless_pin seul (droits déclarés)')
   FROM unnest(ARRAY['begin_vendor_pin_check(uuid,uuid)', 'open_vendor_session(uuid,uuid)']) f;
 SELECT is((SELECT array_agg(r.rolname::text ORDER BY r.rolname)
              FROM pg_roles r, pg_proc p
             WHERE p.oid = f::regprocedure AND NOT r.rolsuper AND r.oid <> p.proowner
               AND has_function_privilege(r.oid, p.oid, 'EXECUTE')),
-  ARRAY['cashless_app'],
-  'OP-N76, ADR-121 : seul cashless_app (hors superutilisateurs et propriétaire) exécute ' || f
-  || ', héritage compris (docs/POINTS_OUVERTS.md OP-N76)')
+  ARRAY['cashless_pin'],
+  'OP-N76 levée : seul cashless_pin (hors superutilisateurs et propriétaire) exécute ' || f || ', héritage compris')
   FROM unnest(ARRAY['begin_vendor_pin_check(uuid,uuid)', 'open_vendor_session(uuid,uuid)']) f;
 SELECT ok(NOT has_function_privilege('public', f, 'EXECUTE'),
-  'OP-N76 : PUBLIC n''exécute pas ' || f)
+  'OP-N76 levée : PUBLIC n''exécute pas ' || f)
   FROM unnest(ARRAY['begin_vendor_pin_check(uuid,uuid)', 'open_vendor_session(uuid,uuid)']) f;
 
 -- 6. Rejeu de post-roles.sql : mêmes droits (idempotent) -----------------------------------------

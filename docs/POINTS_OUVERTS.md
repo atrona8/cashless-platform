@@ -38,11 +38,11 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N57 | `offline_snapshot` : une version très grande plantée par la connexion de l'API bloquait les snapshots suivants du grand livre — **levé** le 04/11/2026 par la mission 7 (migration `0044_offline_snapshots.sql`, `publish_offline_snapshot` calcule la version ; `post-roles.sql` ; `tests_offline_snapshots.sql`, `tests_offline_rights.sql`, `tests_definer_trigger_writers.sql` §3) | Non | Non | — |
 | OP-N58 | `offline_policy_history` : trace des politiques hors ligne falsifiable — **levé** le 04/11/2026 par la mission 7 (migration `0043_offline_policy.sql`, `log_offline_policy` en SECURITY DEFINER, écritures par `set_offline_policy` et `clear_offline_policy` ; `tests_offline_policy.sql`, `tests_definer_trigger_writers.sql` §3 inversé, `tests_offline_rights.sql`) | Non | Non | — |
 | OP-N59 | Fonctions SECURITY DEFINER sans `pg_temp` — **levé** le 21/10/2026 par la mission 5a (migration 0021 et `TEMPORARY` retiré ; `tests_definer_search_path.sql`, `tests_device_rights.sql` §5, `tests_definer_trigger_writers.sql` §4 à 0) | Non | Non | — |
-| OP-N60 | `cashless_app` écrit directement ce que des fonctions contrôlent : `INSERT` et `UPDATE` sur toutes les colonnes de `media_batch` (lot créé directement `ACTIVE` ou `CLOSED`, clôture sans `close_batch`, quantité, index de clé), `UPDATE (status)` de `media` sans motif ; antérieur au lot 20 | Non | **Oui** (décision du porteur du 15/10/2026, ADR-97) | Mission 11 (back-office) |
+| OP-N60 | **LEVÉ le 19/11/2026 par la mission 11a** : lots créés et modifiés par `create_media_batch` et `update_media_batch`, statut d'un bracelet par `media_set_status` (`SUSPENDED` et `BLACKLISTED` seulement) ; `INSERT` et `UPDATE` directs de `cashless_app` retirés (migration 0091, `post-roles.sql` §13 ; `tests_media_batch_functions.sql`, `tests_11a_rights.sql`, `blacklist.spec.ts` « OP-N60 levée » ; ADR-216) | Non | **Non** (levé ; ADR-97 le disait bloquant) | Levé |
 | OP-N61 | Traitements par tranches (NFR-008) : clôture, rattrapage du préchargement et rechiffrement non prouvés sur un lot de 5 000 bracelets (ADR-98) | Non | **Oui** (preuve attendue de la recette, avant la production) | Mission 13 (recette V1), décision du porteur du 15/10/2026 |
 | OP-N62 | Retrait d'une clé dédiée sans travail ; demande approuvée périmée — **levé** le 21/10/2026 par la mission 5a (migration 0025 ; `tests_tag_key_retire_guard.sql`) | Non | Non | — |
 | OP-N63 | Clé d'accord d'un terminal réécrite par l'API — **levé** le 21/10/2026 par la mission 5a (clé écrite à l'enrôlement seulement, ADR-105 ; `tests_device_rights.sql` §1 et §2) | Non | Non | — |
-| OP-N64 | Terminal iOS : clé de signature ECDSA non attestée (App Attest atteste sa propre clé), liée à l'instance attestée par le défi d'enrôlement (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
+| OP-N64 | **Côté serveur prêt, NON LEVÉ** (mission 11a, ADR-222) : clé App Attest gardée à l'enrôlement (`0095`), vérificateur d'assertions interne non branché, **borne iOS gardée** (`/media/auth-keys` refuse toujours iOS) ; reste : assertions envoyées par l'app, vérificateur branché, borne retirée, **vecteur réel d'Apple exigé avant la mission 12** ; clé de signature ECDSA non attestée jusque-là (ADR-106) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 12 (app terminal) |
 | OP-N65 | Rafraîchissement d'un jeton d'appareil : une représentation du jeton consommé tolérée 60 s pour le même terminal (ADR-108) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
 | OP-N66 | Import du fichier de l'imprimeur lent quand la table des bracelets est volumineuse (> 5 s avec ~100 000 bracelets) ; antérieur à la mission 5a | Non | À évaluer | Porteur du projet (point ouvert du 19/10/2026, hors mission 5a) |
 | OP-N67 | Attestation Android : `attestationApplicationId` lu dans la liste logicielle de Key Attestation (seul champ ; écart accepté au plan, ADR-110) | Non | Non (limite acceptée par le porteur le 19/10/2026) | Mission 13 (recette V1) |
@@ -53,11 +53,11 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
 | OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 12b, avec OP-N41 (déplacée de la mission 7 le 29/10/2026, ADR-138) |
 | OP-N74 | Enrôlement sur un code lié à un événement clos ou à un point de vente supprimé — **levé** le 26/10/2026 par la mission 5b (migration `0035_enrollment_event_state.sql` : `create_device_enrollment_code` et `enroll_device` refusent `CLOSED` pour tout mode et, dès `CLOSING`, `CATALOG_POS`/`KEYPAD_TPE`, et un point de vente absent de l'événement du code ; `tests_enrollment_event_state.sql`, ADR-120) | Non | Non | — |
-| OP-N76 | PIN des vendeurs : l'API lit les empreintes et la base ouvre une session sur la transaction de l'API (même classe qu'OP-N56 ; ADR-121) | Non | Non (limite acceptée par le porteur le 22/10/2026, plan de la mission 5b) | Mission 11 (back-office), avec OP-N56 |
+| OP-N76 | **LEVÉ le 19/11/2026 par la mission 11a** : processus `vendor-pin` et rôle `cashless_pin`, seuls à lire l'empreinte et ouvrir la session ; `cashless_app` sans `EXECUTE` ; API sans `VENDOR_PIN_SECRET`, appel signé HMAC sans repli, anti-rejeu (`vendor-pin-process.spec.ts`, `vendor-sessions.spec.ts`, `tests_11a_rights.sql` ; ADR-217). Reste nommé : PIN en transit (OP-N151) | Non | Non (levé) | Levé |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` — **levé** le 04/11/2026 par la mission 7 (rôle `cashless_maint` et processus `maintenance`, `post-roles.sql` §8g ; ADR-114 ; `tests_device_purge_window.sql`, `tests_execute_grants.sql`) | Non | Non | — |
 | OP-N77 | Secrets de l'API (`IDEMPOTENCY_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`, `VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET` depuis le 26/10) exigés et reçus par tous les processus, y compris ceux qui ne s'en servent pas (clés, personnalisation) ; antérieur à la mission 5b (ADR-125) | Non | Non (exposition acceptée par le porteur le 23/10/2026) | Mission 13 (recette V1), proposée par l'agent |
 | OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
-| OP-N79 | `vendor_id` absent de la clé composite de `vendor_session` : rien dans le schéma n'impose que le vendeur d'une vente soit celui de la session (seconde barrière ; la première, le retrait d'`INSERT`/`UPDATE` sur `sale_attribution`, est en place ; ADR-127) | Non | Non (durcissement reporté par le porteur le 26/10/2026) | Mission 11 (back-office), avec OP-N76, proposée par l'agent |
+| OP-N79 | **LEVÉ le 18/11/2026 par la mission 11a** : clé étrangère `sale_attribution_session_vendor_fk` sur `(vendor_session_id, vendor_id)` (migration 0090 ; `tests_vendor_session_key.sql` ; ADR-216) | Non | Non (levé) | Levé |
 | OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
 | OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026 |
 | OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur). **Partie rapprochement levée le 17/11/2026 par la mission 9b** (anomalies PSP prises en compte par le contrôle « grand livre = relevé », ADR-210) |
@@ -75,7 +75,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N94 | Lots et import de journal : choix consignés (vente hors catalogue sans lignes, `config_id` inconnu, annulation du back-office sans réduction de l'anomalie, migration `0050`, acteurs non contrôlés par la base ; ADR-145 et ADR-146) | Non | Non | Mission 13 (recette V1) |
 | OP-N95 | Limites de corps et de démarrage : `500` au lieu de `413` au-delà de 100 ko, corps d'import jusqu'à 21 037 056 octets, `DATABASE_URL_MAINT` vers le propriétaire ou un superutilisateur : refusé au démarrage en production, point (3) levé le 04/11/2026 (ADR-147) | Non | Non | Mission 13 (recette V1) pour (1), (2), (4) |
 | OP-N96 | Remontée des terminaux d'un événement : migration `0051` hors plan, enveloppe `event_device_sync_status_api` (DEFINER, lecture seule) ouverte à `cashless_app` ; les fonctions sous-jacentes restent fermées (ADR-148) | Non | Non | Mission 13 (recette V1) |
-| OP-N97 | Garde des noms secrets de l'API publique : `pwd_pack_enc` permis dans `offline-snapshots.service.ts` seul, les autres noms et `SELECT * FROM media` restent interdits (ADR-150) | Non | Non | Mission 13 (recette V1) |
+| OP-N116 | **LEVÉ le 19/11/2026 par la mission 11a** : `register_edge_gateway` rend `(gateway_id, ledger_id)` (0094, `CL058`), `edge-admin register` refuse `--ledger` (`tests_edge_gateway.sql`, `register.spec.ts` ; ADR-221) | Non | Non (levé) | Levé |
 | OP-N98 | NFR-005 : un changement ordinaire (non bloquant) est visible en 60 s plus la boucle, soit 60,9 à 62,2 s mesurés (`DELTA_AFTER_MS` = 60 s gardé ; les changements bloquants tiennent 5 s ; ADR-151) | Non | Non | Mission 13 (recette V1) |
 | OP-N99 | FR-024 : le refus hors ligne `LEDGER_LOCKED` / `SYNC_DEADLINE_PASSED` est prouvé en unitaire (`period.spec.ts`) mais son câblage depuis le lecteur de conformité n'est pas prouvé en intégration (seul `PERIOD_CLOSED` l'est) ; la base refuse déjà un grand livre verrouillé (`CL003`) | Non | Non | Mission 13 (recette V1) |
 | OP-N100 | Clés de la passerelle (stockage matériel, autorité des passerelles) simulées par des faux jusqu'à la mission 12b ; la passerelle n'est pas utilisable en production avant (mission 8, ADR-155) | Non | **Oui** | Mission 12b |
@@ -94,10 +94,10 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b (mission 8, décision 32, ADR-168) | Non | **Oui** | Mission 12b |
 | OP-N114 | Retour de l'autorité au central : une seconde demande `CENTRAL` à autre clé abandonne le rendu en cours (mission 8, décision 34, ADR-170) | Non | Non | Porteur |
 | OP-N115 | Colis de mots de passe : une page de 200 bracelets illisibles arrête le service de la passerelle (mission 8, WP15, ADR-184) | Non | Non | Mission 12b |
-| OP-N116 | Inscription des passerelles : grand livre passé à la main non vérifié (mission 8, WP15) | Non | Non | Mission 11a |
+| OP-N137 | **LEVÉ le 19/11/2026 par la mission 11a** : crochet `guardDecision` (mauvais rôle `403`, refus par classe), audit `PAYOUT_CONFIRM_REPLAYED`, auto-approbation exactement `409 APPROVAL_INVALID` (`payout-guard-decision.spec.ts`, `payout-confirm.spec.ts`, `payout-batch.spec.ts` ; ADR-220) | Non | Non (levé) | Levé |
 | OP-N117 | LEVÉ le 11/11/2026 (WP25 partie A, borne haute `completed_at` + 120 s) : reprise forcée, anomalies en trop après la fin de la reprise (mission 8, WP14) | Non | Non | Levé |
 | OP-N118 | Purge des secrets de la passerelle : WAL et blocs libres non effacés, tables d'ajout seul non vidées, purge hors de la transaction de la file (mission 8, WP24, décision 49, ADR-186) | Non | **Oui** | Mission 12b |
-| OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A, lot d'ordres seuls) : purge manuelle de la passerelle forcée sans accusé du central (mission 8, WP24, décision 50, ADR-187) | Non | Non | Levé |
+| OP-N140 | **LEVÉ le 19/11/2026 par la mission 11a** : masque d'IBAN dans `redact.ts`, IBAN chiffré (AES-256-GCM) aux trois emplacements, `CHECK` en base (0093 ; `redact.spec.ts`, `iban-vault.spec.ts`, `tests_iban_sealed.sql`, `limits-9b.spec.ts` ; ADR-218). Écart accepté : clé dans le processus public (OP-N150) | Non | Non (levé) | Levé |
 | OP-N122 | Ventes relayées par la passerelle : le central croit `pack_verified` sans pouvoir le vérifier, seule la passerelle détient la clé des colis (mission 8, revue post-fusion C1, décision du 12/11/2026, ADR-188) | Non | **Oui** | Mission 12b |
 | OP-N123 | **LEVÉ le 17/11/2026 par la mission 9b** : création par le back-office d'une demande `BANK_TRANSFER` avec IBAN (`createRefundRequest`, `create-backoffice.spec.ts`, ADR-210) (avant : Demande de remboursement créée par le back-office) | Non | Non | Levé
 | OP-N124 | **LEVÉ le 17/11/2026 par la mission 9b** : code consommé seulement si la décision est écrite (`journey-limits.spec.ts` OP-N124 inversé, `verify-then-consume.spec.ts`, ADR-210) (avant : Remboursement : le code du titulaire est consommé avant l'écriture de sa décision) | Non | Non | Levé
@@ -117,15 +117,28 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N138 | Réclamation tardive en `CASH` inatteignable sur un grand livre `LOCKED` (mission 9b, WP10, ADR-206) | Non | Non | — (règle voulue, consignée) |
 | OP-N139 | Remboursement tardif en mobile money vers un autre numéro que celui du festivalier : accepté, sans code de vérification (mission 9b, WP10, décision 13 du 17/11/2026, ADR-207) | Non | Non | Mission 12b (envoi réel du code) |
 | OP-N140 | `errors/redact.ts` ne masque pas l'IBAN ; IBAN de `refund_request.iban` stocké en clair au repos (mission 9b, WP11, ADR-203) | Non | Oui (avant tout journal de corps de requête) | Mission 11a |
-| OP-N141 | Régularisation `OPERATOR_FEE` : l'écart `amount` n'est borné que par `requirePositive` (mission 9b, WP07, ADR-205) | Non | Non | Mission 11a |
+| OP-N141 | **LEVÉ le 18/11/2026 par la mission 11a** : l'écart de régularisation `OPERATOR_FEE` ne dépasse pas les frais bruts (`closing-variants.spec.ts` ; ADR-220) | Non | Non (levé) | Levé |
 | OP-N142 | Relevés et export comptable : pagination par numéro d'écriture sur plusieurs grands livres ; relevé et CSV festivalier non tracés ; risque de double compte de l'export (mission 9b, WP13, ADR-209) | Non | Non | À proposer au porteur |
 | OP-N143 | `closing_balance` non servi dans le relevé JSON (index couvrant `posting(account_id) INCLUDE (amount)` à proposer) (mission 9b, WP13, décision 16 du 17/11/2026, ADR-209) | Non | Non | Mission ultérieure, à proposer au porteur |
 | OP-N144 | Recrédit d'un `FAILED` refusé `409` si une ligne de relevé est rapprochée : aucune voie de contournement (mission 9b, WP11, ADR-203) | Non | Non | À proposer au porteur |
-| OP-N145 | `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures `refund_deposit(uuid, uuid)` et `refund_deposit_for_session(uuid, uuid)` conservées (mission 9b, WP04, ADR-201) | Non | Non | Mission 11a |
+| OP-N145 | **LEVÉ le 19/11/2026 par la mission 11a** : déclencheur `refund_request_insert_guard` (`CL057`), `INSERT` par colonne, `refund_deposit_for_session(uuid, uuid)` retirée (0092 ; `tests_refund_insert_guard.sql`, `limits-9b.spec.ts` ; ADR-219). `refund_deposit(uuid, uuid)` gardée (OP-N153) | Non | Non (levé) | Levé |
 | OP-N147 | **LEVÉ le 17/11/2026 par la mission 9b (WP14)** : `approvalRequestDto` masque aussi `result` (`maskPaymentData`) ; plus aucun numéro en clair dans `GET /approval-requests` ni dans l'audit `APPROVAL_EXECUTED` (`invariants-cloture/payment-data-exposure.spec.ts`, ADR-211) | Non | Non | Levé |
 | OP-N146 | Renforcements de la mission 9b, faits puis consignés (liste dans la fiche, ADR-200 à ADR-203, ADR-205, ADR-206, ADR-209) | Non | Non | — (clos) |
 | OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` : reste « non rapprochée », seule l'alerte générique `statement-unmatched` ; recrédit possible tant que la ligne n'est pas importée (mission 9b, reste d'OP-N126, ADR-212) | Non | Non | Mission 12b (alertes) |
 | OP-N149 | Aucun balayage d'isolation entre organisateurs d'un même prestataire pour les 20 opérations de la 9b : `isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires (trou dans la preuve, pas un défaut constaté ; mission 9b, relecture) | Non | Non | Mission 13 |
+| OP-N150 | Clé de l'IBAN (`IBAN_KEYRING`) dans le processus public : une API compromise lit la clé (écart accepté par le porteur le 18/11/2026 ; mission 11a, ADR-218) | Non | Non (limite acceptée) | Mission 12b (vrai KMS, OP-N41) |
+| OP-N151 | PIN en transit : l'API voit le PIN avant de l'envoyer au processus `vendor-pin` (limite acceptée, désormais nommée ; mission 11a, ADR-217) | Non | Non (limite acceptée) | Mission 12 et 12b (preuve du PIN, avec OP-N56) |
+| OP-N152 | Compteur App Attest : `cashless_app` peut le faire avancer (déni de service, sans gain d'accès) ; seul `EXECUTE` nouveau accepté (décision du 18/11/2026 ; mission 11a, ADR-222) | Non | Non (limite acceptée) | Mission 12 (aucune levée demandée) |
+| OP-N153 | `refund_deposit(uuid, uuid)` gardée, exécutable par personne : écart à FR-012 (décision du 18/11/2026 ; mission 11a, ADR-219) | Non | Non | Mission 13 (confirmée par le porteur le 19/11/2026 : retrait avec le remaniement du générateur et du schéma) |
+| OP-N154 | Secret du PIN réutilisé dans un autre processus : non détecté (inhérent à la séparation d'OP-N76 ; mission 11a, ADR-224) | Non | Non | Mission 12b (coffre des secrets) |
+| OP-N155 | `CHECK` d'IBAN `NOT VALID` (une ancienne ligne en clair ne change plus d'état) ; superutilisateurs hors de la garde d'insertion (mission 11a, ADR-224) | Non | Oui | Mission 12b (décision du porteur du 19/11/2026) : condition bloquante de passage en production ; purge ou chiffrement des lignes anciennes de `refund_request` et `payout`, puis `VALIDATE CONSTRAINT` des deux `CHECK`, avant la première donnée réelle ; statut des superutilisateurs réexaminé alors |
+| OP-N156 | **LEVÉ le 19/11/2026 par renforcement** (mission 11a, décision du porteur, commit `3c112821`) : IBAN à tirets, espaces insécables, collés et `msisdn` masqués par `redact.ts` (`redact.spec.ts`) ; limites résiduelles dans la fiche (ADR-218, ADR-224) | Non | Non (levé) | Levé |
+| OP-N157 | `cashless_pin` : `INSERT` sur `audit_log` non restreint aux actions `VENDOR_*` ; rôle sans mot de passe en production (mission 11a, ADR-224) | Non | Non | Mission 12b |
+| OP-N158 | Session de vendeur ouverte hors de la transaction de l'API : renvoi après une API tombée compté ; `x-pin-ts` en millisecondes ; cache anti-rejeu borné à 20 000 (mission 11a, ADR-217) | Non | Non | Mission 13 |
+| OP-N159 | Tests faibles et mineurs de `vendor-pin` : `23505` vers `409` non testé, route non marquée `401` ou `404`, module argon2 chargé dans l'API (mission 11a, relectures de WP06 et WP07) | Non | Non | Mission 13 |
+| OP-N160 | Versements : export illisible `500` sans valeur, `canSee` montre un lot mixte en lecture, contradiction de signature de `guardDecision` tranchée par `interfaces.md` (mission 11a, ADR-220) | Non | Non | Mission 11 (écrans, pour `canSee` ; report dans `PROMPTS-A-ENVOYER.md` et `PRD.md`) |
+| OP-N161 | Lots de bracelets : verrou consultatif pris avant la RLS, un prestataire peut retarder le `PATCH` d'un lot d'un autre sans accès aux données (mission 11a, ADR-216) | Non | Non | Mission 13 |
+| OP-N162 | `edge-admin register` refuse `--ledger` : un script de site qui la passe casse volontairement ; 5 lignes de `commands-other.spec.ts` au lieu de 3 (mission 11a, ADR-221) | Non | Non | Sans objet (voulu) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -225,7 +238,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N113 | Clé TLS client de la passerelle vers le central en fichier, jusqu'à la mission 12b | Une copie du disque du mini-PC permet d'usurper la passerelle auprès du central jusqu'à la révocation de son certificat | Démarrage refusé si le fichier ou son répertoire sont plus larges que 0600 ou si c'est un lien symbolique ; clé distincte de la clé `batch` ; jamais journalisée | Mission 12b | Poignée de main signée par le composant matériel (fournisseur OpenSSL/PKCS#11 ou proxy mTLS) ; fichier refusé |
 | OP-N114 | Retour de l'autorité au central : une seconde demande `CENTRAL` à autre clé abandonne le rendu en cours | Un double clic ou un `OPERATOR_ADMIN` malveillant arrête le retour (disponibilité ; le grand livre reste `EDGE`, aucune double dépense) | Abandon audité ; réservé à `OPERATOR_ADMIN` ; test du comportement | Back-office (hors mission) | Confirmation explicite côté interface, ou champ dédié au contrat |
 | OP-N115 | Travailleur des colis de mots de passe (WP15) : `edge_media_to_pack` rend au plus 200 bracelets par page, sans curseur ; les bracelets illisibles sont écartés et journalisés une fois, mais une page de 200 illisibles arrête le service de la passerelle | Bracelets lisibles au-delà de ces 200 jamais servis à la passerelle (disponibilité : ventes refusées sur ces bracelets en mode `EDGE`), sans alerte du colis manqué | Message de journal « page entièrement illisible » ; bracelet illisible = défaut de personnalisation, rare | Mission 12b | Curseur dans `edge_media_to_pack` (migration correctrice) et alerte au central ; test d'une page de 200 illisibles suivie de bracelets lisibles |
-| OP-N116 | Outil d'inscription des passerelles (WP15) : `register --ledger` n'est pas vérifié contre l'événement (aucune fonction de lecture pour `cashless_edgeadmin`) | Grand livre erroné écrit dans le fichier d'enrôlement : la passerelle ne se synchronise pas (disponibilité, aucune fuite) | Échec visible à la première synchronisation ; procédure de site | Mission 11a | Contrôle du grand livre par l'outil (lecture étroite) ou grand livre rendu par l'inscription |
+| OP-N116 | **LEVÉ le 19/11/2026 (mission 11a)** : Outil d'inscription des passerelles (WP15) : `register --ledger` n'est pas vérifié contre l'événement (aucune fonction de lecture pour `cashless_edgeadmin`) | Grand livre erroné écrit dans le fichier d'enrôlement : la passerelle ne se synchronise pas (disponibilité, aucune fuite) | Échec visible à la première synchronisation ; procédure de site | Mission 11a | Contrôle du grand livre par l'outil (lecture étroite) ou grand livre rendu par l'inscription |
 | OP-N117 | LEVÉ le 11/11/2026 (WP25 partie A) : reprise forcée (WP14, R-23) : seule la borne basse de la période de reprise est contrôlée ; une `ONLINE_REF` inconnue postérieure à la fin de la reprise ouvre aussi une anomalie `EDGE_REPLAY_FAILED` | Bruit d'anomalies à résoudre à deux (aucune perte, aucune écriture comptable) | Borne haute `completed_at` + 120 s contrôlée (`forced-takeover.ts`) ; test `apps/api/test/integration/edge/journal/online-ref-unknown.spec.ts` | Levé | Aucune |
 | OP-N118 | Purge des secrets de la passerelle (WP24) : (1) le WAL de PostgreSQL et les blocs libres du disque ne sont pas effacés ; (2) les tables d'ajout seul (audit local, ordres locaux) ne sont pas vidées ; (3) la purge n'est pas dans la même transaction que la file des décisions | Copie du disque après la purge : secrets ou données lisibles dans le WAL ou les blocs libres si le disque n'est pas chiffré ; données d'audit locales conservées ; arrêt entre la file et la purge : purge partielle à reprendre | Disque chiffré exigé par la procédure de site ; canari de purge sur les tables ; purge manuelle versée au central avant destruction (décision 48) | Mission 12b | Données au repos chiffrées sous une clé matérielle détruite à la révocation (même levée qu'OP-N106) ; purge reprise au démarrage si interrompue |
 | OP-N119 | LEVÉ le 11/11/2026 (WP25 partie A) : purge manuelle (WP24, décision 48) : `/edge/sync-batches` exige au moins une opération et la purge exige une file vide ; l'ordre de purge ne peut pas partir seul, la passerelle purge après 30 s sans accusé avec la trace `CENTRAL_UNCONFIRMED` | Ordre de purge jamais vu du central si l'audit local est perdu avec le disque ; versé sinon avec le premier lot suivant | Lot sans opération portant des `local_orders` accepté sous `/edge/*` (`0069`, `edge-0009`) ; avec lien, purge seulement après l'accusé ; tests `sync-empty-batch.spec.ts`, `orders-only.spec.ts`, `purge-with-link.spec.ts` | Levé | Aucune ; trace `CENTRAL_UNCONFIRMED` gardée pour la purge sans lien |
@@ -241,15 +254,15 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N134 | `closing_balance` déclaré jamais recoupé avec la somme des lignes importées | Un solde faux avec des lignes justes rend un compte « rapproché » si le solde du grand livre concorde | L'écran montre lignes et solde ; rapproché = lignes toutes rapprochées ET solde = grand livre | `tests_statements.sql` | À proposer au porteur | Contrôle somme des lignes = variation de solde entre deux relevés |
 | OP-N135 | Une transaction rapprochée par plusieurs lignes d'un même compte | Règlement PSP en plusieurs virements : la somme des lignes peut dépasser le montant de la transaction sans refus | Rapprochement automatique seulement si le net ou le brut égale la ligne ; manuel libre | `tests_statements.sql` §3b, §3c, `match-statement-line.spec.ts` | À proposer au porteur | Règle « somme des lignes rapprochées <= montant de la transaction sur ce compte » |
 | OP-N136 | `explained_by_anomalies` absent du contrat ; deux lignes sur la même anomalie | Un écart peut paraître expliqué deux fois | `explained_by_anomalies` additionne les deux ; rapproché seulement si le solde concorde | `reconciliation-state.spec.ts` (OP-N82) | À proposer au porteur | Une ligne par anomalie, ou champ exposé au contrat |
-| OP-N137 | Mineurs de la relecture de WP08 (liste en détail) | Nuisance (demande `FAILED`), absence d'audit sur un rejeu identique | Aucune écriture dans ces cas | `payouts/payout-batch.spec.ts`, `payout-confirm.spec.ts` | Mission 11a | Voir détail |
+| OP-N137 | **LEVÉ le 19/11/2026 (mission 11a)** : Mineurs de la relecture de WP08 (liste en détail) | Nuisance (demande `FAILED`), absence d'audit sur un rejeu identique | Aucune écriture dans ces cas | `payouts/payout-batch.spec.ts`, `payout-confirm.spec.ts` | Mission 11a | Voir détail |
 | OP-N138 | Réclamation tardive en `CASH` inatteignable sur un grand livre `LOCKED` | Un remboursement tardif en espèces est refusé `422 REFUND_NOT_ALLOWED` quand aucune session de caisse n'est ouverte ; `LEGAL` non exprimable | Règle voulue : session de caisse ouverte par l'auteur exigée | `late-claims/money-account.spec.ts` (« CASH sans session de caisse ouverte par l'auteur ») | — (règle voulue, consignée) | Sans objet |
 | OP-N139 | Remboursement tardif en mobile money vers un autre numéro, sans code de vérification | Un remboursement tardif part vers un numéro que le festivalier n'a pas vérifié | Réclamation à deux personnes, preuve (`proof`), bornes de `check_late_claim`, destination absente de l'audit | `late-claims/late-claim.spec.ts` (« deux personnes : l'auteur ne valide pas sa demande ») ; `consignation.spec.ts` | Mission 12b (code envoyé au nouveau numéro) | Code à usage unique au numéro de destination |
-| OP-N140 | IBAN non masqué par `redact.ts` ; IBAN en clair dans `refund_request.iban` | Un journal de corps de requête ou une lecture directe de la table exposerait l'IBAN | Aucun journal de corps aujourd'hui ; audit et `approval_request` exposé masquent l'IBAN (`maskPaymentData`) | `late-claims/late-claim.spec.ts` (FR-024), `payouts/payout-export.spec.ts` | Mission 11a | Masque dans `redact.ts` avant tout journal de corps ; chiffrement au repos |
-| OP-N141 | Écart explicite de la régularisation `OPERATOR_FEE` non plafonné | Une valeur interne fausse écrirait un écart trop grand ; l'écart est fixé par le seul calculateur | Étape à deux niveaux (aperçu = écriture), `requirePositive` | `closing/closing-variants.spec.ts`, tests des constructeurs | Mission 11a | Plafond = frais bruts |
+| OP-N140 | **LEVÉ le 19/11/2026 (mission 11a)** : IBAN non masqué par `redact.ts` ; IBAN en clair dans `refund_request.iban` | Un journal de corps de requête ou une lecture directe de la table exposerait l'IBAN | Aucun journal de corps aujourd'hui ; audit et `approval_request` exposé masquent l'IBAN (`maskPaymentData`) | `late-claims/late-claim.spec.ts` (FR-024), `payouts/payout-export.spec.ts` | Mission 11a | Masque dans `redact.ts` avant tout journal de corps ; chiffrement au repos |
+| OP-N141 | **LEVÉ le 18/11/2026 (mission 11a)** : Écart explicite de la régularisation `OPERATOR_FEE` non plafonné | Une valeur interne fausse écrirait un écart trop grand ; l'écart est fixé par le seul calculateur | Étape à deux niveaux (aperçu = écriture), `requirePositive` | `closing/closing-variants.spec.ts`, tests des constructeurs | Mission 11a | Plafond = frais bruts |
 | OP-N142 | Relevés et export comptable : pagination multi-grands livres, relevé et CSV non tracés, double compte possible de l'export | Une écriture validée tard manquée entre deux pages (théorique) ; lecture du relevé non tracée ; un consommateur qui additionne les deux comptes légaux d'une écriture compte deux fois | Pagination par numéro d'écriture ; chaque écriture porte ses deux comptes (`sens`) | `statements/accounting-export.spec.ts`, `party-statement.spec.ts` | À proposer au porteur | Pagination stable, traçage de la lecture, note aux équipes clientes sur le double compte |
 | OP-N143 | `closing_balance` non servi dans le relevé JSON | Le champ facultatif du `PartyStatement` manque ; le CSV porte le solde courant | Somme O(n) évitée (p95 2,2 s sans index couvrant) ; NFR-004 tenu sans lui | `statements/party-statement.spec.ts`, `statement-latency.spec.ts` | Mission ultérieure, à proposer au porteur | Index `posting(account_id) INCLUDE (amount)` |
 | OP-N144 | Recrédit d'un `FAILED` sans voie de contournement quand une ligne de relevé est rapprochée | Une ligne rapprochée à tort bloque le recrédit ; aucun second valideur ne peut le débloquer | `409`, aucune écriture, la demande reste confirmable `PAID` | `refunds/failed-recredit-bound.spec.ts` ; `invariants-cloture/concurrency.spec.ts` (décision 14) | À proposer au porteur | Défaire un rapprochement à deux personnes (pas en 9b) |
-| OP-N145 | `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures de `refund_deposit` conservées | Un défaut du rôle applicatif écrirait une demande déjà `PAID` sans passer par les deux personnes | `INSERT` réservé à `cashless_app` (droits de table et de colonne), aucun `DELETE`, `UPDATE` borné aux colonnes de transition | `invariants-cloture/limits-9b.spec.ts` (`has_column_privilege` par rôle `cashless_*` et par colonne ; mutation `GRANT INSERT (status)` : échoue) | Mission 11a | Garde d'insertion et retrait des anciennes signatures |
+| OP-N145 | **LEVÉ le 19/11/2026 (mission 11a)** : `refund_request` : `INSERT` direct en `PAID` possible sous les CHECK ; anciennes signatures de `refund_deposit` conservées | Un défaut du rôle applicatif écrirait une demande déjà `PAID` sans passer par les deux personnes | `INSERT` réservé à `cashless_app` (droits de table et de colonne), aucun `DELETE`, `UPDATE` borné aux colonnes de transition | `invariants-cloture/limits-9b.spec.ts` (`has_column_privilege` par rôle `cashless_*` et par colonne ; mutation `GRANT INSERT (status)` : échoue) | Mission 11a | Garde d'insertion et retrait des anciennes signatures |
 | OP-N146 | Renforcements de la mission 9b, faits puis consignés | Aucun : aucun n'affaiblit la sécurité | Liste dans la fiche (ADR-200 à ADR-203, ADR-205, ADR-206, ADR-209) | Voir la fiche | — (clos) | Sans objet |
 | OP-N147 | LEVÉ le 17/11/2026 : numéro de paiement en clair dans le résultat d'une approbation `WALLET_REFUND` | Numéro de mobile money lisible dans `GET /approval-requests` et l'audit (FR-024) | `approvalRequestDto` masque `result` (`maskPaymentData`) | `invariants-cloture/payment-data-exposure.spec.ts` (ADR-211) | Levé | Sans objet |
 | OP-N148 | Ligne de relevé importée après le recrédit d'un `FAILED` reste « non rapprochée » ; pas d'alerte dédiée | Un paiement réellement parti, vu à la banque après le recrédit, n'est signalé que par l'alerte générique `statement-unmatched` (double versement possible, non expliqué) | Le recrédit est refusé si la ligne est déjà rapprochée (verrou, ADR-203) ; alerte générique | `tests_statements.sql` (section 4b : ligne laissée non rapprochée) | Mission 12b (alertes) | Alerte dédiée « paiement vu à la banque après recrédit » |
@@ -555,6 +568,29 @@ toutes les fonctions SECURITY DEFINER du schéma de référence et des migration
 
 ### OP-N60 — `cashless_app` contourne par accès direct des contrôles de fonctions INVOKER (15 octobre 2026)
 
+- **LEVÉ le 19/11/2026 (mission 11a)**, ADR-216. **Mécanisme.** Migration
+  `0091_media_batch_functions.sql` : `create_media_batch` (12 arguments, lot né `ORDERED`, auteur
+  obligatoire) et `update_media_batch` (liste blanche de champs, `CL056`) ;
+  `set_media_batch_status`, `media_set_status` et `issue_claim_codes` passent `SECURITY DEFINER`
+  (corps identique) ; `media_set_status` limité à `SUSPENDED` et `BLACKLISTED` (renforcement).
+  `post-roles.sql` §13 retire à `cashless_app` `INSERT`/`UPDATE` de `media_batch` et `UPDATE
+  (status)` de `media` ; l'API (`media/batches/batches.service.ts`) appelle les fonctions, verrou
+  `pg_advisory_xact_lock`.
+- **Test de levée.** `packages/ledger-sql/tests/tests_media_batch_functions.sql` (79 tests : lot
+  `ACTIVE` ou `CLOSED` refusé, champ hors liste refusé, `RETIRED` refusé) ; `tests_11a_rights.sql`
+  (69 tests, `has_*_privilege` par rôle) ; `apps/api/test/integration/media/blacklist.spec.ts` («
+  OP-N60 levée : sous cashless_app, aucune écriture directe de lot ni de statut », 42501).
+- **Test de borne inversé.** Les anciens tests qui comptaient l'écriture directe comme permise sont
+  inversés : `tests_media_api.sql` test 1 (8 devient 6 droits), `tests_media_claims.sql` test 9 (5
+  devient 4), `tests_media_reinstate.sql` (`→ORDERED` exige un acteur), `batches.spec.ts` (l'auteur
+  du lot est tracé).
+- **Mutations vérifiées** (notes de WP01, WP05, WP03). Limite `p_to` de `media_set_status` retirée :
+  `RETIRED` passe, le test `CL020` échoue. `GRANT UPDATE (status) ON media` puis `GRANT INSERT ON
+  media_batch` : le test « OP-N60 levée » échoue (42501 attendu, aucune erreur reçue). Verrou du lot
+  neutralisé (`if (false && lock)`) : le test des deux `PATCH` échoue. Quatre mutations de droits de
+  WP03 détectées.
+- **Limite restante.** Le verrou consultatif est pris avant le contrôle RLS (OP-N161).
+
 Relevé au lot 20, cycle 7 (recherche demandée par le porteur : « les autres fonctions qui contrôlent ce qu'un rôle de
 processus pourrait aussi faire par un accès direct à la table »). Les rôles des processus des clés n'ont plus de cas
 (voir ADR-94, complément du cycle 7) ; restent ceux du rôle de l'API. **Tranché par le porteur le 15/10/2026 (ADR-97) ; non corrigé ici**, la
@@ -673,6 +709,27 @@ le 16/10/2026 ; ADR-105.**
   (réécriture directe de chaque colonne protégée refusée). Les colonnes encore modifiables relèvent d'OP-N69.
 
 ### OP-N64 — Terminal iOS : clé de signature non attestée (19 octobre 2026)
+
+- **CÔTÉ SERVEUR PRÊT, NON LEVÉ (mission 11a, WP02 et WP13, ADR-222).** Le serveur garde la clé App
+  Attest à l'enrôlement (migration `0095_device_app_attest_key.sql` : table `device_app_attest_key`,
+  `enroll_device` à 15 arguments, `advance_app_attest_counter(uuid, bytea, bigint)`, `CL059`) et
+  sait vérifier une assertion (`attestation/ios-app-attest-assertion.ts`,
+  `IosAppAttestAssertionVerifier`, **aucun appelant en production**, voulu et gardé par
+  `test/unit/attestation/assertion-architecture.spec.ts`).
+- **La borne iOS reste en place** : `POST /media/auth-keys` refuse toujours un terminal iOS
+  (`device-auth-matrix.spec.ts` et `media-port-swap.spec.ts` inchangés).
+- **Reste pour la mission 12** : envoyer les assertions App Attest, brancher le vérificateur,
+  **puis** retirer la borne iOS. **Limite en toutes lettres : un vecteur d'assertion réel d'Apple
+  est exigé avant la mission 12.** Les vecteurs de test sont générés localement (R1) : une erreur de
+  double hachage ECDSA y serait invisible. Relecture du 19/11/2026 : code conforme à la procédure
+  Apple, lu contre la spécification, jamais exercé sur un appareil. Compteur et déni de service :
+  OP-N152.
+- **Test.** `tests_device_app_attest.sql`, `app-attest-enrollment.spec.ts`,
+  `app-attest-assertion.spec.ts`, `ios-assertion.spec.ts` ; mutations de WP13 : `rpIdHash` retiré,
+  compteur `>=`, clé non passée à `enroll_device`, hachage triple, retour d'`advance` ignoré :
+  toutes détectées.
+- **Fichier à faire relire par une personne.** `attestation/ios-app-attest-assertion.ts`
+  (cryptographie) et `advance_app_attest_counter` (`0095`).
 
 Signalé au plan de la mission 5a. **Écart accepté, bloque la production : non ; réexaminé par la mission 12 (app
 terminal) ; décision du porteur du 19/10/2026 ; ADR-106.**
@@ -970,6 +1027,17 @@ Constaté par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la produc
   disparaît), exécutée par un rôle dédié (même décision qu'OP-N75) ; test pgTAP qui le prouve.
 
 ### OP-N79 — Session de vendeur : `vendor_id` hors de la clé composite (26 octobre 2026)
+
+- **LEVÉ le 18/11/2026 (mission 11a)**, ADR-216. **Mécanisme.** Migration
+  `0090_sale_attribution_vendor_key.sql` : clé `(id, vendor_id)` sur `vendor_session` et clé
+  étrangère `sale_attribution_session_vendor_fk`, qui refuse une attribution dont le vendeur n'est
+  pas celui de la session.
+- **Test de levée.** `packages/ledger-sql/tests/tests_vendor_session_key.sql` (11 tests :
+  attribution (session A, vendeur B) refusée en `23503`). **Test de borne inversé.** La seconde
+  barrière ne manque plus ; `tests_payment_rights.sql` et `tests_11a_rights.sql` figent les droits
+  qui laissaient seule la première barrière.
+- **Mutation vérifiée** (WP01, rejouée en relecture). `DROP CONSTRAINT
+  sale_attribution_session_vendor_fk` : le cas (session A, vendeur B) passe, le test `23503` échoue.
 
 Proposé par la relecture de WP07 de la mission 5b. ADR-127. **Bloque la production : non ; durcissement reporté par le
 porteur le 26/10/2026 ; levée proposée : mission 11, avec OP-N76.**
@@ -1703,6 +1771,37 @@ ADR-181. **Bloque la production : non (module absent en production, aucun faux n
 
 ### OP-N76 — PIN des vendeurs : la base croit l'API pour la vérification (22 octobre 2026)
 
+- **LEVÉ le 19/11/2026 (mission 11a)**, ADR-217. **Mécanisme.** Rôle `cashless_pin`
+  (`post-roles.sql` §13a) et processus `vendor-pin` (`main.vendor-pin.ts`, `vendor-pin/`, écoute
+  127.0.0.1:3003) : seul lecteur de l'empreinte (`begin_vendor_pin_check`) et seul ouvreur de
+  session (`open_vendor_session`) ; `cashless_app` n'a plus `EXECUTE` sur ces deux fonctions (§13b).
+  Appel interne de l'API signé HMAC (`vendor-pin-call-signature.ts`, `x-pin-ts` en millisecondes,
+  fenêtre de 30 s, **sans repli**) ; `VENDOR_PIN_SECRET` n'est lu que par le processus (`config.ts`
+  : `vendorPinSettings`) ; le dérivé d'idempotence reste dans l'API. Décision du porteur du
+  19/11/2026 : cache de signatures vues (rejeu refusé en 401, 20 000 entrées, plein = 401), corps
+  sans `rawBody` refusé.
+- **Test de levée.** `tests_11a_rights.sql` (`cashless_app` sans `EXECUTE`) ;
+  `integration/vendor-pin/vendor-pin-process.spec.ts` (« seul EXECUTE de begin_vendor_pin_check et
+  open_vendor_session », refus uniforme 401, parcours PIN, compteur) ;
+  `integration/vendors/vendor-sessions.spec.ts` (aucun repli : 5 cas) ;
+  `vendor-pin-call-replay.spec.ts` ; `test/unit/architecture.spec.ts` (« le secret des PIN n'est lu
+  que par le processus vendor-pin ») ; `config.spec.ts` (production refusée sans
+  `VENDOR_PIN_CALL_KEY`).
+- **Test de borne inversé.** Les tests qui ouvraient une session par `POST /vendor-sessions` sans
+  processus (`payments-*`, `payment-journey`, `payment-isolation`, `offline-secrets`,
+  `device-auth-matrix`) démarrent maintenant un vrai processus (`test/support/app.ts`,
+  `startVendorPinServer`) ; l'exemption nommée de `config.ts` dans le test d'architecture est levée.
+- **Mutations vérifiées.** Repli (`catch` qui ouvre la session) : 5 cas FR-006 échouent (7 en
+  relecture) ; garde HMAC et fenêtre : 2 et 1 échecs ; `VENDOR_PIN_SECRET` lu dans
+  `errors/problem.ts` : 2 échecs d'architecture ; sans cache anti-rejeu : 2 échecs ; sans refus de
+  `rawBody` : 1 échec. Latence NFR-001 : p50 163 ms, p95 211 ms, p99 249 ms sur 200 ouvertures
+  (seuils 300 et 600 ms).
+- **Limites restantes nommées.** PIN en transit (OP-N151) ; secret du PIN réutilisable ailleurs
+  (OP-N154) ; atomicité et mineurs (OP-N158, OP-N159).
+- **Fichiers à faire relire par une personne.** `main.vendor-pin.ts`,
+  `vendor-pin/vendor-pin-call-signature.ts`, `vendor-pin/vendor-pin-call.guard.ts`,
+  `vendor-pin/vendor-pin.digester.ts`, `vendors/vendor-pin.client.ts`.
+
 Limite acceptée par le porteur au plan de la mission 5b (`DM-01M5HRNFEFWDG47YEGE5N3C3GN`, passe contradictoire A15) ;
 ADR-121. **Bloque la production : non ; levée avec OP-N56 (mission 11).** Code livré par la mission 5b (WP07, migration
 `0031_vendors.sql`) ; borne vérifiée par WP14.
@@ -1833,6 +1932,15 @@ la mission 5a.**
 | OP-N34 Espèces encaissées au-delà d'un plafond | Recharge écrite en deux parts : marge au portefeuille, reste en `L-ESP-A-RENDRE`, rendu au guichet sur présentation du bracelet (B) | 1er octobre 2026 | ADR-63 |
 | OP-N35 Paiement par QR | Deux sens toujours autorisés, sans réglage (C) ; pas de jeton préchargé, réseau obligatoire sur le téléphone ; sinon paiement par bracelet (A) | 1er octobre 2026 | ADR-64 |
 | OP-N38 Rattachement d'un bracelet approvisionné | Libre si le solde est nul ; sinon demande en attente confirmée au guichet (lecture du bracelet et code de confirmation) ; consultation anonyme par un tiers acceptée (A) | 1er octobre 2026 | ADR-57 |
+| OP-N150 Clé de l'IBAN | Clé de chiffrement de l'IBAN lue en configuration de l'API, aux trois emplacements (limite : clé dans le processus public, levée avec le vrai KMS en 12b) | 18 novembre 2026 | ADR-218, ADR-223 |
+| OP-N153 `refund_deposit(uuid, uuid)` | Gardée interne, exécutable par personne (écart à FR-012, neutre) | 18 novembre 2026 | ADR-219, ADR-223 |
+| OP-N152 Compteur App Attest | Un seul `EXECUTE` nouveau pour `cashless_app` hors OP-N60 : `advance_app_attest_counter` | 18 novembre 2026 | ADR-222, ADR-223 |
+| OP-N76 Rejeu de l'appel vendor-pin | Cache de signatures vues, rejeu refusé en 401 ; test d'ouverture de l'enveloppe à l'exécution des versements | 19 novembre 2026 | ADR-217, ADR-220 |
+| OP-N79, N141 | Levés par la mission 11a | 18 novembre 2026 | ADR-216, ADR-220 |
+| OP-N60, N76, N116, N137, N140, N145 | Levés par la mission 11a ; OP-N64 « côté serveur prêt », non levé | 19 novembre 2026 | ADR-216 à ADR-222 |
+| OP-N156 Masque en texte libre | Levé par renforcement : `msisdn` et IBAN libres (tirets, espaces insécables, collés) masqués, sur décision du porteur | 19 novembre 2026 | ADR-218, ADR-223 |
+| Relance de Colima | Colima et le conteneur de test `cashless-platform-pg17` relancés ; `cashless-api-db-1` (5434, API partagée) laissé arrêté, à relancer par le porteur | 19 novembre 2026 | ADR-223 |
+| Tests de borne avant la fusion | Les tests de borne des écarts acceptés sont écrits avant la fusion (règle 3), dans la lane n | 19 novembre 2026 | ADR-223, ADR-224 |
 
 ## 6. Points reportés
 
@@ -2030,6 +2138,24 @@ Source : notes de lane de WP09 et relecture. **Bloque la production : non.**
 
 ### OP-N137 — Mineurs de la relecture de WP08 (17 novembre 2026)
 
+- **LEVÉ le 19/11/2026 (mission 11a)**, ADR-220. **Mécanisme.** `payouts/payout-action.ts` : crochet
+  `guardDecision(ctx, decision)` appelé avant `decide` pour `APPROVE` et `REJECT` (a : approbateur
+  du mauvais rôle, `403`, demande `PENDING`, rien d'écrit ; b : le refus exige aussi la classe de
+  bénéficiaire, renforcement de FR-014) ; c : un `confirm` rejoué laisse une ligne d'audit
+  `PAYOUT_CONFIRM_REPLAYED` sans destination, sans écriture comptable ; d : l'auto-approbation rend
+  exactement `409 APPROVAL_INVALID` (amendement de FR-016 : la spec disait `403`, la réponse réelle
+  est `409`).
+- **Test de levée.** `payouts/payout-guard-decision.spec.ts` (FR-013, FR-014, attribution révoquée)
+  ; `payout-confirm.spec.ts` (« OP-N137 (c) ») ; `payout-batch.spec.ts` (auto-approbation,
+  `APPROVAL_INVALID`).
+- **Test de borne inversé.** L'ancien test d'auto-approbation qui acceptait `[403, 409]` n'accepte
+  plus que `409 APPROVAL_INVALID` ; le test qui laissait passer le mauvais rôle en `FAILED` attend
+  `403` et `PENDING`.
+- **Mutations vérifiées.** Crochet `guardDecision` retiré : 4 échecs ; audit du rejeu retiré : 1
+  échec ; repli sur l'IBAN brut à l'export : 1 échec ; `checkSealed` retiré de `execute` : 1 échec
+  (commit `414e35f2`).
+- **Limites restantes.** OP-N160.
+
 Source : relecture de WP08 (cycle 1). **Bloque la production : non.**
 
 - **(a)** Un approbateur du mauvais rôle fait passer la demande en `FAILED` (aucune écriture) : nuisance possible.
@@ -2057,6 +2183,34 @@ Source : décision du porteur n° 13 du 17/11/2026 ; note de lane de WP10 ; ADR-
 
 ### OP-N140 — IBAN non masqué par `redact.ts`, IBAN en clair au repos (17 novembre 2026)
 
+- **LEVÉ le 19/11/2026 (mission 11a)**, ADR-218 (masque et chiffrement au repos). **Mécanisme.**
+  `errors/redact.ts` masque l'IBAN par champ (`iban`, `iban=`) et par forme (texte libre) ;
+  `common/iban-vault.ts` (`IbanVault`, AES-256-GCM, IV aléatoire, AAD liée au prestataire, enveloppe
+  `enc:v1:<kid>:…`) ; anneau `IBAN_KEYRING` et `IBAN_ACTIVE_KID` lus en configuration de l'API,
+  démarrage refusé en production sans eux ou avec une clé de test ; migration `0093_iban_sealed.sql`
+  (`CHECK … NOT VALID` sur `refund_request.iban` et `payout.iban`) ; champ `iban_mask` (`maskIban`,
+  `common/iban.ts`) à côté de l'enveloppe ; l'enveloppe est écrite aux trois emplacements
+  (`refund_request.iban`, `payout.iban`, `approval_request.payload`) ; l'IBAN n'est ouvert que dans
+  `exportBatch` (et vérifié par `checkSealed` à l'exécution) ; `maskPaymentData` rend `iban_mask`,
+  jamais l'enveloppe.
+- **Test de levée.** `unit/errors/redact.spec.ts` ; `unit/common/iban-vault.spec.ts` ;
+  `tests_iban_sealed.sql` (clair refusé en `23514` sur les deux tables) ;
+  `refunds/create-backoffice.spec.ts` (NFR-005, 7 cas) ; `late-claims/late-claim.spec.ts` ;
+  `payouts/payout-export.spec.ts` (500 lignes en 90 ms, NFR-002) ; `payout-batch.spec.ts` (enveloppe
+  altérée ou d'un autre prestataire forgée en base : `FAILED`, rien au grand livre, commit
+  `414e35f2`) ; `unit/config.spec.ts` (production sans anneau ou avec clé de test refusée).
+- **Test de borne inversé.** `invariants-cloture/limits-9b.spec.ts` figeait le comportement de
+  `redact.ts` (IBAN non masqué) : il exige maintenant le masque (« OP-N140 levé »), et l'IBAN en
+  clair sous `cashless_app` est refusé (23514).
+- **Mutations vérifiées.** Sans `setAAD` : 2 échecs ; sans `setAuthTag` : 2 ; sans passe par valeur
+  : 6 ; sans garde de production de l'anneau : 2 ; clé de test, `https`, 32 octets exacts, `kid`
+  actif : 5 mutations tuées (WP04) ; sans `seal` : 7 cas échouent ; mapper qui rend l'enveloppe :
+  échecs de `payout-roles` et `late-claim` ; `checkSealed` retiré : échec.
+- **Écart accepté par le porteur (18/11/2026) : la clé de l'anneau est dans le processus public**
+  (OP-N150, ADR-218). Texte libre et `msisdn` : OP-N156.
+- **Fichiers à faire relire par une personne.** `errors/redact.ts`, `common/iban-vault.ts`,
+  `config/config.ts` (anneau), `0093_iban_sealed.sql`.
+
 Source : note de lane de WP11 ; ADR-203. **Bloque la production : oui si un journal de corps de requête est ajouté.**
 
 - **Constat.** `errors/redact.ts` ne masque pas l'IBAN (aucun journal de corps aujourd'hui). `refund_request.iban` est stocké en clair (nécessaire au paiement manuel). L'audit et `GET /approval-requests` masquent l'IBAN et le numéro (`maskPaymentData`, WP08) ; la ligne de la base garde la valeur complète pour l'export.
@@ -2065,6 +2219,17 @@ Source : note de lane de WP11 ; ADR-203. **Bloque la production : oui si un jour
 - **Fichier à faire relire par une personne.** `errors/redact.ts`.
 
 ### OP-N141 — Écart explicite de la régularisation `OPERATOR_FEE` (17 novembre 2026)
+
+- **LEVÉ le 18/11/2026 (mission 11a)**, ADR-220. **Mécanisme.** `ledger/builders/closing/fees.ts`
+  exporte `operatorFeeTotal(config, bases)` ; `closing/calculators/operator-fee.ts` y délègue
+  (`feeTotal`) ; l'écart `amount` de la régularisation `OPERATOR_FEE` ne peut dépasser les frais
+  bruts (`VALIDATION_FAILED`). Retouche hors carte de WP11.
+- **Test de levée.** `integration/closing/closing-variants.spec.ts` (5 tests) ;
+  `unit/builders/closing/closing-builders.spec.ts` et les tests unitaires de clôture (70 verts :
+  brut +1 sur trois assiettes, énorme, bases vides). **Test de borne inversé.** L'ancien test qui
+  acceptait tout écart positif exige maintenant le refus de tout écart au-dessus des frais bruts.
+- **Mutations vérifiées.** Contrôle retiré : 8 échecs ; `>` remplacé par `>=` : 3 échecs ; plafond
+  +1 : 7 échecs (relecture).
 
 Source : relecture de WP07 (cycle 2) ; décision n° 10 ; ADR-205. **Bloque la production : non.**
 
@@ -2099,6 +2264,26 @@ Source : note de lane de WP11 (question au porteur) ; décisions n° 13 (16/11) 
 - **Test.** `refunds/failed-recredit-bound.spec.ts`.
 
 ### OP-N145 — `refund_request` : `INSERT` direct et anciennes signatures (17 novembre 2026)
+
+- **LEVÉ le 19/11/2026 (mission 11a)**, ADR-219. **Mécanisme.** Migration
+  `0092_refund_request_insert_guard.sql` : déclencheur `refund_request_insert_guard` (`CL057`, `409
+  CONFLICT_STATE`, `sqlstate-map.ts`) qui refuse tout `INSERT` hors état initial (`AWAITING_HOLDER`,
+  `REQUESTED`) ; `INSERT` de `cashless_app` limité par colonne (`post-roles.sql` §13) ;
+  `refund_deposit_for_session(uuid, uuid)` retirée (`DROP FUNCTION`, migration `0092`) ;
+  `refund_deposit(uuid, uuid)` **gardée** interne, exécutable par aucun rôle (écart à FR-012,
+  OP-N153).
+- **Test de levée.** `tests_refund_insert_guard.sql` ; `tests_11a_rights.sql`
+  (`refund_deposit(uuid,uuid)` et `refund_request_insert_guard()` sans `EXECUTE`, appel refusé en
+  `42501`) ; `tests_refund_transitions.sql`.
+- **Test de borne inversé.** `invariants-cloture/limits-9b.spec.ts`, bloc « OP-N145 : insertion sous
+  cashless_app » : `PAID`, `CANCELLED`, `PROCESSING`, `REJECTED` insérés directement sont refusés
+  (avant : « seul `cashless_app` a `INSERT` » comme limite acceptée) ; `PAID` avec une colonne non
+  accordée : 42501.
+- **Mutations vérifiées.** Déclencheur désactivé : `CANCELLED` passe (WP02) ; `DISABLE TRIGGER` : 4
+  cas échouent (WP09) ; `GRANT INSERT (status, external_reference)` : 3 échecs de `limits-9b`
+  (WP09).
+- **Limites restantes.** Superutilisateurs exclus de la garde, `CHECK` `NOT VALID` : OP-N155.
+- **Fichiers à faire relire par une personne.** `refund_request_insert_guard()` (`0092`).
 
 Source : en-tête de `0086_refund_debts.sql` (WP04). **Bloque la production : non.**
 
@@ -2154,3 +2339,441 @@ Source : relecture de WP14 ; **pas un écart accepté** (aucun ADR) : un trou da
 ### Levées de la mission 9b (17 novembre 2026)
 
 OP-N123, OP-N124, OP-N126, OP-N128, OP-N130 et la partie « rapprochement » d'OP-N82 passent à « levé le 17/11/2026 par la mission 9b » (ADR-210). Pour chacun : test de levée dans la ligne du tableau de la section 1. OP-N3 reste ouvert (aucun jeu de correspondance SYSCOHADA livré, `account_mapping` vide).
+
+## 11. Mission 11a (durcissements serveur hérités) : consignation du 19/11/2026
+
+Écrit par WP14 le 19/11/2026 à partir des notes de lane de WP01 à WP13 (journal d'états de la
+mission), des relectures et des décisions du porteur du 18/11/2026 et du 19/11/2026. Mission Spec
+Kitty `durcissements-serveur-01M7QAJD`. Chaque entrée cite sa source, son test et l'ADR qui la porte
+(ADR-216 à ADR-224). « Bloque la production » : voir la ligne du tableau de la section 2. **Preuves
+par FR, NFR et SC** : `acceptance-matrix.json` de la mission (tenue par l'orchestrateur, source des
+commandes et résultats) ; chaque FR de `spec.md` apparaît ci-dessous (FR-001 à FR-004 : OP-N60 ;
+FR-005 à FR-007 : OP-N76 ; FR-008 : OP-N79 ; FR-009 et FR-010 : OP-N140 ; FR-011 et FR-012 : OP-N145
+; FR-013 à FR-016 : OP-N137 ; FR-017 : OP-N141 ; FR-018 et FR-019 : OP-N64 ; FR-020 : OP-N116 ;
+FR-021 : cette section).
+
+### Lots de la mission
+
+| Lot | Contenu | Migrations et tests principaux |
+|---|---|---|
+| WP01 | Lots de bracelets et clé vendeur-session | `0090`, `0091` ; `tests_vendor_session_key.sql` (11), `tests_media_batch_functions.sql` (79) |
+| WP02 | Garde d'insertion, IBAN scellé, inscription, App Attest | `0092` à `0095` ; `tests_refund_insert_guard.sql`, `tests_iban_sealed.sql`, `tests_edge_gateway.sql`, `tests_device_app_attest.sql` |
+| WP03 | Droits de la base (`post-roles.sql` §13, `cashless_pin`) | `tests_11a_rights.sql` (69) ; 83 suites pgTAP vertes sur la base du lot |
+| WP04 | Configuration (anneau d'IBAN, clé d'appel de `vendor-pin`) | `unit/config.spec.ts` |
+| WP05 | Lots de bracelets, côté API | `integration/media/batches.spec.ts`, `blacklist.spec.ts` |
+| WP06 | Processus `vendor-pin` | `integration/vendor-pin/vendor-pin-process.spec.ts` (13) |
+| WP07 | Session de vendeur par le processus (client, anti-rejeu) | `integration/vendors/*`, `vendor-pin-call-replay.spec.ts` |
+| WP08 | Coffre d'IBAN et masque | `unit/common/iban-vault.spec.ts`, `unit/errors/redact.spec.ts` |
+| WP09 | Remboursements et IBAN scellé | `refunds/create-backoffice.spec.ts`, `invariants-cloture/limits-9b.spec.ts` |
+| WP10 | Versements, décisions, export | `payouts/payout-guard-decision.spec.ts`, `payout-batch.spec.ts`, `payout-confirm.spec.ts` |
+| WP11 | Plafond de la régularisation | `closing/closing-variants.spec.ts` |
+| WP12 | Inscription des passerelles | `tools/edge-admin/test/register.spec.ts`, `commands-other.spec.ts` |
+| WP13 | App Attest côté serveur | `unit/attestation/*`, `integration/attestation/*` |
+
+### Retouches hors carte relevées
+
+`test/support/tls.ts` (WP04, `VENDOR_PIN_CALL_KEY`, `IBAN_KEYRING`) ; `apps/api/src/app.module.ts`
+(WP08, une ligne d'import et `IbanVaultModule`) ; `closing/calculators/operator-fee.ts` (WP11) ;
+`processes/bootstrap.ts` (option `host`, écoute loopback) et les cas
+`device-auth-cases/{payments,vendors}.cases.ts`, `payments-fixtures.ts` (WP06) ;
+`errors/sqlstate-map.ts` (WP05 `CL056`, WP09 `CL057`, test `sqlstate-map.spec.ts`) ;
+`config/config.ts`, `vendor-pin/vendor-pin-call.guard.ts`, `test/support/app.ts`,
+`architecture.spec.ts`, `config.spec.ts` (WP07, la garde autorisée par le porteur le 19/11/2026) ;
+`commands-other.spec.ts`, 5 lignes au lieu de 3 (WP12) ; tests pgTAP figés ajustés (WP02, WP03) ;
+`env.test.example`, `SERVICES-EXTERNES.md`, `migrate.ts` (`CASHLESS_PIN_PASSWORD`),
+`ledger-tests.yml`, `test/support/db.ts` (WP03). `tests_refund_insert_guard.sql` (`GRANT INSERT`
+limité à la transaction de test, annulée) est à valider par le relecteur humain. Aucune retouche à
+`openapi.yaml` ni à `SPECIFICATION.md`.
+
+### Instabilités et états intermédiaires rencontrés
+
+- **Casse de compilation WP06 vers WP07.** Après WP06, `tsc` échoue dans `src/vendors/` tant que
+  WP07 n'est pas fusionné (l'API n'a plus `hash`/`verify`) ; `config.ts` lit encore
+  `VENDOR_PIN_SECRET` jusqu'à WP07. **WP06 et WP07 se fusionnent ensemble.** État voulu, levé par
+  WP07.
+- **`closing-journey.spec.ts` (5 sur 8 en échec) dans toute lane qui a WP02 sans WP10** : `0093`
+  refuse l'IBAN en clair que l'API écrit avant WP10 (`23514` dans `create_payout_batch`). 8 sur 8
+  dans la lane de WP10 : pas une régression. `device-auth-matrix` et les tests qui ouvrent une
+  session par `POST /vendor-sessions` (`payments-*`, `payment-journey`, `payment-isolation`,
+  `offline-secrets`) : `403` depuis WP03 (voulu), levé par WP07 ; ces fichiers ne sont dans aucun
+  `owned_files` : à relancer en série après la fusion.
+- **Défaut de rapport** (amélioration possible, non bloquante) : `23514` est classé
+  `VALIDATION_FAILED` sans motif (`payout-action.ts`, `SQL_FAILURES`).
+- Instabilités déjà connues : `tests_event_ledger.sql` 63-66, `claim-code-order.spec.ts`,
+  `transverse/migrate-lock.spec.ts`, latences sous Docker. Les tests `commands-other` de WP12 sur
+  vraie base ont été rejoués par le relecteur de WP12 sur `cashless_wp12`.
+- **Déploiement (WP04).** En production, tout processus qui appelle `loadConfig` exige
+  `VENDOR_PIN_CALL_KEY`, `IBAN_KEYRING` et `IBAN_ACTIVE_KID` ; le processus `vendor-pin` exige en
+  plus `VENDOR_PIN_SECRET` et son URL de base (`VENDOR_PIN_URL`). Le rôle `cashless_pin` n'a pas de
+  mot de passe en production (OP-N157).
+
+### Renforcements faits puis consignés (règle 1 de `CLAUDE.md`)
+
+Aucun n'affaiblit la sécurité (ADR-216 à ADR-224). `redact.ts` masque `msisdn` et les IBAN libres
+(OP-N156, 19/11/2026, `3c112821`). `media_set_status` limité à `SUSPENDED` et
+`BLACKLISTED` ; `create_media_batch` exige un acteur et l'historique `→ORDERED` porte l'auteur et le
+motif « Création du lot » (avant : NULL) ; `UPDATE` de `media` réduit à deux colonnes ; refus d'un
+lot de versements : la classe de bénéficiaire est exigée (FR-014) ; masque falsifié et enveloppe
+illisible refusés à l'exécution (`APPROVAL_INVALID`) ; `23505` de la clé App Attest converti en `422
+ATTESTATION_FAILED` (au lieu de `500`) ; cache anti-rejeu et refus d'un corps sans `rawBody` (garde
+de `vendor-pin`, décision du porteur du 19/11/2026) ; test d'ouverture de l'enveloppe à l'exécution
+d'un versement (décision du porteur du 19/11/2026, commit `414e35f2`).
+
+### Décisions du porteur consignées
+
+- **18/11/2026, au plan** : (1) clé d'IBAN en configuration de l'API (OP-N150) ; (2)
+  `refund_deposit(uuid, uuid)` gardée interne (OP-N153) ; (3) un seul `EXECUTE` nouveau pour
+  `cashless_app` hors OP-N60 : `advance_app_attest_counter` (OP-N152). ADR-223.
+- **19/11/2026** : cache de signatures vues et refus d'un corps sans `rawBody` dans la garde de
+  `vendor-pin` (fait par WP07) ; test d'ouverture de l'enveloppe à l'exécution des versements (fait
+  par WP10, `414e35f2`).
+- **19/11/2026 (consignées par WP14, ADR-223)** : (a) Colima et Docker trouvés arrêtés : relance
+  autorisée par le porteur, pour le conteneur de test `cashless-platform-pg17` seulement ;
+  `cashless-api-db-1` (base de l'API partagée, port 5434) reste arrêté, à relancer par le porteur.
+  (b) Les tests de borne manquants sont écrits **avant** la fusion (règle 3), dans la lane n :
+  `bde1d13b`, `3c112821`, `d7d1d139`. (c) `msisdn` et les IBAN libres (tirets, espaces insécables,
+  collés) sont masqués par `redact.ts` : **OP-N156 passe de question ouverte à LEVÉ le 19/11/2026,
+  par renforcement** (commit `3c112821`) ; limites résiduelles dans la fiche d'OP-N156.
+
+### Contradiction CL058, tranchée par le porteur le 19/11/2026
+
+`interfaces.md` (l. 44) attribue à WP12 le mappage HTTP de `CL058` dans `sqlstate-map.ts`. Or
+`CL058` n'est levé que par `register_edge_gateway`, appelée par l'outil `edge-admin` (traduit par le
+`main.ts` de l'outil), jamais par l'API : le mappage ne serait jamais atteint. Option proposée :
+corriger `interfaces.md` (pas de ligne inutile dans l'API). **Tranchée par le porteur le
+19/11/2026 : `interfaces.md` corrigé (CL058 traduit par edge-admin, absent de l'API).**
+`sqlstate-map.ts` n'a pas de ligne `CL058` ; `sqlstate-map.spec.ts` a une ligne `CL057`.
+
+### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
+
+L'agent qui a écrit le code ne vaut pas relecture indépendante. Clés, droits de la base,
+cryptographie :
+
+- `apps/api/src/errors/redact.ts` ; `apps/api/src/common/iban-vault.ts` et la configuration de
+  l'anneau (`config/config.ts` : `ibanKeyring`, `ibanActiveKid`, `vendorPinSettings`) ;
+- migrations `0090` à `0095` (en particulier `0091` fonctions `DEFINER` de lot, `0092`
+  `refund_request_insert_guard()`, `0095` `advance_app_attest_counter`) ;
+- `packages/ledger-sql/post-roles.sql` section 13 et `roles.sql` (rôle `cashless_pin`, retraits à
+  `cashless_app`) ;
+- `apps/api/src/main.vendor-pin.ts`, `vendor-pin/vendor-pin-call-signature.ts` (signature HMAC de
+  l'appel interne), `vendor-pin/vendor-pin-call.guard.ts` (cache anti-rejeu),
+  `vendor-pin/vendor-pin.digester.ts`, `vendors/vendor-pin.client.ts` ;
+- `apps/api/src/attestation/ios-app-attest-assertion.ts` (cryptographie : la relecture humaine est
+  la seule garantie avant un vecteur d'Apple) ;
+- `payouts/payout-action.ts` (`checkSealed`, ouverture de l'enveloppe) et
+  `late-claims/late-claim-action.ts` (masque falsifié refusé) : ajoutés par WP14 d'après les notes
+  de WP09 et WP10 ;
+- `packages/ledger-sql/tests/tests_refund_insert_guard.sql` (octroi de test limité à une transaction
+  annulée).
+
+### Tests de borne écrits avant la fusion (19/11/2026) et ce qui reste non figé
+
+Décision du porteur du 19/11/2026 : les tests de borne sont écrits avant la fusion, dans la lane n.
+Chacun a été vérifié par mutation (la mutation fait échouer le test) sauf mention contraire.
+
+- `packages/ledger-sql/tests/tests_11a_bounds.sql` (`bde1d13b`, 46 assertions) : OP-N155(b),
+OP-N157,
+  OP-N8 (`cashless_pin` sans pouvoir d'administration) et OP-N152 ; 12 mutations détectées.
+- `3c112821` : OP-N156 (`unit/errors/redact.spec.ts`), OP-N160
+  (`integration/payouts/payout-export.spec.ts`, `payout-mixed-visibility.spec.ts`), OP-N161
+  (`integration/media/batches-op-n161.spec.ts`), `CL057` dans `unit/errors/sqlstate-map.spec.ts`.
+  Mutations détectées, sauf OP-N160 (a) : non faite.
+- `d7d1d139` : OP-N151 et OP-N159 (c) (`unit/architecture.spec.ts`), OP-N151, OP-N158 et OP-N159
+  (`integration/vendors/vendor-pin-bounds.spec.ts`,
+  `integration/vendor-pin/vendor-pin-process.spec.ts`),
+  anti-rejeu (`vendor-pin-call-replay.spec.ts` : fenêtre 30 s, garde 70 s, cache 20 000).
+
+**Reste non figé, consigné comme limite** (points 23 à 25 de la relecture) : (a) la garde de
+`refund_request_insert_guard` ne vise que les membres de `cashless_app` ; `cashless_platform` et
+`cashless_pin` ne sont arrêtés que par l'absence de droit `INSERT`, elle figée ; (b) le second
+contrôle `REVOKED` dans l'`UPDATE` d'`advance_app_attest_counter` est une défense en double, non
+figée séparément ; (c) le mot de passe de `cashless_pin` n'est pas testable en base de test ; (d)
+les attributs de rôle survivent à `reset-db` (rôles du cluster) : une mutation sur un rôle se défait
+à la main ; (e) le retard du `PATCH` de B sur un lot de A (OP-N161) n'est pas figé ; (f) CL058
+absent
+de `sqlstate-map.ts` (contradiction tranchée le 19/11/2026, ci-dessus). **Non testable :
+OP-N154** (la réutilisation d'un
+secret entre processus est invisible d'un processus seul) : c'est un **contrôle de déploiement**.
+`tests_11a_bounds.sql` est à faire relire par une personne : ses listes attendues sont la source
+des bornes.
+
+### OP-N150 — Clé de l'IBAN dans le processus public (18 novembre 2026)
+
+Source : décision du porteur n° 1 du 18/11/2026 (plan) ; notes de WP04, WP08 ; ADR-218. **Bloque la
+production : non (écart accepté) ; le faux n'existe pas : le démarrage est refusé sans anneau.**
+
+- **Constat.** L'anneau de clés d'IBAN (`IBAN_KEYRING`, `IBAN_ACTIVE_KID`) est lu par l'API, donc
+  par le processus qui exporte le CSV (`x-process: public`). Le processus public n'a aucun port du
+  service de clés (`architecture.spec.ts` l'interdit) et seul un faux existe.
+- **Risque.** Une API compromise lit la clé et ouvre les IBAN qu'elle peut lire. Gain conservé :
+  base, sauvegardes, réplicas, autres rôles de base et injection SQL en lecture ne voient que des
+  enveloppes.
+- **Test de la limite.** `unit/config.spec.ts` (production sans anneau, avec clé de test ou sans
+  `kid` actif : refusée) ; `tests_iban_sealed.sql` (clair refusé) ; `unit/architecture.spec.ts`
+  (aucun port de clés dans l'API publique).
+- **Mission qui le lève.** Mission 12b. **Condition de levée.** Vrai KMS (OP-N41) : retirer
+  `IBAN_KEYRING` de la configuration de l'API, rouvrir par un port du service de clés, ce qui impose
+  de lever la règle d'architecture du processus public ou de déplacer l'export (décision du
+  porteur).
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`. **Fichier à faire relire.**
+  `common/iban-vault.ts`.
+
+### OP-N151 — PIN en transit vers le processus vendor-pin (18 novembre 2026)
+
+Source : plan, tableau des écarts ; ADR-217 ; reste d'OP-N76. **Bloque la production : non (limite
+acceptée).**
+
+- **Constat.** L'API voit le PIN en clair avant de le passer au processus `vendor-pin` ; création et
+  changement de PIN restent appelés par l'API. Le corps de l'appel signé porte le PIN.
+- **Risque.** Une API compromise peut tester des PIN, au rythme du décompte d'essais existant (même
+  limite qu'avant, désormais nommée). Sécurité de l'appel : secret partagé (HMAC), écoute loopback,
+  TLS 1.3 hors loopback.
+- **Test de la limite.** `vendor-pin-process.spec.ts` (le décompte d'essais borne les essais,
+  `LOCKED` au 5e) ; `architecture.spec.ts` (l'API ne lit pas le secret des PIN). **Test de borne
+  (`d7d1d139`) :**
+  `unit/architecture.spec.ts` « OP-N151 » (hors de `vendor-pin/`, aucun fichier ne persiste ni ne
+  journalise le champ `pin`, avec son contrôle) et `integration/vendors/vendor-pin-bounds.spec.ts`
+  (ouverture réussie, refusée, plantée, création et changement de PIN : le PIN n'est ni en base ni
+  dans un journal).
+- **Mission qui le lève.** Mission 12 avec OP-N56 (12b). **Condition de levée.** Preuve du PIN que
+  l'API ne peut pas voir (calculée par l'app).
+- **Report.** `PROMPTS-A-ENVOYER.md` (12 et 12b) et `PRD.md`.
+
+### OP-N152 — Compteur App Attest : déni de service par `cashless_app` (18 novembre 2026)
+
+Source : décision du porteur n° 3 du 18/11/2026 ; note et relecture de WP13 ; ADR-222. **Bloque la
+production : non.**
+
+- **Constat.** `cashless_app` exécute `advance_app_attest_counter(uuid, bytea, bigint)` (`SECURITY
+  DEFINER`, `search_path = public, pg_temp`, mise à jour conditionnelle atomique). C'est le seul
+  `EXECUTE` nouveau de la mission hors OP-N60.
+- **Risque.** Une API compromise peut faire avancer le compteur d'un appareil et bloquer ses
+  assertions (déni de service), sans gagner d'accès.
+- **Test de la limite.** `tests_11a_bounds.sql` (`bde1d13b`, section OP-N152 : `EXECUTE` de la
+  fonction, compteur strictement croissant, terminal `REVOKED` refusé, autre prestataire refusé) ;
+  `tests_execute_grants.sql` et `tests_11a_rights.sql` : la liste figée des
+  `EXECUTE` de `cashless_app` contient cette fonction et rien d'autre de nouveau ;
+  `integration/attestation/app-attest-assertion.spec.ts` (compteur strictement croissant, avance
+  atomique).
+- **Mission qui le lève.** Aucune demandée (risque accepté) ou signature de l'avance (mission 12).
+  **Condition.** Si la mission 12 signe l'avance, retirer l'`EXECUTE` ; sinon aucune.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12) et `PRD.md`. **Fichier à faire relire.** `0095`
+  (`advance_app_attest_counter`).
+
+### OP-N153 — `refund_deposit(uuid, uuid)` gardée (18 novembre 2026)
+
+Source : décision du porteur n° 2 du 18/11/2026 ; note de WP02 ; ADR-219. **Bloque la production :
+non.**
+
+- **Constat.** Écart à FR-012 : `refund_deposit(uuid, uuid)` n'est pas retirée ; elle est appelée
+  par `refund_deposit_from_balance` (0041), par le générateur `gen_tests.py` et définie dans le
+  schéma de référence, que la mission ne modifie pas (C-004).
+- **Risque.** Neutre : exécutable par aucun rôle applicatif ni `PUBLIC`.
+- **Test de la limite.** `tests_11a_rights.sql` (« exécutables par aucun rôle `cashless_*` ni
+  `PUBLIC` », appel refusé en `42501`) ; `tests_refund_transitions.sql`.
+- **Mission qui le lève.** Prochain remaniement du générateur et du schéma de référence. **Condition
+  de levée.** Fonction retirée avec ses appelants.
+- **Mission héritière.** Mission 13 (confirmée par le porteur le 19/11/2026 : le générateur
+  `gen_tests.py` et le schéma de référence ne se modifient pas avant). **Report.**
+  `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
+
+### OP-N154 — Secret du PIN réutilisé dans un autre processus, non détecté (19 novembre 2026)
+
+Source : note et relecture de WP04 (18/11/2026) ; ADR-224. **Bloque la production : non.**
+
+- **Constat.** `vendorPinSettings` ne compare le secret des PIN qu'avec son propre environnement.
+  Une fois l'API sans `VENDOR_PIN_SECRET`, un secret du PIN réutilisé comme autre secret dans un
+  autre processus ou sur une autre machine n'est détecté nulle part. Inhérent à la séparation voulue
+  (OP-N76).
+- **Risque.** Une erreur de déploiement annule la séparation sans alerte.
+- **Test de la limite.** Aucun n'est possible dans un processus seul. `architecture.spec.ts` prouve
+  seulement que l'API ne lit pas le secret. **Non testable ; contrôle de déploiement** (procédure
+  ou outil) à la charge de la mission 12b.
+- **Mission qui le lève.** Mission 12b (coffre des secrets, un secret par rôle). **Condition de
+  levée.** Secrets distincts émis par le coffre.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
+
+### OP-N155 — IBAN `NOT VALID` et superutilisateurs hors de la garde (19 novembre 2026)
+
+Source : notes de WP02 ; ADR-224 ; décision du porteur du 19/11/2026. **Bloque la production :
+oui.**
+
+- **Constat.** (a) Une ligne ancienne de `refund_request` ou `payout` avec un IBAN en clair ne peut
+  plus changer d'état : le `CHECK` est réévalué à l'`UPDATE`. Sans effet en pré-production (aucune
+  donnée réelle, bases de développement recréées). (b) Le déclencheur `refund_request_insert_guard`
+  exclut les superutilisateurs (fixtures du propriétaire) ; un superutilisateur pouvait déjà
+  désactiver le déclencheur. Neutre.
+- **Risque.** (a) Nul ici ; en production avec données anciennes, il faut chiffrer ou purger avant
+  `VALIDATE` : d'où la condition bloquante. (b) Aucun aujourd'hui ; réexaminé avec (a).
+- **Test de la limite.** (a) `tests_iban_sealed.sql` (la ligne ancienne ne change pas d'état ; les
+  deux `CHECK` sont `NOT VALID`). (b) `tests_11a_bounds.sql` (`bde1d13b`, section OP-N155(b) : la
+  garde n'exclut que les superutilisateurs, une seule exclusion, texte de la garde). Limite non
+  figée : la garde ne vise que les membres de `cashless_app` ; `cashless_platform` et `cashless_pin`
+  ne sont arrêtés que par l'absence de droit `INSERT`, elle figée.
+- **Mission qui le lève.** Mission 12b (décision du porteur du 19/11/2026) : **condition bloquante
+  de passage en production**. La 12b purge ou chiffre les lignes anciennes en clair de
+  `refund_request` et de `payout`, puis fait `ALTER TABLE … VALIDATE CONSTRAINT` sur les deux
+  `CHECK`, avant la première donnée réelle ; le statut des superutilisateurs exclus de la garde est
+  réexaminé au même moment. **Condition de levée.** Aucune ligne en clair, `CHECK` validés.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md` (11a, 12b).
+
+### OP-N156 — Masque d'IBAN en texte libre et `msisdn` : LEVÉ le 19/11/2026 par renforcement
+
+Source : relecture et note de WP08 ; décision du porteur du 19/11/2026 ; ADR-218, ADR-223.
+**Bloque la production : non.**
+
+- **LEVÉ le 19/11/2026 par renforcement** (commit `3c112821`, mission 11a). Avant : IBAN à tirets,
+  espaces insécables, deux IBAN collés et `msisdn` non masqués en texte libre ; question posée au
+  porteur le 18/11/2026. Le porteur a décidé le 19/11/2026 de masquer. `errors/redact.ts` masque
+  désormais : les IBAN à tirets, à espaces insécables et collés ; `msisdn`, `phone`, `mobile` par
+  nom de champ (préfixes, `_number`) ; tout numéro E.164 (`+` suivi de 7 à 15 chiffres) en texte
+  libre ; les UUID sont exclus.
+- **Test de levée.** `unit/errors/redact.spec.ts` (« IBAN en texte libre, formes limites »,
+  « msisdn », « conserve le reste du message », montants, décalages horaires et UUID intacts) ;
+  mutations détectées.
+- **Limites résiduelles (consignées).** (1) Faux positif accepté : un nombre signé de 7 chiffres ou
+  plus (`+1250000`) est masqué. (2) Un numéro national sans `+` n'est masqué que par nom de champ,
+  pas en texte libre. (3) Un numéro dans un chemin d'URL (`/p/221771234567`) n'est pas masqué ;
+  ni un numéro national sans `+` hors d'un champ nommé. (4) Aucun journal de corps n'existe
+  aujourd'hui ; le masque reste la dernière barrière.
+- **Mission qui le lève.** Sans objet (levé). **Fichier à faire relire.** `errors/redact.ts`.
+  **Report.** `PRD.md` (11a) et `PROMPTS-A-ENVOYER.md` (11a).
+
+### OP-N157 — Audit de `cashless_pin` et mot de passe du rôle (19 novembre 2026)
+
+Source : relecture de WP03 ; note de WP03 ; ADR-224. **Bloque la production : non.**
+
+- **Constat.** (a) `INSERT` sur `audit_log` borné au prestataire par la RLS, mais non restreint aux
+  actions `VENDOR_*` par une politique dédiée (comme `cashless_tagkeys`). (b) `cashless_pin` n'a pas
+  de mot de passe en production : rôle sans mot de passe, comme les autres rôles de processus (seuls
+  les rôles de la passerelle refusent) ; comportement existant.
+- **Risque.** (a) Un processus compromis pourrait écrire d'autres actions d'audit pour son
+  prestataire ; surface à réduire. (b) Dépend de `pg_hba` et du réseau.
+- **Test de la limite.** `tests_11a_rights.sql` (`INSERT` de `VENDOR_PIN_FAILED` accepté, autre
+  prestataire refusé, `UPDATE` refusé) ; **test de borne** `tests_11a_bounds.sql` (`bde1d13b`,
+  sections OP-N157 et OP-N8) : droits de table et de colonne, `EXECUTE`, RLS d'`audit_log` et
+  politiques nommées une à une, `cashless_pin` sans pouvoir d'administration ; la limite « aucune
+  politique `VENDOR_*` » y est figée et échouera le jour où la politique est ajoutée (voulu : mettre
+  à jour ce test). Le mot de passe du rôle n'est pas testable en base de test.
+- **Mission qui le lève.** Mission 12b (durcissement de déploiement). **Condition.** Politique
+  `VENDOR_*` ; secret du rôle émis par le coffre.
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`. **Fichiers à faire relire.**
+  `post-roles.sql` §13, `tests_11a_bounds.sql`.
+
+### OP-N158 — Session de vendeur ouverte hors de la transaction de l'API (19 novembre 2026)
+
+Source : note et relecture de WP07 ; ADR-217. **Bloque la production : non.**
+
+- **Constat.** La session est ouverte par le processus `vendor-pin` hors de la transaction de l'API
+  : si l'API tombe avant de répondre, le renvoi de la clé d'idempotence reçoit `409` et le nouvel
+  essai est compté. `writes: false` est incompatible avec `transient` : la route appelle le
+  processus hors transaction puis ouvre une `tx.run` vide pour le refus de rejeu. `x-pin-ts` est en
+  millisecondes (code de WP06) alors que le prompt de WP07 disait secondes. Cache anti-rejeu : 20
+  000 entrées, plein = 401 (échec sûr). Deux instances d'API qui signent le même corps à la même
+  milliseconde : le second appel est refusé (`INTERNAL_ERROR`), échec sûr, négligeable. Le corps de
+  l'appel porte le PIN en clair (OP-N151).
+- **Risque.** Un essai de PIN compté en trop après une panne ; aucun accès gagné.
+- **Test de la limite.** `vendor-pin-call-replay.spec.ts` (cache plein, rejeu refusé) ;
+  `vendor-sessions.spec.ts`. **Test de borne (`d7d1d139`) :** `vendors/vendor-pin-bounds.spec.ts`
+  « OP-N158 » : la session est ouverte par le processus ; le renvoi de la clé rend `409` sans
+  rouvrir
+  de session, le processus n'est pas rappelé et un nouvel essai est compté.
+- **Limite non figée.** Si l'API tombe **avant** la validation de la clé d'idempotence (entre
+  l'appel au processus et la validation), la clé est relâchée : le renvoi ouvre une **nouvelle
+  session comptée qui remplace l'ancienne**. Seul le cas « API tombée après la validation » est
+  figé.
+- **Mission qui le lève.** Mission 13 (recette). **Condition.** Décision du porteur.
+- **Report.** `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
+
+### OP-N159 — Tests faibles de WP06 et WP07, mineurs de relecture (19 novembre 2026)
+
+Source : relectures de WP06 et WP07 ; ADR-217. **Bloque la production : non.**
+
+- **(a)** Cas concurrent `23505` vers `409 CONCURRENT` de `vendor-pin` non testé. **(b)** « Route
+  non marquée refusée » accepte `401` ou `404`. **(c)** `vendors/vendors.dto.ts` importe
+  `PIN_PATTERN` de `vendor-pin/vendor-pin.hasher` : le module argon2 est chargé dans l'API sans être
+  utilisé (le secret n'est pas lu) ; correction proposée : constante dans un module neutre et
+  contrôle d'architecture. **(d)** Le corps brut absent signait un corps vide (fail-open latent, non
+  exploitable : `rawBody: true` partout) : **levé** par le refus 401 de WP07.
+  **Corrigé le 19/11/2026 (`d7d1d139`) :** la constante est dans `common/pin-pattern.ts` et plus
+  rien dans `vendors/` n'importe le hacheur. **L'affirmation « argon2 chargé sans être utilisé »
+  était inexacte** : argon2 reste chargé par l'API via `idempotency/idempotency.interceptor.ts`
+  (dérivé d'idempotence, ADR-126), usage légitime, exemption nommée.
+- **Risque, raison.** Nul en production : tests et constante seulement ; l'ancien import ne
+  changeait aucun droit. Raison : mineurs de relecture, corrigés ou figés sans attendre.
+- **Tests de borne (`d7d1d139`).** (a) `vendors/vendor-pin-bounds.spec.ts` (`23505` sur
+  `vendor_session_open_per_device` : `409 CONCURRENT` côté processus, `429 RATE_LIMITED` avec
+  `Retry-After: 1` côté API ; un `23505` d'un autre index n'est jamais pris pour un cas concurrent)
+  ;
+  (b) route non marquée : `404 NOT_FOUND` exact (`vendor-pin-process.spec.ts`) ; (c)
+  `unit/architecture.spec.ts` (aucun import du hacheur, du digester ni d'argon2 hors de
+  `vendor-pin/`) ; anti-rejeu figé (fenêtre 30 s, garde 70 s, cache 20 000 :
+  `vendor-pin-call-replay.spec.ts`). **Mission qui le lève.** Mission 13. **Report.**
+  `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
+
+### OP-N160 — Versements : limites résiduelles de WP10 (19 novembre 2026)
+
+Source : notes et relecture de WP10 ; ADR-220. **Bloque la production : non.**
+
+- **Constat.** (a) Export illisible (enveloppe altérée, autre prestataire, clair ancien) : `500`
+  sans CSV ni valeur (échec fermé). (b) `canSee` montre encore un lot mixte à un détenteur d'une
+  seule classe (lecture seule). (c) Contradiction prompt et `interfaces.md` sur la signature de
+  `guardDecision` : `interfaces.md` suivi (`ctx = {client, request, payload, actor}`). (d)
+  `validatePayload` garde un argument ; l'ouverture de l'enveloppe se fait dans `execute`. (e)
+  Renforcement : le refus exige aussi la classe de bénéficiaire (FR-014).
+- **Risque, raison.** (a) Un lot dont une enveloppe est altérée ne peut pas être exporté : le
+  versement est retardé, aucune valeur n'est exposée (échec fermé voulu). (b) Un détenteur d'une
+  seule classe voit un lot mixte en lecture seule : fuite de lecture limitée au lot, sans écriture.
+  Raison : `canSee` relève de l'écran de la mission 11.
+- **Test de la limite.** `payout-batch.spec.ts` (enveloppe altérée à l'exécution : `FAILED`) ;
+  **tests de borne (`3c112821`)** : (a) `payout-export.spec.ts` « OP-N160 (a) » (une ligne illisible
+  sur plusieurs : `500`, aucun CSV partiel ; mutation de (a) non faite) ; (b)
+  `payouts/payout-mixed-visibility.spec.ts` (lot mixte vu par un détenteur d'une seule classe :
+  lecture seule, ni décision, ni destination, ni export).
+- **Mission qui le lève.** Mission 11 (écrans de versement) pour (b) ; aucune pour (a) (échec
+  fermé voulu). **Condition.** Le back-office n'affiche pas un lot mixte à une seule classe.
+  **Report.** `PROMPTS-A-ENVOYER.md` (11) et `PRD.md` (11).
+
+### OP-N161 — Verrou consultatif des lots de bracelets avant la RLS (19 novembre 2026)
+
+Source : relecture de WP05 (cycle 2) ; ADR-216. **Bloque la production : non.**
+
+- **Constat.** Le verrou (`hashtextextended('media-batch:' || id)`) est pris avant le contrôle RLS :
+  un prestataire qui connaît l'UUID d'un lot d'un autre peut retarder son `PATCH` le temps de sa
+  propre transaction. Aucun accès aux données. Renforcement d'audit non noté dans une note de lane :
+  l'historique `→ORDERED` porte le motif « Création du lot » (au lieu de NULL).
+- **Risque, raison.** Retard d'un `PATCH` d'un lot par un autre prestataire (disponibilité), sans
+  accès aux données ni écriture. Raison : le verrou doit précéder la lecture pour sérialiser.
+- **Test de la limite.** `media/batches.spec.ts` (le propriétaire tient le verrou, un `PATCH` s'y
+  bloque). **Tests de borne (`3c112821`) :** `media/batches-op-n161.spec.ts` (`PATCH` de B sur le
+  lot de A : `404`, aucune donnée, aucune écriture, aucun audit ; clé de verrou préfixée
+  `media-batch:` et propre au lot ; RLS de `media_batch` active). **Non figé :** le retard lui-même.
+- **Mission qui le lève.** Mission 13. **Condition.** Verrou pris après la lecture sous RLS.
+  **Report.** `PROMPTS-A-ENVOYER.md` (13) et `PRD.md`.
+
+### OP-N162 — Inscription des passerelles : `--ledger` refusé (19 novembre 2026)
+
+Source : relecture de WP12 ; ADR-221. **Bloque la production : non.**
+
+- **Risque, raison.** Un script de site qui passe encore `--ledger` casse : disponibilité de
+  l'inscription, aucune fuite ni droit élargi. Raison : le grand livre doit venir de la base, pas
+  d'un argument manuel (OP-N116).
+- **Constat.** Le grand livre est rendu par la base (`register_edge_gateway`, `(gateway_id,
+  ledger_id)`, `CL058`). `edge-admin register` refuse `--ledger`, même vide ou identique : un script
+  de site qui la passe encore casse volontairement (procédure §2 à jour). `CL058` prouvé côté SQL
+  par `tests_edge_gateway.sql` ; côté outil sur le faux (`register.spec.ts`). Écart de périmètre
+  accepté : 5 lignes de `commands-other.spec.ts` au lieu de 3 (signature de `registerReal`), plus
+  l'assertion « grand livre écrit = `identify_edge_gateway` » (T047 §5).
+- **Mission qui le lève.** Sans objet (comportement voulu). **Condition de levée.** Aucune : le
+  refus de `--ledger` reste. **Test de borne.** `tools/edge-admin/test/register.spec.ts` (refus de
+  `--ledger`, même vide ou identique). **Report.** `PRD.md` (11a) et `PROMPTS-A-ENVOYER.md` (11a).
+
+### Levées de la mission 11a (18 et 19 novembre 2026)
+
+OP-N79 et OP-N141 passent à « levé le 18/11/2026 par la mission 11a » ; OP-N60, OP-N76, OP-N116,
+OP-N137 (a à d), OP-N140 et OP-N145 à « levé le 19/11/2026 » (ADR-216 à ADR-221) ; OP-N156 à « levé
+le 19/11/2026 par renforcement » (ADR-218). OP-N64 passe à « côté serveur prêt, non levé »
+(ADR-222). OP-N116 : `register_edge_gateway` rend `(gateway_id, ledger_id)` (`0094`), `edge-admin
+register` refuse `--ledger` (`tools/edge-admin/test/register.spec.ts`, `tests_edge_gateway.sql` :
+`CL058` sans grand livre ou avec deux devises ; mutation : retrait du refus de `--ledger`, 3 tests
+de `register.spec.ts` échouent).

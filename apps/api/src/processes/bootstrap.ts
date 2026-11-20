@@ -184,7 +184,7 @@ function pollSeconds(variable = 'TAG_JOB_POLL_SECONDS', fallback = 5): number {
 export async function serve(
   rootModule: Type<unknown>,
   port: number,
-  options: { apiDocs?: boolean; listener?: 'edge' } = {},
+  options: { apiDocs?: boolean; listener?: 'edge'; host?: string } = {},
 ): Promise<void> {
   // Même environnement que la configuration injectée (APP_CONFIG) : il faut le certificat avant de créer le serveur.
   const transport = loadConfig();
@@ -217,7 +217,9 @@ export async function serve(
   if (options.apiDocs) mountApiDocs(app, config);
   app.setGlobalPrefix(API_PREFIX);
   app.enableShutdownHooks();
-  await app.listen(port);
+  // `host` : adresse d'écoute (`vendor-pin` : locale par défaut) ; absent : toutes les interfaces.
+  if (options.host) await app.listen(port, options.host);
+  else await app.listen(port);
   const interval = pollSeconds();
   const workers = optional(app, WorkerRegistry as unknown as symbol) as WorkerRegistry | null;
   if (interval > 0 && workers && workers.names().length > 0) {

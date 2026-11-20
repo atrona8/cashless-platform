@@ -28,11 +28,7 @@ describe('edge-admin sur une vraie base', () => {
     }));
     return { code, got, text: [...got.out, ...got.err].join('\n') };
   };
-  const registerReal = async (
-    overrides: Record<string, string> = {},
-    event = world.eventId,
-    ledger = world.ledgerId,
-  ) => {
+  const registerReal = async (overrides: Record<string, string> = {}, event = world.eventId) => {
     const serial = `GW-${randomUUID().slice(0, 8)}`;
     const dir = tmp();
     const argv = await registerArgv(
@@ -42,7 +38,6 @@ describe('edge-admin sur une vraie base', () => {
         serial,
         operator: world.operatorId,
         event,
-        ledger,
         ...overrides,
       },
     );
@@ -63,8 +58,14 @@ describe('edge-admin sur une vraie base', () => {
   });
 
   it("register : passerelle créée, alerte EDGE_REGISTERED et audit avec l'étiquette ; second PRIMARY refusé", async () => {
-    const first = await registerReal({}, world.otherEventId, world.otherLedgerId);
+    const first = await registerReal({}, world.otherEventId);
     expect(first.code).toBe(0);
+    const enrolled = readIfExists(join(first.dir, 'enrolment.json'))!;
+    const ident = await owner.query(`SELECT ledger_id FROM identify_edge_gateway($1)`, [
+      sha(enrolled),
+    ]);
+    expect(JSON.parse(enrolled).ledger_id).toBe(ident.rows[0].ledger_id);
+    expect(ident.rows[0].ledger_id).toBe(world.otherLedgerId);
     const { rows } = await owner.query(
       `SELECT after FROM audit_log WHERE action = 'EDGE_GATEWAY_REGISTERED' AND operator_id = $1`,
       [world.operatorId],
@@ -75,7 +76,7 @@ describe('edge-admin sur une vraie base', () => {
       label: 'Awa Diop',
       serial: first.serial,
     });
-    const second = await registerReal({}, world.otherEventId, world.otherLedgerId);
+    const second = await registerReal({}, world.otherEventId);
     expect(second.code).toBe(2);
     expect(second.text).toMatch(/Refus de la base/);
     const stranger = await registerReal({ operator: world.otherOperatorId });
@@ -139,7 +140,6 @@ describe('edge-admin sur une vraie base', () => {
         role: 'STANDBY',
         operator: world.operatorId,
         event: fresh.eventId,
-        ledger: fresh.ledgerId,
       },
     );
     const registered = await run(argv);

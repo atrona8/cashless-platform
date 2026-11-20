@@ -9,8 +9,8 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { FakeDeviceCa } from '../../../src/device-ca/fake-device-ca';
 import { DeviceTokenService } from '../../../src/device-tokens/device-token.service';
 import { qrTokenHash } from '../../../src/payments/qr-token-hash';
-import { VendorPinHasher } from '../../../src/vendor-pin/vendor-pin.hasher';
-import { startHttpsApp, type HttpsTestApp } from '../../support/app';
+import type { VendorPinDigester } from '../../../src/vendor-pin/vendor-pin.digester';
+import { startHttpsApp, testPinDigester, type HttpsTestApp } from '../../support/app';
 import { withOwner } from '../../support/db';
 import {
   activateMedia,
@@ -91,7 +91,7 @@ export class PaymentWorld {
   api!: HttpsTestApp;
   ca!: FakeDeviceCa;
   tokens!: DeviceTokenService;
-  hasher!: VendorPinHasher;
+  hasher!: VendorPinDigester;
   pos!: SeededPos;
   vendorId!: string;
   vendorName = 'Awa du bar';
@@ -107,7 +107,7 @@ export class PaymentWorld {
       keyFile: world.api.tls.deviceCaFakeKeyFile,
     });
     world.tokens = world.api.app.get(DeviceTokenService, { strict: false });
-    world.hasher = world.api.app.get(VendorPinHasher, { strict: false });
+    world.hasher = testPinDigester();
     const pinHash = await world.hasher.hash(PIN);
     await withOwner(async (db) => {
       await seedPaymentConfiguration(db, world.w);

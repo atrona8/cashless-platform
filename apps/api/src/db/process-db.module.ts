@@ -17,7 +17,13 @@ import { TenantTx } from './tenant-tx';
 types.setTypeParser(20, (value: string) => BigInt(value));
 
 /** Processus des clés de bracelet (mission bracelets-nfc, research R-01, R-02) : un rôle de base par processus. */
-export type KeyProcess = 'tag-keys' | 'personalization' | 'tag-check' | 'key-admin' | 'edge';
+export type KeyProcess =
+  | 'tag-keys'
+  | 'personalization'
+  | 'tag-check'
+  | 'key-admin'
+  | 'edge'
+  | 'vendor-pin';
 
 const KEY_PROCESS_URL: Record<KeyProcess, { field: keyof AppConfig; variable: string }> = {
   'tag-keys': { field: 'tagKeysDatabaseUrl', variable: 'DATABASE_URL_TAGKEYS' },
@@ -26,6 +32,8 @@ const KEY_PROCESS_URL: Record<KeyProcess, { field: keyof AppConfig; variable: st
   'key-admin': { field: 'keyAdminDatabaseUrl', variable: 'DATABASE_URL_KEYADMIN' },
   // Processus `edge` (mission passerelle-locale, WP10) : passerelles locales, rôle `cashless_edge`.
   edge: { field: 'edgeDatabaseUrl', variable: 'DATABASE_URL_EDGE' },
+  // Processus `vendor-pin` (mission 11a, WP03) : PIN des vendeurs, rôle `cashless_pin`.
+  'vendor-pin': { field: 'pinDatabaseUrl', variable: 'DATABASE_URL_PIN' },
 };
 
 class ProcessPoolCloser implements OnApplicationShutdown {

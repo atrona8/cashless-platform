@@ -194,8 +194,10 @@ export class IosAppAttestVerifier implements AttestationVerifier {
     if (!sameBytes(value, Buffer.concat([NONCE_EXTENSION_PREFIX, nonce])))
       fail('nonce différent du nonce attendu');
 
-    this.checkAuthData(authData, leaf.x509.publicKey);
-    return { kind: 'IOS_APP_ATTEST', securityLevel: null };
+    const keyId = this.checkAuthData(authData, leaf.x509.publicKey);
+    // La clé attestée et son identifiant sont gardés pour les assertions (WP13, OP-N64).
+    const publicKey = Buffer.from(leaf.x509.publicKey.export({ type: 'spki', format: 'der' }));
+    return { kind: 'IOS_APP_ATTEST', securityLevel: null, appAttestKey: { keyId, publicKey } };
   }
 
   /** CBOR : `fmt = apple-appattest`, `attStmt.x5c` (chaînes d'octets), `authData`. */
@@ -271,8 +273,9 @@ export class IosAppAttestVerifier implements AttestationVerifier {
 
   /**
    * rpIdHash, drapeau AT, compteur nul, aaguid admis, credentialId = SHA-256(clé de la feuille).
+   * Rend le credentialId vérifié (= keyId).
    */
-  private checkAuthData(authData: Buffer, leafKey: KeyObject): void {
+  private checkAuthData(authData: Buffer, leafKey: KeyObject): Buffer {
     if (authData.length < CREDENTIAL_ID_OFFSET) fail('authData tronqué');
     if (!sameBytes(authData.subarray(0, RP_ID_HASH_END), this.rpIdHash))
       fail('rpIdHash d’une autre application');
@@ -291,5 +294,6 @@ export class IosAppAttestVerifier implements AttestationVerifier {
     const credentialId = authData.subarray(CREDENTIAL_ID_OFFSET, CREDENTIAL_ID_OFFSET + length);
     if (!sameBytes(credentialId, sha256(uncompressedPoint(leafKey))))
       fail('credentialId différent de l’empreinte de la clé attestée');
+    return Buffer.from(credentialId);
   }
 }

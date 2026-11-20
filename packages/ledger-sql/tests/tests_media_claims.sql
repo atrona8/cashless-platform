@@ -85,7 +85,8 @@ SELECT has_column('media_batch', 'claim_codes_issued_at', 'media_batch.claim_cod
 SELECT is((SELECT count(*)::int FROM pg_class WHERE relname IN ('claim_code','media_claim','claim_attempt') AND relrowsecurity AND relforcerowsecurity),
   3, 'RLS activée et forcée sur les trois tables');
 SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN ('issue_claim_codes','invalidate_unassociated_codes',
-  'mark_claim_code_used','claim_media','confirm_media_claim') AND NOT prosecdef), 5, 'cinq fonctions de rattachement sont SECURITY INVOKER');
+  'mark_claim_code_used','claim_media','confirm_media_claim') AND NOT prosecdef), 4,
+  'quatre fonctions de rattachement sont SECURITY INVOKER (issue_claim_codes passe DEFINER : mission 11a, WP01/WP03)');
 SELECT is((SELECT prosecdef FROM pg_proc WHERE proname = 'associate_claim_code'), true,
   'associate_claim_code : SECURITY DEFINER depuis 0019 (tests_personalization_definer.sql)');
 SELECT is((SELECT prosecdef FROM pg_proc WHERE proname = 'public_balance_lookup'), true, 'public_balance_lookup : SECURITY DEFINER (route publique, sans prestataire)');

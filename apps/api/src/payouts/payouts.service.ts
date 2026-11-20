@@ -7,6 +7,7 @@
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service';
 import { Csv, type CsvRow } from '../common/csv';
+import { IbanVault, IbanVaultError } from '../common/iban-vault';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
 import { exercisedRole, resolveChain, type ScopeLink } from '../identity/scope-resolver';
@@ -36,6 +37,7 @@ export class PayoutsService {
   constructor(
     private readonly entitlements: EntitlementService,
     private readonly audit: AuditService,
+    private readonly vault: IbanVault,
   ) {}
 
   /**
@@ -157,11 +159,17 @@ export class PayoutsService {
       ledger.chain,
     );
     if (absent) throw new ProblemException('FORBIDDEN');
+    // Seul endroit où l'IBAN est rouvert (OP-N140). Une enveloppe illisible, ou un IBAN non chiffré
+    // en base, lève une erreur nommée sans valeur : ni repli sur le clair, ni CSV partiel.
+    const openIban = (iban: string): string => {
+      if (!this.vault.isSealed(iban)) throw new IbanVaultError('IBAN_VAULT_BAD_FORMAT');
+      return this.vault.open(iban, actor.operatorId);
+    };
     const csv: CsvRow[] = rows.map((r) => ({
       beneficiary: r.legal_name,
       method: r.method,
       // Numéro en chiffres seuls (sans « + », décision 9) ; la neutralisation de Csv.write reste active.
-      destination: r.iban ?? (r.msisdn ? r.msisdn.replace(/^\+/, '') : null),
+      destination: r.iban ? openIban(r.iban) : r.msisdn ? r.msisdn.replace(/^\+/, '') : null,
       amount: Number(r.amount),
       currency: r.currency,
       reference: r.id,
@@ -229,7 +237,17 @@ export class PayoutsService {
       confirmed ? null : input.failureReason,
       actor.principal.userId,
     ]);
-    if (current.status === 'INITIATED')
+    if (current.status !== 'INITIATED')
+      // Rejeu identique (clé d'idempotence différente) : aucune écriture comptable, une trace.
+      await this.audit.record(client, {
+        ...actor.audit,
+        operatorId: actor.operatorId,
+        action: 'PAYOUT_CONFIRM_REPLAYED',
+        objectType: 'payout',
+        objectId: id,
+        after: { ledger_id: current.ledger_id, outcome: input.outcome, replay: true },
+      });
+    else
       await this.audit.record(client, {
         ...actor.audit,
         operatorId: actor.operatorId,

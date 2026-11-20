@@ -132,7 +132,7 @@ SELECT throws_ok($q$SELECT pg_temp.rr(pg_temp.id('81f001'), 'REQUESTED', '{"msis
 SELECT throws_ok($q$SELECT pg_temp.rr(pg_temp.id('81f001'), 'ARCHIVED')$q$, '23514', NULL, 'statut hors énumération : refusé');
 SELECT throws_ok($q$SELECT pg_temp.rr(pg_temp.id('81f001'), 'REQUESTED', '{"method":"CASH"}')$q$, '23514', NULL,
   'canal hors énumération : refusé');
-SELECT lives_ok($q$SELECT pg_temp.rr(pg_temp.id('81f006'), 'CANCELLED', '{"method":"BANK_TRANSFER","msisdn":null,"iban":"SN08X"}')$q$,
+SELECT lives_ok($q$SELECT pg_temp.rr(pg_temp.id('81f006'), 'CANCELLED', '{"method":"BANK_TRANSFER","msisdn":null,"iban":"enc:v1:k1:SN08X"}')$q$,
   'BANK_TRANSFER reste dans l''énumération du contrat');
 
 -- 2. Index unique partiel : une demande ouverte par portefeuille (FR-003, NFR-002)
@@ -235,8 +235,9 @@ SELECT is((SELECT polname FROM pg_policy WHERE polrelid = 'public.refund_request
 -- 8. Droits exacts de cashless_app
 SELECT is((SELECT string_agg(p, ' ' ORDER BY p)
              FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER']) p
-            WHERE has_table_privilege('cashless_app', 'refund_request', p)), 'INSERT SELECT',
-  'cashless_app : SELECT et INSERT seulement (jamais UPDATE de table entière, DELETE, TRUNCATE)');
+            WHERE has_table_privilege('cashless_app', 'refund_request', p)), 'SELECT',
+  'cashless_app : SELECT seulement au niveau table (INSERT par seize colonnes depuis la mission 11a, WP03 : '
+  'tests_11a_rights.sql ; jamais UPDATE de table entière, DELETE, TRUNCATE)');
 SELECT is((SELECT string_agg(a.attname, ' ' ORDER BY a.attname) FROM pg_attribute a
             WHERE a.attrelid = 'public.refund_request'::regclass AND a.attnum > 0 AND NOT a.attisdropped
               AND has_column_privilege('cashless_app', a.attrelid, a.attnum, 'UPDATE')),

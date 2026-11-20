@@ -10,7 +10,7 @@
 //   `locked_at` (la vue `vendor_public` ne les expose d'ailleurs pas, A20).
 import type { components } from '@cashless/contracts';
 import { isUuid, objectBody, unprocessable } from '../organization/platform/platform.dto';
-import { PIN_PATTERN } from '../vendor-pin/vendor-pin.hasher';
+import { PIN_PATTERN } from '../common/pin-pattern';
 
 export type Vendor = components['schemas']['Vendor'];
 export type VendorStatus = components['schemas']['VendorStatus'];

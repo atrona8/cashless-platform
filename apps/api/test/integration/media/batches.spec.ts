@@ -318,6 +318,83 @@ describe('lots de bracelets', () => {
       ).toBeNull();
     });
 
+    it('quantité après codes, lot hors ORDERED : 409 par l’API, base refuse', async () => {
+      const batch = await create();
+      await rows('UPDATE media_batch SET claim_codes_issued_at = now() WHERE id = $1', [
+        batch.batch_id,
+      ]);
+      const res = await api.patch(w.orgAdmin, `${A()}/${batch.batch_id}`, { quantity: 10 });
+      expect(res.status).toBe(409);
+      expect(res.body.code).toBe('CONFLICT_STATE');
+      // Sans passer par le contrôle TypeScript : la fonction de la base refuse d'elle-même.
+      const viaDb = (changes: object, id = batch.batch_id) =>
+        withOwner(async (db) => {
+          await db.query('BEGIN');
+          try {
+            await db.query('SET LOCAL ROLE cashless_app');
+            await db.query(`SELECT set_config('app.operator_id', $1, true)`, [w.ops.a]);
+            await db.query('SELECT update_media_batch($1, $2::jsonb, $3)', [
+              id,
+              JSON.stringify(changes),
+              w.orgAdmin.userId,
+            ]);
+            return null;
+          } catch (error) {
+            return (error as { code?: string }).code;
+          } finally {
+            await db.query('ROLLBACK');
+          }
+        });
+      expect(await viaDb({ quantity: 10 })).toBe('CL020');
+      expect(await viaDb({ print_order_ref: 'BC-9' })).toBeNull();
+      expect(await viaDb({ status: 'CLOSED' })).toBe('CL056');
+      expect(await viaDb({})).toBe('CL056');
+      const other = await create();
+      await api.post(w.orgAdmin, `${A()}/${other.batch_id}/status`, { status: 'PERSONALIZED' });
+      expect(await viaDb({ print_order_ref: 'x' }, other.batch_id)).toBe('CL020');
+    });
+
+    it('deux PATCH concurrents : un verrou consultatif les sérialise, pas de 500', async () => {
+      const batch = await create();
+      const id = batch.batch_id;
+      const key = "hashtextextended('media-batch:' || $1::text, 0)";
+      // Le propriétaire tient le verrou du lot : un PATCH doit s'y bloquer (preuve de la
+      // sérialisation : échoue si le service ne prend plus le verrou), puis passer ensuite.
+      const patch = await withOwner(async (db) => {
+        await db.query('BEGIN');
+        try {
+          await db.query(`SELECT pg_advisory_xact_lock(${key})`, [id]);
+          // `.then` : la requête de supertest ne part qu'à son premier `then`.
+          const pending = api.patch(w.orgAdmin, `${A()}/${id}`, { quantity: 61 }).then((r) => r);
+          let waiting = 0;
+          for (let waited = 0; waited < 5000 && waiting === 0; waited += 25) {
+            const { rows: found } = await db.query<{ n: number }>(
+              `SELECT count(*)::int AS n FROM pg_stat_activity
+                WHERE wait_event_type = 'Lock' AND wait_event = 'advisory'
+                  AND usename = 'cashless_app' AND datname = current_database()`,
+            );
+            waiting = found[0]!.n;
+            if (waiting === 0) await new Promise((resolve) => setTimeout(resolve, 25));
+          }
+          expect(waiting).toBeGreaterThan(0);
+          return pending;
+        } finally {
+          await db.query('COMMIT');
+        }
+      });
+      expect(patch.status).toBe(200);
+      // Deux PATCH simultanés : tous deux réussissent, le lot garde l'une des deux valeurs.
+      const [r1, r2] = await Promise.all([
+        api.patch(w.orgAdmin, `${A()}/${id}`, { quantity: 71 }),
+        api.patch(w.orgAdmin, `${A()}/${id}`, { quantity: 72 }),
+      ]);
+      expect([r1.status, r2.status]).toEqual([200, 200]);
+      const row = (await rows('SELECT quantity FROM media_batch WHERE id = $1', [id]))[0] as {
+        quantity: number;
+      };
+      expect([71, 72]).toContain(row.quantity);
+    });
+
     it('champ inconnu ou non modifiable, corps vide : 400', async () => {
       const batch = await create();
       for (const body of [
@@ -389,7 +466,12 @@ describe('lots de bracelets', () => {
           [batch.batch_id],
         ),
       ).toEqual([
-        { from_status: null, to_status: 'ORDERED', reason: null, actor_id: null },
+        {
+          from_status: null,
+          to_status: 'ORDERED',
+          reason: 'Création du lot',
+          actor_id: expect.any(String), // OP-N60 : l'auteur du lot est tracé (avant : NULL)
+        },
         {
           from_status: 'ORDERED',
           to_status: 'PERSONALIZED',

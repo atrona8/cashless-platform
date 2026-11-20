@@ -4,6 +4,7 @@
 // supplémentaire au-delà du seuil ; un numéro mobile différent de celui du titulaire vérifié passe par `AWAITING_HOLDER`.
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service';
+import { IbanVault } from '../common/iban-vault';
 import { maskIban } from '../common/iban';
 import type { TxClient } from '../db/tenant-tx';
 import { ProblemException } from '../errors/problem';
@@ -25,6 +26,7 @@ export class RefundBackofficeCreateService {
   constructor(
     private readonly audit: AuditService,
     private readonly holder: HolderChallengeService,
+    private readonly vault: IbanVault,
   ) {}
 
   /** Création, dans la transaction idempotente de l'appelant. */
@@ -73,6 +75,9 @@ export class RefundBackofficeCreateService {
       )
     ).rows[0]!;
     const extraCheck = newNumber && eligibility.estimatedAmount > BigInt(event.max);
+    // IBAN : masque calculé avant de chiffrer ; seule l'enveloppe va en base (OP-N140, FR-010).
+    const mask = input.iban ? maskIban(input.iban) : null;
+    const sealedIban = input.iban ? this.vault.seal(input.iban, actor.operatorId) : null;
     let row: RefundRow;
     try {
       const inserted = await client.query<RefundRow>(
@@ -91,7 +96,7 @@ export class RefundBackofficeCreateService {
           actor.principal.userId,
           input.method,
           input.msisdn,
-          input.iban,
+          sealedIban,
           newNumber,
           awaiting ? 'AWAITING_HOLDER' : 'REQUESTED',
           eligibility.estimatedAmount.toString(),
@@ -124,7 +129,7 @@ export class RefundBackofficeCreateService {
         fee: row.fee,
         source: 'BACKOFFICE',
         reason: input.reason,
-        ...(input.iban ? { iban: maskIban(input.iban) } : {}),
+        ...(mask ? { iban: mask } : {}),
       },
     });
     return toRefundRequest(row);

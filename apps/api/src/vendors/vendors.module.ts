@@ -3,8 +3,8 @@
 // Importé par AppModule (API publique seule).
 import { Module } from '@nestjs/common';
 import { TenantModule } from '../organization/tenant/tenant.module';
-import { VendorPinModule } from '../vendor-pin/vendor-pin.module';
 import { SessionLock } from '../db/session-lock';
+import { VendorPinClient } from './vendor-pin.client';
 import { VendorSessionGuard } from './vendor-session-guard';
 import { VendorSessionsController } from './vendor-sessions.controller';
 import { VendorSessionsService } from './vendor-sessions.service';
@@ -12,9 +12,15 @@ import { VendorsController } from './vendors.controller';
 import { VendorsService } from './vendors.service';
 
 @Module({
-  imports: [TenantModule, VendorPinModule],
+  imports: [TenantModule],
   controllers: [VendorsController, VendorSessionsController],
-  providers: [SessionLock, VendorsService, VendorSessionsService, VendorSessionGuard],
+  providers: [
+    SessionLock,
+    VendorPinClient,
+    VendorsService,
+    VendorSessionsService,
+    VendorSessionGuard,
+  ],
   exports: [VendorSessionGuard],
 })
 export class VendorsModule {}

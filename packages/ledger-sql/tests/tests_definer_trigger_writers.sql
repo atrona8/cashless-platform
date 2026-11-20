@@ -196,8 +196,8 @@ SELECT is((SELECT string_agg(r || ':' || t || ':' || p || ':' ||
              FROM (SELECT rolname::text AS r FROM pg_roles WHERE rolname LIKE 'cashless\_%') roles,
                   unnest(ARRAY['media','media_batch']) t, unnest(ARRAY['INSERT','UPDATE']) p
             WHERE has_any_column_privilege(r, t, p)),
-  'cashless_app:media:UPDATE:claim_attempts,claim_code_used_at,status '
-  'cashless_app:media_batch:INSERT:ALL cashless_app:media_batch:UPDATE:ALL '
+  -- mission 11a, WP03 (OP-N60 levée) : plus de statut sur media, plus d'INSERT ni d'UPDATE sur media_batch
+  'cashless_app:media:UPDATE:claim_attempts,claim_code_used_at '
   'cashless_tagkeys:media:UPDATE:pwd_pack_dek_id,pwd_pack_enc',
   'écrivains de media et media_batch : liste exacte des droits des rôles cashless_*');
 SELECT is((SELECT string_agg(r || ':' || t || ':' || p, ' ' ORDER BY r, t, p)
@@ -236,24 +236,25 @@ SELECT is((SELECT count(*)::int FROM pg_proc p
               AND NOT EXISTS (SELECT 1 FROM unnest(coalesce(p.proconfig, '{}'::text[])) c
                                WHERE c LIKE 'search_path=%pg\_temp')),
   0, 'OP-N59 : aucune fonction SECURITY DEFINER sans pg_temp en dernier dans son search_path (levée, migration 0021)');
--- OP-N60 : droits actuels de cashless_app sur media_batch, colonne par colonne (une colonne ajoutée à la table, ou un
--- droit ajouté, fait échouer le test : à revoir avec la mission 11, back-office). Aucune suppression.
+-- OP-N60 LEVÉE (mission 11a, WP03, ADR-118) : cashless_app n'a plus aucun droit d'écriture sur media_batch, colonne
+-- comprise (lots écrits par create_media_batch, update_media_batch et set_media_batch_status, DEFINER). Seule la lecture
+-- subsiste ; un INSERT ou un UPDATE (même d'une seule colonne) qui réapparaît fait échouer le test. Aucune suppression.
+SELECT is((SELECT string_agg(p, ' ' ORDER BY p)
+             FROM unnest(ARRAY['INSERT','UPDATE']) p
+            WHERE has_any_column_privilege('cashless_app', 'media_batch', p)),
+  NULL, 'OP-N60 levée : cashless_app n''a aucun droit d''INSERT ni d''UPDATE sur media_batch (colonne comprise)');
 SELECT is((SELECT string_agg(p || ':' || (SELECT string_agg(a.attname, ',' ORDER BY a.attname) FROM pg_attribute a
                                            WHERE a.attrelid = 'media_batch'::regclass AND a.attnum > 0 AND NOT a.attisdropped
                                              AND has_column_privilege('cashless_app', 'media_batch', a.attname, p)),
                              ' ' ORDER BY p)
-             FROM unnest(ARRAY['INSERT','REFERENCES','SELECT','UPDATE']) p
+             FROM unnest(ARRAY['REFERENCES','SELECT']) p
             WHERE has_any_column_privilege('cashless_app', 'media_batch', p)),
-  'INSERT:claim_codes_issued_at,created_at,deposit_amount,deposit_mode,event_id,id,key_index,key_mode,kind,operator_id,'
-  'organizer_id,preload_promo_amount,print_order_ref,quantity,reuse_policy,status '
   'SELECT:claim_codes_issued_at,created_at,deposit_amount,deposit_mode,event_id,id,key_index,key_mode,kind,operator_id,'
-  'organizer_id,preload_promo_amount,print_order_ref,quantity,reuse_policy,status '
-  'UPDATE:claim_codes_issued_at,created_at,deposit_amount,deposit_mode,event_id,id,key_index,key_mode,kind,operator_id,'
   'organizer_id,preload_promo_amount,print_order_ref,quantity,reuse_policy,status',
-  'OP-N60 : droits de cashless_app sur media_batch figés (INSERT, SELECT, UPDATE ; mission 11)');
+  'OP-N60 levée : droits de cashless_app sur media_batch figés (SELECT seul)');
 SELECT is((SELECT string_agg(p, ' ' ORDER BY p) FROM unnest(ARRAY['DELETE','TRUNCATE','TRIGGER']) p
             WHERE has_table_privilege('cashless_app', 'media_batch', p)),
-  NULL, 'OP-N60 : cashless_app ne supprime ni ne vide media_batch');
+  NULL, 'OP-N60 levée : cashless_app ne supprime ni ne vide media_batch');
 
 SELECT * FROM finish();
 ROLLBACK;

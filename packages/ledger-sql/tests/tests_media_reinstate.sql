@@ -109,8 +109,9 @@ SELECT is((SELECT status FROM decide_approval_request('00000000-0000-0000-0000-0
   '00000000-0000-0000-0000-00000017e002', true)), 'APPROVED', 'décision par le second superviseur');
 SELECT set_config('app.user_id', '00000000-0000-0000-0000-00000017e001', true);
 SELECT set_config('app.approved_by', '00000000-0000-0000-0000-00000017e002', true);
+-- Mission 11a, WP03 (OP-N60 levée) : cashless_app n'a plus UPDATE (status) : refus de droit (42501), plus de CL020.
 SELECT throws_ok($$UPDATE media SET status = 'ACTIVE' WHERE id = '00000000-0000-0000-0000-00000017d001'$$,
-  'CL020', NULL, 'UPDATE direct BLACKLISTED -> ACTIVE depuis cashless_app : refusé');
+  '42501', NULL, 'UPDATE direct BLACKLISTED -> ACTIVE depuis cashless_app : refusé (droit retiré)');
 SELECT throws_ok($$SELECT media_set_status('00000000-0000-0000-0000-00000017d001', 'ACTIVE', 'x',
   '00000000-0000-0000-0000-00000017e001')$$, 'CL020', NULL, 'media_set_status BLACKLISTED -> ACTIVE : refusé');
 SELECT throws_ok($$SELECT reinstate_media('00000000-0000-0000-0000-00000017d001','00000000-0000-0000-0000-00000017e002',
@@ -132,7 +133,8 @@ SELECT is((SELECT actor_id::text || ' ' || approved_by::text FROM media_status_h
 SELECT is(current_setting('app.reinstate_media', true), '', 'marqueur retiré après l''appel');
 
 -- 4. Demande approuvée d'un épisode passé : ne couvre pas une nouvelle mise en liste noire -------------------------------
-UPDATE media SET status = 'BLACKLISTED' WHERE id = '00000000-0000-0000-0000-00000017d001';
+SELECT media_set_status('00000000-0000-0000-0000-00000017d001', 'BLACKLISTED', 'encore',
+  '00000000-0000-0000-0000-00000017e001');
 SELECT throws_ok($$SELECT reinstate_media('00000000-0000-0000-0000-00000017d001','00000000-0000-0000-0000-00000017e001',
   '00000000-0000-0000-0000-00000017e002','encore')$$, 'CL020', NULL, 'demande d''un épisode passé (toujours APPROVED) : refusée');
 
@@ -157,8 +159,11 @@ SELECT throws_ok($$INSERT INTO media_transition VALUES ('BLACKLISTED','ISSUED')$
   'cashless_app : INSERT sur media_transition refusé');
 SELECT throws_ok($$UPDATE media_transition SET to_status = 'ISSUED' WHERE from_status = 'BLACKLISTED' AND to_status = 'RETIRED'$$,
   '42501', NULL, 'cashless_app : UPDATE sur media_transition refusé');
-SELECT throws_ok($$UPDATE media SET status = 'ISSUED' WHERE id = '00000000-0000-0000-0000-00000017d001'$$, 'CL020', NULL,
-  'BLACKLISTED -> ISSUED : refusé (aucun détour par un autre état)');
+SELECT throws_ok($$UPDATE media SET status = 'ISSUED' WHERE id = '00000000-0000-0000-0000-00000017d001'$$, '42501', NULL,
+  'BLACKLISTED -> ISSUED : UPDATE direct refusé (droit retiré, aucun détour par un autre état)');
+SELECT throws_ok($$SELECT media_set_status('00000000-0000-0000-0000-00000017d001', 'ISSUED', 'x',
+  '00000000-0000-0000-0000-00000017e001')$$, 'CL020', NULL,
+  'BLACKLISTED -> ISSUED par media_set_status : refusé (destination limitée à SUSPENDED et BLACKLISTED)');
 
 -- 4 quinquies. Aucune ligne plantée dans les historiques (lot 20, cycle 5 ; relecture du 15/10/2026, scénario
 -- « pin »). Contournement relevé : une fausse mise en liste noire d'identifiant très grand fige l'épisode « en cours »
@@ -191,7 +196,8 @@ SELECT is((SELECT to_status || ' ' || actor_id::text || ' ' || approved_by::text
 -- La demande f002 n'est pas passée EXECUTED (l'API ne le fait pas ici) ; nouvel épisode de liste noire (3).
 SELECT set_config('app.user_id', '00000000-0000-0000-0000-00000017e001', true);
 SELECT set_config('app.approved_by', '', true);
-UPDATE media SET status = 'BLACKLISTED' WHERE id = '00000000-0000-0000-0000-00000017d001';
+SELECT media_set_status('00000000-0000-0000-0000-00000017d001', 'BLACKLISTED', 'épisode 3',
+  '00000000-0000-0000-0000-00000017e001');
 SELECT is((SELECT count(*) FROM media_status_history WHERE media_id = '00000000-0000-0000-0000-00000017d001'
               AND id >= 9000000000000000)::int, 0, 'aucune ligne plantée dans l''historique');
 SELECT throws_ok($$SELECT reinstate_media('00000000-0000-0000-0000-00000017d001','00000000-0000-0000-0000-00000017e001',
@@ -200,9 +206,10 @@ SELECT throws_ok($$SELECT reinstate_media('00000000-0000-0000-0000-00000017d001'
 SELECT is((SELECT status FROM media WHERE id = '00000000-0000-0000-0000-00000017d001'), 'BLACKLISTED',
   'scénario « pin » : le bracelet reste en liste noire');
 -- Historique des lots : le passage normal depuis cashless_app s'écrit toujours.
-SELECT set_config('app.reason', 'personnalisé', true);
-UPDATE media_batch SET status = 'PERSONALIZED' WHERE id = '00000000-0000-0000-0000-000000179001';
-SELECT set_config('app.reason', '', true);
+SELECT throws_ok($$UPDATE media_batch SET status = 'PERSONALIZED' WHERE id = '00000000-0000-0000-0000-000000179001'$$,
+  '42501', NULL, 'cashless_app : UPDATE direct de media_batch refusé (droit retiré, mission 11a WP03)');
+SELECT set_media_batch_status('00000000-0000-0000-0000-000000179001', 'PERSONALIZED', 'personnalisé',
+  '00000000-0000-0000-0000-00000017e001');
 SELECT is((SELECT string_agg(coalesce(from_status, '-') || '>' || to_status || ':' || coalesce(actor_id::text, '-'), ' '
                              ORDER BY id)
              FROM media_batch_status_history WHERE batch_id = '00000000-0000-0000-0000-000000179001'),

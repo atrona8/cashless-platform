@@ -37,9 +37,14 @@ INSERT INTO event (id, operator_id, organizer_id, name, currency, timezone, juri
 SELECT pg_temp.id(e), pg_temp.id(o), pg_temp.id(g), 'Evénement ' || e, 'XOF', 'Africa/Dakar',
        pg_temp.id('58c001'), 'ORGANIZER', 'LIVE'::event_status
   FROM (VALUES ('58d001','58a001','58b001'), ('58d002','58a001','58b001'), ('58d003','58a001','58b001'),
-               ('58d004','58a001','58b001'), ('58d011','58a002','58b011')) AS v(e, o, g);
+               ('58d004','58a001','58b001'), ('58d005','58a001','58b001'), ('58d006','58a001','58b001'),
+               ('58d011','58a002','58b011')) AS v(e, o, g);
 SELECT pg_temp.a();
-SELECT open_event_ledger(pg_temp.id(e)) FROM (VALUES ('58d001'), ('58d002'), ('58d003'), ('58d004')) AS v(e);
+SELECT open_event_ledger(pg_temp.id(e)) FROM (VALUES ('58d001'), ('58d002'), ('58d003'), ('58d004'), ('58d006')) AS v(e);
+-- 58d005 : aucun grand livre ; 58d006 : un second grand livre (deuxième devise), donc ambigu.
+INSERT INTO ledger (operator_id, scope_type, scope_id, currency, issuer_id, funds_holder_id)
+SELECT operator_id, scope_type, scope_id, 'EUR', issuer_id, funds_holder_id FROM ledger
+ WHERE scope_type = 'EVENT' AND scope_id = pg_temp.id('58d006');
 
 -- 1. Non-régression du kit : insertions à cinq colonnes, deux PRIMARY du même événement ---------------------
 SELECT lives_ok($$INSERT INTO edge_gateway (id, operator_id, event_id, serial, role) VALUES
@@ -65,7 +70,7 @@ SELECT lives_ok($$UPDATE edge_gateway SET status = 'ISOLATED' WHERE id = pg_temp
 -- 3. register_edge_gateway -------------------------------------------------------------------------------------
 SELECT pg_temp.a();
 CREATE TABLE pg_temp.r (k text PRIMARY KEY, v uuid);
-INSERT INTO pg_temp.r SELECT 'p1', register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d001'), 'GW-P1',
+INSERT INTO pg_temp.r SELECT 'p1', gateway_id FROM register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d001'), 'GW-P1',
   'PRIMARY', pg_temp.fp(1), pg_temp.ak(), pg_temp.ak(), 'https://gw1.lan', 'Awa (outil)');
 SELECT ok((SELECT v FROM pg_temp.r WHERE k = 'p1') IS NOT NULL, 'register renvoie l''identifiant');
 SELECT is((SELECT status || '/' || role FROM edge_gateway WHERE id = (SELECT v FROM pg_temp.r WHERE k = 'p1')),
@@ -109,6 +114,28 @@ SELECT throws_ok($$SELECT register_edge_gateway(pg_temp.id('58a001'), pg_temp.id
 SELECT throws_ok($$SELECT register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d002'), 'GW-X', 'PRIMARY',
    pg_temp.fp(1), pg_temp.ak(), pg_temp.ak(), NULL, 'x')$$, '23505', NULL,
   'UNIQUE (cert_sha256) hors REVOKED : empreinte déjà prise refusée');
+
+-- 3b. WP02 (0094) : retour (gateway_id, ledger_id), CL058 sans écriture ------------------------------------
+CREATE TABLE pg_temp.rl AS SELECT * FROM register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d004'),
+  'GW-L1', 'STANDBY', pg_temp.fp(31), pg_temp.ak(), pg_temp.ak(), NULL, 'Awa');
+SELECT is((SELECT ledger_id FROM pg_temp.rl), (SELECT i.ledger_id FROM identify_edge_gateway(pg_temp.fp(31)) i),
+  'le ledger_id rendu égale celui d''identify_edge_gateway');
+SELECT is((SELECT after->>'ledger_id' FROM audit_log WHERE action = 'EDGE_GATEWAY_REGISTERED'
+            AND after->>'serial' = 'GW-L1'),
+  (SELECT i.ledger_id::text FROM identify_edge_gateway(pg_temp.fp(31)) i), 'l''audit porte ledger_id');
+SELECT throws_ok($$SELECT register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d005'), 'GW-NL', 'PRIMARY',
+   pg_temp.fp(32), pg_temp.ak(), pg_temp.ak(), NULL, 'Awa')$$, 'CL058', NULL,
+  'événement sans grand livre : CL058');
+SELECT is((SELECT count(*)::int FROM edge_gateway WHERE serial = 'GW-NL'), 0, 'sans grand livre : aucune passerelle écrite');
+SELECT is((SELECT count(*)::int FROM audit_log WHERE action = 'EDGE_GATEWAY_REGISTERED'
+            AND after->>'serial' = 'GW-NL'), 0, 'sans grand livre : aucun audit');
+SELECT throws_ok($$SELECT register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d006'), 'GW-2L', 'PRIMARY',
+   pg_temp.fp(33), pg_temp.ak(), pg_temp.ak(), NULL, 'Awa')$$, 'CL058', NULL,
+  'deux grands livres (deux devises) : CL058');
+SELECT is((SELECT count(*)::int FROM edge_gateway WHERE serial = 'GW-2L'), 0, 'deux grands livres : rien d''écrit');
+SELECT is((SELECT count(*)::int FROM audit_log WHERE after->>'serial' = 'GW-2L'), 0, 'deux grands livres : aucun audit');
+SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname = 'register_edge_gateway'), 1,
+  'une seule signature de register_edge_gateway');
 
 -- 4. identify / touch ------------------------------------------------------------------------------------------
 SELECT is((SELECT gateway_id FROM identify_edge_gateway(pg_temp.fp(1))), (SELECT v FROM pg_temp.r WHERE k = 'p1'),
@@ -191,7 +218,7 @@ SELECT is((SELECT count(*)::int FROM audit_log WHERE action = 'EDGE_GATEWAY_ROLE
             AND after->>'alert' = 'EDGE_ROLE_CHANGED'), 1, 'audit et alerte du changement de rôle');
 SELECT throws_ok($$SELECT swap_edge_gateway_roles((SELECT v FROM pg_temp.r WHERE k = 'p1'),
    (SELECT v FROM pg_temp.r WHERE k = 's1'), 'Awa')$$, 'CL001', NULL, 'swap dans le mauvais sens refusé');
-INSERT INTO pg_temp.r SELECT 'o2', register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d002'), 'GW-O2',
+INSERT INTO pg_temp.r SELECT 'o2', gateway_id FROM register_edge_gateway(pg_temp.id('58a001'), pg_temp.id('58d002'), 'GW-O2',
   'STANDBY', pg_temp.fp(21), pg_temp.ak(), pg_temp.ak(), NULL, 'Awa');
 SELECT throws_ok($$SELECT swap_edge_gateway_roles((SELECT v FROM pg_temp.r WHERE k = 's1'),
    (SELECT v FROM pg_temp.r WHERE k = 'o2'), 'Awa')$$, 'CL001', NULL, 'swap entre deux événements refusé');

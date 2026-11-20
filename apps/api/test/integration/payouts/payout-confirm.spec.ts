@@ -192,6 +192,35 @@ describe('résultat des versements', () => {
     expect(await p.txCount('PAYOUT_CONFIRMED')).toBe(confirmed);
   });
 
+  it('OP-N137 (c) : rejeu identique avec une autre clé : 200, aucune écriture comptable, une ligne PAYOUT_CONFIRM_REPLAYED sans destination', async () => {
+    const { payout } = await one();
+    const body = { outcome: 'CONFIRMED', external_reference: 'R-REPLAY' };
+    expect((await confirm(payout, body)).status).toBe(200);
+    const confirmed = await p.txCount('PAYOUT_CONFIRMED');
+    const replays = () =>
+      ownerRows<{ after: unknown }>(
+        `SELECT after FROM audit_log WHERE action = 'PAYOUT_CONFIRM_REPLAYED' AND object_id = $1`,
+        [payout],
+      );
+    expect(await replays()).toHaveLength(0);
+    const again = await confirm(payout, body, p.w.organizerAdminA, randomUUID());
+    expect(again.status).toBe(200);
+    expect(await p.txCount('PAYOUT_CONFIRMED')).toBe(confirmed);
+    const rows = await replays();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.after).toMatchObject({ outcome: 'CONFIRMED', replay: true });
+    expect(JSON.stringify(rows[0]!.after)).not.toContain('R-REPLAY');
+    // Un résultat différent reste 409 et n'ajoute aucune ligne de rejeu.
+    const other = await confirm(
+      payout,
+      { outcome: 'CONFIRMED', external_reference: 'AUTRE' },
+      p.w.organizerAdminA,
+      randomUUID(),
+    );
+    expect(other.status).toBe(409);
+    expect(await replays()).toHaveLength(1);
+  });
+
   it('FR-012 : la clôture est refusée tant qu’une ligne est INITIATED (PAYOUT_PENDING_ZERO)', async () => {
     await one();
     const condition = () =>

@@ -58,7 +58,7 @@ SELECT is((SELECT count(*)::int FROM pg_proc p
             JOIN pg_extension x ON x.oid = e.refobjid AND x.extname = 'pgcrypto'
            CROSS JOIN unnest(ARRAY['cashless_app', 'cashless_platform', 'cashless_tagkeys',
                                    'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin',
-                                   'cashless_edge', 'cashless_edgeadmin']) r
+                                   'cashless_edge', 'cashless_edgeadmin', 'cashless_pin']) r
            WHERE has_function_privilege(r, p.oid, 'EXECUTE')), 0,
   'pgcrypto : aucun rôle applicatif ne l''exécute');
 
@@ -79,8 +79,9 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'create_platform_admin(uuid,text,text,text,text,text,text,uuid)',
   'decide_approval_request(uuid,uuid,boolean,text)', 'device_token_family_active(uuid,uuid)',
   'enqueue_tag_key_job(uuid)',
+  -- mission 11a, WP03 : enroll_device à 15 arguments (0095 ; l'ancienne à 13 est retirée), même droit
   'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,'
-    || 'uuid)',
+    || 'uuid,bytea,bytea)',
   'enrollment_attempts_exceeded(bytea,inet)', 'event_transition_conditions(uuid,event_status)',
   'expire_media_claims(uuid)', 'forfeit_batch_deposits(uuid,integer)', 'forfeit_deposit(uuid)',
   'identify_person(text,text)', 'invalidate_unassociated_codes(uuid)',
@@ -105,9 +106,10 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'set_media_batch_status(uuid,text,text,uuid)', 'suspend_media(uuid,text,uuid)',
   'wallet_spendable(uuid)', 'wallet_topup_headroom(uuid,timestamptz)',
   -- Mission 5b, lot WP07 : vendeurs (0031)
-  'assert_vendor_session(uuid,uuid)', 'begin_vendor_pin_check(uuid,uuid)',
+  -- mission 11a, WP03 (OP-N76 levée) : begin_vendor_pin_check et open_vendor_session retirées (cashless_pin seul)
+  'assert_vendor_session(uuid,uuid)',
   'close_vendor_session(uuid)', 'create_vendor(uuid,text,text,uuid)',
-  'open_vendor_session(uuid,uuid)', 'set_vendor_pin(uuid,text,uuid)',
+  'set_vendor_pin(uuid,text,uuid)',
   'set_vendor_status(uuid,text,uuid)',
   -- catalogue (0032)
   'check_sale_lines(uuid,jsonb,bigint)', 'create_catalog_category(uuid,text,text,integer,uuid)',
@@ -133,7 +135,7 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'open_cash_session(uuid,uuid)', 'count_cash_session(uuid,bigint,uuid,uuid,text)',
   'begin_cash_close(uuid,uuid)', 'finish_cash_close(uuid,uuid,uuid)', 'attach_cash_tx(uuid,uuid)',
   'open_cash_due_anomaly(uuid,uuid,bigint,uuid)', 'take_deposit_for_session(uuid,uuid)',
-  'refund_deposit_for_session(uuid,uuid)',
+  -- refund_deposit_for_session(uuid,uuid) : retirée par 0092 (mission 11a, WP03)
   'refund_cash_due_for_session(uuid,uuid,text,uuid,uuid,uuid)',
   -- cautions sans compte désigné (0041), à la place de take_deposit et refund_deposit
   'take_deposit_from_balance(uuid)', 'refund_deposit_from_balance(uuid)',
@@ -199,7 +201,11 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'settle_payout(uuid,text,text,text,uuid)', 'import_statement_lines(jsonb,jsonb)',
   'match_statement_line(bigint,uuid,uuid,uuid)', 'account_reconciliation(uuid)',
   'refund_deposit_for_session(uuid,uuid,uuid,uuid)',
-  'create_account_mapping_version(uuid,uuid,timestamptz,jsonb,uuid)'
+  'create_account_mapping_version(uuid,uuid,timestamptz,jsonb,uuid)',
+  -- mission 11a, WP03 (post-roles.sql §13c) : exactement trois EXECUTE ajoutés (lots de bracelets OP-N60 levée,
+  -- compteur App Attest) ; rien d'autre
+  'create_media_batch(uuid,uuid,text,integer,integer,text,bigint,bigint,text,text,text,uuid)',
+  'update_media_batch(uuid,jsonb,uuid)', 'advance_app_attest_counter(uuid,bytea,bigint)'
 ]::text[]::regprocedure[]),
   'cashless_app : liste exacte des fonctions exécutables');
 SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
@@ -266,6 +272,8 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'edge_lock_handover(uuid,uuid)', 'edge_event_lock(uuid)',
                     -- mission 9a, lot WP01 : fonction de déclencheur de refund_request (0081)
                     'refund_request_scope_guard()',
+                    -- mission 11a, WP03 : refund_deposit(uuid,uuid) gardée et déclencheur de 0092, à personne
+                    'refund_deposit(uuid,uuid)', 'refund_request_insert_guard()',
                     -- mission 9b, lot WP06 (0083 à 0088) : internes, gardes et fonctions de déclencheur ; les
                     -- quatorze ops_* vont à cashless_maint seul (post-roles.sql §12)
                     'refund_deposit(uuid,uuid,uuid,uuid)', 'closing_new_conditions(uuid,event_status)',
@@ -365,6 +373,11 @@ SELECT is(pg_temp.fns('cashless_edge'), pg_temp.sigs(ARRAY[
   'edge_tap_proof(uuid,bytea,bytea,bytea)'
 ]::text[]::regprocedure[]),
   'cashless_edge : liste exacte (23 fonctions, ni post_transaction ni fonction S12 brute)');
+-- Mission 11a, WP03 (post-roles.sql §13c) : processus vendor-pin. Liste figée : exactement deux fonctions.
+SELECT is(pg_temp.fns('cashless_pin'), pg_temp.sigs(ARRAY[
+  'begin_vendor_pin_check(uuid,uuid)', 'open_vendor_session(uuid,uuid)'
+]::text[]::regprocedure[]),
+  'cashless_pin : liste exacte (begin_vendor_pin_check et open_vendor_session, mission 11a WP03)');
 SELECT is(pg_temp.fns('cashless_edgeadmin'), pg_temp.sigs(ARRAY[
   'register_edge_gateway(uuid,uuid,text,text,bytea,bytea,bytea,text,text)',
   'revoke_edge_gateway(uuid,text,text)', 'rotate_edge_gateway_cert(uuid,bytea,text)',
@@ -377,7 +390,7 @@ SELECT is((SELECT coalesce(string_agg(r || ':' || p.oid::regprocedure::text, ' '
                                       ORDER BY r, p.oid::regprocedure::text), '')
              FROM pg_proc p CROSS JOIN unnest(ARRAY['public', 'cashless_app', 'cashless_platform', 'cashless_tagkeys',
                 'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign',
-                'cashless_maint', 'cashless_edge', 'cashless_edgeadmin']) r
+                'cashless_maint', 'cashless_edge', 'cashless_edgeadmin', 'cashless_pin']) r
             WHERE p.pronamespace = 'public'::regnamespace
               AND p.proname IN ('set_debit_authority', 'force_central_authority',
                                 'grant_edge_authority', 'ack_edge_handover', 'complete_edge_release',
@@ -397,9 +410,10 @@ SELECT is((SELECT coalesce(string_agg(r || ':' || p.oid::regprocedure::text, ' '
 SELECT is((SELECT count(*)::int FROM pg_proc p CROSS JOIN unnest(ARRAY['public', 'cashless_app',
             'cashless_platform', 'cashless_tagkeys', 'cashless_perso', 'cashless_tagcheck',
             'cashless_keyadmin', 'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint',
-            'cashless_edge', 'cashless_edgeadmin']) r
+            'cashless_edge', 'cashless_edgeadmin', 'cashless_pin']) r
            WHERE p.pronamespace = 'public'::regnamespace
-             AND p.proname IN ('offline_snapshot_add_entries', 'offline_snapshot_draft_locked',
+             AND p.proname IN ('refund_deposit', 'refund_request_insert_guard',
+                               'offline_snapshot_add_entries', 'offline_snapshot_draft_locked',
                                'offline_snapshot_source_rows', 'offline_snapshot_item_ok',
                                'offline_snapshot_header_ok', 'offline_snapshot_envelope_ok',
                                'snapshot_signing_key_cap', 'open_offline_batch_core',
@@ -445,7 +459,7 @@ CREATE TEMP TABLE wp07_before AS
     FROM unnest(ARRAY['public', 'cashless_app', 'cashless_platform', 'cashless_tagkeys',
                       'cashless_perso', 'cashless_tagcheck', 'cashless_keyadmin',
                       'cashless_snapcontent', 'cashless_snapsign', 'cashless_maint', 'cashless_edge',
-                      'cashless_edgeadmin']) r;
+                      'cashless_edgeadmin', 'cashless_pin']) r;
 \ir ../roles.sql
 \ir ../post-roles.sql
 CREATE FUNCTION public.wp07_future_probe() RETURNS int LANGUAGE sql AS 'SELECT 1';
@@ -454,7 +468,8 @@ SELECT ok(NOT has_function_privilege('public', 'public.wp07_future_probe()', 'EX
       AND NOT has_function_privilege('cashless_snapcontent', 'public.wp07_future_probe()', 'EXECUTE')
       AND NOT has_function_privilege('cashless_snapsign', 'public.wp07_future_probe()', 'EXECUTE')
       AND NOT has_function_privilege('cashless_edge', 'public.wp07_future_probe()', 'EXECUTE')
-      AND NOT has_function_privilege('cashless_edgeadmin', 'public.wp07_future_probe()', 'EXECUTE'),
+      AND NOT has_function_privilege('cashless_edgeadmin', 'public.wp07_future_probe()', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_pin', 'public.wp07_future_probe()', 'EXECUTE'),
   'OP-N68 levée : fonction créée à la main par le propriétaire, exécutable ni par PUBLIC ni par un rôle');
 SELECT is((SELECT count(*)::int FROM pg_default_acl d WHERE d.defaclobjtype = 'f'
              AND d.defaclnamespace = 0 AND d.defaclrole = (SELECT oid FROM pg_roles WHERE rolname = current_user)

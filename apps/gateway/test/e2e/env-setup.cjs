@@ -40,6 +40,7 @@ for (const role of [
   'maint',
   'edge',
   'edgeadmin',
+  'pin',
 ]) {
   process.env[`DATABASE_URL_${role.toUpperCase()}`] = url(role);
   process.env[`CASHLESS_${role.toUpperCase()}_PASSWORD`] = pw(role);

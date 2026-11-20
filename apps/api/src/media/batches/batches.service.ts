@@ -42,8 +42,17 @@ export class BatchesService {
   constructor(private readonly audit: AuditService) {}
 
   async row(client: TxClient, batchId: string, lock = false): Promise<MediaBatchRow> {
+    // `cashless_app` n'a plus `UPDATE` sur `media_batch` (OP-N60) : `FOR UPDATE` y serait refusé
+    // (42501). La sérialisation de deux requêtes sur le même lot passe par un verrou consultatif
+    // de transaction, relâché à la fin de la transaction de la requête.
+    if (lock) {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('media-batch:' || $1, 0))",
+        [batchId],
+      );
+    }
     const { rows } = await client.query<MediaBatchRow>(
-      `SELECT ${BATCH_COLUMNS} FROM media_batch WHERE id = $1${lock ? ' FOR UPDATE' : ''}`,
+      `SELECT ${BATCH_COLUMNS} FROM media_batch WHERE id = $1`,
       [batchId],
     );
     if (!rows[0]) throw notFound();
@@ -91,12 +100,11 @@ export class BatchesService {
     language: Language,
   ) {
     await this.assertShape(client, operatorId, input.organizer_id, input, language, true);
-    const { rows } = await client.query<MediaBatchRow>(
-      `INSERT INTO media_batch (operator_id, organizer_id, event_id, kind, quantity, key_index, print_order_ref, preload_promo_amount,
-                                deposit_amount, deposit_mode, key_mode, reuse_policy)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING ${BATCH_COLUMNS}`,
+    // Le prestataire n'est pas un argument : la fonction le lit de la session. L'auteur de la ligne
+    // d'historique `->ORDERED` est la personne qui crée le lot.
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT create_media_batch($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) AS id`,
       [
-        operatorId,
         input.organizer_id,
         input.event_id,
         input.kind,
@@ -108,9 +116,10 @@ export class BatchesService {
         input.deposit_mode,
         input.key_mode,
         input.reuse_policy,
+        actor.actorId,
       ],
     );
-    const created = batchDto(rows[0]!);
+    const created = batchDto(await this.row(client, rows[0]!.id));
     await this.audit.record(client, {
       ...actor,
       operatorId,
@@ -149,13 +158,14 @@ export class BatchesService {
       language,
       false,
     );
-    const keys = Object.keys(changes) as (keyof BatchChanges)[];
-    const { rows } = await client.query<MediaBatchRow>(
-      `UPDATE media_batch SET ${keys.map((key, i) => `"${key}" = $${i + 2}`).join(', ')} WHERE id = $1 RETURNING ${BATCH_COLUMNS}`,
-      [row.id, ...keys.map((key) => changes[key])],
-    );
+    await client.query('SELECT update_media_batch($1, $2::jsonb, $3)', [
+      row.id,
+      JSON.stringify(changes),
+      actor.actorId,
+    ]);
+    const updated = await this.row(client, row.id);
     const before = batchDto(row);
-    const after = batchDto(rows[0]!);
+    const after = batchDto(updated);
     await this.audit.record(client, {
       ...actor,
       operatorId: row.operator_id,

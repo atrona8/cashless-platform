@@ -8,6 +8,7 @@ import {
   buildCashDeposit,
   buildMerchantDebtTransfer,
   buildOperatorFee,
+  operatorFeeTotal,
   buildPayoutConfirmed,
   buildPayoutFailed,
   buildPayoutInitiated,
@@ -15,6 +16,7 @@ import {
   buildPlatformFee,
   buildPspSettlement,
 } from '../../../../src/ledger/builders/closing';
+import { feeTotal } from '../../../../src/closing/calculators/operator-fee';
 import { BuildError, type BuildContext, type Line } from '../../../../src/ledger/types';
 import { coded, command, expectedLines, scenarioConfig } from '../support/scenario-lines';
 
@@ -321,5 +323,73 @@ describe('cas dédiés', () => {
     expect(coded(lines)).toEqual(
       expectedLines(31).map((line) => ({ ...line, amount: -line.amount })),
     );
+  });
+});
+
+describe('OPERATOR_FEE régularisation : plafond (OP-N141)', () => {
+  const both = { TOPUP_AMOUNT: 100_000n, PER_MEDIA: 6n };
+  const rules = config.operatorFees;
+  const only = (basis: 'TOPUP_AMOUNT' | 'PER_MEDIA'): BuildContext => ({
+    config: { ...config, operatorFees: rules.filter((r) => r.basis === basis) },
+  });
+  const regularize =
+    (amount: bigint, bases: object, c: BuildContext = ctx) =>
+    () =>
+      buildOperatorFee(command(31, { bases, regularization: true, amount }), c);
+  const SETS: [string, object, BuildContext][] = [
+    ['PER_MEDIA seul', { PER_MEDIA: 6n }, only('PER_MEDIA')],
+    ['TOPUP_AMOUNT seul', { TOPUP_AMOUNT: 100_000n }, only('TOPUP_AMOUNT')],
+    ['les deux assiettes', both, ctx],
+  ];
+
+  it.each(SETS)('%s : écart = frais bruts accepté, sens inverse, équilibré', (_n, bases, c) => {
+    const gross = operatorFeeTotal(c.config, bases);
+    expect(gross).toBeGreaterThan(0n);
+    const lines = regularize(gross, bases, c)();
+    expectBalanced(lines);
+    expect(lines.some((l) => l.amount === -gross)).toBe(true);
+  });
+
+  it.each(SETS)('%s : écart = frais bruts + 1 refusé (rien produit)', (_n, bases, c) => {
+    const over = regularize(operatorFeeTotal(c.config, bases) + 1n, bases, c);
+    expect(over).toThrow(BuildError);
+    expect(over).toThrow(/supérieur aux frais bruts/);
+  });
+
+  it('écart brut + 1 : code VALIDATION_FAILED', () => {
+    try {
+      regularize(operatorFeeTotal(config, both) + 1n, both)();
+      throw new Error('devait échouer');
+    } catch (e) {
+      expect((e as BuildError).code).toBe('VALIDATION_FAILED');
+    }
+  });
+
+  it('écart énorme refusé', () => {
+    expect(regularize(10n ** 18n, both)).toThrow(/supérieur aux frais bruts/);
+  });
+
+  it.each([{}, { TOPUP_AMOUNT: 0n, PER_MEDIA: 0n }])('bases %j : plafond zéro, refus', (b) => {
+    expect(regularize(1n, b)).toThrow(/supérieur aux frais bruts/);
+  });
+
+  it('règles absentes : plafond zéro, refus', () => {
+    const none: BuildContext = { config: { ...config, operatorFees: [] } };
+    expect(regularize(1n, both, none)).toThrow(/supérieur aux frais bruts/);
+  });
+
+  it.each([0n, -1n])('écart %s : toujours refusé par la borne existante', (amount) => {
+    expect(regularize(amount, both)).toThrow(BuildError);
+    expect(regularize(amount, both)).not.toThrow(/supérieur aux frais bruts/);
+  });
+
+  it('contrôle positif : branche normale inchangée (pas de plafond)', () => {
+    const lines = buildOperatorFee(command(31, { bases: both }), ctx);
+    expect(coded(lines)).toEqual(expectedLines(31));
+  });
+
+  it.each(SETS)('%s : operatorFeeTotal égale feeTotal du calculateur', (_n, bases, c) => {
+    const full = { TOPUP_AMOUNT: 0n, PER_MEDIA: 0n, ...bases };
+    expect(operatorFeeTotal(c.config, bases)).toBe(feeTotal(c.config, full));
   });
 });

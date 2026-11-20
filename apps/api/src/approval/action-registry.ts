@@ -7,6 +7,7 @@ import type { TxClient } from '../db/tenant-tx';
 import type { StaffRole } from '../identity/roles.decorator';
 import type { ScopeRef } from '../identity/scope-resolver';
 import type { ApprovalRequestRow } from './approval.mapper';
+import type { ApprovalActor } from './approval.service';
 
 /** Action d'une demande d'approbation (liste fermée du contrat et du schéma). */
 export type ApprovalAction = components['schemas']['ApprovalAction'];
@@ -34,6 +35,16 @@ export interface ApprovalClosureContext<P> {
   actorId: string;
 }
 
+export interface ApprovalDecisionGuardContext<P = unknown> {
+  /** Transaction de la décision (lectures seules attendues). */
+  client: TxClient;
+  request: ApprovalRequestRow;
+  /** Charge validée de la demande. */
+  payload: P;
+  /** Personne qui décide, avec ses attributions. */
+  actor: ApprovalActor;
+}
+
 export interface ApprovalActionDefinition<P = unknown> {
   action: ApprovalAction;
   /**
@@ -49,6 +60,15 @@ export interface ApprovalActionDefinition<P = unknown> {
   scopeOf(payload: P, targetId: string | null): ScopeRef;
   /** Paramètres validés et figés ; refus : ProblemException 422. */
   validate(payload: unknown): P;
+  /**
+   * Optionnel : contrôle propre à l'action, appelé AVANT toute décision (approuver comme refuser), dans
+   * la transaction de la décision et après le contrôle de rôle générique. Une ProblemException (403)
+   * laisse la demande PENDING. Sans crochet, rien ne change.
+   */
+  guardDecision?(
+    ctx: ApprovalDecisionGuardContext<P>,
+    decision: 'APPROVE' | 'REJECT',
+  ): Promise<void>;
   /**
    * Exécution unique, dans la transaction de l'approbation (sous un point de sauvegarde). Une ProblemException ou
    * une erreur SQL traduisible fait passer la demande FAILED ; toute autre erreur annule tout.
