@@ -39,7 +39,9 @@ l'essentiel est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=
 - **Contrat** : seuls ajouts permis (WP09) : la description du corps `text/csv`
   d'`importClaimCodeAssociations` (colonne `printed_number`) et les motifs `BAD_PRINTED_NUMBER`,
   `PRINTED_NUMBER_TAKEN` de `ClaimCodeAssociationResult.reason` (ADR-225), inscrits dans
-  `contract-baseline.json`. Aucune autre route, aucun champ, aucun code d'erreur exposé nouveau. `node tools/contract-stability/check.mjs` à 0 refus.
+  `contract-baseline.json`. Décision du porteur du 20/11/2026 (soir) : la réponse `'422'` (réponse commune,
+  `VALIDATION_FAILED`) est aussi déclarée sur `revokeKycVerification` (motif absent ou < 10 caractères),
+  ajout rétrocompatible fait par WP09 et inscrit dans `contract-baseline.json` ; ADR en WP11. Aucune autre route, aucun champ, aucun code d'erreur exposé nouveau. `node tools/contract-stability/check.mjs` à 0 refus.
 - **Jamais** modifier un `.sql` généré de `packages/ledger-sql/`, `schema_grand_livre_cashless.sql`
   ni une migration existante : migrations `0096` à `0099` seulement.
 - **Aucune dépendance nouvelle**. Lignes de 100 caractères au plus.
