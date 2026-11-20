@@ -55,7 +55,7 @@ et sont reprises ci-dessous.
   agent titulaire détecté par égalité du numéro vérifié et de `app_user.phone` (limite consignée) ; OP-N47 en rotation
   immédiate, sans période de double empreinte.
 - **Plan (20/11/2026)** :
-  1. code en attente de bascule gardé **en mémoire du processus seulement**, 30 s au plus (« fais ce qui est le plus
+  1. code en attente de bascule gardé **en mémoire du processus seulement**, jusqu'au dernier envoi, 35 s au plus (« fais ce qui est le plus
      secure ») ; bascule perdue au redémarrage ;
   2. chaque empreinte porte la **version du secret** ; une empreinte d'une ancienne version compte comme absente ;
   3. réémission après rotation par une **commande d'exploitation**, contrat inchangé, lots clos compris ;
@@ -102,9 +102,9 @@ kitty-specs/serveur-app-festivalier-01M7WB69/
 ```
 packages/ledger-sql/
 ├── migrations/0096_kyc_functions.sql            # create_kyc_verification, revoke_kyc_verification (DEFINER)
-├── migrations/0097_claim_code_key_version.sql   # version du secret sur media, claim_code, media_claim ; reissue_claim_codes
-├── migrations/0098_media_printed_number.sql     # media.printed_number, associate_claim_code étendue, pending_offline_notice
-├── migrations/0099_otp_channel_attempts.sql     # canaux essayés d'un défi (sans code)
+├── migrations/0097_claim_code_key_version.sql   # version du secret, reissue_claim_codes, printed_number
+├── migrations/0098_pending_offline_notice.sql   # wallet_pending_offline_notice
+├── migrations/0099_otp_channel_attempt.sql      # canaux essayés d'un défi (sans code)
 ├── post-roles.sql                               # section 14 : cashless_claimadmin, EXECUTE KYC, retraits
 └── tests/tests_10a_*.sql                        # fonctions, droits, bornes
 
@@ -139,7 +139,7 @@ flowchart LR
   API -->|create_kyc_verification / revoke_kyc_verification DEFINER| DB[(PostgreSQL)]
   OPS[Exploitant] -->|reissue-claim-codes, rôle cashless_claimadmin| DB
   APP[App festivalier] -->|/customer-auth/otp| API
-  API --> CHAIN[Chaîne : WhatsApp → SMS 10 s → repli 20 s, code en mémoire 30 s]
+  API --> CHAIN[Chaîne : WhatsApp → SMS 10 s → repli 20 s, code en mémoire 35 s au plus]
   APP -->|/me| API
 ```
 
@@ -198,7 +198,7 @@ flowchart LR
 
 - **Purpose**: `printed_number` importé (colonne facultative) et `pending_offline_notice` calculé.
 - **Relevant requirements**: FR-009, FR-010, NFR-004, C-001.
-- **Affected surfaces**: `0098_media_printed_number.sql`, `claim-codes.service.ts` (import), `customer-app/me.service.ts`,
+- **Affected surfaces**: `0097` (`printed_number`), `0098_pending_offline_notice.sql`, `claim-codes.service.ts` (import), `customer-app/me.service.ts`,
   `openapi.yaml` (description), `contract-baseline.json`.
 - **Sequencing/depends-on**: IC-03 (même fichier d'import).
 - **Risks**: le calcul de l'avis lit `offline_snapshot_ack` et `offline_batch` sous RLS ; index pour tenir NFR-004.
@@ -206,10 +206,10 @@ flowchart LR
 ### IC-06 — Chaîne d'envoi des codes
 
 - **Purpose**: expéditeur composite WhatsApp → SMS principal → SMS de repli, délais réglables (10 s et 20 s), code en
-  mémoire 30 s au plus, canaux essayés notés sans le code, trois faux refusés en production.
+  mémoire jusqu'au dernier envoi (35 s au plus), canaux essayés notés sans le code, trois faux refusés en production.
 - **Relevant requirements**: FR-011, FR-012, FR-013, NFR-001, NFR-002, NFR-005, C-003.
 - **Affected surfaces**: `customer-auth/otp-sender.ts`, `customer-auth/otp-chain.ts`, `customer-auth.service.ts`,
-  `0099_otp_channel_attempts.sql`, `config/config.ts`, `production-refusals.spec.ts`.
+  `0099_otp_channel_attempt.sql`, `config/config.ts`, `production-refusals.spec.ts`.
 - **Sequencing/depends-on**: none.
 - **Risks**: minuteries sans fuite au test ni à l'arrêt ; un seul code par défi ; les bascules ne comptent pas dans les
   limites ; le code d'un titulaire (remboursements, mission 9a) suit la même chaîne sans sortir dans une réponse.

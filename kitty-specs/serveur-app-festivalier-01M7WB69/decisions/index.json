@@ -162,6 +162,30 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-11-20T12:59:56.387982Z",
+      "decision_id": "01M7WGNJK39C2XVDFYTXVR8YEK",
+      "final_answer": "Deux valeurs ajout\u00e9es \u00e0 ClaimCodeAssociationResult.reason (BAD_PRINTED_NUMBER, PRINTED_NUMBER_TAKEN), ajout r\u00e9trocompatible inscrit dans contract-baseline.json (ADR-225), types g\u00e9n\u00e9r\u00e9s r\u00e9g\u00e9n\u00e9r\u00e9s",
+      "input_key": "printed_number_reject_reasons",
+      "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+      "mission_slug": "serveur-app-festivalier-01M7WB69",
+      "opened_by": "cli",
+      "options": [
+        "deux valeurs ajoutees",
+        "MALFORMED_LINE",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Import du fichier de l'imprimeur : la r\u00e9ponse liste les lignes refus\u00e9es avec un motif tir\u00e9 d'une \u00e9num\u00e9ration ferm\u00e9e du contrat. Faut-il ajouter deux valeurs (BAD_PRINTED_NUMBER, PRINTED_NUMBER_TAKEN) ou r\u00e9utiliser MALFORMED_LINE ?",
+      "rationale": null,
+      "resolved_at": "2026-11-20T13:07:15.821292Z",
+      "resolved_by": null,
+      "slot_key": "plan.contrat.motifs-import",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",

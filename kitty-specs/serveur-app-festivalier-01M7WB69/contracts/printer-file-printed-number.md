@@ -12,5 +12,6 @@ K7QM-4XH9RT,04A1B2C3D4E5F6,FS26-004812
 
 - Troisième colonne facultative ; un fichier à deux colonnes reste valide (comportement inchangé).
 - `printed_number` : 1 à 32 caractères `[A-Z0-9-]` (casse normalisée), unique par prestataire.
-- Motifs de ligne refusée ajoutés : `BAD_PRINTED_NUMBER`, `PRINTED_NUMBER_TAKEN` (forme de la réponse inchangée).
+- Motifs de ligne refusée ajoutés à l'énumération `ClaimCodeAssociationResult.reason` : `BAD_PRINTED_NUMBER`,
+  `PRINTED_NUMBER_TAKEN` (décision du porteur du 20/11/2026, ADR-225 ; types générés régénérés).
 - Lecture : `CustomerMedia.printed_number` (`listMyMedia`, `getMe`) ; `null` si inconnu.

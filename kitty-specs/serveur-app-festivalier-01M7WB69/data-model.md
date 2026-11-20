@@ -32,10 +32,13 @@ toute empreinte d'une autre version. `reissue_claim_codes(p_batch uuid, p_media 
 smallint) RETURNS int` : exécutable par `cashless_claimadmin` seulement ; lot `PUBLIC` ; ne touche qu'un bracelet sans
 code, ou au code d'une version antérieure jamais utilisé ; journalise le nombre.
 
-### Migration 0098 — numéro imprimé et avis hors ligne
+### Migration 0097 (suite) — numéro imprimé
 
 - `media.printed_number text` : `CHECK (printed_number ~ '^[A-Z0-9-]{1,32}$')`, unique par `(operator_id,
-  printed_number)` quand non NULL ; posé par `associate_claim_code` étendue (paramètre facultatif).
+  printed_number)` quand non NULL ; posé par `associate_claim_code` étendue.
+
+### Migration 0098 — avis hors ligne
+
 - `wallet_pending_offline_notice(p_wallet uuid) RETURNS boolean` (`STABLE`) : événement non `CLOSED` et au moins un
   terminal non révoqué avec un `offline_snapshot_ack` sur le grand livre postérieur à son dernier `offline_batch`.
 

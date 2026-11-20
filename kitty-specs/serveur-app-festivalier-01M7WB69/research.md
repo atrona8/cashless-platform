@@ -80,7 +80,7 @@ Sources lues le 20/11/2026 : `schema_grand_livre_cashless.sql` (S24 `kyc_verific
 - **Decision**: `ChainedOtpSender` implémente `OtpSender` : WhatsApp ; sans confirmation au délai `OTP_WHATSAPP_TIMEOUT_MS`
   (défaut 10 000) ou numéro sans WhatsApp, SMS principal ; sans confirmation à `OTP_SMS_PRIMARY_TIMEOUT_MS` (défaut
   20 000), SMS de repli. Canal `SMS` : WhatsApp sauté. Le code n'est gardé que dans la fermeture de la chaîne en cours
-  (mémoire du processus), effacé à la confirmation, à l'expiration (30 s au plus) ou à l'arrêt ; jamais écrit.
+  (mémoire du processus), effacé à la confirmation, dès le dernier envoi (35 s au plus, délais bornés à 15 s et 20 s) ou à l'arrêt ; jamais écrit.
   Chaque canal essayé est noté (`otp_channel_attempt` : défi, canal, fournisseur, envoyé, confirmé, sans code). Les
   bascules ne créent pas de défi : les limites (`otp_challenge` par numéro et par adresse) ne bougent pas.
 - **Rationale**: décision du porteur (« le plus secure ») ; ADR-66.
