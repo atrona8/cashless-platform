@@ -13,7 +13,7 @@
 // `X-Authority-Epoch: 0`).
 
 import { randomUUID } from 'node:crypto';
-import { VendorPinHasher } from '../../../../src/vendor-pin/vendor-pin.hasher';
+import { testPinDigester } from '../../../support/app';
 import { withOwner } from '../../../support/db';
 import { creditWallet, goLive, tapBody } from '../../../support/media-fixtures';
 import { asOperator, assignPos, seedPos, seedVendor } from '../../vendors/vendor-fixtures';
@@ -30,7 +30,7 @@ export function cases(ctx: CaseContext): Record<string, RouteCase> {
   const prepare = async (ctx: CaseContext): Promise<void> => {
     if (saleId !== '') return;
     const { w, terminal, api } = ctx;
-    const pinHash = await api.app.get(VendorPinHasher, { strict: false }).hash(PIN);
+    const pinHash = await testPinDigester().hash(PIN);
     const seeded = await withOwner(async (db) => {
       const status = await db.query<{ status: string }>('SELECT status FROM event WHERE id = $1', [
         w.ids.eventA,

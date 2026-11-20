@@ -121,7 +121,7 @@ export class ApprovalService {
     note: string | null,
     actor: ApprovalActor,
   ): Promise<ApprovalRequestDto> {
-    const { before, definition, role } = await this.prepareDecision(client, id, actor);
+    const { before, definition, role } = await this.prepareDecision(client, id, actor, 'APPROVE');
     const decided = await this.decide(client, id, actor.principal.userId, true, note, {
       definition,
       before,
@@ -181,7 +181,7 @@ export class ApprovalService {
     note: string,
     actor: ApprovalActor,
   ): Promise<ApprovalRequestDto> {
-    const { before, definition, role } = await this.prepareDecision(client, id, actor);
+    const { before, definition, role } = await this.prepareDecision(client, id, actor, 'REJECT');
     const after = await this.decide(client, id, actor.principal.userId, false, note, {
       definition,
       before,
@@ -268,7 +268,12 @@ export class ApprovalService {
     return operatorId === null ? this.platformTx.run(fn) : this.tx.run(operatorId, fn);
   }
 
-  private async prepareDecision(client: TxClient, id: string, actor: ApprovalActor) {
+  private async prepareDecision(
+    client: TxClient,
+    id: string,
+    actor: ApprovalActor,
+    decision: 'APPROVE' | 'REJECT',
+  ) {
     if (!UUID.test(id)) throw new ProblemException('NOT_FOUND');
     const { rows } = await client.query<ApprovalRequestRow>(
       'SELECT * FROM approval_request WHERE id = $1',
@@ -287,6 +292,12 @@ export class ApprovalService {
       before.target_id,
     );
     if (!role) throw new ProblemException('FORBIDDEN');
+    // Contrôle propre à l'action, AVANT `decide` : un refus laisse la demande PENDING.
+    if (definition.guardDecision)
+      await definition.guardDecision(
+        { client, request: before, payload: definition.validate(before.payload), actor },
+        decision,
+      );
     return { before, definition, role };
   }
 

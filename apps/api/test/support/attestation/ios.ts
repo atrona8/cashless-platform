@@ -252,3 +252,70 @@ export async function appAttestObject(options: AppAttestOptions): Promise<Buffer
   ]);
   return Buffer.from(encode(options.object ? options.object(built) : built));
 }
+
+/** Entier ASN.1 DER positif depuis un entier grand-boutiste de longueur fixe (r ou s). */
+function derInteger(raw: Uint8Array): Buffer {
+  let start = 0;
+  while (start < raw.length - 1 && raw[start] === 0) start += 1;
+  let body = Buffer.from(raw.subarray(start));
+  if (body[0]! & 0x80) body = Buffer.concat([Buffer.from([0]), body]);
+  return Buffer.concat([Buffer.from([0x02, body.length]), body]);
+}
+
+/** Signature ECDSA P-256 « r ‖ s » (WebCrypto) → SEQUENCE DER { r, s }, écrite à la main. */
+export function rawSignatureToDer(raw: Uint8Array): Buffer {
+  const body = Buffer.concat([derInteger(raw.subarray(0, 32)), derInteger(raw.subarray(32))]);
+  return Buffer.concat([Buffer.from([0x30, body.length]), body]);
+}
+
+export interface AppAssertionOptions {
+  /** Clé privée App Attest de l'appareil. */
+  privateKey: CryptoKey;
+  /** Condensé de la requête (déjà calculé). */
+  clientDataHash: Buffer;
+  counter: number;
+  /** `<équipe>.<bundle>` ; défaut : l'app de test. */
+  rpId?: string;
+  /** Drapeaux de `authenticatorData` (défaut 0 : ni AT ni ED). */
+  flags?: number;
+  /** Signature imposée (DER ou autre). */
+  signatureOverride?: Buffer;
+  /** Clés CBOR supplémentaires (cas « clé en trop »). */
+  extraKeys?: Array<[string, unknown]>;
+  /** Clés CBOR retirées (cas « clé manquante »). */
+  omitKeys?: string[];
+  /** `authenticatorData` brut à la place du construit (longueur inattendue). */
+  rawAuthenticatorData?: Buffer;
+}
+
+/**
+ * Assertion App Attest DE TEST, écrite d'après la procédure d'Apple (« Validating apps that connect
+ * to your server »), PAS d'après le vérificateur : `authenticatorData = rpIdHash(32) ‖ flags(1) ‖
+ * compteur(4, grand-boutiste)` ; `nonce = SHA-256(authenticatorData ‖ clientDataHash)` ; signature
+ * ECDSA-SHA256 de `nonce` COMME MESSAGE (WebCrypto hache lui-même), convertie en DER ; objet CBOR
+ * `{ signature, authenticatorData }`. Ne remplace pas un vecteur réel d'Apple (limite R1, OP-N64).
+ */
+export async function appAssertion(options: AppAssertionOptions): Promise<Buffer> {
+  const counter = Buffer.alloc(4);
+  counter.writeUInt32BE(options.counter);
+  const data =
+    options.rawAuthenticatorData ??
+    Buffer.concat([
+      sha256(Buffer.from(options.rpId ?? `${TEST_IOS_TEAM_ID}.${TEST_IOS_BUNDLE_ID}`, 'utf8')),
+      Buffer.from([options.flags ?? 0]),
+      counter,
+    ]);
+  const nonce = sha256(data, options.clientDataHash);
+  const signature =
+    options.signatureOverride ??
+    rawSignatureToDer(
+      new Uint8Array(await crypto.subtle.sign(ECDSA_SHA256, options.privateKey, nonce)),
+    );
+  const entries: Array<[string, unknown]> = [
+    ['signature', new Uint8Array(signature)],
+    ['authenticatorData', new Uint8Array(data)],
+    ...(options.extraKeys ?? []),
+  ];
+  const omitted = new Set(options.omitKeys ?? []);
+  return Buffer.from(encode(new Map(entries.filter(([key]) => !omitted.has(key)))));
+}

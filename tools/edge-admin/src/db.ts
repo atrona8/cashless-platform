@@ -50,9 +50,14 @@ export function assertEdgeAdminUrl(url: string | undefined): string {
   return url;
 }
 
+/** Fonction qui rend une table (migration 0094) : on lit ses colonnes, la ligne entière est rendue. */
+const ROW_FUNCTIONS: ReadonlySet<AdminFunction> = new Set(['register_edge_gateway']);
+
 export function sqlFor(fn: AdminFunction): string {
-  const types = FUNCTIONS[fn];
-  return `SELECT ${fn}(${types.map((type, i) => `$${i + 1}::${type}`).join(', ')}) AS result`;
+  const markers = FUNCTIONS[fn].map((type, i) => `$${i + 1}::${type}`).join(', ');
+  return ROW_FUNCTIONS.has(fn)
+    ? `SELECT gateway_id, ledger_id FROM ${fn}(${markers})`
+    : `SELECT ${fn}(${markers}) AS result`;
 }
 
 export function openAdminDb(connectionString: string): AdminDb {
@@ -65,8 +70,9 @@ export function openAdminDb(connectionString: string): AdminDb {
         await client.query("SELECT set_config('app.operator_id', $1, true)", [operatorId]);
         const result = await work({
           async call(fn, args) {
-            const { rows } = await client.query<{ result: unknown }>(sqlFor(fn), [...args]);
-            return rows[0]?.result;
+            const { rows } = await client.query<Record<string, unknown>>(sqlFor(fn), [...args]);
+            // Une fonction de table rend sa ligne ({ gateway_id, ledger_id }), les autres leur valeur.
+            return ROW_FUNCTIONS.has(fn) ? rows[0] : rows[0]?.result;
           },
         });
         await client.query('COMMIT');

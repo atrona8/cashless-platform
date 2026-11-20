@@ -122,7 +122,7 @@ SELECT is((SELECT count(*)::int
              FROM unnest(ARRAY['device_admin_allowed(uuid,uuid,uuid)',
                                'create_device_enrollment_code(bytea,uuid,uuid,text,boolean,integer,uuid)',
                                'check_device_enrollment_code(bytea,text)',
-                               'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)',
+                               'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)',
                                'set_device_status(uuid,text,text,uuid)',
                                'record_device_heartbeat(uuid,text,timestamptz)',
                                'record_enrollment_attempt(bytea,inet,text)',

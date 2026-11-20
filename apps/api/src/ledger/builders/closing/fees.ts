@@ -98,6 +98,24 @@ export interface OperatorFeePayload {
   amount?: bigint;
 }
 
+/**
+ * Frais TTC bruts de toutes les règles du prestataire pour ces assiettes (plafond de la régularisation,
+ * OP-N141). `PER_MEDIA` : nombre de supports × montant fixe ; `TOPUP_AMOUNT` : règle sur le montant.
+ */
+export function operatorFeeTotal(
+  config: Pick<BuildContext['config'], 'operatorFees'>,
+  bases: OperatorFeePayload['bases'] | undefined,
+): bigint {
+  return config.operatorFees.reduce(
+    (sum, { basis, rule }) =>
+      sum +
+      (basis === 'PER_MEDIA'
+        ? (bases?.PER_MEDIA ?? 0n) * fee(0n, rule)
+        : fee(bases?.TOPUP_AMOUNT ?? 0n, rule)),
+    0n,
+  );
+}
+
 /** Frais du prestataire : une ligne `ORG_FPREST` par règle (jamais fusionnées), une extraction de taxe sur la somme. */
 export function buildOperatorFee(
   command: LedgerCommand<'OPERATOR_FEE', OperatorFeePayload>,
@@ -108,7 +126,15 @@ export function buildOperatorFee(
   const { org, ope } = partyAccounts(config);
   const lines: Line[] = [];
   if (regularization && amount !== undefined) {
-    push(lines, org('ORG_FPREST'), requirePositive(amount, 'écart de régularisation'));
+    requirePositive(amount, 'écart de régularisation');
+    // Plafond (OP-N141) : l'écart ne dépasse jamais les frais bruts TTC, avant toute ligne écrite.
+    if (amount > operatorFeeTotal(config, bases)) {
+      throw new BuildError(
+        'VALIDATION_FAILED',
+        'écart de régularisation : supérieur aux frais bruts',
+      );
+    }
+    push(lines, org('ORG_FPREST'), amount);
     creditWithTax(lines, amount, config.taxBps, ope('OPE_FRAIS'), ope('OPE_TAX'));
     return balanced(lines.map((line) => ({ ...line, amount: -line.amount })));
   }

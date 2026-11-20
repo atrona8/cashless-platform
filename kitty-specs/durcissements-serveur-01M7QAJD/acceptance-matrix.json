@@ -1,0 +1,376 @@
+{
+  "mission_slug": "durcissements-serveur-01M7QAJD",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 (Lot cr\u00e9\u00e9 par fonction seulement) : En tant que plateforme, je veux qu'un lot de bracelets ne puisse na\u00eetre que `ORDERED` par une fonction contr\u00f4l\u00e9e, et que `cashless_app` ne puisse plus ins\u00e9rer de lot directement (OP-N60).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (e4d3d620, migration 0091 create_media_batch), WP03 (cd0420bc, retrait de l'INSERT direct), WP05 (d85a74eb, route par la fonction). pgTAP tests_media_batch_functions.sql, tests_11a_rights.sql ; Jest media/blacklist.spec.ts \u00ab OP-N60 lev\u00e9e : sous cashless_app, aucune \u00e9criture directe de lot ni de statut \u00bb (42501), media/batches.spec.ts \u00ab cr\u00e9e un lot command\u00e9, avec ses valeurs par d\u00e9faut, et le journalise \u00bb. Mutations NFR-004 : WP01 11 mutations sur 0091 et la FK 0090 d\u00e9tect\u00e9es ; WP05 GRANT INSERT ON media_batch remis -> test OP-N60 lev\u00e9e rouge. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 (Lot chang\u00e9 par fonction seulement) : En tant que plateforme, je veux que `cashless_app` ne puisse modifier directement aucune colonne d'un lot (statut, quantit\u00e9, index de cl\u00e9, organisateur, \u00e9v\u00e9nement) ; chaque passage passe par sa fonction (OP-N60).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (e4d3d620, update_media_batch et close_batch en SECURITY DEFINER), WP03 (cd0420bc), WP05 (d85a74eb, c90d231a). tests_media_batch_functions.sql, tests_11a_rights.sql, tests_definer_trigger_writers.sql (mis \u00e0 jour) ; media/blacklist.spec.ts \u00ab OP-N60 lev\u00e9e \u00bb ; media/batches.spec.ts \u00ab un lot command\u00e9 se modifie ; avant et apr\u00e8s sont journalis\u00e9s \u00bb, \u00ab quantit\u00e9 apr\u00e8s codes, lot hors ORDERED : 409 par l'API, base refuse \u00bb, \u00ab deux PATCH concurrents : un verrou consultatif les s\u00e9rialise, pas de 500 \u00bb. Mutations : WP05 verrou retir\u00e9 (1 \u00e9chec), GRANT UPDATE(status) ON media et INSERT ON media_batch (\u00e9checs) ; WP03 3 mutations de droits d\u00e9tect\u00e9es. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 (Statut d'un bracelet avec motif) : En tant que plateforme, je veux que le statut d'un bracelet ne change que par la fonction qui exige un motif (OP-N60).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (e4d3d620, media_set_status limit\u00e9 \u00e0 SUSPENDED et BLACKLISTED), WP03 (cd0420bc, UPDATE de media r\u00e9duit \u00e0 deux colonnes), WP05 (d85a74eb). tests_media_batch_functions.sql, tests_media_roles.sql, tests_11a_rights.sql ; media/blacklist.spec.ts \u00ab OP-N60 lev\u00e9e \u00bb. Mutation WP05 GRANT UPDATE(status) ON media : test rouge (Expected 42501). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 (Routes de lot inchang\u00e9es) : En tant que back-office, je veux que les routes de lot et de statut de bracelet rendent les m\u00eames r\u00e9ponses qu'avant la mission.",
+      "proof_type": "automated_test",
+      "evidence": "WP05 (d85a74eb, c90d231a, relecture cycle 2). media/batches.spec.ts (49 tests batches+blacklist verts : cr\u00e9ation, rejeu de cl\u00e9, filtres, ORDERED -> PERSONALIZED -> DELIVERED -> ACTIVE <-> SUSPENDED, cl\u00f4ture avec 600 cautions, passages interdits en 409), media/blacklist.spec.ts, media/batches-op-n161.spec.ts (404 pour un autre prestataire) ; contract-stability/check.mjs : openapi.yaml inchang\u00e9, 0 refus\u00e9e. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Contr\u00f4le positif : m\u00eames fixtures que FR-001 \u00e0 FR-003."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 (Processus du PIN) : En tant que plateforme, je veux qu'un processus s\u00e9par\u00e9, seul d\u00e9tenteur du secret des PIN et d'un r\u00f4le de base propre, soit le seul \u00e0 lire une empreinte de PIN et \u00e0 ouvrir une session de vendeur (OP-N76).",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (cd0420bc, r\u00f4le cashless_pin, EXECUTE de begin_vendor_pin_check et open_vendor_session), WP04 (fc5572dd, VENDOR_PIN_SECRET propre au processus), WP06 (2cd15d4f, processus vendor-pin). integration/vendor-pin/vendor-pin-process.spec.ts (13 : \u00ab seul EXECUTE de begin_vendor_pin_check et open_vendor_session \u00bb, \u00ab PIN juste : session, un audit VENDOR_SESSION_OPENED, compteur \u00e0 0 \u00bb, \u00ab 5e essai : FAILED x5 et LOCKED x1 \u00bb), unit/processes.spec.ts \u00ab processus vendor-pin \u00bb, tests_11a_rights.sql. Mutations : WP06 garde HMAC+fen\u00eatre rendue vraie (2 \u00e9checs), fen\u00eatre ts retir\u00e9e (1 \u00e9chec). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 (API sans droit sur le PIN) : En tant que plateforme, je veux que `cashless_app` n'ex\u00e9cute plus la lecture d'empreinte ni l'ouverture de session, et que l'API n'ait aucune v\u00e9rification de remplacement si le processus est absent (OP-N76).",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (cd0420bc), WP07 (717b56fd, client sign\u00e9, aucun repli). tests_11a_rights.sql (cashless_app sans EXECUTE) ; vendors/vendor-sessions.spec.ts \u00ab FR-006 : processus arr\u00eat\u00e9 -> erreur de service sans d\u00e9tail, aucune session, aucun essai, aucun repli \u00bb, \u00ab adresse du processus absente \u00bb, \u00ab cl\u00e9 d'appel erron\u00e9e \u00bb, \u00ab processus en erreur (500) \u00bb, \u00ab processus trop lent (d\u00e9lai de 2 s d\u00e9pass\u00e9) \u00bb ; unit/architecture.spec.ts (API sans VENDOR_PIN_SECRET ni module argon2 par vendors/). Mutation WP07 repli catch -> session ouverte : 5 cas FR-006 rouges ; sans cache anti-rejeu : 2 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Ajouts de s\u00e9curit\u00e9 par renforcement : cache anti-rejeu (d\u00e9cision du porteur du 19/11, point 11) et refus d'un corps sans rawBody (OP-N154 et a-consigner 12)."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 (Parcours PIN inchang\u00e9) : En tant que terminal, je veux que l'ouverture d'une session de vendeur garde ses r\u00e9ponses, son d\u00e9compte d'essais et son audit.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 (717b56fd). vendors/vendor-sessions.spec.ts \u00ab FR-003 : bon PIN -> 201 VendorSession (12 h), compteur \u00e0 0, audit VENDOR_SESSION_OPENED \u00bb, \u00ab NFR-004 : PIN faux, inconnu, autre commer\u00e7ant, d\u00e9sactiv\u00e9, bloqu\u00e9 -> m\u00eame statut, m\u00eame corps \u00bb, \u00ab FR-004, NFR-003 : 5 \u00e9checs -> bloqu\u00e9 (VENDOR_LOCKED) \u00bb, \u00ab compter d'abord \u00bb, \u00ab renvoi de la m\u00eame cl\u00e9 : succ\u00e8s -> 409 CONFLICT_STATE ; \u00e9chec -> 401 rejou\u00e9 \u00bb, \u00ab ADR-126 \u00bb, \u00ab fermeture : 204 et LOGOUT audit\u00e9 \u00bb ; vendors/vendors.spec.ts ; vendor-pin-process.spec.ts. R\u00e9ponses identiques, openapi.yaml inchang\u00e9. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Les tests qui ouvrent une session (payments-*, device-auth-matrix) \u00e9taient 403 de WP03 \u00e0 WP07 (voulu, point 16) ; verts apr\u00e8s WP07 dans la batterie. Contr\u00f4le positif : PIN juste et PIN faux sur la m\u00eame fixture que FR-006."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 (Vendeur dans la cl\u00e9 de session) : En tant que plateforme, je veux que la base refuse une attribution de vente dont le vendeur n'est pas celui de la session d\u00e9sign\u00e9e (OP-N79).",
+      "proof_type": "automated_test",
+      "evidence": "WP01 (e4d3d620, migration 0090, cl\u00e9 \u00e9trang\u00e8re sale_attribution_session_vendor_fk sur (vendor_session_id, vendor_id)). pgTAP tests_vendor_session_key.sql (cas session A / vendeur B refus\u00e9 en 23503). Mutation NFR-004 : DROP de la cl\u00e9 \u00e9trang\u00e8re -> le cas passe, donc le test \u00e9choue. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 (IBAN masqu\u00e9 au journal) : En tant que plateforme, je veux qu'un IBAN ne paraisse jamais en clair dans un journal d'erreur ou de requ\u00eate (OP-N140).",
+      "proof_type": "automated_test",
+      "evidence": "WP08 (0ffa0873, redact.ts masque l'IBAN), renforcement du 19/11 (3c112821 : IBAN \u00e0 tirets, espaces ins\u00e9cables, coll\u00e9s ; msisdn). unit/errors/redact.spec.ts \u00ab redactSecrets : IBAN (FR-009) \u00bb, \u00ab IBAN en texte libre, formes limites (OP-N156) \u00bb, \u00ab msisdn (OP-N156) \u00bb ; invariants-cloture/limits-9b.spec.ts \u00ab OP-N140 lev\u00e9 : errors/redact.ts masque l'IBAN \u00bb. Mutations : WP08 7 sur 8 tu\u00e9es ; relecture des bornes : 14 mutations sur 15 d\u00e9tect\u00e9es (survivante : borne haute de INTL_PHONE, c\u00f4t\u00e9 s\u00fbr). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Limite non fig\u00e9e : un num\u00e9ro dans un chemin d'URL n'est pas masqu\u00e9 (OP-N156, a-consigner 27)."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 (IBAN chiffr\u00e9 au repos) : En tant que plateforme, je veux que l'IBAN soit chiffr\u00e9 en base aux trois endroits o\u00f9 il est gard\u00e9 (demande de remboursement, versement, contenu des demandes d'approbation), et d\u00e9chiffr\u00e9 seulement pour l'export du lot de virements (OP-N140 ; moyen de chiffrement diff\u00e9r\u00e9 au plan, d\u00e9cision 1).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, CHECK enc:v1: sur refund_request et payout, migration 0093), WP08 (0ffa0873, IbanVault AES-256-GCM), WP09 (c7443062, remboursements et r\u00e9clamations tardives), WP10 (7c390f2e, 414e35f2, versements et export). pgTAP tests_iban_sealed.sql ; unit/common/iban-vault.spec.ts (aller-retour, IV al\u00e9atoire, AAD prestataire, kid inconnu, jamais de double chiffrement) ; refunds/create-backoffice.spec.ts \u00ab NFR-005 : deux enveloppes par IBAN ; clair par le propri\u00e9taire : 23514 \u00bb ; late-claims/late-claim.spec.ts \u00ab IBAN chiffr\u00e9 (OP-N140 lev\u00e9, FR-010, FR-024) \u00bb ; payouts/payout-export.spec.ts \u00ab FR-011 : CSV complet, IBAN et num\u00e9ro en clair seulement ici \u00bb, \u00ab OP-N140 : enveloppe alt\u00e9r\u00e9e, d'un autre prestataire ou ancienne ligne en clair \u00bb ; payouts/payout-batch.spec.ts \u00ab OP-N140 : enveloppe alt\u00e9r\u00e9e ou scell\u00e9e pour un autre prestataire \u00bb. Mutations : WP08 sans setAAD (2 \u00e9checs) ; WP09 sans seal (7 cas rouges) ; WP10 M1 clair dans payload (2), M2 repli sur brut \u00e0 l'export (1), checkSealed retir\u00e9 (rouge, 414e35f2). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. R\u00e9serve consign\u00e9e : cl\u00e9 d'IBAN dans le processus public, lev\u00e9e avec le KMS r\u00e9el (OP-N150, ADR-218) ; lignes anciennes en clair : CHECK NOT VALID, OP-N155 (condition de production port\u00e9e par la mission 12b)."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 (Demande n\u00e9e \u00e0 son \u00e9tat initial) : En tant que plateforme, je veux que `cashless_app` ne puisse ins\u00e9rer une demande de remboursement qu'\u00e0 son \u00e9tat initial (OP-N145).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, migration 0092 refund_request_insert_guard, CL057), WP03 (INSERT par colonne), WP09 (c7443062). pgTAP tests_refund_insert_guard.sql, tests_refund_requests.sql, tests_11a_rights.sql, tests_11a_bounds.sql ; invariants-cloture/limits-9b.spec.ts \u00ab OP-N145 : insertion sous cashless_app (droits de colonne et d\u00e9clencheur CL057) \u00bb, \u00ab \u00e9tats initiaux AWAITING_HOLDER et REQUESTED : insertion permise \u00bb ; unit/errors/sqlstate-map.spec.ts (CL057). Mutations : WP02 d\u00e9clencheur d\u00e9sactiv\u00e9 -> CANCELLED passe (suite rouge), 6 mutations d\u00e9tect\u00e9es. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Limite accept\u00e9e : la garde ne vise que les membres de cashless_app ; cashless_platform et cashless_pin ne sont arr\u00eat\u00e9s que par l'absence de droit INSERT, fig\u00e9e par tests_11a_bounds.sql (a-consigner 23a)."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 (Anciennes signatures ferm\u00e9es) : En tant que plateforme, je veux que `refund_deposit_for_session(uuid, uuid)` n'existe plus et que `refund_deposit(uuid, uuid)`, gard\u00e9e pour ses appelants internes, ne soit ex\u00e9cutable par aucun r\u00f4le (OP-N145 ; amend\u00e9 le 18/11/2026, d\u00e9cision du porteur).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, 0092 : refund_deposit_for_session retir\u00e9e, EXECUTE de refund_deposit retir\u00e9), WP03 (cd0420bc, refund_deposit/guard \u00e0 personne v\u00e9rifi\u00e9 sur pg_proc). pgTAP tests_refund_insert_guard.sql, tests_11a_rights.sql, tests_execute_grants.sql ; limits-9b.spec.ts. Mutation : WP03 3 mutations de droits d\u00e9tect\u00e9es. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. R\u00e9serve consign\u00e9e : refund_deposit(uuid, uuid) gard\u00e9e interne (OP-N153, ADR-223, d\u00e9cision du porteur du 18/11 ; mission 13 confirm\u00e9e le 19/11)."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 (Mauvais r\u00f4le sans effet) : En tant qu'administrateur, je veux qu'un approbateur du mauvais r\u00f4le re\u00e7oive `403` et que la demande de lot reste en attente (OP-N137 a).",
+      "proof_type": "automated_test",
+      "evidence": "WP10 (7c390f2e). payouts/payout-guard-decision.spec.ts \u00ab FR-013 : approbation d'un lot mixte par une seule classe : 403, PENDING, rien \u00e9crit \u00bb et \u00ab attribution r\u00e9voqu\u00e9e avant la d\u00e9cision : 403 par le crochet, demande PENDING \u00bb ; unit/payouts/payout-roles.spec.ts. Mutation WP10 M3 crochet guardDecision retir\u00e9 : 4 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 (Refus par r\u00f4le de classe) : En tant qu'administrateur, je veux qu'un refus de lot exige le m\u00eame r\u00f4le de classe de b\u00e9n\u00e9ficiaire que la validation (OP-N137 b).",
+      "proof_type": "automated_test",
+      "evidence": "WP10 (7c390f2e). payouts/payout-guard-decision.spec.ts \u00ab FR-014 : refus d'un lot mixte par une seule classe : 403, PENDING ; par un d\u00e9tenteur des deux : REJECTED \u00bb, \u00ab unit\u00e9 : le crochet est appel\u00e9 pour APPROVE et REJECT \u00bb ; payouts/payout-mixed-visibility.spec.ts. Mutation WP10 M3 (4 \u00e9checs). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Renforcement consign\u00e9 : le refus exige aussi la classe de b\u00e9n\u00e9ficiaire (a-consigner 15). Limite : canSee montre un lot mixte en lecture seule \u00e0 un d\u00e9tenteur d'une seule classe (OP-N160, ADR-220)."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 (Rejeu de confirmation audit\u00e9) : En tant qu'auditeur, je veux qu'une confirmation de versement rejou\u00e9e laisse une ligne d'audit, sans \u00e9criture au grand livre (OP-N137 c).",
+      "proof_type": "automated_test",
+      "evidence": "WP10 (7c390f2e). payouts/payout-confirm.spec.ts \u00ab OP-N137 (c) : rejeu identique avec une autre cl\u00e9 : 200, aucune \u00e9criture comptable, une ligne PAYOUT_CONFIRM_REPLAYED sans destination \u00bb. Mutation WP10 M4 audit de rejeu retir\u00e9 : rouge. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 (Auto-approbation : code exact) : En tant que plateforme, je veux que la validation d'un lot par son auteur rende exactement `409 APPROVAL_INVALID`, sa r\u00e9ponse actuelle, et que le test n'accepte plus que celle-l\u00e0 (OP-N137 d ; amend\u00e9 au plan le 18/11/2026, `403` changerait la route).",
+      "proof_type": "automated_test",
+      "evidence": "WP10 (7c390f2e). payouts/payout-batch.spec.ts \u00ab FR-010 : auteur = valideur refus\u00e9, aucune \u00e9criture ; SUPERVISOR et CASHIER : 403 \u00bb (asserte exactement 409 APPROVAL_INVALID, plus de tableau [403, 409]) ; pgTAP tests_payouts.sql (auteur = valideur refus\u00e9 par la base). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 (Plafond de r\u00e9gularisation) : En tant que plateforme, je veux que l'\u00e9cart de r\u00e9gularisation `OPERATOR_FEE` ne puisse d\u00e9passer les frais bruts du prestataire (OP-N141).",
+      "proof_type": "automated_test",
+      "evidence": "WP11 (5e4bdf1e, closing/calculators/operator-fee.ts). unit/builders/closing/closing-builders.spec.ts \u00ab OPERATOR_FEE r\u00e9gularisation : plafond (OP-N141) \u00bb (\u00e9cart = frais bruts accept\u00e9 ; brut+1 refus\u00e9 sur 3 assiettes ; bases vides et r\u00e8gles absentes : plafond z\u00e9ro ; contr\u00f4le positif de la branche normale) ; integration/closing/closing-variants.spec.ts (\u00e9tape OPERATOR_FEE_REGULARIZATION). Mutation WP11 retrait du contr\u00f4le : 8 tests en \u00e9chec ; 3 mutations d\u00e9tect\u00e9es. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 (Cl\u00e9 App Attest gard\u00e9e) : En tant que plateforme, je veux que l'enr\u00f4lement d'un iPhone garde l'identifiant de sa cl\u00e9 App Attest (OP-N64).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, migration 0095 device_app_attest_key), WP13 (4bdd6430). pgTAP tests_device_app_attest.sql, tests_device_enrollment.sql ; integration/attestation/app-attest-enrollment.spec.ts \u00ab iOS : une ligne, key_id = SHA-256 du point, compteur 0, prestataire du code \u00bb, \u00ab Android : aucune ligne ; contr\u00f4le positif \u00bb, \u00ab la m\u00eame cl\u00e9 attest\u00e9e rejou\u00e9e (autre serial) : refus\u00e9e \u00bb, \u00ab audit DEVICE_ENROLLED : app_attest_key_id en hex \u00bb. Mutation WP13 cl\u00e9 non pass\u00e9e \u00e0 enroll_device : 3 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. OP-N64 reste \u00ab c\u00f4t\u00e9 serveur pr\u00eat, NON LEV\u00c9 \u00bb (ADR-222) : limite accept\u00e9e par le porteur le 19/10 et le 18/11/2026 ; vecteur r\u00e9el d'Apple exig\u00e9 avant la mission 12 (OP-N64, a-consigner 14)."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019 (Assertions v\u00e9rifi\u00e9es) : En tant que plateforme, je veux v\u00e9rifier une assertion App Attest : cl\u00e9 de l'appareil, compteur strictement croissant, lien avec la requ\u00eate ; borne iOS gard\u00e9e tant que l'app n'en envoie pas (OP-N64, mission 12).",
+      "proof_type": "automated_test",
+      "evidence": "WP13 (4bdd6430, ios-app-attest-assertion.ts ; advance_app_attest_counter, 0095). integration/attestation/app-attest-assertion.spec.ts \u00ab assertion valide : compteur avanc\u00e9 ; rejeu et compteur inf\u00e9rieur refus\u00e9s \u00bb, \u00ab signature fausse : le compteur n'avance pas \u00bb, \u00ab deux assertions concurrentes de m\u00eame compteur : une seule r\u00e9ussit \u00bb, \u00ab autre prestataire : refus\u00e9 (RLS) ; CL059 \u00bb, \u00ab appareil REVOKED \u00bb, \u00ab appareil Android \u00bb ; unit/attestation/ios-assertion.spec.ts ; unit/attestation/assertion-architecture.spec.ts (v\u00e9rificateur sans route, borne iOS gard\u00e9e de /media/auth-keys) ; tests_device_app_attest.sql, tests_11a_bounds.sql (OP-N152). Mutations WP13 : rpIdHash retir\u00e9, compteur >=, cl\u00e9 non pass\u00e9e, hachage triple : toutes d\u00e9tect\u00e9es. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. R\u00e9serve consign\u00e9e : vecteurs d'assertion g\u00e9n\u00e9r\u00e9s localement, vecteur r\u00e9el d'Apple exig\u00e9 avant la mission 12 (OP-N64, ADR-222, a-consigner 14) ; v\u00e9rificateur non branch\u00e9 (voulu) ; EXECUTE de advance_app_attest_counter accord\u00e9 \u00e0 cashless_app (OP-N152, ADR-223) ; d\u00e9ni de service par compteur avanc\u00e9 par une API compromise (born\u00e9, test de borne)."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020 (Grand livre rendu par l'inscription) : En tant qu'administrateur de site, je veux que l'inscription d'une passerelle trouve le grand livre de l'\u00e9v\u00e9nement et le rende, l'argument manuel \u00e9tant refus\u00e9 (OP-N116).",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, 0094 register_edge_gateway rend (gateway_id, ledger_id), CL058), WP12 (d417b1db, f847dd89), bancs 63b1526b. pgTAP tests_edge_gateway.sql ; tools/edge-admin/test/register.spec.ts \u00ab grand livre du fichier = grand livre rendu par la base, neuf arguments sans grand livre \u00bb, \u00ab grand livre introuvable ou ambigu (CL058) : rien \u00e9crit \u00bb ; commands-other.spec.ts ; apps/api edge/packs-world ; e2e passerelle (bancs sans --ledger). Mutation WP12 retrait du refus --ledger : 3 tests rouges ; ledger_id fig\u00e9 dans le fichier : 1 \u00e9chec. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. \u00c9cart de p\u00e9rim\u00e8tre accept\u00e9 : 5 lignes de commands-other.spec.ts au lieu de 3 (a-consigner 9) ; CL058 traduit par edge-admin, absent de sqlstate-map.ts (interfaces.md corrig\u00e9, d\u00e9cision du porteur du 19/11)."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021 (Lev\u00e9es consign\u00e9es) : En tant que porteur, je veux que chaque point lev\u00e9 passe \u00ab lev\u00e9 \u00bb dans `POINTS_OUVERTS.md` avec son test de lev\u00e9e, son test de borne invers\u00e9 et son ADR mis \u00e0 jour ; OP-N64 passe \u00ab c\u00f4t\u00e9 serveur pr\u00eat \u00bb.",
+      "proof_type": "automated_test",
+      "evidence": "WP14 (bed81935, 0067df90, 86806646, cycle 2 approuv\u00e9 ; bornes bde1d13b, 3c112821, d7d1d139). docs/POINTS_OUVERTS.md : OP-N60, N76, N79, N116, N137, N140, N141, N145 lev\u00e9s (dates 18 et 19/11/2026), OP-N64 \u00ab c\u00f4t\u00e9 serveur pr\u00eat, NON LEV\u00c9 \u00bb (ADR-222), OP-N150 \u00e0 N162 ouverts ou lev\u00e9s, section 11 ; docs/DECISIONS_ADR.md ADR-216 \u00e0 ADR-224 ; reports PROMPTS-A-ENVOYER.md et PRD.md ; invariants-cloture/consignation.spec.ts et limits-9b.spec.ts (consignation 9b mise \u00e0 jour, 0233f74a). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9. Report\u00e9s explicitement : OP-N155 (condition de production, mission 12b), OP-N153 (mission 13), OP-N154 (contr\u00f4le de d\u00e9ploiement, 12b)."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 (Ouverture de session de vendeur) : p95 de l'ouverture de session (PIN juste) <= 300 ms et p99 <= 600 ms sur 200 essais en s\u00e9rie, processus d\u00e9di\u00e9 compris.",
+      "proof_type": "automated_test",
+      "evidence": "WP07 (717b56fd) : vendors/vendor-pin-latency.spec.ts \u00ab 200 ouvertures en s\u00e9rie : p95 <= 300 ms, p99 <= 600 ms \u00bb ; mesure : p50 163 ms, p95 211 ms, p99 249 ms (mesure indicative locale, \u00e9cart\u00e9e de la passe parall\u00e8le). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 (Export d'un lot de virements) : L'export d'un lot de 500 lignes avec IBAN chiffr\u00e9s se fait en moins de 2 s.",
+      "proof_type": "automated_test",
+      "evidence": "WP10 (7c390f2e) : payouts/payout-export.spec.ts \u00ab NFR-002 : export de 500 lignes chiffr\u00e9es en moins de 2 s, d\u00e9chiffrement compris \u00bb. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 (Aucun droit \u00e9largi) : 0 droit de table ou de colonne ajout\u00e9 \u00e0 `cashless_app` ; les seuls `EXECUTE` ajout\u00e9s portent sur des fonctions `SECURITY DEFINER` qui remplacent un droit retir\u00e9 ou contr\u00f4lent elles-m\u00eames l'\u00e9criture, list\u00e9s au plan et fig\u00e9s dans la liste des droits d'ex\u00e9cution.",
+      "proof_type": "automated_test",
+      "evidence": "WP03 (cd0420bc) : pgTAP tests_11a_rights.sql (69, pg_proc conforme \u00e0 interfaces.md), tests_execute_grants.sql (liste fig\u00e9e), tests_11a_bounds.sql (46/46, OP-N152 : seul advance_app_attest_counter hors OP-N60 ; 12 mutations d\u00e9tect\u00e9es), tests_definer_trigger_writers.sql, tests_9b_rights.sql ; invariants-cloture/limits-9b.spec.ts ; docs/passation-11a/preuves-nfr.md. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 (Tests de borne invers\u00e9s) : 100 % des tests de borne des 9 points sont invers\u00e9s ou remplac\u00e9s par un test de lev\u00e9e qui \u00e9choue si la limite revient (mutation v\u00e9rifi\u00e9e pour chacun).",
+      "proof_type": "automated_test",
+      "evidence": "Mutations consign\u00e9es dans les notes de lane : OP-N60 (WP01 11 mutations, WP05 verrou et 2 droits), OP-N76 (WP06 garde HMAC et fen\u00eatre, WP07 repli et cache anti-rejeu), OP-N79 (DROP de la FK), OP-N116 (retrait du refus --ledger : 3 tests), OP-N137 (WP10 M1, M3, M4, checkSealed 414e35f2), OP-N140 (WP08 sans setAAD, WP09 sans seal, 7 mutations sur 8 ; relecture des bornes 14 sur 15), OP-N141 (WP11 retrait du contr\u00f4le : 8 \u00e9checs), OP-N145 (WP02 d\u00e9clencheur d\u00e9sactiv\u00e9, 6 mutations), OP-N64 (WP13 rpIdHash, compteur >=, cl\u00e9 non pass\u00e9e, hachage triple). Bornes ajout\u00e9es avant la fusion : tests_11a_bounds.sql 46/46 (12 mutations), vendor-pin-bounds.spec.ts, vendor-pin-call-replay.spec.ts, batches-op-n161.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 (Rien en clair apr\u00e8s migration) : 100 % des \u00e9critures d'IBAN en clair refus\u00e9es par la base apr\u00e8s la migration, sur `refund_request` et `payout` (contr\u00f4le en base), et 0 IBAN en clair dans le contenu des demandes d'approbation \u00e9crites ensuite ; aucune reprise de lignes.",
+      "proof_type": "automated_test",
+      "evidence": "WP02 (73f95452, 0093), WP09, WP10 : tests_iban_sealed.sql ; refunds/create-backoffice.spec.ts \u00ab NFR-005 : deux enveloppes par IBAN ; clair par le propri\u00e9taire : 23514 \u00bb ; limits-9b.spec.ts \u00ab IBAN en clair sous cashless_app : refus\u00e9 par le CHECK (23514) \u00bb ; payouts/payout-export.spec.ts \u00ab FR-011 : IBAN et num\u00e9ro absents de la liste, des approbations, de tout audit_log \u00bb ; late-claim.spec.ts \u00ab FR-024 : ni IBAN ni num\u00e9ro dans l'audit ni dans GET /approval-requests \u00bb. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001 : 100 % des \u00e9critures directes list\u00e9es dans les fiches d'OP-N60, OP-N76, OP-N79 et OP-N145 sont refus\u00e9es depuis une connexion de l'API compromise.",
+      "proof_type": "automated_test",
+      "evidence": "tests_11a_rights.sql, tests_media_batch_functions.sql, tests_vendor_session_key.sql, tests_refund_insert_guard.sql ; media/blacklist.spec.ts \u00ab OP-N60 lev\u00e9e \u00bb ; vendor-pin-process.spec.ts \u00ab seul EXECUTE de begin_vendor_pin_check et open_vendor_session \u00bb ; limits-9b.spec.ts OP-N145. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002 : 100 % des parcours existants touch\u00e9s (lots, statut de bracelet, PIN de vendeur, remboursements, versements, inscription de passerelle) rendent les m\u00eames r\u00e9sultats qu'avant la mission.",
+      "proof_type": "automated_test",
+      "evidence": "media/batches.spec.ts, blacklist.spec.ts ; vendors/vendor-sessions.spec.ts, vendors.spec.ts ; refunds/create-backoffice.spec.ts ; payouts/payout-batch.spec.ts, payout-confirm.spec.ts, payout-export.spec.ts ; closing/closing-variants.spec.ts ; scenario closing-journey.spec.ts 8/8 dans la lane de WP10 (5/8 interm\u00e9diaire entre WP02 et WP10, voulu, point 16) ; edge-admin 38/38 ; contract-stability/check.mjs 0 refus\u00e9e. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003 : 0 IBAN en clair dans les journaux et dans la table apr\u00e8s migration.",
+      "proof_type": "automated_test",
+      "evidence": "redact.spec.ts, limits-9b.spec.ts, tests_iban_sealed.sql, create-backoffice.spec.ts, payout-export.spec.ts, late-claim.spec.ts ; scans de la relecture de WP09 et WP10 (aucun IBAN en clair en base ni dans audit_log). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004 : 8 points ouverts lev\u00e9s (OP-N60, N76, N79, N116, N137, N140, N141, N145) et OP-N64 \u00ab c\u00f4t\u00e9 serveur pr\u00eat \u00bb, chacun avec un test qui \u00e9choue si la limite revient.",
+      "proof_type": "automated_test",
+      "evidence": "docs/POINTS_OUVERTS.md (8 lev\u00e9s, OP-N64 c\u00f4t\u00e9 serveur pr\u00eat) ; ADR-216 \u00e0 ADR-224 ; mutations de NFR-004. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    },
+    {
+      "criterion_id": "SC-005",
+      "description": "SC-005 : 0 droit de table ou de colonne ajout\u00e9 \u00e0 `cashless_app` ; `EXECUTE` ajout\u00e9s seulement ceux de la liste fig\u00e9e du plan.",
+      "proof_type": "automated_test",
+      "evidence": "tests_11a_rights.sql, tests_execute_grants.sql, tests_11a_bounds.sql (mutation d'un GRANT d\u00e9tect\u00e9e, contr\u00f4le positif : listes fig\u00e9es) ; limits-9b.spec.ts (has_column_privilege par r\u00f4le et par colonne). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-19T17:00:00+00:00",
+      "notes": "Preuves des lots cit\u00e9es (approuv\u00e9s) ; suite rejou\u00e9e dans la batterie du code int\u00e9gr\u00e9."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun droit rouvert \u00e0 cashless_app hors advance_app_attest_counter (et les fonctions de lot de OP-N60) : pas de droit de table ou de colonne ajout\u00e9 (NFR-003, OP-N152)",
+      "verification_method": "custom_command",
+      "verification_command": "pgTAP (pg_prove) packages/ledger-sql/tests/tests_11a_rights.sql tests_11a_bounds.sql tests_execute_grants.sql, apr\u00e8s reset-db",
+      "result": "confirmed_absent",
+      "evidence": "tests_11a_rights.sql (69) et tests_11a_bounds.sql (46/46 ; 12 mutations d\u00e9tect\u00e9es), listes fig\u00e9es de tests_execute_grants.sql. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun IBAN en clair persistant : toute \u00e9criture en clair refus\u00e9e par la base (CHECK enc:v1:), ni en base, ni en audit, ni dans les demandes d'approbation (NFR-005)",
+      "verification_method": "custom_command",
+      "verification_command": "pgTAP tests_iban_sealed.sql ; cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; npx jest --runInBand test/integration/refunds/create-backoffice test/integration/payouts/payout-export test/integration/invariants-cloture/limits-9b",
+      "result": "confirmed_absent",
+      "evidence": "CHECK enc:v1: (0093) ; scans de la relecture de WP09 et WP10 : aucun IBAN en clair en base ni dans audit_log ; create-backoffice.spec.ts \u00ab NFR-005 \u00bb, limits-9b.spec.ts (23514), payout-export.spec.ts. R\u00e9serve : lignes anciennes en clair, CHECK NOT VALID, OP-N155 (mission 12b). Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun faux en production : processus vendor-pin sans son secret, cl\u00e9 d'IBAN de test, faux PSP ou d'identit\u00e9 : d\u00e9marrage refus\u00e9",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && npx jest test/unit/processes.spec.ts test/unit/config.spec.ts ; cd apps/gateway && npx jest test/e2e/production-refusals.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "unit/processes.spec.ts \u00ab aucun faux en production (d\u00e9marrage r\u00e9el) \u00bb, \u00ab processus vendor-pin \u00bb (\u00ab refuse la valeur de test du secret des PIN en production \u00bb) ; unit/config.spec.ts IBAN_KEYRING (manquant et cl\u00e9 de test refus\u00e9s en production) ; apps/gateway/test/e2e/production-refusals.spec.ts. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "openapi.yaml inchang\u00e9 : aucune route du contrat ne change (C-002)",
+      "verification_method": "custom_command",
+      "verification_command": "node tools/contract-stability/check.mjs",
+      "result": "confirmed_absent",
+      "evidence": "check.mjs : 0 refus\u00e9e, 71 admises ; openapi.yaml inchang\u00e9 ; aucun ajout \u00e0 contract-baseline.json. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "Le PIN n'est ni retenu ni journalis\u00e9 par l'API (OP-N151, limite : PIN en transit vers le processus)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; npx jest --runInBand test/integration/vendors/vendor-pin-bounds test/unit/architecture.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "vendor-pin-bounds.spec.ts \u00ab ouverture r\u00e9ussie, refus\u00e9e, plant\u00e9e, cr\u00e9ation et changement de PIN : le PIN n'est ni en base ni dans un journal \u00bb (scan base et journaux, 5 PIN absents) ; unit/architecture.spec.ts (contr\u00f4le statique, exemption nomm\u00e9e idempotency.interceptor.ts). Relecture : le scan statique ne voit pas un alias, rattrap\u00e9 par le scan de journaux. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-006",
+      "description": "Rejeu de l'appel sign\u00e9 vendor-pin refus\u00e9 en 401 (fen\u00eatre 30 s, garde 70 s, cache 20 000 signatures, plein = refus)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_wpmx; source ../../tools/dev-db/env.sh; npx jest --runInBand test/integration/vendors/vendor-pin-call-replay test/integration/vendor-pin/vendor-pin-process",
+      "result": "confirmed_absent",
+      "evidence": "vendor-pin-call-replay.spec.ts \u00ab le m\u00eame appel envoy\u00e9 deux fois : le premier passe, le second re\u00e7oit 401 \u00bb, \u00ab bornes fig\u00e9es : fen\u00eatre 30 s, garde 70 s, cache 20 000 signatures \u00bb, \u00ab cache plein : refus (\u00e9chec s\u00fbr) \u00bb, \u00ab corps annonc\u00e9 sans rawBody -> 401 \u00bb ; vendor-pin-process.spec.ts \u00ab refus uniforme (401) \u00bb. Mutation WP07 sans cache anti-rejeu : 2 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    },
+    {
+      "invariant_id": "NI-007",
+      "description": "edge-admin register refuse --ledger, m\u00eame vide ou identique : le grand livre vient de la base",
+      "verification_method": "custom_command",
+      "verification_command": "cd tools/edge-admin && npx jest",
+      "result": "confirmed_absent",
+      "evidence": "register.spec.ts, commands-other.spec.ts (38/38) ; pgTAP tests_edge_gateway.sql (CL058 c\u00f4t\u00e9 SQL) ; mutation : retrait du refus --ledger fait \u00e9chouer 3 tests. Batterie du code int\u00e9gr\u00e9 (lane-n, orchestrateur, 19/11/2026) : pgTAP toutes suites vertes (t\u00eate 02b5b5f8) ; Jest API 4 231 r\u00e9ussis sur 4 246, 13 ignor\u00e9s, 2 \u00e9checs de fragilit\u00e9 (claim-code-order.spec.ts, instabilit\u00e9 connue ; vendor-pin sessions : \u00e9choue seulement en parall\u00e8le) verts seuls 2 fois sur 2 (47/47) (t\u00eate 63b1526b) ; tsc propre ; contract-stability/check.mjs 0 refus\u00e9e, 71 admises, openapi.yaml inchang\u00e9 ; edge-admin 38/38 ; e2e passerelle 191/192 (agent correcteur ; le seul \u00e9chec, exclusion-under-load, d\u00e9bit 89/s pour 100/s, \u00e9choue de m\u00eame sur la branche de base : limite du poste) ; repass\u00e9 en entier par l'orchestrateur le 19/11/2026 : 191/192, m\u00eame seul \u00e9chec."
+    }
+  ]
+}

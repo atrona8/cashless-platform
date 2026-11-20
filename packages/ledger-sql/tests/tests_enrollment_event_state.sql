@@ -126,7 +126,7 @@ $$;
 -- 1. Structure et droits ------------------------------------------------------------------------
 SELECT is((SELECT count(*)::int FROM pg_proc
             WHERE oid IN ('create_device_enrollment_code(bytea,uuid,uuid,text,boolean,integer,uuid)'::regprocedure,
-                          'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)'::regprocedure,
+                          'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'::regprocedure,
                           'record_enrollment_attempt(bytea,inet,text)'::regprocedure)
               AND prosecdef AND proconfig = ARRAY['search_path=public, pg_temp']), 3,
   'émission, enrôlement et trace d''essai : signatures inchangées, SECURITY DEFINER, search_path public, pg_temp');
@@ -134,12 +134,12 @@ SELECT is((SELECT count(*)::int FROM pg_proc
             WHERE proname IN ('create_device_enrollment_code', 'enroll_device', 'record_enrollment_attempt')),
   3, 'aucune surcharge ajoutée (une seule version de chaque fonction)');
 SELECT is((SELECT pg_get_function_result(
-             'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)'::regprocedure)),
+             'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'::regprocedure)),
   'TABLE(device_id uuid, next_seq bigint)', 'enroll_device rend toujours (device_id, next_seq)');
 SELECT ok((SELECT pg_get_function_arguments(
-             'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)'::regprocedure))
-          LIKE '%p_device_id uuid DEFAULT NULL::uuid',
-  'enroll_device : p_device_id toujours facultatif (DEFAULT NULL)');
+             'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'::regprocedure))
+          LIKE '%p_device_id uuid DEFAULT NULL::uuid, p_app_attest_key_id bytea DEFAULT NULL::bytea, p_app_attest_public_key bytea DEFAULT NULL::bytea',
+  'enroll_device : p_device_id et les deux arguments App Attest (0095) facultatifs (DEFAULT NULL)');
 SELECT is((SELECT pg_get_function_arguments(
              'create_device_enrollment_code(bytea,uuid,uuid,text,boolean,integer,uuid)'::regprocedure)),
   'p_code_hash bytea, p_event uuid, p_pos uuid, p_mode text, p_personal_phone boolean, p_ttl_seconds integer, p_actor uuid',
@@ -148,12 +148,12 @@ DROP ROLE IF EXISTS enroll_state_probe;
 CREATE ROLE enroll_state_probe;
 SELECT is((SELECT count(*)::int
              FROM unnest(ARRAY['create_device_enrollment_code(bytea,uuid,uuid,text,boolean,integer,uuid)',
-                               'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)',
+                               'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)',
                                'record_enrollment_attempt(bytea,inet,text)']) f
             WHERE has_function_privilege('enroll_state_probe', f, 'EXECUTE')), 0,
   'aucune des trois fonctions n''est exécutable par PUBLIC');
 SELECT ok(has_function_privilege('cashless_app',
-            'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)',
+            'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)',
             'EXECUTE')
           AND has_function_privilege('cashless_app',
             'create_device_enrollment_code(bytea,uuid,uuid,text,boolean,integer,uuid)', 'EXECUTE'),
@@ -163,7 +163,7 @@ SELECT ok((SELECT prosrc FROM pg_proc
           ~ 'device_admin_allowed.*FROM event e\s+WHERE e\.id = p_event AND e\.operator_id = v_operator FOR SHARE',
   'émission : état lu FOR SHARE, après le contrôle de l''auteur');
 SELECT ok((SELECT prosrc FROM pg_proc
-            WHERE oid = 'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid)'::regprocedure)
+            WHERE oid = 'enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'::regprocedure)
           ~ 'FOR UPDATE.*CL027.*FROM event e\s+WHERE e\.id = c\.event_id AND e\.operator_id = c\.operator_id FOR SHARE.*pg_advisory_xact_lock',
   'enrôlement : état lu FOR SHARE après le code (FOR UPDATE) et le mode, avant le verrou du serial');
 

@@ -2,6 +2,7 @@
 // sur le service de clés ; aucun ne démarre en production avec un faux (NFR-010).
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { vendorPinSettings } from '../../src/config/config';
 import { CUSTOMER_IDENTITY } from '../../src/customer-identity/customer-identity.port';
 import { NO_OPERATOR, TenantTx } from '../../src/db/tenant-tx';
 import { DEVICE_IDENTITY } from '../../src/device-identity/device-identity.port';
@@ -16,6 +17,7 @@ import { DenyUnmarkedRoutesGuard } from '../../src/processes/process-base';
 import { PublicProcessModule } from '../../src/processes/public.module';
 import { TagCheckProcessModule } from '../../src/processes/tag-check.module';
 import { TagKeysProcessModule } from '../../src/processes/tag-keys.module';
+import { VendorPinProcessModule } from '../../src/processes/vendor-pin.module';
 import { WorkerRegistry } from '../../src/processes/worker';
 import { createKeyProcess, createTestApp, type KeyProcessName } from '../support/app';
 import { FakeIdp } from '../support/fake-idp';
@@ -155,6 +157,8 @@ describe('aucun faux en production (démarrage réel)', () => {
     DATABASE_URL_PERSO: 'postgres://cashless_perso:s@127.0.0.1:1/c',
     DATABASE_URL_TAGCHECK: 'postgres://cashless_tagcheck:s@127.0.0.1:1/c',
     DATABASE_URL_KEYADMIN: 'postgres://cashless_keyadmin:s@127.0.0.1:1/c',
+    // Mission 11a, WP06 : processus `vendor-pin` (rôle cashless_pin, secret des PIN, clé d'appel).
+    DATABASE_URL_PIN: 'postgres://cashless_pin:s@127.0.0.1:1/c',
     OIDC_ISSUER: 'https://id.example',
     OIDC_AUDIENCE: 'a',
     OIDC_APPROVAL_AUDIENCE: 'b',
@@ -204,6 +208,7 @@ describe('aucun faux en production (démarrage réel)', () => {
     ['personnalisation', PersonalizationProcessModule],
     ['contrôle quotidien', TagCheckProcessModule],
     ['commande d’administration', KeyAdminProcessModule],
+    ['PIN des vendeurs', VendorPinProcessModule],
   ])(
     '%s : refuse de démarrer en production sans TRUST_PROXY_HOPS (OP-N53)',
     async (_name, root) => {
@@ -222,12 +227,47 @@ describe('aucun faux en production (démarrage réel)', () => {
     ['personnalisation', PersonalizationProcessModule, 'staging'],
     ['contrôle quotidien', TagCheckProcessModule, undefined],
     ['commande d’administration', KeyAdminProcessModule, ''],
+    ['PIN des vendeurs', VendorPinProcessModule, 'prod'],
   ])('%s : refuse de démarrer avec NODE_ENV absent ou inconnu (%p)', async (_name, root, value) => {
     if (value === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = value;
     await expect(Test.createTestingModule({ imports: [root] }).compile()).rejects.toThrow(
       /NODE_ENV (manquant|inconnu)/,
     );
+  });
+
+  // Mission 11a, WP06 (FR-005, C-006, C-008) : le processus `vendor-pin` ne démarre jamais sans son secret, sa
+  // clé d'appel ni sa chaîne de base. Aucun faux de KMS ni de client n'existe dans ce processus : le test « un
+  // faux en production » des autres processus ne s'y applique pas, la valeur de test du secret le remplace.
+  describe('processus vendor-pin', () => {
+    const compile = () => Test.createTestingModule({ imports: [VendorPinProcessModule] }).compile();
+
+    it('contrôle : toutes les variables présentes, le module se compose', async () => {
+      const module = await compile();
+      await module.close();
+    });
+
+    it.each([
+      ['VENDOR_PIN_SECRET absent', 'VENDOR_PIN_SECRET', /VENDOR_PIN_SECRET/],
+      ['VENDOR_PIN_CALL_KEY absente', 'VENDOR_PIN_CALL_KEY', /VENDOR_PIN_CALL_KEY/],
+      ['DATABASE_URL_PIN absente', 'DATABASE_URL_PIN', /DATABASE_URL_PIN/],
+    ])('refuse de démarrer en production : %s', async (_name, variable, message) => {
+      delete process.env[variable];
+      await expect(compile()).rejects.toThrow(message);
+    });
+
+    it('refuse la valeur de test du secret des PIN en production', async () => {
+      const testSecret = vendorPinSettings({ NODE_ENV: 'test' }).vendorPinSecret;
+      process.env.VENDOR_PIN_SECRET = testSecret.toString('base64');
+      await expect(compile()).rejects.toThrow(/VENDOR_PIN_SECRET/);
+    });
+
+    it('refuse une clé d’appel trop courte ou identique au secret des PIN', async () => {
+      process.env.VENDOR_PIN_CALL_KEY = Buffer.alloc(16, 1).toString('base64');
+      await expect(compile()).rejects.toThrow(/VENDOR_PIN_CALL_KEY/);
+      process.env.VENDOR_PIN_CALL_KEY = process.env.VENDOR_PIN_SECRET;
+      await expect(compile()).rejects.toThrow();
+    });
   });
 
   it('la garde de démarrage refuse aussi un faux injecté autrement', () => {

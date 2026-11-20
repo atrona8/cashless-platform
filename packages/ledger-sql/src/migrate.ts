@@ -161,6 +161,9 @@ export async function migrate(
       // Passerelle locale (WP09, créés par post-roles.sql) : processus `edge` et outil d'administration.
       ['cashless_edge', report.postRoles ? env.CASHLESS_EDGE_PASSWORD : undefined],
       ['cashless_edgeadmin', report.postRoles ? env.CASHLESS_EDGEADMIN_PASSWORD : undefined],
+      // Processus vendor-pin (mission 11a, WP03), créé par post-roles.sql. Mot de passe absent : le rôle reste sans
+      // mot de passe, comme les rôles de processus ci-dessus (à signaler au porteur : refus en production possible).
+      ['cashless_pin', report.postRoles ? process.env.CASHLESS_PIN_PASSWORD : undefined],
     ];
     for (const [role, password] of passwords) {
       if (!password) continue;

@@ -1,5 +1,5 @@
 // Test d'argon2 au démarrage (mission 5b, lot WP08 ; A16, NFR-009 ; research R-01 ;
-// contracts/vendors.md, « Secret VENDOR_PIN_SECRET »). Échec → exception → démarrage refusé.
+// contracts/vendors.md, secret des PIN). Échec → exception → démarrage refusé.
 //
 // 1. Vecteur connu INDÉPENDANT du binaire : RFC 9106 §5.3 (Argon2id) — mot de passe 32 × 0x01,
 //    sel 16 × 0x02, secret 8 × 0x03, données associées 12 × 0x04, m = 32 Kio, t = 3, p = 4,
@@ -13,7 +13,8 @@
 // est donc éprouvé par l'aller-retour (2), le calcul lui-même par le vecteur de la RFC (1).
 import { timingSafeEqual } from 'node:crypto';
 import * as argon2 from 'argon2';
-import { VENDOR_PIN_PARAMS, type Argon2Impl, type VendorPinHasher } from './vendor-pin.hasher';
+import type { VendorPinDigester } from './vendor-pin.digester';
+import { VENDOR_PIN_PARAMS, type Argon2Impl } from './vendor-pin.hasher';
 
 /** RFC 9106 §5.3, « Tag[32] » d'Argon2id, recopié du texte de la RFC. */
 export const RFC9106_ARGON2ID_TAG = Buffer.from(
@@ -60,7 +61,7 @@ export async function checkRfc9106Vector(impl: Argon2Impl = argon2): Promise<voi
 
 /** Étape 2 : aller-retour avec le secret du déploiement (PIN de test, jamais journalisé). */
 export async function checkRoundTrip(
-  hasher: VendorPinHasher,
+  hasher: VendorPinDigester,
   impl: Argon2Impl = argon2,
 ): Promise<void> {
   const pin = '246813';
@@ -75,9 +76,9 @@ export async function checkRoundTrip(
   if (await hasher.verify(null, pin)) throw new Argon2SelfTestError('empreinte factice acceptée');
 }
 
-/** Les deux étapes, dans l'ordre ; appelé par `VendorPinModule.onModuleInit`. */
+/** Les deux étapes, dans l'ordre ; appelé au démarrage par `VendorPinServerModule` (processus `vendor-pin`). */
 export async function runArgon2SelfTest(
-  hasher: VendorPinHasher,
+  hasher: VendorPinDigester,
   impl: Argon2Impl = argon2,
 ): Promise<void> {
   await checkRfc9106Vector(impl);

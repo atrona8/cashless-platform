@@ -29,10 +29,15 @@ technique particulière. Chaque étape se vérifie. En cas de doute, ne rien for
 ## 2. Inscription (une personne)
 
 1. Une seule personne lance la demande d'inscription (`request --serial ... --role PRIMARY|STANDBY`).
-2. Le central envoie une alerte immédiate à l'exploitation à chaque inscription.
-3. **Aucun mot de passe de bracelet n'est envoyé pendant 30 minutes** après l'inscription. Ce délai laisse le
+2. Le grand livre n'est **pas** saisi : l'inscription le retrouve à partir de l'événement et l'écrit dans le
+   fichier d'enrôlement ; l'option `--ledger` est refusée (un ancien script qui la passe encore doit être corrigé).
+   Une inscription qui échoue avec « grand livre introuvable ou ambigu » signifie qu'aucun grand livre (ou
+   plusieurs, plusieurs devises) n'existe pour l'événement : voir l'exploitation du central, ne rien contourner
+   à la main.
+3. Le central envoie une alerte immédiate à l'exploitation à chaque inscription.
+4. **Aucun mot de passe de bracelet n'est envoyé pendant 30 minutes** après l'inscription. Ce délai laisse le
    temps de repérer une inscription non voulue et de la révoquer.
-4. Une passerelle de secours (`STANDBY`) ne reçoit rien tant qu'elle n'est pas promue.
+5. Une passerelle de secours (`STANDBY`) ne reçoit rien tant qu'elle n'est pas promue.
 
 ## 3. Enrôlement
 

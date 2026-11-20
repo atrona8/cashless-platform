@@ -1,0 +1,151 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-18T12:38:03.720642Z",
+      "decision_id": "01M7QAM2P80FKECZ6WRHFT05R5",
+      "final_answer": "Stocker le keyId et v\u00e9rifier les assertions App Attest c\u00f4t\u00e9 serveur ; borne iOS (QR seulement, /media/auth-keys refus\u00e9) gard\u00e9e jusqu'\u00e0 ce que l'app (mission 12) envoie les assertions ; OP-N64 passe c\u00f4t\u00e9 serveur pr\u00eat, non lev\u00e9",
+      "input_key": "op_n64_scope",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Stocker le keyId et v\u00e9rifier les assertions App Attest c\u00f4t\u00e9 serveur, borne iOS gard\u00e9e jusqu \u00e0 la mission 12",
+        "Stocker le keyId seulement",
+        "Sortir OP-N64 de la 11a (tout en mission 12)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "OP-N64 (terminal iOS) : jusqu'o\u00f9 va le c\u00f4t\u00e9 serveur dans la 11a ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T12:39:27.541679Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.op-n64-app-attest",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T12:39:35.072951Z",
+      "decision_id": "01M7QAPVX0MBCMHQ7WWWS484NJ",
+      "final_answer": "Masque de l'IBAN dans redact.ts et chiffrement au repos de refund_request.iban par le service de cl\u00e9s existant (faux jusqu'\u00e0 la 12b, d\u00e9j\u00e0 refus\u00e9 en production par OP-N41) ; d\u00e9chiffrement seulement pour l'export du lot et l'affichage masqu\u00e9",
+      "input_key": "op_n140_at_rest",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Masque dans redact.ts et chiffrement au repos par le service de cl\u00e9s existant (faux jusqu \u00e0 la 12b)",
+        "Masque dans redact.ts seulement, chiffrement au repos report\u00e9 en 12b",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "OP-N140 : IBAN au repos dans refund_request.iban, chiffr\u00e9 dans la 11a ou seulement masqu\u00e9 dans les journaux ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T12:42:02.868578Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.op-n140-iban-at-rest",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T12:42:10.498830Z",
+      "decision_id": "01M7QAVKP21KTHSK8WDV3BQ3CQ",
+      "final_answer": "Grand livre rendu par l'inscription : la fonction d'inscription trouve le grand livre de l'\u00e9v\u00e9nement ; l'outil ne le demande plus (--ledger refus\u00e9) ; aucune lecture nouvelle pour cashless_edgeadmin",
+      "input_key": "op_n116_option",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Lecture \u00e9troite pour cashless_edgeadmin : l outil v\u00e9rifie le grand livre pass\u00e9 contre l \u00e9v\u00e9nement",
+        "Grand livre rendu par l inscription : l outil ne le demande plus",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "OP-N116 : comment l'inscription d'une passerelle s'assure-t-elle du bon grand livre ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T12:44:47.794422Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.op-n116-edge-ledger",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:10:54.540534Z",
+      "decision_id": "01M7QCG7ACJ66PAZVWBX406P0N",
+      "final_answer": "Cl\u00e9 de configuration dans l'API : AES-256-GCM, anneau de cl\u00e9s en configuration, production refus\u00e9e sans cl\u00e9 ; chiffrement aux trois emplacements (refund_request.iban, payout.iban, approval_request.payload avec iban_mask) ; CHECK NOT VALID ; limite r\u00e9siduelle (cl\u00e9 dans le processus public) consign\u00e9e, lev\u00e9e avec le vrai KMS",
+      "input_key": "iban_key_location",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Cl\u00e9 de configuration dans l API (recommand\u00e9)",
+        "Masque seul, chiffrement report\u00e9 au vrai KMS (12b)",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N140 : le processus public n'a pas de service de cl\u00e9s et l'export CSV qui doit d\u00e9chiffrer l'IBAN est public. Chiffrer l'IBAN (3 emplacements) avec une cl\u00e9 AES-256-GCM lue dans la configuration de l'API (production refus\u00e9e sans cl\u00e9), ou garder le masque seul et laisser le chiffrement \u00e0 l'arriv\u00e9e d'un vrai KMS ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T14:37:15.158941Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.iban-key",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:11:02.260148Z",
+      "decision_id": "01M7QCGEVM562A0K8X9W456TMF",
+      "final_answer": "Garder refund_deposit(uuid, uuid) interne, ex\u00e9cutable par aucun r\u00f4le, prouv\u00e9 par test ; \u00e9cart \u00e0 FR-012 neutre, consign\u00e9 ; refund_deposit_for_session(uuid, uuid) retir\u00e9e",
+      "input_key": "refund_deposit_legacy",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "La garder interne, ex\u00e9cutable par personne (recommand\u00e9)",
+        "La retirer (g\u00e9n\u00e9rateur et sch\u00e9ma de r\u00e9f\u00e9rence modifi\u00e9s)",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N145 : retirer refund_deposit(uuid, uuid), appel\u00e9e par refund_deposit_from_balance et par le g\u00e9n\u00e9rateur gen_tests.py (et d\u00e9finie dans le sch\u00e9ma de r\u00e9f\u00e9rence), ou la garder interne, ex\u00e9cutable par aucun r\u00f4le ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T14:37:22.642965Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.refund-deposit-legacy",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-18T13:11:10.226295Z",
+      "decision_id": "01M7QCGPMJE5K4FGCYTEH01MFD",
+      "final_answer": "Oui : un seul EXECUTE nouveau pour cashless_app sur advance_app_attest_counter (mise \u00e0 jour seulement si le compteur cro\u00eet), fig\u00e9 dans tests_execute_grants.sql ; cl\u00e9 gard\u00e9e par une nouvelle version d'enroll_device ; risque de d\u00e9ni de service des assertions consign\u00e9",
+      "input_key": "app_attest_grants",
+      "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+      "mission_slug": "durcissements-serveur-01M7QAJD",
+      "opened_by": "cli",
+      "options": [
+        "Oui, un seul EXECUTE nouveau et \u00e9troit (recommand\u00e9)",
+        "Non, reporter tout OP-N64 c\u00f4t\u00e9 serveur \u00e0 la mission 12",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "OP-N64 : garder la cl\u00e9 App Attest \u00e0 l'enr\u00f4lement (nouvelle version d'enroll_device, m\u00eame droit) et donner \u00e0 cashless_app l'EXECUTE d'une fonction \u00e9troite advance_app_attest_counter (compteur strictement croissant, refus sinon) ?",
+      "rationale": null,
+      "resolved_at": "2026-11-18T14:37:30.181624Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.app-attest-grants",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+  "version": 1
+}

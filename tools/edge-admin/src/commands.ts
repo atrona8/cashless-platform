@@ -97,11 +97,15 @@ async function readKeyArg(deps: Deps, value: string): Promise<string> {
 }
 
 export async function register(args: RegisterArgs, deps: Deps): Promise<number> {
+  // OP-N116 : le grand livre est rendu par la base ; aucune valeur d'option n'est jamais lue.
+  if (args.ledger !== undefined)
+    throw new CliError(
+      "--ledger : retiré ; le grand livre est déterminé par la base à partir de l'événement",
+    );
   const ca = await resolveCa(deps);
   const label = auditLabel(args.by, deps.env);
   const operator = uuid(args.operator, '--operator');
   const event = uuid(args.event, '--event');
-  const ledger = uuid(args.ledger, '--ledger');
   const serial = required(args.serial, '--serial');
   const role = required(args.role, '--role');
   if (role !== 'PRIMARY' && role !== 'STANDBY') throw new CliError('--role : PRIMARY ou STANDBY');
@@ -147,8 +151,8 @@ export async function register(args: RegisterArgs, deps: Deps): Promise<number> 
   const certPem = await ca.issue(request.csrPem, serial);
   const certDigest = createHash('sha256').update(new X509Certificate(certPem).raw).digest();
 
-  const gatewayId = await deps.db().withOperator(operator, async (session) => {
-    const id = await session.call('register_edge_gateway', [
+  const { gatewayId, ledgerId } = await deps.db().withOperator(operator, async (session) => {
+    const row = await session.call('register_edge_gateway', [
       operator,
       event,
       serial,
@@ -159,21 +163,28 @@ export async function register(args: RegisterArgs, deps: Deps): Promise<number> 
       lanUrl,
       label,
     ]);
-    if (typeof id !== 'string') throw new Error('identifiant de passerelle non rendu');
+    const { gateway_id: id, ledger_id: ledger } = (row ?? {}) as Record<string, unknown>;
+    if (
+      typeof id !== 'string' ||
+      !UUID.test(id) ||
+      typeof ledger !== 'string' ||
+      !UUID.test(ledger)
+    )
+      throw new Error('identifiant de passerelle ou de grand livre non rendu');
     await session.call('edge_register_snapshot_key', [
       id,
       request.snapshotKeyId,
       request.snapshotPublicKey,
       label,
     ]);
-    return id;
+    return { gatewayId: id, ledgerId: ledger.toLowerCase() };
   });
 
   const file: EnrollmentFile = {
     gateway_id: gatewayId,
     operator_id: operator,
     event_id: event,
-    ledger_id: ledger,
+    ledger_id: ledgerId,
     serial,
     role,
     central_url: centralUrl.toString(),

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1330" viewBox="0 0 1960 1330">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(20,50)">
+<rect x="1400" y="30" width="460" height="44" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<ellipse cx="275.0" cy="280.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="500.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="720.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<ellipse cx="275.0" cy="940.0" rx="165.0" ry="48.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<rect x="1010" y="183.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="293.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="403.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="513.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="623.0" width="430" height="84" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<rect x="1010" y="733.0" width="430" height="84" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<rect x="1010" y="843.0" width="430" height="84" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<rect x="1010" y="953.0" width="430" height="84" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<polyline points="448,280.0 1000,225.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,225.0 981.8340483819917,237.4096011947275 979.7425751141004,216.41881494243725" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,500.0 1000,335.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,335.0 984.5225823457235,350.63488224308355 978.4812157940671,330.42376505208773" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,500.0 1000,445.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,445.0 981.8340483819917,457.4096011947275 979.7425751141004,436.4188149424372" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,500.0 1000,555.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,555.0 979.7425751141004,563.5811850575627 981.8340483819917,542.5903988052725" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,720.0 1000,665.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,665.0 981.8340483819917,677.4096011947275 979.7425751141004,656.4188149424373" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
+<polyline points="448,940.0 1000,775.0" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1000,775.0 984.5225823457235,790.6348822430836 978.4812157940671,770.4237650520877" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<polyline points="448,940.0 1000,885.0" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1000,885.0 981.8340483819917,897.4096011947275 979.7425751141004,876.4188149424373" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<polyline points="448,940.0 1000,995.0" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1000,995.0 979.7425751141004,1003.5811850575627 981.8340483819917,982.5903988052725" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Durcissements serveur hérités</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Ce que chaque acteur peut faire, et ce que la base refuse à une API compromise</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 19/11/2026 — non fusionné</text>
+<text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
+<text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
+<text x="275.0" y="284.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Terminal (vendeur)</text>
+<text x="275.0" y="504.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Back-office (administrateur)</text>
+<text x="275.0" y="724.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Administrateur de site</text>
+<text x="275.0" y="944.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">API compromise (menace)</text>
+<text x="1225.0" y="229.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Ouvrir une session (PIN)</text>
+<text x="1225.0" y="339.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Créer ou modifier un lot</text>
+<text x="1225.0" y="449.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Demander un remboursement (IBAN)</text>
+<text x="1225.0" y="559.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Décider un lot de versements</text>
+<text x="1225.0" y="669.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Inscrire une passerelle</text>
+<text x="1225.0" y="779.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Écrire un lot directement</text>
+<text x="1225.0" y="889.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Ouvrir une session sans PIN</text>
+<text x="1225.0" y="999.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Insérer une demande payée</text>
+<text x="60" y="1091.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Mission relue le 19/11/2026 (14 lots sur 14 approuvés), non fusionnée. Flèches rouges pointillées : tentatives refusées par la base.</text>
+<text x="60" y="1123.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Le PIN n’est vérifié que par le processus vendor-pin ; les lots passent par des fonctions contrôlées.</text>
+<text x="60" y="1155.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Une demande de remboursement ne naît qu’à son état initial ; l’IBAN est chiffré en base et masqué au journal.</text>
+<text x="60" y="1187.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">L’inscription d’une passerelle rend le grand livre de l’événement (l’option --ledger est refusée) ; les routes et réponses restent celles d’avant.</text>
+</g>
+</svg>

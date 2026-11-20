@@ -114,6 +114,8 @@ describe('architecture', () => {
     'snapshot-signer': 'processes/snapshot-signer.module.ts',
     // Mission passerelle-locale, WP10 : processus `edge`, aucun droit de clé.
     edge: 'processes/edge.module.ts',
+    // Mission 11a, WP06 (OP-N76) : processus `vendor-pin`, aucun droit de clé.
+    'vendor-pin': 'processes/vendor-pin.module.ts',
   } as const;
   // Processus des lots WP11 (snapshot-content) et WP13 (snapshot-signer) : leurs lots ajoutent leur
   // racine ici ; tant que le fichier n'existe pas, la liste ne les attend pas.
@@ -143,6 +145,7 @@ describe('architecture', () => {
     'snapshot-content': ['dataKey', 'decrypt'],
     'snapshot-signer': ['sign'],
     edge: [],
+    'vendor-pin': [],
   };
   const PORT_TOKEN: Record<string, string> = {
     mac: 'MAC_PORT',
@@ -293,6 +296,139 @@ describe('architecture', () => {
     expect(secretNames(exempt, 'SELECT * FROM media')).toBe(true);
   });
 
+  // Mission 11a, WP06 (OP-N76, ADR-121) : le secret des empreintes de PIN n'existe que dans le processus
+  // `vendor-pin`. L'exemption de `config/config.ts` (transition WP04) est levée par WP07 : `AppConfig`
+  // ne porte plus le champ ; seule la fonction `vendorPinSettings` du processus le lit (voir plus bas).
+  const PIN_SECRET_NAME = /\bvendorPinSecret\b|\bVENDOR_PIN_SECRET\b/;
+  const PIN_SECRET_SETTINGS_FILE = 'config/config.ts';
+
+  it('le secret des PIN (VENDOR_PIN_SECRET) n’est lu que par le processus vendor-pin', () => {
+    const readers = files
+      .filter((file) => PIN_SECRET_NAME.test(code(file.text)))
+      .map((file) => file.path)
+      .filter((path) => path !== PIN_SECRET_SETTINGS_FILE);
+    expect(readers.length).toBeGreaterThan(0);
+    const inPinProcess = reachable(ROOTS['vendor-pin']);
+    expect(readers.filter((path) => !inPinProcess.has(path))).toEqual([]);
+    const inPublic = reachable(ROOTS.public);
+    expect(readers.filter((path) => inPublic.has(path))).toEqual([]);
+    // Le seul lecteur du champ de configuration du processus est son module serveur.
+    expect(readers).toContain('vendor-pin/vendor-pin-server.module.ts');
+  });
+
+  it('WP07 : hors vendor-pin/, seul config/config.ts nomme le secret (vendorPinSettings), jamais AppConfig', () => {
+    const outside = files
+      .filter((file) => PIN_SECRET_NAME.test(code(file.text)))
+      .map((file) => file.path)
+      .filter((path) => !path.startsWith('vendor-pin/'));
+    expect(outside).toEqual([PIN_SECRET_SETTINGS_FILE]);
+    // Exemption nommée : le champ n'est plus dans `AppConfig`, ni lu par `loadConfig`.
+    const config = code(files.find((file) => file.path === PIN_SECRET_SETTINGS_FILE)!.text);
+    const appConfig = config.slice(
+      config.indexOf('export interface AppConfig'),
+      config.indexOf('\n}\n', config.indexOf('export interface AppConfig')),
+    );
+    expect(appConfig.length).toBeGreaterThan(100);
+    expect(appConfig).not.toMatch(PIN_SECRET_NAME);
+    const loader = config.slice(config.indexOf('export function loadConfig'));
+    expect(loader.slice(0, loader.indexOf('\nexport '))).not.toMatch(PIN_SECRET_NAME);
+  });
+
+  it('processus vendor-pin : le pool de son rôle seul, ni PlatformTx, ni pool de l’API, ni KmsModule', () => {
+    const text = code(files.find((file) => file.path === ROOTS['vendor-pin'])!.text);
+    expect(text).toContain("ProcessDbModule.forProcess('vendor-pin')");
+    expect(text).not.toMatch(/\bDbModule\b(?!\.)/);
+    expect(text).not.toMatch(/\b(KmsModule|DeviceIdentityModule)\b/);
+    const seen = reachable(ROOTS['vendor-pin']);
+    expect([...seen].filter((path) => path.endsWith('/platform-tx.ts'))).toEqual([]);
+    expect(seen.has('db/db.module.ts')).toBe(false);
+    expect(seen.has('kms/kms.module.ts')).toBe(false);
+    expect(seen.has('device-identity/device-identity.module.ts')).toBe(false);
+    const poolTokens = [...seen].filter((path) =>
+      imports(files.find((file) => file.path === path)!.text).some((s) =>
+        /pool\.token$|platform-tx$/.test(s),
+      ),
+    );
+    expect(poolTokens.every((path) => path.startsWith('db/'))).toBe(true);
+  });
+
+  // ----- Mission 11a : OP-N151 (PIN en transit) et OP-N159 (c) (argon2 hors de l'API) -----
+
+  /** Appels qui écrivent ou journalisent : le champ `pin` n'y figure jamais hors de `vendor-pin/`. */
+  const SINKS =
+    /(?:\.query|\.record|\.log\w*|\.warn|\.error|\.info|\.debug|\.verbose|\.write|console\.\w+|logger\.\w+|Logger\.\w+)\s*\(/g;
+  /** Texte de l'appel qui commence à `start` (parenthèses équilibrées). */
+  function callText(text: string, start: number): string {
+    let depth = 0;
+    for (let i = start; i < text.length; i += 1) {
+      if (text[i] === '(') depth += 1;
+      if (text[i] === ')' && --depth === 0) return text.slice(start, i + 1);
+    }
+    return text.slice(start);
+  }
+  /** Appels d'écriture ou de journal dont les arguments nomment le PIN (`pin`, `.pin`, `pin:`). */
+  function pinSinks(text: string): string[] {
+    const source = code(text);
+    return [...source.matchAll(SINKS)]
+      .map((m) => callText(source, m.index! + m[0].length - 1))
+      .filter((call) => /(?<![A-Za-z0-9_])pin(?![A-Za-z0-9_])/.test(call));
+  }
+
+  it('OP-N151 : hors de vendor-pin/, aucun fichier ne persiste ni ne journalise le champ pin', () => {
+    const offenders = files
+      .filter((file) => !file.path.startsWith('vendor-pin/'))
+      .filter((file) => pinSinks(file.text).length > 0)
+      .map((file) => file.path);
+    expect(offenders).toEqual([]);
+    // Les fichiers qui manipulent le champ sont connus (liste figée) : un nouveau est à relire.
+    const handlers = files
+      .filter((file) => !file.path.startsWith('vendor-pin/'))
+      .filter((file) =>
+        /(?<![A-Za-z0-9_'.-])(?:input|body|call)\.pin\b|\{ pin \}/.test(code(file.text)),
+      )
+      .map((file) => file.path)
+      .sort();
+    expect(handlers).toEqual([
+      'vendors/vendor-pin.client.ts',
+      'vendors/vendor-sessions.service.ts',
+      'vendors/vendors.controller.ts',
+      'vendors/vendors.dto.ts',
+    ]);
+  });
+
+  it('OP-N151 (contrôle) : un appel de journal ou d’écriture qui nomme le pin est attrapé', () => {
+    expect(
+      pinSinks("this.audit.record(client, { action: 'X', after: { pin: input.pin } });"),
+    ).toHaveLength(1);
+    expect(pinSinks("client.query('INSERT INTO t VALUES ($1)', [pin]);")).toHaveLength(1);
+    expect(pinSinks('logger.warn(`essai ${input.pin}`);')).toHaveLength(1);
+    expect(pinSinks("client.query('SELECT 1', [pinHash]);")).toHaveLength(0);
+    expect(pinSinks("// logger.warn(pin)\n const x = 'pin';")).toHaveLength(0);
+  });
+
+  it('OP-N159 (c) : aucun import de vendor-pin.hasher, vendor-pin.digester ni argon2 hors de vendor-pin/', () => {
+    const importers = (pattern: RegExp): string[] =>
+      files
+        .filter((file) => !file.path.startsWith('vendor-pin/'))
+        .filter((file) => imports(file.text).some((source) => pattern.test(source)))
+        .map((file) => file.path)
+        .sort();
+    expect(importers(/(^|\/)vendor-pin\.digester$/)).toEqual([]);
+    expect(importers(/^argon2$/)).toEqual([]);
+    // Seule exemption nommée : le dérivé d'idempotence du PIN (ADR-126) résout `VendorPinHasher`.
+    expect(importers(/(^|\/)vendor-pin\.hasher$/)).toEqual([
+      'idempotency/idempotency.interceptor.ts',
+    ]);
+    // `vendors/` n'atteint ni le hacheur ni argon2 : le motif du PIN vient d'un module neutre.
+    const reached = reachable('vendors/vendors.dto.ts');
+    expect([...reached].filter((path) => /vendor-pin\.(hasher|digester)\.ts$/.test(path))).toEqual(
+      [],
+    );
+    expect(code(files.find((file) => file.path === 'common/pin-pattern.ts')!.text)).not.toMatch(
+      /\bimport\b/,
+    );
+  });
+
   it('chaque point d’entrée passe par le démarrage commun, qui applique la garde de production', () => {
     const mains = files.filter((file) => /^main(\.[a-z-]+)?\.ts$/.test(file.path));
     expect(mains.map((file) => file.path).sort()).toEqual([
@@ -306,6 +442,7 @@ describe('architecture', () => {
       'main.tag-check.ts',
       'main.tag-keys.ts',
       'main.ts',
+      'main.vendor-pin.ts',
     ]);
     for (const main of mains) expect(code(main.text)).toMatch(/\b(serve|runWorkers)\(/);
     const bootstrap = code(files.find((file) => file.path === 'processes/bootstrap.ts')!.text);

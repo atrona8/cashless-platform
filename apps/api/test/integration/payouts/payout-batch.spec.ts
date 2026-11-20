@@ -1,6 +1,9 @@
 // Intégration : demande et validation d'un lot de versements (mission 9b, lot WP08, T036 ; FR-009,
 // FR-010, SC-002).
 import { randomUUID } from 'node:crypto';
+import { maskIban } from '../../../src/common/iban';
+import { IbanVault } from '../../../src/common/iban-vault';
+import { withOwner } from '../../support/db';
 import { ownerRows } from '../../support/media-fixtures';
 import { IBAN, PayoutWorld } from './payout-fixtures';
 
@@ -42,9 +45,27 @@ describe('lot de versements', () => {
     const rows = await p.payoutsOf(id);
     expect(rows).toHaveLength(2);
     expect(rows.map((r) => r.status)).toEqual(['INITIATED', 'INITIATED']);
-    // La ligne en base garde la destination complète (IBAN normalisé) ; aucune réponse
-    // d'approbation ne la porte.
-    expect(rows.find((r) => r.iban)!.iban).toBe(IBAN);
+    // OP-N140 : la ligne en base ne porte que l'enveloppe (IBAN normalisé chiffré), jamais le clair ;
+    // la demande non plus. L'export seul rouvre la valeur (payout-export.spec.ts).
+    expect(rows.find((r) => r.iban)!.iban).toMatch(/^enc:v1:/);
+    const clear = await ownerRows<{ n: number }>(
+      `SELECT (SELECT count(*) FROM payout WHERE iban LIKE $1 AND approval_request_id = $2)::int
+            + (SELECT count(*) FROM approval_request
+                WHERE id = $2 AND (payload::text LIKE $1 OR result::text LIKE $1))::int
+            + (SELECT count(*) FROM audit_log
+                WHERE object_id::text = $2::text AND (before::text LIKE $1 OR after::text LIKE $1))::int AS n`,
+      [`%${IBAN}%`, id],
+    );
+    expect(clear[0]!.n).toBe(0);
+    const stored = await ownerRows<{
+      payload: { lines: Array<{ iban?: string; iban_mask?: string }> };
+    }>('SELECT payload FROM approval_request WHERE id = $1', [id]);
+    const bank = stored[0]!.payload.lines.find((l) => l.iban)!;
+    expect(bank.iban).toMatch(/^enc:v1:/);
+    expect(bank.iban_mask).toBe(maskIban(IBAN));
+    const shown = await p.bo('GET', `/approval-requests/${id}`, p.w.organizerAdminA);
+    expect(shown.text).not.toContain(IBAN);
+    expect(shown.text).not.toContain(String(bank.iban));
     for (const text of [asked.text, approved.text]) {
       expect(text).not.toContain(IBAN);
       expect(text).not.toContain('770000001');
@@ -65,8 +86,15 @@ describe('lot de versements', () => {
     const before = await p.txCount('PAYOUT_INITIATED');
     const asked = await p.request([p.line(m, 1_000)]);
     const self = await p.approve(asked.body.approval_request_id, p.w.organizerAdminA);
-    expect([403, 409]).toContain(self.status);
-    expect(self.body.status).not.toBe('EXECUTED');
+    // FR-016 amendé : exactement 409 APPROVAL_INVALID (CL023), demande encore PENDING.
+    expect(self.status).toBe(409);
+    expect(self.body.code).toBe('APPROVAL_INVALID');
+    const still = await p.bo(
+      'GET',
+      `/approval-requests/${asked.body.approval_request_id}`,
+      p.w.organizerAdminA,
+    );
+    expect(still.body.status).toBe('PENDING');
     for (const who of [p.w.supervisorA, p.w.cashierA]) {
       expect((await p.request([p.line(m, 1_000)], who)).status).toBe(403);
       expect((await p.approve(asked.body.approval_request_id, who)).status).toBe(403);
@@ -92,7 +120,7 @@ describe('lot de versements', () => {
     expect(ok.approved.body.status).toBe('EXECUTED');
   });
 
-  it('lot mixte : les deux rôles à la demande ; valideur du mauvais rôle : demande FAILED, rien écrit', async () => {
+  it('lot mixte : les deux rôles à la demande ; valideur du mauvais rôle : 403 avant la décision, demande PENDING (FR-013)', async () => {
     await p.fund('L-OPE-CASSE', 4_000);
     const m = await p.merchant(5_000);
     const operator = {
@@ -113,8 +141,10 @@ describe('lot de versements', () => {
     expect(asked.status).toBe(202);
     const before = await p.txCount('PAYOUT_INITIATED');
     const wrong = await p.approve(asked.body.approval_request_id, p.organizerAdmin2);
-    expect(wrong.body.status).toBe('FAILED');
+    expect(wrong.status).toBe(403);
     expect(await p.txCount('PAYOUT_INITIATED')).toBe(before);
+    const pending = await p.bo('GET', `/approval-requests/${asked.body.approval_request_id}`, both);
+    expect(pending.body.status).toBe('PENDING');
     const again = await p.request(mixed, both);
     const right = await p.approve(again.body.approval_request_id, await p.holdingBoth());
     expect(right.body.status).toBe('EXECUTED');
@@ -156,6 +186,108 @@ describe('lot de versements', () => {
     ]);
     expect([ra.body.status, rb.body.status].sort()).toEqual(['EXECUTED', 'FAILED']);
     expect(await p.net(m.partyId)).toBe(9_225);
+  });
+
+  it('OP-N140 : un IBAN en clair dans la charge reçue à l’exécution est refusé ; la base refuse le clair', async () => {
+    const m = await p.merchant(5_000);
+    const asked = await p.request([
+      p.line(m, 100, { method: 'BANK_TRANSFER', msisdn: undefined, iban: IBAN }),
+    ]);
+    const id = String(asked.body.approval_request_id);
+    // Charge forgée : le clair remplace l'enveloppe (écriture du propriétaire, hors API).
+    await withOwner(async (db) => {
+      await db.query('BEGIN');
+      await db.query("SET LOCAL session_replication_role = 'replica'");
+      await db.query(
+        `UPDATE approval_request
+            SET payload = jsonb_set(payload, '{lines,0,iban}', to_jsonb($2::text)) WHERE id = $1`,
+        [id, IBAN],
+      );
+      await db.query('COMMIT');
+    });
+    const res = await p.approve(id);
+    // Refus 422 dès le crochet (charge relue avant la décision) : demande PENDING, rien écrit.
+    expect(res.status).toBe(422);
+    expect(await p.payoutsOf(id)).toHaveLength(0);
+    // Borne de la base : `payout.iban` en clair viole payout_iban_sealed (23514), seule contrainte
+    // touchée (toutes les autres colonnes sont copiées d'une ligne valide).
+    const ok = await p.batch([
+      p.line(m, 100, { method: 'BANK_TRANSFER', msisdn: undefined, iban: IBAN }),
+    ]);
+    expect(ok.approved.body.status).toBe('EXECUTED');
+    await expect(
+      ownerRows(
+        `INSERT INTO payout (operator_id, ledger_id, beneficiary_id, amount, method, status, iban,
+                             initiated_by, approved_by, initiated_tx_id, approval_request_id,
+                             origin_account_id)
+         SELECT operator_id, ledger_id, beneficiary_id, amount, method, status, $2,
+                initiated_by, approved_by, initiated_tx_id, approval_request_id, origin_account_id
+           FROM payout WHERE approval_request_id = $1`,
+        [ok.id, IBAN],
+      ),
+    ).rejects.toMatchObject({ code: '23514', constraint: 'payout_iban_sealed' });
+  });
+
+  it('OP-N140 : enveloppe altérée ou scellée pour un autre prestataire, masque falsifié, forgés en base : FAILED, rien écrit, aucun fragment d’IBAN', async () => {
+    // `guardDecision` ne relit que la forme (`validatePayload`) : la forge le franchit et atteint
+    // `execute`, où seule l'ouverture de l'enveloppe pour CE prestataire (`checkSealed`) l'arrête.
+    // Masque falsifié (revue post-fusion de la mission 11a, B-1) : l'enveloppe est authentique mais
+    // le masque affiché au valideur n'est pas celui de l'IBAN payé.
+    const vault = p.api.app.get(IbanVault);
+    const forgeries: Array<[string, 'iban' | 'iban_mask', (genuine: string) => string]> = [
+      [
+        'altérée',
+        'iban',
+        (genuine) => {
+          const at = genuine.length - 30;
+          return `${genuine.slice(0, at)}${genuine[at] === 'A' ? 'B' : 'A'}${genuine.slice(at + 1)}`;
+        },
+      ],
+      ['autre prestataire', 'iban', () => vault.seal(IBAN, p.w.ops.b)],
+      ['masque falsifié', 'iban_mask', () => maskIban('FR7630006000011234567890189')],
+    ];
+    for (const [label, field, forge] of forgeries) {
+      const m = await p.merchant(5_000);
+      const asked = await p.request([
+        p.line(m, 100, { method: 'BANK_TRANSFER', msisdn: undefined, iban: IBAN }),
+      ]);
+      expect(asked.status).toBe(202);
+      const id = String(asked.body.approval_request_id);
+      const [stored] = await ownerRows<{ value: string }>(
+        `SELECT payload->'lines'->0->>$2 AS value FROM approval_request WHERE id = $1`,
+        [id, field],
+      );
+      const forged = forge(stored!.value);
+      expect(forged).not.toBe(stored!.value);
+      await withOwner(async (db) => {
+        await db.query('BEGIN');
+        await db.query("SET LOCAL session_replication_role = 'replica'");
+        await db.query(
+          `UPDATE approval_request
+              SET payload = jsonb_set(payload, ARRAY['lines', '0', $3], to_jsonb($2::text))
+            WHERE id = $1`,
+          [id, forged, field],
+        );
+        await db.query('COMMIT');
+      });
+      const txs = () =>
+        ownerRows<{ n: number }>(
+          'SELECT count(*)::int AS n FROM journal_transaction WHERE ledger_id = $1',
+          [p.ledger],
+        ).then((r) => r[0]!.n);
+      const before = await txs();
+      const res = await p.approve(id);
+      // Passé le crochet, la décision est prise puis l'exécution refuse : FAILED (jamais EXECUTED).
+      expect([label, res.body.status]).toEqual([label, 'FAILED']);
+      expect(await p.payoutsOf(id)).toHaveLength(0);
+      expect([label, await txs()]).toEqual([label, before]);
+      // Un masque est fait pour être affiché : seule une enveloppe forgée est un fragment interdit.
+      const fragments = [IBAN, IBAN.slice(0, 12), IBAN.slice(-8)];
+      if (field === 'iban') fragments.push(forged);
+      for (const fragment of fragments) {
+        expect(res.text).not.toContain(fragment);
+      }
+    }
   });
 
   it('entrée refusée : montant nul, négatif, décimal, énorme, IBAN faux, doublon, champ étranger, CASH', async () => {

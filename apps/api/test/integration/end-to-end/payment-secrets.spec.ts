@@ -16,7 +16,7 @@
 import 'reflect-metadata';
 import { createHash, randomInt, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
-import { loadConfig } from '../../../src/config/config';
+import { loadConfig, vendorPinSettings } from '../../../src/config/config';
 import { asPerson } from '../../support/device-e2e';
 import { withOwner } from '../../support/db';
 import { ownerRows } from '../../support/media-fixtures';
@@ -77,13 +77,15 @@ describe('NFR-002, NFR-008, SC-003 : aucun PIN, jeton ni secret en clair après 
   async function journey(): Promise<void> {
     const server = { baseUrl: pw.api.baseUrl, serverCaPem: pw.api.tls.serverCaPem };
     const config = loadConfig({ NODE_ENV: 'test' });
+    // Le secret des empreintes n'est plus dans l'API (WP07) : celui du processus `vendor-pin`.
+    const { vendorPinSecret } = vendorPinSettings({ NODE_ENV: 'test' });
     secrets.push(
       {
         label: 'VENDOR_PIN_SECRET',
         forms: [
-          config.vendorPinSecret.toString('hex'),
-          config.vendorPinSecret.toString('base64'),
-          hex(config.vendorPinSecret.toString('hex')),
+          vendorPinSecret.toString('hex'),
+          vendorPinSecret.toString('base64'),
+          hex(vendorPinSecret.toString('hex')),
         ],
       },
       {

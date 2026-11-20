@@ -97,7 +97,6 @@ export async function registerViaTool(
     request: join(dir, 'request.json'),
     operator: world.operatorId,
     event: event.eventId,
-    ledger: event.ledgerId,
     serial,
     role,
     'lan-url': lanUrl,

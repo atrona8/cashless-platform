@@ -91,8 +91,8 @@ SELECT ok(NOT has_any_column_privilege('cashless_app', 'tag_data_key', 'INSERT')
   'API publique : n''écrit aucune clé de données');
 SELECT is((SELECT array_agg(a.attname::text ORDER BY a.attname) FROM pg_attribute a
             WHERE a.attrelid = 'media'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND has_column_privilege('cashless_app', 'media', a.attname, 'UPDATE')),
-  ARRAY['claim_attempts','claim_code_used_at','status'],
-  'API publique : trois colonnes de media modifiables, pas une de plus (claim_code_hash : associate_claim_code seule, 0019)');
+  ARRAY['claim_attempts','claim_code_used_at'],
+  'API publique : deux colonnes de media modifiables, pas une de plus (statut : media_set_status, mission 11a WP03 ; claim_code_hash : associate_claim_code seule, 0019)');
 SELECT is((SELECT count(*)::int FROM pg_attribute a WHERE a.attrelid = 'media'::regclass AND a.attnum > 0 AND NOT a.attisdropped
             AND NOT has_column_privilege('cashless_app', 'media', a.attname, 'SELECT')), 2, 'API publique : toutes les colonnes de media lisibles sauf deux');
 SELECT ok(has_function_privilege('cashless_app', 'public_balance_lookup(bytea, text)', 'EXECUTE'), 'API publique : consultation anonyme accordée');

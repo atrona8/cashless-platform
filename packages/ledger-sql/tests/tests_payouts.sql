@@ -102,7 +102,7 @@ SELECT post_transaction((SELECT la FROM fx), 'ADJUSTMENT', 'f:bank', clock_times
 CREATE FUNCTION pg_temp.ln(p_ben jsonb, p_party uuid, p_amount bigint, p_method text DEFAULT 'BANK_TRANSFER')
 RETURNS jsonb LANGUAGE sql AS $$
   SELECT jsonb_build_object('beneficiary', p_ben, 'beneficiary_id', p_party, 'amount', p_amount, 'method', p_method)
-         || CASE WHEN p_method = 'BANK_TRANSFER' THEN jsonb_build_object('iban', 'SN08SN0100152000048500003035')
+         || CASE WHEN p_method = 'BANK_TRANSFER' THEN jsonb_build_object('iban', 'enc:v1:k1:AAAAAAAAAAAAAAAA')
                  ELSE jsonb_build_object('msisdn', '+221770000001') END $$;
 CREATE FUNCTION pg_temp.batch(p_req text, p_lines jsonb) RETURNS jsonb LANGUAGE sql AS $$
   SELECT create_payout_batch((SELECT la FROM fx), pg_temp.id(p_req), p_lines, pg_temp.id('85aaa1'), pg_temp.id('85aaa2')) $$;

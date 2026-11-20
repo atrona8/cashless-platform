@@ -165,6 +165,10 @@ export const DEVICE_PRODUCTION = {
   VENDOR_PIN_SECRET: '04'.repeat(32),
   VENDOR_PIN_IDEMPOTENCY_SECRET: '05'.repeat(32),
   CUSTOMER_AUTH_HMAC_KEY: '06'.repeat(32),
+  // Distincte des autres secrets (`01` à `06`) et de `07` (utilisé par des tests de base64).
+  VENDOR_PIN_CALL_KEY: '3c'.repeat(32),
+  IBAN_KEYRING: `k1:${Buffer.alloc(32, 0x08).toString('base64')}`,
+  IBAN_ACTIVE_KID: 'k1',
   CLOCK_TOLERANCE_SECONDS: '120',
   DEVICE_REQUEST_AUTHORITIES: 'api.cashless.example',
 };

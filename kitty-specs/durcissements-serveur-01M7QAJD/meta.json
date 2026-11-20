@@ -1,0 +1,39 @@
+{
+  "accept_commit": "ef1d35041d727e880993f741b3eaa23c09233348",
+  "acceptance_history": [
+    {
+      "accept_commit": "ef1d35041d727e880993f741b3eaa23c09233348",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-19T16:10:17.166764+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "400015604529f9f3819ad94a7a93cb9b233226b7"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-19T16:10:17.166764+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "400015604529f9f3819ad94a7a93cb9b233226b7",
+  "baseline_merge_commit": "3f7741f66d5e97e37de89cd326b4df2916634114",
+  "contracts": "none",
+  "contracts_rationale": "Aucune interface ajoutée ni modifiée : aucune route du contrat openapi.yaml ne change (C-002) ; les appels internes au processus vendor-pin ne sont pas exposés et la vérification App Attest n'est branchée sur aucune route.",
+  "coordination_branch": "kitty/mission-durcissements-serveur-01M7QAJD",
+  "created_at": "2026-11-18T12:37:09.842388+00:00",
+  "flattened": false,
+  "friendly_name": "Durcissements serveur hérités",
+  "merged_at": "2026-11-20T09:45:32.771553+00:00",
+  "merged_commit": "cdedcd48a0f563864b8480a2f623e7231af2aaf0",
+  "mid8": "01M7QAJD",
+  "mission_id": "01M7QAJDZWVP1GG5NT4DDYWD37",
+  "mission_number": 6,
+  "mission_slug": "durcissements-serveur-01M7QAJD",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Plusieurs missions ont accepté des limites de sécurité côté serveur (écritures directes de l'application sur des tables gardées par des fonctions, PIN des vendeurs vérifié dans l'API, vendeur absent de la clé des sessions de vente, IBAN non masqué, garde-fous manquants sur les remboursements et versements). Cette mission les lève sans affaiblir aucun contrôle existant, avant la mise en production.",
+  "purpose_tldr": "Lever les dettes de sécurité serveur héritées des missions 4, 5a, 5b, 8 et 9b, chacune prouvée par un test.",
+  "slug": "durcissements-serveur-01M7QAJD",
+  "status_phase": "1",
+  "target_branch": "feat/durcissements-serveur",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-18T15:11:21.729651+00:00"
+}

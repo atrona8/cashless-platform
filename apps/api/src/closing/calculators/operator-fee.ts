@@ -1,7 +1,7 @@
 // Étape 2 : frais du prestataire (R-03, R-04). Assiettes : recharges payées de l'événement et supports activés.
 // L'étape écrit toujours la base BRUTE, même en `NET_OF_REFUNDS` (la régularisation vient en étape 4).
-import { fee } from '@cashless/shared-rules';
 import type { ResolvedConfig } from '../../ledger/types';
+import { operatorFeeTotal } from '../../ledger/builders/closing/fees';
 import { amountJson } from '../closing-steps.dto';
 import {
   big,
@@ -38,12 +38,7 @@ export async function readBases(ctx: ClosingContext): Promise<FeeBases> {
 
 /** Frais TTC de toutes les règles du prestataire pour ces assiettes (même arithmétique que le constructeur). */
 export function feeTotal(config: ResolvedConfig, bases: FeeBases): bigint {
-  return config.operatorFees.reduce(
-    (sum, { basis, rule }) =>
-      sum +
-      (basis === 'PER_MEDIA' ? bases.PER_MEDIA * fee(0n, rule) : fee(bases.TOPUP_AMOUNT, rule)),
-    0n,
-  );
+  return operatorFeeTotal(config, bases);
 }
 
 export const basesJson = (b: FeeBases) => ({

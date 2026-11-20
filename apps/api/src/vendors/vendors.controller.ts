@@ -2,8 +2,8 @@
 // `getVendor`, `setVendorPin`, `setVendorStatus`. Personne authentifiée (garde globale) ;
 // prestataire de la transaction : celui de la personne. Rôles : `OPERATOR_ADMIN` (tout le
 // prestataire), `MERCHANT_ADMIN` (ses commerçants) ; autre rôle : 403 ; hors portée : 404.
-// Écritures idempotentes (`bo:`) ; l'empreinte du PIN est calculée AVANT la transaction (aucune
-// transaction ouverte pendant argon2) ; la réponse enregistrée ne contient ni PIN ni empreinte.
+// Écritures idempotentes (`bo:`) ; l'empreinte du PIN est calculée AVANT la transaction par le processus
+// `vendor-pin` (aucune transaction ouverte pendant argon2 ; mission 11a, WP07) ; la réponse enregistrée ne contient ni PIN ni empreinte.
 import { Body, Controller, Get, HttpCode, Param, Post, Query, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
@@ -14,7 +14,6 @@ import {
 import type { Role } from '../identity/principal';
 import { pageOf, pageRequest, requireUuid } from '../organization/platform/platform.dto';
 import { TenantAccess } from '../organization/tenant/tenant-access';
-import { VendorPinHasher } from '../vendor-pin/vendor-pin.hasher';
 import {
   parseVendorCreate,
   parseVendorPinChange,
@@ -22,6 +21,7 @@ import {
   parseVendorStatusFilter,
   vendorDto,
 } from './vendors.dto';
+import { VendorPinClient } from './vendor-pin.client';
 import { assertMerchantInScope, VendorsService } from './vendors.service';
 
 const VENDOR_ADMINS: readonly Role[] = ['OPERATOR_ADMIN', 'MERCHANT_ADMIN'];
@@ -31,7 +31,7 @@ export class VendorsController {
   constructor(
     private readonly access: TenantAccess,
     private readonly vendors: VendorsService,
-    private readonly hasher: VendorPinHasher,
+    private readonly pinClient: VendorPinClient,
   ) {}
 
   @Get('merchants/:merchant_id/vendors')
@@ -65,7 +65,7 @@ export class VendorsController {
     const input = parseVendorCreate(body);
     // Hors portée : 404 avant tout calcul d'empreinte.
     assertMerchantInScope(actor, merchant);
-    const pinHash = await this.hasher.hash(input.pin);
+    const pinHash = await this.pinClient.hash(input.pin);
     return tx.run(async (client) => {
       const created = await this.vendors.create(
         client,
@@ -99,7 +99,7 @@ export class VendorsController {
   ) {
     const actor = this.access.actor(req, VENDOR_ADMINS);
     const id = requireUuid(vendorId);
-    const pinHash = await this.hasher.hash(parseVendorPinChange(body));
+    const pinHash = await this.pinClient.hash(parseVendorPinChange(body));
     return tx.run((client) => this.vendors.setPin(client, actor, id, pinHash));
   }
 

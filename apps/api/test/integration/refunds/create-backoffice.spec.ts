@@ -1,5 +1,6 @@
 // Intégration (mission 9b, WP11 ; FR-017, OP-N123) : `createRefundRequest` (POST /refund-requests, back-office).
 import { randomUUID } from 'node:crypto';
+import { IbanVault } from '../../../src/common/iban-vault';
 import { contractViolations } from '../../support/contract-schema';
 import { freshPhone } from '../../support/customer-auth';
 import { withOwner } from '../../support/db';
@@ -61,12 +62,18 @@ describe('création d’une demande de remboursement par le back-office (POST /r
     expect(contractViolations('RefundRequest', created.body)).toEqual([]);
     expect(JSON.stringify(created.body)).not.toContain('FR14');
     const id = created.body.refund_request_id as string;
-    // IBAN stocké normalisé (jamais la saisie brute) ; requested_by = l'auteur.
+    // IBAN stocké chiffré (enveloppe `enc:v1:`, jamais le clair) ; requested_by = l'auteur.
     const [row] = await rows<{ iban: string; requested_by: string; msisdn: string | null }>(
       'SELECT iban, requested_by, msisdn FROM refund_request WHERE id = $1',
       [id],
     );
-    expect(row).toEqual({ iban: IBAN, requested_by: s.adminA.userId, msisdn: null });
+    expect(row!.iban.startsWith('enc:v1:')).toBe(true);
+    expect(row!.iban).not.toContain(IBAN);
+    expect(row!.iban).not.toContain('2004101005');
+    // Le coffre de l'API (anneau de test) rend l'IBAN normalisé, lié au prestataire.
+    const vault = r.app.get(IbanVault);
+    expect(vault.open(row!.iban, r.w.ops.a)).toBe(IBAN);
+    expect([row!.requested_by, row!.msisdn]).toEqual([s.adminA.userId, null]);
     // Audit : raison présente, IBAN masqué.
     const [audit] = await rows<{ after: Record<string, unknown>; actor_id: string }>(
       `SELECT after, actor_id FROM audit_log WHERE action = 'REFUND_REQUEST_CREATED' AND object_id = $1`,
@@ -90,6 +97,32 @@ describe('création d’une demande de remboursement par le back-office (POST /r
     );
     expect(Number(bankLine!.s)).toBe(-24_500);
     await expectRefundInvariants({ ledgerId: r.w.ids.ledgerA });
+  });
+
+  it('NFR-005 : deux enveloppes par IBAN ; clair par le propriétaire : 23514', async () => {
+    const a = await fundedCustomer(r.w, 25_000);
+    const b = await fundedCustomer(r.w, 25_000);
+    const ia = (await create(s.adminA, bank(a.walletId))).body.refund_request_id as string;
+    const ib = (await create(s.adminA, bank(b.walletId))).body.refund_request_id as string;
+    const [x, y] = await Promise.all(
+      [ia, ib].map(
+        async (id) =>
+          (await rows<{ iban: string }>('SELECT iban FROM refund_request WHERE id = $1', [id]))[0]!
+            .iban,
+      ),
+    );
+    expect(x).not.toBe(y);
+    const c = await fundedCustomer(r.w, 25_000);
+    await expect(
+      withOwner((db) =>
+        db.query(
+          `INSERT INTO refund_request (operator_id, ledger_id, event_id, wallet_id, method, iban,
+                                       new_number, status, estimated_amount, fee, currency)
+           VALUES ($1, $2, $3, $4, 'BANK_TRANSFER', $5, true, 'REQUESTED', 100, 0, 'XOF')`,
+          [r.w.ops.a, r.w.ids.ledgerA, r.w.ids.eventA, c.walletId, IBAN],
+        ),
+      ),
+    ).rejects.toMatchObject({ code: '23514', constraint: 'refund_request_iban_sealed' });
   });
 
   it('FR-017 : le demandeur ne valide pas sa propre demande (approbation exécutée par A : refus, demande REQUESTED)', async () => {

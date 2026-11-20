@@ -102,4 +102,36 @@ describe('masque des données de paiement', () => {
     expect(out.lines[0]!.amount).toBe(5);
     expect(JSON.stringify(out)).not.toContain('770000001');
   });
+  const ENVELOPE = 'enc:v1:test:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
+  it('enveloppe + iban_mask : iban_mask rendu, enveloppe absente (toute profondeur)', () => {
+    const mask = maskIban('SN08SN0100152000048500003035');
+    const out = maskPaymentData({
+      destination: { method: 'BANK_TRANSFER', iban: ENVELOPE, iban_mask: mask },
+      lines: [{ iban: ENVELOPE, iban_mask: mask, amount: 5 }],
+    }) as {
+      destination: Record<string, unknown>;
+      lines: Array<Record<string, unknown>>;
+    };
+    expect(out.destination.iban).toBe(mask);
+    expect(out.destination.iban_mask).toBe(mask);
+    expect(out.lines[0]!.iban).toBe(mask);
+    expect(JSON.stringify(out)).not.toContain('enc:v1:');
+  });
+
+  it('enveloppe sans iban_mask (ou non chaîne) : [masqué], jamais l’enveloppe', () => {
+    for (const extra of [{}, { iban_mask: 12 }]) {
+      const out = maskPaymentData({ iban: ENVELOPE, ...extra }) as Record<string, unknown>;
+      expect(out.iban).toBe('[masqué]');
+      expect(JSON.stringify(out)).not.toContain('enc:v1:');
+    }
+  });
+
+  it('iban en clair (ancienne ligne) : maskIban', () => {
+    const out = maskPaymentData({ iban: 'SN08SN0100152000048500003035' }) as Record<
+      string,
+      unknown
+    >;
+    expect(out.iban).toBe(maskIban('SN08SN0100152000048500003035'));
+  });
 });

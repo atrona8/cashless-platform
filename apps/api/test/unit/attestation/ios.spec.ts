@@ -121,10 +121,13 @@ async function refusedWith(
 
 describe('attestation iOS — cas nominal', () => {
   it('accepte un objet App Attest valide, sans niveau de sécurité', async () => {
-    await expect(verifier().verify(await input())).resolves.toEqual({
-      kind: 'IOS_APP_ATTEST',
-      securityLevel: null,
-    });
+    const result = await verifier().verify(await input());
+    expect(result).toMatchObject({ kind: 'IOS_APP_ATTEST', securityLevel: null });
+    // WP13 : clé attestée et identifiant gardés (keyId = SHA-256 du point non compressé).
+    expect(result.appAttestKey!.keyId.equals(sha256(await rawPoint(appAttestKeys.publicKey)))).toBe(
+      true,
+    );
+    expect(result.appAttestKey!.publicKey.equals(await spki(appAttestKeys.publicKey))).toBe(true);
   });
 
   it('accepte une liste vide pour la chaîne d’accord (absente sur iOS)', async () => {
@@ -472,9 +475,10 @@ describe('attestation iOS — module, routeur et garde de production', () => {
     );
     expect(router).toBeInstanceOf(AttestationRouter);
     expect(router.isFake).toBeUndefined();
-    await expect(router.verify(await input())).resolves.toEqual({
+    await expect(router.verify(await input())).resolves.toMatchObject({
       kind: 'IOS_APP_ATTEST',
       securityLevel: null,
+      appAttestKey: { keyId: expect.any(Buffer), publicKey: expect.any(Buffer) },
     });
     await refusal(router.verify(await input({ fields: { counter: 1 } })), /compteur ≠ 0/);
   });

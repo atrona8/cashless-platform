@@ -5,6 +5,10 @@
 // conservée (`transient`) : un renvoi de la même clé reçoit `409 CONFLICT_STATE` et n'est pas un
 // nouvel essai ; un refus (4xx) est enregistré et rejoué tel quel, sans nouveau comptage, sauf le `429` d'un
 // essai simultané (clé relâchée). Le PIN n'entre dans l'empreinte que sous un dérivé argon2 (ADR-126).
+// Mission 11a (WP07) : l'ouverture est faite par le processus `vendor-pin` (hors transaction de
+// l'API) ; la transaction idempotente ne sert plus qu'à enregistrer le refus de rejeu (`transient`).
+// `writes: false` n'est PAS utilisable ici : il enregistre la réponse réelle au lieu du refus de
+// rejeu (le renvoi d'une clé réussie rendrait 201 au lieu de 409) ; voir la note de lane de WP07.
 import { Body, Controller, Delete, Get, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { DeviceAuth } from '../device-identity/device.guard';

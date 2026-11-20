@@ -29,12 +29,31 @@ import { KeyAdminProcessModule } from '../../src/processes/key-admin.module';
 import { PersonalizationProcessModule } from '../../src/processes/personalization.module';
 import { TagCheckProcessModule } from '../../src/processes/tag-check.module';
 import { TagKeysProcessModule } from '../../src/processes/tag-keys.module';
+import { VendorPinProcessModule } from '../../src/processes/vendor-pin.module';
+import { vendorPinSettings } from '../../src/config/config';
+import { VendorPinDigester } from '../../src/vendor-pin/vendor-pin.digester';
 import { applyTrustProxy, tlsServerOptions } from '../../src/processes/bootstrap';
 import { PublicProcessModule } from '../../src/processes/public.module';
 import { WorkerRegistry } from '../../src/processes/worker';
 import { applyBatchBody } from '../../src/offline/batches/batch-body';
-import { APP_URL, KEYADMIN_URL, PERSO_URL, PLATFORM_URL, TAGCHECK_URL, TAGKEYS_URL } from './db';
+import {
+  APP_URL,
+  KEYADMIN_URL,
+  PERSO_URL,
+  PIN_URL,
+  PLATFORM_URL,
+  TAGCHECK_URL,
+  TAGKEYS_URL,
+} from './db';
 import { useTestTls, type TestTls } from './tls';
+
+/**
+ * Hacheur de PIN des suites qui amorcent un vendeur (`pin_hash` posé par le propriétaire) : même
+ * secret de test que le processus `vendor-pin`, que l'API ne détient plus (mission 11a, WP06).
+ */
+export function testPinDigester(): VendorPinDigester {
+  return new VendorPinDigester(vendorPinSettings(process.env).vendorPinSecret);
+}
 
 export const TEST_OPERATOR_HEADER = 'X-Test-Operator-Id';
 
@@ -84,11 +103,19 @@ export interface TestAppOptions {
   deviceIdentity?: 'fake' | 'real';
   /** Documentation interactive montée comme `serve` (hors production seulement) avec cette configuration. */
   apiDocs?: Pick<AppConfig, 'production'>;
+  /** Démarre un vrai processus `vendor-pin` pour cette application (hachage des PIN, WP07). */
+  vendorPin?: boolean;
 }
 
 export async function createTestApp(options: TestAppOptions = {}): Promise<INestApplication> {
   process.env.DATABASE_URL_APP = APP_URL;
   process.env.DATABASE_URL_PLATFORM = PLATFORM_URL;
+  let pinServer: Awaited<ReturnType<typeof startVendorPinServer>> | null = null;
+  if (options.vendorPin) {
+    setKeyProcessUrls();
+    pinServer = await startVendorPinServer();
+    process.env.VENDOR_PIN_URL = pinServer.url;
+  }
   const builder = Test.createTestingModule({
     imports: [AppModule, ...(options.imports ?? [])],
     providers: options.providers ?? [],
@@ -115,6 +142,14 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
   app.setGlobalPrefix(API_PREFIX);
   applyBatchBody(app);
   await app.init();
+  if (pinServer) {
+    const closeApp = app.close.bind(app);
+    const stop = pinServer.close;
+    app.close = async () => {
+      await closeApp();
+      await stop();
+    };
+  }
   return app;
 }
 
@@ -125,6 +160,7 @@ function setKeyProcessUrls(): void {
   process.env.DATABASE_URL_PERSO = PERSO_URL;
   process.env.DATABASE_URL_TAGCHECK = TAGCHECK_URL;
   process.env.DATABASE_URL_KEYADMIN = KEYADMIN_URL;
+  process.env.DATABASE_URL_PIN = PIN_URL;
 }
 
 const KEY_PROCESS_ROOTS = {
@@ -175,6 +211,38 @@ export async function createKeyProcess(
   };
 }
 
+/**
+ * Démarre le processus `vendor-pin` avec son vrai module racine et son vrai rôle de base
+ * (`cashless_pin`, `DATABASE_URL_PIN`) : aucun service de clés, aucun faux. Le secret des PIN et la clé
+ * d'appel sont ceux de test (`vendorPinSettings` hors production). Corps brut gardé comme `serve`.
+ */
+export async function createVendorPinProcess(): Promise<INestApplication> {
+  setKeyProcessUrls();
+  const moduleRef = await Test.createTestingModule({
+    imports: [VendorPinProcessModule],
+  }).compile();
+  const app = moduleRef.createNestApplication({ logger: false, rawBody: true });
+  applyTrustProxy(app, app.get<AppConfig>(APP_CONFIG, { strict: false }).trustProxyHops);
+  app.setGlobalPrefix(API_PREFIX);
+  await app.init();
+  return app;
+}
+
+/**
+ * Processus `vendor-pin` réel à l'écoute sur un port libre de 127.0.0.1 (jamais le 80), en HTTP
+ * clair (hors production). `url` se branche dans `VENDOR_PIN_URL` de l'API de test ; `close()` l'arrête.
+ */
+export async function startVendorPinServer(): Promise<{
+  app: INestApplication;
+  url: string;
+  close(): Promise<void>;
+}> {
+  const app = await createVendorPinProcess();
+  await app.listen(0, '127.0.0.1');
+  const { port } = app.getHttpServer().address() as AddressInfo;
+  return { app, url: `http://127.0.0.1:${port}`, close: () => app.close() };
+}
+
 // ----- Serveur HTTPS de test (mission identite-enrolement-terminaux, research R-03) -----
 
 export interface HttpsTestApp {
@@ -202,11 +270,21 @@ export async function startHttpsApp(
      * adresse pose 1 et choisit son adresse par `X-Forwarded-For`, sans partager 127.0.0.1.
      */
     trustProxyHops?: number;
+    /**
+     * Adresse du processus `vendor-pin` de l'API publique (mission 11a, WP07) : par défaut, un vrai
+     * processus est démarré (et arrêté avec l'application) ; une chaîne vise une autre adresse.
+     */
+    vendorPinUrl?: string;
   } = {},
 ): Promise<HttpsTestApp> {
   process.env.DATABASE_URL_APP = APP_URL;
   process.env.DATABASE_URL_PLATFORM = PLATFORM_URL;
   setKeyProcessUrls();
+  let pinServer: Awaited<ReturnType<typeof startVendorPinServer>> | null = null;
+  if (rootModule === PublicProcessModule) {
+    if (options.vendorPinUrl === undefined) pinServer = await startVendorPinServer();
+    process.env.VENDOR_PIN_URL = options.vendorPinUrl ?? pinServer!.url;
+  }
   const tls = await useTestTls();
   const builder = Test.createTestingModule({ imports: [rootModule] });
   for (const override of options.overrides ?? [])
@@ -228,6 +306,9 @@ export async function startHttpsApp(
     app,
     baseUrl: `https://localhost:${port}/${API_PREFIX}`,
     tls,
-    close: () => app.close(),
+    close: async () => {
+      await app.close();
+      await pinServer?.close();
+    },
   };
 }

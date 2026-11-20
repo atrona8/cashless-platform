@@ -61,6 +61,9 @@ describe('consignation de la mission 9b', () => {
     const files = [
       ...walk(join(ROOT, 'apps/api/test')),
       ...walk(join(ROOT, 'packages/ledger-sql')),
+      // Mission 11a (WP12) : les fiches de la 9b citent aussi `register.spec.ts` et
+      // `commands-other.spec.ts` de l'outil de site ; ces fichiers existent sous `tools/`.
+      ...walk(join(ROOT, 'tools/edge-admin/test')),
     ].map((f) => relative(ROOT, f));
     const missing = [...names].filter((name) => {
       const base = name.split('/').pop()!;

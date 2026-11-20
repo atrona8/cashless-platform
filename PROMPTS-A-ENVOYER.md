@@ -40,7 +40,7 @@ Deux principes, décidés le 29/10/2026 au lancement de la mission 7 :
 | 9a | Remboursements (festivalier, back-office, guichet) — découpée le 13/11/2026 | nous | en cours (16/11/2026) : WP01 à WP06 approuvés, WP07 (preuves, consignation) en relecture ; reste review, accept, merge |
 | 9b | Versements, rapprochements et clôture | nous | après la fusion de 9a |
 | 10a | Serveur de l'app festivalier (comptes par numéro, code à usage unique simulé, `/me`) | nous | après 9 |
-| 11a | Durcissements serveur hérités (back-office et terminaux) | nous | quand on veut |
+| 11a | Durcissements serveur hérités (back-office et terminaux) | nous | implémentée le 19/11/2026 (`durcissements-serveur-01M7QAJD`) : WP01 à WP13 approuvés, WP14 (consignation) en relecture ; reste review, accept, merge ; OP-N64 côté serveur prêt, reports en 12, 12b et 13 |
 | 10c | Gestion des clients par une application cliente (décidée le 05/11/2026) | nous | après 10a |
 | 10b | App festivalier (Flutter) | **déléguée** | contrat simulé maintenant ; routes réelles après 10a |
 | 11 | Back-office web (Next.js) | **déléguée** | maintenant (routes des missions 1 à 6 servies) ; écrans 7 à 9 au fil de l'eau |
@@ -210,8 +210,8 @@ vendeurs et le catalogue : la mission les ajoute.
 > (vendeur dans la fenêtre, `SUPERVISOR` sur place, demande à deux au back-office), enrôlement refusé sur un
 > événement clos (**OP-N74 levé**, migration 0035). Preuves de bout en bout : `payment-journey`, `payment-isolation`,
 > `payment-secrets`, `payment-latency` (p95 ≤ 200 ms, p99 ≤ 500 ms, étape CI propre) et `payment-concurrency`
-> (`apps/api/test/integration/end-to-end/`). Dettes ouvertes héritées : OP-N76 (mission 11), OP-N77 et OP-N78 et
-> OP-N80 (mission 13), OP-N79 (mission 11), OP-N43 complété (mission 10).
+> (`apps/api/test/integration/end-to-end/`). Dettes ouvertes héritées : OP-N76 et OP-N79 (levés par
+> la mission 11a), OP-N77 et OP-N78 et OP-N80 (mission 13), OP-N43 complété (mission 10).
 
 ## Mission 6 — Recharges, caisses et PSP
 
@@ -529,6 +529,25 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 11a — Durcissements serveur hérités (back-office et terminaux)
 
+> **État (19/11/2026) : mission `durcissements-serveur-01M7QAJD` implémentée, lots WP01 à WP13
+> approuvés, WP14 (consignation) en cours de relecture.** Levés le 18/11/2026 : OP-N79 (ADR-216) et
+> OP-N141 (ADR-220). Levés le 19/11/2026 : OP-N60 (ADR-216), OP-N76 (ADR-217), OP-N116 (ADR-221),
+> OP-N137 (ADR-220), OP-N140 (ADR-218), OP-N145 (ADR-219) ; OP-N156 levé le 19/11/2026 par
+> renforcement (`msisdn` et IBAN libres masqués, ADR-218). **OP-N64 : côté serveur prêt, non levé**
+> (ADR-222) ; reste
+> pour la mission 12. Limites nommées, chacune avec son entrée, son ADR, son test de borne et son
+> report : clé de l'IBAN dans le processus public (OP-N150, 12b), PIN en transit (OP-N151, 12 et
+> 12b), compteur App Attest (OP-N152, 12), `refund_deposit(uuid, uuid)` gardée (OP-N153) ; limites
+> relevées en relecture : OP-N154 à OP-N162 (ADR-224). Reports : OP-N160 (b) en mission 11, OP-N153
+> et OP-N158, OP-N159, OP-N161 en mission 13, OP-N154, OP-N155 et OP-N157 en 12b (OP-N155 :
+> condition bloquante de production) ;
+> OP-N153 : mission 13, confirmée par le porteur le 19/11/2026. Décisions du porteur du 19/11/2026 :
+> relance de Colima (conteneur de test seulement), tests de borne écrits avant la fusion, `msisdn`
+> masqué. Contradiction CL058 tranchée par le porteur le 19/11/2026 : `interfaces.md` corrigé (CL058
+> traduit par edge-admin, absent de l'API). Les blocs «
+> Hérité » ci-dessous décrivaient
+> le besoin avant la mission ; ils sont conservés comme historique, **plus rien n'y est à faire**.
+
 > **Créée le 29/10/2026** (décision du porteur) : les dettes serveur héritées par les anciennes missions 11 et 12
 > restent chez nous quand les applications sont déléguées. OP-N56 (preuve de la personne qui décide, avec le serveur
 > d'identité réel) et OP-N46 (signature NXP réelle) partent en mission 12b ; le reste se fait ici.
@@ -570,7 +589,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > OP-N145 (garde d'insertion de `refund_request` et retrait des anciennes signatures `refund_deposit(uuid, uuid)` et
 > `refund_deposit_for_session(uuid, uuid)`, ADR-201).
 
-- [ ] /spec-kitty.specify Durcissements serveur hérités : OP-N60 (lots de bracelets et statut d'un bracelet par fonctions seulement), OP-N79 (`vendor_id` dans la clé composite de session des ventes), OP-N76 (vérification du PIN des vendeurs dans un processus séparé, seul détenteur de `VENDOR_PIN_SECRET`), côté serveur d'OP-N64 (stockage du `keyId` App Attest), chacun avec son test et la levée du point.
+- [ ] /spec-kitty.specify Durcissements serveur hérités : OP-N60 (lots de bracelets et statut d'un bracelet par fonctions seulement), OP-N79 (`vendor_id` dans la clé composite de session des ventes), OP-N76 (vérification du PIN des vendeurs dans un processus séparé, seul détenteur de `VENDOR_PIN_SECRET`), côté serveur d'OP-N64 (stockage du `keyId` App Attest), OP-N116 (inscription des passerelles : grand livre vérifié contre l'événement), et les héritages de la 9b : OP-N137 (mineurs des versements, ADR-204), OP-N140 (masque de l'IBAN dans `errors/redact.ts`, IBAN au repos, ADR-203), OP-N141 (plafond de l'écart de régularisation `OPERATOR_FEE`, ADR-205), OP-N145 (garde d'insertion de `refund_request`, anciennes signatures de `refund_deposit` retirées, ADR-201), chacun avec son test et la levée du point.
 - [ ] /spec-kitty.plan Migrations sans affaiblir aucun contrôle ; tests de borne inversés ; `tests_definer_trigger_writers.sql` mis à jour.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission durcissements-serveur
@@ -585,6 +604,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > ligne (7), de la clôture et des versements (9) s'ajoutent quand ces missions sont fusionnées. Les dettes serveur
 > héritées sont en mission 11a.
 
+> **Hérité de la mission 11a (OP-N160, ADR-220, 19/11/2026)** : `canSee` montre encore un lot de
+> versements mixte (plusieurs classes de bénéficiaires) en lecture seule à un détenteur d'une seule
+> classe ; l'écran ne doit pas l'afficher, ni offrir décision, destination ou export. Test de borne
+> serveur : `payouts/payout-mixed-visibility.spec.ts`. L'export illisible rend `500` sans CSV
+> partiel (échec fermé voulu, `payout-export.spec.ts`) : l'écran affiche une erreur.
+
 - [ ] /spec-kitty.specify Back-office Next.js (SPECIFICATION §1.2, §3.2, §7.7, §9.3, §11, §12, §15 « Lecture NFC »). Interfaces plateforme (prestataires, contrats, redevance, supervision), prestataire (organisateurs, contrats, index de clés, plafonds maximaux, profils de législation, configurations PSP), organisateur (événements, commerçants, catalogues, terminaux et codes d'enrôlement, politique hors ligne avec affichage du risque maximal, clôture avec liste des conditions et leur état, versements, relevés, exports, relevé des soldes restants), commerçant (ventes par article et par taux, relevés, vendeurs, catalogue si autorisé). Demandes d'approbation : liste, consultation, approbation, refus. Inventaire des lots, anomalies, remboursements. Liste des modèles de téléphone avec leur niveau NFC et signalement des terminaux « tolérés » ou non testés. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan React / Next.js, types TypeScript générés depuis `openapi.yaml`. Les contrôles de clôture non calculables par la base (caisses comptées, PSP rapprochés, terminaux remontés) sont faits avant l'appel. Cloisonnement : un utilisateur d'un prestataire ne voit rien d'un autre.
 - [ ] /spec-kitty.tasks
@@ -597,7 +622,7 @@ vendeurs et le catalogue : la mission les ajoute.
 
 > **Déléguée à une équipe cliente (29/10/2026).** Partie en ligne dès maintenant (routes des missions 5a, 5b, 6
 > servies) ; hors ligne après les missions 7 et 8 ; lecture NFC après les actions 1 et 2. Côté serveur : OP-N46 en
-> mission 12b, stockage du `keyId` App Attest (OP-N64) en mission 11a.
+> mission 12b, stockage du `keyId` App Attest (OP-N64) fait en mission 11a (ADR-222).
 
 > **Condition préalable** : validation de la puce sur de vrais bracelets et campagne de mesure NFC faites
 > (actions 1 et 2 de `POINTS_OUVERTS.md` §7, ADR-39). Ne pas lancer cette mission avant.
@@ -621,11 +646,26 @@ vendeurs et le catalogue : la mission les ajoute.
 > les requêtes iOS par assertion App Attest (ou preuve équivalente), puis lever la limite.
 > L'app implémente aussi le profil de signature des requêtes (RFC 9421 restreint), le défi d'enrôlement et le mTLS de
 > la mission 5a (`kitty-specs/identite-enrolement-terminaux-01M52R6H/contracts/`).
-> Pour lever OP-N64 (relecture de WP11 de la mission 5a) : le port d'attestation iOS doit renvoyer le `keyId` App
-> Attest (credentialId) et le serveur le stocker (vérification des assertions) ; l'app passe `iosClientDataHash` tel
-> quel à `attestKey`.
+> Pour lever OP-N64 (relecture de WP11 de la mission 5a) : le port d'attestation iOS renvoie le
+> `keyId` App Attest (credentialId) et le serveur le stocke (**fait par la mission 11a**, ADR-222) ;
+> l'app passe `iosClientDataHash` tel quel à `attestKey`.
 > Android 12 minimum (décision du porteur du 19/10/2026) : à confronter au parc visé et au banc NFC. Faisabilité à
 > vérifier : mTLS en Flutter avec une clé Keystore ou Secure Enclave non exportable (canal natif).
+
+> **Hérité de la mission 11a (OP-N64, ADR-222, consigné le 19/11/2026)** : le serveur garde la clé
+> App Attest à l'enrôlement (`device_app_attest_key`) et sait vérifier une assertion
+> (`IosAppAttestAssertionVerifier(settings{teamId, bundleId}).verify({deviceId, assertion,
+> clientDataHash}, client)`, signature réelle de la note de WP13), **mais aucune route ne l'appelle
+> et la borne iOS reste en place** (`/media/auth-keys` refuse iOS). La mission 12 doit : **envoyer
+> les assertions App Attest** (choix des champs de la requête liée par `clientDataHash` ; ajout de
+> ce transport au contrat `openapi.yaml`, **soumis au porteur avant**, puis inscrit dans
+> `contract-baseline.json`, ADR-215) ; brancher le vérificateur sur les routes ; **retirer la borne
+> iOS** de `/media/auth-keys` ; fournir un **vecteur d'assertion réel d'Apple** avant de se fier au
+> vérificateur (les vecteurs actuels sont générés localement, un double hachage ECDSA y serait
+> invisible, R1). Test : un terminal iOS sans assertion valide est refusé ; avec assertion valide et
+> compteur croissant, accepté. Hérité aussi : compteur App Attest (OP-N152, déni de service accepté
+> ; signature de l'avance si la mission 12 la fournit) et PIN en transit (OP-N151, preuve du PIN que
+> l'API ne voit pas, avec OP-N56).
 
 - [ ] /spec-kitty.specify App terminal Flutter (SPECIFICATION §7.6, §8.1, §8.2, §9.3 à §9.5, `docs/sync_protocol.md`, résultats du banc `tools/nfc-bench`). Modes `CATALOG_POS`, `KEYPAD_TPE`, `TOPUP_DESK` ; enrôlement par QR, clés ECDSA et ECDH dans l'Android Keystore (StrongBox si disponible) ou la Secure Enclave ; connexion des vendeurs par PIN ; épinglage d'écran. Lecture NFC Android en mode lecteur (`NfcA.transceive`) : page 4, `READ_SIG` à chaque passage, PWD/PACK depuis le snapshot ou `/media/auth-keys`, `PWD_AUTH`, `FAST_READ`, CRC, `INCR_CNT`/`READ_CNT` sur le compteur 2, effacement des mots de passe. Paiement en ligne en un aller-retour avec repli hors ligne après 3 s ; règle d'autorisation hors ligne dans l'ordre imposé (§9.3), journal SQLCipher (WAL, `synchronous = FULL`, fsync avant succès), compteur `seq` commun, snapshots vérifiés et deltas, lots signés et chaînés, exposition par bracelet et par terminal, bascule vers la passerelle. QR (iOS : QR uniquement). Guichet : recharges, cautions, restitutions, remplacements, remboursements, jeton d'approbation de la seconde personne. Vecteurs du format B produits et vérifiés par l'app.
 - [ ] /spec-kitty.plan Flutter, Android et iOS ; `packages/tag-format` en Dart ; réglages de lecture par modèle de téléphone issus du banc. Aucune clé maître sur le terminal. Hors ligne jamais pour : QR, recharge PSP, remboursement, activation, caution, restitution, remplacement. Un refus en ligne est définitif. Latence NFC p95 ≤ 300 ms.
@@ -664,6 +704,21 @@ vendeurs et le catalogue : la mission les ajoute.
 > propriétaire privilégié, ADR-199) ; OP-N139 (code à usage unique envoyé au numéro de destination d'un remboursement tardif en
 > mobile money, ADR-207).
 
+> **Hérité de la mission 11a (OP-N140, OP-N150, ADR-218, décision du porteur du 18/11/2026)** :
+> **vrai KMS pour la clé de l'IBAN** : retirer `IBAN_KEYRING` et `IBAN_ACTIVE_KID` de la
+> configuration de l'API et rouvrir par un port du service de clés, ce qui impose de lever la règle
+> d'architecture du processus public ou de déplacer l'export (décision du porteur sur le contrat) ;
+> test : production refusée sans le service de clés, aucun clair en base. Hérité aussi : preuve
+> infalsifiable du PIN (OP-N151, avec OP-N56) si la mission 12 la fournit ; secrets distincts par
+> rôle émis par le coffre (OP-N154) et politique `VENDOR_*` sur l'audit de `cashless_pin` (OP-N157).
+>
+> **Hérité de la mission 11a (OP-N155, décision du porteur du 19/11/2026) : condition bloquante de
+> passage en production, bloque la production.** Avant la première donnée réelle : purger ou
+> chiffrer les lignes anciennes en clair de `refund_request` et de `payout`, puis `ALTER TABLE …
+> VALIDATE CONSTRAINT` sur les deux `CHECK` d'IBAN (`NOT VALID` depuis la 11a) ; réexaminer en
+> même temps le statut des superutilisateurs exclus de `refund_request_insert_guard`. Test : les
+> deux `CHECK` validés, aucune ligne en clair (`tests_iban_sealed.sql` adapté).
+
 > **Créée le 29/10/2026** (décision du porteur) : toutes les intégrations qui demandent un accès extérieur, regroupées
 > avant la recette. Prérequis : accès de test PSP (action 11), devis et comptes OTP (action 10), compte AWS et région
 > confirmée (OP-N11), clé publique et signatures NXP réelles (action 1). Reprend la mission 6b.
@@ -688,6 +743,16 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la mission 11a (19/11/2026, ADR-224)** : relevé des limites de relecture : atomicité
+> de la session de vendeur après une API tombée (OP-N158), tests faibles de `vendor-pin` (OP-N159 :
+> `23505` vers `409`, route non marquée en `401` ou `404`) et verrou des lots avant la RLS (OP-N161)
+> ; balayage des droits de `cashless_pin` et de `cashless_app` (`tests_11a_rights.sql` rejoué sur la
+> base de recette).
+> Hérité aussi (OP-N153, mission 13 confirmée par le porteur le 19/11/2026) : retrait de
+> `refund_deposit(uuid, uuid)` avec ses appelants (`refund_deposit_from_balance`, `gen_tests.py`,
+> schéma de référence) ; test : `tests_11a_rights.sql` (« exécutable par aucun rôle ») reste vert.
+> OP-N155 : voir la mission 12b (condition bloquante de production).
 
 > **Hérité de la mission 9b (17/11/2026, OP-N149)** : balayage d'isolation entre organisateurs d'un même prestataire pour les 20
 > opérations ajoutées au contrat (`isolation-9b.spec.ts` ne prouve que l'isolation entre prestataires) ; mutation : retirer un

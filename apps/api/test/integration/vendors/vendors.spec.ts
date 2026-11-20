@@ -12,8 +12,7 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { VendorPinHasher } from '../../../src/vendor-pin/vendor-pin.hasher';
-import { createTestApp } from '../../support/app';
+import { createTestApp, testPinDigester } from '../../support/app';
 import { contractViolations } from '../../support/contract-schema';
 import { withOwner } from '../../support/db';
 import type { TestPerson } from '../../support/fake-idp';
@@ -86,8 +85,8 @@ describe('Back-office des vendeurs (WP09, T039)', () => {
         roles: [{ role: 'OPERATOR_ADMIN', scopeType: 'OPERATOR', scopeId: w.ops.b }],
       });
     });
-    app = await createTestApp({ identity: w.idp });
-    const pinHash = await app.get(VendorPinHasher, { strict: false }).hash(PIN);
+    app = await createTestApp({ identity: w.idp, vendorPin: true });
+    const pinHash = await testPinDigester().hash(PIN);
     vendorB = await withOwner((db) =>
       seedVendor(db, {
         operatorId: w.ops.b,
@@ -203,12 +202,12 @@ describe('Back-office des vendeurs (WP09, T039)', () => {
       after: { locked: false, unlocked: true },
     });
     expect(JSON.stringify(audit)).not.toMatch(new RegExp(`${NEW_PIN}|\\$argon2`));
-    // Le nouveau PIN est bien celui en base (vérifié par le hacheur de l'application).
+    // Le nouveau PIN est bien celui en base (empreinte rendue par le processus `vendor-pin`, vérifiée par son digesteur).
     const [hash] = await ownerRows<{ pin_hash: string }>(
       'SELECT pin_hash FROM vendor WHERE id = $1',
       [id],
     );
-    const hasher = app.get(VendorPinHasher, { strict: false });
+    const hasher = testPinDigester();
     expect(await hasher.verify(hash!.pin_hash, NEW_PIN)).toBe(true);
     expect(await hasher.verify(hash!.pin_hash, PIN)).toBe(false);
   });

@@ -349,8 +349,18 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
 SELECT ok(has_function_privilege('cashless_app', f, 'EXECUTE'),
   f || ' : accordée à cashless_app (remplace la signature retirée)')
   FROM unnest(ARRAY['take_deposit_from_balance(uuid)', 'refund_deposit_from_balance(uuid)',
-                    'take_deposit_for_session(uuid,uuid)', 'refund_deposit_for_session(uuid,uuid)',
+                    'take_deposit_for_session(uuid,uuid)',
                     'refund_cash_due_for_session(uuid,uuid,text,uuid,uuid,uuid)']) f;
+-- Mission 11a, WP03 : refund_deposit_for_session(uuid,uuid) n'existe plus (0092) ; refund_deposit(uuid,uuid) reste
+-- gardée, exécutable par personne (écart accepté par le porteur le 18/11/2026).
+SELECT is((SELECT count(*)::int FROM pg_proc WHERE oid IS NOT NULL AND proname = 'refund_deposit_for_session'
+              AND pronargs = 2), 0, 'refund_deposit_for_session(uuid,uuid) : retirée (0092, mission 11a)');
+SELECT is((SELECT array_agg(r ORDER BY r) FROM pg_roles r0, LATERAL (SELECT r0.rolname::text AS r) x
+            WHERE r0.rolname LIKE 'cashless\_%'
+              AND has_function_privilege(r0.rolname, 'refund_deposit(uuid,uuid)', 'EXECUTE')
+              AND NOT r0.rolsuper), NULL::text[], 'refund_deposit(uuid,uuid) : exécutable par aucun rôle cashless_*');
+SELECT ok(NOT has_function_privilege('public', 'refund_deposit(uuid,uuid)', 'EXECUTE'),
+  'refund_deposit(uuid,uuid) : PUBLIC ne l''exécute pas');
 
 -- 3. Refus réels sous cashless_app ----------------------------------------------------------------
 SET LOCAL ROLE cashless_app;

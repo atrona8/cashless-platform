@@ -41,9 +41,14 @@ LANGUAGE sql AS $$
 $$;
 
 -- 1. Structure ---------------------------------------------------------------------------------------------------------
-SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN ('set_media_batch_status','media_set_status',
-  'blacklist_media','suspend_media','media_summary','media_status_log','media_set_actor','media_session_operator') AND NOT prosecdef), 8,
-  'les huit autres fonctions sont SECURITY INVOKER');
+-- Mission 11a, WP03 (0091, OP-N60 levée) : set_media_batch_status et media_set_status passent SECURITY DEFINER ;
+-- restent INVOKER les six autres.
+SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN (
+  'blacklist_media','suspend_media','media_summary','media_status_log','media_set_actor','media_session_operator') AND NOT prosecdef), 6,
+  'les six autres fonctions sont SECURITY INVOKER');
+SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN ('create_media_batch','update_media_batch',
+  'set_media_batch_status','media_set_status','issue_claim_codes') AND prosecdef), 5,
+  'les cinq fonctions des lots et des statuts sont SECURITY DEFINER (mission 11a, WP01)');
 SELECT is((SELECT prosecdef FROM pg_proc WHERE proname = 'register_personalized_media'), true,
   'register_personalized_media : SECURITY DEFINER depuis 0019 (personnalisation seule, tests_personalization_definer.sql)');
 SELECT is((SELECT count(*)::int FROM unnest((SELECT proargnames FROM pg_proc WHERE proname = 'media_summary')) n

@@ -54,7 +54,7 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 - **À faire** : vérifier que PostgreSQL 17 est disponible sur RDS dans la région retenue (ADR-55, ADR-78) ; instance
   chiffrée, sauvegardes automatiques, accès réseau privé seulement.
 - **Comment** : une URL de connexion par rôle de base (`DATABASE_URL_APP`, `_PLATFORM`, `_TAGKEYS`, `_PERSO`,
-  `_TAGCHECK`, `_KEYADMIN`, `_MAINT`, `_SNAPCONTENT`, `_SNAPSIGN`, `_OWNER` pour les migrations). Les mots de passe des
+  `_TAGCHECK`, `_KEYADMIN`, `_MAINT`, `_SNAPCONTENT`, `_SNAPSIGN`, `_PIN` (rôle `cashless_pin`, processus `vendor-pin`), `_OWNER` pour les migrations). Les mots de passe des
   rôles vont dans Secrets Manager, jamais les valeurs de test de `tools/dev-db/env.sh`. Migrations :
   `npm run migrate -w @cashless/ledger-sql`.
 

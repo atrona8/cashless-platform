@@ -51,6 +51,7 @@ module.exports = {
           'snapshot-keys/key-admin-worker',
           'controls/controls-alerts',
           'sealing/seal-and-verify',
+          'vendors/vendor-pin-latency',
         ]
       : []),
   ],

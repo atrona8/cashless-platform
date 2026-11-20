@@ -674,9 +674,29 @@ classDiagram
 
 Invariants (testés en pgTAP) : une étape de clôture au plus une fois par événement (clé primaire, ajout seul) ; versements `INITIATED` non réglés ≤ droit net à l'initiation (`CL055`) ; une ligne `payout` change d'état une seule fois ; une ligne de relevé rapprochée au plus une fois, au même prestataire, grand livre et compte ; `refund_request` ne suit que son graphe, montant et frais figés après `PROCESSING` ; `cashless_app` sans `DELETE` ni `UPDATE` direct sur ces tables ; `cashless_maint` sans lecture de table. Isolation par prestataire (RLS `ENABLE` et `FORCE`).
 
+## 4 nonies. Durcissements serveur (mission 11a, 🔎 relue le 19/11/2026, non fusionnée)
+
+> **Réalisé et relu, non fusionné.** Sources : `kitty-specs/durcissements-serveur-01M7QAJD/data-model.md` et migrations `0090` à `0095`.
+
+- `vendor_session` : contrainte `UNIQUE (id, vendor_id)` ; `sale_attribution` : clé étrangère `(vendor_session_id, vendor_id)` vers elle (`0090`, OP-N79).
+- `media_batch` et `media` : aucune colonne nouvelle ; écriture par les fonctions `SECURITY DEFINER` `create_media_batch` et `update_media_batch` ; `cashless_app` perd `INSERT` et `UPDATE` sur `media_batch` (`0091`, OP-N60).
+- `refund_request` : déclencheur `BEFORE INSERT` (état initial seulement pour `cashless_app`, `CL057`, `0092`) ; `refund_request.iban` et `payout.iban` ne portent plus qu'une valeur chiffrée : `CHECK … LIKE 'enc:v1:%'` **`NOT VALID`** (`0093`, OP-N140 ; OP-N155 : une ancienne ligne en clair ne change plus d'état, levée en 12b).
+- `register_edge_gateway` rend `(gateway_id, ledger_id)` (`0094`, OP-N116).
+- Table nouvelle `device_app_attest_key` (appareil, prestataire, identifiant de clé unique, clé publique SPKI, compteur, dates), RLS forcée, liée à `device` ; `enroll_device` accepte la clé ; `advance_app_attest_counter` fait avancer le compteur (`0095`, OP-N64, non levé).
+
+```mermaid
+classDiagram
+  class vendor_session { id; vendor_id; UNIQUE(id, vendor_id) }
+  class sale_attribution { vendor_session_id; vendor_id }
+  class device { id }
+  class device_app_attest_key { device_id; operator_id; key_id; public_key; counter }
+  sale_attribution --> vendor_session : (vendor_session_id, vendor_id)
+  device_app_attest_key --> device : device_id
+```
+
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`, 113 avec la mission « Durcissements serveur » : `device_app_attest_key`),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -729,6 +749,7 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | Table | Rôle | Origine |
 |---|---|---|
 | `device` | Terminal (Android ou iOS) : mode d'application, numéro de série, clés publiques, statut, événement et point de vente, numérotation et chaînage de ses opérations. | réf. |
+| `device_app_attest_key` | Clé App Attest d'un terminal iOS : identifiant de clé, clé publique, dernier compteur (mission 11a, vérificateur non branché). | 0095 |
 | `device_seq_registry` | Registre des numéros de séquence de chaque terminal : idempotence des lots et détection des trous ; écrit avec l'écriture comptable. | réf. |
 | `device_config_served` | Configuration figée servie à un terminal (politique effective, époque, plancher de séquence), citée par chaque opération hors ligne ; écrite par `record_config_served`, qui refuse un terminal révoqué et une version d'un autre prestataire (0029). | réf. (+0029) |
 | `device_enrollment_code` | Code d'enrôlement à usage unique : empreinte HMAC seulement, événement obligatoire, point de vente et mode facultatifs, téléphone personnel (KEYPAD_TPE seulement), durée de 5 min à 7 jours, terminal qui l'a consommé. | 0022 |

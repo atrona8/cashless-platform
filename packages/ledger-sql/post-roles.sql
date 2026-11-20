@@ -459,8 +459,10 @@ GRANT EXECUTE ON FUNCTION
   -- le seul processus qui les charge ; aucun autre rôle ne les exécute.
   create_device_enrollment_code(bytea, uuid, uuid, text, boolean, integer, uuid),
   check_device_enrollment_code(bytea, text),
+  -- Mission 11a, WP03 : enroll_device à 15 arguments (0095 : + clé App Attest et clé publique) ; l'ancienne
+  -- signature à 13 arguments n'existe plus. Même droit, pas un ajout.
   enroll_device(bytea, text, text, text, bytea, bytea, bytea, timestamptz, text, text, bytea,
-                timestamptz, uuid),
+                timestamptz, uuid, bytea, bytea),
   set_device_status(uuid, text, text, uuid), record_device_heartbeat(uuid, text, timestamptz),
   record_enrollment_attempt(bytea, inet, text), enrollment_attempts_exceeded(bytea, inet),
   -- Refus d'enrôlement : essai et audit ensemble, chaîne du code ou de la plateforme (0027, ADR-117)
@@ -482,11 +484,10 @@ GRANT EXECUTE ON FUNCTION
   -- sous ce rôle. Fonctions internes jamais accordées (appelées seulement par les fonctions
   -- SECURITY DEFINER ci-dessous) : vendor_admin_allowed (0031), catalog_admin_allowed,
   -- catalog_lock_pos, catalog_bump_version, catalog_label (0032) ; tests_execute_grants.sql §2.
-  --   Vendeurs (0031). OP-N76, ADR-121 (limite acceptée, dette nommée) : begin_vendor_pin_check
-  --   et open_vendor_session ne sont exécutées que par ce rôle (borne de tests_payment_rights.sql).
+  --   Vendeurs (0031). OP-N76 levée (mission 11a, WP03) : begin_vendor_pin_check et open_vendor_session ne sont
+  --   plus accordées à ce rôle (section 13 : cashless_pin seul, processus vendor-pin).
   create_vendor(uuid, text, text, uuid), set_vendor_pin(uuid, text, uuid),
-  set_vendor_status(uuid, text, uuid), begin_vendor_pin_check(uuid, uuid),
-  open_vendor_session(uuid, uuid), close_vendor_session(uuid), assert_vendor_session(uuid, uuid),
+  set_vendor_status(uuid, text, uuid), close_vendor_session(uuid), assert_vendor_session(uuid, uuid),
   --   Catalogue (0032) : écritures (chacune crée la version suivante), version servie, contrôle
   --   des lignes d'une vente (check_sale_lines, STABLE : arbitrage du 22/10/2026) et écriture des
   --   lignes. Aucune lecture de version par fonction (l'API lit les tables, sous la RLS).
@@ -708,7 +709,7 @@ GRANT EXECUTE ON FUNCTION
   open_cash_session(uuid, uuid), count_cash_session(uuid, bigint, uuid, uuid, text),
   begin_cash_close(uuid, uuid), finish_cash_close(uuid, uuid, uuid), attach_cash_tx(uuid, uuid),
   open_cash_due_anomaly(uuid, uuid, bigint, uuid), take_deposit_for_session(uuid, uuid),
-  refund_deposit_for_session(uuid, uuid),
+  -- refund_deposit_for_session(uuid, uuid) : retirée par 0092 (mission 11a, WP02) ; plus accordée.
   refund_cash_due_for_session(uuid, uuid, text, uuid, uuid, uuid),
   -- Cautions sans compte désigné (0041) : remplacent take_deposit et refund_deposit
   take_deposit_from_balance(uuid), refund_deposit_from_balance(uuid),
@@ -778,7 +779,8 @@ END $$;
 DO $$
 DECLARE r text;
 BEGIN
-  FOREACH r IN ARRAY ARRAY['cashless_snapcontent','cashless_snapsign','cashless_maint'] LOOP
+  -- cashless_pin (mission 11a, WP03, section 13a) est créé ici, avant les sections 12 et 13 dont les listes le nomment.
+  FOREACH r IN ARRAY ARRAY['cashless_snapcontent','cashless_snapsign','cashless_maint','cashless_pin'] LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
       EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT', r);
     END IF;
@@ -1089,7 +1091,8 @@ REVOKE EXECUTE ON FUNCTION refund_request_scope_guard() FROM cashless_app;
 --   Aucune écriture de ces tables dans apps/api/src (recherche faite au lot) : tout passe par les fonctions.
 REVOKE ALL ON payout, external_statement_line, closing_step, statement_import, account_mapping
   FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
-       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin;
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin,
+       cashless_pin;
 GRANT SELECT ON payout, external_statement_line, closing_step, statement_import, account_mapping TO cashless_app;
 
 -- 12a. cashless_app (API publique) : routes de versement, de rapprochement, de clôture, de remboursement de caution
@@ -1114,7 +1117,8 @@ REVOKE EXECUTE ON FUNCTION
   closing_step_scope_guard(), payout_scope_guard(), payout_transition_guard(), payout_no_delete(),
   refund_request_transition_guard(), account_mapping_scope_guard(), account_mapping_append_only()
   FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
-       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin;
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin,
+       cashless_pin;
 
 -- 12c. Les quatorze fonctions d'exploitation ops_* (0087) : cashless_maint seul (travailleur d'exploitation :
 -- scellement, copie des scellements, alertes). Jamais l'API. cashless_maint n'a AUCUN droit de table, ni
@@ -1129,7 +1133,8 @@ REVOKE EXECUTE ON FUNCTION
   ops_ledger_controls(text), ops_overdue_payouts(interval), ops_unmatched_statements(interval),
   ops_new_open_anomalies(timestamptz), ops_raise_alert(integer, jsonb), ops_long_transactions(interval)
   FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
-       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_edge, cashless_edgeadmin;
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_edge, cashless_edgeadmin,
+       cashless_pin;
 GRANT EXECUTE ON FUNCTION
   ops_ledgers_to_seal(), ops_seal_ledger(uuid), ops_audit_chains_to_seal(), ops_seal_audit(uuid),
   ops_record_seal_copy(text, uuid, integer, text), ops_seals_since(interval),
@@ -1137,3 +1142,62 @@ GRANT EXECUTE ON FUNCTION
   ops_ledger_controls(text), ops_overdue_payouts(interval), ops_unmatched_statements(interval),
   ops_new_open_anomalies(timestamptz), ops_raise_alert(integer, jsonb), ops_long_transactions(interval)
   TO cashless_maint;
+
+-- 13. Durcissements du serveur, mission 11a (durcissements-serveur ; WP03 ; FR-006, NFR-003, C-005, C-008). Rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (CLAUDE.md, règle 4) : droits de la base de la mission. Seul WP03 écrit cette section.
+-- Principe : cashless_app ne gagne AUCUN droit de table ni de colonne (NFR-003) et exactement trois EXECUTE
+-- (create_media_batch, update_media_batch, advance_app_attest_counter) ; il perd les écritures directes des lots de
+-- bracelets, du statut des bracelets, l'INSERT libre des demandes de remboursement, les deux fonctions du PIN et
+-- refund_deposit_for_session(uuid, uuid) (retirée en base par 0092). Preuve : tests/tests_11a_rights.sql.
+
+-- 13a. cashless_pin (processus vendor-pin, OP-N76 levée, ADR-121). Créé en section 8b (la création y précède les
+-- listes de rôles des sections 12 et 13) : LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT, quatre
+-- délais, tous droits remis à zéro à chaque rejeu. Mot de passe hors de ce fichier (CASHLESS_PIN_PASSWORD, migrate.ts).
+DO $$
+BEGIN
+  EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM cashless_pin', current_database());
+END $$;
+
+-- 13b. Retraits à cashless_app (roles.sql a rendu SELECT, INSERT, UPDATE sur toutes les tables).
+--   Lots de bracelets (OP-N60 levée, ADR-118) : ils ne s'écrivent que par create_media_batch, update_media_batch et
+--   set_media_batch_status (SECURITY DEFINER, 0091). SELECT intact ; FOR UPDATE refusé (il exige UPDATE).
+REVOKE INSERT, UPDATE ON media_batch FROM cashless_app;
+--   Statut d'un bracelet : media_set_status (DEFINER, 0091) seul. Restent les deux colonnes de l'usage du code de
+--   rattachement (sept requêtes FOR UPDATE OF m de l'API en dépendent, R-N60 §2) ; elles remplacent UPDATE (status, …)
+--   de la section 1 : le fichier rejoué en ordre ne rend pas le statut.
+REVOKE UPDATE ON media FROM cashless_app;
+GRANT UPDATE (claim_code_used_at, claim_attempts) ON media TO cashless_app;
+--   Demandes de remboursement : INSERT sur les seize colonnes écrites par l'API (refund-backoffice-create.service.ts
+--   et refund-requests.service.ts), jamais approved_by, external_reference ni les colonnes de transition. Le
+--   déclencheur refund_request_insert_guard (0092) borne en plus l'état initial. SELECT et UPDATE (section 11) inchangés.
+REVOKE INSERT ON refund_request FROM cashless_app;
+GRANT INSERT (operator_id, ledger_id, event_id, wallet_id, customer_id, requested_by, method, msisdn, iban,
+  new_number, status, estimated_amount, fee, currency, hold_until, extra_check_required)
+  ON refund_request TO cashless_app;
+--   Clé App Attest (0095) : lecture seule pour l'API ; écriture par enroll_device et advance_app_attest_counter.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON device_app_attest_key FROM PUBLIC, cashless_app, cashless_platform,
+  cashless_tagkeys, cashless_perso, cashless_tagcheck, cashless_keyadmin, cashless_snapcontent, cashless_snapsign,
+  cashless_maint, cashless_edge, cashless_edgeadmin, cashless_pin;
+--   OP-N76 levée : les deux fonctions du PIN ne sont plus exécutables par l'API (déjà absentes de la liste 4a ;
+--   retrait redit pour qu'un oubli ailleurs ne les rende pas).
+REVOKE EXECUTE ON FUNCTION begin_vendor_pin_check(uuid, uuid), open_vendor_session(uuid, uuid)
+  FROM PUBLIC, cashless_app;
+
+-- 13c. EXECUTE ajoutés (signatures réelles de 0091 et 0095), rien d'autre.
+GRANT EXECUTE ON FUNCTION
+  create_media_batch(uuid, uuid, text, int, int, text, bigint, bigint, text, text, text, uuid),
+  update_media_batch(uuid, jsonb, uuid),
+  advance_app_attest_counter(uuid, bytea, bigint)
+  TO cashless_app;
+--   cashless_pin : les deux fonctions du PIN et l'audit des essais (VENDOR_SESSION_OPENED, VENDOR_PIN_FAILED,
+--   VENDOR_LOCKED ; RLS tenant_isolation d'audit_log, comme cashless_tagkeys). Aucun droit sur vendor, vendor_session
+--   ni vendor_pin_check. create_vendor et set_vendor_pin restent à cashless_app (le processus ne fait que hacher).
+GRANT EXECUTE ON FUNCTION begin_vendor_pin_check(uuid, uuid), open_vendor_session(uuid, uuid) TO cashless_pin;
+GRANT SELECT, INSERT ON audit_log TO cashless_pin;
+GRANT USAGE, SELECT ON SEQUENCE audit_log_id_seq TO cashless_pin;
+--   Écart accepté par le porteur (18/11/2026) : refund_deposit(uuid, uuid) est gardée, exécutable par PERSONNE.
+--   Fonction de déclencheur : à personne. Aucun GRANT ON ALL.
+REVOKE EXECUTE ON FUNCTION refund_deposit(uuid, uuid), refund_request_insert_guard()
+  FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin,
+       cashless_pin;

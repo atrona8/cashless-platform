@@ -307,8 +307,15 @@ describe('liste noire et sortie à deux', () => {
         );
         // Conséquence concrète : dans la même transaction, une nouvelle mise en liste noire ne
         // peut pas être levée sans seconde personne (la base ne voit plus de valideur).
-        await db.query(`UPDATE media SET status = 'BLACKLISTED' WHERE id = $1`, [m.id]);
+        // (la pose passe par media_set_status : cashless_app n'a plus UPDATE sur media.status).
+        await db.query(`SELECT media_set_status($1, 'BLACKLISTED', 'Nouvelle fraude', $2)`, [
+          m.id,
+          supervisor.userId,
+        ]);
         await db.query('SAVEPOINT second_exit');
+        // La sortie directe est jugée par le déclencheur, donc sous le rôle propriétaire (sous
+        // cashless_app elle échoue plus tôt en 42501, droit retiré : voir « OP-N60 levée »).
+        await db.query('RESET ROLE');
         const secondExit = await db
           .query(`UPDATE media SET status = 'ACTIVE' WHERE id = $1`, [m.id])
           .then(
@@ -430,10 +437,11 @@ describe('liste noire et sortie à deux', () => {
       }
     });
     await expect(invented).rejects.toMatchObject({ code: 'CL020' });
-    // UPDATE direct, même avec la demande approuvée et les réglages posés : refus.
+    // UPDATE direct, même avec la demande approuvée et les réglages posés : refus (42501 depuis
+    // OP-N60 : le droit UPDATE sur media.status est retiré à cashless_app).
     expect(
       await asApp(`UPDATE media SET status = 'ACTIVE' WHERE id = $1`, [m.id], true, true),
-    ).toBe('CL020');
+    ).toBe('42501');
     // Contrôle : dans les mêmes conditions, reinstate_media passe (le refus ci-dessus vient du chemin).
     expect(
       await asApp(reinstate, [m.id, supervisor.userId, supervisor2.userId, 'x'], true),
@@ -456,6 +464,80 @@ describe('liste noire et sortie à deux', () => {
     });
     await expect(forged).rejects.toMatchObject({ code: 'CL023' });
     expect(await status(m)).toBe('BLACKLISTED');
+  });
+
+  it('OP-N60 levée : sous cashless_app, aucune écriture directe de lot ni de statut', async () => {
+    const m = await active();
+    const batchId = (
+      (await rows(`SELECT batch_id FROM media WHERE id = $1`, [m.id])) as { batch_id: string }[]
+    )[0]!.batch_id;
+    const sqlstate = (sql: string, params: unknown[] = []) =>
+      withOwner(async (db) => {
+        await db.query('BEGIN');
+        try {
+          await db.query('SET LOCAL ROLE cashless_app');
+          await db.query(`SELECT set_config('app.operator_id', $1, true)`, [w.ops.a]);
+          await db.query(sql, params);
+          return null;
+        } catch (error) {
+          return (error as { code?: string }).code;
+        } finally {
+          await db.query('ROLLBACK');
+        }
+      });
+    const insert = (status: string) =>
+      sqlstate(
+        `INSERT INTO media_batch (operator_id, organizer_id, kind, quantity, key_index, status)
+         SELECT operator_id, organizer_id, kind, quantity, key_index, '${status}'
+           FROM media_batch WHERE id = $1`,
+        [batchId],
+      );
+    expect(await insert('ACTIVE')).toBe('42501');
+    expect(await insert('CLOSED')).toBe('42501');
+    for (const set of [
+      `status = 'CLOSED'`,
+      'quantity = quantity + 1',
+      'key_index = key_index',
+      'organizer_id = organizer_id',
+      'event_id = event_id',
+    ]) {
+      expect(await sqlstate(`UPDATE media_batch SET ${set} WHERE id = $1`, [batchId])).toBe(
+        '42501',
+      );
+    }
+    expect(await sqlstate('SELECT id FROM media_batch WHERE id = $1 FOR UPDATE', [batchId])).toBe(
+      '42501',
+    );
+    expect(await sqlstate(`UPDATE media SET status = 'BLACKLISTED' WHERE id = $1`, [m.id])).toBe(
+      '42501',
+    );
+    expect(await sqlstate(`UPDATE media SET status = 'ACTIVE' WHERE id = $1`, [m.id])).toBe(
+      '42501',
+    );
+    for (const to of ['RETIRED', 'DESTROYED', 'ACTIVE']) {
+      expect(
+        await sqlstate('SELECT media_set_status($1, $2, $3, $4)', [
+          m.id,
+          to,
+          'x',
+          supervisor.userId,
+        ]),
+      ).toBe('CL020');
+    }
+    expect(
+      await sqlstate(`SELECT media_set_status($1, 'BLACKLISTED', '', $2)`, [
+        m.id,
+        supervisor.userId,
+      ]),
+    ).toBe('CL001');
+    // Contrôle positif : le chemin par la fonction passe.
+    expect(
+      await sqlstate(`SELECT media_set_status($1, 'BLACKLISTED', 'motif', $2)`, [
+        m.id,
+        supervisor.userId,
+      ]),
+    ).toBeNull();
+    expect(await status(m)).toBe('ACTIVE'); // transactions annulées
   });
 
   it('passage non permis (bracelet remplacé) : 409 ; motif absent : 400 ; aucune route ne remet en service', async () => {

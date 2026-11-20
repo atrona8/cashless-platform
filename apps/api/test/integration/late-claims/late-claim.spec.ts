@@ -2,9 +2,9 @@
 // FR-024 ; ADR-67, ADR-74, ADR-75). Deux personnes du back-office, annulation de casse puis
 // remboursement sous le même point de sauvegarde, bornes de la base (CL024) précontrôlées par
 // l'API.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { IbanVault } from '../../../src/common/iban-vault';
+import { maskIban } from '../../../src/common/iban';
 import { LATE_CLAIM_ROLES } from '../../../src/late-claims/late-claim-action';
 import { withOwner } from '../../support/db';
 import { ownerRows } from '../../support/media-fixtures';
@@ -332,38 +332,138 @@ describe('réclamation tardive (LATE_CLAIM)', () => {
     expect(await lw.requests('LATE_CLAIM', walletId)).toHaveLength(1);
   });
 
-  // Le masque générique des charges (`approval/approval.mapper.ts`) est posé par WP08, pas par ce
-  // lot : tant qu'il n'est pas dans la base de la lane, l'essai est suspendu ; il est rejoué tel
-  // quel à la consolidation.
-  const masked = readFileSync(
-    join(__dirname, '../../../src/approval/approval.mapper.ts'),
-    'utf8',
-  ).includes('iban');
-  (masked ? it : it.skip)(
-    'FR-024 : ni IBAN ni numéro dans l’audit ni dans GET /approval-requests (masque de WP08)',
-    async () => {
+  describe('IBAN chiffré (OP-N140 levé, FR-010, FR-024)', () => {
+    const iban = 'SN08SN0100152000048500003035';
+    const frag = iban.slice(6, 14);
+    const vault = () => lw.pw.sw.api.app.get(IbanVault);
+
+    async function bankRequest(amount = 4_000) {
       const { walletId } = await lw.brokenWallet();
       await lw.lock();
-      const iban = 'SN08SN0100152000048500003035';
-      const msisdn = '+221770000099';
-      const bank = await lw.claim(
-        lw.claimBody(walletId, { amount: 4_000, destination: { method: 'BANK_TRANSFER', iban } }),
+      const asked = await lw.claim(
+        lw.claimBody(walletId, { amount, destination: { method: 'BANK_TRANSFER', iban } }),
       );
-      expect((await lw.approve(bank.body.approval_request_id)).body.status).toBe('EXECUTED');
-      const wave = await lw.claim(
-        lw.claimBody(walletId, { amount: 1_000, destination: { method: 'WAVE', msisdn } }),
+      expect(asked.status).toBe(202);
+      return { walletId, id: asked.body.approval_request_id as string };
+    }
+
+    async function tamper(id: string, destination: Record<string, unknown>) {
+      await withOwner(async (db) => {
+        await db.query(`SET session_replication_role = replica`);
+        await db.query(
+          `UPDATE approval_request SET payload = jsonb_set(payload, '{destination}', $2::jsonb)
+            WHERE id = $1`,
+          [id, JSON.stringify(destination)],
+        );
+        await db.query(`SET session_replication_role = DEFAULT`);
+      });
+    }
+
+    it('charge : iban chiffré + iban_mask, aucun IBAN en base, audit, réponses', async () => {
+      const { walletId, id } = await bankRequest();
+      const [row] = await ownerRows<{ payload: { destination: Record<string, string> } }>(
+        'SELECT payload FROM approval_request WHERE id = $1',
+        [id],
       );
-      expect(wave.status).toBe(202);
+      const d = row!.payload.destination;
+      expect(Object.keys(d).sort()).toEqual(['iban', 'iban_mask', 'method']);
+      expect(d.iban!.startsWith('enc:v1:')).toBe(true);
+      expect(d.iban_mask).toBe(maskIban(iban));
+      expect(vault().open(d.iban!, lw.operatorId)).toBe(iban);
+      const like = await ownerRows<{ n: number }>(
+        `SELECT count(*)::int AS n FROM approval_request
+          WHERE id = $2 AND payload::text LIKE ANY($1)`,
+        [[`%${iban}%`, `%${frag}%`], id],
+      );
+      expect(like[0]!.n).toBe(0);
+      // Lecture exposée : le masque, jamais l'enveloppe ni l'IBAN.
+      const list = await lw.cw.bo('GET', '/approval-requests', lw.validator());
+      const text = JSON.stringify(list.body);
+      expect(text).toContain(maskIban(iban));
+      expect(text).not.toContain('enc:v1:');
+      expect(text).not.toContain(frag);
+      // Contrôle positif : l'approbation exécute, même paire d'écritures qu'avant.
+      const writes = await lw.lateWrites();
+      const done = await lw.approve(id);
+      expect(done.body.status).toBe('EXECUTED');
+      expect(await lw.lateWrites()).toBe(writes + 2);
+      expect(await lw.walletPaid(walletId)).toBe(0n);
+      const exposed = JSON.stringify(done.body);
+      expect(exposed).not.toContain('enc:v1:');
+      expect(exposed).not.toContain(frag);
       const audit = await ownerRows<{ n: number }>(
         `SELECT count(*)::int AS n FROM audit_log
-          WHERE (before::text LIKE ANY($1) OR after::text LIKE ANY($1))
-            AND (after->>'target_id' = $2 OR before->>'target_id' = $2)`,
-        [[`%${iban}%`, `%${msisdn}%`], walletId],
+          WHERE before::text LIKE ANY($1) OR after::text LIKE ANY($1)`,
+        [[`%${iban}%`, `%${frag}%`, '%enc:v1:%']],
       );
       expect(audit[0]!.n).toBe(0);
-      const list = await lw.cw.bo('GET', '/approval-requests', lw.validator());
-      expect(JSON.stringify(list.body)).not.toContain(iban);
-      expect(JSON.stringify(list.body)).not.toContain(msisdn);
-    },
-  );
+      const results = await ownerRows<{ n: number }>(
+        `SELECT count(*)::int AS n FROM approval_request WHERE result::text LIKE ANY($1)`,
+        [[`%${iban}%`, '%enc:v1:%']],
+      );
+      expect(results[0]!.n).toBe(0);
+    });
+
+    it('charge falsifiée (5 cas) : FAILED, rien d’écrit', async () => {
+      const forged: Record<string, unknown>[] = [
+        { method: 'BANK_TRANSFER', iban, iban_mask: maskIban(iban) },
+        {
+          method: 'BANK_TRANSFER',
+          iban: vault().seal(iban, randomUUID()),
+          iban_mask: maskIban(iban),
+        },
+        {
+          method: 'BANK_TRANSFER',
+          iban: vault().seal(iban, lw.operatorId),
+          iban_mask: 'XX00*************0000',
+        },
+        {
+          method: 'BANK_TRANSFER',
+          iban: vault().seal(iban, lw.operatorId),
+          iban_mask: maskIban(iban),
+          msisdn: '+221770000002',
+        },
+        { method: 'BANK_TRANSFER', iban: 'enc:v1:test:AAAA', iban_mask: maskIban(iban) },
+      ];
+      for (const destination of forged) {
+        const { id } = await bankRequest();
+        const writes = await lw.lateWrites();
+        await tamper(id, destination);
+        const res = await lw.approve(id);
+        expect([JSON.stringify(destination).slice(0, 40), res.body.status]).toEqual([
+          JSON.stringify(destination).slice(0, 40),
+          'FAILED',
+        ]);
+        expect(await lw.lateWrites()).toBe(writes);
+        expect(JSON.stringify(res.body)).not.toContain(frag);
+        await lw.reset();
+      }
+    });
+  });
+
+  // Masque générique des charges (`approval/approval.mapper.ts`, WP08 et WP09).
+  it('FR-024 : ni IBAN ni numéro dans l’audit ni dans GET /approval-requests', async () => {
+    const { walletId } = await lw.brokenWallet();
+    await lw.lock();
+    const iban = 'SN08SN0100152000048500003035';
+    const msisdn = '+221770000099';
+    const bank = await lw.claim(
+      lw.claimBody(walletId, { amount: 4_000, destination: { method: 'BANK_TRANSFER', iban } }),
+    );
+    expect((await lw.approve(bank.body.approval_request_id)).body.status).toBe('EXECUTED');
+    const wave = await lw.claim(
+      lw.claimBody(walletId, { amount: 1_000, destination: { method: 'WAVE', msisdn } }),
+    );
+    expect(wave.status).toBe(202);
+    const audit = await ownerRows<{ n: number }>(
+      `SELECT count(*)::int AS n FROM audit_log
+          WHERE (before::text LIKE ANY($1) OR after::text LIKE ANY($1))
+            AND (after->>'target_id' = $2 OR before->>'target_id' = $2)`,
+      [[`%${iban}%`, `%${msisdn}%`], walletId],
+    );
+    expect(audit[0]!.n).toBe(0);
+    const list = await lw.cw.bo('GET', '/approval-requests', lw.validator());
+    expect(JSON.stringify(list.body)).not.toContain(iban);
+    expect(JSON.stringify(list.body)).not.toContain(msisdn);
+  });
 });
