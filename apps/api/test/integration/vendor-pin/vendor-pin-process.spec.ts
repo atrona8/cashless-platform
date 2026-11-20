@@ -40,7 +40,7 @@ describe('Processus vendor-pin (WP06)', () => {
       const body = { vendorId: v, deviceId: t.deviceId, operatorId: world.w.ops.a, pin: PIN };
       const other = { ...body, pin: WRONG };
       const now = Date.now();
-      const auditBefore = await auditCount();
+      const auditBefore = await auditCount(world.w.ops.a);
       const cases: Array<[string, Parameters<typeof call>[2]]> = [
         ['signature absente', { sig: null }],
         ['horodatage absent', { tsHeader: null }],
@@ -71,7 +71,7 @@ describe('Processus vendor-pin (WP06)', () => {
       }
       expect(bodies.size).toBe(1);
       expect(await vendorRow(v)).toMatchObject({ failed_attempts: 0 });
-      expect(await auditCount()).toBe(auditBefore);
+      expect(await auditCount(world.w.ops.a)).toBe(auditBefore);
       expect(await sessionsOf(t.deviceId)).toEqual([]);
     });
 
