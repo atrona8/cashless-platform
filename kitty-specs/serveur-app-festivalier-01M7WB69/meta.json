@@ -13,5 +13,7 @@
   "purpose_tldr": "Rendre utilisable en production le serveur de l'app festivalier : vrai compte par numéro vérifié, identification au guichet et ce qui manque à /me.",
   "slug": "serveur-app-festivalier-01M7WB69",
   "target_branch": "feat/serveur-app-festivalier",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-20T14:46:38.464420+00:00"
 }
