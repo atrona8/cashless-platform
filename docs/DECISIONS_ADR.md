@@ -3220,8 +3220,11 @@ levée consignée le 19/11/2026.
   processus refuse de démarrer sans son secret (aucun faux).
 - **Risque, raison, levée.** *PIN en transit* : l'API voit le PIN avant de l'envoyer ; une API
   compromise peut tester des PIN au rythme du décompte d'essais (même limite qu'avant, désormais
-  nommée, OP-N151). Raison : seule une preuve du PIN que l'API ne voit pas la lève, et elle vient de
-  l'app. **Mission qui la lève : 12 (avec OP-N56, 12b).** Condition : preuve du PIN calculée par
+  nommée, OP-N151). Précisé le 20/11/2026 (revue post-fusion, N-3) : un processus d'API entièrement
+  compromis peut aussi **remplacer** le PIN (empreinte calculée par `POST hash`, puis
+  `set_vendor_pin`, qui remet le compteur à 0 et lève le blocage) et ouvrir ensuite une session ;
+  le changement est audité et ferme les sessions. Une connexion SQL seule ne le peut pas. Raison :
+  seule une preuve du PIN que l'API ne voit pas la lève, et elle vient de l'app. **Mission qui la lève : 12 (avec OP-N56, 12b).** Condition : preuve du PIN calculée par
   l'app et vérifiée par le processus. Autres limites : OP-N154, OP-N158, OP-N159.
 - **Limite : renvoi après une API tombée (OP-N158).** La session est ouverte par le processus hors
   de la transaction de l'API. Si l'API tombe **après** la validation de la clé d'idempotence, le

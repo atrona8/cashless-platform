@@ -2413,8 +2413,12 @@ Aucun n'affaiblit la sécurité (ADR-216 à ADR-224). `redact.ts` masque `msisdn
 (OP-N156, 19/11/2026, `3c112821`). `media_set_status` limité à `SUSPENDED` et
 `BLACKLISTED` ; `create_media_batch` exige un acteur et l'historique `→ORDERED` porte l'auteur et le
 motif « Création du lot » (avant : NULL) ; `UPDATE` de `media` réduit à deux colonnes ; refus d'un
-lot de versements : la classe de bénéficiaire est exigée (FR-014) ; masque falsifié et enveloppe
-illisible refusés à l'exécution (`APPROVAL_INVALID`) ; `23505` de la clé App Attest converti en `422
+lot de versements : la classe de bénéficiaire est exigée (FR-014) ; réclamation tardive : masque
+falsifié et enveloppe illisible refusés à l'exécution (`APPROVAL_INVALID`) ; lot de versements :
+masque d'IBAN recoupé avec l'enveloppe ouverte à l'exécution, masque falsifié → `FAILED`
+(`VALIDATION_FAILED`) (revue post-fusion du 20/11/2026, constat B-1, commit `ae432316`, test
+« masque falsifié » de `payout-batch.spec.ts` ; avant ce correctif, le valideur pouvait voir le
+masque d'un autre IBAN que celui payé) ; `23505` de la clé App Attest converti en `422
 ATTESTATION_FAILED` (au lieu de `500`) ; cache anti-rejeu et refus d'un corps sans `rawBody` (garde
 de `vendor-pin`, décision du porteur du 19/11/2026) ; test d'ouverture de l'enveloppe à l'exécution
 d'un versement (décision du porteur du 19/11/2026, commit `414e35f2`).
@@ -2527,7 +2531,13 @@ acceptée).**
   changement de PIN restent appelés par l'API. Le corps de l'appel signé porte le PIN.
 - **Risque.** Une API compromise peut tester des PIN, au rythme du décompte d'essais existant (même
   limite qu'avant, désormais nommée). Sécurité de l'appel : secret partagé (HMAC), écoute loopback,
-  TLS 1.3 hors loopback.
+  TLS 1.3 hors loopback. **Portée précisée le 20/11/2026 (revue post-fusion, N-3)** : un processus
+  d'API **entièrement** compromis (clé d'appel et connexion `cashless_app`) n'est pas borné par le
+  décompte. Il peut faire calculer l'empreinte d'un PIN de son choix (`POST hash` du processus
+  `vendor-pin`), l'écrire par `set_vendor_pin` (`vendors.service.ts`, qui remet le compteur à 0 et
+  lève le blocage, `0031_vendors.sql`), puis ouvrir une session de ce vendeur avec ce PIN. Le
+  changement de PIN est audité (`VENDOR_PIN_CHANGED`) et ferme les sessions ouvertes. Une connexion SQL
+  seule ne le peut pas : sans le secret du processus, elle ne fabrique pas d'empreinte valide.
 - **Test de la limite.** `vendor-pin-process.spec.ts` (le décompte d'essais borne les essais,
   `LOCKED` au 5e) ; `architecture.spec.ts` (l'API ne lit pas le secret des PIN). **Test de borne
   (`d7d1d139`) :**
