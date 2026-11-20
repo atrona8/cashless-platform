@@ -16,6 +16,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/serveur-app-festivalier. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/serveur-app-festivalier unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-serveur-app-festivalier-01M7WB69
+base_commit: 955099f6e1afe151ef3ce3b6480ef6670893989e
+created_at: '2026-11-20T15:51:49.177649+00:00'
 subtasks: [T041, T042, T043, T044, T045]
 phase: Phase 2 - API
 agent: claude
