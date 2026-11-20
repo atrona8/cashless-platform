@@ -22,7 +22,10 @@ node apps/api/dist/cli/reissue-claim-codes.js --operator <id> --batch <id> --out
 ```
 
 - Connexion : `DATABASE_URL_CLAIMADMIN` (rôle `cashless_claimadmin`) ; lit `CLAIM_CODE_HMAC_KEY` et sa version.
-- Sortie : fichier `rank,code,url` (forme de `issueClaimCodeOrder`), mode 0600, refuse d'écraser un fichier existant.
+- Sortie : fichier `rank,code,url,uid,printed_number`, mode 0600, refuse d'écraser un fichier existant. Décision du
+  porteur du 20/11/2026 : chaque ligne nomme son bracelet (`uid` = UID NFC en hexadécimal, comme dans le fichier de
+  l'imprimeur ; `printed_number` vide s'il est inconnu). Les codes réémis sont déjà liés à leur bracelet en base : le
+  fichier sert à poser la bonne étiquette sur le bon bracelet, **sans** nouvel import.
 - Stdout : nombre de codes réémis seulement. Codes de sortie : 0 succès, 2 lot introuvable ou non `PUBLIC`, 3 aucun
   bracelet à réémettre, 1 autre erreur.
 - Lots clos compris ; bracelets dont le code courant a déjà servi : ignorés.
