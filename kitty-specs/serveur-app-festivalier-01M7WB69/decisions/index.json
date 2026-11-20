@@ -1,0 +1,81 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-20T11:24:57.505805Z",
+      "decision_id": "01M7WB7N91279BTQYH74QMSM83",
+      "final_answer": "Les quatre blocs : KYC au guichet ; OP-N47 rotation du secret des codes de rattachement ; printed_number et pending_offline_notice dans /me ; cha\u00eene d'envoi des codes WhatsApp puis SMS principal puis SMS de repli (faux fournisseurs)",
+      "input_key": "mission_scope",
+      "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+      "mission_slug": "serveur-app-festivalier-01M7WB69",
+      "opened_by": "cli",
+      "options": [
+        "KYC",
+        "OP-N47",
+        "printed_number+pending_offline_notice",
+        "chaine OTP",
+        "reprise code 10/11",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Quels blocs restants entrent dans la mission 10a ? (KYC au guichet ; rotation du secret des codes de rattachement OP-N47 ; printed_number et pending_offline_notice dans /me ; cha\u00eene d'envoi des codes WhatsApp puis SMS avec repli, faux fournisseurs ; reprise sous Spec Kitty du code fait hors Spec Kitty le 10/11)",
+      "rationale": null,
+      "resolved_at": "2026-11-20T11:30:54.377779Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.perimetre",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-20T11:31:16.012239Z",
+      "decision_id": "01M7WBK6XCN3JJKDERSFYAKTR5",
+      "final_answer": "Num\u00e9ro v\u00e9rifi\u00e9 identique : refus 403 si le num\u00e9ro v\u00e9rifi\u00e9 du compte festivalier est \u00e9gal au t\u00e9l\u00e9phone de l'agent (app_user.phone) ; limite consign\u00e9e (agent sans num\u00e9ro ou avec un autre num\u00e9ro)",
+      "input_key": "kyc_self_identification_rule",
+      "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+      "mission_slug": "serveur-app-festivalier-01M7WB69",
+      "opened_by": "cli",
+      "options": [
+        "numero verifie identique",
+        "lien declare",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Comment le serveur reconna\u00eet-il qu'un agent du guichet est lui-m\u00eame le festivalier qu'il identifie (r\u00e8gle \u00a76.3 point 4) ?",
+      "rationale": null,
+      "resolved_at": "2026-11-20T11:36:22.938175Z",
+      "resolved_by": null,
+      "slot_key": "specify.kyc.agent-titulaire",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-20T11:36:34.961412Z",
+      "decision_id": "01M7WBWYCHZW1JG27XAFWXDDGB",
+      "final_answer": "Pas de p\u00e9riode : rotation imm\u00e9diate ; les codes \u00e9mis sous l'ancien secret sont invalid\u00e9s, r\u00e9impression ou r\u00e9\u00e9mission des codes",
+      "input_key": "claim_secret_grace_period",
+      "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+      "mission_slug": "serveur-app-festivalier-01M7WB69",
+      "opened_by": "cli",
+      "options": [
+        "30 jours, par configuration",
+        "jusqu a la fin de l evenement",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Rotation du secret des codes de rattachement (OP-N47) : combien de temps l'ancien secret reste-t-il accept\u00e9, et qui d\u00e9clenche la rotation ?",
+      "rationale": null,
+      "resolved_at": "2026-11-20T11:45:44.062764Z",
+      "resolved_by": null,
+      "slot_key": "specify.op-n47.periode",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+  "version": 1
+}
