@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-23T11:47:46.508442+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "fa0fa40b5cbf686c7faf029e41ad283483fe5475"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-23T11:47:46.508442+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "fa0fa40b5cbf686c7faf029e41ad283483fe5475",
   "coordination_branch": "kitty/mission-serveur-app-festivalier-01M7WB69",
   "created_at": "2026-11-20T11:24:12.832275+00:00",
   "flattened": false,
