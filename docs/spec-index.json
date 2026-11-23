@@ -1379,5 +1379,66 @@
       "Faux fournisseurs refusés en production"
     ],
     "source": "kitty-specs/serveur-app-festivalier-01M7WB69/spec.md"
+  },
+  {
+    "mission": "remboursement-partiel-especes-01M84932",
+    "titre_cas_usage": "Remboursement partiel en espèces au guichet",
+    "statut": "planifiée : plan finalisé le 23/11/2026, rien n'est codé ; décisions D1 à D6 par défaut, non validées par le porteur ; ajouts au contrat soumis au porteur",
+    "user_stories": [
+      {
+        "titre": "Rendre une partie du solde",
+        "detail": "En tant que festivalier, avec ou sans compte, je veux récupérer en espèces au guichet tout ou partie de mon solde payé en gardant mon bracelet actif, afin de continuer à payer ; crédits offerts et caution inchangés, tout le solde payé peut être rendu."
+      },
+      {
+        "titre": "L'organisateur décide",
+        "detail": "En tant qu'organisateur, je veux activer ou désactiver le rendu partiel pour chacun de mes événements, seulement si mon prestataire l'autorise ; refusé par défaut aux deux niveaux, refus avec motif distinct au guichet, retrait de l'autorisation du prestataire effectif au rendu suivant."
+      },
+      {
+        "titre": "Seconde personne sur le cumul",
+        "detail": "En tant qu'organisateur, je veux qu'une seconde personne valide dès que le cumul des rendus partiels du bracelet sur la journée UTC, rendu en cours compris, dépasse cash_refund_single_max, afin qu'un gros remboursement ne soit pas fractionné."
+      }
+    ],
+    "entites_cles": [
+      "Autorisation du prestataire (cash_partial_refund_allowed)",
+      "Réglage de l'événement (cash_partial_refund_enabled)",
+      "Rendu partiel (WALLET_REFUND marqué)",
+      "Session de caisse",
+      "Bracelet et solde payé"
+    ],
+    "resultat_mesurable": "100 % des demandes sur un événement non autorisé ou non activé refusées sans sortie d'espèces ; 100 % des cumuls du jour au-dessus du seuil exigent une seconde personne, même fractionnés ; 0 écart de caisse à la fermeture sur le scénario de recette ; 95 % des rendus sous 300 ms ; 20 demandes simultanées sur un bracelet sans dépassement du solde payé ni du cumul",
+    "hypotheses": [
+      "La journée du cumul est la journée UTC (SPECIFICATION §2.2)",
+      "Les phases où le rendu partiel est permis sont celles où le guichet rembourse déjà en espèces",
+      "Les espèces dues restent rendues par l'opération existante (L2)",
+      "Pas de nombre maximal de rendus par jour : frais et seconde personne bornent les abus",
+      "D1 à D6 de research.md prises par défaut pendant l'absence du porteur, à valider avant /spec-kitty.tasks"
+    ],
+    "contraintes": [
+      "Contrat partagé stable : une route, une propriété facultative, une description, rétrocompatibles, soumis au porteur avant d'être codés (C-001)",
+      "Guichet de retour inchangé (C-002)",
+      "SPECIFICATION §8.5 et §17 amendés, ADR à la suite (C-003)",
+      "Écart de sécurité soumis au porteur avant d'être codé (C-004)",
+      "Espèces seulement, depuis la caisse du guichet (C-005)"
+    ],
+    "cas_limites": [
+      "Montant nul, négatif, au-dessus du solde payé ou sous le minimum : refus, rien d'écrit",
+      "Solde payé insuffisant pour le montant plus les frais : refus",
+      "Bracelet suspendu, en liste noire, remplacé ou non activé : refus",
+      "Aucune session de caisse ouverte ou terminal qui n'est pas un guichet : refus",
+      "Autorité de débit sur la passerelle (EDGE) : refus",
+      "Même demande rejouée : même réponse, une seule sortie d'espèces",
+      "Deux rendus simultanés sur le même bracelet : cumul et solde justes",
+      "Bracelet remplacé dans la journée : cumul qui repart de zéro (L1)"
+    ],
+    "fonctionnel": [
+      "FR-001 à FR-013 : rendu partiel, bracelet gardé actif, solde payé seulement, autorisation du prestataire, activation par l'organisateur, refus explicite, seconde personne au cumul du jour, frais à chaque rendu, bracelets anonymes, contrôle de caisse, idempotence, indisponible en coupure, traçabilité"
+    ],
+    "non_fonctionnel": [
+      "NFR-001 : p95 sous 300 ms",
+      "NFR-002 : aucun dépassement sur 20 demandes simultanées",
+      "NFR-003 : cloisonnement par prestataire et organisateur",
+      "NFR-004 : aucun droit de table ni de colonne ajouté à cashless_app"
+    ],
+    "source": "kitty-specs/remboursement-partiel-especes-01M84932/spec.md"
   }
 ]

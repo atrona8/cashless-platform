@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1440" viewBox="0 0 2066 1440">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1252" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="701.6666666666666" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1252" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1252" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1252" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,290.72 1210.3333333333333,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,290.72 1191.026516971745,301.2673618492925 1191.026516971745,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="530.4666666666666" y="253.72000000000003" width="342.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="953.3333333333333" y="336.72" width="530" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="70" y="416.71999999999997" width="254" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,518.72 193.0,518.72" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="504.4666666666666" y="481.72" width="394.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="410.71999999999997" width="1856.0" height="141.28000000000003" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1224.3333333333333,628.9200000000001 1727.0,628.9200000000001" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,628.9200000000001 1707.6931836384117,639.4673618492925 1707.6931836384117,618.3726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1289.8666666666666" y="591.9200000000001" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1013.3333333333333" y="674.9200000000001" width="410" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="70" y="754.92" width="294" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,856.92 193.0,856.92" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,856.92 212.3068163615882,846.3726381507075 212.3068163615882,867.4673618492924" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="509.66666666666663" y="819.92" width="384.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="695.6666666666666,932.92 193.0,932.92" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,932.92 212.3068163615882,922.3726381507075 212.3068163615882,943.4673618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="355.3333333333333" y="895.92" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,1008.92 1210.3333333333333,1008.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,1008.92 1191.026516971745,1019.4673618492924 1191.026516971745,998.3726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="582.4666666666666" y="971.92" width="238.4" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="748.92" width="1856.0" height="293.27999999999986" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1224.3333333333333,1119.12 1727.0,1119.12" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,1119.12 1707.6931836384117,1129.6673618492923 1707.6931836384117,1108.5726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1258.6666666666665" y="1082.12" width="436.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,1195.12 193.0,1195.12" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1195.12 212.3068163615882,1184.5726381507075 212.3068163615882,1205.6673618492923" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="478.4666666666666" y="1158.12" width="446.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Rendu partiel au guichet</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Verrou du solde payé, cumul du jour lu sous verrou, frais du moteur, espèces sorties de la caisse</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Seconde personne</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
+<text x="701.6666666666666" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rendre N (tap_id, clé, montant)</text>
+<text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="1218.3333333333333" y="368.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Réglages permis ? session OPEN ? bracelet actif ?</text>
+<text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="74" y="434.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt fonction non permise</text>
+<text x="701.6666666666666" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">422 REFUND_NOT_ALLOWED, rien d’écrit</text>
+<text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1476.6666666666665" y="610.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Verrous : bracelet puis solde payé</text>
+<text x="34.0" y="631.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1218.3333333333333" y="707.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Cumul du jour UTC + N, lu sous verrou</text>
+<text x="34.0" y="707.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="74" y="772.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt cumul au-dessus du seuil</text>
+<text x="701.6666666666666" y="838.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">403 APPROVAL_REQUIRED, rien d’écrit</text>
+<text x="34.0" y="859.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="443.3333333333333" y="914.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Jeton sur place</text>
+<text x="34.0" y="935.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="701.6666666666666" y="990.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rejouer avec le jeton</text>
+<text x="34.0" y="1011.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="1476.6666666666665" y="1100.395" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">WALLET_REFUND brut, frais, net en caisse</text>
+<text x="34.0" y="1122.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="701.6666666666666" y="1176.395" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">201 : espèces remises, solde payé restant</text>
+<text x="34.0" y="1198.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1297.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu au plan (23/11/2026), pas encore codé. Même clé : même réponse. Coupure (EDGE) : 409. Solde payé insuffisant : 422. Bracelet gardé actif.</text>
+</g>
+</svg>

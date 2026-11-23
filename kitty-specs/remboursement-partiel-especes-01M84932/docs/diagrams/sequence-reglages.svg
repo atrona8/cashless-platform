@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1178" viewBox="0 0 2006 1178">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<ellipse cx="701.6666666666666" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="701.6666666666666,236 701.6666666666666,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,301.7 1210.3333333333333,301.7" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,301.7 1191.026516971745,312.2473618492925 1191.026516971745,291.1526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="410.8666666666666" y="264.7" width="581.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,392.95 1727.0,392.95" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,392.95 1707.6931836384117,403.4973618492925 1707.6931836384117,382.4026381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1331.4666666666665" y="355.95" width="290.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,484.2 1210.3333333333333,484.2" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,484.2 1191.026516971745,494.7473618492925 1191.026516971745,473.6526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="700.4" y="447.2" width="519.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1013.3333333333333" y="545.45" width="410" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1212.3333333333333,666.7 709.6666666666666,666.7" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="709.6666666666666,666.7 728.9734830282548,656.1526381507076 728.9734830282548,677.2473618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="762.8" y="629.7" width="394.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1224.3333333333333,757.9499999999999 1727.0,757.9499999999999" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,757.9499999999999 1707.6931836384117,768.4973618492924 1707.6931836384117,747.4026381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1253.4666666666665" y="720.9499999999999" width="446.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1212.3333333333333,849.1999999999999 709.6666666666666,849.1999999999999" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="709.6666666666666,849.1999999999999 728.9734830282548,838.6526381507075 728.9734830282548,859.7473618492924" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="887.6" y="812.1999999999999" width="144.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="893.3333333333333" y="910.4499999999999" width="650" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Réglages : le prestataire autorise, l’organisateur active</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Refusé par défaut ; contrôlé de nouveau à chaque rendu</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Prestataire</text>
+<text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Organisateur</text>
+<text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
+<text x="701.6666666666666" y="282.97499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Version de configuration : cash_partial_refund_allowed</text>
+<text x="34.0" y="304.75" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="1476.6666666666665" y="374.22499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Clé de cascade enregistrée</text>
+<text x="34.0" y="396.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="960.0" y="465.47499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">updateEvent : cash_partial_refund_enabled = true</text>
+<text x="34.0" y="487.25" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="1218.3333333333333" y="577.725" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Autorisation du prestataire résolue ?</text>
+<text x="34.0" y="578.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="960.0" y="647.975" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Non autorisé : 422 VALIDATION_FAILED</text>
+<text x="34.0" y="669.75" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="1476.6666666666665" y="739.2249999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Colonne de l’événement enregistrée, audit</text>
+<text x="34.0" y="760.9999999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="960.0" y="830.4749999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : activé</text>
+<text x="34.0" y="852.2499999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="1218.3333333333333" y="942.7249999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">À chaque rendu : les deux réglages résolus doivent être vrais</text>
+<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu au plan (23/11/2026), pas encore codé. En LIVE, le changement suit l’opération à deux personnes existante (à vérifier). Retrait de l’autorisation : le rendu suivant est refusé.</text>
+</g>
+</svg>
