@@ -435,6 +435,23 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission versements-rapprochements-cloture
 - [ ] spec-kitty merge --mission versements-rapprochements-cloture
 
+## Mission 9c — Remboursement partiel en espèces au guichet, sans restitution du bracelet
+
+> **Décidée par le porteur le 23/11/2026** : aujourd'hui, au guichet, le solde payé ne se rend en espèces qu'en rendant le
+> bracelet (`releaseMedia`, guichet de retour). Le porteur veut permettre au festivalier de récupérer **tout ou partie** de
+> son solde payé en espèces **en gardant son bracelet**, et que ce soit **l'organisateur qui décide**, événement par
+> événement, si c'est permis. Ajout au contrat partagé (route et réglage d'événement nouveaux, rétrocompatibles) :
+> soumis au porteur au plan, avant d'être codé. Écart actuel entre `SPECIFICATION.md` §8.5 (« sur présentation du
+> bracelet ») et le contrat (restitution obligatoire), relevé le 23/11/2026 : cette mission le résout.
+
+- [ ] /spec-kitty.specify Remboursement partiel en espèces au guichet sans restitution du bracelet. Un nouveau réglage d'événement, réglé par l'organisateur (`ORGANIZER_ADMIN`) et désactivé par défaut, permet au guichet (terminal `TOPUP_DESK`, personne `CASHIER` ou `SUPERVISOR`, session de caisse ouverte) de rendre en espèces un montant choisi, au plus le solde payé du portefeuille du bracelet lu (lecture `POST /taps` valide) ; le bracelet reste actif et rattaché. Écriture `WALLET_REFUND` depuis la caisse de la session, frais de remboursement éventuels selon la règle de frais ; les crédits offerts ne sont jamais rendus et ne bougent pas ; caution non touchée. Seconde personne au-delà de `event.cash_refund_single_max` (jeton d'approbation sur place, comme `releaseMedia`). Ouvert aux bracelets anonymes comme le guichet de retour. Refus explicite si le réglage est désactivé. Indisponible pendant `EDGE`. Plafonds et contrôles anti-fraude à préciser (nombre de remboursements partiels par bracelet et par jour ?). Sections : SPECIFICATION §7.9, §8.5, §11.2 ; ADR-53, ADR-74.
+- [ ] /spec-kitty.plan Route nouvelle et champ d'événement nouveau seulement, rétrocompatibles, présentés au porteur avant d'être codés (contrat stable depuis le 05/11/2026) ; inscrits dans `contract-baseline.json` ; aucune route existante modifiée. Écriture par une fonction `DEFINER` de la base, idempotente ; contrôle de la session de caisse comme `releaseMedia`. Amendement de `SPECIFICATION.md` §8.5 (remboursement sans restitution, si l'organisateur l'a permis).
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty consolidate --mission [slug réel]
+
 ## Mission 10a — Serveur de l'app festivalier
 
 > **Coupée le 29/10/2026** (décision du porteur) : la partie serveur de l'ancienne mission 10 reste chez nous ; l'app
@@ -520,6 +537,12 @@ vendeurs et le catalogue : la mission les ajoute.
 > **À trancher au specify** : téléphone transmis ou comptes sans numéro ; qui porte le risque si l'application est
 > compromise ; avis du juriste sur l'identification du client (SPEC §4, plafonds) ; parcours de remboursement, de perte
 > et de rattachement d'un bracelet ; droits exacts de l'application.
+
+> **Tranché par le porteur le 23/11/2026, avant le specify** : (1) le numéro de téléphone du client est **obligatoire et
+> vérifié** par code à usage unique (chaîne d'envoi de la 10a) ; (2) avec le jeton de compte court, l'application agit au
+> nom du client pour **consulter** solde et bracelets, **rattacher** un bracelet, **déclarer une perte**, **recharger** et
+> **demander un remboursement** ; (3) le risque d'une application compromise n'est **pas tranché** : « à voir avec le
+> juriste », point ouvert qui **bloque la production** de la fonction jusqu'à son avis.
 
 - [ ] /spec-kitty.specify Gestion des clients par une application cliente. Une application inscrite auprès d'un prestataire s'authentifie de serveur à serveur. Elle crée ou retrouve un client par son identifiant externe (idempotent : le même identifiant donne toujours le même compte), lit la liste et le détail de ses clients, les recherche par identifiant externe, les désactive et les réactive. Pour agir au nom d'un client, elle obtient un jeton de compte court, identique à celui de `exchangeCustomerOtp`, utilisable sur les routes `/me` existantes. Correspondance (application, identifiant externe) vers compte, sans fusion entre applications ni entre prestataires ; une application ne voit jamais les clients d'une autre. Révocation immédiate d'une application, rotation de ses secrets, audit de chaque action et de chaque jeton délivré, limites de débit.
 - [ ] /spec-kitty.plan Routes nouvelles seulement, rétrocompatibles, soumises au porteur avant d'être codées ; aucune route existante modifiée ; contrôle de stabilité du contrat (`passerelle-locale`, NFR-012) étendu. Secrets de l'application jamais en clair en base. Faux refusés en production. Reprendre si possible le schéma `posClient` (OAuth 2.0 client credentials) déclaré au contrat.
@@ -710,6 +733,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission app-terminal
 
 ## Mission 12b — Intégrations réelles (services externes)
+
+> **Hérité de la 10a (23/11/2026, OP-N172, ADR-232)** : rendre impossible ou refuser au démarrage un changement du
+> secret des codes de rattachement sans hausse de sa version (aujourd'hui seule la baisse est refusée). Avec le KMS réel,
+> la version de clé portée par le service fait foi ; test : un secret changé à version égale est refusé.
 
 > **Hérité de la 10a (20/11/2026, ADR-229, OP-N120, OP-N166)** : brancher les **trois fournisseurs réels** derrière
 > `OtpProvider` (WhatsApp, SMS principal, SMS de repli ; `customer-auth/otp-providers.ts`) : accusés de livraison

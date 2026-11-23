@@ -3624,3 +3624,15 @@ Consignation du 23/11/2026 (règle 3 de `CLAUDE.md`).
 - **Écart de WP07 (OP-N169).** `personalization.service.ts` sans contrôle applicatif de `claim_code_used_at` : la base refuse (`CL020`), test `tests_claim_key_version.sql` l. 298-299.
 - **Report.** `PROMPTS-A-ENVOYER.md` (10a, 10b, 11, 12b, 13) et `PRD.md`. Liste complète des fichiers à faire
   relire : `docs/POINTS_OUVERTS.md` §12.
+
+## ADR-232 — Mission 10a : changement du secret des codes sans hausse de version, limite consignée (OP-N172)
+
+Consignation du 23/11/2026 (règle 3 de `CLAUDE.md`), sur décision du porteur après la revue post-fusion de la 10a (M-5).
+
+- **Statut** : Acceptée. Ne bloque ni le code ni la production ; n'élargit aucun droit.
+- **Risque.** Un exploitant change `CLAIM_CODE_HMAC_KEY` sans monter `CLAIM_CODE_HMAC_KEY_VERSION` : les empreintes déjà en base ne correspondent plus, les codes imprimés sont refusés comme inconnus, et rien ne signale la cause. Aucune fuite : l'effet est un déni de service sur le rattachement, réparé par la procédure de rotation (`docs/procedure-rotation-codes-rattachement.md`) avec une hausse de version.
+- **Raison.** Un contrôle au démarrage (empreinte du secret stockée avec la version) n'a pas été retenu par le porteur le 23/11/2026 ; la procédure de rotation exige déjà la hausse de version.
+- **Mission qui le lève.** 12b : le secret passe au KMS réel, dont la version de clé est portée par le service.
+- **Condition de levée.** Un changement de secret sans changement de version est impossible ou refusé au démarrage.
+- **Test.** Aucun test de borne : limite déclarée non figée, comme OP-N167 à OP-N169. Seule la baisse de version est figée (refus au démarrage, `claims.service.ts`).
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b) et `PRD.md`.
