@@ -22,6 +22,7 @@ describe('OP-N140 levé : errors/redact.ts masque l’IBAN', () => {
       'qr_payload',
       'x-approval-token',
       'iban',
+      'id_last4',
     ]);
   });
   it('les secrets déjà couverts restent masqués', () => {

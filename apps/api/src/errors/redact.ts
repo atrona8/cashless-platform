@@ -36,6 +36,8 @@ export const REDACTED_FIELDS = Object.freeze([
   'qr_payload',
   'x-approval-token',
   'iban',
+  // Mission 10a, WP05 : 4 derniers caractères de la pièce d'identité (jamais dans les journaux).
+  'id_last4',
 ]);
 
 // IBAN nu : 2 lettres, 2 chiffres, puis soit 11 à 30 caractères alphanumériques d'un tenant, soit

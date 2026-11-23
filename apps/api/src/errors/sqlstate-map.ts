@@ -91,6 +91,11 @@ export const SQLSTATE_MAP: Readonly<Record<string, MappedProblem>> = {
   CL056: { code: 'CONFLICT_STATE', status: 409 },
   // CL057 : demande de remboursement insérée hors état initial (mission 11a, migration 0092).
   CL057: { code: 'CONFLICT_STATE', status: 409 },
+  // Mission 10a (migration 0096) : identification au guichet (`create_kyc_verification`, `revoke_kyc_verification`).
+  CL060: { code: 'ACCOUNT_REQUIRED', status: 422 },
+  CL061: { code: 'FORBIDDEN', status: 403 },
+  CL062: { code: 'VALIDATION_FAILED', status: 422 },
+  CL063: { code: 'CONFLICT_STATE', status: 409 },
   P0002: { code: 'NOT_FOUND', status: 404 },
   // FR-024 : seul usage prévu en V1, le terminal révoqué (`open_offline_batch`,
   // `record_device_heartbeat`, `assert_device_active`). Le SQLSTATE seul ne distingue pas un refus

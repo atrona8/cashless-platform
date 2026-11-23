@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-19T18:00:00Z",
+  "derniere_verification_globale": "2026-11-23T12:00:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -81,6 +81,13 @@
     "durcissements-serveur-01M7QAJD": {
       "statut": "mergée : acceptée le 19/11/2026 (ef1d3504), consolidée le 20/11/2026 (squash cdedcd48), dans main par la PR #20 le 20/11/2026 (27d0ec50)",
       "verifie_le": "2026-11-20T13:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "serveur-app-festivalier-01M7WB69": {
+      "statut": "relue le 23/11/2026 (11 lots sur 11 approuvés), non acceptée, non fusionnée",
+      "verifie_le": "2026-11-23T12:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

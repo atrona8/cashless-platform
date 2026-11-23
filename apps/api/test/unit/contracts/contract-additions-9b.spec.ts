@@ -109,6 +109,17 @@ const PROBLEM_BULLET =
   'disponible du\n' +
   '  bénéficiaire, versements en cours déduits (mission 9b).\n';
 
+/**
+ * Mission serveur-app-festivalier (10a), décision du porteur du 20/11/2026, ADR-225 : trois ajouts rétrocompatibles
+ * au contrat, inscrits dans `contract-baseline.json`. Ce sont les SEULS écarts admis, par chemin exact ; chacun est
+ * vérifié à part (`contrat de la mission 10a`) et tout autre écart reste un échec.
+ */
+const ADDED_BY_10A = [
+  "paths['/kyc-verifications/{kyc_verification_id}/revoke'].post.responses.422 : clé ajoutée",
+  "paths['/operators/{operator_id}/media-batches/{batch_id}/claim-code-associations'].post.requestBody.content['text/csv'].schema.description : valeur modifiée",
+  'components.schemas.ClaimCodeAssociationResult.properties.rejected.items.properties.reason.enum : longueur modifiée',
+];
+
 function obj(value: Json | undefined, what: string): Obj {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${what} : objet attendu`);
@@ -208,7 +219,64 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ne modifie ni ne retire rien d existant (champs, required, enum, réponses)', () => {
     const found: string[] = [];
     violations(base, next, '', found);
-    expect(found).toEqual([]);
+    // Seuls les trois ajouts de la 10a (ADR-225) sont admis ; ils sont vérifiés dans le test suivant.
+    expect(found.filter((entry) => !ADDED_BY_10A.includes(entry))).toEqual([]);
+  });
+
+  it('contrat de la mission 10a (ADR-225) : exactement les trois ajouts décidés, rien de plus', () => {
+    const found: string[] = [];
+    violations(base, next, '', found);
+    expect(found.filter((entry) => ADDED_BY_10A.includes(entry)).sort()).toEqual(
+      [...ADDED_BY_10A].sort(),
+    );
+    const at = (doc: Obj, ...keys: string[]): Json | undefined =>
+      keys.reduce<Json | undefined>(
+        (node, key) => (typeof node === 'object' && node !== null ? (node as Obj)[key] : undefined),
+        doc,
+      );
+    // 1. `422` sur revokeKycVerification : la réponse commune, rien d'autre ne change dans les réponses.
+    const revoke = [
+      'paths',
+      '/kyc-verifications/{kyc_verification_id}/revoke',
+      'post',
+      'responses',
+    ];
+    const before = Object.keys(at(base, ...revoke) as Obj);
+    const after = at(next, ...revoke) as Obj;
+    expect(Object.keys(after).filter((code) => !before.includes(code))).toEqual(['422']);
+    expect(after['422']).toEqual({ $ref: '#/components/responses/Unprocessable' });
+    // 2. description du corps text/csv : seule la description change (même type), colonne `printed_number`.
+    const csv = [
+      'paths',
+      '/operators/{operator_id}/media-batches/{batch_id}/claim-code-associations',
+      'post',
+      'requestBody',
+      'content',
+      'text/csv',
+      'schema',
+    ];
+    expect({ ...(at(next, ...csv) as Obj), description: null }).toEqual({
+      ...(at(base, ...csv) as Obj),
+      description: null,
+    });
+    expect(at(next, ...csv, 'description')).toContain('printed_number');
+    // 3. motifs de rejet : les anciennes valeurs, dans l'ordre, puis exactement les deux nouveaux.
+    const reason = [
+      'components',
+      'schemas',
+      'ClaimCodeAssociationResult',
+      'properties',
+      'rejected',
+      'items',
+      'properties',
+      'reason',
+    ];
+    const oldReasons = at(base, ...reason, 'enum') as string[];
+    expect(at(next, ...reason, 'enum')).toEqual([
+      ...oldReasons,
+      'BAD_PRINTED_NUMBER',
+      'PRINTED_NUMBER_TAKEN',
+    ]);
   });
 
   it('ajoute exactement les 20 opérations listées', () => {

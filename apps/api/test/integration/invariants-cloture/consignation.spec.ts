@@ -64,6 +64,9 @@ describe('consignation de la mission 9b', () => {
       // Mission 11a (WP12) : les fiches de la 9b citent aussi `register.spec.ts` et
       // `commands-other.spec.ts` de l'outil de site ; ces fichiers existent sous `tools/`.
       ...walk(join(ROOT, 'tools/edge-admin/test')),
+      // Mission 10a (WP11) : les fiches de la 10a (WP10, WP11) citent `production-refusals.spec.ts` de la passerelle, sous
+      // `apps/gateway/test` ; le contrôle d'existence reste entier (le fichier doit y être).
+      ...walk(join(ROOT, 'apps/gateway/test')),
     ].map((f) => relative(ROOT, f));
     const missing = [...names].filter((name) => {
       const base = name.split('/').pop()!;

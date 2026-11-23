@@ -1,0 +1,207 @@
+{
+  "event_count": 101,
+  "last_event_id": "01M8447SG3HW1BQD7X6DS8R9MF",
+  "materialized_at": "2026-11-23T11:56:37.252163+00:00",
+  "mission_number": "",
+  "mission_slug": "serveur-app-festivalier-01M7WB69",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 11,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8446TX6EBT9WMFVDACTD3RZ",
+      "last_transition_at": "2026-11-23T11:56:05.926457+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP01-base-kyc/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP01-base-kyc/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 41357,
+      "shell_pid_created_at": "1795185984.732135"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8446XVER9R1M3WXP80R6TC6",
+      "last_transition_at": "2026-11-23T11:56:08.943049+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP02-base-version-codes/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP02-base-version-codes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 42034,
+      "shell_pid_created_at": "1795186024.526194"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M84470PHHHCK9F7ZCKVF6Q3J",
+      "last_transition_at": "2026-11-23T11:56:11.857254+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP03-base-avis-canaux/review-cycle-2.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP03-base-avis-canaux/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 51456,
+      "shell_pid_created_at": "1795186664.003342"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M84473JFYHHDY7PGEPJKARS3",
+      "last_transition_at": "2026-11-23T11:56:14.800147+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP04-droits-base/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP04-droits-base/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 55916,
+      "shell_pid_created_at": "1795186918.567341"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M84476E7QNW3MVM9F7JKFXSH",
+      "last_transition_at": "2026-11-23T11:56:17.735565+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP05-kyc-identification/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP05-kyc-identification/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 61966,
+      "shell_pid_created_at": "1795188026.280732"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8447DHKZB3147RJAGDMKKDT",
+      "last_transition_at": "2026-11-23T11:56:25.011305+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP06-kyc-revocation/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP06-kyc-revocation/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 69529,
+      "shell_pid_created_at": "1795188692.615076"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M84479BH3YSMWST1RD5WJQ1C",
+      "last_transition_at": "2026-11-23T11:56:20.721379+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP07-codes-versionnes-api/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP07-codes-versionnes-api/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 61966,
+      "shell_pid_created_at": "1795188026.280732"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8447GGAFGEQGQMD0DDBVE02",
+      "last_transition_at": "2026-11-23T11:56:28.042231+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP08-reemission-procedure/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP08-reemission-procedure/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 79317,
+      "shell_pid_created_at": "1795189813.599484"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8447KFCS8R748DVWNCDTZNQ",
+      "last_transition_at": "2026-11-23T11:56:31.084399+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP09-me-complet/review-cycle-1.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP09-me-complet/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 79317,
+      "shell_pid_created_at": "1795189813.599484"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8447PK00N0ADSPM4Y0WF2H0",
+      "last_transition_at": "2026-11-23T11:56:34.272639+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP10-chaine-envoi-codes/review-cycle-2.md",
+        "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP10-chaine-envoi-codes/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 5377,
+      "shell_pid_created_at": "1795426572.132524"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8447SG3HW1BQD7X6DS8R9MF",
+      "last_transition_at": "2026-11-23T11:56:37.252163+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP11:20261123",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 24901,
+      "shell_pid_created_at": "1795429612.324866"
+    }
+  }
+}

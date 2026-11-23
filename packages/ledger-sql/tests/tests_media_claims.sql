@@ -71,7 +71,7 @@ CREATE FUNCTION pg_temp.q(n int) RETURNS uuid LANGUAGE sql IMMUTABLE AS $$ SELEC
 -- Résultat d'un essai de rattachement, en un mot.
 CREATE FUNCTION pg_temp.claim(code int, customer int, device text, claim int DEFAULT NULL) RETURNS text LANGUAGE sql AS $$
   SELECT outcome FROM claim_media(pg_temp.h(code), pg_temp.c(customer), device,
-                                  CASE WHEN claim IS NULL THEN gen_random_uuid() ELSE pg_temp.q(claim) END, pg_temp.k(coalesce(claim, 0)))
+                                  CASE WHEN claim IS NULL THEN gen_random_uuid() ELSE pg_temp.q(claim) END, pg_temp.k(coalesce(claim, 0)), 1::smallint)
 $$;
 
 -- 1. Structure ---------------------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ SELECT is((SELECT count(*)::int FROM pg_proc WHERE proname IN ('issue_claim_code
 SELECT is((SELECT prosecdef FROM pg_proc WHERE proname = 'associate_claim_code'), true,
   'associate_claim_code : SECURITY DEFINER depuis 0019 (tests_personalization_definer.sql)');
 SELECT is((SELECT prosecdef FROM pg_proc WHERE proname = 'public_balance_lookup'), true, 'public_balance_lookup : SECURITY DEFINER (route publique, sans prestataire)');
-SELECT ok(NOT has_function_privilege('public', 'public_balance_lookup(bytea, text)', 'execute'), 'public_balance_lookup : retirée à PUBLIC');
+SELECT ok(NOT has_function_privilege('public', 'public_balance_lookup(bytea, text, smallint)', 'execute'), 'public_balance_lookup : retirée à PUBLIC');
 SELECT throws_ok($$INSERT INTO claim_code (operator_id, batch_id, code_hash) VALUES ('00000000-0000-0000-0000-00000010a001','00000000-0000-0000-0000-00000010b001','\x00')$$,
   '23514', NULL, 'empreinte de code : 32 octets');
 SELECT throws_ok($$UPDATE media SET claim_code_used_at = now() WHERE id = '00000000-0000-0000-0000-00000010d001'$$,
@@ -101,27 +101,27 @@ SET LOCAL ROLE cashless_app;
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000010a001', true);
 
 -- 2. Émission des codes ----------------------------------------------------------------------------------------------
-SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(1)])$$,
+SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(1)], 1::smallint)$$,
   '%CLAIM_CODES_COUNT%', 'un code par bracelet du lot');
-SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b002', ARRAY[pg_temp.h(91), pg_temp.h(92)])$$,
+SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b002', ARRAY[pg_temp.h(91), pg_temp.h(92)], 1::smallint)$$,
   '%CLAIM_CODES_NOT_PUBLIC%', 'pas de code pour un lot STAFF');
-SELECT is(issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(1), pg_temp.h(2), pg_temp.h(3), pg_temp.h(4), pg_temp.h(5), pg_temp.h(6)]),
+SELECT is(issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(1), pg_temp.h(2), pg_temp.h(3), pg_temp.h(4), pg_temp.h(5), pg_temp.h(6)], 1::smallint),
   6, 'six empreintes enregistrées');
 SELECT isnt((SELECT claim_codes_issued_at FROM media_batch WHERE id = '00000000-0000-0000-0000-00000010b001'), NULL, 'date d''émission posée');
-SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(11), pg_temp.h(12), pg_temp.h(13), pg_temp.h(14), pg_temp.h(15), pg_temp.h(16)])$$,
+SELECT throws_like($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b001', ARRAY[pg_temp.h(11), pg_temp.h(12), pg_temp.h(13), pg_temp.h(14), pg_temp.h(15), pg_temp.h(16)], 1::smallint)$$,
   '%CLAIM_CODES_ALREADY_ISSUED%', 'le fichier de commande n''est produit qu''une fois');
-SELECT is(issue_claim_codes('00000000-0000-0000-0000-00000010b003', ARRAY[pg_temp.h(7)]), 1, 'code du second lot');
-SELECT throws_ok($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b009', ARRAY[pg_temp.h(99)])$$,
+SELECT is(issue_claim_codes('00000000-0000-0000-0000-00000010b003', ARRAY[pg_temp.h(7)], 1::smallint), 1, 'code du second lot');
+SELECT throws_ok($$SELECT issue_claim_codes('00000000-0000-0000-0000-00000010b009', ARRAY[pg_temp.h(99)], 1::smallint)$$,
   'P0002', NULL, 'lot d''un autre prestataire : introuvable');
 
 -- 3. Association ---------------------------------------------------------------------------------------------------
-SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(50), pg_temp.m(1))$$, '%CLAIM_CODE_UNKNOWN%', 'code inconnu');
-SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(7), pg_temp.m(1))$$, '%CLAIM_CODE_OTHER_BATCH%', 'code d''un autre lot');
-SELECT lives_ok($$SELECT associate_claim_code(pg_temp.h(n), pg_temp.m(n)) FROM generate_series(1, 5) n$$, 'codes 1 à 5 associés aux bracelets 1 à 5');
+SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(50), pg_temp.m(1), NULL, 1::smallint)$$, '%CLAIM_CODE_UNKNOWN%', 'code inconnu');
+SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(7), pg_temp.m(1), NULL, 1::smallint)$$, '%CLAIM_CODE_OTHER_BATCH%', 'code d''un autre lot');
+SELECT lives_ok($$SELECT associate_claim_code(pg_temp.h(n), pg_temp.m(n), NULL, 1::smallint) FROM generate_series(1, 5) n$$, 'codes 1 à 5 associés aux bracelets 1 à 5');
 SELECT is((SELECT claim_code_hash FROM media WHERE id = pg_temp.m(2)), pg_temp.h(2), 'le bracelet porte l''empreinte de son code');
-SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(1), pg_temp.m(1))$$, '%CLAIM_CODE_ALREADY_ASSOCIATED%', 'code déjà associé');
-SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(6), pg_temp.m(1))$$, '%MEDIA_ALREADY_HAS_CODE%', 'bracelet qui porte déjà un code');
-SELECT throws_ok($$SELECT associate_claim_code(pg_temp.h(6), '00000000-0000-0000-0000-00000010d009')$$, 'P0002', NULL,
+SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(1), pg_temp.m(1), NULL, 1::smallint)$$, '%CLAIM_CODE_ALREADY_ASSOCIATED%', 'code déjà associé');
+SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(6), pg_temp.m(1), NULL, 1::smallint)$$, '%MEDIA_ALREADY_HAS_CODE%', 'bracelet qui porte déjà un code');
+SELECT throws_ok($$SELECT associate_claim_code(pg_temp.h(6), '00000000-0000-0000-0000-00000010d009', NULL, 1::smallint)$$, 'P0002', NULL,
   'bracelet d''un autre prestataire : introuvable');
 
 -- 4. Rattachement ----------------------------------------------------------------------------------------------------
@@ -167,19 +167,19 @@ SELECT lives_ok($$SELECT mark_claim_code_used(pg_temp.m(3))$$, 'code consommé �
 SELECT is(pg_temp.claim(3, 8, 'app-8'), 'REFUSED', 'un code consommé ne sert plus');
 
 -- 5. Confirmation au guichet --------------------------------------------------------------------------------------------
-SELECT is(confirm_media_claim(pg_temp.q(1), pg_temp.m(4), pg_temp.k(1), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(1), pg_temp.m(4), pg_temp.k(1), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'WRONG_MEDIA', 'autre bracelet que celui de la demande');
 SELECT is((SELECT status FROM media_claim WHERE id = pg_temp.q(1)), 'CANCELLED', 'la demande ne peut plus être confirmée');
-SELECT is(confirm_media_claim(pg_temp.q(1), pg_temp.m(2), pg_temp.k(1), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(1), pg_temp.m(2), pg_temp.k(1), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'demande annulée : refus');
-SELECT is((SELECT array_agg(confirm_media_claim(pg_temp.q(2), pg_temp.m(2), pg_temp.k(99), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)) ORDER BY n)
+SELECT is((SELECT array_agg(confirm_media_claim(pg_temp.q(2), pg_temp.m(2), pg_temp.k(99), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint) ORDER BY n)
              FROM generate_series(1, 6) n),
   ARRAY['WRONG_CODE','WRONG_CODE','WRONG_CODE','WRONG_CODE','WRONG_CODE','REFUSED'], 'cinq codes faux, puis refus');
 SELECT is((SELECT status || ':' || attempts FROM media_claim WHERE id = pg_temp.q(2)), 'CANCELLED:5', 'demande annulée au cinquième code faux');
-SELECT is(confirm_media_claim(pg_temp.q(2), pg_temp.m(2), pg_temp.k(2), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(2), pg_temp.m(2), pg_temp.k(2), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'le bon code arrive trop tard');
 SELECT is(pg_temp.claim(2, 9, 'app-9', 5), 'PENDING', 'une place s''est libérée : nouvelle demande');
-SELECT is(confirm_media_claim(pg_temp.q(3), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(3), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'CONFIRMED', 'même bracelet et bon code : confirmée');
 SELECT is((SELECT customer_id FROM wallet WHERE id = '00000000-0000-0000-0000-00000010e002'), pg_temp.c(4), 'portefeuille rattaché au demandeur');
 SELECT is(wallet_spendable('00000000-0000-0000-0000-00000010e002'), 500::bigint, 'aucun mouvement d''argent');
@@ -187,42 +187,42 @@ SELECT isnt((SELECT claim_code_used_at FROM media WHERE id = pg_temp.m(2)), NULL
 SELECT is((SELECT confirmed_device_id::text || ' ' || confirmed_by::text FROM media_claim WHERE id = pg_temp.q(3)),
   '00000000-0000-0000-0000-000000100d01 ' || pg_temp.c(12)::text, 'terminal et agent de confirmation tracés');
 SELECT is((SELECT status FROM media_claim WHERE id = pg_temp.q(5)), 'CANCELLED', 'les autres demandes du bracelet sont annulées');
-SELECT is(confirm_media_claim(pg_temp.q(3), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(3), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'une demande confirmée ne se rejoue pas');
-SELECT is(confirm_media_claim(gen_random_uuid(), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(gen_random_uuid(), pg_temp.m(2), pg_temp.k(3), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'demande inconnue');
 -- Expiration.
 SELECT is(pg_temp.claim(4, 10, 'app-10', 6), 'PENDING', 'demande sur le bracelet 4');
 RESET ROLE;
 UPDATE media_claim SET expires_at = clock_timestamp() - interval '1 second' WHERE id = pg_temp.q(6);
 SET LOCAL ROLE cashless_app;
-SELECT is(confirm_media_claim(pg_temp.q(6), pg_temp.m(4), pg_temp.k(6), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(6), pg_temp.m(4), pg_temp.k(6), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'demande expirée : refus, même avec le bon code');
 SELECT is((SELECT status FROM media_claim WHERE id = pg_temp.q(6)), 'EXPIRED', 'demande marquée expirée');
 SELECT is(pg_temp.claim(4, 11, 'app-11', 7), 'PENDING', 'une demande expirée ne compte plus dans la limite de trois');
 
 -- 6. Consultation anonyme (route publique : aucun prestataire de session) ----------------------------------------------
 RESET ROLE;
-GRANT EXECUTE ON FUNCTION public_balance_lookup(bytea, text) TO cashless_app;   -- posé par post-roles.sql (WP06)
+GRANT EXECUTE ON FUNCTION public_balance_lookup(bytea, text, smallint) TO cashless_app;   -- posé par post-roles.sql (WP06)
 SET LOCAL ROLE cashless_app;
 SELECT set_config('app.operator_id', '', true);
-SELECT is((SELECT outcome || ' ' || currency || ' ' || spendable || ' ' || media_status FROM public_balance_lookup(pg_temp.h(5), 'adr-1')),
+SELECT is((SELECT outcome || ' ' || currency || ' ' || spendable || ' ' || media_status FROM public_balance_lookup(pg_temp.h(5), 'adr-1', 1::smallint)),
   'LOOKUP XOF 900 ACTIVE', 'solde lu avec le code seul, sans compte ni prestataire');
-SELECT is((SELECT movements FROM public_balance_lookup(pg_temp.h(5), 'adr-1')), '[]'::jsonb, 'aucun mouvement : liste vide');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(50), 'adr-1')), 'REFUSED', 'code inconnu : refus');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(2), 'adr-1')), 'REFUSED', 'bracelet rattaché : même refus');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(3), 'adr-1')), 'REFUSED', 'code consommé : même refus');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(4), 'appareil-partagé')), 'LOOKUP',
+SELECT is((SELECT movements FROM public_balance_lookup(pg_temp.h(5), 'adr-1', 1::smallint)), '[]'::jsonb, 'aucun mouvement : liste vide');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(50), 'adr-1', 1::smallint)), 'REFUSED', 'code inconnu : refus');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(2), 'adr-1', 1::smallint)), 'REFUSED', 'bracelet rattaché : même refus');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(3), 'adr-1', 1::smallint)), 'REFUSED', 'code consommé : même refus');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(4), 'appareil-partagé', 1::smallint)), 'LOOKUP',
   'les essais de rattachement d''un appareil ne comptent pas dans la limite de consultation');
-SELECT throws_ok($$SELECT public_balance_lookup('\x00', 'adr-1')$$, 'CL001', NULL, 'empreinte mal formée');
+SELECT throws_ok($$SELECT public_balance_lookup('\x00', 'adr-1', 1::smallint)$$, 'CL001', NULL, 'empreinte mal formée');
 -- 20 consultations par code et par heure.
-SELECT is((SELECT count(*)::int FROM generate_series(1, 18) n, LATERAL public_balance_lookup(pg_temp.h(5), 'adr-code-' || n) r WHERE r.outcome = 'LOOKUP'),
+SELECT is((SELECT count(*)::int FROM generate_series(1, 18) n, LATERAL public_balance_lookup(pg_temp.h(5), 'adr-code-' || n, 1::smallint) r WHERE r.outcome = 'LOOKUP'),
   18, 'jusqu''à vingt consultations du même code dans l''heure');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(5), 'adr-code-21')), 'BLOCKED', 'vingt et unième consultation du même code : bloquée');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(5), 'adr-code-21', 1::smallint)), 'BLOCKED', 'vingt et unième consultation du même code : bloquée');
 -- 60 par adresse et par heure, y compris pour des codes inconnus (aucun prestataire à qui les rattacher).
-SELECT is((SELECT count(*)::int FROM generate_series(1, 60) n, LATERAL public_balance_lookup(pg_temp.h(1000 + n), 'adr-curieuse') r WHERE r.outcome = 'REFUSED'),
+SELECT is((SELECT count(*)::int FROM generate_series(1, 60) n, LATERAL public_balance_lookup(pg_temp.h(1000 + n), 'adr-curieuse', 1::smallint) r WHERE r.outcome = 'REFUSED'),
   60, 'soixante essais de codes inconnus depuis la même adresse');
-SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(4), 'adr-curieuse')), 'BLOCKED', 'soixante et unième essai de l''adresse : bloqué, même avec un code valide');
+SELECT is((SELECT outcome FROM public_balance_lookup(pg_temp.h(4), 'adr-curieuse', 1::smallint)), 'BLOCKED', 'soixante et unième essai de l''adresse : bloqué, même avec un code valide');
 RESET ROLE;
 SELECT is((SELECT count(*)::int FROM claim_attempt WHERE operator_id IS NULL AND device_ref = 'adr-curieuse'), 60,
   'les essais de codes inconnus sont tracés sans prestataire');
@@ -239,21 +239,21 @@ INSERT INTO media (id, operator_id, kind, token_hash, nfc_uid, batch_id, key_ind
  ('00000000-0000-0000-0000-00000010d006','00000000-0000-0000-0000-00000010a001','NFC_TAG', sha256('identité 0010 6'), '\x04100000000006',
   '00000000-0000-0000-0000-00000010b001', 1, 'PERSONALIZED');
 SET LOCAL ROLE cashless_app;
-SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(6), pg_temp.m(6))$$, '%CLAIM_CODE_INVALIDATED%', 'un code invalidé ne s''associe plus');
+SELECT throws_like($$SELECT associate_claim_code(pg_temp.h(6), pg_temp.m(6), NULL, 1::smallint)$$, '%CLAIM_CODE_INVALIDATED%', 'un code invalidé ne s''associe plus');
 
 -- 8. Isolation -----------------------------------------------------------------------------------------------------------
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000010a002', true);
 SELECT is((SELECT count(*)::int FROM claim_code), 0, 'B ne voit aucun code de A');
 SELECT is((SELECT count(*)::int FROM media_claim), 0, 'B ne voit aucune demande de A');
 SELECT is((SELECT count(*)::int FROM claim_attempt), 0, 'B ne voit aucun essai de A');
-SELECT is((SELECT outcome FROM claim_media(pg_temp.h(5), '00000000-0000-0000-0000-00000010c099', 'app-b', gen_random_uuid(), pg_temp.k(0))),
+SELECT is((SELECT outcome FROM claim_media(pg_temp.h(5), '00000000-0000-0000-0000-00000010c099', 'app-b', gen_random_uuid(), pg_temp.k(0), 1::smallint)),
   'REFUSED', 'un code de A présenté chez B : refus');
-SELECT is(confirm_media_claim(pg_temp.q(7), pg_temp.m(4), pg_temp.k(7), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12)),
+SELECT is(confirm_media_claim(pg_temp.q(7), pg_temp.m(4), pg_temp.k(7), '00000000-0000-0000-0000-000000100d01', pg_temp.c(12), 1::smallint),
   'REFUSED', 'une demande de A ne se confirme pas chez B');
 SELECT throws_ok($$SELECT mark_claim_code_used(pg_temp.m(5))$$, 'P0002', NULL, 'bracelet de A : introuvable chez B');
 SELECT throws_ok($$SELECT invalidate_unassociated_codes('00000000-0000-0000-0000-00000010b003')$$, 'P0002', NULL, 'lot de A : introuvable chez B');
 SELECT set_config('app.operator_id', '', true);
-SELECT throws_ok($$SELECT claim_media(pg_temp.h(5), pg_temp.c(1), 'app', gen_random_uuid(), pg_temp.k(0))$$, 'P0002', NULL, 'rattachement sans prestataire de session : introuvable');
+SELECT throws_ok($$SELECT claim_media(pg_temp.h(5), pg_temp.c(1), 'app', gen_random_uuid(), pg_temp.k(0), 1::smallint)$$, 'P0002', NULL, 'rattachement sans prestataire de session : introuvable');
 RESET ROLE;
 
 SELECT * FROM finish();

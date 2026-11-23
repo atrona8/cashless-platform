@@ -21,11 +21,11 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
 | OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 12b (déplacée de la mission 7 le 29/10/2026, ADR-138), après OP-N11 |
 | OP-N42 | Identité du terminal — **levé** le 21/10/2026 par la mission 5a (jeton lié, mTLS et signature de chaque requête, ADR-107 ; `device-auth-matrix.spec.ts`, `production-guard.spec.ts`) | Non | Non | — |
-| OP-N43 | Identité du festivalier : **jeton d'accès réel disponible depuis le 10/11/2026** (`/customer-auth/*`, `TokenCustomerIdentity`, hors Spec Kitty, ADR-180) ; en production le jeton seul est cru (en-têtes `X-Test-*` ignorés), hors production les en-têtes restent admis en l'absence d'`Authorization`. Reste : KYC au guichet, OP-N47, envoi réel du code (OP-N120, mission 12b) | Non | **Oui** (tant qu'OP-N120 n'est pas levé : le faux envoyeur refuse le démarrage en production) | Mission 10a (reste) et mission 12b |
+| OP-N43 | Identité du festivalier : **jeton d'accès réel disponible depuis le 10/11/2026** (`/customer-auth/*`, `TokenCustomerIdentity`, hors Spec Kitty, ADR-180) ; en production le jeton seul est cru (en-têtes `X-Test-*` ignorés), hors production les en-têtes restent admis en l'absence d'`Authorization`. KYC au guichet et OP-N47 **levés par la mission 10a le 20/11/2026** (ADR-226, ADR-228) ; reste l'envoi réel du code (OP-N120, mission 12b) | Non | **Oui** (tant qu'OP-N120 n'est pas levé : le faux envoyeur refuse le démarrage en production) | Mission 12b (la 10a a levé le reste, 20/11/2026) |
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` — **levé** le 21/10/2026 par la mission 5a (droits rôle par rôle, `tests_execute_grants.sql`) | Non | Non | — |
 | OP-N45 | Aiguillage par chemin devant les processus de l'API | Non | **Oui** | Mission 13 (recette V1) (confirmé par le porteur le 15/10/2026) |
 | OP-N46 | Signature d'originalité NXP vérifiée par le poste seulement | Non | Non | Mission 12 (app terminal), avec l'auditeur sécurité (confirmé par le porteur le 15/10/2026) |
-| OP-N47 | Rotation du secret d'empreinte des codes de rattachement non outillée | Non | Non | Mission 10 (app festivalier) : proposée par l'agent le 16/10/2026, à confirmer par le porteur (ADR-104) |
+| OP-N47 | Rotation du secret d'empreinte des codes de rattachement — **LEVÉ le 20/11/2026 par la mission 10a** : rotation immédiate, version du secret sur chaque empreinte, réémission par la commande `reissue-claim-codes` sous le rôle `cashless_claimadmin` (ADR-228 ; test de levée `media/claim-rotation.spec.ts`, `cli/reissue-claim-codes.spec.ts`, `tests_claim_key_version.sql`) | Non | Non | Levé (décision du porteur du 20/11/2026 : rotation immédiate, sans double empreinte ; ADR-104 réalisée par la mission 10a) |
 | OP-N48 | Fichier de commande des codes de rattachement perdu en route : pas de nouvelle émission | Non | Non | Agent (choix laissé par le porteur) ; à revoir en exploitation |
 | OP-N49 | Caution en espèces et espèces dues : aucune caisse avant la mission des caisses (`409`) — **levé** le 29/10/2026 par la mission 6 (migration `0036_cash_sessions.sql` ; `tests_cash_sessions.sql`, `deposit.spec.ts`, `cash-due.spec.ts`, `release.spec.ts`, `cash-desk-guard.spec.ts`, cas `SC-002 : OP-N49 levé` de `topup-journey.spec.ts`) | Non | Non | — |
 | OP-N50 | Lecture liée à une demande de rattachement utilisable par `consume_tap` — **levé** le 21/10/2026 par la mission 5a (migrations 0024, 0026 ; `tests_consume_tap_claim.sql`, `tap-claim-race.spec.ts`) | Non | Non | — |
@@ -139,6 +139,13 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N160 | Versements : export illisible `500` sans valeur, `canSee` montre un lot mixte en lecture, contradiction de signature de `guardDecision` tranchée par `interfaces.md` (mission 11a, ADR-220) | Non | Non | Mission 11 (écrans, pour `canSee` ; report dans `PROMPTS-A-ENVOYER.md` et `PRD.md`) |
 | OP-N161 | Lots de bracelets : verrou consultatif pris avant la RLS, un prestataire peut retarder le `PATCH` d'un lot d'un autre sans accès aux données (mission 11a, ADR-216) | Non | Non | Mission 13 |
 | OP-N162 | `edge-admin register` refuse `--ledger` : un script de site qui la passe casse volontairement ; 5 lignes de `commands-other.spec.ts` au lieu de 3 (mission 11a, ADR-221) | Non | Non | Sans objet (voulu) |
+| OP-N163 | Identification au guichet : la règle de l'agent titulaire ne détecte ni un agent sans téléphone ni un agent au téléphone différent du numéro du compte (mission 10a, décision du porteur du 20/11/2026, ADR-227) | Non | Non | Porteur du projet (lien agent ↔ compte festivalier, écarté au specify) |
+| OP-N164 | Contradiction SPECIFICATION §6.3 point 5 (« un administrateur PEUT révoquer ») contre `openapi.yaml` (révocation par deux personnes) : le contrat prime (§0.3), **LEVÉ le 23/11/2026** : `SPECIFICATION.md` §6.3 point 5 amendé sur décision du porteur pour s'aligner sur le contrat (mission 10a, ADR-227) | Non | Non | Levé (décision du porteur du 23/11/2026) |
+| OP-N165 | Identification et révocation : auteur de la révocation fixé par l'API et non contrôlé par la base, client sans portefeuille d'événement refusé en `403`, plafond non rejoué sur un second portefeuille après révocation (mission 10a, ADR-226) | Non | Non | Mission 11 (écrans) pour le message ; OP-N56 (preuve signée de la personne qui décide) pour l'auteur |
+| OP-N166 | Chaîne d'envoi des codes : code gardé en mémoire du processus seulement (bascule perdue au redémarrage), chaîne arrêtée sans repli ni essai noté quand le plafond de 35 s tombe avant l'étape suivante, une instabilité d'intégration vue une fois sur 50 (mission 10a, ADR-229) | Non | Non | Mission 12b (fournisseurs réels, mesure des délais) |
+| OP-N167 | Commande `reissue-claim-codes` : fichier de codes en clair (orphelin si le processus est tué entre le fichier et la base, conservé si l'issue du COMMIT est incertaine), disque plein et COMMIT d'issue incertaine sans test, spec d'intégration absent de la passe parallèle (mission 10a, ADR-228) | Non | Non | Mission 13 (recette : procédure jouée sur un lot réel) |
+| OP-N168 | `pending_offline_notice` : approximation assumée (tous statuts de lot comptent, dernier lot du terminal sur le grand livre du portefeuille, grands livres ORGANIZER et OPERATOR_BILLING toujours faux) (mission 10a, ADR-230) | Non | Non | Mission 13 (recette) |
+| OP-N169 | Mineurs de la 10a : course `CL065` non testée, personnalisation sans test du cas d'ancien code, `seed-demo` sans version de code, version du secret globale à la base (suite en série), compteurs d'adresse remis à zéro à la rotation, lignes de plus de 100 caractères (mission 10a, ADR-231) | Non | Non | Mission 13 |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -207,11 +214,11 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 |---|---|---|---|---|---|
 | OP-N41 | Le service de clés est un faux (`apps/api/src/kms/fake-kms.ts`) : ses clés se dérivent d'une graine écrite dans le code | Tous les mots de passe de bracelets calculables par quiconque lit le code | Le faux refuse de se construire en production et la garde de démarrage refuse un processus qui le porte (`production-guard.spec.ts`) | **Mission 12b** (déplacée de la mission 7 le 29/10/2026, ADR-138) : adaptateur AWS KMS, une fois la région et les comptes arrêtés (OP-N11) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Les ports `MacPort`, `DataKeyPort`, `DecryptPort`, `KeyAdminPort` ont une implémentation AWS, avec un rôle IAM par processus (§3.2) |
 | OP-N42 | L'identité du terminal est un faux qui croit des en-têtes ; aucune requête de terminal n'est signée | Quiconque se dit terminal obtient le mot de passe d'un bracelet et enregistre des lectures ; rejeu et falsification d'une lecture | Même garde de production ; le terminal annoncé est toujours relu en base (statut, prestataire) | Mission 5 (terminaux) | `DeviceIdentityPort` vérifie le jeton d'appareil, le mTLS et la signature de chaque requête ; le faux n'est plus câblé hors des tests |
-| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken` ; 10/11/2026 : lectures `getMe`, `listMyWallets`, `listMyWalletTransactions`, `listMyMedia`, test `customer-app/me.spec.ts`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests | **Mise à jour du 10/11/2026 :** le jeton de compte est livré (`TokenCustomerIdentity`, ADR-180). En production l'identité par jeton ne croit plus les en-têtes (`production-guard.spec.ts`) ; hors production, les en-têtes ne sont admis que sans `Authorization` (un Bearer invalide donne 401, jamais de repli). Le démarrage en production reste refusé par le faux envoyeur de codes (OP-N120).
+| OP-N43 | L'identité du festivalier est un faux qui croit des en-têtes (routes concernées complétées par le plan de la mission 5b, 22/10/2026 : `payPaymentRequest`, `createCustomerQrToken` ; 10/11/2026 : lectures `getMe`, `listMyWallets`, `listMyWalletTransactions`, `listMyMedia`, test `customer-app/me.spec.ts`) | Rattachement d'un bracelet à solde nul par un tiers qui connaît son code ; paiement QR depuis l'app impossible en production tant que le faux reste seul | Même garde de production ; le compte annoncé est relu en base ; un bracelet approvisionné exige toujours la confirmation au guichet | Mission 10 (app festivalier) | `CustomerIdentityPort` vérifie un jeton de compte festivalier ; le faux n'est plus câblé hors des tests | **Mise à jour du 10/11/2026 :** le jeton de compte est livré (`TokenCustomerIdentity`, ADR-180). En production l'identité par jeton ne croit plus les en-têtes (`production-guard.spec.ts`) ; hors production, les en-têtes ne sont admis que sans `Authorization` (un Bearer invalide donne 401, jamais de repli). Le démarrage en production reste refusé par le faux envoyeur de codes (OP-N120). **Mise à jour du 20/11/2026 (mission 10a) :** l'identification au guichet (ADR-227) et la rotation du secret des codes (OP-N47, ADR-228) sont livrées ; il reste l'envoi réel du code (OP-N120, mission 12b).
 | OP-N44 | Les rôles `cashless_tagkeys`, `cashless_perso`, `cashless_tagcheck`, `cashless_keyadmin` héritent de `PUBLIC` le droit d'exécuter les fonctions d'API du schéma de référence (même limite que `cashless_platform`, ADR-80) | Un processus des clés compromis peut appeler ces fonctions pour un prestataire dont il pose l'identifiant — ni plus ni moins que le rôle de l'API publique | Aucun droit direct sur les tables du grand livre (`tests_media_roles.sql`) ; chaque fonction commence par `assert_tenant` | **Mission 5**, avec OP-N59 : modification du générateur de la suite de référence du kit (`gen_tests.py`) (confirmé par le porteur le 15/10/2026 ; ADR-101) | La suite de référence n'exige plus `EXECUTE` pour `PUBLIC` ; les droits d'exécution sont accordés rôle par rôle |
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
-| OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | Une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après |
+| OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | **Ancienne condition, écartée par la décision du porteur du 20/11/2026 :** une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après. **LEVÉ le 20/11/2026 par la mission 10a, par une rotation immédiate (aucune période de double empreinte).** Mécanisme réel : `CLAIM_CODE_HMAC_KEY_VERSION` ; colonnes `media.claim_key_version`, `claim_code.key_version`, `media_claim.key_version` et signatures versionnées (migration `0097`) ; une empreinte d'une autre version compte comme absente ; démarrage de l'API refusé si la version est inférieure à `claim_key_version_max()` ; `reissue_claim_codes` et `reissuable_media` ; rôle `cashless_claimadmin` (`post-roles.sql` §14) ; commande `apps/api/src/cli/reissue-claim-codes.ts` ; procédure `docs/procedure-rotation-codes-rattachement.md`. **Test de levée :** `apps/api/test/integration/media/claim-rotation.spec.ts` (ancien code refusé comme inconnu, NFR-002), `apps/api/test/integration/cli/reissue-claim-codes.spec.ts` (« SC-003 »), `packages/ledger-sql/tests/tests_claim_key_version.sql`. **Test de borne inversé :** un ancien code ne se rattache plus après la rotation (l'ancienne condition exigeait qu'il se rattache pendant la période) ; ces mêmes tests échouent si une période de double empreinte réapparaît. **Mutations :** voir ADR-228 et `docs/passation-10a/preuves.md` (FR-007, FR-008). Limites : OP-N167 |
 | OP-N81 | Les PSP et le coffre des secrets sont des faux (un par fournisseur, `apps/api/src/psp/`) : un faux PSP produit des notifications signées avec des secrets de test | Crédits de portefeuille fabriqués par quiconque connaît le faux ; secrets de test au lieu de secrets par détenteur des fonds | Chaque faux porte `isFake` ; `assertProcessIsSafe` refuse le démarrage en production (processus public et `psp-poller`), test `production-guard.spec.ts` | Mission « Adaptateurs PSP réels » | Adaptateurs essayés contre le bac à sable de chaque PSP, coffre AWS réel, faux retirés de la production (ADR-131) |
 | OP-N83 | CORRIGÉ en cycle 2 de WP14 (migration `0042`) : `wallet.other_block` tenu par le déclencheur `wallet_block_cause_guard` ; le déblocage « contestation » refuse (CL029) dès qu'une autre cause est active, quel que soit l'ordre | Un chemin de blocage qui écrirait `ACTIVE` lui-même lève aussi la contestation (comportement voulu : une personne habilitée de l'autre cause) | `unblock_wallet` refuse si `other_block` ; `block_wallet_after_chargeback` ne marque pas si `other_block` ; `tests_psp_topups.sql` (perte puis contestation, contestation puis perte, cause tierce puis deux contestations) ; `wallet-unblock.spec.ts` | Mission 13 (revue) | Un futur chemin de blocage (perte, fraude) à relire : il doit écrire `BLOCKED` sans annoncer l'origine « contestation » |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2, décision du porteur) : `take_deposit(uuid,uuid)`, `refund_deposit(uuid,uuid)`, `refund_cash_due(...)` retirées de `post-roles.sql` (section 4) ; le moteur passe par `take_deposit_for_session`, `refund_deposit_for_session`, `refund_cash_due_for_session` et, sans compte désigné (mode `FROM_BALANCE`), par `take_deposit_from_balance` / `refund_deposit_from_balance` (0041) | Aucun : droit plus étroit que celui retiré | `tests_cash_psp_rights.sql` (`[A8-DETTE levée]` : EXECUTE refusé), `tests_execute_grants.sql`, `engine.spec.ts` (compte désigné refusé) | Levé | Aucune ; fonctions à faire relire par une personne |
@@ -1729,7 +1736,7 @@ ADR-180. **Bloque la production : oui (le faux envoyeur refuse le démarrage en 
   se connecte sur n'importe quel numéro (la vérification du numéro est inopérante) : lecture des soldes et de
   l'historique, déclaration de perte de bracelet. Sans effet en production, où le démarrage est refusé.
 - **Garde en place.** `createOtpSender` lève `FakeInProductionError` en production et la garde de démarrage nomme
-  « l'envoi des codes à usage unique » ; l'en-tête n'est posé que si `isFake` (jamais avec un envoyeur réel). Les limites
+  « l'envoi des codes à usage unique » (libellé d'origine ; depuis la 10a, trois libellés : voir la mise à jour du 20/11/2026 ci-dessous) ; l'en-tête n'est posé que si `isFake` (jamais avec un envoyeur réel). Les limites
   (3 envois par numéro sur 15 min, 10 par adresse et par heure, 5 essais puis blocage 30 min) s'appliquent aussi au faux.
 - **Mission qui le lève.** Mission 12b (vrai fournisseur d'envoi, avec le service de clés réel).
 - **Condition de levée.** `OtpSender` réel branché ; `FakeOtpSender` et l'en-tête `X-Test-Otp-Code` retirés du code de
@@ -1739,6 +1746,18 @@ ADR-180. **Bloque la production : oui (le faux envoyeur refuse le démarrage en 
   l'en-tête peut sortir en production.
 - **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a et 12b) et `PRD.md`. Fichiers à faire relire par une personne :
   `0080_customer_auth.sql`, section 10 de `post-roles.sql`, `customer-auth.service.ts` (empreintes, blocage, rotation).
+- **Mise à jour du 20/11/2026 (mission 10a, ADR-229).** L'envoyeur unique devient une chaîne : `ChainedOtpSender`
+  (`customer-auth/otp-chain.ts`) devant trois fournisseurs (`OtpProvider`, `customer-auth/otp-providers.ts`), tous des
+  faux jusqu'à la 12b : `FakeWhatsAppProvider`, `FakeSmsPrimaryProvider`, `FakeSmsFallbackProvider`. **Les trois
+  refusent le démarrage en production**, chacun avec son libellé dans `processes/bootstrap.ts` : « l'envoi des codes
+  par WhatsApp », « l'envoi des codes par SMS (principal) », « l'envoi des codes par SMS (repli) » (au lieu d'un seul
+  « l'envoi des codes à usage unique »). Tests de borne : `apps/api/test/unit/customer-auth/otp-chain.spec.ts`
+  (section 11 : les trois faux refusent), `apps/gateway/test/e2e/production-refusals.spec.ts` (trois entrées,
+  35/35 à la relecture de WP10), `test/unit/production-guard.spec.ts`. L'en-tête `X-Test-Otp-Code` reste tant qu'un
+  fournisseur est un faux (`integration/customer-auth/otp-chain.spec.ts` : « un fournisseur non factice : aucun
+  en-tête »). **Condition de levée complétée :** les trois fournisseurs réels branchés derrière `OtpProvider` (accusés de
+  livraison par `deliveryRef`, lien du titulaire), `X-Test-Otp-Code` retiré, les trois libellés de `bootstrap.ts` et
+  `COVERAGE` retirés avec les faux. Limites propres à la chaîne : OP-N166.
 
 ### OP-N121 — Secrets PSP de démo et route de simulation du paiement, hors production (10 novembre 2026)
 
@@ -1941,6 +1960,15 @@ la mission 5a.**
 | OP-N156 Masque en texte libre | Levé par renforcement : `msisdn` et IBAN libres (tirets, espaces insécables, collés) masqués, sur décision du porteur | 19 novembre 2026 | ADR-218, ADR-223 |
 | Relance de Colima | Colima et le conteneur de test `cashless-platform-pg17` relancés ; `cashless-api-db-1` (5434, API partagée) laissé arrêté, à relancer par le porteur | 19 novembre 2026 | ADR-223 |
 | Tests de borne avant la fusion | Les tests de borne des écarts acceptés sont écrits avant la fusion (règle 3), dans la lane n | 19 novembre 2026 | ADR-223, ADR-224 |
+| Périmètre de la 10a | KYC au guichet, OP-N47, `printed_number` et `pending_offline_notice`, chaîne d'envoi des codes | 20 novembre 2026 | ADR-231 |
+| OP-N163 Agent titulaire | Détecté par l'égalité du numéro vérifié du compte et de `app_user.phone` de l'agent ; limite : agent sans numéro ou à autre numéro non détecté | 20 novembre 2026 | ADR-227, ADR-231 |
+| OP-N47 Rotation du secret des codes | Rotation **immédiate**, sans double empreinte ; version du secret sur chaque empreinte ; réémission par commande d'exploitation sous le rôle `cashless_claimadmin` (jamais `cashless_app`) | 20 novembre 2026 | ADR-228, ADR-231 |
+| Code OTP en mémoire | Code gardé en mémoire du processus seulement pendant la chaîne, 35 s au plus, jamais en base ni dans un journal | 20 novembre 2026 | ADR-229, ADR-231 |
+| `printed_number` | Troisième colonne facultative du fichier de l'imprimeur ; description du corps `text/csv` et deux motifs de ligne ajoutés au contrat | 20 novembre 2026 | ADR-225 |
+| Fichier de réémission | Cinq colonnes `rank,code,url,uid,printed_number` : chaque ligne nomme son bracelet ; plus d'import après réémission (`reissuable_media` rend `nfc_uid` et `printed_number`) | 20 novembre 2026 (soir) | ADR-228, ADR-231 |
+| Réponse `422` de `revokeKycVerification` | Déclarée au contrat (motif absent ou de moins de 10 caractères, `VALIDATION_FAILED`), ajout rétrocompatible inscrit dans `contract-baseline.json` | 20 novembre 2026 (soir) | ADR-225 |
+| Contradiction §6.3 point 5 | Le contrat (révocation par deux personnes) prime (20/11/2026) ; **spécification amendée le 23/11/2026, décision du porteur : OP-N164 levé** | 20 et 23 novembre 2026 | ADR-227 |
+| Réponse `422` de `revokeKycVerification` dans ADR-225 | Validé par le porteur : la décision reste dans ADR-225 | 23 novembre 2026 | ADR-225 |
 
 ## 6. Points reportés
 
@@ -2787,3 +2815,291 @@ le 19/11/2026 par renforcement » (ADR-218). OP-N64 passe à « côté serveur p
 register` refuse `--ledger` (`tools/edge-admin/test/register.spec.ts`, `tests_edge_gateway.sql` :
 `CL058` sans grand livre ou avec deux devises ; mutation : retrait du refus de `--ledger`, 3 tests
 de `register.spec.ts` échouent).
+
+## 12. Mission 10a (serveur de l'app festivalier) : consignation du 23/11/2026
+
+Écrit par WP11 à partir des notes de lane de WP01 à WP10 (journal d'états de la mission), des comptes
+rendus de relecture (`review-cycle-*` et `review-feedback-*` de chaque lot) et des décisions du porteur du
+20/11/2026. Mission Spec Kitty `serveur-app-festivalier-01M7WB69`. Chaque entrée cite sa source, son test
+et l'ADR qui la porte (ADR-225 à ADR-231). « Bloque la production » : voir la ligne du tableau de la
+section 2. **Preuves par FR, NFR, SC et contrainte** : `docs/passation-10a/preuves.md` (commande,
+résultat, mutation, chaque preuve absente d'une note étant écrite « non établie ») et
+`acceptance-matrix.json` de la mission (tenue par l'orchestrateur, que ce lot ne modifie pas). Couverture :
+FR-001 à FR-004 et FR-006 : identification (OP-N163, OP-N164, OP-N165) ; FR-005 : révocation (OP-N164) ;
+FR-007 et FR-008 : OP-N47 levé (OP-N167) ; FR-009 et FR-010 : `/me` (OP-N168) ; FR-011 à FR-013 : chaîne
+d'envoi (OP-N120 mis à jour, OP-N166) ; C-001 : ADR-225 ; C-005 : OP-N163 ; C-002 : OP-N164.
+
+### Lots de la mission
+
+| Lot | Contenu | Migrations et tests principaux |
+|---|---|---|
+| WP01 | Fonctions d'identification et de révocation (`DEFINER`, `CL060` à `CL063`) | `0096` ; `tests_kyc_functions.sql` (63 à la relecture) |
+| WP02 | Version du secret des codes, signatures versionnées, `reissue_claim_codes`, `reissuable_media`, `claim_key_version_max`, `media.printed_number` (`CL064`, `CL065`) | `0097` ; `tests_claim_key_version.sql` (125 à la fusion de WP08) |
+| WP03 | Avis de solde provisoire et table des canaux d'envoi | `0098`, `0099` ; `tests_pending_offline_notice.sql`, `tests_otp_channel_attempt.sql` |
+| WP04 | Droits de la base (`post-roles.sql` §14, rôle `cashless_claimadmin`), environnements | `tests_10a_rights.sql` (78) |
+| WP05 | `createKycVerification` (`POST /kyc-verifications`), `KYC_VERIFIED`, masque d'`id_last4` | `integration/kyc/create.spec.ts`, `limits.spec.ts` |
+| WP06 | Révocation à deux (`KYC_REVOCATION`, `revokeKycVerification`) | `integration/kyc/revoke.spec.ts` (12/12) |
+| WP07 | Configuration (version du secret, délais), appels versionnés, import à trois colonnes | `integration/media/claim-rotation.spec.ts` |
+| WP08 | Commande `reissue-claim-codes`, procédure de rotation, fichier de cinq colonnes | `integration/cli/reissue-claim-codes.spec.ts` (12/12) |
+| WP09 | `/me` complet (`printed_number`, `pending_offline_notice`), trois ajouts au contrat | `integration/customer-app/me-10a.spec.ts` ; `check.mjs` 0 refus |
+| WP10 | Chaîne d'envoi (WhatsApp, SMS principal, SMS de repli), trois faux refusés en production | `unit/customer-auth/otp-chain.spec.ts` (19/19), `integration/customer-auth/otp-chain.spec.ts` (5/5) |
+| WP11 | Preuves, consignation, documentation | aucun code |
+
+### Retouches hors carte relevées
+
+WP02 : `post-roles.sql` (signatures seules, aucun droit ajouté ou retiré), `tests_media_claims.sql`,
+`tests_personalization_definer.sql`, `tests_media_roles.sql`, `tests_media_batch_functions.sql` (appels
+passés aux signatures versionnées) ; ajout non prévu : `claim_media_reissuable` (prédicat partagé, exécutable
+par aucun rôle). WP03 : `UNIQUE (id, operator_id)` ajouté à `otp_challenge` (table de `0080`) dans `0099`,
+pour la clé composite. WP04 : `tools/dev-db/env.test.example`, `docs/SERVICES-EXTERNES.md`,
+`tests_offline_rights.sql`, `packages/ledger-sql/src/migrate.ts`, `tools/dev-db/env.sh`, le workflow de CI,
+`apps/gateway/test/support/disposable-databases.ts`, `apps/api/test/support/db.ts` ; listes figées de droits
+mises à jour ; test 122 de `tests_claim_key_version.sql` aligné sur `interfaces.md`. WP05 :
+`apps/api/src/app.module.ts` (un import, une ligne), `audit/audit.service.ts` (`KYC_VERIFIED`, `KYC_REVOKED`),
+`unit/errors/sqlstate-map.spec.ts`, `errors/redact.ts` (`id_last4`) avec `redact.spec.ts` et `limits-9b.spec.ts`.
+WP06 : `kyc/kyc.module.ts`. WP07 : `media/claims/claims.dto.ts`, `claim-code-order.spec.ts` (quatre colonnes),
+`apps/api/jest.config.cjs`, `.github/workflows/ledger-tests.yml` (étape en série), `claim-rotation.spec.ts`.
+WP08 : `jest.config.cjs`, `ledger-tests.yml` ; puis, par décision du porteur du 20/11/2026 (soir),
+`0097` (`reissuable_media` rend `nfc_uid` et `printed_number`) et `tests_claim_key_version.sql`. WP09 :
+`customer-app/lost-media.service.ts`, `packages/contracts/generated/openapi.ts`, types Dart régénérés
+(`reason3.dart`, `rejected.g.dart`), `tools/contract-stability/check.test.mjs` (71 à 75). WP10 :
+`unit/production-guard.spec.ts`, `integration/end-to-end/device-latency.spec.ts`, ajout non prévu
+`integration/devices/enrollment.spec.ts` (trois jetons neutres : ses fabriques auraient refusé en
+production). WP11 : `docs/procedure-rotation-codes-rattachement.md`, étape 4 (fichier à cinq colonnes, comme
+l'étape 5 et le contrat), retouche autorisée par l'orchestrateur. Aucun fichier `.sql` généré ni migration
+existante modifié ; `SPECIFICATION.md` non touché.
+
+### Instabilités et états intermédiaires rencontrés
+
+- **WP10 : un échec isolé sur 50** en intégration (`customer-auth/otp-chain`), vert à la relance ; cause non
+  établie ; consigné comme instabilité (OP-N166).
+- **WP08 : `integration/cli/reissue-claim-codes.spec.ts` est ignoré** quand `SKIP_LATENCY` est posé
+  (`apps/api/jest.config.cjs`, passe parallèle) ; il tourne dans l'étape en série de
+  `.github/workflows/ledger-tests.yml`. Même cas pour `media/claim-rotation.spec.ts` (WP07 : la version du
+  secret est globale à la base). Un lancement avec `SKIP_LATENCY` seul ne les exerce donc pas (OP-N167).
+- **WP10, cycle 1 : base Docker arrêtée** (Colima) ; les tests d'intégration n'avaient pas pu être relancés par le
+  relecteur, rejoués au cycle 2 (50/50).
+- **WP04 :** tant que WP04 n'est pas fusionné, les suites de droits figées échouent sur les nouveaux objets (état
+  voulu) ; levé par WP04.
+- Instabilités déjà connues : `tests_event_ledger.sql` 63-66, `claim-code-order.spec.ts`,
+  `transverse/migrate-lock.spec.ts`, `tests_offline_snapshot_source_no_stats.sql`.
+- **Lignes de plus de 100 caractères** non reformatées dans `otp-chain.ts`, `otp-providers.ts`,
+  `otp-sender.ts`, `reissue-claim-codes.ts` et leurs tests : reformatage à la fusion (décision du 14/10/2026).
+
+### Renforcements faits puis consignés (règle 1 de `CLAUDE.md`)
+
+Aucun écart de la mission n'affaiblit la sécurité ; chacun des suivants la renforce (ADR-226 à ADR-229).
+Réémission réservée au rôle `cashless_claimadmin` (`cashless_app` ne peut exécuter ni `reissue_claim_codes`,
+ni `reissuable_media`, ni `claim_media_reissuable`) ; **`packages/ledger-sql/src/migrate.ts` refuse de
+démarrer en production sans mot de passe de `cashless_claimadmin`** (`CASHLESS_CLAIMADMIN_PASSWORD`, WP04) ;
+identification et révocation par fonctions `DEFINER` seules ; pièce déjà expirée refusée à la saisie
+(`CL062`) ; agent restreint à `operator_id` de la session ou NULL (plateforme), sinon `no_data_found` ; client
+d'un autre prestataire jamais atteint par la comparaison de numéro ; `id_last4` ajouté à `REDACTED_FIELDS`
+(jamais dans les journaux applicatifs) ; `associate_claim_code` n'accepte qu'un code d'une version plus
+ancienne jamais utilisé, un code déjà utilisé reste refusé ; `failed_reason` borné par un `CHECK` plus
+strict que le prompt (commence par une lettre), clé composite `(challenge_id, operator_id)` vers
+`otp_challenge` ; fichier de réémission créé en mode `0600` avec `wx` (jamais écrasé), supprimé quand la
+base refuse, version inférieure à la base refusée sans rien écrire ; démarrage de l'API refusé quand la
+version configurée est inférieure à `claim_key_version_max()` ; délai par envoi de la chaîne borné au délai
+de l'étape, essais notés dans l'ordre des étapes ; bornes OTP à 15 000 et 20 000 ms (le prompt de WP07 en
+citait 60 000 par erreur, `interfaces.md` fait foi).
+
+### Décisions du porteur consignées
+
+- **20/11/2026, au specify et au plan (ADR-231)** : périmètre ; agent titulaire par égalité du numéro vérifié et
+  de `app_user.phone` (limite OP-N163) ; rotation **immédiate** sans double empreinte, version du secret sur
+  chaque empreinte (OP-N47 levé) ; réémission par commande d'exploitation sous `cashless_claimadmin` ;
+  code OTP en mémoire du processus seulement (35 s au plus) ; `printed_number` en troisième colonne facultative
+  du fichier de l'imprimeur.
+- **20/11/2026 (soir), ADR-225 et ADR-228** : (a) motifs `BAD_PRINTED_NUMBER` et `PRINTED_NUMBER_TAKEN` ajoutés à
+  `ClaimCodeAssociationResult.reason` ; (b) réponse `'422'` (`VALIDATION_FAILED`) déclarée sur
+  `revokeKycVerification` ; (c) le fichier de réémission nomme son bracelet (`rank,code,url,uid,printed_number`),
+  plus d'import après réémission, `reissuable_media` rend `nfc_uid` et `printed_number` (WP08 avait signalé que
+  le fichier `rank,code,url` ne disait pas quel bracelet portait quel rang). Les trois sont inscrites dans
+  `contract-baseline.json` (« Décision du porteur : 20/11/2026 ADR-225 ») pour (a) et (b).
+- **23/11/2026 (revue de WP11), ADR-227 et ADR-225 :** (a) la décision « `422` de `revokeKycVerification` » reste dans
+  ADR-225 (validé) ; (b) `SPECIFICATION.md` §6.3 point 5 est amendé pour s'aligner sur le contrat (révocation par deux
+  personnes) : amendement minimal et daté, **OP-N164 levé**.
+
+### Fiches des points nés de la mission
+
+### OP-N163 — Agent titulaire non détecté (20 novembre 2026)
+
+Décision du porteur du 20/11/2026 ; ADR-227. **Bloque la production : non** (limite acceptée par décision du
+porteur ; l'identification reste tracée avec son auteur à l'audit, `KYC_VERIFIED`).
+
+- **Constat.** `create_kyc_verification` refuse (`CL061`, `403`) l'identification d'un compte dont
+  `customer_identity.phone` est égal à `app_user.phone` de l'agent. Un agent sans téléphone enregistré, ou
+  qui identifie un compte à un autre numéro que le sien, n'est pas détecté.
+- **Risque.** Un agent peut ouvrir des plafonds à un compte qu'il contrôle sous un autre numéro.
+- **Raison.** Le lien agent ↔ compte festivalier n'existe pas ; il a été écarté au specify.
+- **Mission qui le lève.** À décider par le porteur. **Condition de levée.** Un lien agent ↔ compte festivalier
+  (ou un second contrôle) qui détecte aussi ces deux cas ; le test de borne est alors inversé.
+- **Test de borne.** `packages/ledger-sql/tests/tests_kyc_functions.sql` (section 9 « Limite consignée C-005 » :
+  agent sans numéro accepté, agent à autre numéro accepté, agent au numéro du client refusé, agent au numéro d'un
+  client d'un autre prestataire accepté) et `integration/kyc/create.spec.ts` (« limite C-005 : agent sans numéro,
+  201 ») : échouent si la règle s'élargit ou se resserre en silence.
+- **Report.** `PROMPTS-A-ENVOYER.md` (missions 10a, 11) et `PRD.md`. Fichier à faire relire : `0096`.
+
+### OP-N164 — Contradiction SPECIFICATION §6.3 point 5 et contrat (20 novembre 2026) — LEVÉ le 23/11/2026
+
+ADR-227. **Bloque la production : non.** **LEVÉ le 23/11/2026 : décision du porteur, `SPECIFICATION.md` §6.3 point 5 amendé
+(révocation par deux personnes), amendement daté renvoyant à ADR-227.** Texte d'origine conservé ci-dessous.
+
+- **Constat.** §6.3 point 5 dit qu'un administrateur peut révoquer une identification ; `openapi.yaml`
+  (`revokeKycVerification`) exige une demande `KYC_REVOCATION` approuvée par une autre personne (`OPERATOR_ADMIN`
+  ou `ORGANIZER_ADMIN`). Le contrat prime (§0.3) : l'implémentation suit le contrat.
+- **Risque.** Une lecture de la seule spécification attendrait une révocation par une personne.
+- **Mission qui le lève.** Levé par la mission 10a le 23/11/2026. **Condition de levée (remplie).** Le porteur confirme le
+  contrat et la spécification est amendée.
+- **Test de borne.** `integration/kyc/revoke.spec.ts` (« l'auteur ne valide pas sa demande », « approbation par une
+  autre personne », rôles bornés) : échoue si la révocation redevient l'acte d'une personne ; la spécification et le
+  contrat disent désormais la même chose.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 11) et `PRD.md`.
+
+### OP-N165 — Identification et révocation : limites résiduelles (20 novembre 2026)
+
+ADR-226. **Bloque la production : non.**
+
+- **Constats (notes de WP05 et WP06, relectures).** (1) `p_by` de `revoke_kyc_verification` n'est pas contrôlé par
+  la base : l'auteur est le `requested_by` de la demande, fixé par l'API (même classe qu'OP-N56) ; (2) une
+  identification posée par `customer_id` seul (`wallet_id` NULL) se révoque à la portée `OPERATOR`, donc par
+  `OPERATOR_ADMIN` seulement ; (3) avec `customer_id`, un client sans portefeuille d'événement est refusé en
+  `403` et non en `422` ; (4) le plafond de recharge n'est pas rejoué sur un second portefeuille après révocation
+  (niveau `NONE` prouvé par `wallet_kyc_level`) ; (5) le contrôle `scope_type = 'EVENT'` de `0098` est redondant
+  avec la jointure de l'événement (test ajouté au cycle 2 de WP03, mutation : échec du test 16) ; (6) **`guardDecision`
+  ne teste pas l'état `REVOKED`** (R-03 de WP06, qui a suivi le contrat) : une demande sur une identification déjà
+  révoquée n'est pas refusée par la garde de décision, elle échoue à l'exécution (`CL063`, `409 CONFLICT_STATE`). Contrôle
+  reporté vers la base, qui refuse ; test : `integration/kyc/revoke.spec.ts` (« déjà révoquée : 409 à la demande sans
+  demande créée ; révoquée entre-temps : approbation FAILED CONFLICT_STATE ») ; mutation WP06 (a) : contrôle `REVOKED`
+  retiré, test 6 échoue.
+- **Mission qui les lève.** OP-N56 (mission 12b) pour (1) ; mission 11 (messages d'écran) pour (3) ; mission 13
+  pour (4). **Conditions.** Preuve signée de la personne qui décide ; écran qui explique le `403` ; test de
+  recharge sur deux portefeuilles.
+- **Tests de borne.** `integration/kyc/revoke.spec.ts` (« identification posée par client : portée OPERATOR »,
+  « demande falsifiée par le propriétaire »), `integration/kyc/create.spec.ts` (« 403 : client dont les
+  portefeuilles sont seulement sur un autre événement »).
+- **Report.** `PROMPTS-A-ENVOYER.md` (11, 12b, 13) et `PRD.md`. Fichiers à faire relire : `0096`,
+  `kyc/kyc.service.ts`, `kyc/kyc-revocation-action.ts`.
+
+### OP-N166 — Chaîne d'envoi des codes : limites (20 novembre 2026)
+
+Décision du porteur du 20/11/2026 (code en mémoire) ; ADR-229. **Bloque la production : non** (les trois
+fournisseurs sont des faux, refusés en production : c'est OP-N120 qui bloque).
+
+- **Constats.** (1) Le code en attente de bascule n'existe qu'en mémoire du processus : un redémarrage perd la
+  bascule, le festivalier redemande un code (décision du porteur). (2) Quand le plafond dur de 35 s tombe avant
+  l'étape suivante (délais réglés au maximum, fournisseur lent), la chaîne s'arrête sans envoi de repli et sans
+  essai noté en base : conforme à « 35 s au plus », signalé en relecture de WP10 (constat 2). (3) La mémoire est
+  bornée à 1 000 entrées : la 1 001ᵉ efface la plus ancienne, qui ne se déclenche plus. (4) Un échec isolé sur 50
+  en intégration (voir instabilités), vert à la relance.
+- **Risque.** Un code non délivré dans ces cas ; le festivalier redemande (les bascules ne comptent pas dans les
+  limites d'envoi).
+- **Mission qui le lève.** Mission 12b (fournisseurs réels, mesure des délais réels de 10 s et 20 s).
+  **Condition.** Délais mesurés avec les vrais fournisseurs, décision du porteur sur un essai noté au plafond.
+- **Tests de borne.** `unit/customer-auth/otp-chain.spec.ts` (« plafond dur seul » : repli jamais appelé, code
+  effacé à 35 000 ms ; « borne de 1 000 » ; mutation : retrait de `arm(entry, OTP_CODE_HARD_CAP_MS, …)`, 1 échec
+  sur 19), `integration/customer-auth/otp-chain.spec.ts` (« arrêt pendant une chaîne »).
+- **Report.** `PROMPTS-A-ENVOYER.md` (12b, 13) et `PRD.md`. Fichiers à faire relire : `otp-chain.ts`,
+  `otp-providers.ts`, `bootstrap.ts`.
+
+### OP-N167 — Commande `reissue-claim-codes` : limites (20 novembre 2026)
+
+ADR-228. **Bloque la production : non** (commande d'exploitation sous accord écrit du porteur).
+
+- **Constats.** (1) Le fichier contient des codes en clair : mode `0600`, jamais écrasé, jamais sur la sortie
+  standard ; il doit être détruit après remise (procédure). (2) La commande écrit le fichier avant la base :
+  tuée entre les deux, elle laisse un fichier sans valeur ; si l'issue du `COMMIT` est incertaine, le fichier est
+  conservé et la relance est interdite sans vérification. (3) **Aucun test pour disque plein (`ENOSPC`) ni pour un
+  `COMMIT` d'issue incertaine** : le code les traite, rien ne les exerce (relecture de WP08). (4) Le spec
+  d'intégration est ignoré quand `SKIP_LATENCY` est posé (`jest.config.cjs`) : il ne tourne que dans l'étape en
+  série de la CI (la course `CL065` est dans OP-N169).
+- **Mission qui le lève.** Mission 13 (recette : procédure jouée sur un lot réel). **Condition.** Les deux cas
+  (3) figés par test ; procédure exécutée de bout en bout sur un lot réel.
+- **Tests de borne.** `integration/cli/reissue-claim-codes.spec.ts` (« fichier existant : jamais écrasé »,
+  « base refusée : aucun fichier ne reste », « aucun code ailleurs que dans le fichier », « droits : cashless_app
+  ne peut pas réémettre ») ; mutations : écriture du fichier après la base, retrait de `wx`, mode `0644`, codes sur
+  la sortie standard, UID permutés (tous détectés).
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`. Fichiers à faire relire :
+  `apps/api/src/cli/reissue-claim-codes.ts`, `0097`, `post-roles.sql` §14.
+
+### OP-N168 — Avis de solde provisoire : approximation assumée (20 novembre 2026)
+
+ADR-230. **Bloque la production : non.**
+
+- **Constat.** `wallet_pending_offline_notice` est vrai si l'événement n'est pas `CLOSED` et si au moins un
+  terminal non révoqué a un accusé de snapshot sur ce grand livre plus récent que son dernier lot (ou sans lot).
+  Approximations : tous les statuts de lot comptent (`REJECTED` inclus) ; le dernier lot est celui du terminal sur
+  le grand livre du portefeuille ; les grands livres `ORGANIZER` et `OPERATOR_BILLING` rendent toujours faux.
+- **Risque.** Un avis absent ou superflu ; jamais un solde modifié. Le faux `false` d'un lot d'un autre grand livre a
+  été corrigé au cycle 2 de WP03.
+- **Mission qui le lève.** Mission 13 (recette). **Condition.** Le porteur confirme l'approximation ou demande de
+  l'affiner.
+- **Tests de borne.** `tests_pending_offline_notice.sql` (mutations : retrait de `status <> REVOKED`, `>=`,
+  `coalesce`, `status <> CLOSED`, filtre de grand livre, `scope_type`) et `integration/customer-app/me-10a.spec.ts`
+  (« terminal révoqué ou événement CLOSED : l'avis reste faux »). Le comportement « tous statuts de lot comptent »
+  n'a pas de test dédié cité par les notes : non établi.
+- **Report.** `PROMPTS-A-ENVOYER.md` (10b, 13) et `PRD.md`.
+
+### OP-N169 — Mineurs de la 10a (20 novembre 2026)
+
+ADR-231. **Bloque la production : non.**
+
+- **Constats.** Course `CL065` non testée (WP02) ; la personnalisation ne teste pas le cas d'un ancien code
+  (WP07) ; `seed-demo` ne pose pas la version des codes (défaut 1 : refusé après une rotation) ; la version du secret
+  est globale à la base, d'où l'étape en série de la CI (`claim-rotation`) ; les compteurs de consultation
+  anonyme par adresse repartent à zéro à la rotation (la référence d'adresse dépend du secret, accepté au plan) ;
+  lignes de plus de 100 caractères (reformatage à la fusion) ; import `reflect-metadata` inutile dans la commande
+  (WP08) ; **`personalization.service.ts` n'a pas le contrôle applicatif de `claim_code_used_at`** (WP07) : un code déjà
+  utilisé est refusé par la base seule (`CL020`, `MEDIA_ALREADY_HAS_CODE`), contrôle reporté vers la base ; test qui le
+  fige : `packages/ledger-sql/tests/tests_claim_key_version.sql` (l. 298-299 : `claim_code_used_at` posé, puis
+  `throws_ok` `CL020`) ; la personnalisation elle-même n'a pas de test du cas d'ancien code.
+- **Mission qui les lève.** Mission 13. **Condition.** Tests figés et nettoyage au passage de la recette.
+- **Report.** `PROMPTS-A-ENVOYER.md` (mission 13) et `PRD.md`.
+
+### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
+
+L'agent qui a écrit le code ne vaut pas relecture indépendante. Clés, droits de la base, cryptographie,
+codes en clair :
+
+- `packages/ledger-sql/migrations/0096_kyc_functions.sql` (fonctions `DEFINER` d'identification et de révocation,
+  règle de l'agent titulaire, ordre des contrôles) ;
+- `packages/ledger-sql/migrations/0097_claim_code_key_version.sql` (version du secret, signatures versionnées,
+  `reissue_claim_codes`, `reissuable_media`, `claim_media_reissuable`, `claim_key_version_max`, `associate_claim_code`
+  qui libère l'ancienne ligne, numéro imprimé) ;
+- `packages/ledger-sql/migrations/0098_pending_offline_notice.sql` et `0099_otp_channel_attempt.sql` (RLS forcée,
+  clé composite, `UNIQUE (id, operator_id)` ajouté à `otp_challenge`, aucune colonne de code) ;
+- `packages/ledger-sql/post-roles.sql` section 14 (rôle `cashless_claimadmin`, `EXECUTE` de `cashless_app`, droits
+  de `otp_channel_attempt`) ; `roles.sql` n'a pas changé ; `packages/ledger-sql/src/migrate.ts` (mot de passe du
+  rôle, refus en production) ;
+- `apps/api/src/cli/reissue-claim-codes.ts` (codes en clair, fichier de sortie, rôle de la connexion) ;
+- `apps/api/src/db/claim-admin-connection.ts` (connexion du rôle `cashless_claimadmin` et refus en production d'un rôle
+  trop large, déplacés de la commande par le correctif d'intégration `f5299969` du 23/11/2026) ;
+- `apps/api/src/kms/claim-hash.ts`, `config/config.ts` (`claimAdminSettings`, version du secret) et
+  `media/claims/claims.service.ts` (refus de démarrage sur version) ;
+- `apps/api/src/customer-auth/otp-chain.ts` (code en mémoire, plafond, effacement), `otp-providers.ts`,
+  `otp-sender.ts` et `apps/api/src/processes/bootstrap.ts` (libellés de refus des trois faux) ;
+- `apps/api/src/kyc/kyc.service.ts` et `kyc-revocation-action.ts` (portée, auteur de la révocation),
+  `errors/redact.ts` (`id_last4`) ;
+- `.github/workflows/ledger-tests.yml`, `tools/dev-db/env.sh`, `tools/dev-db/env.test.example` et
+  `apps/gateway/test/support/disposable-databases.ts` (mot de passe et URL du rôle `cashless_claimadmin`, WP04) ;
+- `apps/api/src/kyc/kyc.controller.ts` et `kyc/kyc-revocation.controller.ts` (contrôle de rôle et de portée des
+  routes d'identification et de révocation) ;
+- `apps/api/src/media/batches/claim-codes.service.ts` et `media/personalization/personalization.service.ts`
+  (appels versionnés, remplacement d'un ancien code, `MEDIA_ALREADY_HAS_CODE`, empreintes) ;
+- `apps/api/src/customer-auth/customer-auth.service.ts` et `customer-auth.module.ts` (câblage de la chaîne, lien du
+  titulaire), `audit/audit.service.ts` (`KYC_VERIFIED`, `KYC_REVOKED`), `errors/sqlstate-map.ts` (`CL060` à `CL063`) ;
+- `tools/contract-stability/contract-baseline.json` et les trois ajouts d'`openapi.yaml` (décision du porteur).
+
+Exhaustivité revérifiée le 23/11/2026 par `git diff --name-only` de la base commune avec `main` : les autres fichiers
+modifiés hors tests sont des fichiers de documentation, de lecture (`customer-app/me.service.ts`, `lost-media.service.ts`),
+de câblage sans droit ni secret (`app.module.ts`, `kyc.module.ts`, `claims.dto.ts`) ou générés (`openapi.ts`, Dart).
+
+### Tests de borne écrits avec la mission et ce qui reste non figé
+
+Chaque test de borne ci-dessus est écrit dans le lot qui porte la limite ; mutations rejouées par les
+relecteurs (voir `docs/passation-10a/preuves.md`). **Non figé, consigné comme limite :** (a) disque plein et
+`COMMIT` d'issue incertaine de `reissue-claim-codes` (OP-N167) ; (b) « tous statuts de lot comptent » dans
+`wallet_pending_offline_notice` (OP-N168) ; (c) course `CL065` (OP-N169) ; (d) `scope_type = 'EVENT'` de `0098`
+prouvé seulement depuis le cycle 2 de WP03 ; (e) délais réels de 10 s et 20 s (faux seulement, minuteries
+simulées) : mission 12b ; (f) auteur de la révocation non contrôlé par la base (OP-N165).

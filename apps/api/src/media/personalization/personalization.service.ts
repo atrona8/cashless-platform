@@ -281,19 +281,32 @@ export class PersonalizationService {
       const media = await client.query<{
         batch_id: string | null;
         claim_code_hash: Buffer | null;
+        claim_key_version: number;
         kind: string | null;
       }>(
-        `SELECT m.batch_id, m.claim_code_hash, b.kind FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id WHERE m.id = $1`,
+        // Ce rôle ne lit de `media` que `claim_code_hash` : la version de l'empreinte du bracelet se lit sur
+        // sa ligne `claim_code` courante (posée avec la même version par `associate_claim_code`).
+        `SELECT m.batch_id, m.claim_code_hash, b.kind,
+                coalesce((SELECT c.key_version FROM claim_code c
+                           WHERE c.media_id = m.id AND c.invalidated_at IS NULL), 1)
+                  AS claim_key_version
+           FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id WHERE m.id = $1`,
         [mediaId],
       );
       const row = media.rows[0];
       if (!row) throw notFound();
       if (row.kind !== 'PUBLIC')
         throw conflict('Ce bracelet appartient à un lot sans code de rattachement.');
-      if (row.claim_code_hash !== null) {
-        if (hash && row.claim_code_hash.equals(hash)) return 'REPLAYED' as const;
+      // Un code d'une version plus ancienne du secret, jamais utilisé, est remplacé par la base.
+      if (
+        row.claim_code_hash !== null &&
+        row.claim_key_version === this.hasher.keyVersion &&
+        hash &&
+        row.claim_code_hash.equals(hash)
+      )
+        return 'REPLAYED' as const;
+      if (row.claim_code_hash !== null && row.claim_key_version >= this.hasher.keyVersion)
         throw conflict('Ce bracelet porte déjà un code de rattachement.');
-      }
       let reason = hash ? await this.refusal(client, hash, row.batch_id) : 'BAD_CLAIM_CODE';
       if (!reason && hash) reason = await this.associate(client, hash, mediaId, row.batch_id);
       await this.audit.record(client, {
@@ -324,7 +337,10 @@ export class PersonalizationService {
       batch_id: string;
       media_id: string | null;
       invalidated_at: Date | null;
-    }>('SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1', [hash]);
+    }>(
+      'SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1 AND key_version = $2',
+      [hash, this.hasher.keyVersion],
+    );
     const code = rows[0];
     if (!code) return 'CLAIM_CODE_UNKNOWN';
     if (code.invalidated_at !== null) return 'CLAIM_CODE_INVALIDATED';
@@ -347,7 +363,11 @@ export class PersonalizationService {
   ): Promise<string | null> {
     await client.query('SAVEPOINT claim_code_association');
     try {
-      await client.query('SELECT associate_claim_code($1, $2)', [hash, mediaId]);
+      await client.query('SELECT associate_claim_code($1, $2, NULL, $3)', [
+        hash,
+        mediaId,
+        this.hasher.keyVersion,
+      ]);
       await client.query('RELEASE SAVEPOINT claim_code_association');
       return null;
     } catch (error) {

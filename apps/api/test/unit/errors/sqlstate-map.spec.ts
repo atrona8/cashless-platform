@@ -78,6 +78,11 @@ const TABLE: [string, ProblemCode, number][] = [
   // mission 11a
   ['CL056', 'CONFLICT_STATE', 409],
   ['CL057', 'CONFLICT_STATE', 409],
+  // mission 10a
+  ['CL060', 'ACCOUNT_REQUIRED', 422],
+  ['CL061', 'FORBIDDEN', 403],
+  ['CL062', 'VALIDATION_FAILED', 422],
+  ['CL063', 'CONFLICT_STATE', 409],
   ['P0002', 'NOT_FOUND', 404],
   ['42501', 'DEVICE_REVOKED', 403],
   ['P0001', 'INTERNAL_ERROR', 500],

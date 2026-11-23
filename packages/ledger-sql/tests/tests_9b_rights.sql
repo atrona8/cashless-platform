@@ -132,7 +132,8 @@ CREATE TEMP TABLE r9b (r text PRIMARY KEY);
 INSERT INTO r9b VALUES ('cashless_app'), ('cashless_platform'), ('cashless_tagkeys'), ('cashless_perso'),
  ('cashless_tagcheck'), ('cashless_keyadmin'), ('cashless_snapcontent'), ('cashless_snapsign'), ('cashless_maint'),
  ('cashless_edge'), ('cashless_edgeadmin'),
- ('cashless_pin');  -- mission 11a, WP03 : processus vendor-pin (aucun droit sur les objets de la 9b)
+ ('cashless_pin'),  -- mission 11a, WP03 : processus vendor-pin (aucun droit sur les objets de la 9b)
+ ('cashless_claimadmin');  -- mission 10a, WP04 : commande reissue-claim-codes (aucun droit sur les objets de la 9b)
 SELECT is((SELECT count(*) FROM pg_roles WHERE rolname LIKE 'cashless\_%'), (SELECT count(*) FROM r9b),
   'liste des rôles cashless_* : aucun rôle de plus que ceux testés');
 -- Fonctions de la mission exécutables par chaque rôle = liste attendue (set_eq sur regprocedure).

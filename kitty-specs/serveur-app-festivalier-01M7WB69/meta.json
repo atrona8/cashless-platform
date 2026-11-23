@@ -1,0 +1,37 @@
+{
+  "accept_commit": "b2b664b00c838c9d28e7f76ad39cfb80f967adae",
+  "acceptance_history": [
+    {
+      "accept_commit": "b2b664b00c838c9d28e7f76ad39cfb80f967adae",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-23T11:47:46.508442+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "fa0fa40b5cbf686c7faf029e41ad283483fe5475"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-23T11:47:46.508442+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "fa0fa40b5cbf686c7faf029e41ad283483fe5475",
+  "baseline_merge_commit": "2508853b5adec7295e2633bfc99200a85526f896",
+  "coordination_branch": "kitty/mission-serveur-app-festivalier-01M7WB69",
+  "created_at": "2026-11-20T11:24:12.832275+00:00",
+  "flattened": false,
+  "friendly_name": "Serveur de l'app festivalier",
+  "merged_at": "2026-11-23T11:56:48.258323+00:00",
+  "merged_commit": "d4593299101283ee01249a9c961d5c1101fbbb35",
+  "mid8": "01M7WB69",
+  "mission_id": "01M7WB69J2GKJHCP39J5CVTHAT",
+  "mission_number": 7,
+  "mission_slug": "serveur-app-festivalier-01M7WB69",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Une partie du serveur de l'app festivalier a été servie en avance hors Spec Kitty le 10/11/2026 (lectures /me, codes à usage unique, déclaration de perte) derrière des faux. La mission 10a complète ce serveur pour que l'équipe de l'app (mission 10b) code contre des routes réelles : identification du festivalier au guichet, rotation du secret des codes de rattachement, remboursements et informations manquantes dans /me, chaîne d'envoi des codes avec repli, et retrait du faux d'identité.",
+  "purpose_tldr": "Rendre utilisable en production le serveur de l'app festivalier : vrai compte par numéro vérifié, identification au guichet et ce qui manque à /me.",
+  "slug": "serveur-app-festivalier-01M7WB69",
+  "status_phase": "1",
+  "target_branch": "feat/serveur-app-festivalier",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-20T14:46:38.464420+00:00"
+}

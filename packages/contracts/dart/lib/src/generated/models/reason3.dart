@@ -23,7 +23,11 @@ enum Reason3 {
   @JsonValue('CLAIM_CODE_INVALIDATED')
   claimCodeInvalidated('CLAIM_CODE_INVALIDATED'),
   @JsonValue('MEDIA_ALREADY_HAS_CODE')
-  mediaAlreadyHasCode('MEDIA_ALREADY_HAS_CODE');
+  mediaAlreadyHasCode('MEDIA_ALREADY_HAS_CODE'),
+  @JsonValue('BAD_PRINTED_NUMBER')
+  badPrintedNumber('BAD_PRINTED_NUMBER'),
+  @JsonValue('PRINTED_NUMBER_TAKEN')
+  printedNumberTaken('PRINTED_NUMBER_TAKEN');
 
   const Reason3(this.json);
 

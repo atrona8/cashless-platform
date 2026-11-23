@@ -294,7 +294,7 @@ describe('codes de rattachement à la commande', () => {
         `${dashed(codes[0]!)},${media[0]!.uid}`, // 2 : acceptée (avec tiret)
         `${codes[1]!.toLowerCase()}, ${media[1]!.uid.toLowerCase()} `, // 3 : acceptée (minuscules, espaces)
         '', // 4 : ligne vide, ignorée
-        `${codes[2]},${media[2]!.uid},en-trop`, // 5
+        `${codes[2]},${media[2]!.uid},EN-TROP,en-trop`, // 5 : quatre colonnes (trois sont admises)
         `${codes[2]!.slice(0, 9)}0,${media[2]!.uid}`, // 6 : caractère hors alphabet
         `${codes[2]},04ZZ`, // 7
         `${codes[2]},04FFFFFFFFFFFF`, // 8 : puce inconnue du lot

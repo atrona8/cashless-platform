@@ -4,7 +4,18 @@ import { CustomerAccessTokens } from '../../src/customer-identity/customer-acces
 import { createCustomerIdentity } from '../../src/customer-identity/customer-identity.module';
 import { FakeCustomerIdentity } from '../../src/customer-identity/fake-customer-identity';
 import { TokenCustomerIdentity } from '../../src/customer-identity/token-customer-identity';
-import { createOtpSender, FakeOtpSender, OTP_SENDER } from '../../src/customer-auth/otp-sender';
+import {
+  createSmsFallbackProvider,
+  createSmsPrimaryProvider,
+  createWhatsAppProvider,
+  FakeSmsFallbackProvider,
+  FakeSmsPrimaryProvider,
+  FakeWhatsAppProvider,
+  OTP_SMS_FALLBACK_PROVIDER,
+  OTP_SMS_PRIMARY_PROVIDER,
+  OTP_WHATSAPP_PROVIDER,
+} from '../../src/customer-auth/otp-providers';
+import { FakeOtpSender } from '../../src/customer-auth/otp-sender';
 import { createDeviceIdentity } from '../../src/device-identity/device-identity.module';
 import { FakeDeviceIdentity } from '../../src/device-identity/fake-device-identity';
 import { RealDeviceIdentity } from '../../src/device-identity/real-device-identity';
@@ -113,17 +124,32 @@ describe('aucun faux en production', () => {
     });
   });
 
-  it('faux envoyeur de codes : construction refusée en production, et l’en-tête X-Test-Otp-Code impossible', () => {
-    expect(() => createOtpSender(PRODUCTION)).toThrow(FakeInProductionError);
-    expect(createOtpSender(LOCAL)).toBeInstanceOf(FakeOtpSender);
-    // La garde de démarrage nomme l'envoyeur ; l'en-tête n'est posé que si `isFake` : jamais atteint en production.
-    expect(() =>
-      assertProcessIsSafe(processWith(true, OTP_SENDER, new FakeOtpSender()) as never),
-    ).toThrow(/l’envoi des codes à usage unique est un faux/);
-    expect(() =>
-      assertProcessIsSafe(processWith(false, OTP_SENDER, new FakeOtpSender()) as never),
-    ).not.toThrow();
-    expect(() => assertProcessIsSafe(processWith(true, OTP_SENDER, {}) as never)).not.toThrow();
+  it.each([
+    ['WhatsApp', createWhatsAppProvider, FakeWhatsAppProvider, OTP_WHATSAPP_PROVIDER],
+    ['SMS (principal)', createSmsPrimaryProvider, FakeSmsPrimaryProvider, OTP_SMS_PRIMARY_PROVIDER],
+    ['SMS (repli)', createSmsFallbackProvider, FakeSmsFallbackProvider, OTP_SMS_FALLBACK_PROVIDER],
+  ])(
+    'faux fournisseur de codes %s : construction refusée en production, garde de démarrage',
+    (label, create, Fake, token) => {
+      expect(() => create(PRODUCTION)).toThrow(FakeInProductionError);
+      expect(create(LOCAL)).toBeInstanceOf(Fake);
+      // La garde de démarrage nomme le fournisseur ; l'en-tête X-Test-Otp-Code n'est posé que si `isFake`.
+      expect(() => assertProcessIsSafe(processWith(true, token, new Fake()) as never)).toThrow(
+        new RegExp(`l’envoi des codes par ${label.replace(/[()]/g, '\\$&')} est un faux`),
+      );
+      expect(() =>
+        assertProcessIsSafe(processWith(false, token, new Fake()) as never),
+      ).not.toThrow();
+      expect(() => assertProcessIsSafe(processWith(true, token, {}) as never)).not.toThrow();
+    },
+  );
+
+  it('FakeProvider : base commune des trois faux fournisseurs, chacun refusé en production', () => {
+    for (const Fake of [FakeWhatsAppProvider, FakeSmsPrimaryProvider, FakeSmsFallbackProvider]) {
+      expect(Object.getPrototypeOf(Fake).name).toBe('FakeProvider');
+      expect(new Fake().isFake).toBe(true);
+    }
+    expect(new FakeOtpSender().isFake).toBe(true);
   });
 
   // Copie externe des scellements (9b, WP12 ; décision du porteur : simulée jusqu'à la mission 12b).
@@ -152,6 +178,10 @@ describe('aucun faux en production', () => {
     ['l’identité du festivalier', new FakeCustomerIdentity()],
     ['les adaptateurs PSP', new PspAdapterRegistry([new FakePspAdapter('WAVE')], true)],
     ['le coffre des secrets PSP', new FakePspSecretStore()],
+    // Mission 10a : l'envoyeur factice de code (FakeOtpSender) et la base commune FakeProvider des trois faux
+    // fournisseurs (instanciée ici par l'un d'eux) portent `isFake` : la garde les refuse en production.
+    ['l’envoi des codes, FakeOtpSender', new FakeOtpSender()],
+    ['l’envoi des codes, FakeProvider', new FakeWhatsAppProvider()],
   ])('garde de démarrage : %s en production fait échouer le démarrage', (name, fake) => {
     expect(() => assertNoFakeInProduction(true, { [name]: fake })).toThrow(new RegExp(name));
     expect(() => assertNoFakeInProduction(false, { [name]: fake })).not.toThrow();
@@ -197,7 +227,7 @@ describe('aucun faux en production', () => {
       createDeviceIdentity(config, DEVICE_DEPS, { ...process.env, DEVICE_IDENTITY_FAKE: '1' }),
     ).toThrow(FakeInProductionError);
     expect((createCustomerIdentity(config) as { isFake?: boolean }).isFake).toBeUndefined();
-    expect(() => createOtpSender(config)).toThrow(FakeInProductionError);
+    expect(() => createWhatsAppProvider(config)).toThrow(FakeInProductionError);
   });
 
   // ----- Mission identite-enrolement-terminaux (T038) : trois ports de plus, lus par la garde de démarrage -----

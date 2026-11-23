@@ -57,11 +57,23 @@ describe('redactSecrets : IBAN (FR-009)', () => {
       'qr_payload',
       'x-approval-token',
       'iban',
+      'id_last4',
     ]);
   });
 });
 
 // OP-N156 : bornes ajoutées le 19/11/2026 (IBAN à tirets, espaces insécables, IBAN collés, msisdn).
+describe('redactSecrets : id_last4 (mission 10a, WP05)', () => {
+  it.each([
+    ['{"id_last4":"Z9Q7"}', `{"id_last4":"${REDACTED}"}`],
+    ['id_last4=Z9Q7', `id_last4=${REDACTED}`],
+    ['{"idLast_id_last4":"Z9Q7"}', `{"idLast_id_last4":"${REDACTED}"}`],
+  ])('%s', (input, expected) => {
+    expect(redactSecrets(input)).toBe(expected);
+    expect(redactSecrets(input)).not.toContain('Z9Q7');
+  });
+});
+
 describe('redactSecrets : IBAN en texte libre, formes limites (OP-N156)', () => {
   const HYPHEN = 'FR76-3000-4028-3798-7654-3210-943';
   const NBSP = 'SN08\u00a0SN01\u00a00015\u00a02000\u00a00485\u00a00000\u00a03035';

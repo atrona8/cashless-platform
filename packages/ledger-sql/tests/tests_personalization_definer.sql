@@ -137,20 +137,20 @@ SELECT throws_ok($$UPDATE media SET claim_code_hash = sha256('code 19 c1') WHERE
 SELECT throws_ok($$UPDATE claim_code SET media_id = '00000000-0000-0000-0000-00000019d002', associated_at = now()
                     WHERE code_hash = sha256('code 19 c4')$$,
   '42501', NULL, 'personnalisation : n''associe pas directement un code (ici, un code invalidé)');
-SELECT lives_ok($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d002')$$,
+SELECT lives_ok($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d002', NULL, 1::smallint)$$,
   'chemin légitime : code associé par la fonction');
-SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d003')$$,
+SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$,
   '%CLAIM_CODE_ALREADY_ASSOCIATED%', 'code déjà associé : refusé');
-SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c4'), '00000000-0000-0000-0000-00000019d003')$$,
+SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c4'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$,
   '%CLAIM_CODE_INVALIDATED%', 'code invalidé : refusé');
-SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c3'), '00000000-0000-0000-0000-00000019d003')$$,
+SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c3'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$,
   '%CLAIM_CODE_OTHER_BATCH%', 'code d''un autre lot : refusé');
 -- Code d'un autre prestataire (relecture du cycle 7, remarque 3) : la fonction ne le voit pas, comme un code inconnu.
 -- Sans le filtre de prestataire sur claim_code, le refus deviendrait CLAIM_CODE_OTHER_BATCH et trahirait son existence.
-SELECT throws_ok($$SELECT associate_claim_code(sha256('code 19 b1'), '00000000-0000-0000-0000-00000019d003')$$, 'CL020',
+SELECT throws_ok($$SELECT associate_claim_code(sha256('code 19 b1'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$, 'CL020',
   'CLAIM_CODE_UNKNOWN : code inconnu', 'code d''un autre prestataire : CLAIM_CODE_UNKNOWN, comme un code inconnu');
 SELECT set_config('app.operator_id', '00000000-0000-0000-0000-00000019a002', true);
-SELECT throws_ok($$SELECT associate_claim_code(sha256('code 19 c2'), '00000000-0000-0000-0000-00000019d003')$$, 'P0002', NULL,
+SELECT throws_ok($$SELECT associate_claim_code(sha256('code 19 c2'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$, 'P0002', NULL,
   'session de B, bracelet de A : introuvable');
 RESET ROLE;
 
@@ -164,9 +164,9 @@ SELECT throws_ok($$UPDATE media SET claim_code_hash = sha256('code 19 c2') WHERE
 SELECT throws_ok($$UPDATE claim_code SET media_id = '00000000-0000-0000-0000-00000019d003', associated_at = now()
                     WHERE code_hash = sha256('code 19 c4')$$,
   '42501', NULL, 'API : n''associe pas directement un code (ici, un code invalidé)');
-SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d003')$$,
+SELECT throws_like($$SELECT associate_claim_code(sha256('code 19 c1'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$,
   '%CLAIM_CODE_ALREADY_ASSOCIATED%', 'API, par la fonction : code déjà associé refusé');
-SELECT lives_ok($$SELECT associate_claim_code(sha256('code 19 c2'), '00000000-0000-0000-0000-00000019d003')$$,
+SELECT lives_ok($$SELECT associate_claim_code(sha256('code 19 c2'), '00000000-0000-0000-0000-00000019d003', NULL, 1::smallint)$$,
   'API, par la fonction : association légitime (import du fichier de l''imprimeur)');
 RESET ROLE;
 
@@ -193,9 +193,9 @@ SELECT is((SELECT string_agg(proname || ':' || prosecdef::text || ':' || array_t
 SELECT is((SELECT string_agg(r || ':' || f, ' ' ORDER BY r, f)
              FROM (SELECT rolname::text AS r FROM pg_roles WHERE rolname LIKE 'cashless\_%' UNION ALL SELECT 'public') roles,
                   unnest(ARRAY['register_personalized_media(uuid, uuid, bytea, bytea, bytea, boolean, bytea, uuid, uuid)',
-                               'associate_claim_code(bytea, uuid)']) f
+                               'associate_claim_code(bytea, uuid, text, smallint)']) f
             WHERE has_function_privilege(r, f, 'EXECUTE')),
-  'cashless_app:associate_claim_code(bytea, uuid) cashless_perso:associate_claim_code(bytea, uuid) '
+  'cashless_app:associate_claim_code(bytea, uuid, text, smallint) cashless_perso:associate_claim_code(bytea, uuid, text, smallint) '
   'cashless_perso:register_personalized_media(uuid, uuid, bytea, bytea, bytea, boolean, bytea, uuid, uuid)',
   'EXECUTE : enregistrement à cashless_perso seul ; association à cashless_perso et cashless_app ; rien à PUBLIC');
 SELECT is((SELECT string_agg(t || ':' || p, ' ' ORDER BY t, p)

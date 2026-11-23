@@ -112,7 +112,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   `SUPERVISOR`. Le prix d'une ligne de vente doit être celui du catalogue de la configuration servie au terminal ou le
   prix actuel. OP-N74 : enrôlement refusé dès `CLOSING` pour `CATALOG_POS` et `KEYPAD_TPE`, permis en `TOPUP_DESK`
   jusqu'à `CLOSED` ; `CLOSED` et point de vente supprimé refusent tout. Révocation d'une identification à deux
-  (contrat ; §6.3 dit « un administrateur », contradiction signalée).
+  (contrat et SPECIFICATION §6.3 point 5, amendé le 23/11/2026, OP-N164 levé).
 - Plan de la mission 5b (porteur, 22/10/2026) : pile du document 08 (Node 22, `argon2` 0.44.0, la 0.45 n'ayant pas de
   binaire macOS Intel) ; empreinte du PIN avec un secret hors base (`VENDOR_PIN_SECRET`, exigé en production) ; PIN
   jamais en clair dans l'empreinte d'idempotence, remplacé par un dérivé argon2 sous un secret distinct
@@ -141,6 +141,21 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   cashless. Cloisonnement entre applications et entre prestataires. Risque à trancher au cadrage : l'application devient
   garante de l'identité de comptes qui portent de l'argent ; identification du client à soumettre au juriste.
   Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : connexion par numéro et code à usage unique, jetons d'accès et de renouvellement, déclaration de perte ; l'envoi réel du code (12b) et l'identification au guichet restent à faire (OP-N120, ADR-180).
+  Mission 10a (`serveur-app-festivalier-01M7WB69`, **livrée** : lots WP01 à WP10 approuvés, consignation WP11,
+  décisions du porteur du 20/11/2026) : identification au guichet (pièce : type, pays, 4 derniers caractères,
+  expiration ; compte au numéro vérifié exigé ; refus de l'agent dont le téléphone est le numéro vérifié du compte,
+  **limite OP-N163** pour un agent sans numéro ou avec un autre ; pièce déjà expirée refusée ; écriture par des fonctions
+  `DEFINER` de la base seules, ADR-226) ; révocation à deux personnes (contrat ; **OP-N164 levé le 23/11/2026** : SPECIFICATION §6.3 point 5 amendé
+  sur décision du porteur, ADR-227) ; rotation **immédiate** du secret des codes de rattachement,
+  sans période de double empreinte (**OP-N47 levé le 20/11/2026**, ADR-228) : version du secret sur chaque
+  empreinte, les codes émis avant sont refusés comme inconnus, réémission par une **commande d'exploitation**
+  (`reissue-claim-codes`) sous un rôle de base dédié, `cashless_claimadmin`, jamais `cashless_app`, qui rend un
+  fichier de cinq colonnes (`rank,code,url,uid,printed_number`) pour l'imprimeur ; `printed_number` (troisième
+  colonne facultative du fichier de l'imprimeur, trois ajouts rétrocompatibles au contrat, ADR-225) et
+  `pending_offline_notice` (par terminal et grand livre, approximation assumée, OP-N168, ADR-230) dans `/me` ; chaîne
+  d'envoi des codes WhatsApp puis SMS principal (10 s) puis SMS de repli (20 s), code gardé en mémoire du processus
+  seulement (35 s au plus), trois fournisseurs simulés refusés au démarrage en production (OP-N120, OP-N166, ADR-229),
+  jusqu'à la 12b.
   Recharge PSP testable de bout en bout en développement (10/11/2026) : configurations de démo, secrets de démo du faux coffre, route de simulation du paiement hors contrat, absente en production ; levée par la 12b (OP-N121, ADR-181).
 
 ### 2.6 En ligne, hors ligne, passerelle locale (§9, `sync_protocol.md`)
@@ -301,6 +316,14 @@ interface commune ; types TypeScript et Dart générés depuis `openapi.yaml`.
     d'essais, audit), sans repli si le processus est absent. (§8.2, ADR-217)
 12. Export du lot de virements : ouverture de l'IBAN chiffré par la seule route d'export, avec refus
     fermé si l'enveloppe est illisible. (§11.4, ADR-218)
+13. Identification au guichet : le caissier saisit la pièce d'un festivalier au compte vérifié ; la base refuse un
+    portefeuille anonyme et l'agent dont le téléphone est le numéro du compte ; les plafonds suivent le niveau calculé.
+    Révocation : demande `KYC_REVOCATION` approuvée par une autre personne habilitée. (§6.3, ADR-226, ADR-227)
+14. Rotation et réémission des codes de rattachement : nouveau secret et version, redémarrage (anciens codes refusés),
+    commande `reissue-claim-codes` sous `cashless_claimadmin`, fichier de cinq colonnes à l'imprimeur, détruit après
+    remise. (ADR-228, `docs/procedure-rotation-codes-rattachement.md`)
+15. Envoi du code du festivalier : WhatsApp, puis SMS principal après 10 s ou sans WhatsApp, puis SMS de repli après
+    20 s ; un seul code par défi, gardé en mémoire 35 s au plus. (§8.5, ADR-229)
 
 ## 7. Glossaire métier
 
@@ -460,9 +483,15 @@ OP-N46, OP-N50 et OP-N54 proposées par l'agent et confirmées par le porteur le
   traduit par edge-admin, absent de l'API) ;
 - mission 10 : identité réelle du festivalier (OP-N43), liste et déclaration de perte de ses bracelets ; le
   rattachement par code, la demande en attente et l'activation depuis l'app sont déjà servis côté serveur.
-- mission 10, suite (mission proposée par l'agent le 16/10/2026, à confirmer par le porteur) :
-  rotation du secret d'empreinte des codes imprimés (`CLAIM_CODE_HMAC_KEY`) sans réimpression, par
-  une double empreinte pendant une période bornée (OP-N47, ADR-104) ;
+- mission 10a (**livrée**, décision du porteur du 20/11/2026) : rotation **immédiate** du secret d'empreinte des codes
+  imprimés (`CLAIM_CODE_HMAC_KEY`), sans période de double empreinte ; les codes émis avant sont refusés et réémis par
+  la commande `reissue-claim-codes` (**OP-N47 levé le 20/11/2026**, ADR-104, ADR-228). Limites nommées et reportées
+  (ADR-231) : OP-N163 (agent titulaire non détecté, décision du porteur), OP-N164 (§6.3 point 5 contre le contrat : **levé le 23/11/2026**,
+  spécification amendée), OP-N165 (auteur de la révocation : OP-N56, 12b ; messages d'écran : 11), OP-N166 (code en
+  mémoire, plafond de 35 s sans repli : 12b), OP-N167, OP-N168 et OP-N169 (mission 13) ; hérité : mission 10b (routes
+  réelles, faux fournisseurs, `X-Test-Otp-Code` encore là), mission 11 (écrans d'identification et de révocation à
+  deux, règle de l'agent titulaire), mission 12b (trois fournisseurs réels, accusés, retrait de `X-Test-Otp-Code` et
+  des trois libellés de refus), mission 13 (procédure de rotation sur un lot réel, délais réels de 10 s et 20 s) ;
 - mission 11 : décision d'une demande d'approbation liée à une preuve signée de la personne qui décide (serveur
   d'identité réel ou signature du valideur), pour que la base ne croie plus le valideur que lui passe l'API (OP-N56,
   ADR-94) ; OP-N60 (lots de bracelets par fonctions) et OP-N79 (`vendor_id` dans la clé composite de

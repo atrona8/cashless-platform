@@ -7,7 +7,9 @@
 //     anciens, créés avant l'authentification par code) ;
 //   - `refund` : éligibilité, date limite EFFECTIVE et frais de `evaluateRefundEligibility` (mission 9a, WP04), la
 //     même règle que la création de la demande ; règle de frais absente : `eligible: false` ;
-//   - `pending_offline_notice` : absent (facultatif au contrat).
+//   - `printed_number` : lu en base (`media.printed_number`), `null` si inconnu (mission 10a, WP09) ;
+//   - `pending_offline_notice` : rendu pour chaque portefeuille, calculé par la fonction de la base
+//     `wallet_pending_offline_notice` (solde provisoire d'un terminal hors ligne, WP03/WP09).
 import { Injectable } from '@nestjs/common';
 import type { CustomerContext } from '../customer-identity/customer-identity.port';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
@@ -100,6 +102,7 @@ export class MeService {
         paid: string;
         promo: string;
         verified: boolean;
+        pending_offline_notice: boolean;
         as_of: Date;
       }>(
         `SELECT w.id AS wallet_id, w.status, l.currency, e.id AS event_id, e.name AS event_name,
@@ -109,6 +112,7 @@ export class MeService {
                 coalesce((SELECT -sum(b.balance) FROM account a JOIN account_balance b ON b.account_id = a.id
                            WHERE a.wallet_id = w.id AND a.purpose = 'WALLET_PROMO'), 0)::text AS promo,
                 ${KYC_VERIFIED_SQL} AS verified,
+                wallet_pending_offline_notice(w.id) AS pending_offline_notice,
                 clock_timestamp() AS as_of
            FROM wallet w
            JOIN ledger l ON l.id = w.ledger_id
@@ -142,6 +146,7 @@ export class MeService {
             event: { event_id: w.event_id, name: w.event_name, status: w.event_status },
             balance: { spendable: paid + promo, paid, promo },
             balance_as_of: w.as_of.toISOString(),
+            pending_offline_notice: w.pending_offline_notice,
             media: media.filter((m) => m.wallet_id === w.wallet_id),
             refund: {
               eligible: refund?.eligible ?? false,
@@ -165,11 +170,13 @@ export class MeService {
   ): Promise<CustomerMediaDto[]> {
     const { rows } = await client.query<{
       media_id: string;
+      printed_number: string | null;
       status: string;
       deposit_status: string;
       wallet_id: string;
     }>(
-      `SELECT m.id AS media_id, m.status::text, m.deposit_status::text, w.id AS wallet_id
+      `SELECT m.id AS media_id, m.printed_number, m.status::text, m.deposit_status::text,
+              w.id AS wallet_id
          FROM media_assignment ma
          JOIN wallet w ON w.id = ma.wallet_id
          JOIN media m ON m.id = ma.media_id
@@ -177,7 +184,7 @@ export class MeService {
         ORDER BY ma.assigned_at, m.id`,
       [customer.customerId],
     );
-    return rows.map((r) => ({ ...r, printed_number: null }));
+    return rows.map((r) => ({ ...r, printed_number: r.printed_number ?? null }));
   }
 
   transactions(

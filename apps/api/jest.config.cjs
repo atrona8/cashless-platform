@@ -25,6 +25,9 @@ module.exports = {
   // (`resetDatabase()`) pour que les contrôles permanents et le scellement, qui lisent TOUS les grands livres et
   // toutes les chaînes d'audit, ne voient que leurs données. Elles détruiraient la base des autres travailleurs : elles
   // tournent seules, en série, sur base recréée, après la passe parallèle (workflow CI).
+  // Mission serveur-app-festivalier (WP07) : `claim-rotation` pose des lignes en version 2 du secret des codes de
+  // rattachement ; cette version est globale à la base et une API de version inférieure refuse de démarrer : seule.
+  // WP08 : `cli/reissue-claim-codes` pose aussi des versions > 1 (commande lancée en version 2) : seule, même étape.
   testPathIgnorePatterns: [
     '/node_modules/',
     ...(process.env.SKIP_LATENCY
@@ -52,6 +55,8 @@ module.exports = {
           'controls/controls-alerts',
           'sealing/seal-and-verify',
           'vendors/vendor-pin-latency',
+          'media/claim-rotation',
+          'cli/reissue-claim-codes',
         ]
       : []),
   ],

@@ -1,0 +1,164 @@
+{
+  "mission_slug": "serveur-app-festivalier-01M7WB69",
+  "mission_number": "10a",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 (Identification au guichet) : lots WP01, WP05",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `sql/tests_kyc_functions.sql`, `api/integration/kyc/create.spec.ts`. Commande : `pg_prove -d cashless_wp01 tests/tests_kyc_functions.sql` ; `npx jest test/integration/kyc test/unit/errors/sqlstate-map.spec.ts --runInBand`. R\u00e9sultat : WP01 : 63/63 pgTAP \u00e0 la relecture ; WP05 : 171 verts sur `cashless_wp05` (kyc + sqlstate-map), 230 \u00e0 la relecture. Mutations : WP05 (a) `exercisedRole` retir\u00e9 : 2 tests ; (d) `agent_id` lu du corps : test 400 ; (e) `Idempotent` retir\u00e9 : le rejeu \u00e9choue. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 (Compte exig\u00e9) : lots WP01, WP05",
+      "proof_type": "automated_test",
+      "evidence": "Tests : idem (`422 ACCOUNT_REQUIRED`, `CL060`). Commande : idem. R\u00e9sultat : idem. Mutations : WP01 (c1, c2, c4, c3) : portefeuille, r\u00e9vocation, client, identit\u00e9 sans filtre d'op\u00e9rateur, tous d\u00e9tect\u00e9s. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 (Agent titulaire refus\u00e9) : lots WP01, WP05",
+      "proof_type": "automated_test",
+      "evidence": "Tests : idem (`403`, `CL061`), `sql/tests_kyc_functions.sql` section 9. Commande : idem. R\u00e9sultat : idem. Mutations : WP01 (a) `CL061` retir\u00e9, (e) comparaison sans filtre client : \u00e9chouent ; WP05 (b) `CL061` retir\u00e9 : 3 tests. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 (\u00c9criture contr\u00f4l\u00e9e) : lots WP04",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `sql/tests_10a_rights.sql`, `sql/tests_execute_grants.sql`. Commande : `pg_prove -d cashless_wp04 tests/tests_10a_rights.sql`. R\u00e9sultat : 78 tests ; relecture : droits catalogue, rejeu x2 idempotent, 8 suites pgTAP, 2 Jest. Mutations : WP04 (a) \u00e0 (e) : \u00e9checs aux tests 4/6/20, 10/23, 44/58/65, 12/13/27-32, 4/6/7/20. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 (R\u00e9vocation \u00e0 deux) : lots WP06",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/integration/kyc/revoke.spec.ts`. Commande : `npx jest test/integration/kyc/revoke.spec.ts --runInBand`. R\u00e9sultat : 12/12 sur `cashless_wp06` ; relecture : 26 tests kyc + 22 approval verts, `check.mjs` 0 refus. Mutations : WP06 (a) contr\u00f4le `REVOKED` retir\u00e9 : test 6 ; (b) `approvedBy` au lieu de `requestedBy` : 3 tests ; (c) `CASHIER` ajout\u00e9 aux r\u00f4les : 2 ; (d) contr\u00f4le `target_id` retir\u00e9 : test de falsification. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 (Niveau calcul\u00e9) : lots WP01, WP06",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/integration/kyc/limits.spec.ts`, `revoke.spec.ts` (\u00ab plafonds apr\u00e8s r\u00e9vocation \u00bb), `sql/tests_kyc_functions.sql`. Commande : `npx jest test/integration/kyc --runInBand`. R\u00e9sultat : verts (compris dans les 171 de WP05 et les 12/12 de WP06). Mutations : WP01 (b) expiration retir\u00e9e : \u00e9chec ; WP06 (commit `3bb7613b`) r\u00e9vocation non ex\u00e9cut\u00e9e : 5 tests \u00e9chouent. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 (Rotation imm\u00e9diate du secret) : lots WP02, WP07",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/integration/media/claim-rotation.spec.ts`, `sql/tests_claim_key_version.sql`. Commande : `npx jest test/integration/media/claim-rotation.spec.ts --runInBand` (sans `SKIP_LATENCY`) ; `pg_prove -d cashless_wp02 tests/tests_claim_key_version.sql`. R\u00e9sultat : pgTAP : 125 ok (commit `24f594d7`) ; Jest : vert \u00e0 la relecture de WP07 (nombre non not\u00e9 : non \u00e9tabli). Mutations : WP02 (a) 19/21/23, (b) 28-30, (c) 33, (d) 36-38, (e) erreur `23505`, (f) 84 ; WP07 (a) retrait de `AND claim_key_version` de `confirm`, (b) `1` en dur \u00e0 `claim_media`, (c) `assertClaimKeyVersion` retir\u00e9, (d) refus sans version, (e) `toUpperCase` retir\u00e9, (f) `1` en dur \u00e0 `public_balance_lookup` : toutes \u00e9chouent. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 (R\u00e9\u00e9mission des codes) : lots WP02, WP08",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/integration/cli/reissue-claim-codes.spec.ts` (\u00ab SC-003 \u00bb), `sql/tests_claim_key_version.sql`. Commande : `npx jest test/integration/cli/reissue-claim-codes.spec.ts --runInBand` (sans `SKIP_LATENCY`). R\u00e9sultat : 12/12 sur `cashless_wp08`. Mutations : WP08 : fichier \u00e9crit apr\u00e8s la base, `wx` retir\u00e9, mode `0644`, codes sur la sortie standard, UID permut\u00e9s : tous d\u00e9tect\u00e9s. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 (Num\u00e9ro imprim\u00e9) : lots WP02, WP09",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/integration/customer-app/me-10a.spec.ts`, `claim-rotation.spec.ts` (\u00ab num\u00e9ro imprim\u00e9 \u00bb), `sql/tests_claim_key_version.sql`. Commande : `npx jest test/integration/customer-app/me-10a.spec.ts --runInBand`. R\u00e9sultat : vert \u00e0 la relecture de WP09 (nombre non not\u00e9 : non \u00e9tabli). Mutations : WP09 `printed_number = null` : 2 tests \u00e9chouent. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 (Avis de solde provisoire) : lots WP03, WP09",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `sql/tests_pending_offline_notice.sql`, `me-10a.spec.ts`. Commande : `pg_prove -d cashless_wp03 tests/tests_pending_offline_notice.sql`. R\u00e9sultat : WP03 : suites 0048/0080/snapshots/definer_search_path et les deux suites WP03 vertes (293 tests au total sur `cashless_wp03`). Mutations : WP03 (a) `status<>REVOKED` retir\u00e9 : test 9 ; (b) `>=` : test 6, sans `coalesce` : 2, 10, 13, 16 ; (c) `status<>CLOSED` retir\u00e9 : test 12 ; cycle 2 : filtre de grand livre retir\u00e9 : test 14, `scope_type` retir\u00e9 : test 16 ; WP09 `notice = false` : 2 tests. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 (Cha\u00eene d'envoi) : lots WP10",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `api/unit/customer-auth/otp-chain.spec.ts`, `api/integration/customer-auth/otp-chain.spec.ts`. Commande : `npx jest test/unit/customer-auth --runInBand` ; `npx jest test/integration/customer-auth/otp-chain.spec.ts --runInBand`. R\u00e9sultat : unitaires 19/19 ; int\u00e9gration 5/5 (50/50 sur le dossier `customer-auth` ; un \u00e9chec isol\u00e9 au premier passage, vert \u00e0 la relance : instabilit\u00e9 consign\u00e9e, OP-N166). Mutations : WP10 (a) confirmation sans effacement, (b) d\u00e9lais \u00e9chang\u00e9s, (d) borne retir\u00e9e, (c), (e), (f), (h) retrait de `arm(entry, OTP_CODE_HARD_CAP_MS, \u2026)` : 1 \u00e9chec sur 19. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 (SMS direct) : lots WP10",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `otp-chain.spec.ts` unitaire (4. canal SMS) et int\u00e9gration (\u00ab canal SMS : aucun essai WhatsApp \u00bb). Commande : idem. R\u00e9sultat : idem. Mutations : non \u00e9tablie s\u00e9par\u00e9ment. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 (Un seul code par d\u00e9fi) : lots WP03, WP10",
+      "proof_type": "automated_test",
+      "evidence": "Tests : `otp-chain.spec.ts` (5. m\u00eame code aux trois \u00e9tapes ; int\u00e9gration \u00ab les bascules ne comptent pas dans les limites \u00bb), `sql/tests_otp_channel_attempt.sql`. Commande : idem ; `pg_prove -d cashless_wp03 tests/tests_otp_channel_attempt.sql`. R\u00e9sultat : idem ; pgTAP vert (nombre non not\u00e9 : non \u00e9tabli). Mutations : WP03 (d) `NO FORCE RLS` : test 4 ; (e) `CHECK failed_reason` retir\u00e9 : tests 12-17 et 21. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots.",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur ; impl\u00e9menteurs et relecteurs distincts des lots)",
+      "verified_at": "2026-11-23T15:00:00+00:00",
+      "notes": "Preuves des lots approuv\u00e9s (docs/passation-10a/preuves.md) ; \u00ab non \u00e9tabli \u00bb y est signal\u00e9 l\u00e0 o\u00f9 un compte manque."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun code OTP ni code de rattachement en clair en base, journal, audit ou r\u00e9ponse (NFR-002)",
+      "verification_method": "custom_command",
+      "verification_command": "npx jest test/integration/media/claim-rotation.spec.ts test/integration/cli/reissue-claim-codes.spec.ts test/unit/customer-auth test/integration/customer-auth --runInBand",
+      "result": "confirmed_absent",
+      "evidence": "claim-rotation \u00ab NFR-002 : aucun code en clair\u2026 \u00bb, reissue-claim-codes \u00ab aucun code ailleurs que dans le fichier \u00bb (12/12), otp-chain unitaires 9 et 10 (19/19), int\u00e9gration customer-auth 50/50 ; mutations WP07, WP08 (codes sur la sortie standard : 4 \u00e9checs), WP10 (f) code dans failed_reason : 2 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun faux (WhatsApp, SMS principal, SMS de repli) en production : d\u00e9marrage refus\u00e9 (r\u00e8gle 2 de CLAUDE.md, NFR-005)",
+      "verification_method": "custom_command",
+      "verification_command": "npx jest test/unit/production-guard.spec.ts test/integration/end-to-end/psp-production.spec.ts test/integration/end-to-end/offline-production.spec.ts ; apps/gateway : npx jest -c test/e2e/jest.e2e.config.cjs production-refusals",
+      "result": "confirmed_absent",
+      "evidence": "production-guard couvre FakeOtpSender et FakeProvider (correctif f5299969, mutation isFake=false : 5 \u00e9checs) ; production-refusals 35/35 ; WP10 (e) libell\u00e9 retir\u00e9 de bootstrap.ts : 2 \u00e9checs. Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "R\u00e9\u00e9mission des codes jamais par cashless_app ; aucun droit rouvert \u00e0 cashless_app (FR-004)",
+      "verification_method": "custom_command",
+      "verification_command": "pg_prove tests/tests_10a_rights.sql tests/tests_execute_grants.sql (CI) ; npx jest test/integration/cli/reissue-claim-codes.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "tests_10a_rights.sql 78 tests (WP04, mutations (a)-(e) d\u00e9tect\u00e9es) ; cashless_app re\u00e7oit 42501 sur reissue_claim_codes et reissuable_media (relecture WP08) ; contr\u00f4le de r\u00f4le en production repris \u00e0 l'identique dans src/db/claim-admin-connection.ts (relecture du correctif). Batterie du code int\u00e9gr\u00e9 (lane k, orchestrateur, 23/11/2026, apr\u00e8s correctif d'int\u00e9gration f5299969 relu et approuv\u00e9) : lint et typecheck propres ; contract-stability/check.mjs 75 admises, 0 refus\u00e9e ; Jest API 4 333 r\u00e9ussis sur 4 348, 14 ignor\u00e9s, 1 \u00e9chec de fragilit\u00e9 (claim-code-order.spec.ts, d\u00e9lai de 5 s sous charge, instabilit\u00e9 connue, 18/18 seul) ; reissue-claim-codes.spec.ts (sans SKIP_LATENCY) 12/12 ; e2e passerelle 191/192 (seul \u00e9chec exclusion-under-load, limite du poste, identique en 11a). pgTAP : laiss\u00e9 \u00e0 la CI de la PR (d\u00e9cision du porteur du 23/11/2026) ; suites pgTAP vertes \u00e0 la relecture des lots."
+    }
+  ]
+}

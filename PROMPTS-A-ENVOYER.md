@@ -457,9 +457,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > jeton d'accès HS256 de 900 s, renouvellement à usage unique avec révocation de la famille), `TokenCustomerIdentity`
 > (jeton seul en production, en-têtes `X-Test-*` admis hors production sans `Authorization`), `GET /me` avec `phone`
 > réel, `POST /me/media/{media_id}/report-lost`, port `OtpSender` avec faux (**écart accepté : code rendu en en-tête
-> `X-Test-Otp-Code` par le faux, OP-N120, ADR-180, levé par la 12b**). **Reste pour la 10a** : identification au guichet
+> `X-Test-Otp-Code` par le faux, OP-N120, ADR-180, levé par la 12b**). **Reste pour la 10a (fait le 20/11/2026, voir l'état ci-dessus)** : identification au guichet
 > (KYC, ci-dessous), OP-N47 (rotation du secret des codes de rattachement), remboursements (mission 9),
-> `pending_offline_notice` et `printed_number`, envoi réel par WhatsApp puis repli SMS (mission 12b), relecture par une
+> `pending_offline_notice` et `printed_number` ; **reste pour la 12b** : envoi réel par WhatsApp puis repli SMS, relecture par une
 > personne de `0080_customer_auth.sql`, de la section 10 de `post-roles.sql` et de `customer-auth.service.ts`.
 >
 > **Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : recharge PSP testable sur l'API de développement.**
@@ -467,15 +467,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > `POST /v1/__dev/psp-topups/{topup_id}/outcome` hors contrat (**écart accepté : OP-N121, ADR-181, levé par la 12b** :
 > adaptateurs réels, retrait du module de simulation et des secrets de démo).
 >
-> **Hérité aussi de la mission 4, OP-N47 (ADR-87, ADR-104 ; mission proposée par l'agent le
-> 16/10/2026, à confirmer par le porteur)** : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY`
-> ; changer le secret invalide toutes les empreintes des codes imprimés et des codes de
-> confirmation. Écrire et tester une rotation : nouveau secret actif, ancien accepté en lecture
-> pendant une période bornée (double empreinte avec version du secret), extinction des anciennes
-> empreintes, retrait de l'ancien secret ; test : un code émis sous l'ancien secret se rattache
-> pendant la période et plus après, aucun code conservé en clair.
+> **Hérité de la mission 4, OP-N47 (ADR-87, ADR-104) : LEVÉ le 20/11/2026 par la 10a (ADR-228).** Texte d'origine,
+> conservé pour l'historique : aucune procédure de rotation de `CLAIM_CODE_HMAC_KEY` ; changer le secret invalide
+> toutes les empreintes. Décision du porteur du 20/11/2026 : **rotation immédiate, sans double empreinte** (la période
+> bornée de l'énoncé d'origine est écartée) ; version du secret sur chaque empreinte, réémission par la commande
+> `reissue-claim-codes`, procédure `docs/procedure-rotation-codes-rattachement.md`.
 >
-> **Hérité de la mission 5b (décisions du porteur au plan, 22/10/2026)** : (1) **identification au guichet**
+> **Hérité de la mission 5b (décisions du porteur au plan, 22/10/2026) — fait par la 10a le 20/11/2026 (ADR-226, ADR-227)** : (1) **identification au guichet**
 > (SPECIFICATION §6.3, S24, `createKycVerification`, `revokeKycVerification`), reportée de la 5b : la base n'avait ni
 > numéro vérifié du festivalier ni lien agent-festivalier. L'écrire par une fonction de la base qui exige un compte au
 > numéro vérifié et refuse un agent titulaire du portefeuille (lien personne ↔ compte festivalier à créer) ; révocation
@@ -486,13 +484,31 @@ vendeurs et le catalogue : la mission les ajoute.
 > derrière le port d'identité du festivalier : il devient utilisable en production quand l'identité réelle remplace le
 > faux (OP-N43 complété).
 
-- [ ] /spec-kitty.specify Serveur de l'app festivalier (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques.
-- [ ] /spec-kitty.plan Port `OtpSender` avec faux fournisseurs seulement (adaptateurs réels en 12b, action 10 de POINTS_OUVERTS). Routes servies conformes à `openapi.yaml` : l'équipe de l'app 10b code contre ce contrat.
-- [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission serveur-app-festivalier
-- [ ] /spec-kitty.review --mission serveur-app-festivalier
-- [ ] /spec-kitty.accept --mission serveur-app-festivalier
-- [ ] spec-kitty merge --mission serveur-app-festivalier
+> **État (23/11/2026) : mission `serveur-app-festivalier-01M7WB69` implémentée, lots WP01 à WP10 approuvés, WP11
+> (consignation) à relire.** OP-N47 **levé le 20/11/2026** par rotation immédiate (ADR-228 ; la « double empreinte avec
+> version du secret » du bloc hérité ci-dessus est écartée par décision du porteur). Livrés : identification au guichet
+> et révocation à deux personnes (ADR-226, ADR-227), version du secret et réémission par la commande
+> `reissue-claim-codes` sous le rôle `cashless_claimadmin` (ADR-228), `printed_number` et `pending_offline_notice`
+> dans `/me` (ADR-230), chaîne d'envoi avec trois faux refusés en production (ADR-229, OP-N120 mis à jour), trois
+> ajouts au contrat (ADR-225). Limites nommées, chacune avec son point ouvert, son ADR et son report, et un test de borne, ou une limite déclarée
+> non figée (section 12 de `POINTS_OUVERTS.md` : OP-N167, OP-N168, OP-N169) : OP-N163 (agent titulaire non détecté dans deux cas, porteur), OP-N164 (§6.3 point 5 contre le contrat : **levé le 23/11/2026**,
+> spécification amendée sur décision du porteur), OP-N165 (auteur de la révocation, portée `OPERATOR`, `403`), OP-N166 (code en mémoire,
+> plafond de 35 s : 12b), OP-N167 (fichier de réémission en clair, cas non testés : 13), OP-N168 (avis de solde
+> approximatif : 13), OP-N169 (mineurs : 13). OP-N120 reste à lever par la 12b.
+
+> **Specify fait le 20/11/2026** (`serveur-app-festivalier-01M7WB69`, branche `feat/serveur-app-festivalier`). Décisions
+> du porteur : périmètre = KYC au guichet, OP-N47, `printed_number` et `pending_offline_notice`, chaîne d'envoi des
+> codes ; agent titulaire détecté par numéro vérifié identique au téléphone de l'agent (limite consignée) ; OP-N47 en
+> rotation **immédiate**, sans période (codes réémis par un nouveau fichier de l'imprimeur). Hypothèse à trancher au
+> plan : origine du numéro imprimé (colonne facultative du fichier de l'imprimeur, ajout soumis au porteur).
+
+- [x] /spec-kitty.specify Serveur de l'app festivalier (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, §14.2 S17, ADR-42, ADR-57, ADR-64, ADR-66). Côté serveur : comptes par numéro E.164 vérifié par code à usage unique (`customer_identity`, `otp_challenge`), port `OtpSender` avec chaîne WhatsApp puis SMS principal puis SMS de repli (bascules à 10 s et 20 s, faux fournisseurs), limites (`429 OTP_RATE_LIMITED`), `/me` et ses portefeuilles et historiques.
+- [x] /spec-kitty.plan Port `OtpSender` avec faux fournisseurs seulement (adaptateurs réels en 12b, action 10 de POINTS_OUVERTS). Routes servies conformes à `openapi.yaml` : l'équipe de l'app 10b code contre ce contrat.
+- [x] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission serveur-app-festivalier-01M7WB69
+- [ ] /spec-kitty.review --mission serveur-app-festivalier-01M7WB69
+- [ ] /spec-kitty.accept --mission serveur-app-festivalier-01M7WB69
+- [ ] spec-kitty merge --mission serveur-app-festivalier-01M7WB69
 
 ## Mission 10c — Gestion des clients par une application cliente
 
@@ -518,6 +534,15 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Déléguée à une équipe cliente (29/10/2026).** Code contre `packages/contracts/openapi.yaml` (routes simulées tant
 > que 10a n'est pas fusionnée) ; types Dart générés par `npm run generate:dart -w @cashless/contracts`. Toute route
 > manquante ou tout écart de contrat est demandé à l'équipe serveur.
+
+> **Hérité de la 10a (serveur livré le 20/11/2026, ADR-225 à ADR-231)** : routes réellement servies, plus de route
+> simulée pour : identification au guichet (`createKycVerification`, `revokeKycVerification`), `/me` complet
+> (`printed_number` rendu par `listMyMedia`, `getMe` et la déclaration de perte, `null` sinon ; `pending_offline_notice`
+> par portefeuille, approximation assumée, OP-N168), chaîne d'envoi des codes WhatsApp puis SMS principal (10 s) puis
+> SMS de repli (20 s) avec **faux fournisseurs** : l'en-tête `X-Test-Otp-Code` est encore rendu tant qu'un fournisseur
+> est un faux (OP-N120, levé par la 12b). Types régénérés : `ClaimCodeAssociationResult.reason` gagne
+> `BAD_PRINTED_NUMBER` et `PRINTED_NUMBER_TAKEN` (ADR-225) ; un client doit tolérer une valeur inconnue. Le code part
+> même si l'app ne reçoit pas d'accusé : la bascule se fait côté serveur (limites : OP-N166).
 
 - [ ] /spec-kitty.specify App festivalier Flutter, Android et iOS, contre le contrat (SPECIFICATION §8.5 « App festivalier », §7.8, §8.3, ADR-42, ADR-57, ADR-64, ADR-66). connexion, solde et historique, recharge en ligne, paiement par QR commerçant (confirmation par PIN ou biométrie) et QR client à usage unique (60 s, jamais préchargé), rattachement par QR ou code imprimé (demande en attente avec code de confirmation si le bracelet contient de l'argent), déclaration de perte (suspension immédiate, proposition de payer par QR), demande de remboursement, consultation anonyme du solde par code (`POST /public/balance-lookups`, lecture seule). L'app ne lit jamais la puce. Interfaces en français et en anglais.
 - [ ] /spec-kitty.plan Flutter, types Dart générés depuis `openapi.yaml`. Pas de connexion Google ou Apple. Pas de portail web.
@@ -604,6 +629,15 @@ vendeurs et le catalogue : la mission les ajoute.
 > ligne (7), de la clôture et des versements (9) s'ajoutent quand ces missions sont fusionnées. Les dettes serveur
 > héritées sont en mission 11a.
 
+> **Hérité de la 10a (20/11/2026, ADR-226, ADR-227, OP-N163 à OP-N165)** : écran d'identification (pièce : type, pays,
+> 4 derniers caractères, expiration ; compte vérifié exigé, `422 ACCOUNT_REQUIRED` sinon) et écran de révocation à
+> deux personnes (demande `KYC_REVOCATION`, motif de 10 caractères au moins, approbation par une autre personne
+> habilitée). **L'écran doit expliquer à l'agent la règle de l'agent titulaire** : un compte dont le numéro vérifié est
+> son propre téléphone est refusé (`403`) ; limite connue, non détectée : agent sans numéro ou compte à un autre numéro
+> (OP-N163). Un client sans portefeuille d'événement répond `403` (OP-N165). Une identification posée sans
+> portefeuille ne se révoque que par `OPERATOR_ADMIN`. SPECIFICATION §6.3 point 5 amendé le 23/11/2026 (décision du porteur) : deux personnes,
+> comme le contrat (OP-N164 levé).
+
 > **Hérité de la mission 11a (OP-N160, ADR-220, 19/11/2026)** : `canSee` montre encore un lot de
 > versements mixte (plusieurs classes de bénéficiaires) en lecture seule à un détenteur d'une seule
 > classe ; l'écran ne doit pas l'afficher, ni offrir décision, destination ou export. Test de borne
@@ -677,6 +711,17 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 12b — Intégrations réelles (services externes)
 
+> **Hérité de la 10a (20/11/2026, ADR-229, OP-N120, OP-N166)** : brancher les **trois fournisseurs réels** derrière
+> `OtpProvider` (WhatsApp, SMS principal, SMS de repli ; `customer-auth/otp-providers.ts`) : accusés de livraison
+> (`deliveryRef`, `onDelivery`), lien du titulaire (`HolderLink`), délais `OTP_WHATSAPP_TIMEOUT_MS` et
+> `OTP_SMS_PRIMARY_TIMEOUT_MS` mesurés en réel ; **retirer `X-Test-Otp-Code`** et les trois faux, ainsi que leurs
+> libellés dans `processes/bootstrap.ts` et `COVERAGE` de `production-refusals.spec.ts` (« l'envoi des codes par
+> WhatsApp », « … par SMS (principal) », « … par SMS (repli) »). Limites propres à la 12b : code en mémoire du processus
+> seulement (une bascule est perdue au redémarrage), chaîne arrêtée sans repli ni essai noté quand le plafond de 35 s
+> tombe avant l'étape suivante, instabilité d'un échec sur 50 en intégration (OP-N166 ; tests de borne
+> `unit/customer-auth/otp-chain.spec.ts`). Aussi : OP-N165, l'auteur de la révocation fixé par l'API, se lève avec la
+> preuve signée de la personne qui décide (OP-N56).
+
 > **Hérité de la mission 9b (17/11/2026, OP-N148, ADR-212)** : alerte dédiée « paiement vu à la banque après recrédit » quand une ligne
 > de relevé importée après le recrédit d'un `FAILED` porte la référence de la demande (aujourd'hui : alerte générique
 > `statement-unmatched`), envoyée à une personne (OP-N132) ; test : la ligne tardive lève l'alerte dédiée.
@@ -743,6 +788,14 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la 10a (20/11/2026, ADR-228, ADR-230, ADR-231)** : (1) exécuter
+> `docs/procedure-rotation-codes-rattachement.md` **sur un lot réel** (rotation, réémission par la commande, ancien
+> code refusé, nouveau code qui rattache le bracelet de sa ligne, fichier détruit) et figer par test le disque plein
+> (`ENOSPC`) et le `COMMIT` d'issue incertaine de `reissue-claim-codes` (OP-N167) ; (2) passe réelle des délais de
+> 10 s et 20 s de la chaîne d'envoi avec les fournisseurs de la 12b ; (3) confirmer ou affiner l'avis de solde
+> provisoire (OP-N168) ; (4) mineurs OP-N169 (course `CL065`, ancien code à la personnalisation, `seed-demo` sans
+> version de code, lignes de plus de 100 caractères) ; (5) rejouer `tests_10a_rights.sql` sur la base de recette.
 
 > **Hérité de la mission 11a (19/11/2026, ADR-224)** : relevé des limites de relecture : atomicité
 > de la session de vendeur après une API tombée (OP-N158), tests faibles de `vendor-pin` (OP-N159 :

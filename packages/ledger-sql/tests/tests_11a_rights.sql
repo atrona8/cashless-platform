@@ -67,7 +67,7 @@ CREATE TEMP TABLE m11a (sig text PRIMARY KEY);
 INSERT INTO m11a VALUES
  ('create_media_batch(uuid,uuid,text,integer,integer,text,bigint,bigint,text,text,text,uuid)'),
  ('update_media_batch(uuid,jsonb,uuid)'), ('set_media_batch_status(uuid,text,text,uuid)'),
- ('media_set_status(uuid,text,text,uuid)'), ('issue_claim_codes(uuid,bytea[])'),
+ ('media_set_status(uuid,text,text,uuid)'), ('issue_claim_codes(uuid,bytea[],smallint)'),
  ('advance_app_attest_counter(uuid,bytea,bigint)'),
  ('enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'),
  ('begin_vendor_pin_check(uuid,uuid)'), ('open_vendor_session(uuid,uuid)'),
@@ -86,7 +86,7 @@ SELECT set_eq(
     ('cashless_app update_media_batch(uuid,jsonb,uuid)'),
     ('cashless_app set_media_batch_status(uuid,text,text,uuid)'),
     ('cashless_app media_set_status(uuid,text,text,uuid)'),
-    ('cashless_app issue_claim_codes(uuid,bytea[])'),
+    ('cashless_app issue_claim_codes(uuid,bytea[],smallint)'),
     ('cashless_app advance_app_attest_counter(uuid,bytea,bigint)'),
     ('cashless_app enroll_device(bytea,text,text,text,bytea,bytea,bytea,timestamptz,text,text,bytea,timestamptz,uuid,bytea,bytea)'),
     ('cashless_pin begin_vendor_pin_check(uuid,uuid)'),

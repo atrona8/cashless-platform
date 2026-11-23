@@ -56,7 +56,7 @@ export class LostMediaService {
       });
     }
     const current = await client.query<CustomerMediaDto>(
-      `SELECT m.id AS media_id, NULL::text AS printed_number, m.status::text,
+      `SELECT m.id AS media_id, m.printed_number, m.status::text,
               m.deposit_status::text, ma.wallet_id
          FROM media m
          JOIN media_assignment ma ON ma.media_id = m.id AND ma.released_at IS NULL

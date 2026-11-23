@@ -1,5 +1,5 @@
 {
-  "_comment": "Référence épinglée du contrat (mission 8). Changer ce fichier est une décision du porteur : ligne 'Décision du porteur : <date> <référence ADR>' exigée par check-baseline-decision.mjs. Fichier à faire relire par une personne.",
+  "_comment": "Référence épinglée du contrat (mission 8). Changer ce fichier est une décision du porteur : ligne 'Décision du porteur : <date> <référence ADR>' exigée par check-baseline-decision.mjs. Fichier à faire relire par une personne. Mission 10a, décision du porteur du 20/11/2026 (ADR-225) : description du corps text/csv d'importClaimCodeAssociations, motifs BAD_PRINTED_NUMBER et PRINTED_NUMBER_TAKEN, réponse 422 de revokeKycVerification.",
   "baseline": {
     "commit": "d2a7c538c81a2a790c1aec6902aaf09283bab58f",
     "path": "packages/contracts/openapi.yaml",
@@ -366,6 +366,27 @@
       "pointer": "/components/schemas/AccountMappingVersion",
       "kind": "schema",
       "sha256": "76851e0b506a3b0b9a96ddb6d0eb0350e924f4c0d84867e5c8fbd2fac525e17e"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1claim-code-associations/post/requestBody/content/text~1csv/schema/description",
+      "kind": "description",
+      "before": "Lignes `code,uid` (UID sur 14 chiffres hexadécimaux), avec ou sans ligne d'en-tête.",
+      "sha256": "d29a454a36a74307bd98d287758c452e8c09bac429119bdce507fd2745e825b7"
+    },
+    {
+      "pointer": "/components/schemas/ClaimCodeAssociationResult/properties/rejected/items/properties/reason/enum/9",
+      "kind": "enum-value",
+      "sha256": "7f2aa531253298a3247d195e82c60c424799623b3f9103ce04379020db830f7a"
+    },
+    {
+      "pointer": "/components/schemas/ClaimCodeAssociationResult/properties/rejected/items/properties/reason/enum/10",
+      "kind": "enum-value",
+      "sha256": "644ebb2a19dc0acae992df7848682a84dc6cfbef23252437e89e7b3c856ffcb6"
+    },
+    {
+      "pointer": "/paths/~1kyc-verifications~1{kyc_verification_id}~1revoke/post/responses/422",
+      "kind": "response",
+      "sha256": "50fbeef8755b71753dbe87b2485e840226e9bc43b04a4241699a47f25d6c30a9"
     }
   ]
 }

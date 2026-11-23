@@ -1,5 +1,6 @@
 // Configuration lue dans l'environnement : pools applicatif et de plateforme (contrat platform-access).
-import { loadConfig, vendorPinSettings } from '../../src/config/config';
+import { claimAdminSettings, loadConfig, vendorPinSettings } from '../../src/config/config';
+import { ClaimHasher, assertClaimKeyVersion } from '../../src/kms/claim-hash';
 import { DEVICE_PRODUCTION } from '../support/tls';
 
 const PRODUCTION = {
@@ -830,5 +831,109 @@ describe('loadConfig', () => {
       expect(() => loadConfig({ ...PRODUCTION, ANDROID_MIN_PATCH_LEVEL: bad })).toThrow(
         /ANDROID_MIN_PATCH_LEVEL/,
       );
+  });
+
+  // ----- Mission serveur-app-festivalier (WP07) : version du secret des codes, délais d'envoi -----
+
+  describe('version du secret des codes de rattachement et délais de la chaîne d’envoi', () => {
+    it('défauts (1, 10 000, 20 000), en production comme ailleurs', () => {
+      for (const env of [LOCAL, PRODUCTION]) {
+        const config = loadConfig(env);
+        expect(config.claimCodeKeyVersion).toBe(1);
+        expect(config.otpWhatsappTimeoutMs).toBe(10_000);
+        expect(config.otpSmsPrimaryTimeoutMs).toBe(20_000);
+      }
+    });
+
+    it.each([
+      ['CLAIM_CODE_HMAC_KEY_VERSION', '1', 'claimCodeKeyVersion', 1],
+      ['CLAIM_CODE_HMAC_KEY_VERSION', '32767', 'claimCodeKeyVersion', 32767],
+      ['OTP_WHATSAPP_TIMEOUT_MS', '1000', 'otpWhatsappTimeoutMs', 1000],
+      ['OTP_WHATSAPP_TIMEOUT_MS', '15000', 'otpWhatsappTimeoutMs', 15000],
+      ['OTP_SMS_PRIMARY_TIMEOUT_MS', '1000', 'otpSmsPrimaryTimeoutMs', 1000],
+      ['OTP_SMS_PRIMARY_TIMEOUT_MS', '20000', 'otpSmsPrimaryTimeoutMs', 20000],
+    ] as const)('%s=%s accepté (borne)', (name, value, field, expected) => {
+      expect(loadConfig({ ...PRODUCTION, [name]: value })[field]).toBe(expected);
+    });
+
+    it.each([
+      ['CLAIM_CODE_HMAC_KEY_VERSION', ['0', '32768', '1.5', '-1', 'abc']],
+      ['OTP_WHATSAPP_TIMEOUT_MS', ['999', '15001', '1.5', '-1', 'abc']],
+      ['OTP_SMS_PRIMARY_TIMEOUT_MS', ['999', '20001', '1.5', '-1', 'abc']],
+    ] as const)('%s hors bornes ou non entier : refus nommant la variable', (name, bads) => {
+      for (const bad of bads) {
+        expect(() => loadConfig({ ...PRODUCTION, [name]: bad })).toThrow(new RegExp(name));
+        expect(() => loadConfig({ ...LOCAL, [name]: bad })).toThrow(new RegExp(name));
+      }
+    });
+
+    it('valeur vide : défaut', () => {
+      expect(
+        loadConfig({ ...PRODUCTION, CLAIM_CODE_HMAC_KEY_VERSION: '' }).claimCodeKeyVersion,
+      ).toBe(1);
+    });
+
+    it('ClaimHasher expose la version de la configuration', () => {
+      const config = loadConfig({ ...PRODUCTION, CLAIM_CODE_HMAC_KEY_VERSION: '7' });
+      expect(new ClaimHasher(config).keyVersion).toBe(7);
+    });
+
+    it('assertClaimKeyVersion : inférieure refuse, égale et supérieure passent, 0 passe', () => {
+      expect(() => assertClaimKeyVersion(1, 2)).toThrow(/inférieure à la version 2/);
+      expect(() => assertClaimKeyVersion(2, 2)).not.toThrow();
+      expect(() => assertClaimKeyVersion(3, 2)).not.toThrow();
+      expect(() => assertClaimKeyVersion(1, 0)).not.toThrow();
+    });
+  });
+
+  describe('claimAdminSettings (commande de réémission des codes)', () => {
+    const ADMIN_PRODUCTION = {
+      NODE_ENV: 'production',
+      CLAIM_CODE_HMAC_KEY: 'ab'.repeat(32),
+      CLAIM_CODE_DOMAIN: 'pay.example.org',
+      DATABASE_URL_CLAIMADMIN: 'postgres://cashless_claimadmin:secret@db.internal:5432/cashless',
+    };
+
+    it('production : lit la configuration nécessaire, sans OIDC ni autre secret', () => {
+      const settings = claimAdminSettings(ADMIN_PRODUCTION);
+      expect(settings).toMatchObject({
+        production: true,
+        claimCodeKeyVersion: 1,
+        claimCodeDomain: 'pay.example.org',
+        claimAdminDatabaseUrl: ADMIN_PRODUCTION.DATABASE_URL_CLAIMADMIN,
+      });
+      expect(settings.claimCodeHmacKey.equals(Buffer.alloc(32, 0xab))).toBe(true);
+      expect(
+        claimAdminSettings({ ...ADMIN_PRODUCTION, CLAIM_CODE_HMAC_KEY_VERSION: '3' })
+          .claimCodeKeyVersion,
+      ).toBe(3);
+    });
+
+    it('production sans DATABASE_URL_CLAIMADMIN : erreur nommant la variable', () => {
+      const { DATABASE_URL_CLAIMADMIN: _url, ...without } = ADMIN_PRODUCTION;
+      expect(() => claimAdminSettings(without)).toThrow(/DATABASE_URL_CLAIMADMIN/);
+    });
+
+    it('production : secret de test, secret absent et domaine absent refusés', () => {
+      const testKey = Buffer.from(
+        'cashless-claim-code-hmac-key-de-test-uniquement-0000',
+        'utf8',
+      ).toString('hex');
+      expect(() =>
+        claimAdminSettings({ ...ADMIN_PRODUCTION, CLAIM_CODE_HMAC_KEY: testKey }),
+      ).toThrow(/secret de test refusé/);
+      const { CLAIM_CODE_HMAC_KEY: _k, ...noKey } = ADMIN_PRODUCTION;
+      expect(() => claimAdminSettings(noKey)).toThrow(/CLAIM_CODE_HMAC_KEY/);
+      const { CLAIM_CODE_DOMAIN: _d, ...noDomain } = ADMIN_PRODUCTION;
+      expect(() => claimAdminSettings(noDomain)).toThrow(/CLAIM_CODE_DOMAIN/);
+    });
+
+    it('hors production : valeur locale du rôle cashless_claimadmin', () => {
+      const settings = claimAdminSettings(LOCAL);
+      expect(settings.production).toBe(false);
+      expect(settings.claimAdminDatabaseUrl).toContain(
+        'cashless_claimadmin:cashless_claimadmin_local',
+      );
+    });
   });
 });

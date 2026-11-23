@@ -48,6 +48,12 @@ export interface AppConfig {
   snapshotSigningKeyRef: string;
   /** Secret de l'empreinte des codes de rattachement (32 octets au moins), hors de la base. */
   claimCodeHmacKey: Buffer;
+  /** Version du secret des empreintes de codes de rattachement (`CLAIM_CODE_HMAC_KEY_VERSION`, entier de 1 à 32767, 1 par défaut). */
+  claimCodeKeyVersion: number;
+  /** Attente de la réponse de WhatsApp avant le repli (`OTP_WHATSAPP_TIMEOUT_MS`, 1 000 à 15 000, 10 000 par défaut). */
+  otpWhatsappTimeoutMs: number;
+  /** Attente du SMS principal avant le repli (`OTP_SMS_PRIMARY_TIMEOUT_MS`, 1 000 à 20 000, 20 000 par défaut) : le code reste en mémoire 35 s au plus. */
+  otpSmsPrimaryTimeoutMs: number;
   /** Durée de vie en mémoire d'une clé de données en clair, en secondes (0 à 300 ; 0 = aucun cache). */
   tagDekCacheSeconds: number;
   /** Clé d'emballage des clés de données dans le service de clés ; obligatoire en production. */
@@ -234,6 +240,8 @@ const LOCAL_TAG_URLS = {
   DATABASE_URL_SNAPSIGN:
     'postgres://cashless_snapsign:cashless_snapsign_local@127.0.0.1:5433/cashless_test',
   DATABASE_URL_PIN: 'postgres://cashless_pin:cashless_pin_local@127.0.0.1:5433/cashless_test',
+  DATABASE_URL_CLAIMADMIN:
+    'postgres://cashless_claimadmin:cashless_claimadmin_local@127.0.0.1:5433/cashless_test',
 } as const;
 
 /** Secret de test, hors production seulement : sa valeur est publique. */
@@ -451,6 +459,21 @@ function boundedInt(
       );
     return bounds.test;
   }
+  if (!/^[0-9]+$/.test(value) || Number(value) < bounds.min || Number(value) > bounds.max)
+    throw new Error(
+      `${name} : entier de ${bounds.min} à ${bounds.max} attendu (reçu « ${value} »)`,
+    );
+  return Number(value);
+}
+
+/** Entier facultatif borné : `fallback` si la variable est absente ou vide, en production comme ailleurs. */
+function optionalInt(
+  env: NodeJS.ProcessEnv,
+  name: string,
+  bounds: { min: number; max: number; default: number },
+): number {
+  const value = env[name];
+  if (value === undefined || value === '') return bounds.default;
   if (!/^[0-9]+$/.test(value) || Number(value) < bounds.min || Number(value) > bounds.max)
     throw new Error(
       `${name} : entier de ${bounds.min} à ${bounds.max} attendu (reçu « ${value} »)`,
@@ -792,6 +815,38 @@ export function vendorPinSettings(env: NodeJS.ProcessEnv = process.env): {
   };
 }
 
+/**
+ * Configuration lue par la seule commande d'exploitation de réémission des codes de rattachement
+ * (jamais `loadConfig` : ni OIDC ni autre secret). Rôle `cashless_claimadmin`, jamais `cashless_app`.
+ */
+export function claimAdminSettings(env: NodeJS.ProcessEnv = process.env): {
+  production: boolean;
+  claimCodeHmacKey: Buffer;
+  claimCodeKeyVersion: number;
+  claimCodeDomain: string;
+  claimAdminDatabaseUrl: string;
+} {
+  const production = nodeEnv(env.NODE_ENV) === 'production';
+  const claimAdminDatabaseUrl =
+    env.DATABASE_URL_CLAIMADMIN || (production ? '' : LOCAL_TAG_URLS.DATABASE_URL_CLAIMADMIN);
+  if (!claimAdminDatabaseUrl)
+    throw new Error(
+      'DATABASE_URL_CLAIMADMIN manquant : chaîne de connexion du rôle cashless_claimadmin ' +
+        'obligatoire en production',
+    );
+  return {
+    production,
+    claimCodeHmacKey: claimCodeHmacKey(env, production),
+    claimCodeKeyVersion: optionalInt(env, 'CLAIM_CODE_HMAC_KEY_VERSION', {
+      min: 1,
+      max: 32767,
+      default: 1,
+    }),
+    claimCodeDomain: claimCodeDomain(env.CLAIM_CODE_DOMAIN, production),
+    claimAdminDatabaseUrl,
+  };
+}
+
 /** Réglages ajoutés par la mission des terminaux. */
 type DeviceSettings = Pick<
   AppConfig,
@@ -1006,6 +1061,21 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     snapshotSignerDatabaseUrl: tagUrl('DATABASE_URL_SNAPSIGN'),
     snapshotSigningKeyRef: env.SNAPSHOT_SIGNING_KEY_REF || (production ? '' : 'fake-kms:ecc:test'),
     claimCodeHmacKey: claimKey,
+    claimCodeKeyVersion: optionalInt(env, 'CLAIM_CODE_HMAC_KEY_VERSION', {
+      min: 1,
+      max: 32767,
+      default: 1,
+    }),
+    otpWhatsappTimeoutMs: optionalInt(env, 'OTP_WHATSAPP_TIMEOUT_MS', {
+      min: 1000,
+      max: 15000,
+      default: 10000,
+    }),
+    otpSmsPrimaryTimeoutMs: optionalInt(env, 'OTP_SMS_PRIMARY_TIMEOUT_MS', {
+      min: 1000,
+      max: 20000,
+      default: 20000,
+    }),
     tagDekCacheSeconds: tagDekCacheSeconds(env.TAG_DEK_CACHE_SECONDS),
     tagWrappingKeyRef: tagWrappingKeyRef(env.TAG_WRAPPING_KEY_REF, production),
     claimCodeDomain: claimCodeDomain(env.CLAIM_CODE_DOMAIN, production),

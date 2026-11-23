@@ -218,8 +218,7 @@ export class CustomerAuthService {
     });
     // Après validation du défi : l'envoi n'a lieu que pour un défi enregistré. Même chemin, numéro connu ou non.
     const link = input.linkFor?.(challengeId);
-    if (link) await this.sender.send(phone, code, input.channel, link);
-    else await this.sender.send(phone, code, input.channel);
+    await this.sender.send(phone, code, input.channel, link, { challengeId, operatorId });
     return { challengeId, code };
   }
 

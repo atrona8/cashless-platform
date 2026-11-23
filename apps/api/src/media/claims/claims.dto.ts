@@ -51,7 +51,7 @@ export function parseConfirm(raw: unknown): ConfirmInput {
 /** Bracelet vu par son festivalier (contrat `CustomerMedia`). */
 export interface CustomerMedia {
   media_id: string;
-  printed_number: null;
+  printed_number: string | null;
   status: string;
   deposit_status: string;
   wallet_id: string | null;
