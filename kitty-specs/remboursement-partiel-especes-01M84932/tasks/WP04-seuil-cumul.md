@@ -11,6 +11,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/remboursement-partiel-especes. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/remboursement-partiel-especes unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-remboursement-partiel-especes-01M84932
+base_commit: ca19084c915229a733c034180609f789a22ad401
+created_at: '2026-11-23T14:25:50.618893+00:00'
 subtasks: [T012, T013, T014]
 phase: Phase 2 - Réglages et seuil
 agent: claude
