@@ -49,7 +49,7 @@
 <rect x="382.5" y="1697.12" width="380" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Identification et révocation à deux</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Écriture par fonctions contrôlées de la base ; la révocation n’est exécutée qu’à l’approbation</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan du 20/11/2026 — non implémenté</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 23/11/2026 — non fusionné</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier</text>
 <text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
@@ -88,7 +88,7 @@
 <text x="1153.75" y="1598.195" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Approuvée, valideur audité</text>
 <text x="34.0" y="1619.9699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">14</text>
 <text x="572.5" y="1729.395" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Niveau NONE à la recharge suivante</text>
-<text x="60" y="1817.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan du 20/11/2026, non implémenté. Une pièce expirée donne le niveau NONE sans tâche planifiée ; une identification déjà révoquée donne 409.</text>
+<text x="60" y="1817.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 23/11/2026, non fusionné. Pièce expirée : niveau NONE sans tâche planifiée. Identification déjà révoquée : demande acceptée, exécution refusée (409, demande FAILED).</text>
 <text x="60" y="1842.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">La règle de l’agent titulaire compare le numéro vérifié du compte au téléphone de l’agent ; limite consignée (agent sans numéro non détecté).</text>
 </g>
 </svg>

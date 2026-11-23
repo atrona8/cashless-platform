@@ -25,7 +25,7 @@
 <polyline points="448,940.0 1000,995.0" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,995.0 979.7425751141004,1003.5811850575627 981.8340483819917,982.5903988052725" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Serveur de l’app festivalier</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Ce que chaque acteur peut faire au guichet, à l’exploitation et dans l’app</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan du 20/11/2026 — non implémenté</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 23/11/2026 — non fusionné</text>
 <text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
 <text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
 <text x="275.0" y="284.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Caissier</text>
@@ -40,9 +40,9 @@
 <text x="1225.0" y="779.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Réémettre les codes</text>
 <text x="1225.0" y="889.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Recevoir son code</text>
 <text x="1225.0" y="999.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="middle">Voir bracelet et solde</text>
-<text x="60" y="1091.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan finalisé le 20/11/2026, non implémenté. Flèche rouge pointillée : refus (agent titulaire, 403).</text>
+<text x="60" y="1091.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 23/11/2026 (11 lots approuvés), non fusionné. Flèche rouge pointillée : refus (agent titulaire, 403).</text>
 <text x="60" y="1123.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">L’identification exige un compte au numéro vérifié ; la révocation se fait à deux personnes.</text>
-<text x="60" y="1155.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Après rotation, les anciens codes sont refusés comme inconnus ; les nouveaux sont réémis par la commande d’exploitation.</text>
+<text x="60" y="1155.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Après rotation, les anciens codes sont refusés comme inconnus ; les nouveaux sont réémis par la commande d’exploitation, dont le fichier nomme chaque bracelet.</text>
 <text x="60" y="1187.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Le code part par WhatsApp, puis SMS ; le numéro imprimé et l’avis de solde provisoire arrivent dans /me.</text>
 </g>
 </svg>

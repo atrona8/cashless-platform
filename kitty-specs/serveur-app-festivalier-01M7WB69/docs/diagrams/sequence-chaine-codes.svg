@@ -44,7 +44,7 @@
 <rect x="794.0" y="1462.12" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Chaîne d’envoi des codes</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Un seul code par défi, gardé en mémoire du processus ; les bascules ne comptent pas dans les limites</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan du 20/11/2026 — non implémenté</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 23/11/2026 — non fusionné</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">App festivalier</text>
 <text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">WhatsApp (faux)</text>
@@ -78,7 +78,7 @@
 <text x="34.0" y="1426.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
 <text x="960.0" y="1480.395" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Envoyer le code, sans WhatsApp</text>
 <text x="34.0" y="1502.1699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
-<text x="60" y="1589.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan du 20/11/2026, non implémenté. Chaque essai est noté sans le code (otp_channel_attempt) ; redémarrage pendant la chaîne : bascule perdue, le festivalier redemande.</text>
+<text x="60" y="1589.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 23/11/2026, non fusionné. Essais notés sans le code ; code gardé 35 s au plus : au plafond, la chaîne s’arrête sans repli (OP-N166) ; redémarrage : bascule perdue.</text>
 <text x="60" y="1614.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Les trois faux refusent le démarrage en production ; l’en-tête X-Test-Otp-Code du faux reste jusqu’à la mission 12b (OP-N120).</text>
 </g>
 </svg>

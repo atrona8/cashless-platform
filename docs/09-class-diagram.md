@@ -15,6 +15,7 @@
 > `.docmeta/diagram-style-routing.md` ; Mermaid y est le repli par défaut.
 > Complément du 16/11/2026 (mission 9a consolidée sur `feat/remboursements`, squash `bf0b6376`) : section 4 septies recalée sur les migrations `0081` et `0082` (`refund_request`, colonnes ajoutées à `otp_challenge`) ; section 5 complétée : `refund_request` et les 5 tables de `0080` (comptes festivaliers, servis hors Spec Kitty le 10/11/2026), 109 tables au total. Dans `main` par la PR #15 le 16/11/2026.
 > Complément du 17/11/2026 (mission 9b, review terminée puis consolidée sur `feat` le 17/11/2026, squash `b4b81d8c`, dans `main` par la PR #18 le 18/11/2026 ; section 5 complétée : 3 tables, 112 au total) : section 4 octies recalée sur le code réel (tables `closing_step`, `statement_import`, `account_mapping` ; colonnes ajoutées à `payout` et `external_statement_line` ; déclencheur de `refund_request`) ; migrations réelles `0083` à `0088` sur la branche de la mission, pas encore dans `main`.
+> Complément du 23/11/2026 (mission 10a relue, 11 lots approuvés, non fusionnée) : section 4 decies réalisée sur les migrations `0096` à `0099` (lane `k`) ; `printed_number` est en `0097` (et non `0098` comme prévu au plan) ; section 5 : `otp_channel_attempt`, 114 tables au total.
 
 ## 1. Organisation, événements et identité
 
@@ -694,14 +695,14 @@ classDiagram
   device_app_attest_key --> device : device_id
 ```
 
-## 4 decies. Serveur de l'app festivalier (mission 10a, 📝 plan finalisé le 20/11/2026, non implémentée)
+## 4 decies. Serveur de l'app festivalier (mission 10a, 🔍 relue le 23/11/2026, non fusionnée)
 
-> **Prévu, non réalisé.** Source : `kitty-specs/serveur-app-festivalier-01M7WB69/data-model.md` (migrations `0096` à `0099` à venir).
+> **Réalisé sur la lane `k`, pas encore dans `main`.** Source : migrations `0096` à `0099` de `packages/ledger-sql/migrations/`, `kitty-specs/serveur-app-festivalier-01M7WB69/data-model.md`.
 
 - `kyc_verification` : table existante (schéma de référence), aucune colonne nouvelle ; écrite par `create_kyc_verification` et `revoke_kyc_verification` (`0096`, `SECURITY DEFINER`).
-- `media.claim_key_version`, `claim_code.key_version`, `media_claim.key_version` : version du secret de l'empreinte, défaut 1 (`0097`) ; fonction `reissue_claim_codes` (rôle `cashless_claimadmin`).
-- `media.printed_number` : texte facultatif `[A-Z0-9-]{1,32}`, unique par prestataire quand non NULL (`0098`) ; fonction `wallet_pending_offline_notice`.
-- Table nouvelle `otp_channel_attempt` (défi, canal `WHATSAPP`, `SMS_PRIMARY` ou `SMS_FALLBACK`, fournisseur, envoi, confirmation, motif d'échec ; jamais de code) (`0099`).
+- `media.claim_key_version`, `claim_code.key_version`, `media_claim.key_version` : version du secret de l'empreinte, défaut 1 (`0097`) ; fonctions `reissuable_media` et `reissue_claim_codes` (rôle `cashless_claimadmin`, aucun droit de table), `claim_key_version_max` (refus de démarrage de l'API si la version configurée est inférieure).
+- `media.printed_number` : texte facultatif `[A-Z0-9-]{1,32}`, unique par prestataire quand non NULL (`0097`, erreurs `CL064` et `CL065`) ; fonction `wallet_pending_offline_notice` (`0098`).
+- Table nouvelle `otp_channel_attempt` (défi, canal `WHATSAPP`, `SMS_PRIMARY` ou `SMS_FALLBACK`, fournisseur, envoi, confirmation, motif d'échec en capitales ; jamais de code ; RLS forcée) (`0099`), avec `UNIQUE (id, operator_id)` ajouté à `otp_challenge` pour la clé composite.
 
 ```mermaid
 classDiagram
@@ -717,7 +718,7 @@ classDiagram
 
 ## 5. Description des tables
 
-Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`, 113 avec la mission « Durcissements serveur » : `device_app_attest_key`),
+Toutes les tables du schéma (58 jusqu'à la mission 4, 63 avec la mission « Identité et enrôlement des terminaux », 75 avec la mission « Encaissement en ligne », 85 avec la mission « Recharges, caisses et PSP », 95 avec la mission « Hors ligne : snapshots et lots », 103 avec la mission « Passerelle locale de site », 108 avec les comptes festivaliers de `0080`, 109 avec la mission « Remboursements des festivaliers », 112 avec la mission « Versements, rapprochements et clôture » : `statement_import`, `closing_step`, `account_mapping`, 113 avec la mission « Durcissements serveur » : `device_app_attest_key`, 114 avec la mission « Serveur de l'app festivalier » : `otp_channel_attempt`),
 groupées par domaine. Colonne « Origine » : schéma de référence (`réf.`) ou
 migration qui l'a créée. Les descriptions reprennent les commentaires du schéma SQL ; en cas d'écart, le SQL fait foi.
 
@@ -744,7 +745,8 @@ migration qui l'a créée. Les descriptions reprennent les commentaires du sché
 | `app_user` | Personne du personnel connue par son fournisseur d'identité (émetteur, sujet), rattachée à un prestataire ou à la plateforme. | 0003 |
 | `role_assignment` | Rôle tenu par une personne sur une portée (plateforme, prestataire, organisateur, événement, commerçant), avec qui l'a accordé ou retiré ; rôle `PERSONALIZER` ajouté par 0011. | 0003 (+0011) |
 | `customer_identity` | Compte d'un festivalier par numéro de téléphone vérifié par code (un numéro = un compte par prestataire). | 0080 |
-| `otp_challenge` | Défi de code à usage unique : empreinte HMAC du code, canal, 5 essais au plus, expiration ; usage (`purpose`) et objet (`subject_id`) ajoutés par `0081` pour le titulaire d'un remboursement. | 0080 (+0081) |
+| `otp_challenge` | Défi de code à usage unique : empreinte HMAC du code, canal, 5 essais au plus, expiration ; usage (`purpose`) et objet (`subject_id`) ajoutés par `0081` pour le titulaire d'un remboursement ; `UNIQUE (id, operator_id)` ajouté par `0099`. | 0080 (+0081, +0099) |
+| `otp_channel_attempt` | Essai d'envoi d'un code par un canal de la chaîne (WhatsApp, SMS principal, SMS de repli) : fournisseur, envoi, confirmation, motif d'échec fermé ; jamais le code, une empreinte ni un numéro. | 0099 |
 | `otp_phone_block` | Numéro bloqué un temps après trop d'essais faux. | 0080 |
 | `customer_refresh_token` | Jetons de renouvellement des festivaliers (empreinte, usage unique, rotation par famille, réemploi = famille révoquée). | 0080 |
 | `operator_public_code` | Code public d'un prestataire, utilisé par l'app festivalier multi-prestataires. | 0080 |
@@ -854,7 +856,7 @@ Extensions de tables existantes : `offline_policy` (`CHECK offline_policy_cash_t
 | `media_batch` | Lot de bracelets : type, quantité, index de clé, statut, politique de réutilisation, caution et préchargement ; événement nul = lot réutilisable pour tous les événements de l'organisateur ; date de commande des codes imprimés. | réf. (+0010) |
 | `media_batch_transition` | Passages de statut permis pour un lot. | réf. |
 | `media_batch_status_history` | Historique des statuts d'un lot. | réf. |
-| `media` | Bracelet (MIFARE Ultralight EV1) : identité opaque (empreinte), UID, statut, caution, mot de passe chiffré, empreinte du code imprimé. Le bracelet ne porte aucun montant. | réf. (+0010) |
+| `media` | Bracelet (MIFARE Ultralight EV1) : identité opaque (empreinte), UID, statut, caution, mot de passe chiffré, empreinte du code imprimé et sa version du secret (`claim_key_version`), numéro imprimé facultatif (`printed_number`). Le bracelet ne porte aucun montant. | réf. (+0010, +0097) |
 | `media_transition` | Passages de statut permis pour un bracelet. | réf. |
 | `media_status_history` | Historique des statuts d'un bracelet : qui, quand, pourquoi, validé par qui. | réf. |
 | `media_assignment` | Rattachement d'un bracelet à un portefeuille, par devise ; historisé (un bracelet réattribuable en a plusieurs). | réf. |

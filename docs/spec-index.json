@@ -1309,7 +1309,7 @@
   {
     "mission": "serveur-app-festivalier-01M7WB69",
     "titre_cas_usage": "Serveur de l'app festivalier",
-    "statut": "plan finalisé le 20/11/2026, non implémentée",
+    "statut": "relue le 23/11/2026 (11 lots approuvés), non fusionnée",
     "user_stories": [
       {
         "titre": "Identifier au guichet",
@@ -1342,13 +1342,13 @@
     "resultat_mesurable": "100 % des festivaliers identifiés rechargent au-delà du plafond non identifié et 0 identification pour un portefeuille anonyme ou par l'agent titulaire ; après rotation 100 % des anciens codes refusés et 100 % des codes réémis rattachent ; bascules WhatsApp, SMS principal, SMS de repli à 11 s et 21 s au plus (tolérance 1 s) ; getMe et listMyWallets p95 sous 300 ms pour 5 portefeuilles ; 0 code en clair en base, journaux, audit ou registre d'idempotence",
     "hypotheses": [
       "Le numéro imprimé arrive par une colonne facultative du fichier de l'imprimeur ; sinon printed_number vaut null (ajout validé par le porteur le 20/11/2026)",
-      "Les nouveaux codes après rotation passent par la commande d'exploitation de réémission, contrat inchangé",
+      "Les nouveaux codes après rotation passent par la commande d'exploitation de réémission ; son fichier à cinq colonnes (rank,code,url,uid,printed_number) nomme le bracelet de chaque code, sans import (décision du porteur, 20/11/2026 au soir)",
       "Les délais de 10 s et de 20 s sont réglables par la plateforme",
       "La relecture humaine des fichiers hérités de la mission hors Spec Kitty reste à la charge du porteur"
     ],
     "contraintes": [
-      "openapi.yaml fait foi : aucune route modifiée, un seul ajout rétrocompatible",
-      "Révocation : le contrat (deux personnes) prime sur SPECIFICATION §6.3 ; contradiction signalée",
+      "openapi.yaml fait foi : aucune route modifiée, trois ajouts rétrocompatibles (colonne printed_number, deux motifs de ligne, réponse 422 de revokeKycVerification ; ADR-225)",
+      "Révocation à deux personnes : contrat et SPECIFICATION §6.3 point 5, amendé le 23/11/2026 (OP-N164 levé)",
       "Fournisseurs WhatsApp et SMS simulés jusqu'à la mission 12b, refusés en production",
       "Règle de l'agent titulaire limitée à l'égalité du numéro vérifié et du téléphone de l'agent (C-005)",
       "Plafonds du Sénégal provisoires ; .sql générés jamais modifiés à la main"
@@ -1359,7 +1359,9 @@
       "Pièce déjà expirée à la saisie : 422",
       "Rotation du secret pendant un rattachement en attente de confirmation",
       "Toute la chaîne d'envoi échoue : défi valide jusqu'à son expiration",
-      "Fournisseur qui confirme après la bascule : même code, rien n'est invalidé"
+      "Fournisseur qui confirme après la bascule : même code, rien n'est invalidé",
+      "Délais réglés au maximum ou fournisseur lent : le plafond de 35 s arrête la chaîne sans repli (OP-N166)",
+      "Demande de révocation d'une identification déjà révoquée : acceptée, exécution refusée (409)"
     ],
     "fonctionnel": [
       "Identification au guichet par fonction contrôlée de la base",
@@ -1370,7 +1372,7 @@
       "Chaîne d'envoi WhatsApp, SMS principal, SMS de repli ; SMS direct ; un seul code par défi"
     ],
     "non_fonctionnel": [
-      "Bascules à l'heure (11 s et 21 s)",
+      "Bascules à l'heure (11 s et 21 s, prouvées en minuteries simulées seulement ; mesure réelle en 12b et 13)",
       "Aucun code en clair",
       "Pièce minimale (4 derniers caractères)",
       "Lecture /me p95 sous 300 ms",

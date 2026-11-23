@@ -1,17 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1664" viewBox="0 0 2006 1664">
+<svg xmlns="http://www.w3.org/2000/svg" width="2101" height="1740" viewBox="0 0 2101 1740">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(66,50)">
 <rect x="1400" y="30" width="460" height="44" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
 <ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="185.0,236 185.0,1476" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="185.0,236 185.0,1552" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="447.5" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<polyline points="572.5,236 572.5,1476" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="572.5,236 572.5,1552" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="960.0,236 960.0,1476" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="960.0,236 960.0,1552" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1222.5" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<polyline points="1347.5,236 1347.5,1476" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1347.5,236 1347.5,1552" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <ellipse cx="1735.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="1735.0,236 1735.0,1476" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1735.0,236 1735.0,1552" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <polyline points="1729.0,290.72 580.5,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="580.5,290.72 599.8068163615882,280.17263815070754 599.8068163615882,301.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="1003.35" y="253.72000000000003" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <rect x="407.5" y="336.72" width="330" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
@@ -30,20 +30,21 @@
 <rect x="770.0" y="868.72" width="380" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <polyline points="966.0,974.72 1339.5,974.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1339.5,974.72 1320.1931836384117,985.2673618492925 1320.1931836384117,964.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="1029.35" y="937.72" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="1187.5" y="1020.72" width="320" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="1092.5" y="1020.72" width="510" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <polyline points="1353.5,1126.72 1727.0,1126.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1727.0,1126.72 1707.6931836384117,1137.2673618492925 1707.6931836384117,1116.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="1406.45" y="1089.72" width="269.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="191.0,1202.72 564.5,1202.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="564.5,1202.72 545.1931836384118,1213.2673618492925 545.1931836384118,1192.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="228.35" y="1165.72" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="578.5,1278.72 952.0,1278.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,1278.72 932.6931836384118,1289.2673618492925 932.6931836384118,1268.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="615.85" y="1241.72" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="954.0,1354.72 580.5,1354.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,1354.72 599.8068163615882,1344.1726381507076 599.8068163615882,1365.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="678.25" y="1317.72" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="566.5,1430.72 193.0,1430.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1430.72 212.3068163615882,1420.1726381507076 212.3068163615882,1441.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="280.35" y="1393.72" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1515.0" y="1172.72" width="440" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="191.0,1278.72 564.5,1278.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="564.5,1278.72 545.1931836384118,1289.2673618492925 545.1931836384118,1268.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="228.35" y="1241.72" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="578.5,1354.72 952.0,1354.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,1354.72 932.6931836384118,1365.2673618492925 932.6931836384118,1344.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="615.85" y="1317.72" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="954.0,1430.72 580.5,1430.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="580.5,1430.72 599.8068163615882,1420.1726381507076 599.8068163615882,1441.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="678.25" y="1393.72" width="176.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="566.5,1506.7199999999998 193.0,1506.7199999999998" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,1506.7199999999998 212.3068163615882,1496.1726381507074 212.3068163615882,1517.2673618492922" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="280.35" y="1469.7199999999998" width="196.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Rotation du secret et réémission</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Rotation immédiate : toute empreinte d’une ancienne version compte comme absente</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan du 20/11/2026 — non implémenté</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 23/11/2026 — non fusionné</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
 <text x="572.5" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
@@ -69,19 +70,21 @@
 <text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
 <text x="1153.75" y="955.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nombre de codes réémis</text>
 <text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
-<text x="1347.5" y="1052.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Fichier rank,code,url (0600)</text>
+<text x="1347.5" y="1052.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Fichier rank,code,url,uid,printed_number (0600)</text>
 <text x="34.0" y="1053.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">11</text>
 <text x="1541.25" y="1107.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Fichier pour l’imprimeur</text>
 <text x="34.0" y="1129.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">12</text>
-<text x="378.75" y="1183.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nouveau code (rattachement)</text>
+<text x="1735.0" y="1204.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Étiquette posée sur le bracelet de l’UID</text>
 <text x="34.0" y="1205.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">13</text>
-<text x="766.25" y="1259.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Empreinte, version courante</text>
+<text x="378.75" y="1259.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Nouveau code (rattachement)</text>
 <text x="34.0" y="1281.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">14</text>
-<text x="766.25" y="1335.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Bracelet trouvé</text>
+<text x="766.25" y="1335.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Empreinte, version courante</text>
 <text x="34.0" y="1357.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">15</text>
-<text x="378.75" y="1411.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Bracelet rattaché</text>
+<text x="766.25" y="1411.9950000000001" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Bracelet trouvé</text>
 <text x="34.0" y="1433.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">16</text>
-<text x="60" y="1509.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan du 20/11/2026, non implémenté. La commande utilise le rôle cashless_claimadmin ; cashless_app n’a aucun droit sur la réémission (test de droits).</text>
-<text x="60" y="1534.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Les lots clos sont compris ; les bracelets dont le code courant a déjà servi sont ignorés ; aucun code en clair en base, au journal ni à la sortie standard.</text>
+<text x="378.75" y="1487.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Bracelet rattaché</text>
+<text x="34.0" y="1509.7699999999998" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">17</text>
+<text x="60" y="1585.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 23/11/2026, non fusionné. Rôle cashless_claimadmin (sans mot de passe en production, migrate.ts refuse) ; cashless_app n’a aucun droit sur la réémission.</text>
+<text x="60" y="1610.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Les lots clos sont compris ; les bracelets dont le code courant a déjà servi sont ignorés ; aucun code en clair en base, au journal ni à la sortie standard.</text>
 </g>
 </svg>

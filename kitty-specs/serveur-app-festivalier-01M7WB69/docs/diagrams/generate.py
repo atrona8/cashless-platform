@@ -28,7 +28,7 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Plan du 20/11/2026 — non implémenté','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 23/11/2026 — non fusionné','decision','rectangle',20)
     ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
@@ -48,7 +48,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
 def sequence(name,title,sub,parts,msgs,note=None):
     # Styles de message : call, ret (pointillé), bad, self (action interne), note (Note over, a..b),
     # et cadres : ('#open', libellé) / ('#else', libellé) / ('#close',) (loop, alt).
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Plan du 20/11/2026 — non implémenté','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 23/11/2026 — non fusionné','decision','rectangle',20)
     n=len(parts); pw=250; gap=(1800-pw)/(n-1) if n>1 else 0; top=160
     rows=sum(1 for m in msgs if m[0]!='#close'); step=max(min((1000-top-110)/max(rows,1),104),76)
     cx={k:60+pw/2+i*gap for i,(k,_,_) in enumerate(parts)}
@@ -99,7 +99,7 @@ files.append(usecase('usecase-festivalier-serveur','Serveur de l’app festivali
  [CA,AD,EX,FE],
  [(U1,'primary'),(R1,'warn'),(U2,'primary'),(U3,'primary'),(U4,'primary'),(U5,'primary'),(U6,'primary'),(U7,'primary')],
  [(CA,U1),(CA,R1,RED),(AD,U1),(AD,U2),(AD,U3),(EX,U4),(EX,U5),(FE,U6),(FE,U7)],
- note="Plan finalisé le 20/11/2026, non implémenté. Flèche rouge pointillée : refus (agent titulaire, 403).\nL’identification exige un compte au numéro vérifié ; la révocation se fait à deux personnes.\nAprès rotation, les anciens codes sont refusés comme inconnus ; les nouveaux sont réémis par la commande d’exploitation.\nLe code part par WhatsApp, puis SMS ; le numéro imprimé et l’avis de solde provisoire arrivent dans /me.",H=880))
+ note="Relu le 23/11/2026 (11 lots approuvés), non fusionné. Flèche rouge pointillée : refus (agent titulaire, 403).\nL’identification exige un compte au numéro vérifié ; la révocation se fait à deux personnes.\nAprès rotation, les anciens codes sont refusés comme inconnus ; les nouveaux sont réémis par la commande d’exploitation, dont le fichier nomme chaque bracelet.\nLe code part par WhatsApp, puis SMS ; le numéro imprimé et l’avis de solde provisoire arrivent dans /me.",H=880))
 files.append(sequence('sequence-kyc','Identification et révocation à deux','Écriture par fonctions contrôlées de la base ; la révocation n’est exécutée qu’à l’approbation',
  [P('c','Caissier','data'),P('a','API','primary'),P('d','Base'),P('r','Administrateur','data'),P('s','Autre administrateur','data')],
  [('c','a','POST /kyc-verifications'),('a','d','create_kyc_verification (DEFINER)'),
@@ -110,7 +110,7 @@ files.append(sequence('sequence-kyc','Identification et révocation à deux','É
   ('#open','alt même personne que l’auteur'),('a','s','Refus, demande PENDING','bad'),
   ('#else','sinon'),('a','d','revoke_kyc_verification'),('d','d','REVOKED, auteur et motif','self'),('a','s','Approuvée, valideur audité','ret'),('#close',),
   ('a','a','Niveau NONE à la recharge suivante','note')],
- note="Plan du 20/11/2026, non implémenté. Une pièce expirée donne le niveau NONE sans tâche planifiée ; une identification déjà révoquée donne 409.\nLa règle de l’agent titulaire compare le numéro vérifié du compte au téléphone de l’agent ; limite consignée (agent sans numéro non détecté)."))
+ note="Relu le 23/11/2026, non fusionné. Pièce expirée : niveau NONE sans tâche planifiée. Identification déjà révoquée : demande acceptée, exécution refusée (409, demande FAILED).\nLa règle de l’agent titulaire compare le numéro vérifié du compte au téléphone de l’agent ; limite consignée (agent sans numéro non détecté)."))
 files.append(sequence('sequence-chaine-codes','Chaîne d’envoi des codes','Un seul code par défi, gardé en mémoire du processus ; les bascules ne comptent pas dans les limites',
  [P('f','App festivalier','data'),P('a','API','primary'),P('w','WhatsApp (faux)','accent'),P('p','SMS principal (faux)','accent'),P('b','SMS repli (faux)','accent')],
  [('f','a','Demander un code (AUTO)'),('a','a','Défi créé, code en mémoire','self'),('a','w','Envoyer le code'),
@@ -120,14 +120,14 @@ files.append(sequence('sequence-chaine-codes','Chaîne d’envoi des codes','Un 
   ('#else','sinon 20 s écoulées'),('a','b','Même code par SMS de repli'),('b','a','Livraison confirmée ou non','ret'),('#close',),('#close',),
   ('a','a','Code effacé de la mémoire','self'),
   ('f','a','Demander un code (SMS)'),('a','p','Envoyer le code, sans WhatsApp')],
- note="Plan du 20/11/2026, non implémenté. Chaque essai est noté sans le code (otp_channel_attempt) ; redémarrage pendant la chaîne : bascule perdue, le festivalier redemande.\nLes trois faux refusent le démarrage en production ; l’en-tête X-Test-Otp-Code du faux reste jusqu’à la mission 12b (OP-N120)."))
+ note="Relu le 23/11/2026, non fusionné. Essais notés sans le code ; code gardé 35 s au plus : au plafond, la chaîne s’arrête sans repli (OP-N166) ; redémarrage : bascule perdue.\nLes trois faux refusent le démarrage en production ; l’en-tête X-Test-Otp-Code du faux reste jusqu’à la mission 12b (OP-N120)."))
 files.append(sequence('sequence-rotation','Rotation du secret et réémission','Rotation immédiate : toute empreinte d’une ancienne version compte comme absente',
  [P('f','Festivalier','data'),P('a','API','primary'),P('d','Base'),P('c','Commande réémission','accent'),P('e','Exploitant','data')],
  [('e','a','Nouveau secret, version + 1'),('a','a','Redémarrage, version courante','self'),
   ('f','a','Ancien code (rattachement)'),('a','d','Empreinte, version courante'),('d','a','Aucune empreinte','ret'),('a','f','Même réponse qu’un code inconnu','bad'),
   ('e','c','reissue-claim-codes (lot)'),('c','d','reissue_claim_codes (claimadmin)'),
   ('d','d','Bracelets au code périmé ou absent','self'),('d','c','Nombre de codes réémis','ret'),
-  ('c','c','Fichier rank,code,url (0600)','self'),('c','e','Fichier pour l’imprimeur','ret'),
-  ('f','a','Nouveau code (rattachement)'),('a','d','Empreinte, version courante'),('d','a','Bracelet trouvé','ret'),('a','f','Bracelet rattaché','ret')],
- note="Plan du 20/11/2026, non implémenté. La commande utilise le rôle cashless_claimadmin ; cashless_app n’a aucun droit sur la réémission (test de droits).\nLes lots clos sont compris ; les bracelets dont le code courant a déjà servi sont ignorés ; aucun code en clair en base, au journal ni à la sortie standard."))
+  ('c','c','Fichier rank,code,url,uid,printed_number (0600)','self'),('c','e','Fichier pour l’imprimeur','ret'),
+  ('e','e','Étiquette posée sur le bracelet de l’UID','self'),('f','a','Nouveau code (rattachement)'),('a','d','Empreinte, version courante'),('d','a','Bracelet trouvé','ret'),('a','f','Bracelet rattaché','ret')],
+ note="Relu le 23/11/2026, non fusionné. Rôle cashless_claimadmin (sans mot de passe en production, migrate.ts refuse) ; cashless_app n’a aucun droit sur la réémission.\nLes lots clos sont compris ; les bracelets dont le code courant a déjà servi sont ignorés ; aucun code en clair en base, au journal ni à la sortie standard."))
 for f in files: print(r.render(f))
