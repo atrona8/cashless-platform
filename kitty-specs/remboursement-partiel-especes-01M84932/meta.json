@@ -13,5 +13,7 @@
   "purpose_tldr": "Permettre au festivalier de récupérer en espèces tout ou partie de son solde payé au guichet en gardant son bracelet, si l'organisateur l'autorise.",
   "slug": "remboursement-partiel-especes-01M84932",
   "target_branch": "feat/remboursement-partiel-especes",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-23T14:15:18.459910+00:00"
 }
