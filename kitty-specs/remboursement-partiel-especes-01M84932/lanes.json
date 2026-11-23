@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "mission_slug": "remboursement-partiel-especes-01M84932",
+  "mission_id": "01M84932TEMR04GJJ065CAQ0FZ",
+  "mission_branch": "kitty/mission-remboursement-partiel-especes-01M84932",
+  "target_branch": "feat/remboursement-partiel-especes",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "packages/ledger-sql/migrations/0100_event_cash_partial_refund.sql",
+        "packages/ledger-sql/tests/tests_cash_partial_refund.sql"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "apps/api/test/unit/contracts/contract-additions-9b.spec.ts",
+        "packages/contracts/dart/lib/**",
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml",
+        "tools/contract-stability/contract-baseline.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "apps/api/src/configuration/bounds-validator.ts",
+        "apps/api/src/configuration/settings-catalog.ts",
+        "apps/api/src/events/events.dto.ts",
+        "apps/api/src/events/events.service.ts",
+        "apps/api/test/integration/configuration/partial-refund-settings.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "apps/api/src/media/lifecycle/partial-refund-threshold.ts",
+        "apps/api/test/integration/media/partial-refund-threshold.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        ".github/workflows/ledger-tests.yml",
+        "apps/api/jest.config.cjs",
+        "apps/api/src/media/lifecycle/partial-refund.controller.ts",
+        "apps/api/src/media/lifecycle/partial-refund.service.ts",
+        "apps/api/src/media/lifecycle/return.module.ts",
+        "apps/api/test/integration/media/partial-cash-refund-concurrency.spec.ts",
+        "apps/api/test/integration/media/partial-cash-refund.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md",
+        "docs/SPECIFICATION.md",
+        "docs/passation-9c/note-equipes.md",
+        "docs/passation-9c/preuves.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-11-23T14:13:16.261235+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "5b779f59019c84618a41f32779e29fa607d5d7d7"
+}
