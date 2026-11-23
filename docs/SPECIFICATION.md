@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Statut | Normatif. Ce document dit ce que l'agent DOIT implémenter. Il ne contient ni historique ni justification : les raisons sont dans `DECISIONS_ADR.md`, les questions non tranchées dans `POINTS_OUVERTS.md`. |
-| Version | 1.3 — 23 novembre 2026 |
+| Version | 1.2 — 2 octobre 2026 |
 | Langue du code | Identifiants, tables, types et codes d'erreur en anglais ; textes d'interface en français et en anglais. |
 
 **Journal des modifications.**
@@ -14,7 +14,6 @@
 | 1.1 | 30 septembre 2026 | Corrections de la revue de cohérence n° 1. Décisions du 1er et du 2 octobre intégrées ensuite sous le même numéro (ADR-49 à ADR-70 : clôture, remboursements, passerelle, PSP, codes à usage unique, casse réversible). |
 | 1.2 | 2 octobre 2026 | Corrections de la revue de cohérence n° 2 (`REVUE_COHERENCE_2.md`, ADR-71) : clôture par partie (§12.1), comptes de casse en négatif permis (§5.2), `consume_tap` et `SIGNATURE_MISSING` (§7.6), rendu des espèces dues (`refund_cash_due`, §8.5), caution qui suit le bracelet remplacé (§7.8), borne des numéros de séquence (§9.5), codes `CL020` à `CL022` (§5.7), scellement étendu (§13.7), §17 en deux tables. Questions Q1 à Q6 en attente (`POINTS_OUVERTS.md` §9). |
 | 1.2 | 2 octobre 2026 (suite) | Q1 à Q6 tranchées (ADR-72 à ADR-77). Contestations carte (ADR-77, §11.1, §12.1). Remboursement vers un autre numéro (ADR-76, §8.5). Bornes des réclamations tardives en base (ADR-75, `CL024`). Double validation par l'API (ADR-74) : jeton d'approbation sur place au guichet, demande puis approbation au back-office (§3.2), table `approval_request` (§14.1), code `CL023` (§5.7) ; `approved_by` du corps ignoré. |
-| 1.3 | 23 novembre 2026 | Amendements apportés depuis la 1.2 sans changement de numéro, regroupés ici : idempotence relâchée sur les refus transitoires `DEBIT_AUTHORITY_EDGE` et `DEBIT_AUTHORITY_MOVING` (§10, ADR-124, 23/10/2026) ; rôles des versements selon le bénéficiaire, `OPERATOR_ADMIN` pour le prestataire et la plateforme (§3.2, ADR-204, 17/11/2026) ; seconde personne distincte pour enregistrer un `PAYOUT_FAILED` (§11.4, décision 18 de la mission 9b, 17/11/2026) ; révocation d'une identification par deux personnes (§6.3 point 5, ADR-227, OP-N164 levé, 23/11/2026). |
 
 ## 0. Comment utiliser ce document
 
