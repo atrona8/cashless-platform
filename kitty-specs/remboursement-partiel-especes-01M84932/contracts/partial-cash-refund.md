@@ -29,9 +29,12 @@ et admis exactement par le test de gel `contract-additions-9b.spec.ts`.
           schema:
             type: object
             additionalProperties: false
-            required: [tap_id, amount]
+            required: [amount]
+            description: Passage obligatoire, par `tap_id` (passage déjà enregistré) OU `tap` (lecture en ligne),
+              exactement comme `releaseMedia` ; aucun des deux, ou les deux : `400`.
             properties:
-              tap_id: { type: string, format: uuid }
+              tap_id: { type: integer, format: int64, minimum: 0 }
+              tap: { $ref: '#/components/schemas/TapInput' }
               amount: { type: integer, format: int64, minimum: 1, description: Montant débité, unités mineures }
     responses:
       '201': PartialCashRefund { transaction_id, media_id, wallet_id, amount_debited, fee, cash_handed,
