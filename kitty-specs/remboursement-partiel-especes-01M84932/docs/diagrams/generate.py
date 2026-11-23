@@ -28,7 +28,7 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
-    d=D(); d.text(60,30,1800,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left')
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 23/11/2026 — non fusionnée','decision','rectangle',20)
     ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
@@ -47,7 +47,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
 def sequence(name,title,sub,parts,msgs,note=None):
     # Styles de message : call, ret (pointillé), bad, self (action interne), note (Note over, a..b),
     # et cadres : ('#open', libellé) / ('#else', libellé) / ('#close',) (loop, alt).
-    d=D(); d.text(60,30,1800,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left')
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 23/11/2026 — non fusionnée','decision','rectangle',20)
     n=len(parts); pw=250; gap=(1800-pw)/(n-1) if n>1 else 0; top=160
     rows=sum(1 for m in msgs if m[0]!='#close'); step=max(min((1000-top-110)/max(rows,1),104),76)
     cx={k:60+pw/2+i*gap for i,(k,_,_) in enumerate(parts)}
@@ -95,19 +95,19 @@ files.append(usecase('usecase-rendu-partiel','Rendu partiel en espèces : qui d�
  [('Autoriser la fonction pour ses organisateurs','primary'),('Activer ou désactiver pour un événement','primary'),('Rendre une partie du solde payé','primary'),('Refus avec motif distinct','warn'),('Valider le cumul du jour au-dessus du seuil','accent')],
  [('Prestataire (admin)','Autoriser la fonction pour ses organisateurs'),('Organisateur (admin)','Activer ou désactiver pour un événement'),
   ('Caissier ou superviseur','Rendre une partie du solde payé'),('Caissier ou superviseur','Refus avec motif distinct'),('Seconde personne (sur place)','Valider le cumul du jour au-dessus du seuil')],
- note="PLANIFIÉ (plan du 23/11/2026, rien n’est codé). Refusée par défaut aux deux niveaux ; l’organisateur n’active que si le prestataire autorise.\nLe festivalier, avec ou sans compte, est servi sur simple lecture du bracelet. Le bracelet reste actif ; crédits offerts et caution inchangés.",H=760))
+ note="Relue le 23/11/2026 (6 lots approuvés), non fusionnée. Refusée par défaut aux deux niveaux ; l’organisateur n’active que si le prestataire autorise.\nLe cumul du jour est celui du portefeuille (tous ses bracelets). Le bracelet reste actif ; crédits offerts et caution inchangés.",H=760))
 files.append(sequence('sequence-rendu-partiel','Rendu partiel au guichet','Verrou du solde payé, cumul du jour lu sous verrou, frais du moteur, espèces sorties de la caisse',
  [P('c','Caissier','data'),P('s','Seconde personne','data'),P('a','API','primary'),P('d','Base')],
- [('c','a','Rendre N (tap_id, clé, montant)'),('a','a','Réglages permis ? session OPEN ? bracelet actif ?','self'),('#open','alt fonction non permise'),('a','c','422 REFUND_NOT_ALLOWED, rien d’écrit','bad'),('#close',),
-  ('a','d','Verrous : bracelet puis solde payé'),('a','a','Cumul du jour UTC + N, lu sous verrou','self'),
+ [('c','a','Rendre N (tap_id, clé, montant)'),('a','a','Bracelet actif ? EDGE ? réglages ? session OPEN ?','self'),('#open','alt fonction non permise'),('a','c','422 REFUND_NOT_ALLOWED, rien d’écrit','bad'),('#close',),
+  ('a','d','Verrous : bracelet puis solde payé'),('a','a','Cumul du jour UTC du portefeuille + N, sous verrou','self'),
   ('#open','alt cumul au-dessus du seuil'),('a','c','403 APPROVAL_REQUIRED, rien d’écrit','bad'),('s','c','Jeton sur place','ret'),('c','a','Rejouer avec le jeton'),('#close',),
   ('a','d','WALLET_REFUND brut, frais, net en caisse'),('a','c','201 : espèces remises, solde payé restant','ret')],
- note="Prévu au plan (23/11/2026), pas encore codé. Même clé : même réponse. Coupure (EDGE) : 409. Solde payé insuffisant : 422. Bracelet gardé actif."))
+ note="Relue le 23/11/2026, non fusionnée. Même clé : même réponse. Coupure (EDGE) : 409. Solde payé insuffisant : 422. Phase DRAFT : 422. Bracelet gardé actif."))
 files.append(sequence('sequence-reglages','Réglages : le prestataire autorise, l’organisateur active','Refusé par défaut ; contrôlé de nouveau à chaque rendu',
  [P('o','Prestataire','data'),P('g','Organisateur','data'),P('a','API','primary'),P('d','Base')],
  [('o','a','Version de configuration : cash_partial_refund_allowed'),('a','d','Clé de cascade enregistrée'),
   ('g','a','updateEvent : cash_partial_refund_enabled = true'),('a','a','Autorisation du prestataire résolue ?','self'),
   ('a','g','Non autorisé : 422 VALIDATION_FAILED','bad'),('a','d','Colonne de l’événement enregistrée, audit'),('a','g','200 : activé','ret'),
   ('a','a','À chaque rendu : les deux réglages résolus doivent être vrais','note')],
- note="Prévu au plan (23/11/2026), pas encore codé. En LIVE, le changement suit l’opération à deux personnes existante (à vérifier). Retrait de l’autorisation : le rendu suivant est refusé."))
+ note="Relue le 23/11/2026, non fusionnée. En LIVE, le changement suit l’opération à deux personnes existante (EVENT_SETTINGS_CHANGE), revérifiée à l’approbation.\nRetrait de l’autorisation : le rendu suivant est refusé."))
 for f in files: print(r.render(f))

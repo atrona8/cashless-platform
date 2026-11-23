@@ -93,10 +93,10 @@
       "spec_index_a_jour": true
     },
     "remboursement-partiel-especes-01M84932": {
-      "statut": "planifiée : plan finalisé le 23/11/2026, rien n'est codé (D1 à D6 par défaut, non validées par le porteur)",
-      "verifie_le": "2026-11-23T14:00:00Z",
+      "statut": "relue le 23/11/2026 (6 lots approuvés), non acceptée, non fusionnée (code dans les lanes a à f, tout dans la lane f)",
+      "verifie_le": "2026-11-23T18:00:00Z",
       "addendum_plan_applique": true,
-      "addendum_review_applique": false,
+      "addendum_review_applique": true,
       "spec_index_a_jour": true
     }
   }

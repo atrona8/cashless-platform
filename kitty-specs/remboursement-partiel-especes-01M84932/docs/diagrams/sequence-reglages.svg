@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2006" height="1178" viewBox="0 0 2006 1178">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(66,50)">
+<rect x="1400" y="30" width="460" height="44" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
 <ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
 <polyline points="185.0,236 185.0,990.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <ellipse cx="701.6666666666666" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
@@ -25,6 +26,7 @@
 <rect x="893.3333333333333" y="910.4499999999999" width="650" height="56" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Réglages : le prestataire autorise, l’organisateur active</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Refusé par défaut ; contrôlé de nouveau à chaque rendu</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 23/11/2026 — non fusionnée</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Prestataire</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Organisateur</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
@@ -44,6 +46,7 @@
 <text x="960.0" y="830.4749999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : activé</text>
 <text x="34.0" y="852.2499999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
 <text x="1218.3333333333333" y="942.7249999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">À chaque rendu : les deux réglages résolus doivent être vrais</text>
-<text x="60" y="1035.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Prévu au plan (23/11/2026), pas encore codé. En LIVE, le changement suit l’opération à deux personnes existante (à vérifier). Retrait de l’autorisation : le rendu suivant est refusé.</text>
+<text x="60" y="1023.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relue le 23/11/2026, non fusionnée. En LIVE, le changement suit l’opération à deux personnes existante (EVENT_SETTINGS_CHANGE), revérifiée à l’approbation.</text>
+<text x="60" y="1048.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Retrait de l’autorisation : le rendu suivant est refusé.</text>
 </g>
 </svg>
