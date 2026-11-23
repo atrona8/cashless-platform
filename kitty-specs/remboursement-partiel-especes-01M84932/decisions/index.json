@@ -1,0 +1,80 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-23T13:21:51.663715Z",
+      "decision_id": "01M8493W1FG8MBAV40SZA02BYN",
+      "final_answer": "Par bracelet et par jour",
+      "input_key": "cumul_window",
+      "mission_id": "01M84932TEMR04GJJ065CAQ0FZ",
+      "mission_slug": "remboursement-partiel-especes-01M84932",
+      "opened_by": "cli",
+      "options": [
+        "Par bracelet et par jour",
+        "Par bracelet sur tout l evenement",
+        "Par bracelet et par session de caisse",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Sur quelle p\u00e9riode cumuler les rendus partiels d'un bracelet pour le seuil de la seconde personne ?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T13:23:54.108899Z",
+      "resolved_by": null,
+      "slot_key": "specify.rules.cumul-window",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T13:24:02.165852Z",
+      "decision_id": "01M8497VFN53994FGM6W8W7JZ8",
+      "final_answer": "Anonymes oui, frais a chaque rendu",
+      "input_key": "anonymous_and_fees",
+      "mission_id": "01M84932TEMR04GJJ065CAQ0FZ",
+      "mission_slug": "remboursement-partiel-especes-01M84932",
+      "opened_by": "cli",
+      "options": [
+        "Anonymes oui, frais a chaque rendu",
+        "Anonymes oui, sans frais",
+        "Compte obligatoire, frais a chaque rendu",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Bracelets anonymes accept\u00e9s et frais de remboursement appliqu\u00e9s \u00e0 chaque rendu partiel ?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T13:26:28.020675Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.anonymous-and-fees",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T13:26:35.688561Z",
+      "decision_id": "01M849CHD8C0GA8MZXGFQSBVCF",
+      "final_answer": "Prestataire autorise, organisateur active",
+      "input_key": "setting_governance",
+      "mission_id": "01M84932TEMR04GJJ065CAQ0FZ",
+      "mission_slug": "remboursement-partiel-especes-01M84932",
+      "opened_by": "cli",
+      "options": [
+        "Organisateur seul",
+        "Prestataire autorise, organisateur active",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Le prestataire peut-il interdire ou plafonner ce que l'organisateur autorise ?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T13:28:59.126445Z",
+      "resolved_by": null,
+      "slot_key": "specify.config.prestataire-cap",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M84932TEMR04GJJ065CAQ0FZ",
+  "version": 1
+}
