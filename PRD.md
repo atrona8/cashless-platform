@@ -139,6 +139,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   pour chaque événement (désactivé par défaut) ; seconde personne au-delà de `event.cash_refund_single_max` ; crédits
   offerts et caution non touchés. Aujourd'hui le solde ne se rend en espèces qu'à la restitution (`releaseMedia`) : écart
   avec SPECIFICATION §8.5 relevé le 23/11/2026, résolu par cette mission (route et réglage nouveaux, soumis au porteur).
+  Réalise ADR-53 (point 3) ; seuil de la seconde personne appliqué au cumul des rendus partiels (ADR-190).
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 - Gestion des clients par une application cliente (décision du porteur du 05/11/2026, mission 10c) : l'application
   s'authentifie de serveur à serveur, crée ou retrouve un client par son identifiant externe, liste, recherche,
@@ -221,6 +222,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Un PIN de vendeur n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 (ADR-126, 26/10/2026, mission 5b).
 - Authentification par type d'appelant ; jeton d'approbation pour la seconde personne au guichet. (§10.3)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
+  Routes encore absentes, vérifiées le 23/11/2026, confiées à la mission 11b (décision du porteur du 23/11/2026) : profil
+  et rôles de la personne connectée, `x-roles` lisible par machine, liste des ventes et paiements, liste et résolution des
+  anomalies, recherche (bracelet par UID ou code imprimé, portefeuille, festivalier), modèles de téléphone et niveau NFC.
 
 ### 2.8 Argent réel : PSP, caisses, rapprochements, versements (§11)
 - Configurations PSP par organisateur, choix par événement ; interface commune d'adaptateur et faux par fournisseur
@@ -392,6 +396,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        23/11/2026, décision du porteur ; après 9a, indépendante de 10c).
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée) ; 10a fusionnée dans `main` le 23/11/2026 (PR #24, `ee5099a7`)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
+    11b. Routes serveur manquantes au back-office (nous ; ajoutée le 23/11/2026, après la 9c, avant la mission 11).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1

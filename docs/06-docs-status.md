@@ -36,6 +36,7 @@
 | 13/11/2026 | Découpage de la mission 9 en 9a (remboursements, attendus par l'app festivalier) et 9b (versements, rapprochements, clôture) ; externes simulés jusqu'à la 12b | §7 découpage (liste des missions) | Oui (missions 9a et 9b, héritages répartis) |
 | 20/11/2026 | Specify de la mission 10a (`serveur-app-festivalier-01M7WB69`) : périmètre restant (KYC au guichet, OP-N47, `printed_number` et `pending_offline_notice`, chaîne d'envoi des codes), règle de l'agent titulaire par numéro identique, rotation immédiate du secret des codes de rattachement (au lieu d'une double empreinte) | §2.5 (App festivalier), liste des héritages (mission 10a) | Décisions du porteur du 20/11/2026 (Decision Moments du specify) |
 | 23/11/2026 | Décisions du porteur : mission 9c ajoutée (remboursement partiel en espèces au guichet sans restitution, permis par l'organisateur) ; cadrage de la 10c (téléphone vérifié obligatoire, droits de l'application sur `/me`, risque soumis au juriste) ; 10a fusionnée | §2.5 (recharges et remboursements, application cliente) ; §8 découpage (9c, état de la 10a) |
+| 23/11/2026 | Mission 11b ajoutée (routes serveur manquantes au back-office : profil et rôles, `x-roles`, ventes, anomalies, recherche, modèles NFC) ; 9c rattachée à ADR-53, ADR-91, ADR-190 | §2.5 (remboursement partiel), §2.7 (endpoints back-office) ; §8 découpage (11b) |
 
 ## Documents globaux
 
