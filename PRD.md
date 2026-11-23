@@ -134,12 +134,21 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   par la mission 11a), OP-N77, OP-N78
   et OP-N80 (mission 13, dimensionnement du verrou d'essai de PIN), OP-N43 complété (mission 10).
 - Recharges (Wave, Orange Money, carte, espèces), remboursements (mobile, virement, espèces, espèces dues), OTP. (§8.5)
+- Remboursement partiel en espèces au guichet **sans restitution du bracelet** (décision du porteur du 23/11/2026,
+  mission 9c) : tout ou partie du solde payé rendu en espèces, bracelet gardé actif, **permis ou non par l'organisateur**
+  pour chaque événement (désactivé par défaut) ; seconde personne au-delà de `event.cash_refund_single_max` ; crédits
+  offerts et caution non touchés. Aujourd'hui le solde ne se rend en espèces qu'à la restitution (`releaseMedia`) : écart
+  avec SPECIFICATION §8.5 relevé le 23/11/2026, résolu par cette mission (route et réglage nouveaux, soumis au porteur).
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 - Gestion des clients par une application cliente (décision du porteur du 05/11/2026, mission 10c) : l'application
   s'authentifie de serveur à serveur, crée ou retrouve un client par son identifiant externe, liste, recherche,
   désactive, et obtient un jeton court pour agir en son nom sur les routes `/me` ; ses utilisateurs ne voient pas le
   cashless. Cloisonnement entre applications et entre prestataires. Risque à trancher au cadrage : l'application devient
   garante de l'identité de comptes qui portent de l'argent ; identification du client à soumettre au juriste.
+  Cadrage du porteur du 23/11/2026 (avant le specify) : numéro de téléphone du client **obligatoire et vérifié** par code ;
+  au nom du client, l'application consulte solde et bracelets, rattache un bracelet, déclare une perte, recharge et demande
+  un remboursement ; risque d'une application compromise **non tranché**, soumis au juriste, point ouvert bloquant la
+  production de la fonction.
   Servi en avance le 10/11/2026 (porteur, hors Spec Kitty) : connexion par numéro et code à usage unique, jetons d'accès et de renouvellement, déclaration de perte ; l'envoi réel du code (12b) et l'identification au guichet restent à faire (OP-N120, ADR-180).
   Mission 10a (`serveur-app-festivalier-01M7WB69`, **livrée** : lots WP01 à WP10 approuvés, consignation WP11,
   décisions du porteur du 20/11/2026) : identification au guichet (pièce : type, pays, 4 derniers caractères,
@@ -156,6 +165,8 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   d'envoi des codes WhatsApp puis SMS principal (10 s) puis SMS de repli (20 s), code gardé en mémoire du processus
   seulement (35 s au plus), trois fournisseurs simulés refusés au démarrage en production (OP-N120, OP-N166, ADR-229),
   jusqu'à la 12b.
+  Limite ajoutée le 23/11/2026 (revue post-fusion, OP-N172, ADR-232) : un changement du secret des codes sans hausse de
+  sa version n'est pas refusé au démarrage (codes émis inutilisables sans message clair) ; levée par la 12b (KMS réel).
   Recharge PSP testable de bout en bout en développement (10/11/2026) : configurations de démo, secrets de démo du faux coffre, route de simulation du paiement hors contrat, absente en production ; levée par la 12b (OP-N121, ADR-181).
 
 ### 2.6 En ligne, hors ligne, passerelle locale (§9, `sync_protocol.md`)
@@ -377,7 +388,9 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        alertes sans envoi (OP-N132, ADR-198), remboursement tardif en mobile money vers un autre numéro (OP-N139, ADR-207).
        Limites consignées : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126 : alerte dédiée en 12b, ADR-212), OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire, 13) ; renforcements : OP-N146 (dont le renommage des enums Dart, ADR-213) ; OP-N147 levé (ADR-211). Note aux équipes clientes :
        `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`.
-10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée)
+   9c. Remboursement partiel en espèces au guichet sans restitution du bracelet, permis par l'organisateur (ajoutée le
+       23/11/2026, décision du porteur ; après 9a, indépendante de 10c).
+10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée) ; 10a fusionnée dans `main` le 23/11/2026 (PR #24, `ee5099a7`)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
 12b. Intégrations réelles (services externes), avant la recette
