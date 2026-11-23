@@ -12,7 +12,15 @@ const dbUrl = (): string => {
   url.pathname = `/${DB}`;
   return url.toString();
 };
-const GATEWAY = { CASHLESS_EDGE_PASSWORD: 'e', CASHLESS_EDGEADMIN_PASSWORD: 'ea' };
+// Les rôles sont globaux au cluster : migrate() pose leurs mots de passe pour TOUTES les bases. Les valeurs passées
+// ici sont donc celles déjà en vigueur (variables de l'environnement, sinon `<rôle>_local`), jamais des valeurs
+// factices : sinon les suites lancées ensuite sans reset-db (tools/edge-admin en CI) échouent en 28P01.
+const current = (role: string): string =>
+  process.env[`CASHLESS_${role.toUpperCase()}_PASSWORD`] ?? `cashless_${role}_local`;
+const GATEWAY = {
+  CASHLESS_EDGE_PASSWORD: current('edge'),
+  CASHLESS_EDGEADMIN_PASSWORD: current('edgeadmin'),
+};
 
 describe('migrate.ts : mot de passe de cashless_claimadmin', () => {
   let db: Client;
@@ -43,7 +51,7 @@ describe('migrate.ts : mot de passe de cashless_claimadmin', () => {
   it('production avec le mot de passe : la série passe et le mot de passe est posé', async () => {
     const report = await migrate(db, undefined, undefined, {
       NODE_ENV: 'production',
-      CASHLESS_CLAIMADMIN_PASSWORD: 'cashless_claimadmin_prod_test',
+      CASHLESS_CLAIMADMIN_PASSWORD: current('claimadmin'),
       ...GATEWAY,
     });
     expect(report.postRoles).toBe(true);
