@@ -45,6 +45,7 @@ export CASHLESS_MAINT_PASSWORD="${CASHLESS_MAINT_PASSWORD:-cashless_maint_local}
 export CASHLESS_EDGE_PASSWORD="${CASHLESS_EDGE_PASSWORD:-cashless_edge_local}"
 export CASHLESS_EDGEADMIN_PASSWORD="${CASHLESS_EDGEADMIN_PASSWORD:-cashless_edgeadmin_local}"
 export CASHLESS_PIN_PASSWORD="${CASHLESS_PIN_PASSWORD:-cashless_pin_local}"
+export CASHLESS_CLAIMADMIN_PASSWORD="${CASHLESS_CLAIMADMIN_PASSWORD:-cashless_claimadmin_local}"
 export DATABASE_URL_OWNER="${DATABASE_URL_OWNER:-postgres://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_APP="${DATABASE_URL_APP:-postgres://cashless_app:$CASHLESS_APP_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 export DATABASE_URL_PLATFORM="${DATABASE_URL_PLATFORM:-postgres://cashless_platform:$CASHLESS_PLATFORM_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
@@ -63,6 +64,8 @@ export DATABASE_URL_SNAPCONTENT="${DATABASE_URL_SNAPCONTENT:-postgres://cashless
 export DATABASE_URL_SNAPSIGN="${DATABASE_URL_SNAPSIGN:-postgres://cashless_snapsign:$CASHLESS_SNAPSIGN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 # Mission 11a : processus vendor-pin (cashless_pin).
 export DATABASE_URL_PIN="${DATABASE_URL_PIN:-postgres://cashless_pin:$CASHLESS_PIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
+# Mission 10a : commande d'exploitation reissue-claim-codes (cashless_claimadmin).
+export DATABASE_URL_CLAIMADMIN="${DATABASE_URL_CLAIMADMIN:-postgres://cashless_claimadmin:$CASHLESS_CLAIMADMIN_PASSWORD@$PGHOST:$PGPORT/$PGDATABASE}"
 
 # Mission identite-enrolement-terminaux : VALEURS DE TEST seulement (publiques), identiques aux défauts hors
 # production de apps/api/src/config/config.ts ; refusées en production même posées (secrets de test). En production,

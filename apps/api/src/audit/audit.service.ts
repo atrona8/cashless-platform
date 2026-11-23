@@ -167,7 +167,10 @@ export type AuditAction =
   // Mission 9b (lot WP13) : relevés exportés, correspondance comptable et export comptable (jamais de montant)
   | 'PARTY_STATEMENT_EXPORTED'
   | 'ACCOUNT_MAPPING_VERSION_CREATED'
-  | 'ACCOUNTING_EXPORTED';
+  | 'ACCOUNTING_EXPORTED'
+  // Mission 10a, WP05 : identification au guichet et sa révocation (WP06)
+  | 'KYC_VERIFIED'
+  | 'KYC_REVOKED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

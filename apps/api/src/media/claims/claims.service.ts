@@ -6,14 +6,14 @@
 // inconnu et un code utilisé suivent le même chemin (une empreinte, un code de confirmation
 // tiré, un appel) et reçoivent la même réponse.
 import { randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { AuditService, type AuditContext } from '../../audit/audit.service';
 import type { CustomerContext } from '../../customer-identity/customer-identity.port';
 import { TenantTx, type TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import type { Language } from '../../http/language';
 import { CommittedProblem } from '../../idempotency/committed-problem';
-import { ClaimHasher } from '../../kms/claim-hash';
+import { ClaimHasher, assertClaimKeyVersion } from '../../kms/claim-hash';
 import type { CounterActor } from '../lifecycle/counter-access';
 import { DepositService } from '../lifecycle/deposit.service';
 import { TapService } from '../taps/tap.service';
@@ -51,13 +51,13 @@ interface LookupRow {
 }
 
 const HOUR = 3600;
-const CONFIRM_SQL = 'SELECT confirm_media_claim($1, $2, $3, $4, $5) AS result';
+const CONFIRM_SQL = 'SELECT confirm_media_claim($1, $2, $3, $4, $5, $6) AS result';
 // Secondes avant que l'essai le plus ancien encore compté sorte de sa fenêtre.
 const UNTIL = (window: string) =>
   `ceil(extract(epoch FROM a.attempted_at + interval '${window}' - clock_timestamp()))::int`;
 
 @Injectable()
-export class ClaimsService {
+export class ClaimsService implements OnModuleInit {
   constructor(
     private readonly tx: TenantTx,
     private readonly hasher: ClaimHasher,
@@ -65,6 +65,18 @@ export class ClaimsService {
     private readonly taps: TapService,
     private readonly audit: AuditService,
   ) {}
+
+  /**
+   * Refus de démarrage : une API dont la version du secret est inférieure à celle que la base
+   * connaît ne rattacherait plus aucun code (une rotation ne se défait pas).
+   */
+  async onModuleInit(): Promise<void> {
+    const known = await this.tx.unscoped(
+      async (client) =>
+        (await client.query<{ v: number }>('SELECT claim_key_version_max() AS v')).rows[0]!.v,
+    );
+    assertClaimKeyVersion(this.hasher.keyVersion, Number(known));
+  }
 
   /** Rattachement par le festivalier (`claimMedia`). */
   async claim(
@@ -80,13 +92,17 @@ export class ClaimsService {
     const claimId = randomUUID();
     const digits = String(randomInt(0, 1_000_000)).padStart(6, '0');
     const confirmation = this.hasher.confirmationHash(claimId, digits);
-    const { rows } = await client.query<ClaimRow>('SELECT * FROM claim_media($1, $2, $3, $4, $5)', [
-      hash,
-      customer.customerId,
-      customer.deviceRef,
-      claimId,
-      confirmation,
-    ]);
+    const { rows } = await client.query<ClaimRow>(
+      'SELECT * FROM claim_media($1, $2, $3, $4, $5, $6)',
+      [
+        hash,
+        customer.customerId,
+        customer.deviceRef,
+        claimId,
+        confirmation,
+        this.hasher.keyVersion,
+      ],
+    );
     const row = rows[0]!;
     const base = { ...audit, operatorId: customer.operatorId, objectType: 'media' };
     switch (row.outcome) {
@@ -276,15 +292,16 @@ export class ClaimsService {
     const media = await client.query<{ id: string; organizer_id: string | null }>(
       `SELECT m.id, b.organizer_id
          FROM media m LEFT JOIN media_batch b ON b.id = m.batch_id
-        WHERE m.claim_code_hash = $1 FOR UPDATE OF m`,
-      [hash],
+        WHERE m.claim_code_hash = $1 AND m.claim_key_version = $2 FOR UPDATE OF m`,
+      [hash, this.hasher.keyVersion],
     );
     const codeMedia = media.rows[0];
     if (!codeMedia || codeMedia.organizer_id !== actor.organizerId) throw claimInvalid();
     const pending = await client.query<{ id: string; confirmation_hash: Buffer }>(
       `SELECT id, confirmation_hash FROM media_claim
-        WHERE media_id = $1 AND status = 'PENDING' ORDER BY created_at FOR UPDATE`,
-      [codeMedia.id],
+        WHERE media_id = $1 AND status = 'PENDING' AND key_version = $2
+        ORDER BY created_at FOR UPDATE`,
+      [codeMedia.id, this.hasher.keyVersion],
     );
     const claims = pending.rows.map((c) => ({
       id: c.id,
@@ -293,7 +310,7 @@ export class ClaimsService {
     }));
     const { deviceId } = actor.device;
     const decide = async (claimId: string, mediaId: string, given: Buffer) => {
-      const params = [claimId, mediaId, given, deviceId, actor.userId];
+      const params = [claimId, mediaId, given, deviceId, actor.userId, this.hasher.keyVersion];
       const { rows } = await client.query<{ result: string }>(CONFIRM_SQL, params);
       return rows[0]!.result;
     };
@@ -352,8 +369,8 @@ export class ClaimsService {
       async (client) =>
         (
           await client.query<LookupRow>(
-            'SELECT * FROM public_balance_lookup($1, $2) ORDER BY currency',
-            [hash, this.hasher.addressRef(address)],
+            'SELECT * FROM public_balance_lookup($1, $2, $3) ORDER BY currency',
+            [hash, this.hasher.addressRef(address), this.hasher.keyVersion],
           )
         ).rows,
     );
@@ -381,11 +398,14 @@ export class ClaimsService {
       status: string;
       deposit_status: string;
       wallet_id: string | null;
-    }>('SELECT status, deposit_status, wallet_id FROM media WHERE id = $1', [mediaId]);
+      printed_number: string | null;
+    }>('SELECT status, deposit_status, wallet_id, printed_number FROM media WHERE id = $1', [
+      mediaId,
+    ]);
     const m = rows[0]!;
     return {
       media_id: mediaId,
-      printed_number: null,
+      printed_number: m.printed_number,
       status: m.status,
       deposit_status: m.deposit_status,
       wallet_id: m.wallet_id,

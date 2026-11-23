@@ -188,7 +188,7 @@ SELECT set_media_batch_status(current_setting('t91.b2')::uuid, 'ACTIVE', NULL, p
 -- Quantité après les codes : CL020 ; les autres champs restent modifiables.
 SELECT set_config('t91.b3', pg_temp.cmb('91b001', NULL, 'PUBLIC', 3)::text, true);
 SELECT is(issue_claim_codes(current_setting('t91.b3')::uuid,
-  ARRAY[sha256('\x01'), sha256('\x02'), sha256('\x03')]), 3, 'issue_claim_codes toujours fonctionnel');
+  ARRAY[sha256('\x01'), sha256('\x02'), sha256('\x03')], 1::smallint), 3, 'issue_claim_codes toujours fonctionnel');
 SELECT is(pg_temp.state('u', $$SELECT pg_temp.upd('{"quantity": 4}', current_setting('t91.b3'))$$),
   'CL020', 'quantity après les codes : CL020');
 SELECT lives_ok($$SELECT pg_temp.upd('{"print_order_ref": "x"}', current_setting('t91.b3'))$$,

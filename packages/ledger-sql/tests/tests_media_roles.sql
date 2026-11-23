@@ -95,9 +95,9 @@ SELECT is((SELECT array_agg(a.attname::text ORDER BY a.attname) FROM pg_attribut
   'API publique : deux colonnes de media modifiables, pas une de plus (statut : media_set_status, mission 11a WP03 ; claim_code_hash : associate_claim_code seule, 0019)');
 SELECT is((SELECT count(*)::int FROM pg_attribute a WHERE a.attrelid = 'media'::regclass AND a.attnum > 0 AND NOT a.attisdropped
             AND NOT has_column_privilege('cashless_app', 'media', a.attname, 'SELECT')), 2, 'API publique : toutes les colonnes de media lisibles sauf deux');
-SELECT ok(has_function_privilege('cashless_app', 'public_balance_lookup(bytea, text)', 'EXECUTE'), 'API publique : consultation anonyme accordée');
-SELECT ok(NOT has_function_privilege('cashless_tagkeys', 'public_balance_lookup(bytea, text)', 'EXECUTE')
-      AND NOT has_function_privilege('cashless_perso', 'public_balance_lookup(bytea, text)', 'EXECUTE'), 'consultation anonyme : API publique seulement');
+SELECT ok(has_function_privilege('cashless_app', 'public_balance_lookup(bytea, text, smallint)', 'EXECUTE'), 'API publique : consultation anonyme accordée');
+SELECT ok(NOT has_function_privilege('cashless_tagkeys', 'public_balance_lookup(bytea, text, smallint)', 'EXECUTE')
+      AND NOT has_function_privilege('cashless_perso', 'public_balance_lookup(bytea, text, smallint)', 'EXECUTE'), 'consultation anonyme : API publique seulement');
 
 SET LOCAL ROLE cashless_app;
 SELECT pg_temp.a();

@@ -308,7 +308,7 @@ GRANT SELECT (id, operator_id, kind, nfc_uid, key_index, batch_id, status, perso
 --       (claim_code_hash) et UPDATE (media_id, associated_at) sur claim_code, il associait un code invalidé, déjà
 --       associé ou d'un autre lot.
 GRANT EXECUTE ON FUNCTION register_personalized_media(uuid, uuid, bytea, bytea, bytea, boolean, bytea, uuid, uuid),
-  associate_claim_code(bytea, uuid) TO cashless_perso;
+  associate_claim_code(bytea, uuid, text, smallint) TO cashless_perso;
 GRANT SELECT ON media_batch, media_transition, tag_key, claim_code, tag_key_job, app_user, role_assignment,
   api_idempotency, event TO cashless_perso;
 --       Clé de données : elle en crée (GenerateDataKey) mais ne relit jamais une clé chiffrée existante.
@@ -424,7 +424,7 @@ GRANT EXECUTE ON FUNCTION
   -- Bracelets : lots, codes de rattachement, cycle de vie, liste noire, lectures
   preload_batch(uuid, integer), close_batch(uuid), forfeit_batch_deposits(uuid, integer),
   set_media_batch_status(uuid, text, text, uuid), invalidate_unassociated_codes(uuid),
-  issue_claim_codes(uuid, bytea[]), associate_claim_code(bytea, uuid),
+  issue_claim_codes(uuid, bytea[], smallint), associate_claim_code(bytea, uuid, text, smallint),
   activate_media(uuid, uuid, text, uuid), open_event_wallet(uuid, uuid), release_media(uuid, text),
   reassign_pool_media(uuid, bytea), replace_media(uuid, uuid), recover_media(uuid),
   suspend_media(uuid, text, uuid), blacklist_media(uuid, text, uuid),
@@ -434,9 +434,10 @@ GRANT EXECUTE ON FUNCTION
   register_tap(uuid, bytea, bytea, bigint, timestamptz, uuid, text, uuid, bigint, bytea),
   consume_tap(bigint, uuid),
   -- Rattachement par le festivalier
-  claim_media(bytea, uuid, text, uuid, bytea), confirm_media_claim(uuid, uuid, bytea, uuid, uuid),
+  claim_media(bytea, uuid, text, uuid, bytea, smallint),
+  confirm_media_claim(uuid, uuid, bytea, uuid, uuid, smallint),
   mark_claim_code_used(uuid), consume_tap_for_claim(bigint, uuid),
-  public_balance_lookup(bytea, text),
+  public_balance_lookup(bytea, text, smallint),
   -- Travaux de clé : inscription d'un travail approuvé, relance d'un travail en échec
   enqueue_tag_key_job(uuid), retry_tag_key_job(uuid),
   -- Appelées par les fonctions SECURITY INVOKER ci-dessus (suspend_media, blacklist_media,
@@ -645,8 +646,9 @@ BEGIN
 END $$;
 REVOKE INSERT, UPDATE ON payment_request_detail FROM cashless_app;
 
--- 6e. Identification au guichet (R-07, C-008 ; renforcement) : aucun usage dans l'API ;
--- FR-021 à FR-023 reportées à la mission 10, qui accordera ses fonctions. Lecture gardée.
+-- 6e. Identification au guichet (R-07, C-008 ; renforcement) : aucune écriture directe par l'API ;
+-- FR-021 à FR-023 : create_kyc_verification et revoke_kyc_verification (DEFINER) sont accordées en section 14.
+-- Lecture gardée.
 REVOKE INSERT, UPDATE ON kyc_verification FROM cashless_app;
 
 -- -----------------------------------------------------------------------------------------------
@@ -1201,3 +1203,75 @@ REVOKE EXECUTE ON FUNCTION refund_deposit(uuid, uuid), refund_request_insert_gua
   FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
        cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin,
        cashless_pin;
+
+-- 14. Serveur de l'app festivalier, mission 10a (serveur-app-festivalier ; WP04 ; FR-006, FR-007, NFR-003). Rejouable.
+-- A FAIRE RELIRE PAR UNE PERSONNE (CLAUDE.md, règle 4) : droits de la base de la mission. Seul WP04 écrit cette section.
+-- Principe : cashless_app ne gagne AUCUN droit de table ni de colonne (hors UPDATE de deux colonnes d'une table
+-- nouvelle) et exactement quatre EXECUTE ; le rôle cashless_claimadmin n'a que trois EXECUTE et aucun droit de table.
+-- Les signatures versionnées des cinq fonctions de codes sont déjà posées par WP02 (sections 1 et 4a) : rien ici.
+-- Preuve : tests/tests_10a_rights.sql.
+
+-- 14a. cashless_claimadmin (commande d'exploitation reissue-claim-codes, FR-006). Modèle de la section 8b :
+-- LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT, quatre délais, tous droits remis à zéro à chaque
+-- rejeu. Mot de passe hors de ce fichier (CASHLESS_CLAIMADMIN_PASSWORD, posé par migrate.ts).
+DO $$
+DECLARE r text := 'cashless_claimadmin';
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+    EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOINHERIT', r);
+  END IF;
+  EXECUTE format('ALTER ROLE %I SET statement_timeout = ''30s''', r);
+  EXECUTE format('ALTER ROLE %I SET idle_in_transaction_session_timeout = ''10s''', r);
+  EXECUTE format('ALTER ROLE %I SET lock_timeout = ''5s''', r);
+  IF current_setting('server_version_num')::int >= 170000 THEN
+    EXECUTE format('ALTER ROLE %I SET transaction_timeout = ''60s''', r);
+  END IF;
+  EXECUTE format('REVOKE ALL ON ALL TABLES IN SCHEMA public FROM %I', r);
+  EXECUTE format('REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM %I', r);
+  EXECUTE format('REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM %I', r);
+  EXECUTE format('GRANT USAGE ON SCHEMA public TO %I', r);
+  EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM %I', current_database(), r);
+END $$;
+
+-- 14b. Signatures versionnées : rien à écrire (WP02, sections 1 et 4a). tests_10a_rights.sql prouve que les droits de
+-- cashless_app et de cashless_perso sur les cinq fonctions sont ceux d'avant.
+
+-- 14c. cashless_app : quatre EXECUTE (signatures réelles de 0096, 0097 et 0098), rien d'autre.
+--   kyc_verification : le REVOKE INSERT, UPDATE de la section 6e reste (les fonctions DEFINER écrivent).
+GRANT EXECUTE ON FUNCTION
+  create_kyc_verification(uuid, uuid, text, text, text, date, uuid),
+  revoke_kyc_verification(uuid, uuid, text),
+  wallet_pending_offline_notice(uuid),
+  claim_key_version_max()
+  TO cashless_app;
+--   otp_channel_attempt (0099) : INSERT et SELECT hérités de roles.sql ; UPDATE restreint aux deux colonnes d'issue
+--   (roles.sql rend l'UPDATE de table entière). Aucun DELETE ni TRUNCATE.
+REVOKE UPDATE ON otp_channel_attempt FROM cashless_app;
+GRANT UPDATE (confirmed_at, failed_reason) ON otp_channel_attempt TO cashless_app;
+REVOKE DELETE, TRUNCATE ON otp_channel_attempt FROM cashless_app;
+
+-- 14d. cashless_claimadmin : trois EXECUTE. reissue_claim_codes et reissuable_media : à personne d'autre (ni PUBLIC, ni
+-- cashless_app, ni aucun autre rôle cashless_*) ; claim_key_version_max : à cashless_app aussi (14c), à personne d'autre.
+-- claim_media_reissuable (prédicat partagé, DEFINER) : exécutable par aucun rôle.
+REVOKE EXECUTE ON FUNCTION
+  reissue_claim_codes(uuid, uuid, uuid[], bytea[], smallint),
+  reissuable_media(uuid, uuid, smallint),
+  claim_media_reissuable(uuid, uuid, uuid, smallint)
+  FROM PUBLIC, cashless_app, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck,
+       cashless_keyadmin, cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin,
+       cashless_pin, cashless_claimadmin;
+REVOKE EXECUTE ON FUNCTION claim_key_version_max()
+  FROM PUBLIC, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck, cashless_keyadmin,
+       cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin, cashless_pin;
+REVOKE EXECUTE ON FUNCTION
+  create_kyc_verification(uuid, uuid, text, text, text, date, uuid),
+  revoke_kyc_verification(uuid, uuid, text),
+  wallet_pending_offline_notice(uuid)
+  FROM PUBLIC, cashless_platform, cashless_tagkeys, cashless_perso, cashless_tagcheck, cashless_keyadmin,
+       cashless_snapcontent, cashless_snapsign, cashless_maint, cashless_edge, cashless_edgeadmin, cashless_pin,
+       cashless_claimadmin;
+GRANT EXECUTE ON FUNCTION
+  reissue_claim_codes(uuid, uuid, uuid[], bytea[], smallint),
+  reissuable_media(uuid, uuid, smallint),
+  claim_key_version_max()
+  TO cashless_claimadmin;

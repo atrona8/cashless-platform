@@ -423,10 +423,19 @@ describe('central : aucun faux en production', () => {
       edgeProcess: false,
       suite: 'test/unit/production-guard.spec.ts',
     },
-    // App festivalier (PR #11, migration 0080) : l'envoyeur de codes n'existe qu'en faux (mission 12b).
-    'l’envoi des codes à usage unique': {
+    // App festivalier (PR #11, migration 0080 ; mission 10a, WP10) : trois fournisseurs d'envoi des codes, tous des
+    // faux jusqu'à la mission 12b, chacun refusé en production par la garde de démarrage.
+    'l’envoi des codes par WhatsApp': {
       edgeProcess: false,
-      suite: 'test/unit/production-guard.spec.ts',
+      suite: 'test/unit/customer-auth/otp-chain.spec.ts',
+    },
+    'l’envoi des codes par SMS (principal)': {
+      edgeProcess: false,
+      suite: 'test/unit/customer-auth/otp-chain.spec.ts',
+    },
+    'l’envoi des codes par SMS (repli)': {
+      edgeProcess: false,
+      suite: 'test/unit/customer-auth/otp-chain.spec.ts',
     },
     // Mission 9b (WP12, OP-N131, ADR-197) : copie externe des scellements simulée jusqu'à la 12b.
     'la copie externe des scellements': {

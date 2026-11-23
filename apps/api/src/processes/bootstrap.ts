@@ -20,7 +20,11 @@ import { applyEdgeSyncBody } from '../edge/sync/edge-sync-body';
 import { EDGE_SYNC_CENTRAL } from '../edge/sync/edge-sync-central.port';
 import { TAP_PROOF_VERIFIER } from '../edge/sync/tap-proof.port';
 import { PSP_ADAPTERS, PSP_SECRET_STORE } from '../psp/psp.tokens';
-import { OTP_SENDER } from '../customer-auth/otp-sender';
+import {
+  OTP_SMS_FALLBACK_PROVIDER,
+  OTP_SMS_PRIMARY_PROVIDER,
+  OTP_WHATSAPP_PROVIDER,
+} from '../customer-auth/otp-providers';
 import { KMS_PROVIDER } from '../kms/kms.module';
 import { SIGN_PORT } from '../kms/kms.ports';
 import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
@@ -49,7 +53,9 @@ export function assertProcessIsSafe(app: INestApplicationContext): AppConfig {
     'le signataire de snapshots': optional(app, SIGN_PORT),
     'l’identité du terminal': optional(app, DEVICE_IDENTITY),
     'l’identité du festivalier': optional(app, CUSTOMER_IDENTITY),
-    'l’envoi des codes à usage unique': optional(app, OTP_SENDER),
+    'l’envoi des codes par WhatsApp': optional(app, OTP_WHATSAPP_PROVIDER),
+    'l’envoi des codes par SMS (principal)': optional(app, OTP_SMS_PRIMARY_PROVIDER),
+    'l’envoi des codes par SMS (repli)': optional(app, OTP_SMS_FALLBACK_PROVIDER),
     'l’autorité des terminaux': optional(app, DEVICE_CA),
     'l’autorité des passerelles': optional(app, EDGE_CA),
     'le signataire des jetons d’appareil': optional(app, TOKEN_SIGNER),

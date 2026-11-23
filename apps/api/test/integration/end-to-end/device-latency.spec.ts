@@ -26,7 +26,14 @@ import type { Request } from 'express';
 import { Test } from '@nestjs/testing';
 import { FakeAttestation } from '../../../src/attestation/fake-attestation';
 import { APP_CONFIG, loadConfig, type AppConfig } from '../../../src/config/config';
-import { FakeOtpSender, OTP_SENDER } from '../../../src/customer-auth/otp-sender';
+import {
+  FakeSmsFallbackProvider,
+  FakeSmsPrimaryProvider,
+  FakeWhatsAppProvider,
+  OTP_SMS_FALLBACK_PROVIDER,
+  OTP_SMS_PRIMARY_PROVIDER,
+  OTP_WHATSAPP_PROVIDER,
+} from '../../../src/customer-auth/otp-providers';
 import { CUSTOMER_IDENTITY } from '../../../src/customer-identity/customer-identity.port';
 import { TokenCustomerIdentity } from '../../../src/customer-identity/token-customer-identity';
 import type { DeviceCaPort } from '../../../src/device-ca/device-ca.port';
@@ -271,6 +278,12 @@ describe('NFR-009 : latence des terminaux (indicatif, local)', () => {
 
 describe('NFR-001 : aucun faux en production, un test par faux sur le graphe réel', () => {
   /** Ports sans adaptateur réel dans la mission : fournisseurs « réels » neutres (non appelés). */
+  /** Fournisseur d'envoi « réel » neutre : non factice, jamais appelé. */
+  const neutralOtpProvider = (name: string) => ({
+    name,
+    send: () => Promise.reject(new Error('non appelé')),
+    onDelivery: () => undefined,
+  });
   const realLike = {
     [DEVICE_CA]: {
       issue: () => Promise.reject(new Error('non appelé')),
@@ -282,8 +295,11 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
       publicJwk: () => ({}),
     },
     [ATTESTATION_VERIFIER]: { verify: () => Promise.reject(new Error('non appelé')) },
-    // Envoyeur de codes des festivaliers : sans adaptateur réel avant la mission 12b, fournisseur « réel » neutre.
-    [OTP_SENDER]: { send: () => Promise.reject(new Error('non appelé')) },
+    // Fournisseurs d'envoi des codes (WhatsApp, SMS principal, SMS de repli) : sans adaptateur réel avant la
+    // mission 12b, fournisseurs « réels » neutres ; la chaîne se construit dessus.
+    [OTP_WHATSAPP_PROVIDER]: neutralOtpProvider('whatsapp'),
+    [OTP_SMS_PRIMARY_PROVIDER]: neutralOtpProvider('sms-primary'),
+    [OTP_SMS_FALLBACK_PROVIDER]: neutralOtpProvider('sms-fallback'),
     // Fabricant de notifications PSP du module de simulation de développement (chargé quand NODE_ENV vaut `test`).
     [DEV_NOTIFICATION_FABRICATOR]: () => {
       throw new Error('non appelé');
@@ -293,7 +309,9 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
     DEVICE_CA,
     TOKEN_SIGNER,
     ATTESTATION_VERIFIER,
-    OTP_SENDER,
+    OTP_WHATSAPP_PROVIDER,
+    OTP_SMS_PRIMARY_PROVIDER,
+    OTP_SMS_FALLBACK_PROVIDER,
     DEV_NOTIFICATION_FABRICATOR,
   ];
   const saved = process.env.DEVICE_IDENTITY_FAKE;
@@ -330,7 +348,17 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
     ['l’autorité des terminaux', DEVICE_CA, () => FakeDeviceCa.inMemory()],
     ['le signataire des jetons d’appareil', TOKEN_SIGNER, () => FakeTokenSigner.create()],
     ['le vérificateur d’attestation', ATTESTATION_VERIFIER, () => new FakeAttestation()],
-    ['l’envoi des codes à usage unique', OTP_SENDER, () => new FakeOtpSender()],
+    ['l’envoi des codes par WhatsApp', OTP_WHATSAPP_PROVIDER, () => new FakeWhatsAppProvider()],
+    [
+      'l’envoi des codes par SMS (principal)',
+      OTP_SMS_PRIMARY_PROVIDER,
+      () => new FakeSmsPrimaryProvider(),
+    ],
+    [
+      'l’envoi des codes par SMS (repli)',
+      OTP_SMS_FALLBACK_PROVIDER,
+      () => new FakeSmsFallbackProvider(),
+    ],
   ])('faux de %s seul : démarrage refusé, et seul ce faux est nommé', async (name, token, make) => {
     const app = await compile({ token, provider: await make() });
     try {
@@ -362,14 +390,23 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
     expect((error as FakeInProductionError).names).toEqual(['la simulation de paiement PSP']);
   });
 
-  it('envoyeur de codes : sa fabrique refuse aussi en production sans remplaçant', async () => {
-    await expect(
-      compile(
-        undefined,
-        NEUTRAL.filter((token) => token !== OTP_SENDER),
-      ),
-    ).rejects.toThrow(/l’envoi des codes à usage unique est un faux/);
-  });
+  it.each([
+    ['WhatsApp', OTP_WHATSAPP_PROVIDER],
+    ['SMS (principal)', OTP_SMS_PRIMARY_PROVIDER],
+    ['SMS (repli)', OTP_SMS_FALLBACK_PROVIDER],
+  ])(
+    'fournisseur de codes %s : sa fabrique refuse aussi en production sans remplaçant',
+    async (label, token) => {
+      await expect(
+        compile(
+          undefined,
+          NEUTRAL.filter((neutral) => neutral !== token),
+        ),
+      ).rejects.toThrow(
+        new RegExp(`l’envoi des codes par ${label.replace(/[()]/g, '\\$&')} est un faux`),
+      );
+    },
+  );
 
   it('identité du festivalier : réelle (par jeton, non factice) et sourde aux en-têtes X-Test-* en production', async () => {
     const app = await compile();

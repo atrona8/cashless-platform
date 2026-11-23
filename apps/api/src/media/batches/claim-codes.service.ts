@@ -18,6 +18,7 @@ import type { MediaBatchRow } from './batches.dto';
 export const MAX_ASSOCIATION_LINES = 10_000;
 const ISSUE_ATTEMPTS = 3;
 const UID = /^[0-9a-fA-F]{14}$/;
+const PRINTED_NUMBER = /^[A-Z0-9-]{1,32}$/;
 
 export const ASSOCIATION_REASONS = [
   'MALFORMED_LINE',
@@ -29,6 +30,8 @@ export const ASSOCIATION_REASONS = [
   'CLAIM_CODE_ALREADY_ASSOCIATED',
   'CLAIM_CODE_INVALIDATED',
   'MEDIA_ALREADY_HAS_CODE',
+  'BAD_PRINTED_NUMBER',
+  'PRINTED_NUMBER_TAKEN',
 ] as const;
 export type AssociationReason = (typeof ASSOCIATION_REASONS)[number];
 
@@ -69,7 +72,11 @@ export class ClaimCodesService {
       const drawn = await this.draw(client, batch.quantity);
       await client.query('SAVEPOINT claim_codes');
       try {
-        await client.query('SELECT issue_claim_codes($1, $2::bytea[])', [batch.id, drawn.hashes]);
+        await client.query('SELECT issue_claim_codes($1, $2::bytea[], $3)', [
+          batch.id,
+          drawn.hashes,
+          this.hasher.keyVersion,
+        ]);
         await client.query('RELEASE SAVEPOINT claim_codes');
         codes = drawn.codes;
         break;
@@ -121,7 +128,7 @@ export class ClaimCodesService {
     return { codes: drawn.map((d) => d.code), hashes: drawn.map((d) => d.hash) };
   }
 
-  /** Importe le fichier `code,uid` de l'imprimeur ; chaque ligne est un point de reprise. */
+  /** Importe le fichier `code,uid[,numéro imprimé]` de l'imprimeur ; chaque ligne est un point de reprise. */
   async importAssociations(
     client: TxClient,
     batch: MediaBatchRow,
@@ -167,7 +174,7 @@ export class ClaimCodesService {
     batch: MediaBatchRow,
     fields: string[],
   ): Promise<AssociationReason | null> {
-    if (fields.length !== 2) return 'MALFORMED_LINE';
+    if (fields.length !== 2 && fields.length !== 3) return 'MALFORMED_LINE';
     let hash: Buffer;
     try {
       hash = this.hasher.claimCodeHash(fields[0]!);
@@ -175,12 +182,21 @@ export class ClaimCodesService {
       return 'BAD_CLAIM_CODE';
     }
     if (!UID.test(fields[1]!)) return 'BAD_UID';
+    // Troisième colonne facultative : vide = absente ; sinon majuscules, avant tout accès à la base.
+    const printedRaw = fields[2] ?? '';
+    const printed = printedRaw === '' ? null : printedRaw.toUpperCase();
+    if (printed !== null && !PRINTED_NUMBER.test(printed)) return 'BAD_PRINTED_NUMBER';
     const uid = Buffer.from(fields[1]!, 'hex');
     const checked = await this.refusal(client, batch.id, hash, uid);
     if (typeof checked === 'string') return checked;
     await client.query('SAVEPOINT claim_line');
     try {
-      await client.query('SELECT associate_claim_code($1, $2)', [hash, checked.mediaId]);
+      await client.query('SELECT associate_claim_code($1, $2, $3, $4)', [
+        hash,
+        checked.mediaId,
+        printed,
+        this.hasher.keyVersion,
+      ]);
       await client.query('RELEASE SAVEPOINT claim_line');
       return null;
     } catch (error) {
@@ -188,6 +204,7 @@ export class ClaimCodesService {
       // Les contrôles ci-dessus ont été devancés par une écriture concurrente : la base a tranché. Le motif est relu
       // après coup (lot 20, cycle 8) : en READ COMMITTED, la nouvelle lecture voit l'écriture validée (invalidation à
       // la clôture, autre association). Motif par défaut si la relecture ne l'explique pas : déjà associé.
+      if (isSqlError(error) && error.code === 'CL065') return 'PRINTED_NUMBER_TAKEN';
       if (isSqlError(error) && (error.code === 'CL020' || error.code === '23505')) {
         const reread = await this.refusal(client, batch.id, hash, uid);
         return typeof reread === 'string' ? reread : 'CLAIM_CODE_ALREADY_ASSOCIATED';
@@ -203,8 +220,14 @@ export class ClaimCodesService {
     hash: Buffer,
     uid: Buffer,
   ): Promise<AssociationReason | { mediaId: string }> {
-    const media = await client.query<{ id: string; claim_code_hash: Buffer | null }>(
-      'SELECT id, claim_code_hash FROM media WHERE batch_id = $1 AND nfc_uid = $2',
+    const media = await client.query<{
+      id: string;
+      claim_code_hash: Buffer | null;
+      claim_key_version: number;
+      claim_code_used_at: Date | null;
+    }>(
+      `SELECT id, claim_code_hash, claim_key_version, claim_code_used_at
+         FROM media WHERE batch_id = $1 AND nfc_uid = $2`,
       [batchId, uid],
     );
     if (!media.rows[0]) return 'MEDIA_UNKNOWN';
@@ -212,13 +235,23 @@ export class ClaimCodesService {
       batch_id: string;
       media_id: string | null;
       invalidated_at: Date | null;
-    }>('SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1', [hash]);
+    }>(
+      'SELECT batch_id, media_id, invalidated_at FROM claim_code WHERE code_hash = $1 AND key_version = $2',
+      [hash, this.hasher.keyVersion],
+    );
     const found = code.rows[0];
     if (!found) return 'CLAIM_CODE_UNKNOWN';
     if (found.invalidated_at !== null) return 'CLAIM_CODE_INVALIDATED';
     if (found.media_id !== null) return 'CLAIM_CODE_ALREADY_ASSOCIATED';
     if (found.batch_id !== batchId) return 'CLAIM_CODE_OTHER_BATCH';
-    if (media.rows[0].claim_code_hash !== null) return 'MEDIA_ALREADY_HAS_CODE';
-    return { mediaId: media.rows[0].id };
+    // Un code d'une version plus ancienne, jamais utilisé, est remplacé par la base ; un code de la
+    // version courante (ou utilisé) reste.
+    const held = media.rows[0];
+    if (
+      held.claim_code_hash !== null &&
+      (held.claim_key_version >= this.hasher.keyVersion || held.claim_code_used_at !== null)
+    )
+      return 'MEDIA_ALREADY_HAS_CODE';
+    return { mediaId: held.id };
   }
 }

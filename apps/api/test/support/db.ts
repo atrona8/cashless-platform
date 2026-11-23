@@ -58,6 +58,13 @@ export const EDGEADMIN_URL = roleUrl(
 /** Processus vendor-pin (mission 11a, WP03, post-roles.sql § 13). */
 export const PIN_URL = roleUrl('DATABASE_URL_PIN', 'cashless_pin', 'CASHLESS_PIN_PASSWORD');
 
+/** Commande d'exploitation reissue-claim-codes (mission 10a, WP04, post-roles.sql § 14). */
+export const CLAIMADMIN_URL = roleUrl(
+  'DATABASE_URL_CLAIMADMIN',
+  'cashless_claimadmin',
+  'CASHLESS_CLAIMADMIN_PASSWORD',
+);
+
 const REPO_ROOT = join(__dirname, '../../../..');
 
 /** Recrée la base de test par les migrations (packages/ledger-sql/scripts/reset-db.sh). */

@@ -26,4 +26,6 @@ const _$Reason3EnumMap = {
   Reason3.claimCodeAlreadyAssociated: 'CLAIM_CODE_ALREADY_ASSOCIATED',
   Reason3.claimCodeInvalidated: 'CLAIM_CODE_INVALIDATED',
   Reason3.mediaAlreadyHasCode: 'MEDIA_ALREADY_HAS_CODE',
+  Reason3.badPrintedNumber: 'BAD_PRINTED_NUMBER',
+  Reason3.printedNumberTaken: 'PRINTED_NUMBER_TAKEN',
 };

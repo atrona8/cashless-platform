@@ -1,10 +1,7 @@
 // Port d'envoi du code à usage unique (SMS, WhatsApp). Le vrai fournisseur arrive avec la mission 12b ; d'ici là,
-// seul le FAUX existe : il n'envoie rien, n'écrit JAMAIS le code dans les journaux, et refuse le démarrage en
+// seuls des FAUX existent (otp-providers.ts, chaîne dans otp-chain.ts) : ils n'envoient rien, n'écrit JAMAIS le code dans les journaux, et refuse le démarrage en
 // production (règle du porteur du 13/10/2026). Hors production, la route rend le code dans l'en-tête
 // `X-Test-Otp-Code` tant que l'envoyeur est un faux (ADR-180, OP-N120).
-import { FakeInProductionError } from '../kms/production-guard';
-import type { AppConfig } from '../config/config';
-
 export type OtpChannel = 'AUTO' | 'SMS' | 'WHATSAPP';
 
 /** Envoi d'usage « titulaire » (mission 9a, décision 14) : de quoi construire le lien de décision. */
@@ -13,10 +10,25 @@ export interface HolderLink {
   otpRequestId: string;
 }
 
+/** Défi auquel l'envoi se rattache : sert aux essais notés dans `otp_channel_attempt` (jamais au code). */
+export interface OtpSendContext {
+  challengeId: string;
+  operatorId: string;
+}
+
 export interface OtpSender {
   readonly isFake?: boolean;
-  /** `link` n'est présent que pour le code d'un titulaire ; la connexion garde la signature à trois arguments. */
-  send(phone: string, code: string, channel: OtpChannel, link?: HolderLink): Promise<void>;
+  /**
+   * `link` n'est présent que pour le code d'un titulaire ; `context` (WP10) désigne le défi des essais notés.
+   * La connexion et les envoyeurs de test à trois arguments restent valides.
+   */
+  send(
+    phone: string,
+    code: string,
+    channel: OtpChannel,
+    link?: HolderLink,
+    context?: OtpSendContext,
+  ): Promise<void>;
 }
 
 export interface SentOtp {
@@ -45,9 +57,4 @@ export class FakeOtpSender implements OtpSender {
   lastSent(): SentOtp | null {
     return this.last;
   }
-}
-
-export function createOtpSender(config: Pick<AppConfig, 'production'>): OtpSender {
-  if (config.production) throw new FakeInProductionError(['l’envoi des codes à usage unique']);
-  return new FakeOtpSender();
 }

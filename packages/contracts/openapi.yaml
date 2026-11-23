@@ -3289,6 +3289,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
 
   # ---------------------------------------------------------------- Configurations PSP et choix par événement
   /organizers/{organizer_id}/psp-configurations:
@@ -10456,7 +10458,7 @@ paths:
           text/csv:
             schema:
               type: string
-              description: 'Lignes `code,uid` (UID sur 14 chiffres hexadécimaux), avec ou sans ligne d''en-tête.'
+              description: 'Lignes `code,uid[,printed_number]` (UID sur 14 chiffres hexadécimaux), avec ou sans ligne d''en-tête. La troisième colonne `printed_number`, le numéro imprimé sur le bracelet, est facultative : 1 à 32 caractères parmi `A-Z`, `0-9` et `-`, casse normalisée, unique par prestataire. Un fichier à deux colonnes reste valide ; un numéro refusé l''est ligne par ligne, motifs `BAD_PRINTED_NUMBER` et `PRINTED_NUMBER_TAKEN`.'
             example: |
               code,uid
               K7QM-4XH9RT,04A1B2C3D4E5F6
@@ -18762,7 +18764,7 @@ components:
                 description: Numéro de la ligne dans le fichier (1 = première ligne).
               reason:
                 type: string
-                enum: [MALFORMED_LINE, BAD_CLAIM_CODE, BAD_UID, MEDIA_UNKNOWN, CLAIM_CODE_UNKNOWN, CLAIM_CODE_OTHER_BATCH, CLAIM_CODE_ALREADY_ASSOCIATED, CLAIM_CODE_INVALIDATED, MEDIA_ALREADY_HAS_CODE]
+                enum: [MALFORMED_LINE, BAD_CLAIM_CODE, BAD_UID, MEDIA_UNKNOWN, CLAIM_CODE_UNKNOWN, CLAIM_CODE_OTHER_BATCH, CLAIM_CODE_ALREADY_ASSOCIATED, CLAIM_CODE_INVALIDATED, MEDIA_ALREADY_HAS_CODE, BAD_PRINTED_NUMBER, PRINTED_NUMBER_TAKEN]
     ClaimCodeAssociation:
       type: object
       required: [claim_code]

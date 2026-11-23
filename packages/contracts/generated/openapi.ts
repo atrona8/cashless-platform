@@ -8750,7 +8750,7 @@ export type components = {
                 /** @description Numéro de la ligne dans le fichier (1 = première ligne). */
                 line: number;
                 /** @enum {string} */
-                reason: "MALFORMED_LINE" | "BAD_CLAIM_CODE" | "BAD_UID" | "MEDIA_UNKNOWN" | "CLAIM_CODE_UNKNOWN" | "CLAIM_CODE_OTHER_BATCH" | "CLAIM_CODE_ALREADY_ASSOCIATED" | "CLAIM_CODE_INVALIDATED" | "MEDIA_ALREADY_HAS_CODE";
+                reason: "MALFORMED_LINE" | "BAD_CLAIM_CODE" | "BAD_UID" | "MEDIA_UNKNOWN" | "CLAIM_CODE_UNKNOWN" | "CLAIM_CODE_OTHER_BATCH" | "CLAIM_CODE_ALREADY_ASSOCIATED" | "CLAIM_CODE_INVALIDATED" | "MEDIA_ALREADY_HAS_CODE" | "BAD_PRINTED_NUMBER" | "PRINTED_NUMBER_TAKEN";
             }[];
         };
         ClaimCodeAssociation: {
@@ -13201,6 +13201,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
         };
     };
     listPspConfigurations: {

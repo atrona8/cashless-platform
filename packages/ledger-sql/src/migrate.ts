@@ -143,6 +143,12 @@ export async function migrate(
             `${variable} manquant : rôle de la passerelle sans mot de passe en production`,
           );
     }
+    // Commande d'exploitation reissue-claim-codes (mission 10a, WP04) : même refus (décision du porteur, 20/11/2026).
+    // cashless_pin n'est pas concerné.
+    if (report.postRoles && env.NODE_ENV === 'production' && !env.CASHLESS_CLAIMADMIN_PASSWORD)
+      throw new Error(
+        'CASHLESS_CLAIMADMIN_PASSWORD manquant : rôle de la commande d’exploitation sans mot de passe en production',
+      );
     const passwords: [role: string, password: string | undefined][] = [
       ['cashless_app', process.env.CASHLESS_APP_PASSWORD],
       ['cashless_platform', report.postRoles ? process.env.CASHLESS_PLATFORM_PASSWORD : undefined],
@@ -164,6 +170,8 @@ export async function migrate(
       // Processus vendor-pin (mission 11a, WP03), créé par post-roles.sql. Mot de passe absent : le rôle reste sans
       // mot de passe, comme les rôles de processus ci-dessus (à signaler au porteur : refus en production possible).
       ['cashless_pin', report.postRoles ? process.env.CASHLESS_PIN_PASSWORD : undefined],
+      // Commande d'exploitation reissue-claim-codes (mission 10a, WP04), créé par post-roles.sql § 14. Absent en production : refus ci-dessus.
+      ['cashless_claimadmin', report.postRoles ? env.CASHLESS_CLAIMADMIN_PASSWORD : undefined],
     ];
     for (const [role, password] of passwords) {
       if (!password) continue;

@@ -74,6 +74,10 @@ jobs:
       # Mission 11a (WP03) : processus vendor-pin, rôle cashless_pin.
       CASHLESS_PIN_PASSWORD: cashless_pin_ci
       DATABASE_URL_PIN: postgres://cashless_pin:cashless_pin_ci@localhost:5432/cashless_test
+      # Mission 10a (WP04) : commande d'exploitation reissue-claim-codes, rôle cashless_claimadmin (sans le mot de
+      # passe, connexion refusée en 28P01 : piège de la PR #20).
+      CASHLESS_CLAIMADMIN_PASSWORD: cashless_claimadmin_ci
+      DATABASE_URL_CLAIMADMIN: postgres://cashless_claimadmin:cashless_claimadmin_ci@localhost:5432/cashless_test
       # Clé d'empreinte des codes de rattachement : valeur de test (32 octets en hexadécimal), sans valeur ailleurs.
       CLAIM_CODE_HMAC_KEY: 636173686c6573732d63692d636c61696d2d636f64652d686d61632d74657374
       # Répartiteurs de confiance devant l'API (OP-N53) : aucun en CI, l'adresse est celle de la connexion. Obligatoire
@@ -267,6 +271,13 @@ jobs:
         run: |
           npm run reset-db -w @cashless/ledger-sql
           npm test -w @cashless/api -- --runInBand controls/controls-alerts sealing/seal-and-verify
+
+      # Mission serveur-app-festivalier (WP07) : la version du secret des codes de rattachement est globale à la base
+      # (`claim_key_version_max()`) ; cette suite y pose des lignes en version 2, ce qui ferait refuser le démarrage
+      # des suites voisines. Écartée de la passe parallèle, lancée seule, en série.
+      # WP08 : la commande `reissue-claim-codes` (lancée en version 2, rôle cashless_claimadmin) tourne dans la même étape.
+      - name: Rotation du secret des codes de rattachement (suites seules, en série)
+        run: npm test -w @cashless/api -- --runInBand media/claim-rotation cli/reissue-claim-codes
 
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
