@@ -3073,6 +3073,8 @@ codes en clair :
   de `otp_channel_attempt`) ; `roles.sql` n'a pas changé ; `packages/ledger-sql/src/migrate.ts` (mot de passe du
   rôle, refus en production) ;
 - `apps/api/src/cli/reissue-claim-codes.ts` (codes en clair, fichier de sortie, rôle de la connexion) ;
+- `apps/api/src/db/claim-admin-connection.ts` (connexion du rôle `cashless_claimadmin` et refus en production d'un rôle
+  trop large, déplacés de la commande par le correctif d'intégration `f5299969` du 23/11/2026) ;
 - `apps/api/src/kms/claim-hash.ts`, `config/config.ts` (`claimAdminSettings`, version du secret) et
   `media/claims/claims.service.ts` (refus de démarrage sur version) ;
 - `apps/api/src/customer-auth/otp-chain.ts` (code en mémoire, plafond, effacement), `otp-providers.ts`,
