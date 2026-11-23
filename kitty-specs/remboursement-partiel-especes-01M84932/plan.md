@@ -13,7 +13,8 @@ réglages la gouvernent : l'autorisation du prestataire (réglage de cascade, sa
 par événement (colonne d'événement réglée par l'organisateur, sur le modèle de `cash_refund_single_max`).
 
 **Décisions prises par défaut pendant l'absence du porteur (23/11/2026), à lui présenter avant `/spec-kitty.tasks`** :
-D1 à D6 de `research.md`. Les ajouts au contrat (C-001) sont listés dans `contracts/partial-cash-refund.md` et restent
+D1, D4, D5, D6 de `research.md` ; D2 (montant débité, frais retenus sur les espèces) et D3 (cumul par portefeuille)
+validés par le porteur le 23/11/2026. Les ajouts au contrat (C-001) sont listés dans `contracts/partial-cash-refund.md` et restent
 **soumis au porteur avant d'être codés**.
 
 ## Technical Context
@@ -90,9 +91,9 @@ solde payé (leçon d'OP-N128, ADR-195), sinon deux rendus simultanés passent c
 
 ### IC-03 — Seconde personne au cumul du jour
 
-- **Purpose**: empêcher le fractionnement sous le seuil (ADR-190) en cumulant les rendus partiels du bracelet sur la journée UTC.
+- **Purpose**: empêcher le fractionnement sous le seuil (ADR-190) en cumulant les rendus partiels du portefeuille sur la journée UTC, tous bracelets confondus (renforcement validé par le porteur).
 - **Relevant requirements**: FR-007, FR-013, NFR-002, SC-003
-- **Affected surfaces**: `partial-refund.service.ts` (cumul lu APRÈS `lockWalletPaidBalance`, somme des montants bruts des `WALLET_REFUND` marqués rendu partiel du bracelet depuis 00:00 UTC + montant demandé, comparé `>` à `event.cash_refund_single_max`), `approvedBy` porté par l'écriture (ADR-195), test de concurrence (20 envois).
+- **Affected surfaces**: `partial-refund.service.ts` (cumul lu APRÈS `lockWalletPaidBalance`, somme des montants bruts des `WALLET_REFUND` marqués rendu partiel du portefeuille depuis 00:00 UTC + montant demandé, comparé `>` à `event.cash_refund_single_max`), `approvedBy` porté par l'écriture (ADR-195), test de concurrence (20 envois).
 - **Sequencing/depends-on**: IC-02
 - **Risks**: index de lecture du cumul (transactions d'un bracelet par date) à vérifier sur un grand livre chargé ; concurrence entre bracelets d'un même portefeuille couverte par le verrou du portefeuille.
 

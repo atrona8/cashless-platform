@@ -23,9 +23,9 @@ Pas de table nouvelle. Un rendu partiel est une transaction `WALLET_REFUND` du g
 
 ## Invariants
 
-- Montant demandé > 0, ≥ `refund_policy.minimum_amount`, ≤ solde payé lu sous verrou.
+- Montant demandé > frais, ≥ `refund_policy.minimum_amount`, ≤ solde payé lu sous verrou ; espèces remises = montant − frais.
 - Crédits offerts (`WALLET_PROMO`) et caution (`media.deposit_status`, `deposit_held`) inchangés.
 - Bracelet `ACTIVE` avant et après ; rattachement inchangé.
-- Cumul du jour (UTC) des rendus partiels du bracelet + montant demandé > `cash_refund_single_max` ⇒ seconde personne
+- Cumul du jour (UTC) des rendus partiels du portefeuille, tous bracelets confondus, + montant demandé > `cash_refund_single_max` ⇒ seconde personne
   distincte de l'auteur.
 - Ordre des verrous : bracelet, puis soldes payés des portefeuilles par identifiant (comme `releaseMedia`).

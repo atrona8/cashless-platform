@@ -24,6 +24,7 @@ d'approvisionnement » est sans objet.
 
 ## D2 — Montant saisi : brut ou net
 
+- **Validé par le porteur le 23/11/2026.**
 - **Decision**: le caissier saisit le **montant débité** du solde payé (brut) ; les espèces remises sont ce montant
   moins les frais de `refund_policy`. La réponse donne les deux, pour l'écran.
 - **Rationale**: même convention que le guichet de retour (`WALLET_REFUND` du montant brut, espèces lues sur la ligne de
@@ -32,8 +33,10 @@ d'approvisionnement » est sans objet.
 
 ## D3 — Cumul du jour
 
+- **Renforcement validé par le porteur le 23/11/2026** : cumul par **portefeuille** (et non par bracelet), pour qu'un
+  portefeuille à plusieurs bracelets ne multiplie pas le seuil (relevé par l'addendum post-plan).
 - **Decision**: somme des montants **bruts** des `WALLET_REFUND` marqués rendu partiel (`metadata.partial_cash_refund`)
-  sur le bracelet, depuis 00:00 UTC, plus le montant demandé ; lue **après** le verrou du solde payé ; comparée `>` au
+  sur le portefeuille, tous bracelets confondus, depuis 00:00 UTC, plus le montant demandé ; lue **après** le verrou du solde payé ; comparée `>` au
   `cash_refund_single_max` de l'événement. Le guichet de retour garde son propre cumul (inchangé, C-002).
 - **Rationale**: ADR-190 (comparaison au cumul), ADR-195 / OP-N128 (lecture sous verrou), journée UTC (§2.2).
 - **Alternatives considered**: inclure le guichet de retour dans le cumul (change un comportement existant, hors
@@ -66,6 +69,5 @@ d'approvisionnement » est sans objet.
 
 ## Limites relevées (à consigner au moment du code)
 
-- **L1**: un bracelet remplacé dans la journée repart d'un cumul nul (le cumul suit le bracelet, comme le seuil du
-  guichet de retour). Ne relâche pas un droit ; borné par le seuil de chaque bracelet et par les frais.
+- **L1**: levée avant codage : le cumul suit le portefeuille, un bracelet remplacé ne repart pas de zéro.
 - **L2**: le rendu partiel ne rend pas les espèces dues (`refundCashDue` reste la seule voie, C-002).

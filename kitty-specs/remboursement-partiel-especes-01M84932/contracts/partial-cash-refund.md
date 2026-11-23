@@ -17,7 +17,7 @@ et admis exactement par le test de gel `contract-additions-9b.spec.ts`.
       Terminal `TOPUP_DESK` et personne `CASHIER` ou `SUPERVISOR` de l'événement ; session de caisse `OPEN` du
       terminal (`409 CONFLICT_STATE` sinon). Le bracelet est lu (`tap_id` valide) et reste actif. Montant débité du
       solde payé (brut) ; espèces remises = montant − frais de `refund_policy`. Crédits offerts et caution inchangés.
-      Seconde personne (`X-Approval-Token`) quand le cumul du jour UTC des rendus partiels du bracelet, montant compris,
+      Seconde personne (`X-Approval-Token`) quand le cumul du jour UTC des rendus partiels du portefeuille (tous bracelets), montant compris,
       dépasse `event.cash_refund_single_max`. Indisponible pendant `EDGE` (`409 DEBIT_AUTHORITY_EDGE`).
     security: [{ deviceMtls: [], deviceToken: [], deviceSignature: [], staffBearer: [] }]
     parameters: [MediaId, IdempotencyKey (obligatoire), ApprovalToken, DeviceRequestId, SignatureInput, Signature,
