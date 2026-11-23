@@ -15,7 +15,7 @@ par événement (colonne d'événement réglée par l'organisateur, sur le modè
 **Décisions prises par défaut pendant l'absence du porteur (23/11/2026), à lui présenter avant `/spec-kitty.tasks`** :
 D1, D4, D5, D6 de `research.md` ; D2 (montant débité, frais retenus sur les espèces) et D3 (cumul par portefeuille)
 validés par le porteur le 23/11/2026. Les ajouts au contrat (C-001) sont listés dans `contracts/partial-cash-refund.md` et restent
-**soumis au porteur avant d'être codés**.
+**acceptés par le porteur le 23/11/2026**.
 
 ## Technical Context
 

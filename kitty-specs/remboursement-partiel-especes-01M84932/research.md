@@ -1,7 +1,8 @@
 # Research: Remboursement partiel en espèces au guichet
 
 Décisions du plan prises par défaut le 23/11/2026, pendant l'absence du porteur, à partir des modèles existants du
-projet. **À présenter au porteur avant `/spec-kitty.tasks`.** Aucune dépendance nouvelle : la section « chaîne
+projet. **Toutes validées par le porteur le 23/11/2026** (D2 et D3 après correction), ainsi que les ajouts au contrat
+de `contracts/partial-cash-refund.md`. Aucune dépendance nouvelle : la section « chaîne
 d'approvisionnement » est sans objet.
 
 ## Décisions du porteur reprises du specify (23/11/2026)

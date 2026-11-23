@@ -1,4 +1,4 @@
-# Ajouts au contrat — rendu partiel en espèces (À SOUMETTRE AU PORTEUR AVANT D'ÊTRE CODÉS)
+# Ajouts au contrat — rendu partiel en espèces (ACCEPTÉS PAR LE PORTEUR LE 23/11/2026)
 
 Contrat partagé stable depuis le 05/11/2026 : ajouts rétrocompatibles seulement. Aucune route existante, aucun champ
 existant, aucune énumération ne change. Chaque ajout est inscrit dans `tools/contract-stability/contract-baseline.json`
