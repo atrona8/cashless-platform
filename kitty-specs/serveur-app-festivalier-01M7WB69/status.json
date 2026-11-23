@@ -2,10 +2,9 @@
   "event_count": 101,
   "last_event_id": "01M8447SG3HW1BQD7X6DS8R9MF",
   "materialized_at": "2026-11-23T11:56:37.252163+00:00",
-  "mission_number": "7",
+  "mission_number": "",
   "mission_slug": "serveur-app-festivalier-01M7WB69",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,367 +20,188 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8446TX6EBT9WMFVDACTD3RZ",
       "last_transition_at": "2026-11-23T11:56:05.926457+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Retouches hors carte: aucune. Signatures conformes a interfaces.md. Ordre: session, forme (CL062), portefeuille/client (no_data_found), CL060, agent absent (CL001), agent inconnu (no_data_found), CL061, piece (CL062). Renforcement signale: agent restreint a operator_id = session ou NULL (plateforme), sinon no_data_found. Revocation: session, CL001, introuvable, motif CL062, CL063. Mutations rejouees puis retablies: a (CL061) echoue; b (expiration) echoue; c1 wallet, c2 revoke, c4 party echouent; c3 identity sans filtre operateur echoue grace au cas wallet A -> client B; d (CL063) echoue; e (comparaison sans filtre client) echoue au point 4 de C-005. p_id_country text suivi (colonne char(2)).",
-        "Review passed: 63/63 pgTAP, definer_search_path 14/14, mutations a,b,c,d,e + identite sans filtre rejouees et detectees, aucun GRANT/DELETE"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP01-base-kyc/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP01-base-kyc/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 47593,
-      "shell_pid_created_at": "1795186479.449156",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done"
-      }
+      "shell_pid": 41357,
+      "shell_pid_created_at": "1795185984.732135"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8446XVER9R1M3WXP80R6TC6",
       "last_transition_at": "2026-11-23T11:56:08.943049+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Migration 0097 (5 fonctions versionnees, anciennes retirees; claim_key_version_max, reissuable_media, reissue_claim_codes; media.printed_number). Retouches hors carte: post-roles.sql (signatures seules, aucun droit ajoute/retire), tests_media_claims, tests_personalization_definer, tests_media_roles, tests_media_batch_functions (appels passes a la nouvelle signature). Ajout non prevu: helper claim_media_reissuable (DEFINER, REVOKE PUBLIC, partage le predicat de reissuable_media/reissue_claim_codes; WP04 ne l'accorde a personne). Ecarts: associate_claim_code accepte un code d'une version PLUS ANCIENNE seulement (renforce); code deja utilise => MEDIA_ALREADY_HAS_CODE; autre numero deja porte => CL065; message de course CL065 suffixe (concurrence) pour que la mutation f soit observable. Mutations rejouees (tests_claim_key_version): a=19,21,23; b=28-30; c=33; d=36-38; e=erreur 23505 claim_code_media_key; f=84. Jest a corriger en WP07: media-isolation, claim-code-order, personalization specs + services claims/claim-codes/personalization.",
-        "Review passed: 5 suites pgTAP vertes sur cashless_wp02, mutations a-f rejouees (echec puis retablies), droits post-roles inchanges, aucun GRANT 0097, ancien code v1 refuse partout. Mineur: course CL065 non testee ; ancienne signature absente confirmee."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP02-base-version-codes/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP02-base-version-codes/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 51274,
-      "shell_pid_created_at": "1795186649.069533",
-      "subtasks": {
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done"
-      }
+      "shell_pid": 42034,
+      "shell_pid_created_at": "1795186024.526194"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M84470PHHHCK9F7ZCKVF6Q3J",
       "last_transition_at": "2026-11-23T11:56:11.857254+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Migrations 0098 (wallet_pending_offline_notice(uuid) boolean STABLE INVOKER; index offline_batch_device_received_idx (device_id, received_at) et offline_snapshot_ack_ledger_device_idx (ledger_id, device_id, acked_at)) et 0099 (otp_channel_attempt, RLS forcee, FK composite, index (challenge_id, sent_at)). Aucune retouche hors carte, aucun GRANT. Points signales: (1) ORGANIZER/OPERATOR_BILLING: faux; (2) tous statuts de lot comptent (REJECTED inclus); le dernier lot est celui du terminal, tous grands livres confondus; (3) index ack (ledger_id, device_id, acked_at) cree en plus de (device_id, acked_at) existant; (4) suivi interfaces.md pour 0097/0098/0099. Renforcements: CHECK failed_reason ^[A-Z][A-Z0-9_]{0,39}$ (commence par une lettre: un numero ou code a chiffres seuls est refuse, plus strict que le prompt); provider 1-64; cle composite (challenge_id, operator_id) -> otp_challenge, avec UNIQUE (id, operator_id) AJOUTE sur otp_challenge (table de 0080). Mutations rejouees puis retablies: a (retrait d.status<>REVOKED) echec test 9; b (>= ) echec test 6, (sans coalesce) echecs 2,10,13,16; c (retrait e.status<>CLOSED) echec test 12; d (NO FORCE RLS) echec test 4; e (retrait CHECK failed_reason) echecs 12-17 et 21. Mutation scope_type='EVENT' retire: aucun test n'echoue (controle redondant avec la jointure event.id=ledger.scope_id, gardee par prudence). EXPLAIN 2000 acks: index only scan offline_batch, 0,07 ms. Suites 0048/0080/snapshots/definer_search_path vertes (293 tests).",
-        "Cycle 1. (1) Corrige: le dernier lot est pris sur le grand livre du portefeuille (b.ledger_id = w.ledger_id), index offline_batch (device_id, ledger_id, received_at) ajoute; test aa05 (accuse f010 3h, lot f001 4h: vrai) echoue sans le filtre (mutation rejouee: test 14). (2) Test ajoute: grand livre ORGANIZER dont scope_id = evenement LIVE avec accuse en attente: faux; echoue sans scope_type='EVENT' (mutation: test 16). (3) Test rendu probant: aa06 n'a qu'un accuse sur f010, 98cb001 reste faux, 98cb010 vrai. (4) noté, pour WP04. Suites 0048/0080/snapshots/definer et les deux suites WP03 vertes sur cashless_wp03.",
-        "Cycle 2: constats 1-3 corriges et verifies par mutation; suites WP03 + offline_snapshots vertes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP03-base-avis-canaux/review-cycle-2.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP03-base-avis-canaux/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 54770,
-      "shell_pid_created_at": "1795186824.997597",
-      "subtasks": {
-        "T011": "done",
-        "T012": "done",
-        "T013": "done"
-      }
+      "shell_pid": 51456,
+      "shell_pid_created_at": "1795186664.003342"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M84473JFYHHDY7PGEPJKARS3",
       "last_transition_at": "2026-11-23T11:56:14.800147+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP04: section 14 de post-roles.sql (cashless_claimadmin, 4 EXECUTE a cashless_app, otp_channel_attempt UPDATE(confirmed_at, failed_reason)), tests_10a_rights.sql (78 tests), listes figees (execute_grants, 11a, 9b), env (migrate.ts, env.sh, workflow, disposable-databases, db.ts). Hors carte: tools/dev-db/env.test.example, docs/SERVICES-EXTERNES.md, tests_offline_rights.sql (liste de tables +otp_channel_attempt). roles.sql inchange (cashless_pin est cree en 8b, claimadmin en 14a). Signale: tests_claim_key_version.sql test 122 (WP02) attend claim_key_version_max non executable par cashless_app, contraire a interfaces.md. Mutations a-e: echouent aux tests 4/6/20, 10/23, 44/58/65, 12/13/27-32, 4/6/7/20 de tests_10a_rights.sql.",
-        "Review passed: droits catalogue, rejeu x2 idempotent, 8 suites pgTAP, 2 Jest, 4 mutations detectees"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP04-droits-base/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP04-droits-base/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 60298,
-      "shell_pid_created_at": "1795187731.699764",
-      "subtasks": {
-        "T014": "done",
-        "T015": "done",
-        "T016": "done",
-        "T017": "done"
-      }
+      "shell_pid": 55916,
+      "shell_pid_created_at": "1795186918.567341"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M84476E7QNW3MVM9F7JKFXSH",
       "last_transition_at": "2026-11-23T11:56:17.735565+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte (nommees par le prompt): app.module.ts (1 import + 1 ligne), audit.service.ts (KYC_VERIFIED, KYC_REVOKED), test/unit/errors/sqlstate-map.spec.ts (4 lignes). Chemin customer_id: role CASHIER/ORGANIZER_ADMIN sur la chaine d'au moins un evenement ou le client a un portefeuille, sinon 403. Role d'audit = exercisedRole. Noms: KycService.create, parseKycVerificationCreate, KYC_DESK_ROLES (kyc.service.ts, reexporte). Mutations rejouees et retablies: (a) exercisedRole retire -> 2 tests echouent; (b) CL061 retire -> 3 echouent; (c) log id_last4 -> test de non-fuite echoue; (d) agent_id lu du corps -> test 400 echoue; (e) Idempotent retire -> rejeu echoue. Jest kyc + sqlstate-map: 171 verts sur cashless_wp05; contract-stability 0 refus.",
-        "Revue WP05: 230 tests verts sur cashless_wp05, contrat 0 refus, mutations (controle de role retire, filtre customer_id elargi) detectees. Mineur: client sans portefeuille d'evenement => 403 (pas 422)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP05-kyc-identification/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP05-kyc-identification/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 67642,
-      "shell_pid_created_at": "1795188540.298015",
-      "subtasks": {
-        "T018": "done",
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done"
-      }
+      "shell_pid": 61966,
+      "shell_pid_created_at": "1795188026.280732"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8447DHKZB3147RJAGDMKKDT",
       "last_transition_at": "2026-11-23T11:56:25.011305+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte: apps/api/src/kyc/kyc.module.ts (2 imports + controllers/providers, 4 lignes). Ecarts: R-03 suivi contrat (guardDecision ne teste pas REVOKED, demande FAILED); wallet_id nul => portee OPERATOR (OPERATOR_ADMIN seul); contradiction SPEC 6.3 p5 notee en tete (T026). p_by non controle par la base: auteur = requested_by de la demande. Test de plafond de recharge non repris (niveau NONE prouve par wallet_kyc_level). Mutations: (a) retrait controle REVOKED -> test 6 echoue; (b) approvedBy au lieu de requestedBy -> 3 tests echouent; (c) CASHIER ajoute aux roles -> 2 echouent; (d) retrait controle target_id du guardDecision -> test falsification echoue. revoke.spec 12/12 sur cashless_wp06; check.mjs 0 refus; eslint/prettier/tsc OK.",
-        "Review passed: 26 kyc + 22 approval tests OK sur cashless_wp06, contract-stability 0 refus, mutations requestedBy->approvedBy (3 echecs), garde REVOKED (1), champs hors liste (1). Mineur: pas de recharge sur 2e portefeuille apres revocation (niveau NONE verifie)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP06-kyc-revocation/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP06-kyc-revocation/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 76969,
-      "shell_pid_created_at": "1795189424.982485",
-      "subtasks": {
-        "T023": "done",
-        "T024": "done",
-        "T025": "done",
-        "T026": "done"
-      }
+      "shell_pid": 69529,
+      "shell_pid_created_at": "1795188692.615076"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M84479BH3YSMWST1RD5WJQ1C",
       "last_transition_at": "2026-11-23T11:56:20.721379+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Retouches hors carte: claims.dto.ts (printed_number string|null); test/integration/media/claim-code-order.spec.ts (ligne 5: 4 colonnes, car 3 colonnes sont admises). Ecarts interfaces.md: claimAdminSettings ajoute claimCodeDomain (prevu); bornes OTP 15000/20000 suivies (le prompt cite 60000 par erreur); personalization.service lit la version via claim_code.key_version (cashless_perso ne lit pas media.claim_key_version, aucun droit ajoute) et n'a pas le controle claim_code_used_at (la base refuse CL020). Mutations (toutes echouent): a) retrait AND claim_key_version de confirm; b) 1 en dur a claim_media; c) retrait assertClaimKeyVersion; d) refusal sans version; e) retrait toUpperCase; f) 1 en dur a public_balance_lookup.",
-        "Review passed: aucun oracle de version (meme chemin, filtre de version partout), ClaimHasher seul lecteur du secret, import 2/3 colonnes, NFR-002 prouve (mutation audit echoue), mutations (a) et (d) echouent, claim-rotation hors passe parallele. Mineurs: personnalisation ne teste pas le cas ancien code; seed-demo sans key_version."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP07-codes-versionnes-api/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP07-codes-versionnes-api/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 74653,
-      "shell_pid_created_at": "1795189162.80922",
-      "subtasks": {
-        "T027": "done",
-        "T028": "done",
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done"
-      }
+      "shell_pid": 61966,
+      "shell_pid_created_at": "1795188026.280732"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8447GGAFGEQGQMD0DDBVE02",
       "last_transition_at": "2026-11-23T11:56:28.042231+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte: apps/api/jest.config.cjs (cli/reissue-claim-codes ecarte de la passe parallele, SKIP_LATENCY), .github/workflows/ledger-tests.yml (suite ajoutee a l'etape serie Rotation du secret). Mutations (toutes detectees): ecriture fichier apres la base (test fichier existant), suppression du fichier apres refus retiree (test base refusee), wx retire (fichier existant), mode 0644 (SC-003), codes sur stdout (4 tests). Ecart a soumettre au porteur: le fichier rank,code,url ne donne pas le bracelet de chaque rang et l'import imprimeur refuse les codes deja lies (CLAIM_CODE_ALREADY_ASSOCIATED); documente dans la procedure. A relire par une personne: apps/api/src/cli/reissue-claim-codes.ts (codes en clair, role claimadmin).",
-        "Review passed: 12/12 spec WP08 sur cashless_wp08 ; 4 mutations (fichier apres base, retrait wx, mode 0644, codes sur stdout) detectees ; mineurs consignes : doc etape 4 dit encore rank,code,url (5 colonnes en realite), lignes >100 car. (reformatage a la fusion), import reflect-metadata inutile, pas de test ENOSPC ni COMMIT incertain. A relire par une personne : cli/reissue-claim-codes.ts, migration 0097, post-roles.sql s14."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP08-reemission-procedure/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP08-reemission-procedure/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 2664,
-      "shell_pid_created_at": "1795426388.163803",
-      "subtasks": {
-        "T033": "done",
-        "T034": "done",
-        "T035": "done",
-        "T036": "done"
-      }
+      "shell_pid": 79317,
+      "shell_pid_created_at": "1795189813.599484"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8447KFCS8R748DVWNCDTZNQ",
       "last_transition_at": "2026-11-23T11:56:31.084399+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte: lost-media.service.ts (m.printed_number); generes: contracts/generated/openapi.ts, dart reason3.dart + rejected.g.dart (regeneres, outil Dart present); check.test.mjs (71->75). Contrat: 3 ajouts (description csv, enum 9-10, 422 revokeKycVerification), 4 entrees baseline (kind description/enum-value/enum-value/response), ADR-225. Mutations: notice=false -> 2 tests echouent; printed_number=null -> 2 echouent; empreinte description -> check.mjs refuse le pointeur. NFR-004 p95: getMe 24 ms, listMyWallets 51 ms. A relire: contract-baseline.json.",
-        "Review passed: 3 ajouts contrat exacts, check.mjs 0 refus, NFR-004 p95 26/73 ms, mutations rejouees"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP09-me-complet/review-cycle-1.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP09-me-complet/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 92535,
-      "shell_pid_created_at": "1795190823.138859",
-      "subtasks": {
-        "T037": "done",
-        "T038": "done",
-        "T039": "done",
-        "T040": "done"
-      }
+      "shell_pid": 79317,
+      "shell_pid_created_at": "1795189813.599484"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8447PK00N0ADSPM4Y0WF2H0",
       "last_transition_at": "2026-11-23T11:56:34.272639+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte (garde de libellés, prévu au prompt) : test/unit/production-guard.spec.ts, test/integration/end-to-end/device-latency.spec.ts, ajout non prévu test/integration/devices/enrollment.spec.ts (en production, ses fabriques de fournisseurs auraient refusé : trois jetons neutres). Écarts : aucun affaiblissement. Renforcement : timeout par envoi (TIMEOUT) borné au délai de l'étape, essais notés dans l'ordre des étapes. Noms figés : OTP_*_PROVIDER, OtpProvider, ChainedOtpSender, AttemptRecorder, TenantAttemptRecorder, OTP_CODE_HARD_CAP_MS, OTP_CHAIN_MAX_ENTRIES. Mutations (a)-(f) vérifiées en échec puis rétablies. À relire : otp-chain.ts, bootstrap.ts. OP-N120 à mettre à jour en WP11.",
-        "Cycle 2. Constat 1 : test unitaire 'plafond dur seul' (WhatsApp accepte a 14 s, SMS principal lance a 29 s accepte a 34 s, repli du a 54 s ; code present a 34 999 ms, efface a 35 000 ms, 0 minuterie, repli jamais appele). Mutation : retrait de this.arm(entry, OTP_CODE_HARD_CAP_MS, ...) dans otp-chain.ts => 1 echec sur 19 ; code remis, 19/19. Constat 2 (mineur, conforme a '35 s au plus') : quand le plafond tombe avant l'etape suivante (delais au maximum + fournisseur lent), la chaine s'arrete sans repli et sans essai note en base. Constat 3 : lignes > 100 car. non reformatees, a faire a la fusion. Integration sur cashless_wp10 (toutes DATABASE_URL_* verifiees) : customer-auth/otp-chain 5/5 ; gateway e2e production-refusals 35/35 (jest -c test/e2e/jest.e2e.config.cjs). eslint, tsc propres. Aucune retouche hors carte.",
-        "Cycle 2 : plafond dur prouvé seul (mutation h échoue), mutations c, e, f échouent, unitaires 19/19, intégration 50/50 (un échec isolé au premier passage, vert à la relance), refus en production 35/35. Reste mineur : lignes > 100 car."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/serveur-app-festivalier-01M7WB69-coord/kitty-specs/serveur-app-festivalier-01M7WB69/tasks/WP10-chaine-envoi-codes/review-cycle-2.md",
         "reference": "review-cycle://serveur-app-festivalier-01M7WB69/WP10-chaine-envoi-codes/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 9890,
-      "shell_pid_created_at": "1795426819.836751",
-      "subtasks": {
-        "T041": "done",
-        "T042": "done",
-        "T043": "done",
-        "T044": "done",
-        "T045": "done"
-      }
+      "shell_pid": 5377,
+      "shell_pid_created_at": "1795426572.132524"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8447SG3HW1BQD7X6DS8R9MF",
       "last_transition_at": "2026-11-23T11:56:37.252163+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Hors carte : docs/procedure-rotation-codes-rattachement.md étape 4 alignée sur cinq colonnes rank,code,url,uid,printed_number (retouche autorisée). Écarts : aucun affaiblissement ; ADR-225 couvre aussi le 422 de revokeKycVerification (baseline le cite). Consigné : OP-N47 levé, OP-N163 à OP-N169, ADR-225 à ADR-231, preuves.md (preuves non établies listées). SPECIFICATION §6.3 non amendée : à demander à l'orchestrateur. Matrice non touchée. Aucune mutation (documentation).",
-        "Cycle 2. Fichiers modifiés par le lot : sept (POINTS_OUVERTS, DECISIONS_ADR, PROMPTS-A-ENVOYER, PRD, preuves.md, docs/procedure-rotation-codes-rattachement.md étape 4 [retouche hors carte cycle 1], docs/SPECIFICATION.md §6.3 point 5 [amendement décidé par le porteur le 23/11/2026, déclaré ici]). Constats 1 à 3 corrigés ; OP-N164 levé ; ADR-225 garde le 422 (validé). Aucun test lancé.",
-        "Cycle 2 bis : PRD.md l. 115 seule ligne changée (§6.3 point 5 amendé le 23/11/2026, OP-N164 levé). Fichiers du lot inchangés par ailleurs.",
-        "Review passed cycle 3: PRD l.115 aligned on amended 6.3 (OP-N164 lifted); cycles 1-2 findings fixed",
-        "Correctif d'intégration f5299969 (gardes transverses : connexion claimadmin sous src/db, faux OTP couverts par production-guard, ADDED_BY_10A exact, consignation cherche apps/gateway/test, commentaire kyc-revocation-action) commité dans la lane k après approbation ; déjà relu par un relecteur indépendant, à approuver formellement",
-        "Contenu nouveau depuis l'approbation : correctif d'intégration f5299969 (connexion claimadmin sous src/db/claim-admin-connection.ts, FakeOtpSender et FakeProvider couverts par production-guard, ADDED_BY_10A limité à 3 écarts ADR-225, consignation cherche apps/gateway/test, commentaire kyc-revocation-action), déjà relu et approuvé par un relecteur indépendant ; plus fusions --no-ff de chaînage et de la coordination (doc post-review de feat, sans code)",
-        "Relecture formelle apres LANE_MOVED_AFTER_APPROVAL : correctif f5299969 relu (role claimadmin identique, faux refuses en prod prouves par mutation, tolerance contrat limitee aux 3 chemins ADR-225, citation fictive refusee), suites, lint, typecheck verts. git diff f5299969..HEAD sur apps packages tools .github vide ; docs : addendum post-review seulement."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "auto-approval:WP11:20261123",
         "reviewer": "spec-kitty auto-rebase",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 57981,
-      "shell_pid_created_at": "1795434771.36733",
-      "subtasks": {
-        "T046": "done",
-        "T047": "done",
-        "T048": "done"
-      }
+      "shell_pid": 24901,
+      "shell_pid_created_at": "1795429612.324866"
     }
   }
 }
