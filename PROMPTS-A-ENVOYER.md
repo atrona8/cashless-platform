@@ -437,7 +437,7 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 9c — Remboursement partiel en espèces au guichet, sans restitution du bracelet
 
-> **État (23/11/2026) : mission `remboursement-partiel-especes-01M84932` implémentée, lots WP01 à WP05 approuvés, WP06 (consignation) au cycle 2.** Décisions du porteur du 23/11/2026 : cumul par portefeuille (renforcement), bracelets anonymes avec frais à chaque rendu, le prestataire autorise et l'organisateur active, montant saisi débité et espèces nettes des frais, ajouts au contrat acceptés : ADR-233. Limites OP-N173 à OP-N184 : ADR-234, `docs/POINTS_OUVERTS.md` §13. Preuves : `docs/passation-9c/preuves.md`. `SPECIFICATION.md` §8.5 et §17 amendés sans changer le numéro de version.
+> **État (24/11/2026) : mission `remboursement-partiel-especes-01M84932` livrée : lots WP01 à WP06 approuvés, acceptée, consolidée (`4365e93b`), revue post-fusion PASS WITH NOTES, PR #26 (fusion sur accord du porteur).** Décisions du porteur du 23/11/2026 : cumul par portefeuille (renforcement), bracelets anonymes avec frais à chaque rendu, le prestataire autorise et l'organisateur active, montant saisi débité et espèces nettes des frais, ajouts au contrat acceptés : ADR-233. Limites OP-N173 à OP-N184 : ADR-234, `docs/POINTS_OUVERTS.md` §13. Preuves : `docs/passation-9c/preuves.md`. `SPECIFICATION.md` §8.5 et §17 amendés sans changer le numéro de version.
 
 > **Décidée par le porteur le 23/11/2026** : aujourd'hui, au guichet, le solde payé ne se rend en espèces qu'en rendant le
 > bracelet (`releaseMedia`, guichet de retour). Le porteur veut permettre au festivalier de récupérer **tout ou partie** de
