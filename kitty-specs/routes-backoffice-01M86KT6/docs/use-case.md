@@ -2,7 +2,7 @@
 
 > État : **plan finalisé le 24/11/2026, rien n'est codé** (mission 11b « Routes serveur du back-office », plan commité `d92b4133`, artefacts `612a4291`).
 > Source : `spec.md`, `plan.md`, `research.md`, `contracts/backoffice-routes.md`. **Les ajouts au contrat A1 à A6 et les décisions D4, D7, D9, D10 de `research.md`
-> sont encore à valider par le porteur** ; D1 à D3 sont décidées par lui (24/11/2026), D5, D6 et D8 acceptées avec l'alignement technique. Diagrammes `/illustre`
+> sont validés par le porteur le 24/11/2026** ; D1 à D3 sont décidées par lui (24/11/2026), D5, D6 et D8 acceptées avec l'alignement technique. Diagrammes `/illustre`
 > (police sans empattement, rendus relus), sources et générateur dans [`diagrams/`](diagrams/) (`generate.py`).
 
 ## Cas d'usage propres à cette mission
@@ -26,6 +26,6 @@ Hors périmètre : écrans (mission 11), résolutions d'anomalie qui écrivent d
 
 Contribue à : `docs/02-use-case-diagram.md`, domaines « Administration et exploitation » (lectures, classement, recherche) et « Terminaux et encaissement » (niveau NFC des modèles) ; aucun domaine nouveau, aucun renommage ni fusion de cas d'usage globaux.
 
-## Nécessaire pour cette mission ? Oui : six cas d'usage nouveaux et quatre acteurs (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Complet ? Oui pour le plan : refus et motifs distincts en texte, liste des 10 types classables dans `research.md` D1 ; à relire quand les ajouts au contrat seront tranchés (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Validé par : réponse proposée par l'Agent le 24/11/2026, en attente du porteur.
+## Nécessaire pour cette mission ? Oui : six cas d'usage nouveaux et quatre acteurs (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Complet ? Oui pour le plan : refus et motifs distincts en texte, liste des 10 types classables dans `research.md` D1 ; à relire quand les ajouts au contrat seront tranchés (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Validé par : réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026.

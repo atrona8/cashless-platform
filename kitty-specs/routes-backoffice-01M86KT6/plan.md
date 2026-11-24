@@ -13,10 +13,10 @@ la base. Une migration `0101`.
 
 **Décisions du porteur (24/11/2026)** : research D1 (10 types classables), D2 (modèle déclaré par le terminal,
 exception à C-001 pour deux requêtes), D3 (matrice échantillon pour `x-roles`), et l'alignement technique (D5, D6, D8).
-**À lui présenter avant `/spec-kitty.tasks`** : D4 (retrait du droit direct de clore une anomalie, renforcement), D7
-(audit de la recherche par numéro sans le numéro), D9 (table de plateforme des modèles), D10 (aucun code d'erreur
-nouveau), et dans `contracts/backoffice-routes.md` : la forme de `x-roles` (A2) et les ajouts facultatifs aux réponses
-des terminaux (A6).
+**Validés explicitement par le porteur le 24/11/2026, avant `/spec-kitty.tasks`** : D4 (retrait du droit direct de
+clore une anomalie, renforcement), D7 (audit de la recherche par numéro sans le numéro), D9 (table de plateforme des
+modèles), D10 (aucun code d'erreur nouveau), et dans `contracts/backoffice-routes.md` : `x-roles` sur chaque opération
+(forme (a)) et les ajouts facultatifs aux réponses des terminaux (A6).
 
 ## Technical Context
 

@@ -1,6 +1,6 @@
 # Notes d'architecture : mission routes-backoffice-01M86KT6
 
-> État : **plan finalisé le 24/11/2026, rien n'est codé.** Aucun conteneur nouveau. **Décisions D4, D7, D9, D10 et ajouts au contrat A1 à A6 : à valider par le porteur avant `/spec-kitty.tasks`** ;
+> État : **plan finalisé le 24/11/2026, rien n'est codé.** Aucun conteneur nouveau. **Décisions D4, D7, D9, D10 et ajouts au contrat A1 à A6 : validés par le porteur le 24/11/2026 avant `/spec-kitty.tasks`** ;
 > D1 à D3 décidées par le porteur le 24/11/2026, D5, D6, D8 acceptées avec l'alignement technique.
 
 ## Composant(s) introduit(s) ou modifié(s) par cette mission
@@ -33,6 +33,6 @@ Aucun écart qui affaiblit la sécurité n'est prévu ; D4 est un renforcement �
 
 Contribue à : `docs/04-architecture-diagram.md`, table « Détail par mission » et « Décisions notables ». Vue C4 inchangée (aucun conteneur nouveau).
 
-## Nécessaire pour cette mission ? Oui : décisions D1 à D10, migration et contrat à tracer, même sans conteneur nouveau (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Complet ? Oui pour le plan ; à recaler sur le code réel à la review (noms définitifs des opérations dans `interfaces.md` aux tâches, numéro de migration, éventuel `0102`) (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Validé par : réponse proposée par l'Agent le 24/11/2026, en attente du porteur.
+## Nécessaire pour cette mission ? Oui : décisions D1 à D10, migration et contrat à tracer, même sans conteneur nouveau (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Complet ? Oui pour le plan ; à recaler sur le code réel à la review (noms définitifs des opérations dans `interfaces.md` aux tâches, numéro de migration, éventuel `0102`) (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Validé par : réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026.

@@ -2,9 +2,9 @@
 
 Faits relevés dans le code le 24/11/2026 (chemins : `L` = `packages/ledger-sql`, `A` = `apps/api/src`,
 `C` = `packages/contracts/openapi.yaml`). Décisions : D1 à D3 prises par le porteur au plan (moments de décision du
-24/11/2026) ; D5, D6 et D8 acceptées par le porteur avec l'alignement technique du 24/11/2026 ; **D4, D7 (audit sans
-numéro, au lieu d'une empreinte), D9 et D10 décidées après l'alignement, à présenter au porteur avec les ajouts au
-contrat, avant `/spec-kitty.tasks`**.
+24/11/2026) ; D5, D6 et D8 acceptées par le porteur avec l'alignement technique du 24/11/2026 ; D4, D7 (audit sans
+numéro, au lieu d'une empreinte), D9 et D10, décidées après l'alignement, **validées explicitement par le porteur le
+24/11/2026**, avec la forme (a) de `x-roles` et les ajouts aux réponses des terminaux.
 
 ## Faits établis
 

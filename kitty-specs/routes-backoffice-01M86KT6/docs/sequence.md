@@ -1,7 +1,7 @@
 # Séquences : mission routes-backoffice-01M86KT6
 
 > État : **plan finalisé le 24/11/2026, rien n'est codé.** Flux prévus, à recaler sur le code à la review. Diagrammes `/illustre`, rendus relus ; sources dans [`diagrams/`](diagrams/) (`generate.py`).
-> D4, D7, D8 et D10 sont **à valider par le porteur**.
+> D4, D7, D8 et D10 sont **validés par le porteur le 24/11/2026**.
 
 ## Flux internes propres à cette mission
 
@@ -28,6 +28,6 @@ Restent en texte : lectures de ventes et d'anomalies (vues sous RLS, curseur), p
 
 Voir `docs/05-sequence-diagrams.md`, flux : « Recherche et classement au back-office (ventes, anomalies, numéro de festivalier) » (ajouté par cette mission, prévu) ; l'enrôlement d'un terminal (mission 5a) reçoit seulement un champ facultatif.
 
-## Nécessaire pour cette mission ? Oui : deux interactions inter-composants nouvelles et sensibles (classement sans écriture, recherche encadrée) (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Complet ? Oui pour le plan ; concurrence des classements et pagination en texte (réponse proposée par l'Agent le 24/11/2026, en attente du porteur).
-## Validé par : réponse proposée par l'Agent le 24/11/2026, en attente du porteur.
+## Nécessaire pour cette mission ? Oui : deux interactions inter-composants nouvelles et sensibles (classement sans écriture, recherche encadrée) (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Complet ? Oui pour le plan ; concurrence des classements et pagination en texte (réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026).
+## Validé par : réponse proposée par l'Agent le 24/11/2026, validée par le porteur le 24/11/2026.

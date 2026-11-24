@@ -1483,7 +1483,7 @@
       "Types classables : 10, décision du porteur (D1) ; la base connaît 23 types, SPECIFICATION §12.2 en liste 21 (amendement prévu)",
       "Période des filtres en UTC",
       "Seuil de débit de la recherche par numéro : 20 par minute et par personne, réglable (D8)",
-      "Décisions à valider par le porteur : D4, D7, D9, D10, ajouts au contrat A1 à A6"
+      "Décisions validés par le porteur le 24/11/2026 : D4, D7, D9, D10, ajouts au contrat A1 à A6"
     ],
     "contraintes": [
       "Contrat partagé stable : ajouts rétrocompatibles soumis au porteur avant codage (C-001)",

@@ -1,4 +1,4 @@
-# Ajouts au contrat — mission 11b (à soumettre au porteur avant tout code)
+# Ajouts au contrat — mission 11b (acceptés par le porteur le 24/11/2026)
 
 Tous les ajouts sont rétrocompatibles. Aucun code d'erreur nouveau (research D10). Chaque ajout entre dans
 `tools/contract-stability/contract-baseline.json` avec son empreinte et une ligne « Décision du porteur ». Noms
@@ -17,7 +17,7 @@ définitifs fixés dans `interfaces.md` aux tâches.
 - Extension `x-roles` sur **chaque** opération : liste de valeurs parmi les 7 rôles du personnel (`PLATFORM_ADMIN`,
   `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `MERCHANT_ADMIN`, `SUPERVISOR`, `CASHIER`, `PERSONALIZER`) et les appelants
   non personnels (`VENDOR`, `CUSTOMER`, `DEVICE`, `GATEWAY`, `PUBLIC`).
-- **Choix de forme à trancher** (contrôle de stabilité : une entrée de référence par ajout) :
+- **Forme retenue par le porteur le 24/11/2026 : (a)** (contrôle de stabilité : une entrée de référence par ajout) :
   - **(a, recommandé)** `x-roles` sur chaque opération : 227 entrées de référence, produites par un script et une seule
     décision du porteur ; forme naturelle pour un générateur de client.
   - (b) une seule extension de premier niveau `x-operation-roles` (table `operationId` → rôles) : 1 entrée de
@@ -62,13 +62,11 @@ définitifs fixés dans `interfaces.md` aux tâches.
 - `GET /phone-models` → `listPhoneModels` (tous les administrateurs).
 - `PUT /phone-models/{manufacturer}/{model}` → `upsertPhoneModel` (`PLATFORM_ADMIN`), corps `{ nfc_level:
   RECOMMENDED | TOLERATED, measured_at }` ; `DELETE` même chemin → `deletePhoneModel`.
-- **Ajouts à des schémas existants (exception à C-001 accordée le 24/11/2026 pour les requêtes ; à confirmer pour les
-  réponses)** :
+- **Ajouts à des schémas existants (exception à C-001 accordée le 24/11/2026 pour les requêtes et les réponses)** :
   - `DeviceEnrollmentRequest`, `HeartbeatRequest` : propriété facultative `device_model { manufacturer, model }`
     (accordé).
   - `DeviceAdminDetail` et l'élément de `DevicePage` : propriétés facultatives `device_model` et `nfc_level`
-    (`RECOMMENDED`, `TOLERATED`, `UNTESTED`) — **à confirmer** : sans elles, FR-016 exigerait une route de lecture à
-    part.
+    (`RECOMMENDED`, `TOLERATED`, `UNTESTED`) (accordé le 24/11/2026).
 
 ## Hors contrat
 
