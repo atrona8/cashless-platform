@@ -84,3 +84,14 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
 - Verdict : `… move-task WPxx --to approved --note "…"` ou `--to planned --review-feedback-file <fichier>` (constats
   numérotés, gravité, correction). Pas de `--force`.
 - Compte rendu final (≤ 20 lignes) : verdict, constats bloquants, mineurs, preuves relancées.
+
+## Consignes issues de l'analyse (24/11/2026, `analysis-report.md`, verdict `ready`)
+- **WP07 (F3)** : une anomalie sans grand livre (`ledger_id IS NULL`, signal de sécurité d'un bracelet sans portefeuille)
+  n'a pas d'événement : seule une personne `OPERATOR_ADMIN` du prestataire la lit et la classe ; `ORGANIZER_ADMIN` ne la
+  voit pas (liste) et reçoit `404` (classement). Le tester et l'écrire dans la note de lane.
+- **WP11 (F1, F4, F5, F7)** : ADR-235 cite nommément les droits nouveaux de `cashless_app` (`SELECT` sur `sale_overview`,
+  `anomaly_overview`, `phone_model` ; `EXECUTE` des fonctions de 0101), couverts par D5 et D9 ; le retrait de
+  `PLATFORM_ADMIN` de `searchCustomerByPhone` (renforcement) ; l'exception à C-001 (`device_model`, `nfc_level`) ;
+  l'amendement de §12.2 (23 types).
+- **Consolidation (F2)** : WP04 retouche des fichiers de WP03 depuis une autre lane : chaîner les lanes en `--no-ff` et
+  faire relire à WP04 le diff exact de `openapi.yaml` et `contract-baseline.json`.
