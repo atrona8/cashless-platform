@@ -95,3 +95,13 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   l'amendement de §12.2 (23 types).
 - **Consolidation (F2)** : WP04 retouche des fichiers de WP03 depuis une autre lane : chaîner les lanes en `--no-ff` et
   faire relire à WP04 le diff exact de `openapi.yaml` et `contract-baseline.json`.
+
+## Consignes issues des relectures
+- **WP04 (relecture de WP03)** : `SaleDetail` est un `allOf` sur `SaleSummary`, qui porte `additionalProperties: false` :
+  un validateur strict rejette `lines`. Corriger dans la retouche hors carte d'`openapi.yaml` (`SaleDetail` autonome, ou
+  `additionalProperties` retiré de la base), avec les empreintes de `contract-baseline.json` et les types générés
+  recalculés ; remonter aussi « T11 bis » de `check.test.mjs`. Le dire dans la note de lane.
+- **WP07 (relecture de WP01)** : `classify_anomaly` ne vérifie pas que `p_actor` appartient au prestataire : l'API passe
+  toujours `principal.userId` de la session, jamais une valeur de la requête ; un test le montre.
+- **Tous les lots** : WP01 a retenu `set_device_model(...)` et posé les droits dans `post-roles.sql` § 15 (voir
+  `interfaces.md` §2). Toute fonction nouvelle appelable par `cashless_app` s'ajoute à `tests_execute_grants.sql`.
