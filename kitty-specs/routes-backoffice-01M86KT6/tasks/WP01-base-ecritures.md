@@ -1,6 +1,6 @@
 ---
 work_package_id: WP01
-title: "Base : classement des anomalies, modèles de téléphone, modèle du terminal"
+title: 'Base : classement des anomalies, modèles de téléphone, modèle du terminal'
 dependencies: []
 requirement_refs:
 - FR-009
@@ -19,6 +19,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/routes-backoffice. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/routes-backoffice unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-routes-backoffice-01M86KT6
+base_commit: f375210160ffbd44e1d2e0c86e2a656d65861415
+created_at: '2026-11-24T15:46:16.015176+00:00'
 subtasks: [T001, T002, T003, T004, T005]
 phase: Phase 1 - Fondations
 agent: claude
