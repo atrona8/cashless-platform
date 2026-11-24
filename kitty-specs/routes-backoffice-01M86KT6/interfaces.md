@@ -107,7 +107,8 @@ Opérations, toutes avec `x-process: public` et la sécurité du personnel (jeto
 | `upsertPhoneModel` | `PUT /phone-models/{manufacturer}/{model}` | `PLATFORM_ADMIN` |
 | `deletePhoneModel` | `DELETE /phone-models/{manufacturer}/{model}` | `PLATFORM_ADMIN` |
 
-Schémas : `StaffProfile`, `StaffAssignment`, `SalePage`, `SaleSummary`, `SaleDetail`, `SaleLine`, `AnomalyPage`,
+Schémas : `StaffProfile`, `StaffAssignment`, `SalePage`, `SaleSummary`, `SaleDetail`, `SaleDetailLine` (`SaleLine` existe
+déjà : ligne envoyée par le terminal), `AnomalyPage`,
 `Anomaly`, `AnomalyClassificationCreate`, `MediaSearchResult`, `WalletOverview`, `CustomerSearchRequest`,
 `CustomerSearchResult`, `PhoneModel`, `PhoneModelPage`, `PhoneModelUpsert`, `DeviceModel`, `NfcLevel`. Champs :
 `contracts/backoffice-routes.md`. Ajouts facultatifs : `device_model` sur `DeviceEnrollmentRequest`,
@@ -117,6 +118,12 @@ Schémas : `StaffProfile`, `StaffAssignment`, `SalePage`, `SaleSummary`, `SaleDe
 `ORGANIZER_ADMIN`, `MERCHANT_ADMIN`, `SUPERVISOR`, `CASHIER`, `PERSONALIZER`, `VENDOR`, `CUSTOMER`, `DEVICE`,
 `GATEWAY`, `PUBLIC`. Source relue : `tools/contract-stability/x-roles/roles.json` (`operationId` → rôles, avec
 `source` = fichier:ligne du contrôle). Entrées de référence produites par `tools/contract-stability/x-roles/apply.mjs`.
+
+Retenu par WP03 (24/11/2026) : réponse de `searchMedia` = `{ data: [MediaSearchResult] }` (0 ou 1 élément, objet en
+ligne) ; `PhoneModel` = `manufacturer`, `model`, `nfc_level`, `measured_at`, `updated_at` ; `Idempotency-Key` exigée
+seulement par `classifyAnomaly` ; `device_model` et `nfc_level` posés sur `DeviceAdmin` (donc `DeviceAdminDetail` et
+l'élément de `DevicePage`) ; schémas de la mission en fin de `components.schemas`. `tools/contract-stability/
+check.test.mjs` (« T11 bis ») compte les ajouts admis : retouché par WP03 (116), à remonter par WP04.
 
 Codes : aucun nouveau (D10). `reason` `ANOMALY_KIND_NOT_CLASSIFIABLE` dans le détail d'un `422 VALIDATION_FAILED`.
 
