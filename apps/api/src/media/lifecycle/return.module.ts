@@ -10,6 +10,8 @@ import { CashDueService } from './cash-due.service';
 import { LifecycleModule } from './lifecycle.module';
 import { LossController } from './loss.controller';
 import { LossService } from './loss.service';
+import { PartialRefundController } from './partial-refund.controller';
+import { PartialRefundService } from './partial-refund.service';
 import { ReleaseController } from './release.controller';
 import { ReleaseService } from './release.service';
 import { ReplaceController } from './replace.controller';
@@ -17,7 +19,13 @@ import { ReplaceService } from './replace.service';
 
 @Module({
   imports: [TenantModule, ConfigResolverModule, TapsModule, LifecycleModule, OnsiteApprovalModule],
-  controllers: [ReleaseController, ReplaceController, LossController, CashDueController],
-  providers: [ReleaseService, ReplaceService, LossService, CashDueService],
+  controllers: [
+    ReleaseController,
+    ReplaceController,
+    LossController,
+    CashDueController,
+    PartialRefundController,
+  ],
+  providers: [ReleaseService, ReplaceService, LossService, CashDueService, PartialRefundService],
 })
 export class ReturnModule {}

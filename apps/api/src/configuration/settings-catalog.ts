@@ -24,6 +24,8 @@ export type SettingType =
   | { kind: 'int'; min: number; max: number }
   /** Montant en unités mineures, ≥ 0 : entier ou chaîne de chiffres (jamais un flottant). */
   | { kind: 'amount' }
+  /** Booléen strict (`true` ou `false`, jamais une chaîne ni un entier). */
+  | { kind: 'boolean' }
   | { kind: 'datetime'; nullable: boolean }
   | { kind: 'uuid'; nullable: boolean }
   | { kind: 'text'; maxLength: number }
@@ -126,6 +128,11 @@ const DEFINITIONS: readonly SettingDefinition[] = [
     default: 50000,
     cappedBy: 'cash_refund_single_max_cap',
   }),
+  // Rendu partiel en espèces au guichet : refusé par défaut ; ne s'active que si le prestataire l'autorise
+  // (`cash_partial_refund_allowed`, règle croisée `operator.cash_partial_refund_allowed`). Décision du porteur du 23/11/2026.
+  column('cash_partial_refund_enabled', { kind: 'boolean' }, 'ORGANIZER_ADMIN', {
+    default: false,
+  }),
   // Absente : fin de l'événement + 30 jours, valeur provisoire (§17.2) ; bornée par le profil de législation.
   column('refund_deadline', { kind: 'datetime', nullable: true }, 'ORGANIZER_ADMIN', {
     provisional: { confirmBy: 'porteur du projet' },
@@ -183,6 +190,11 @@ const DEFINITIONS: readonly SettingDefinition[] = [
   ),
   // Maximum fixé par le prestataire pour `cash_refund_single_max` des événements (§4.2).
   setting('cash_refund_single_max_cap', ['OPERATOR'], { kind: 'amount' }, 'OPERATOR_ADMIN'),
+  // Autorisation du rendu partiel en espèces : niveau prestataire seul (jamais l'organisateur, qui ne peut pas
+  // s'autoriser lui-même), refusée par défaut. Décision du porteur du 23/11/2026.
+  setting('cash_partial_refund_allowed', ['OPERATOR'], { kind: 'boolean' }, 'OPERATOR_ADMIN', {
+    default: false,
+  }),
 ];
 
 export const SETTINGS_CATALOG: ReadonlyMap<string, SettingDefinition> = new Map(

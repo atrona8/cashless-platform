@@ -282,6 +282,11 @@ jobs:
       - name: Rotation du secret des codes de rattachement (suites seules, en série)
         run: npm test -w @cashless/api -- --runInBand media/claim-rotation cli/reissue-claim-codes
 
+      # Mission remboursement-partiel-especes (WP05) : 20 rendus partiels simultanés sur un portefeuille (NFR-002) et
+      # p95 sur 50 rendus (NFR-001). Écartée de la passe parallèle (SKIP_LATENCY), lancée seule, en série.
+      - name: Rendu partiel en espèces, concurrence et latence (suite seule, en série)
+        run: npm test -w @cashless/api -- --runInBand media/partial-cash-refund-concurrency
+
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency
 

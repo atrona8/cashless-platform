@@ -629,6 +629,41 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/media/{media_id}/partial-cash-refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rendre en espèces une partie du solde payé sans restituer le bracelet
+         * @description Permis seulement si le prestataire l'autorise (`cash_partial_refund_allowed`) et si l'événement l'active
+         *     (`cash_partial_refund_enabled`) ; sinon `422 REFUND_NOT_ALLOWED` (raison `PARTIAL_CASH_REFUND_DISABLED`).
+         *     Terminal `TOPUP_DESK` et personne `CASHIER` ou `SUPERVISOR` de l'événement. Session de caisse `OPEN` du
+         *     terminal (sans session ouverte : `409 CONFLICT_STATE`).
+         *     Le bracelet est lu et reste actif. Le passage est obligatoire : `tap_id` (passage déjà enregistré) OU `tap`
+         *     (lecture en ligne), exactement comme `releaseMedia` ; aucun des deux, ou les deux : `400`.
+         *     Le montant est débité du solde payé (montant brut). Les espèces remises valent le montant moins les frais de
+         *     `refund_policy`. Les crédits offerts et la caution restent inchangés.
+         *     Seconde personne obligatoire, par jeton d'approbation sur place (en-tête `X-Approval-Token`, ADR-74), quand le
+         *     cumul du jour UTC des rendus partiels du portefeuille (tous ses bracelets), montant compris, dépasse
+         *     `event.cash_refund_single_max` (ADR-53) ; sans jeton `403 APPROVAL_REQUIRED`, jeton refusé
+         *     `403 APPROVAL_INVALID`.
+         *     Indisponible pendant `EDGE` (`409 DEBIT_AUTHORITY_EDGE`, sync_protocol.md §9.6).
+         *     Codes possibles (tous déjà définis) : `403` `APPROVAL_REQUIRED`, `APPROVAL_INVALID`, `FORBIDDEN` ; `409`
+         *     `CONFLICT_STATE`, `DEBIT_AUTHORITY_EDGE`, `MEDIA_STATE_INVALID` ; `422` `REFUND_NOT_ALLOWED`,
+         *     `AMOUNT_OUT_OF_RANGE`, `INSUFFICIENT_FUNDS`, `VALIDATION_FAILED`.
+         */
+        post: operations["refundPartialCash"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/{media_id}/reassignment": {
         parameters: {
             query?: never;
@@ -3279,6 +3314,8 @@ export type paths = {
          * @description Crée la version suivante du niveau `OPERATOR` (contenu complet). Contrôles dans l'ordre : type, bornes fixes
          *     du catalogue, maximum du niveau supérieur ; premier échec : `422 VALIDATION_FAILED` (`violations`). Écriture
          *     concurrente : `409 CONFLICT_STATE`. Journalisé (`CONFIG_VERSION_CREATED`). Rôle : `OPERATOR_ADMIN`.
+         *     Clé `cash_partial_refund_allowed` : autorise le rendu partiel en espèces (niveau prestataire seul,
+         *     `OPERATOR_ADMIN`, défaut `false`).
          */
         post: operations["createOperatorConfigVersion"];
         delete?: never;
@@ -3537,6 +3574,8 @@ export type paths = {
          * @description Résout la cascade `PLATFORM → OPERATOR → ORGANIZER → EVENT` (§4.2) à la date `at` : pour chaque clé, la valeur
          *     du niveau le plus précis qui la définit, son niveau et sa version d'origine ; à défaut la valeur par défaut du
          *     catalogue, marquée `provisional` si elle vient de §17.2. `participation_id` ajoute le niveau `PARTICIPATION`.
+         *     Clé `cash_partial_refund_allowed` (niveau prestataire, `OPERATOR_ADMIN`, défaut `false`) : autorise le rendu
+         *     partiel en espèces.
          *     Rôles : lecture de l'événement.
          */
         get: operations["getResolvedEventConfig"];
@@ -5871,6 +5910,61 @@ export type components = {
             cash_session_id?: string;
             refund_deposit_by?: components["schemas"]["CashMovement"];
             settle_balance?: components["schemas"]["CashMovement"];
+        };
+        /**
+         * @description Passage obligatoire, par `tap_id` (passage déjà enregistré) OU `tap` (lecture en ligne), exactement comme
+         *     `releaseMedia` ; aucun des deux, ou les deux : `400`.
+         */
+        PartialCashRefundCreate: {
+            /** Format: int64 */
+            tap_id?: number;
+            tap?: components["schemas"]["TapInput"];
+            /**
+             * Format: int64
+             * @description Montant débité du solde payé, en unités mineures.
+             */
+            amount: number;
+        };
+        /** @description Rendu partiel en espèces. Montants en unités mineures. */
+        PartialCashRefund: {
+            /** Format: uuid */
+            transaction_id: string;
+            /** Format: uuid */
+            media_id: string;
+            /** Format: uuid */
+            wallet_id: string;
+            /**
+             * Format: int64
+             * @description Montant débité du solde payé (brut).
+             */
+            amount_debited: number;
+            /**
+             * Format: int64
+             * @description Frais retenus (`refund_policy`).
+             */
+            fee: number;
+            /**
+             * Format: int64
+             * @description Espèces remises, soit le montant débité moins les frais.
+             */
+            cash_handed: number;
+            /**
+             * Format: int64
+             * @description Solde payé du portefeuille après le rendu.
+             */
+            paid_balance_after: number;
+            /**
+             * Format: int64
+             * @description Cumul du jour UTC des rendus partiels du portefeuille, ce rendu compris.
+             */
+            day_cumulative: number;
+            /**
+             * Format: uuid
+             * @description Seconde personne (`sub` du jeton d'approbation) ; null si elle n'était pas requise.
+             */
+            approved_by: string | null;
+            /** Format: uuid */
+            cash_session_id: string;
         };
         MediaReleaseResponse: {
             /** Format: uuid */
@@ -8277,8 +8371,11 @@ export type components = {
         /**
          * @description Événement (`event`, §4.2, §9.8, §12.1). Montants en unités mineures de `currency`. Réglés par
          *     l'`ORGANIZER_ADMIN` : nom, dates, `refund_deadline`, `identity_mode`, `activation_modes`,
-         *     `lost_media_policy`, `cash_refund_single_max`, `reversal_window_minutes`. Réglés par l'`OPERATOR_ADMIN` : les
-         *     réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`, `refund_new_number_*`, `card_*`.
+         *     `lost_media_policy`, `cash_refund_single_max`, `cash_partial_refund_enabled`, `reversal_window_minutes`. Réglés
+         *     par l'`OPERATOR_ADMIN` : les réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`,
+         *     `refund_new_number_*`, `card_*`. `cash_partial_refund_enabled` (facultatif, défaut `false`) active le rendu
+         *     partiel en espèces au guichet (`refundPartialCash`) ; l'activer alors que le prestataire ne l'autorise pas :
+         *     `422 VALIDATION_FAILED` (règle `operator.cash_partial_refund_allowed`).
          */
         Event: {
             /** Format: uuid */
@@ -8335,6 +8432,8 @@ export type components = {
              * @description Remboursement en espèces par une seule personne jusqu'à ce montant (ADR-53), plafonné par le prestataire.
              */
             cash_refund_single_max: number;
+            /** @description Rendu partiel en espèces activé pour l'événement (défaut `false`) ; exige l'autorisation du prestataire. */
+            cash_partial_refund_enabled?: boolean;
             sync_deadline_hours: number;
             /** Format: int64 */
             refund_new_number_max: number;
@@ -8403,8 +8502,10 @@ export type components = {
          * @description Modification d'un événement ; au moins une clé. Clés de l'`ORGANIZER_ADMIN` : `name`, `starts_at`, `ends_at`,
          *     `refund_deadline`, `jurisdiction_id`, `contract_id`, `funds_holder`, `funds_holder_party_id`, `issuer`,
          *     `identity_mode`, `activation_modes`, `lost_media_policy`, `cash_refund_single_max`,
-         *     `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres. Devise, fuseau et organisateur ne
-         *     changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+         *     `cash_partial_refund_enabled`, `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres.
+         *     Devise, fuseau et organisateur ne changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+         *     `cash_partial_refund_enabled` à `true` alors que le prestataire ne l'autorise pas (clé
+         *     `cash_partial_refund_allowed`) : `422 VALIDATION_FAILED` (règle `operator.cash_partial_refund_allowed`).
          */
         EventUpdate: {
             name?: string;
@@ -8430,6 +8531,7 @@ export type components = {
             lost_media_policy?: "END_OF_LIFE" | "REACTIVATE";
             /** Format: int64 */
             cash_refund_single_max?: number;
+            cash_partial_refund_enabled?: boolean;
             reversal_window_minutes?: number;
             tap_replay_window_seconds?: number;
             sync_deadline_hours?: number;
@@ -11296,6 +11398,101 @@ export interface operations {
                     "application/json": components["schemas"]["MediaReleaseResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    refundPartialCash: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Jeton d'approbation sur place (guichet, ADR-74, SPECIFICATION §3.2). La seconde personne saisit son code
+                 *     personnel sur le même terminal ; le serveur d'identité (OIDC, authentification renforcée) délivre un JWT
+                 *     signé, valable 5 min, à usage unique (`jti` mémorisé jusqu'à l'expiration), lié à l'action :
+                 *     `sub` = valideur, `act` = operationId, `act_hash` = SHA-256 (hex) de la requête canonique
+                 *     (méthode, chemin, corps en JSON canonique JCS, RFC 8785 ; le jeton n'en fait pas partie).
+                 *     Le serveur vérifie signature, expiration, `jti` non réutilisé, `act` et `act_hash`, `sub` ≠ appelant et
+                 *     rôle du valideur ; le valideur transmis à la base est le `sub`. Obligatoire seulement quand l'opération
+                 *     l'exige (au-delà de `event.cash_refund_single_max`) : absent → `403 APPROVAL_REQUIRED` ; refusé
+                 *     (invalide, expiré, déjà utilisé, autre action, même personne) → `403 APPROVAL_INVALID`. Envoyé sans
+                 *     nécessité, il est vérifié puis consommé de la même façon.
+                 */
+                "X-Approval-Token"?: components["parameters"]["ApprovalToken"];
+                /**
+                 * @description Identifiant de corrélation (UUID), obligatoire sur une route de terminal : composant signé
+                 *     `"x-request-id"` (`deviceSignature`).
+                 */
+                "X-Request-Id": components["parameters"]["DeviceRequestId"];
+                /**
+                 * @description Paramètres de la signature du terminal (RFC 9421, libellé `dev`) : composants couverts et `created`,
+                 *     `nonce`, `keyid`, `alg`. Profil : `deviceSignature`.
+                 * @example dev=("@method" "@authority" "@path" "@query" "content-digest" "x-request-id");created=1797000000;nonce="q3RfUjx7d8bL0mNp4sVw2A";keyid="3f7d2c10-6a55-4b6e-9d0e-1c2b3a4d5e6f";alg="ecdsa-p256-sha256"
+                 */
+                "Signature-Input": components["parameters"]["SignatureInput"];
+                /**
+                 * @description Signature ECDSA P-256 (`r ‖ s`, 64 octets) du terminal, libellé `dev` ; profil `deviceSignature`.
+                 * @example dev=:l0ZLDkpZDOz58wdBIAxR/JjJVNndy47EtbZxcSvK5T/3rZUvojnTbojLpcXq3k+myvFhnNCuD8vTDlrRu6FlCQ==:
+                 */
+                Signature: components["parameters"]["Signature"];
+                /**
+                 * @description Empreinte du corps (RFC 9530), `sha-256` seul, sur les octets bruts du corps ; présente même pour un corps
+                 *     vide. Composant signé `"content-digest"`.
+                 * @example sha-256=:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=:
+                 */
+                "Content-Digest": components["parameters"]["ContentDigest"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                media_id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "tap_id": 918301,
+                 *       "amount": 2000
+                 *     }
+                 */
+                "application/json": components["schemas"]["PartialCashRefundCreate"];
+            };
+        };
+        responses: {
+            /** @description Montant rendu en espèces, bracelet toujours actif. */
+            201: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartialCashRefund"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];

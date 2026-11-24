@@ -1,0 +1,139 @@
+{
+  "mission_slug": "remboursement-partiel-especes-01M84932",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 \u2014 Rendu partiel au guichet",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US1 (solde 20 000, rendu de 5 000 avec 200 de frais ; tout le solde pay\u00e9 rendu) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 \u2014 Bracelet gard\u00e9 actif",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US1 (bracelet ACTIVE, m\u00eame portefeuille, solde relu) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie. Test \u00ab paiement suivant accept\u00e9 \u00bb absent : OP-N180 (mission 13)."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 \u2014 Solde pay\u00e9 seulement",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US1 (cr\u00e9dits offerts et caution intacts) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 \u2014 Autorisation du prestataire",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/configuration/partial-refund-settings.spec.ts (qui r\u00e8gle quoi, d\u00e9faut refus\u00e9) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 \u2014 Activation par l'organisateur",
+      "proof_type": "automated_test",
+      "evidence": "partial-refund-settings.spec.ts (r\u00e8gle crois\u00e9e, LIVE \u00e0 deux personnes) ; packages/ledger-sql/tests/tests_cash_partial_refund.sql (colonne, d\u00e9faut false, NOT NULL) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 \u2014 Refus explicite",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US2 (422 REFUND_NOT_ALLOWED, reason PARTIAL_CASH_REFUND_DISABLED, aucune \u00e9criture) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 \u2014 Seconde personne au cumul du jour",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-refund-threshold.spec.ts ; apps/api/test/integration/media/partial-cash-refund.spec.ts US3 (fractionnement, seuil exact, deux bracelets du m\u00eame portefeuille) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie. REVERSAL non d\u00e9duit du cumul (prudent) : OP-N173."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 \u2014 Frais \u00e0 chaque rendu",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US1 (200 de frais, esp\u00e8ces nettes ; montant \u2264 frais : 422 AMOUNT_OUT_OF_RANGE) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 \u2014 Bracelets anonymes",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts US1 (bracelet anonyme) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 \u2014 Contr\u00f4le de caisse",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts SC-004 (comptage juste, fermeture sans \u00e9cart) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 \u2014 Idempotence",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts (rejeu de la m\u00eame cl\u00e9 : m\u00eame r\u00e9ponse, une seule sortie d'esp\u00e8ces) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 \u2014 Indisponible pendant une coupure",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts (EDGE : 409 DEBIT_AUTHORITY_EDGE, rien d'\u00e9crit) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 \u2014 Tra\u00e7abilit\u00e9",
+      "proof_type": "automated_test",
+      "evidence": "apps/api/test/integration/media/partial-cash-refund.spec.ts:295 (audit_log MEDIA_PARTIAL_CASH_REFUNDED, auteur et montants) ; partial-refund-settings.spec.ts (EVENT_SETTINGS_CHANGE) \u2014 Batterie de l'orchestrateur, lane f (30808c51, contient a\u2026e), 24/11/2026 : lint et typecheck verts, check.mjs 84 admises/0 refus, node --test contrat 0 \u00e9chec, check:generated et contrats TS+Dart \u00e0 jour, pgTAP 7541/7541 (92 fichiers, PASS), Jest API SKIP_LATENCY=1 4370 pass\u00e9s/14 ignor\u00e9s/0 \u00e9chec (352 suites)",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrateur, mission 9c)",
+      "verified_at": "2026-11-24T10:30:00Z",
+      "notes": "Tests lus dans docs/passation-9c/preuves.md et relanc\u00e9s dans la batterie. preuves.md disait \u00ab non \u00e9tabli \u00bb pour le rendu : le test lit bien l'\u00e9criture d'audit (v\u00e9rifi\u00e9 par l'orchestrateur)."
+    }
+  ],
+  "negative_invariants": []
+}

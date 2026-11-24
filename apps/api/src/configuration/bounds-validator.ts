@@ -80,6 +80,8 @@ function typeViolation(definition: SettingDefinition, value: unknown): Violation
     case 'amount':
       if (!isAmount(value)) return bad('catalog.type', 'integer amount in minor units');
       return BigInt(value) >= 0n ? undefined : bad('catalog.range', '>= 0');
+    case 'boolean':
+      return typeof value === 'boolean' ? undefined : bad('catalog.type', 'boolean');
     case 'datetime':
       if (value === null) return type.nullable ? undefined : bad('catalog.type', 'date-time');
       return toDate(value) ? undefined : bad('catalog.type', 'date-time');
@@ -210,6 +212,19 @@ export function findViolations(
         requested: connect,
         limit: total,
         source: CATALOG,
+      });
+    }
+  }
+  // Rendu partiel en espèces : on n'active pas sans l'autorisation du prestataire (désactiver est toujours permis).
+  if (touched('cash_partial_refund_enabled') && changes.cash_partial_refund_enabled === true) {
+    const allowed = context.resolved?.cash_partial_refund_allowed;
+    if (allowed?.value !== true) {
+      add({
+        field: 'cash_partial_refund_enabled',
+        rule: 'operator.cash_partial_refund_allowed',
+        requested: true,
+        limit: false,
+        source: allowed?.level ? `${allowed.level} v${allowed.version}` : CATALOG,
       });
     }
   }

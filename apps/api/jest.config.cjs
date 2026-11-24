@@ -28,6 +28,8 @@ module.exports = {
   // Mission serveur-app-festivalier (WP07) : `claim-rotation` pose des lignes en version 2 du secret des codes de
   // rattachement ; cette version est globale à la base et une API de version inférieure refuse de démarrer : seule.
   // WP08 : `cli/reissue-claim-codes` pose aussi des versions > 1 (commande lancée en version 2) : seule, même étape.
+  // Mission remboursement-partiel-especes (WP05) : `media/partial-cash-refund-concurrency` lance 20 envois simultanés et
+  // mesure le p95 (NFR-001, NFR-002) : seule, en série, après la passe parallèle.
   testPathIgnorePatterns: [
     '/node_modules/',
     ...(process.env.SKIP_LATENCY
@@ -57,6 +59,7 @@ module.exports = {
           'vendors/vendor-pin-latency',
           'media/claim-rotation',
           'cli/reissue-claim-codes',
+          'media/partial-cash-refund-concurrency',
         ]
       : []),
   ],

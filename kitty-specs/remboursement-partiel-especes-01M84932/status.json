@@ -1,0 +1,220 @@
+{
+  "event_count": 53,
+  "last_event_id": "01M86G546X9SRB72M8HWPKGAHG",
+  "materialized_at": "2026-11-24T10:03:21.693308+00:00",
+  "mission_number": "8",
+  "mission_slug": "remboursement-partiel-especes-01M84932",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G4PKTNBRGF3574B4GR4MQ",
+      "last_transition_at": "2026-11-24T10:03:07.771286+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migration 0100 : event.cash_partial_refund_enabled boolean NOT NULL DEFAULT false + index partiel journal_transaction_partial_refund_idx (ledger_id, recorded_at) WHERE type = 'WALLET_REFUND' AND metadata->>'partial_cash_refund' = 'true' (WP04 : reprendre ce predicat mot pour mot). Requete du cumul : SELECT coalesce(sum(p.amount),0) FROM posting p JOIN journal_transaction jt ON jt.ledger_id=p.ledger_id AND jt.id=p.transaction_id WHERE p.account_id=(SELECT id FROM account WHERE wallet_id=$1 AND purpose='WALLET_PAID') AND p.amount>0 AND jt.type='WALLET_REFUND' AND jt.metadata->>'partial_cash_refund'='true' AND jt.recorded_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'. Plan (60000 tx, 30 portefeuilles x 2000 postings, donnees synthetiques, trigger off): sans index Bitmap Scan journal_transaction_event_id_type_idx (tous les WALLET_REFUND de l'evenement) 10.3 ms; avec index Index Scan partiel 3.1 ms. Sur donnees realistes (300 portefeuilles x 200) le plan passe par posting(account_id,id), 1.2 ms. Mutations: defaut true -> echec tests 4,5; nullable -> echec 3,6; index retire -> echec 7; GRANT DELETE sur event -> echec 8. Aucun GRANT, droits cashless_app sur event (table-level INSERT/SELECT/UPDATE) couvrent la colonne. Suites droits (execute_grants, 9b, 10a, 11a) vertes. Aucune retouche hors carte.",
+        "Review passed: defaut false/NOT NULL, aucun GRANT, index partiel utilise (EXPLAIN rejoue), signe WALLET_PAID debit > 0 verifie sur WALLET_REFUND reel, 3 mutations echouent. Reserves pour WP04/WP05: ajouter t.ledger_id dans la requete du cumul; WALLET_REFUND reel n'a que engine_command_sha256 en metadata, WP05 doit poser partial_cash_refund='true'."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP01-base-colonne-cumul/review-cycle-1.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP01-base-colonne-cumul/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 78989,
+      "shell_pid_created_at": "1795443735.676775",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G4SAT1WZE5K790TFTT2HJ",
+      "last_transition_at": "2026-11-24T10:03:10.554736+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP02 (f5af9479) : A1 refundPartialCash + PartialCashRefundCreate/PartialCashRefund ; A2 cash_partial_refund_enabled (Event, EventUpdate, hors required) ; A3 descriptions createOperatorConfigVersion/getResolvedEventConfig ; baseline 9 entrées ; ADDED_BY_9C (6 chemins) + filtres des tests de comptage 9b ; types TS et Dart régénérés. Retouche hors carte : tools/contract-stability/check.test.mjs l.153 (75 -> 84 admises). Mutation : PARTIAL_CASH_REFUND_DISABLED ajouté à ProblemCode.enum -> 2 tests de gel + check.mjs refusent. Preuves : check.mjs 84/0, node --test 42/0, contracts check OK, typecheck OK, jest unit/contracts 15/15. Orchestrateur : feat fusionnée en --no-ff dans la lane (garde kitty-specs, commit des tâches absent), code inchangé.",
+        "Review passed: diff openapi limited to A1-A3, Event.required unchanged, ADDED_BY_9C exact paths, mutations (fake op, fake schema, required) fail, check.mjs 84/0, npm run check OK"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP02-contrat/review-cycle-1.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP02-contrat/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 86195,
+      "shell_pid_created_at": "1795444113.902241",
+      "subtasks": {
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G4W28HA1C6XCWY4PM9KBV",
+      "last_transition_at": "2026-11-24T10:03:13.352843+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Catalogue: type boolean ajoute (SettingType + typeViolation), cash_partial_refund_enabled (colonne, ORGANIZER_ADMIN, defaut false), cash_partial_refund_allowed (OPERATOR seul, OPERATOR_ADMIN, defaut false). Regle croisee operator.cash_partial_refund_allowed dans bounds-validator (422; desactiver toujours permis). T010: aucun code: events.dto/service lisent UPDATE_KEYS du catalogue; EVENT_SETTINGS_CHANGE reverifie les bornes a l'approbation (demande FAILED si autorisation retiree, testé). Creation d'evenement: champ ignore (EventCreate inchange). Retouches hors carte: aucune (events.dto/service/messages non modifies; message 422 via FALLBACK qui cite la regle). Mutations: M1 regle croisee retiree -> 2 echecs; M2 allowed defaut true -> 3 echecs; M3 enabled defaut true catalogue -> cascade.spec 'defauts du catalogue = defauts des colonnes' echoue; M4 setBy OPERATOR_ADMIN -> 5 echecs. Preuves: partial-refund-settings 8/8, cascade+events+architecture+contracts 97/97 sur cashless_wp03; eslint, prettier, tsc OK.",
+        "Review passed: contournements essayes (creation, config organisateur/prestataire, approbation LIVE apres retrait, auto-autorisation) refuses; booleen strict; defauts false; 4 mutations detectees; gardes transverses verts. Mineur: pas de message localise propre pour operator.cash_partial_refund_allowed (fallback generique), commentaires >100 car."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP03-reglages/review-cycle-1.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP03-reglages/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 95564,
+      "shell_pid_created_at": "1795445020.053671",
+      "subtasks": {
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G4YS7MQGVEXGSYR92S0SZ",
+      "last_transition_at": "2026-11-24T10:03:16.136257+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Commit d3145253. Signatures finales : partialRefundDayTotal(client, walletId, now, ledgerId): bigint ; requireApprovalOverDailyCumul(client, {walletId, amount, limit, now, ledgerId}, approve|null): {dayTotal, approvedBy}. ECART interfaces.md : parametre ledgerId ajoute aux deux (index partiel en tete ledger_id) ; WP05 doit le passer (ledger du terminal). Requete : FROM journal_transaction jt JOIN posting p ON p.ledger_id=jt.ledger_id AND p.transaction_id=jt.id JOIN account a ON a.id=p.account_id WHERE jt.ledger_id=$1 AND jt.type='WALLET_REFUND' AND jt.metadata->>'partial_cash_refund'='true' AND jt.recorded_at>=date_trunc('day',$3::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' AND a.wallet_id=$2 AND a.purpose='WALLET_PAID' AND p.amount>0 (somme brute = frais + net). REVERSAL d'un rendu partiel NON deduit (choix prudent). EXPLAIN : sur 73 lignes le planificateur prend journal_transaction_ledger_id_occurred_at_idx (bitmap) ; avec enable_seqscan=off+enable_bitmapscan=off il prend journal_transaction_partial_refund_idx (Index Cond ledger_id + recorded_at), predicat reconnu ; a verifier a volume. Mutations (suite 11/11 verte, chacune relue puis remise) : '>=' au lieu de '>' -> 2 echecs ; marque ignoree -> 1 echec ; filtre portefeuille retire -> 2 echecs ; jour non borne -> 1 echec ; filtre ledger retire -> 1 echec ; filtre p.amount>0 retire -> aucun echec (defensif, sans mutation couverte). Tests : base cashless_wp04, WALLET_REFUND poses par post_transaction source ONLINE avec metadata partial_cash_refund='true' ; 'hier' = jour suivant interroge (pas d'horloge Node). Aucune retouche hors carte ; liens node_modules/@cashless crees dans la lane (ignores par git).",
+        "Review passed: cumul portefeuille/jour UTC base/grand livre, > strict, marque exigée; mutations >=, montant, marque, portefeuille, grand livre, jour échouent; p.amount>0 juste (débits positifs), sans effet testable"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP04-seuil-cumul/review-cycle-1.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP04-seuil-cumul/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 89937,
+      "shell_pid_created_at": "1795444292.277035",
+      "subtasks": {
+        "T012": "done",
+        "T013": "done",
+        "T014": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G51FWQFK7NH1CZM2DHT5Y",
+      "last_transition_at": "2026-11-24T10:03:18.909067+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP05 pret pour relecture. Commit f9ae006a (lane e). Route refundPartialCash (PartialRefundController/Service), tests partial-cash-refund.spec.ts (16) et partial-cash-refund-concurrency.spec.ts (3), sur cashless_wp05. Gardes transverses vertes (architecture, production-guard, contracts, consignation : 147 tests). eslint et tsc propres.\nRETOUCHES HORS CARTE : audit.service.ts (+1 valeur d'union MEDIA_PARTIAL_CASH_REFUNDED, aucune contrainte en base) ; aucun autre (return.module.ts, jest.config.cjs, ledger-tests.yml sont dans la carte). Lien node_modules/@cashless dans la lane (non suivi).\nMESURES : p95 = 126-128 ms sur 50 rendus (p50 103, max 149), NFR-001 < 300. Concurrence : 20 envois sur un solde de 10 000 -> exactement 10 passent, somme rendue 10 000, cumul 10 000, 10 ecritures ; 20 envois reparties sur 2 bracelets du meme portefeuille avec maximum 5 000 -> exactement 5 passent, 15 x 403 APPROVAL_REQUIRED, cumul 5 000. Suite ecartee de la passe parallele (SKIP_LATENCY) + etape seule dans ledger-tests.yml.\nMUTATIONS (retire, test echoue, remis) : autorisation prestataire ignoree ; activation ignoree ; politique fermee/sans CASH ignoree ; minimum_amount ; frais >= montant (> au lieu de >=) ; statut du portefeuille ; EDGE (test d'ordre sans session) ; bracelet non ACTIVE ; solde insuffisant (test d'ordre : refus de solde avant seconde personne) ; jeton non passe au seuil ; marque partial_cash_refund absente (4 tests echouent, dont le second rendu qui n'exige plus le jeton) ; verrou lockWalletPaidBalance retire (echoue seulement avec 2 bracelets du meme portefeuille : le verrou du bracelet sert une file unique) ; seuil WP04 <= devenu < (test seuil exact) ; credits offertes debites (PROMO_EXPIRY ajoute : echec US1).\nC1 PHASE : le guichet de retour n'a pas de controle de phase dans son code ; il est tenu par la matrice du moteur (status-matrix, WALLET_REFUND, source ONLINE) lors de engine.execute, et par open_cash_session (LIVE/CLOSING). Le rendu partiel passe par le meme engine.execute : memes phases, meme refus (422 VALIDATION_FAILED). Aucun controle ajoute dans mon code (aucune mutation possible, c'est le moteur). Test : DRAFT refuse 422 sans ecriture, CLOSING accepte (statut force par session_replication_role=replica, set_event_status ne recule pas).\nPOINTS A SIGNALER : (1) interfaces.md donne 422 WALLET_BLOCKED pour portefeuille bloque, absent de la liste des codes de l'operation dans openapi.yaml (code existant, reponse 422 generique) : suivi interfaces.md. (2) refund_policy sans channels : refuse (prudent). (3) Pas de assertDeviceMode(TOPUP_DESK) : la session OPEN, exigee, n'existe que pour un terminal TOPUP_DESK (evite un DEVICE_MODE_NOT_ALLOWED hors contrat). (4) Test 'paiement suivant accepte' (US1) non fait : bracelet ACTIVE + solde relu seulement. (5) EDGE et INSUFFICIENT_FUNDS sont aussi refuses par la base : controles gardes pour l'ordre des refus, prouves par tests d'ordre. (6) Fichiers a faire relire par une personne : partial-refund.service.ts (ordre des verrous, cumul, droits). Aucun ecart affaiblissant la securite.",
+        "Revue WP05 : approuve. 16+3 tests verts, gardes transverses vertes (147). Mutations rejouees : reglage ignore, marque absente, seuil retire, policy ignoree, wallet bloque (detectees), verrou portefeuille retire (detecte 4 fois sur 5). Mineurs : pas de test paiement suivant (US1), pas de test VENDOR explicite, WALLET_BLOCKED absent de la liste de l'operation openapi (code du catalogue), channels absent refuse (plus strict).",
+        "Batterie du code intégré : 3 gardes transverses sans cas pour refundPartialCash (device-auth-matrix, media-isolation, media-port-swap)",
+        "Cycle 2 : retouches HORS CARTE (3 gardes transverses, cas ajoutes, aucune tolerance generale) : device-auth-matrix.spec.ts (cas POST /media/{}/partial-cash-refunds + PartialRefundController dans BASE_CONTROLLERS), media-isolation.spec.ts (cas refundPartialCash, compte 47 -> 48), media-port-swap.spec.ts (exclusion du seul chemin exact partial-refund.controller.ts, fichier nouveau 9c, commentaire). Commit cfa11861. Trois suites vertes (38 tests). Batterie complete SKIP_LATENCY=1 --maxWorkers=2 sur cashless_wp05 : 351 suites passees, 4 ignorees, 1 echec = claim-code-order.spec.ts (instable connue, fiche) ; tests 4369 passes, 1 echec, 14 ignores. Relance seule de claim-code-order non concluante (delai de ma commande), a refaire par le relecteur. Cycle 1 inchange : mutations, p95 126 ms, concurrence.",
+        "Cycle 2 : 3 retouches de tests ciblees (cas de route, cas d'isolation 48 ops, exclusion du chemin exact), aucune tolerance generale ; suites 13/6/19 et claim-code-order 18 verts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP05-operation-rendu/review-cycle-1.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP05-operation-rendu/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 17997,
+      "shell_pid_created_at": "1795452306.85407",
+      "subtasks": {
+        "T015": "done",
+        "T016": "done",
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M86G546X9SRB72M8HWPKGAHG",
+      "last_transition_at": "2026-11-24T10:03:21.693308+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP06 (187532e9) : SPECIFICATION 8.5 et 17 amendes sans changer la version ; ADR-233 (decision) et ADR-234 (limites) ; OP-N173 a OP-N184 ; POINTS_OUVERTS section 13 (la section 12 existante est celle de la 10a) avec fichiers a relire ; reports PROMPTS (9c cochee, 11, 12, 13) et PRD ; note-equipes.md et preuves.md (non etabli ecrit explicitement). consignation.spec.ts 57/57. Aucune retouche hors carte, aucun code. Signale : ligne de fraicheur de docs/06-docs-status.md non faite (hors lot).",
+        "Cycle 2 : chiffres WP01/WP03 avec source exacte ou non etabli ; settings-catalog.ts a relire ; ledgerId et creation d'evenement consignes ; etat PROMPTS ; gardes transverses du cycle 2 de WP05 dans preuves.md et note-equipes.md.",
+        "Cycle 2 : constats 1 a 4 leves (chiffres sources ou rapportes par l'orchestrateur, settings-catalog a relire, deux faits consignes, etat PROMPTS), gardes transverses et lecon note-equipes conformes, consignation.spec 57/57 sur cashless_wp06"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/remboursement-partiel-especes-01M84932-coord/kitty-specs/remboursement-partiel-especes-01M84932/tasks/WP06-consignation/review-cycle-2.md",
+        "reference": "review-cycle://remboursement-partiel-especes-01M84932/WP06-consignation/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 21088,
+      "shell_pid_created_at": "1795452541.881959",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
+    }
+  }
+}

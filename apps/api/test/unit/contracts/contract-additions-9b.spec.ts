@@ -120,6 +120,24 @@ const ADDED_BY_10A = [
   'components.schemas.ClaimCodeAssociationResult.properties.rejected.items.properties.reason.enum : longueur modifiée',
 ];
 
+/**
+ * Mission remboursement-partiel-especes (9c), décision du porteur du 23/11/2026, ADR-233 : l'opération
+ * `refundPartialCash`, ses deux schémas, la propriété facultative `cash_partial_refund_enabled` d'`Event` et
+ * d'`EventUpdate`, et quatre descriptions. Seuls écarts admis, par chemin exact, avec ceux de la 10a. Le chemin et
+ * les deux schémas sont des objets nouveaux : ils ne sont pas des modifications d'existant.
+ */
+const ADDED_BY_9C = [
+  "paths['/operators/{operator_id}/config-versions'].post.description : valeur modifiée",
+  "paths['/operators/{operator_id}/events/{event_id}/config'].get.description : valeur modifiée",
+  'components.schemas.Event.description : valeur modifiée',
+  'components.schemas.Event.properties.cash_partial_refund_enabled : clé ajoutée',
+  'components.schemas.EventUpdate.description : valeur modifiée',
+  'components.schemas.EventUpdate.properties.cash_partial_refund_enabled : clé ajoutée',
+];
+const ADDED_OPERATIONS_9C = ['refundPartialCash'];
+const ADDED_SCHEMAS_9C = ['PartialCashRefundCreate', 'PartialCashRefund'];
+const ADDED_PATHS_9C = ['/media/{media_id}/partial-cash-refunds'];
+
 function obj(value: Json | undefined, what: string): Obj {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${what} : objet attendu`);
@@ -219,8 +237,10 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ne modifie ni ne retire rien d existant (champs, required, enum, réponses)', () => {
     const found: string[] = [];
     violations(base, next, '', found);
-    // Seuls les trois ajouts de la 10a (ADR-225) sont admis ; ils sont vérifiés dans le test suivant.
-    expect(found.filter((entry) => !ADDED_BY_10A.includes(entry))).toEqual([]);
+    // Seuls les ajouts de la 10a (ADR-225) et de la 9c (ADR-233) sont admis ; chacun est vérifié à part.
+    expect(
+      found.filter((entry) => !ADDED_BY_10A.includes(entry) && !ADDED_BY_9C.includes(entry)),
+    ).toEqual([]);
   });
 
   it('contrat de la mission 10a (ADR-225) : exactement les trois ajouts décidés, rien de plus', () => {
@@ -279,15 +299,62 @@ describe('contrat de la mission 9b (C-002)', () => {
     ]);
   });
 
+  it('contrat de la mission 9c (ADR-233) : exactement les ajouts décidés, rien de plus', () => {
+    const found: string[] = [];
+    violations(base, next, '', found);
+    expect(found.filter((entry) => ADDED_BY_9C.includes(entry)).sort()).toEqual(
+      [...ADDED_BY_9C].sort(),
+    );
+    const added = (names: string[], all: string[]): string[] =>
+      all.filter((name) => !names.includes(name));
+    // Un seul objet nouveau de chaque sorte : l'opération, son chemin et ses deux schémas.
+    const newOps = [...nextOps.keys()].filter((id) => !baseOps.has(id));
+    expect(added(ADDED_OPERATIONS, newOps)).toEqual(ADDED_OPERATIONS_9C);
+    const basePaths = Object.keys(obj(base.paths, 'paths'));
+    const newPaths = Object.keys(obj(next.paths, 'paths')).filter((p) => !basePaths.includes(p));
+    expect(added(ADDED_PATHS, newPaths)).toEqual(ADDED_PATHS_9C);
+    const schemas = (doc: Obj): Obj => obj(obj(doc.components, 'c').schemas, 's');
+    const newSchemas = Object.keys(schemas(next)).filter((n) => !(n in schemas(base)));
+    expect(added(ADDED_SCHEMAS, newSchemas).sort()).toEqual([...ADDED_SCHEMAS_9C].sort());
+    // Aucun code d'erreur nouveau : l'énumération des problèmes garde ses seules valeurs de la 9b.
+    const codes = (doc: Obj): Json[] => (obj(schemas(doc).ProblemCode, 'p').enum as Json[]) ?? [];
+    expect(codes(next)).toEqual([...codes(base), 'PAYOUT_EXCEEDS_ENTITLEMENT']);
+    // Propriété d'événement : facultative, booléenne, jamais dans `required`.
+    for (const name of ['Event', 'EventUpdate']) {
+      const event = obj(schemas(next)[name], name);
+      expect(obj(obj(event.properties, 'p').cash_partial_refund_enabled, 'c').type).toBe('boolean');
+      expect((event.required as string[] | undefined) ?? []).not.toContain(
+        'cash_partial_refund_enabled',
+      );
+      const old = obj(schemas(base)[name], name);
+      expect(event.required).toEqual(old.required);
+    }
+    // Opération : mêmes en-têtes et sécurité que `releaseMedia`, `Idempotency-Key` obligatoire.
+    const refund = nextOps.get('refundPartialCash');
+    const release = nextOps.get('releaseMedia');
+    expect(refund?.method).toBe('post');
+    expect(refund?.op.security).toEqual(release?.op.security);
+    expect(refund?.op.parameters).toEqual(release?.op.parameters);
+    expect(refund?.op['x-process']).toBe('public');
+    // Aucune réponse hors des codes communs existants.
+    expect(Object.keys(obj(refund?.op.responses, 'responses')).sort()).toEqual(
+      ['201', '400', '401', '403', '404', '409', '422'].sort(),
+    );
+  });
+
   it('ajoute exactement les 20 opérations listées', () => {
-    const added = [...nextOps.keys()].filter((id) => !baseOps.has(id));
+    const added = [...nextOps.keys()].filter(
+      (id) => !baseOps.has(id) && !ADDED_OPERATIONS_9C.includes(id),
+    );
     expect(added.sort()).toEqual([...ADDED_OPERATIONS].sort());
     expect(added).toHaveLength(20);
   });
 
   it('ajoute exactement 18 chemins (le 19e est un ajout de méthode à /refund-requests)', () => {
     const basePaths = Object.keys(obj(base.paths, 'paths'));
-    const added = Object.keys(obj(next.paths, 'paths')).filter((p) => !basePaths.includes(p));
+    const added = Object.keys(obj(next.paths, 'paths')).filter(
+      (p) => !basePaths.includes(p) && !ADDED_PATHS_9C.includes(p),
+    );
     expect(added.sort()).toEqual([...ADDED_PATHS].sort());
     const refund = obj(obj(next.paths, 'paths')['/refund-requests'], '/refund-requests');
     expect(Object.keys(refund).sort()).toEqual(['get', 'post']);
@@ -300,7 +367,7 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ajoute exactement les 19 schémas listés', () => {
     const baseSchemas = Object.keys(obj(obj(base.components, 'c').schemas, 's'));
     const added = Object.keys(obj(obj(next.components, 'c').schemas, 's')).filter(
-      (name) => !baseSchemas.includes(name),
+      (name) => !baseSchemas.includes(name) && !ADDED_SCHEMAS_9C.includes(name),
     );
     expect(added.sort()).toEqual([...ADDED_SCHEMAS].sort());
     expect(added).toHaveLength(19);
