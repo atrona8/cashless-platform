@@ -1,6 +1,6 @@
 ---
 work_package_id: WP02
-title: "Base : vues de lecture des ventes et des anomalies"
+title: 'Base : vues de lecture des ventes et des anomalies'
 dependencies: [WP01]
 requirement_refs:
 - FR-005
@@ -18,6 +18,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/routes-backoffice. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/routes-backoffice unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-routes-backoffice-01M86KT6
+base_commit: 83cef3907ab67b4157bc1163dbb7f6450d274a73
+created_at: '2026-11-24T16:22:15.145543+00:00'
 subtasks: [T006, T007, T008, T009]
 phase: Phase 1 - Fondations
 agent: claude
