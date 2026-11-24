@@ -41,7 +41,7 @@ CREATE FUNCTION anomaly_classifiable(p_kind text) RETURNS boolean IMMUTABLE;   -
 
 CREATE FUNCTION classify_anomaly(p_anomaly uuid, p_reason text, p_actor uuid)
   RETURNS anomaly  -- la ligne après classement
-  SECURITY DEFINER SET search_path = public;  -- pg_temp exclu, comme les autres fonctions DEFINER
+  SECURITY DEFINER SET search_path = public, pg_temp;  -- pg_temp en dernier, exigé par tests_definer_search_path.sql
 -- Sous la RLS de l'appelant (operator_id = app.operator_id). SELECT … FOR UPDATE.
 -- Erreurs : CL066 introuvable ou autre prestataire → 404 ; CL067 type non classable → 422
 --   (reason ANOMALY_KIND_NOT_CLASSIFIABLE) ; CL068 statut ≠ OPEN → 409 CONFLICT_STATE ;
@@ -67,6 +67,12 @@ ALTER TABLE device ADD COLUMN manufacturer text, ADD COLUMN model text;  -- 1 à
 -- Écriture par les chemins d'enrôlement et de signal de vie EXISTANTS : nouvelle version des fonctions SQL s'ils
 -- passent par une fonction ; s'ils écrivent par un droit de colonne, NE PAS élargir ce droit : fonction
 -- set_device_model(p_device uuid, p_manufacturer text, p_model text) SECURITY DEFINER, EXECUTE à cashless_app.
+-- RETENU PAR WP01 (24/11/2026) : set_device_model(...) RETURNS void, appelé par WP09 dans la même transaction, après
+-- l'enrôlement et après le signal de vie ; NULL/NULL sans effet, un NULL n'efface pas la valeur connue ; erreurs CL001
+-- (valeur invalide), P0002 (terminal introuvable ou d'un autre prestataire), 42501 (terminal révoqué). Les signatures
+-- d'enroll_device et de record_device_heartbeat restent inchangées.
+-- Droits posés dans post-roles.sql § 15 (rejoué après roles.sql par migrate.ts), pas dans la migration.
+-- cashless_platform n'a PAS de SELECT sur phone_model : la liste se lit par le pool applicatif (WP09).
 
 -- Index pour la limite de débit (D8), si absent : audit_log (actor_id, action, occurred_at).
 ```
