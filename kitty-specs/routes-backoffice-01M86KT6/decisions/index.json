@@ -1,0 +1,79 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-24T11:07:53.943802Z",
+      "decision_id": "01M86KV9PQKAX02D2M0DGJ1QDP",
+      "final_answer": "Liste et classement : la 11b liste et filtre les anomalies et permet de les classer trait\u00e9es avec un motif, sans \u00e9criture ; les r\u00e9solutions qui \u00e9crivent de l'argent vont dans une mission suivante, type par type.",
+      "input_key": "anomaly_resolution_scope",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Liste et r\u00e9solution sans \u00e9criture ; \u00e9critures plus tard",
+        "Liste et r\u00e9solution compl\u00e8te, \u00e9critures \u00e0 deux comprises",
+        "Liste seulement",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "La r\u00e9solution des anomalies qui touchent l'argent (\u00e9criture \u00e0 deux personnes) fait-elle partie de la 11b, ou la 11b se limite-t-elle \u00e0 les lister et \u00e0 les marquer trait\u00e9es sans \u00e9criture ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T11:56:47.345579Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.anomaly-resolution",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T11:56:54.834239Z",
+      "decision_id": "01M86PN1NJ4KYYTCHWY64A4YJ4",
+      "final_answer": "Administrateurs dans leur port\u00e9e et superviseur au guichet ; num\u00e9ro exact seulement, jamais de recherche partielle ; r\u00e9ponse : portefeuilles et bracelets avec num\u00e9ro masqu\u00e9 ; chaque recherche journalis\u00e9e, d\u00e9bit limit\u00e9.",
+      "input_key": "search_personal_data",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Guichet et admins, num\u00e9ro masqu\u00e9",
+        "Admins seulement",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Qui peut chercher un festivalier par num\u00e9ro de t\u00e9l\u00e9phone, et que voit-il ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T12:41:01.758863Z",
+      "resolved_by": null,
+      "slot_key": "specify.search.personal-data",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T12:41:11.699326Z",
+      "decision_id": "01M86S648KZ9MG63YNHGDCKTBJ",
+      "final_answer": "L'administrateur plateforme tient la liste (mod\u00e8le, niveau, date de mesure) ; la fiche d'un terminal et la liste des terminaux d'un \u00e9v\u00e9nement signalent un mod\u00e8le tol\u00e9r\u00e9 ou non test\u00e9 ; aucun refus d'enr\u00f4lement.",
+      "input_key": "phone_model_referential",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Plateforme tient la liste, alerte seulement",
+        "Plateforme tient la liste, enr\u00f4lement refus\u00e9 si non test\u00e9",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Qui tient la liste des mod\u00e8les de t\u00e9l\u00e9phone et leur niveau NFC, et que se passe-t-il pour un terminal dont le mod\u00e8le est tol\u00e9r\u00e9 ou non test\u00e9 ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T12:42:14.510606Z",
+      "resolved_by": null,
+      "slot_key": "specify.devices.model-referential",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+  "version": 1
+}
