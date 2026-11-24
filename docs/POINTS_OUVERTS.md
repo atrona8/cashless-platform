@@ -146,6 +146,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N167 | Commande `reissue-claim-codes` : fichier de codes en clair (orphelin si le processus est tué entre le fichier et la base, conservé si l'issue du COMMIT est incertaine), disque plein et COMMIT d'issue incertaine sans test, spec d'intégration absent de la passe parallèle (mission 10a, ADR-228) | Non | Non | Mission 13 (recette : procédure jouée sur un lot réel) |
 | OP-N168 | `pending_offline_notice` : approximation assumée (tous statuts de lot comptent, dernier lot du terminal sur le grand livre du portefeuille, grands livres ORGANIZER et OPERATOR_BILLING toujours faux) (mission 10a, ADR-230) | Non | Non | Mission 13 (recette) |
 | OP-N169 | Mineurs de la 10a : course `CL065` non testée, personnalisation sans test du cas d'ancien code, `seed-demo` sans version de code, version du secret globale à la base (suite en série), compteurs d'adresse remis à zéro à la rotation, lignes de plus de 100 caractères (mission 10a, ADR-231) | Non | Non | Mission 13 |
+| OP-N170 | Back-office : routes de lecture absentes du contrat (profil « qui suis-je » du personnel avec rôles et portées, liste des ventes et paiements, liste et résolution des anomalies, recherche de bracelet, portefeuille ou festivalier, modèles de téléphone et niveau NFC, extension `x-roles`) ; manques 1, 2, 3, 5, 6 et 8 de `docs/DOSSIER-DESIGN-BACKOFFICE.md` | Non | **Oui** (back-office inutilisable pour piloter un événement) | Mission 11b (décision du porteur du 23/11/2026) |
+| OP-N171 | Back-office : créer une personne exige son `issuer` et son `subject` OIDC, aucun parcours d'invitation (manque 7 de `docs/DOSSIER-DESIGN-BACKOFFICE.md`) | Non | Non | Mission 12b (lié au choix du serveur d'identité) |
 | OP-N172 | Secret des codes de rattachement : rien ne vérifie qu'un changement de `CLAIM_CODE_HMAC_KEY` s'accompagne d'une hausse de `CLAIM_CODE_HMAC_KEY_VERSION` (seule une baisse de version est refusée au démarrage) ; un secret changé sans hausse rend inutilisables les codes émis, sans message clair (revue post-fusion de la 10a, M-5 ; consigné sur décision du porteur du 23/11/2026, ADR-232 ; numéros OP-N170 et OP-N171 réservés au dossier du back-office) | Non | Non | Mission 12b (secret porté par le KMS réel) |
 | OP-N173 | Rendu partiel en espèces : un `REVERSAL` d'un rendu partiel n'est pas déduit du cumul du jour (choix prudent : le seuil de la seconde personne est atteint plus vite) (mission 9c, ADR-234) | Non | Non | Mission 13 (recette) |
 | OP-N174 | Rendu partiel en espèces : les espèces dues (`L-ESP-A-RENDRE`) ne sont pas rendues par ce chemin (L2) ; `refundCashDue` reste la seule voie (mission 9c, ADR-234) | Non | Non | Sans objet (voulu, C-002 : guichet de retour inchangé) |
@@ -3216,3 +3218,13 @@ fichiers modifiés hors tests et documentation sont de câblage sans droit ni se
 
 Mutations rejouées par les relecteurs (voir `docs/passation-9c/preuves.md`). **Non figé, consigné comme limite :**
 (a) OP-N180 ; (b) OP-N181 ; (c) OP-N182 ; (d) OP-N183 ; (e) OP-N174.
+
+## 14. Dossier de design du back-office : consignation du 24/11/2026
+
+Numéros réservés le 23/11/2026 et consignés le 24/11/2026, au reversement du dossier
+(`docs/DOSSIER-DESIGN-BACKOFFICE.md`, copie du document de travail en ligne).
+
+- **OP-N170.** Manques 1, 2, 3, 5, 6 et 8 du dossier (« Manques de l'API »), vérifiés absents de `openapi.yaml` le
+  23/11/2026. Le dossier les rangeait sous OP-N164, numéro repris entre-temps par la mission 10a. Levée : mission 11b.
+- **OP-N171.** Manque 7 : pas de parcours d'invitation d'une personne du personnel ; sa création exige `issuer` et
+  `subject` OIDC. Lié au choix du serveur d'identité (PRD §4). Levée : mission 12b.
