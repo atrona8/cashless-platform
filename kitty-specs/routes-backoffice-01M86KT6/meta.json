@@ -13,5 +13,7 @@
   "purpose_tldr": "Servir au back-office web les lectures et actions qui lui manquent : profil du personnel, ventes, anomalies, recherche, modèles de téléphone, rôles par opération.",
   "slug": "routes-backoffice-01M86KT6",
   "target_branch": "feat/routes-backoffice",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-24T15:46:05.736257+00:00"
 }
