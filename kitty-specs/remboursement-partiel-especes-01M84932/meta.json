@@ -26,6 +26,7 @@
   "purpose_context": "Aujourd'hui le solde ne se rend en espèces qu'en rendant le bracelet. Le porteur a décidé le 23/11/2026 d'ouvrir un remboursement partiel sans restitution, activable par l'organisateur pour chaque événement, en respectant la règle de la seconde personne appliquée au cumul des espèces sorties (ADR-53, ADR-190).",
   "purpose_tldr": "Permettre au festivalier de récupérer en espèces tout ou partie de son solde payé au guichet en gardant son bracelet, si l'organisateur l'autorise.",
   "slug": "remboursement-partiel-especes-01M84932",
+  "status_phase": "1",
   "target_branch": "feat/remboursement-partiel-especes",
   "topology": "coord",
   "vcs": "git",
