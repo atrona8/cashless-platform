@@ -1443,5 +1443,76 @@
       "NFR-004 : aucun droit de table ni de colonne ajouté à cashless_app"
     ],
     "source": "kitty-specs/remboursement-partiel-especes-01M84932/spec.md"
+  },
+  {
+    "mission": "routes-backoffice-01M86KT6",
+    "titre_cas_usage": "Routes serveur du back-office",
+    "statut": "planifiée : plan finalisé le 24/11/2026, rien n'est codé",
+    "user_stories": [
+      {
+        "titre": "Savoir qui est connecté et ce qu'il peut faire",
+        "detail": "En tant que personne du personnel, je veux obtenir mon profil (rôles et portées) et connaître les rôles autorisés de chaque opération, afin que le back-office n'affiche que ce qui me concerne ; un contrôle automatique échoue si la déclaration dérive."
+      },
+      {
+        "titre": "Lister les ventes d'un événement",
+        "detail": "En tant qu'administrateur, je veux lister et ouvrir les ventes de ma portée, filtrées et paginées ; l'administrateur de commerçant ne voit que les siennes."
+      },
+      {
+        "titre": "Voir et classer les anomalies",
+        "detail": "En tant qu'administrateur, je veux lister les anomalies et classer « traitée », avec un motif, celles de 10 types classables, sans écriture au grand livre ; les autres restent ouvertes."
+      },
+      {
+        "titre": "Retrouver un bracelet, un portefeuille ou un festivalier",
+        "detail": "En tant que personne du personnel, je veux retrouver un bracelet (UID ou code imprimé) ou un portefeuille ; administrateur dans sa portée ou superviseur : un festivalier par numéro exact, numéro masqué, recherche journalisée sans le numéro et limitée en débit."
+      },
+      {
+        "titre": "Tenir les modèles de téléphone et leur niveau NFC",
+        "detail": "En tant qu'administrateur plateforme, je veux tenir la liste des modèles et leur niveau ; les terminaux toléré ou non testé sont signalés, sans refus d'enrôlement."
+      }
+    ],
+    "entites_cles": [
+      "Profil du personnel",
+      "Rôles autorisés d'une opération (x-roles)",
+      "Vente (liste, détail, lignes)",
+      "Anomalie (classement : motif, auteur, date)",
+      "Modèle de téléphone (niveau NFC)"
+    ],
+    "resultat_mesurable": "Scénario principal entièrement par les opérations du contrat ; 100 % des opérations déclarent leurs rôles ; 0 donnée hors portée rendue (deux prestataires, quatre portées) ; 100 % des classements sans écriture au grand livre et 100 % des recherches par numéro auditées ; p95 sous 500 ms sur 200 000 ventes (objectif, non mesuré)",
+    "hypotheses": [
+      "Rôles et portées existent (mission 2) ; anomalies existantes, aucun type nouveau",
+      "Types classables : 10, décision du porteur (D1) ; la base connaît 23 types, SPECIFICATION §12.2 en liste 21 (amendement prévu)",
+      "Période des filtres en UTC",
+      "Seuil de débit de la recherche par numéro : 20 par minute et par personne, réglable (D8)",
+      "Décisions à valider par le porteur : D4, D7, D9, D10, ajouts au contrat A1 à A6"
+    ],
+    "contraintes": [
+      "Contrat partagé stable : ajouts rétrocompatibles soumis au porteur avant codage (C-001)",
+      "Aucune écriture au grand livre (C-002)",
+      "Aucun refus d'enrôlement selon le niveau NFC (C-003)",
+      "Écart de sécurité soumis au porteur avant codage (C-004)",
+      "Liste fermée des types d'anomalie (C-005)",
+      "Aucun écran (C-006)"
+    ],
+    "cas_limites": [
+      "Rôle retiré en cours de session : le profil suivant ne le contient plus",
+      "Vente hors ligne synchronisée : date et origine d'origine",
+      "Page au-delà de 200 ou curseur invalide : refus propre",
+      "Deux classements simultanés : un seul gagne, l'autre 409",
+      "Bracelet réattribué : l'ancien code ne rend pas le nouveau porteur",
+      "Numéro non vérifié, incomplet ou hors portée : rien rendu, sans indice",
+      "Modèle retiré de la liste : ses terminaux passent non testé"
+    ],
+    "fonctionnel": [
+      "FR-001 à FR-018 : profil, x-roles et fidélité, ventes, anomalies et classement, recherche (bracelet, portefeuille, numéro encadré), modèles et signalement, cloisonnement, traçabilité"
+    ],
+    "non_fonctionnel": [
+      "NFR-001 : p95 sous 500 ms sur 200 000 ventes",
+      "NFR-002 : pages de 200 au plus, 0 écart de pagination",
+      "NFR-003 : 0 donnée hors portée",
+      "NFR-004 : 20 recherches par numéro par minute",
+      "NFR-005 : aucun droit nouveau pour cashless_app",
+      "NFR-006 : aucune donnée personnelle en clair dans les nouvelles réponses"
+    ],
+    "source": "kitty-specs/routes-backoffice-01M86KT6/spec.md"
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-23T14:00:00Z",
+  "derniere_verification_globale": "2026-11-24T14:00:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -97,6 +97,13 @@
       "verifie_le": "2026-11-23T18:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "routes-backoffice-01M86KT6": {
+      "statut": "planifiée : plan finalisé le 24/11/2026, rien n'est codé (D4, D7, D9, D10 et ajouts au contrat A1 à A6 à valider par le porteur)",
+      "verifie_le": "2026-11-24T14:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
       "spec_index_a_jour": true
     }
   }

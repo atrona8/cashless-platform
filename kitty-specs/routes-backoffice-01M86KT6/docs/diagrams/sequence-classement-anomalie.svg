@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2106" height="1218" viewBox="0 0 2106 1218">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<g transform="translate(66,50)">
+<rect x="1400" y="30" width="460" height="44" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
+<polyline points="185.0,236 185.0,1030.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="835.0" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
+<polyline points="960.0,236 960.0,1030.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="1735.0,236 1735.0,1030.0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="191.0,301.7 952.0,301.7" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="952.0,301.7 932.6931836384118,312.2473618492925 932.6931836384118,291.1526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="406.5" y="264.7" width="332.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="765.0" y="362.95" width="390" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="966.0,484.2 1727.0,484.2" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,484.2 1707.6931836384117,494.7473618492925 1707.6931836384117,473.6526381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1160.7" y="447.2" width="373.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="549.45" width="404" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="954.0,666.7 193.0,666.7" fill="none" stroke="#DC2626" stroke-width="2"/><polygon points="193.0,666.7 212.3068163615882,656.1526381507076 212.3068163615882,677.2473618492925" fill="#DC2626" stroke="#DC2626" stroke-width="1"/>
+<rect x="276.5" y="629.7" width="592.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="64" y="543.45" width="1856.0" height="160.79999999999995" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<rect x="1510.0" y="769.0125" width="450" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="740.0" y="860.2625" width="440" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<polyline points="954.0,981.5125 193.0,981.5125" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,981.5125 212.3068163615882,970.9651381507076 212.3068163615882,992.0598618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="448.1" y="944.5125" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Classer une anomalie, sans écriture d’argent</text>
+<text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Fonction de la base : types classables tenus en base, un seul classement gagne</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan finalisé — à valider</text>
+<text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Administrateur</text>
+<text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
+<text x="572.5" y="282.97499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Classer (anomalie, motif, clé)</text>
+<text x="34.0" y="304.75" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
+<text x="960.0" y="395.22499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Anomalie dans ma portée ? sinon 404</text>
+<text x="34.0" y="396.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
+<text x="1347.5" y="465.47499999999997" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">classify_anomaly (verrou de ligne)</text>
+<text x="34.0" y="487.25" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
+<text x="74" y="567.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt type non classable, ou déjà traitée</text>
+<text x="572.5" y="647.975" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">422 ANOMALY_KIND_NOT_CLASSIFIABLE ou 409 CONFLICT_STATE</text>
+<text x="34.0" y="669.75" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
+<text x="1735.0" y="801.2875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">OPEN vers RESOLVED, sans resolution_tx_id</text>
+<text x="34.0" y="802.0625" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
+<text x="960.0" y="892.5375" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Audit ANOMALY_CLASSIFIED (auteur, motif)</text>
+<text x="34.0" y="893.3125" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
+<text x="572.5" y="962.7875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : anomalie traitée</text>
+<text x="34.0" y="984.5625" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
+<text x="60" y="1075.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan finalisé le 24/11/2026, à valider (D1, D4, D10). Le droit direct de clore une anomalie est retiré à l’application (ou gardé par un déclencheur). Aucune ligne au grand livre.</text>
+</g>
+</svg>
