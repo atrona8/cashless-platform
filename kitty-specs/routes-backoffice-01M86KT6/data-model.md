@@ -1,6 +1,7 @@
 # Modèle de données — mission 11b
 
-Migration `packages/ledger-sql/migrations/0101_backoffice_reads.sql` (découpable en `0102` au tasks si utile).
+Migrations `packages/ledger-sql/migrations/0101_anomaly_classification_phone_models.sql` (écritures, WP01) et
+`0102_backoffice_read_views.sql` (vues de lecture, WP02) ; noms exacts dans `interfaces.md`.
 Aucun `.sql` généré ni migration existante modifiés.
 
 ## Classement d'une anomalie (existant `anomaly`, ajouts)

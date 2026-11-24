@@ -18,7 +18,7 @@ définitifs fixés dans `interfaces.md` aux tâches.
   `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `MERCHANT_ADMIN`, `SUPERVISOR`, `CASHIER`, `PERSONALIZER`) et les appelants
   non personnels (`VENDOR`, `CUSTOMER`, `DEVICE`, `GATEWAY`, `PUBLIC`).
 - **Forme retenue par le porteur le 24/11/2026 : (a)** (contrôle de stabilité : une entrée de référence par ajout) :
-  - **(a, recommandé)** `x-roles` sur chaque opération : 227 entrées de référence, produites par un script et une seule
+  - **(a, recommandé)** `x-roles` sur chaque opération : une entrée de référence par opération (230 au 24/11/2026, compté par le script), produites par un script et une seule
     décision du porteur ; forme naturelle pour un générateur de client.
   - (b) une seule extension de premier niveau `x-operation-roles` (table `operationId` → rôles) : 1 entrée de
     référence, mais l'information est séparée de l'opération.
@@ -54,8 +54,9 @@ définitifs fixés dans `interfaces.md` aux tâches.
 - `GET /search/wallets/{wallet_id}` → `getWalletOverview` : soldes, statut, bracelets (`media_id`, `status`,
   `printed_number`), `customer_ref` masqué.
 - `POST /search/customers` → `searchCustomerByPhone`, corps `{ phone }` (E.164 strict) : `CustomerSearchResult` :
-  `masked_phone`, `wallets[]` (même forme que `getWalletOverview`). Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`,
-  `ORGANIZER_ADMIN`, `SUPERVISOR`. `429 RATE_LIMITED` avec `Retry-After`.
+  `masked_phone`, `wallets[]` (même forme que `getWalletOverview`). Rôles : `OPERATOR_ADMIN`,
+  `ORGANIZER_ADMIN`, `SUPERVISOR` (pas `PLATFORM_ADMIN` : renforcement décidé aux tâches le 24/11/2026, à consigner en
+  WP11). `429 RATE_LIMITED` avec `Retry-After`.
 
 ## A6 — Modèles de téléphone (FR-015, FR-016)
 

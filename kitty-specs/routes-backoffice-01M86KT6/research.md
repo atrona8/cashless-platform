@@ -37,7 +37,7 @@ numéro, au lieu d'une empreinte), D9 et D10, décidées après l'alignement, **
 - **Contrat.** Extensions `x-` déjà utilisées (`x-process`, `x-edge-available`, …). `check.mjs` n'admet un ajout que
   s'il figure dans `contract-baseline.json` avec son empreinte, et toute modification de la référence exige une ligne
   « Décision du porteur ».
-- **Dernière migration** : `0100` → la mission prend `0101` (et `0102` si un découpage est utile).
+- **Dernière migration** : `0100` → la mission prend `0101` (écritures) et `0102` (vues de lecture).
 
 ## Décisions
 

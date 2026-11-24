@@ -9,7 +9,7 @@ Six familles d'ajouts côté serveur, sans écriture au grand livre : profil du 
 (`x-roles`), lecture des ventes, liste et classement des anomalies, recherche (bracelet, portefeuille, festivalier par
 numéro), modèles de téléphone et niveau NFC des terminaux. Les lectures passent par des vues ou requêtes sous la RLS du
 prestataire, le filtre de portée étant appliqué en requête ; les écritures (classement, modèles) par des fonctions de
-la base. Une migration `0101`.
+la base. Deux migrations, `0101` (écritures) et `0102` (vues de lecture).
 
 **Décisions du porteur (24/11/2026)** : research D1 (10 types classables), D2 (modèle déclaré par le terminal,
 exception à C-001 pour deux requêtes), D3 (matrice échantillon pour `x-roles`), et l'alignement technique (D5, D6, D8).
@@ -22,13 +22,13 @@ modèles), D10 (aucun code d'erreur nouveau), et dans `contracts/backoffice-rout
 
 **Language/Version**: TypeScript 5.9 sur Node.js 22 (API NestJS 11), SQL PostgreSQL 17 (migrations `packages/ledger-sql`)
 **Primary Dependencies**: NestJS, `pg`, gardes d'identité existantes (`identity/roles.guard.ts`, `scope-resolver.ts`), lecture de vente existante (`payments/payment-read.service.ts`), `ClaimHasher` (`kms/claim-hash.ts`), audit (`audit/audit.service.ts`) ; aucune dépendance nouvelle (`docs/08-pile-logicielle.md`, ADR-78)
-**Storage**: PostgreSQL 17 : migration `0101` (colonnes de classement sur `anomaly`, table `phone_model`, colonnes `device.manufacturer`/`model`, vues `security_invoker`, fonctions `SECURITY DEFINER`, index de lecture des ventes)
+**Storage**: PostgreSQL 17 : migrations `0101` et `0102` (colonnes de classement sur `anomaly`, table `phone_model`, colonnes `device.manufacturer`/`model`, vues `security_invoker`, fonctions `SECURITY DEFINER`, index de lecture des ventes)
 **Testing**: Jest (unitaires et intégration sur base par lot `cashless_wpXX`), pgTAP (droits, fonctions, RLS), contrôle de stabilité du contrat (`check.mjs`, `contract-baseline.json`), matrice échantillon `x-roles`, gardes transverses
 **Target Platform**: serveur Linux (AWS) ; appelé par le back-office web (mission 11) et, pour la recherche, par le superviseur
 **Project Type**: monorepo (API, paquets partagés) ; aucune interface dans cette mission
 **Performance Goals**: p95 < 500 ms côté serveur par page de liste ou recherche, événement de 200 000 ventes (NFR-001)
 **Constraints**: contrat stable (ajouts seulement, soumis au porteur) ; aucun droit nouveau pour `cashless_app` (NFR-005) ; aucune donnée personnelle en clair dans les réponses (NFR-006) ; aucune écriture au grand livre (C-002)
-**Scale/Scope**: ~11 opérations nouvelles, une extension sur 227 opérations, 4 ajouts facultatifs à des schémas existants, une migration, une ADR, un amendement de SPECIFICATION §12.2
+**Scale/Scope**: ~11 opérations nouvelles, une extension sur toutes les opérations (230 au 24/11/2026), 4 ajouts facultatifs à des schémas existants, une migration, une ADR, un amendement de SPECIFICATION §12.2
 
 ## Charter Check
 
@@ -53,8 +53,9 @@ kitty-specs/routes-backoffice-01M86KT6/
 ### Source Code (repository root)
 
 ```
-packages/ledger-sql/migrations/0101_backoffice_reads.sql        # classement, phone_model, device model, vues, index
-packages/ledger-sql/tests/tests_backoffice_reads.sql            # pgTAP : droits, fonctions, RLS
+packages/ledger-sql/migrations/0101_anomaly_classification_phone_models.sql  # classement, phone_model, modèle du terminal
+packages/ledger-sql/migrations/0102_backoffice_read_views.sql   # vues de lecture, index
+packages/ledger-sql/tests/tests_backoffice_{writes,read_views}.sql  # pgTAP : droits, fonctions, RLS
 packages/contracts/openapi.yaml                                  # A1 à A6 (après accord), x-roles
 tools/contract-stability/contract-baseline.json                  # ajouts déclarés
 tools/contract-stability/x-roles/                                # script de production des x-roles et des entrées
@@ -75,7 +76,7 @@ réutilisent les jointures de `payment-read.service.ts` (commerçant par partici
 ## Complexity Tracking
 
 Aucune violation. Points d'attention :
-- `x-roles` sur 227 opérations : produit par un script à partir d'un tableau relu à la main, opération par opération,
+- `x-roles` sur toutes les opérations (230) : produit par un script à partir d'un tableau relu à la main, opération par opération,
   contre le code ; la matrice échantillon attrape les dérives, pas les rôles « oubliés mais refusés à juste titre ».
 - La portée du commerçant passe par le compte `MERCHANT` du posting : la requête de liste doit rester indexée.
 
@@ -85,7 +86,7 @@ Aucune violation. Points d'attention :
 
 - **Purpose**: porter dans la base les règles qui ne doivent pas dépendre de l'API (types classables, droits, RLS).
 - **Relevant requirements**: FR-009, FR-010, FR-015, FR-016, FR-017, NFR-001, NFR-003, NFR-005, C-002, C-005
-- **Affected surfaces**: migration `0101` (colonnes de classement, `classify_anomaly`, `phone_model` et ses fonctions,
+- **Affected surfaces**: migrations `0101` et `0102` (colonnes de classement, `classify_anomaly`, `phone_model` et ses fonctions,
   `device.manufacturer`/`model`, nouvelles versions des fonctions d'enrôlement et de signal de vie, vues
   `sale_overview`/`anomaly_overview`, index), pgTAP.
 - **Sequencing/depends-on**: none

@@ -16,7 +16,7 @@ jamais tranché en silence. Décisions du porteur : `research.md` D1 à D10 (tou
 | `apps/api/src/sales/**`, `apps/api/src/payments/payments.module.ts`, `apps/api/test/integration/backoffice/sales*.spec.ts`, `…/backoffice-isolation-cases/sales.cases.ts` | WP06 |
 | `apps/api/src/anomalies/**`, `apps/api/src/app.module.ts`, `apps/api/test/integration/backoffice/anomalies*.spec.ts`, `…/backoffice-isolation-cases/anomalies.cases.ts` | WP07 |
 | `apps/api/src/search/**`, `apps/api/src/media/media-public.module.ts`, `apps/api/test/integration/backoffice/search*.spec.ts`, `…/backoffice-isolation-cases/search.cases.ts` | WP08 |
-| `apps/api/src/devices/phone-models/**`, `apps/api/src/devices/devices.module.ts`, fichiers d'enrôlement et de signal de vie et de lecture des terminaux nommés dans le prompt de WP09, `apps/api/test/integration/backoffice/phone-models*.spec.ts`, `…/backoffice-isolation-cases/phone-models.cases.ts` | WP09 |
+| `apps/api/src/devices/phone-models/**`, `apps/api/src/devices/devices.module.ts`, `apps/api/src/devices/enrollment/enrollment.{dto,service}.ts`, `apps/api/src/devices/heartbeat/heartbeat.{dto,controller}.ts`, `apps/api/src/devices/admin/device-admin.{dto,service}.ts`, `apps/api/test/integration/backoffice/phone-models*.spec.ts`, `…/backoffice-isolation-cases/phone-models.cases.ts` | WP09 |
 | `apps/api/test/integration/end-to-end/x-roles-matrix.spec.ts`, `apps/api/test/integration/end-to-end/x-roles-cases/**` | WP10 |
 | `docs/SPECIFICATION.md`, `docs/DECISIONS_ADR.md`, `docs/POINTS_OUVERTS.md`, `PRD.md`, `PROMPTS-A-ENVOYER.md`, `docs/passation-11b/preuves.md`, `docs/passation-11b/note-equipes.md` | WP11 |
 
@@ -96,7 +96,7 @@ Opérations, toutes avec `x-process: public` et la sécurité du personnel (jeto
 | `classifyAnomaly` | `POST /anomalies/{anomaly_id}/classification` | `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` |
 | `searchMedia` | `GET /search/media` | `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER`, `MERCHANT_ADMIN` |
 | `getWalletOverview` | `GET /search/wallets/{wallet_id}` | `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `CASHIER` |
-| `searchCustomerByPhone` | `POST /search/customers` | `PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR` |
+| `searchCustomerByPhone` | `POST /search/customers` | `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR` (pas `PLATFORM_ADMIN` : renforcement du 24/11/2026, une recherche sans prestataire porterait sur tous les prestataires) |
 | `listPhoneModels` | `GET /phone-models` | `PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN` |
 | `upsertPhoneModel` | `PUT /phone-models/{manufacturer}/{model}` | `PLATFORM_ADMIN` |
 | `deletePhoneModel` | `DELETE /phone-models/{manufacturer}/{model}` | `PLATFORM_ADMIN` |
@@ -121,7 +121,7 @@ Codes : aucun nouveau (D10). `reason` `ANOMALY_KIND_NOT_CLASSIFIABLE` dans le d�
 'ANOMALY_CLASSIFIED' | 'PHONE_MODEL_UPSERTED' | 'PHONE_MODEL_DELETED'
   | 'STAFF_CUSTOMER_SEARCH' | 'STAFF_CUSTOMER_SEARCH_RATE_LIMITED'
 
-// Pagination (WP06, WP07, WP09) : curseur opaque base64url de `${iso}|${uuid}`, comme users.dto.ts encodeCursor ;
+// Pagination (WP06, WP07, WP09) : curseur opaque au format de `users.dto.ts` `encodeCursor` / `decodeCursor` (réutilisé ou imité, sans modifier ce fichier) ;
 // limit entier 1..200, défaut 50 ; curseur invalide → 422 VALIDATION_FAILED.
 
 // Masque de numéro (WP08) : maskPhone('+221771234512') === '+221 77 *** ** 12' (indicatif, 2 chiffres, 3 étoiles,
@@ -145,7 +145,10 @@ Portée : tout filtre de portée dans la requête SQL (jamais après lecture), �
 - `backoffice-isolation.spec.ts` : pour chaque opération de `MISSION_11B_OPERATIONS`, appelle les cas du registre
   `backoffice-isolation-cases/registry.ts` (lecture des fichiers `*.cases.ts` du dossier, comme
   `device-auth-cases/registry.ts`) : personnel d'un autre prestataire → 403 ou 404, jamais 2xx, aucune donnée de A ;
-  sans jeton → 401 ; jeton festivalier → refus ; jeton terminal → refus. **Une opération sans cas fait échouer le test.**
+  sans jeton → 401 ; jeton festivalier → refus ; jeton terminal → refus. **Une opération SERVIE par l'application (route
+  inscrite dans Nest) sans cas fait échouer le test** ; une opération pas encore servie (lot non fusionné) est sautée
+  et nommée dans la sortie. Aucune liste d'attente partagée : `registry.ts` n'est modifié par aucun autre lot que WP05.
+  WP10 vérifie que les 11 opérations sont toutes servies et ont toutes leur cas.
 - Forme d'un cas : `export const cases: BackofficeIsolationCase[]` avec `{ operationId, method, path(fx), body?(fx) }`.
 
 ## 6. Matrice `x-roles` (WP10)
