@@ -158,3 +158,8 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   ALIGNER `x-roles` sur le code : retirer CASHIER de `listCashSessions`, OPERATOR_ADMIN de `setOrganizerOfflinePolicy`
   et `setEventOfflinePolicy` (renforcement : aucun droit élargi) ; empreintes et types générés recalculés ;
   `knownDrifts` vidé. Consigné par WP11 (écart qui renforce : fait puis consigné).
+- **WP11 (relecture de WP10, cycle 1)** : à nommer dans le bilan de FR-004 — `initiatePspTopup`, `getPspTopup`,
+  `cancelPspTopup` non jouées par la matrice (401 de la garde terminal ; preuve restante : topup-isolation) ;
+  99 opérations sans rôle déclaré abouti en 2xx (un rôle déclaré recevant un 403 autre que FORBIDDEN passerait sans
+  bruit) ; SUPERVISOR de `approve/rejectApprovalRequest` déclaré par union d'actions, non vérifié pour l'action jouée ;
+  échantillon élargi à tout le personnel (1281 appels, au lieu des ~470 de D3).
