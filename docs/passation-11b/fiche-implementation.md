@@ -139,3 +139,10 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   `search-rate-limit.ts`.
 - **WP11 (relecture de WP06, cycle 2)** : `SET LOCAL enable_sort = off` dans la liste des ventes est un contournement du
   planificateur (dépend des statistiques, à réévaluer si la volumétrie change) : à consigner.
+- **WP06, détail d'une vente non attribuée (décision du porteur, 25/11)** : `GET /sales/{id}` d'une vente sans
+  `sale_attribution` rend 404 (cohérent avec la liste ; contrat inchangé). WP11 consigne la limite avec l'exclusion de la
+  liste (même OP-N).
+- **WP11 (relecture de WP06, cycle 3)** : le chemin rapide des annulées teste `EXISTS sale_attribution` et la vue
+  `channel IS NOT NULL` (équivalent tant que `channel` est non nul en table) ; forme en deux temps et `enable_sort = off`
+  dépendent du planificateur ; REVERSED combiné à merchant_id/pos_id/vendor_id/MERCHANT_ADMIN reste sur la requête
+  générale (non mesuré) ; le test de plan de `sales-latency.spec.ts` garde son propre SQL.
