@@ -132,3 +132,8 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   `reason: ANOMALY_KIND_NOT_CLASSIFIABLE` est une extension de premier niveau du 422, pas « dans le détail » (préciser la
   doc) ; `media_id` sort dans `Anomaly` (conforme au contrat) ; `nfcLevelFor` asynchrone avec client SQL (≠ §4) ;
   modèle déclaré par le terminal informatif et non vérifié ; points ouverts des décisions du 25/11.
+- **WP11 (relecture de WP08, approuvé le 25/11)** : à consigner — `searchMedia` rend 400 (contrat) et non 422 (prompt
+  T029) : écart prompt/contrat ; code imprimé mal formé → liste vide ; test 403 de PLATFORM_ADMIN ne prouve pas seul le
+  retrait (ce rôle n'a pas de prestataire) : ajouter un cas avec prestataire attribué si possible ; NFR-001 de la
+  recherche (200 000 bracelets) à mesurer hors `SKIP_LATENCY` avant la clôture ; relecture humaine : `search-scope.ts`,
+  `search-rate-limit.ts`.
