@@ -23,7 +23,7 @@
 <rect x="448.1" y="944.5125" width="248.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Classer une anomalie, sans écriture d’argent</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Fonction de la base : types classables tenus en base, un seul classement gagne</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Plan finalisé — à valider</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Livré, relu le 25/11/2026</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Administrateur</text>
 <text x="960.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API</text>
 <text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
@@ -42,6 +42,6 @@
 <text x="34.0" y="893.3125" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
 <text x="572.5" y="962.7875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 : anomalie traitée</text>
 <text x="34.0" y="984.5625" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="60" y="1075.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Plan finalisé le 24/11/2026, à valider (D1, D4, D10). Le droit direct de clore une anomalie est retiré à l’application (ou gardé par un déclencheur). Aucune ligne au grand livre.</text>
+<text x="60" y="1075.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Livré et relu le 25/11/2026 (D1, D4, D10). Le droit direct de clore une anomalie est retiré à l’application (REVOKE, testé). Aucune ligne au grand livre.</text>
 </g>
 </svg>

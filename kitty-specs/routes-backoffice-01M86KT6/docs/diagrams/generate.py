@@ -28,7 +28,7 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Plan finalisé — à valider','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Livré, relu le 25/11/2026','decision','rectangle',20)
     ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
@@ -47,7 +47,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
 def sequence(name,title,sub,parts,msgs,note=None):
     # Styles de message : call, ret (pointillé), bad, self (action interne), note (Note over, a..b),
     # et cadres : ('#open', libellé) / ('#else', libellé) / ('#close',) (loop, alt).
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Plan finalisé — à valider','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Livré, relu le 25/11/2026','decision','rectangle',20)
     n=len(parts); pw=250; gap=(1800-pw)/(n-1) if n>1 else 0; top=160
     rows=sum(1 for m in msgs if m[0]!='#close'); step=max(min((1000-top-110)/max(rows,1),104),76)
     cx={k:60+pw/2+i*gap for i,(k,_,_) in enumerate(parts)}
@@ -95,18 +95,18 @@ files.append(usecase('usecase-routes-backoffice','Routes du back-office : qui li
  [('Savoir qui je suis et ce que je peux faire','primary'),('Lister et ouvrir les ventes','primary'),('Lister et classer les anomalies','primary'),('Retrouver un bracelet ou un portefeuille','primary'),('Chercher un festivalier par numéro exact','accent'),('Tenir les modèles de téléphone','second')],
  [('Personnel connecté','Savoir qui je suis et ce que je peux faire'),('Administrateur (portée)','Lister et ouvrir les ventes'),('Administrateur (portée)','Lister et classer les anomalies'),
   ('Personnel connecté','Retrouver un bracelet ou un portefeuille'),('Superviseur ou administrateur','Chercher un festivalier par numéro exact'),('Administrateur plateforme','Tenir les modèles de téléphone')],
- note="Plan finalisé le 24/11/2026, rien n’est codé ; ajouts au contrat A1 à A6 et décisions D4, D7, D9, D10 à valider par le porteur.\nLe classement ne touche jamais au grand livre. La recherche par numéro refuse vendeurs et caissiers, exige le numéro exact, masque le numéro et laisse une trace sans lui.",H=800))
+ note="Livré et relu le 25/11/2026 (11 lots approuvés), non accepté ni fusionné ; décisions D1 à D10 et ajouts au contrat A1 à A6 validés par le porteur.\nLe classement ne touche jamais au grand livre. La recherche par numéro refuse vendeurs, caissiers, administrateurs de commerçant et de plateforme,\nexige le numéro exact, masque le numéro et laisse une trace sans lui.",H=800))
 files.append(sequence('sequence-classement-anomalie','Classer une anomalie, sans écriture d’argent','Fonction de la base : types classables tenus en base, un seul classement gagne',
  [P('g','Administrateur','data'),P('a','API','primary'),P('d','Base')],
  [('g','a','Classer (anomalie, motif, clé)'),('a','a','Anomalie dans ma portée ? sinon 404','self'),('a','d','classify_anomaly (verrou de ligne)'),
   ('#open','alt type non classable, ou déjà traitée'),('a','g','422 ANOMALY_KIND_NOT_CLASSIFIABLE ou 409 CONFLICT_STATE','bad'),('#close',),
   ('d','d','OPEN vers RESOLVED, sans resolution_tx_id','self'),('a','a','Audit ANOMALY_CLASSIFIED (auteur, motif)','self'),('a','g','200 : anomalie traitée','ret')],
- note="Plan finalisé le 24/11/2026, à valider (D1, D4, D10). Le droit direct de clore une anomalie est retiré à l’application (ou gardé par un déclencheur). Aucune ligne au grand livre."))
+ note="Livré et relu le 25/11/2026 (D1, D4, D10). Le droit direct de clore une anomalie est retiré à l’application (REVOKE, testé). Aucune ligne au grand livre."))
 files.append(sequence('sequence-recherche-numero','Recherche d’un festivalier par numéro exact','POST, numéro jamais dans l’URL ; numéro masqué en réponse ; audit sans le numéro',
  [P('p','Personnel autorisé','data'),P('a','API','primary'),P('d','Base')],
  [('p','a','POST /search/customers (numéro E.164)'),('a','a','Rôle admin ou superviseur ? sinon 403','self'),
   ('a','d','Recherches de la minute (audit)'),('#open','alt plus de 20 en une minute'),('a','p','429 RATE_LIMITED, refus audité','bad'),('#close',),
   ('a','d','Égalité exacte, portée de l’appelant'),('a','a','Masquer le numéro, garder les portefeuilles de la portée','self'),
   ('a','d','Audit : auteur, portée, nombre, clients (jamais le numéro)'),('a','p','200 : portefeuilles et bracelets, numéro masqué','ret')],
- note="Plan finalisé le 24/11/2026, à valider (D7, D8). Numéro incomplet : résultat vide ; numéro non vérifié ou hors portée : introuvable sans indice."))
+ note="Livré et relu le 25/11/2026 (D7, D8). Réservé aux administrateurs de prestataire et d’organisateur et au superviseur. Numéro incomplet : résultat vide ; numéro non vérifié ou hors portée : introuvable sans indice."))
 for f in files: print(r.render(f))

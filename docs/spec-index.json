@@ -1447,7 +1447,7 @@
   {
     "mission": "routes-backoffice-01M86KT6",
     "titre_cas_usage": "Routes serveur du back-office",
-    "statut": "planifiée : plan finalisé le 24/11/2026, rien n'est codé",
+    "statut": "relue le 25/11/2026 (11 lots sur 11 approuvés), non acceptée, non fusionnée (code dans la lane k)",
     "user_stories": [
       {
         "titre": "Savoir qui est connecté et ce qu'il peut faire",
@@ -1477,16 +1477,16 @@
       "Anomalie (classement : motif, auteur, date)",
       "Modèle de téléphone (niveau NFC)"
     ],
-    "resultat_mesurable": "Scénario principal entièrement par les opérations du contrat ; 100 % des opérations déclarent leurs rôles ; 0 donnée hors portée rendue (deux prestataires, quatre portées) ; 100 % des classements sans écriture au grand livre et 100 % des recherches par numéro auditées ; p95 sous 500 ms sur 200 000 ventes (objectif, non mesuré)",
+    "resultat_mesurable": "Scénario principal par les 11 opérations du contrat (SC-001 non joué en un seul test) ; 226 opérations déclarent leurs rôles (8 sans route, OP-N188), matrice de 1 281 appels ; 0 donnée hors portée rendue (registre d'isolement, un cas par opération) ; 100 % des classements sans écriture au grand livre et des recherches par numéro auditées sans le numéro ; ventes : p95 de 35 à 52 ms sur 200 000 ventes (un passage à 160 ms, sous 500 ms), recherche de bracelet 30 ms ; latence d'`listAnomalies`, `getWalletOverview`, `searchCustomerByPhone` non mesurée (OP-N195)",
     "hypotheses": [
       "Rôles et portées existent (mission 2) ; anomalies existantes, aucun type nouveau",
-      "Types classables : 10, décision du porteur (D1) ; la base connaît 23 types, SPECIFICATION §12.2 en liste 21 (amendement prévu)",
+      "Types classables : 10, décision du porteur (D1) ; la base connaît 23 types, SPECIFICATION §12.2 en liste 21 (amendé à 23 par la mission)",
       "Période des filtres en UTC",
       "Seuil de débit de la recherche par numéro : 20 par minute et par personne, réglable (D8)",
-      "Décisions validés par le porteur le 24/11/2026 : D4, D7, D9, D10, ajouts au contrat A1 à A6"
+      "Décisions D1 à D10 et ajouts au contrat A1 à A6 validés par le porteur les 24 et 25/11/2026 ; ADR-235 et ADR-236"
     ],
     "contraintes": [
-      "Contrat partagé stable : ajouts rétrocompatibles soumis au porteur avant codage (C-001)",
+      "Contrat partagé stable : ajouts rétrocompatibles soumis au porteur avant codage, respecté (C-001)",
       "Aucune écriture au grand livre (C-002)",
       "Aucun refus d'enrôlement selon le niveau NFC (C-003)",
       "Écart de sécurité soumis au porteur avant codage (C-004)",
@@ -1500,7 +1500,9 @@
       "Deux classements simultanés : un seul gagne, l'autre 409",
       "Bracelet réattribué : l'ancien code ne rend pas le nouveau porteur",
       "Numéro non vérifié, incomplet ou hors portée : rien rendu, sans indice",
-      "Modèle retiré de la liste : ses terminaux passent non testé"
+      "Modèle retiré de la liste : ses terminaux passent non testé",
+      "Vente sans attribution de canal : absente de la liste, 404 au détail (OP-N192)",
+      "Anomalie sans grand livre : vue et classée du seul OPERATOR_ADMIN du prestataire"
     ],
     "fonctionnel": [
       "FR-001 à FR-018 : profil, x-roles et fidélité, ventes, anomalies et classement, recherche (bracelet, portefeuille, numéro encadré), modèles et signalement, cloisonnement, traçabilité"
@@ -1510,7 +1512,7 @@
       "NFR-002 : pages de 200 au plus, 0 écart de pagination",
       "NFR-003 : 0 donnée hors portée",
       "NFR-004 : 20 recherches par numéro par minute",
-      "NFR-005 : aucun droit nouveau pour cashless_app",
+      "NFR-005 : droits nouveaux de cashless_app limités et nommés (SELECT sur deux vues et phone_model, EXECUTE sur 4 fonctions, ADR-235)",
       "NFR-006 : aucune donnée personnelle en clair dans les nouvelles réponses"
     ],
     "source": "kitty-specs/routes-backoffice-01M86KT6/spec.md"
