@@ -1,0 +1,614 @@
+== page1
+                                                                                   QUERY PLAN                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=982
+   ->  Nested Loop Left Join (actual rows=51 loops=1)
+         Buffers: shared hit=982
+         ->  Nested Loop Left Join (actual rows=51 loops=1)
+               Buffers: shared hit=878
+               ->  Nested Loop Left Join (actual rows=51 loops=1)
+                     Buffers: shared hit=572
+                     ->  Nested Loop Left Join (actual rows=51 loops=1)
+                           Buffers: shared hit=265
+                           ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                 Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                                 Rows Removed by Join Filter: 525
+                                 Buffers: shared hit=211
+                                 ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                       Buffers: shared hit=210
+                                       ->  Nested Loop (actual rows=51 loops=1)
+                                             Join Filter: (l.id = t.ledger_id)
+                                             Buffers: shared hit=6
+                                             ->  Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=51 loops=1)
+                                                   Index Cond: (event_id = '00000000-0000-0000-0000-00000000fd01'::uuid)
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=5
+                                             ->  Materialize (actual rows=1 loops=51)
+                                                   Buffers: shared hit=1
+                                                   ->  Seq Scan on ledger l (actual rows=1 loops=1)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=1
+                                       ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=51)
+                                             Index Cond: (transaction_id = t.id)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=204
+                                 ->  Materialize (actual rows=11 loops=51)
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on device d (actual rows=20 loops=1)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=1
+                           ->  Limit (actual rows=0 loops=51)
+                                 Buffers: shared hit=54
+                                 ->  Sort (actual rows=0 loops=51)
+                                       Sort Key: s.line_no
+                                       Sort Method: quicksort  Memory: 25kB
+                                       Buffers: shared hit=54
+                                       ->  Seq Scan on sale_line s (actual rows=0 loops=51)
+                                             Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                             Buffers: shared hit=51
+                     ->  Hash Right Join (actual rows=1 loops=51)
+                           Hash Cond: (mp.id = m.participation_id)
+                           Buffers: shared hit=307
+                           ->  Seq Scan on merchant_participation mp (actual rows=20 loops=51)
+                                 Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=51
+                           ->  Hash (actual rows=1 loops=51)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=256
+                                 ->  Subquery Scan on m (actual rows=1 loops=51)
+                                       Buffers: shared hit=256
+                                       ->  Limit (actual rows=1 loops=51)
+                                             Buffers: shared hit=256
+                                             ->  Nested Loop (actual rows=1 loops=51)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 30
+                                                   Buffers: shared hit=256
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=51)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=255
+                                                   ->  Materialize (actual rows=16 loops=102)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+               ->  Aggregate (actual rows=1 loops=51)
+                     Buffers: shared hit=306
+                     ->  Nested Loop (actual rows=1 loops=51)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=306
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=51)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=255
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=51)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=51
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=51)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=104
+ Planning:
+   Buffers: shared hit=991
+ Planning Time: 6.609 ms
+ Execution Time: 4.791 ms
+(96 rows)
+
+== cursor_deep
+                                                                                                                          QUERY PLAN                                                                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=981
+   ->  Nested Loop Left Join (actual rows=51 loops=1)
+         Buffers: shared hit=981
+         ->  Nested Loop Left Join (actual rows=51 loops=1)
+               Buffers: shared hit=878
+               ->  Nested Loop Left Join (actual rows=51 loops=1)
+                     Buffers: shared hit=572
+                     ->  Nested Loop Left Join (actual rows=51 loops=1)
+                           Buffers: shared hit=265
+                           ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                 Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                                 Rows Removed by Join Filter: 490
+                                 Buffers: shared hit=211
+                                 ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                       Buffers: shared hit=210
+                                       ->  Nested Loop (actual rows=51 loops=1)
+                                             Join Filter: (l.id = t.ledger_id)
+                                             Buffers: shared hit=6
+                                             ->  Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=51 loops=1)
+                                                   Index Cond: ((event_id = '00000000-0000-0000-0000-00000000fd01'::uuid) AND (ROW(occurred_at, id) < ROW('2026-06-10 00:00:00+00'::timestamp with time zone, 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid)))
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=5
+                                             ->  Materialize (actual rows=1 loops=51)
+                                                   Buffers: shared hit=1
+                                                   ->  Seq Scan on ledger l (actual rows=1 loops=1)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=1
+                                       ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=51)
+                                             Index Cond: (transaction_id = t.id)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=204
+                                 ->  Materialize (actual rows=11 loops=51)
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on device d (actual rows=20 loops=1)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=1
+                           ->  Limit (actual rows=0 loops=51)
+                                 Buffers: shared hit=54
+                                 ->  Sort (actual rows=0 loops=51)
+                                       Sort Key: s.line_no
+                                       Sort Method: quicksort  Memory: 25kB
+                                       Buffers: shared hit=54
+                                       ->  Seq Scan on sale_line s (actual rows=0 loops=51)
+                                             Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                             Buffers: shared hit=51
+                     ->  Hash Right Join (actual rows=1 loops=51)
+                           Hash Cond: (mp.id = m.participation_id)
+                           Buffers: shared hit=307
+                           ->  Seq Scan on merchant_participation mp (actual rows=20 loops=51)
+                                 Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=51
+                           ->  Hash (actual rows=1 loops=51)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=256
+                                 ->  Subquery Scan on m (actual rows=1 loops=51)
+                                       Buffers: shared hit=256
+                                       ->  Limit (actual rows=1 loops=51)
+                                             Buffers: shared hit=256
+                                             ->  Nested Loop (actual rows=1 loops=51)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 30
+                                                   Buffers: shared hit=256
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=51)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=255
+                                                   ->  Materialize (actual rows=15 loops=102)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+               ->  Aggregate (actual rows=1 loops=51)
+                     Buffers: shared hit=306
+                     ->  Nested Loop (actual rows=1 loops=51)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=306
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=51)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=255
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=51)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=51
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=51)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=103
+ Planning:
+   Buffers: shared hit=997
+ Planning Time: 5.467 ms
+ Execution Time: 4.588 ms
+(96 rows)
+
+== pos
+                                                                                   QUERY PLAN                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=9140
+   ->  Nested Loop Left Join (actual rows=51 loops=1)
+         Buffers: shared hit=9140
+         ->  Nested Loop Left Join (actual rows=51 loops=1)
+               Buffers: shared hit=9038
+               ->  Nested Loop Left Join (actual rows=51 loops=1)
+                     Buffers: shared hit=8732
+                     ->  Nested Loop Left Join (actual rows=51 loops=1)
+                           Filter: (COALESCE(d.pos_id, s.pos_id) = '00000000-0000-0000-0000-0000000f5003'::uuid)
+                           Rows Removed by Filter: 968
+                           Buffers: shared hit=8425
+                           ->  Nested Loop Left Join (actual rows=1019 loops=1)
+                                 Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                                 Rows Removed by Join Filter: 9689
+                                 Buffers: shared hit=7403
+                                 ->  Gather Merge (actual rows=1019 loops=1)
+                                       Workers Planned: 2
+                                       Workers Launched: 2
+                                       Buffers: shared hit=7402
+                                       ->  Nested Loop Left Join (actual rows=610 loops=3)
+                                             Buffers: shared hit=7402
+                                             ->  Nested Loop (actual rows=610 loops=3)
+                                                   Buffers: shared hit=76
+                                                   ->  Parallel Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=610 loops=3)
+                                                         Index Cond: (event_id = '00000000-0000-0000-0000-00000000fd01'::uuid)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=68
+                                                   ->  Memoize (actual rows=1 loops=1831)
+                                                         Cache Key: t.ledger_id
+                                                         Cache Mode: logical
+                                                         Hits: 140  Misses: 1  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                                                         Buffers: shared hit=8
+                                                         Worker 0:  Hits: 723  Misses: 1  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                                                         Worker 1:  Hits: 965  Misses: 1  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                                                         ->  Index Scan using ledger_pkey on ledger l (actual rows=1 loops=3)
+                                                               Index Cond: (id = t.ledger_id)
+                                                               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                               Buffers: shared hit=8
+                                             ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=1831)
+                                                   Index Cond: (transaction_id = t.id)
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=7326
+                                 ->  Materialize (actual rows=11 loops=1019)
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on device d (actual rows=20 loops=1)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=1
+                           ->  Limit (actual rows=0 loops=1019)
+                                 Buffers: shared hit=1022
+                                 ->  Sort (actual rows=0 loops=1019)
+                                       Sort Key: s.line_no
+                                       Sort Method: quicksort  Memory: 25kB
+                                       Buffers: shared hit=1022
+                                       ->  Seq Scan on sale_line s (actual rows=0 loops=1019)
+                                             Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                             Buffers: shared hit=1019
+                     ->  Hash Right Join (actual rows=1 loops=51)
+                           Hash Cond: (mp.id = m.participation_id)
+                           Buffers: shared hit=307
+                           ->  Seq Scan on merchant_participation mp (actual rows=20 loops=51)
+                                 Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=51
+                           ->  Hash (actual rows=1 loops=51)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=256
+                                 ->  Subquery Scan on m (actual rows=1 loops=51)
+                                       Buffers: shared hit=256
+                                       ->  Limit (actual rows=1 loops=51)
+                                             Buffers: shared hit=256
+                                             ->  Nested Loop (actual rows=1 loops=51)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 22
+                                                   Buffers: shared hit=256
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=51)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=255
+                                                   ->  Materialize (actual rows=12 loops=102)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+               ->  Aggregate (actual rows=1 loops=51)
+                     Buffers: shared hit=306
+                     ->  Nested Loop (actual rows=1 loops=51)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=306
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=51)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=255
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=51)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=51
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=51)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=102
+ Planning:
+   Buffers: shared hit=996
+ Planning Time: 5.807 ms
+ Execution Time: 24.800 ms
+(107 rows)
+
+== merchant
+                                                                                                   QUERY PLAN                                                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=5788
+   ->  Nested Loop Left Join (actual rows=51 loops=1)
+         Buffers: shared hit=5788
+         ->  Nested Loop Left Join (actual rows=51 loops=1)
+               Buffers: shared hit=5686
+               ->  Nested Loop Left Join (actual rows=51 loops=1)
+                     Buffers: shared hit=5380
+                     ->  Nested Loop Left Join (actual rows=51 loops=1)
+                           Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                           Rows Removed by Join Filter: 204
+                           Buffers: shared hit=5326
+                           ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                 Buffers: shared hit=5325
+                                 ->  Nested Loop (actual rows=51 loops=1)
+                                       Join Filter: (mp.id = a.participation_id)
+                                       Rows Removed by Join Filter: 966
+                                       Buffers: shared hit=5121
+                                       ->  Nested Loop (actual rows=1017 loops=1)
+                                             Join Filter: (l.id = t.ledger_id)
+                                             Buffers: shared hit=35
+                                             ->  Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=1017 loops=1)
+                                                   Index Cond: (event_id = '00000000-0000-0000-0000-00000000fd01'::uuid)
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=33
+                                             ->  Materialize (actual rows=1 loops=1017)
+                                                   Buffers: shared hit=2
+                                                   ->  Nested Loop (actual rows=1 loops=1)
+                                                         Buffers: shared hit=2
+                                                         ->  Seq Scan on ledger l (actual rows=1 loops=1)
+                                                               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                               Rows Removed by Filter: 1
+                                                               Buffers: shared hit=1
+                                                         ->  Seq Scan on merchant_participation mp (actual rows=1 loops=1)
+                                                               Filter: ((merchant_id = '00000000-0000-0000-0000-0000000f2005'::uuid) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 20
+                                                               Buffers: shared hit=1
+                                       ->  Limit (actual rows=1 loops=1017)
+                                             Buffers: shared hit=5086
+                                             ->  Nested Loop (actual rows=1 loops=1017)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 30
+                                                   Buffers: shared hit=5086
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=1017)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=5085
+                                                   ->  Materialize (actual rows=15 loops=2034)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+                                 ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=51)
+                                       Index Cond: (transaction_id = t.id)
+                                       Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                       Buffers: shared hit=204
+                           ->  Materialize (actual rows=5 loops=51)
+                                 Buffers: shared hit=1
+                                 ->  Seq Scan on device d (actual rows=5 loops=1)
+                                       Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                       Buffers: shared hit=1
+                     ->  Limit (actual rows=0 loops=51)
+                           Buffers: shared hit=54
+                           ->  Sort (actual rows=0 loops=51)
+                                 Sort Key: s.line_no
+                                 Sort Method: quicksort  Memory: 25kB
+                                 Buffers: shared hit=54
+                                 ->  Seq Scan on sale_line s (actual rows=0 loops=51)
+                                       Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                       Buffers: shared hit=51
+               ->  Aggregate (actual rows=1 loops=51)
+                     Buffers: shared hit=306
+                     ->  Nested Loop (actual rows=1 loops=51)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=306
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=51)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=255
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=51)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=51
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=51)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=102
+ Planning:
+   Buffers: shared hit=995
+ Planning Time: 6.529 ms
+ Execution Time: 13.874 ms
+(93 rows)
+
+== range
+                                                                                                                                QUERY PLAN                                                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=981
+   ->  Nested Loop Left Join (actual rows=51 loops=1)
+         Buffers: shared hit=981
+         ->  Nested Loop Left Join (actual rows=51 loops=1)
+               Buffers: shared hit=878
+               ->  Nested Loop Left Join (actual rows=51 loops=1)
+                     Buffers: shared hit=572
+                     ->  Nested Loop Left Join (actual rows=51 loops=1)
+                           Buffers: shared hit=265
+                           ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                 Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                                 Rows Removed by Join Filter: 457
+                                 Buffers: shared hit=211
+                                 ->  Nested Loop Left Join (actual rows=51 loops=1)
+                                       Buffers: shared hit=210
+                                       ->  Nested Loop (actual rows=51 loops=1)
+                                             Join Filter: (l.id = t.ledger_id)
+                                             Buffers: shared hit=6
+                                             ->  Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=51 loops=1)
+                                                   Index Cond: ((event_id = '00000000-0000-0000-0000-00000000fd01'::uuid) AND (occurred_at >= '2026-06-15 00:00:00+00'::timestamp with time zone) AND (occurred_at < '2026-06-16 00:00:00+00'::timestamp with time zone))
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=5
+                                             ->  Materialize (actual rows=1 loops=51)
+                                                   Buffers: shared hit=1
+                                                   ->  Seq Scan on ledger l (actual rows=1 loops=1)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=1
+                                       ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=51)
+                                             Index Cond: (transaction_id = t.id)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=204
+                                 ->  Materialize (actual rows=10 loops=51)
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on device d (actual rows=20 loops=1)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=1
+                           ->  Limit (actual rows=0 loops=51)
+                                 Buffers: shared hit=54
+                                 ->  Sort (actual rows=0 loops=51)
+                                       Sort Key: s.line_no
+                                       Sort Method: quicksort  Memory: 25kB
+                                       Buffers: shared hit=54
+                                       ->  Seq Scan on sale_line s (actual rows=0 loops=51)
+                                             Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                             Buffers: shared hit=51
+                     ->  Hash Right Join (actual rows=1 loops=51)
+                           Hash Cond: (mp.id = m.participation_id)
+                           Buffers: shared hit=307
+                           ->  Seq Scan on merchant_participation mp (actual rows=20 loops=51)
+                                 Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=51
+                           ->  Hash (actual rows=1 loops=51)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=256
+                                 ->  Subquery Scan on m (actual rows=1 loops=51)
+                                       Buffers: shared hit=256
+                                       ->  Limit (actual rows=1 loops=51)
+                                             Buffers: shared hit=256
+                                             ->  Nested Loop (actual rows=1 loops=51)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 29
+                                                   Buffers: shared hit=256
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=51)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=255
+                                                   ->  Materialize (actual rows=15 loops=102)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+               ->  Aggregate (actual rows=1 loops=51)
+                     Buffers: shared hit=306
+                     ->  Nested Loop (actual rows=1 loops=51)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=306
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=51)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=255
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=51)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=51
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=51)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=103
+ Planning:
+   Buffers: shared hit=1004
+ Planning Time: 5.991 ms
+ Execution Time: 4.644 ms
+(96 rows)
+
+== reversed
+                                                                                   QUERY PLAN                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual rows=51 loops=1)
+   Buffers: shared hit=47650
+   ->  Nested Loop (actual rows=51 loops=1)
+         Buffers: shared hit=47650
+         ->  Nested Loop Left Join (actual rows=2501 loops=1)
+               Buffers: shared hit=42597
+               ->  Nested Loop Left Join (actual rows=2501 loops=1)
+                     Buffers: shared hit=27591
+                     ->  Nested Loop Left Join (actual rows=2501 loops=1)
+                           Buffers: shared hit=12584
+                           ->  Nested Loop Left Join (actual rows=2501 loops=1)
+                                 Join Filter: (d.id = COALESCE(sa.device_id, t.device_id))
+                                 Rows Removed by Join Filter: 23750
+                                 Buffers: shared hit=10080
+                                 ->  Nested Loop Left Join (actual rows=2501 loops=1)
+                                       Buffers: shared hit=10079
+                                       ->  Nested Loop (actual rows=2501 loops=1)
+                                             Join Filter: (l.id = t.ledger_id)
+                                             Buffers: shared hit=75
+                                             ->  Index Scan using journal_transaction_sales_idx on journal_transaction t (actual rows=2501 loops=1)
+                                                   Index Cond: (event_id = '00000000-0000-0000-0000-00000000fd01'::uuid)
+                                                   Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                   Buffers: shared hit=74
+                                             ->  Materialize (actual rows=1 loops=2501)
+                                                   Buffers: shared hit=1
+                                                   ->  Seq Scan on ledger l (actual rows=1 loops=1)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=1
+                                       ->  Index Scan using sale_attribution_pkey on sale_attribution sa (actual rows=1 loops=2501)
+                                             Index Cond: (transaction_id = t.id)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=10004
+                                 ->  Materialize (actual rows=10 loops=2501)
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on device d (actual rows=20 loops=1)
+                                             Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                             Buffers: shared hit=1
+                           ->  Limit (actual rows=0 loops=2501)
+                                 Buffers: shared hit=2504
+                                 ->  Sort (actual rows=0 loops=2501)
+                                       Sort Key: s.line_no
+                                       Sort Method: quicksort  Memory: 25kB
+                                       Buffers: shared hit=2504
+                                       ->  Seq Scan on sale_line s (actual rows=0 loops=2501)
+                                             Filter: ((transaction_id = t.id) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                             Buffers: shared hit=2501
+                     ->  Hash Right Join (actual rows=1 loops=2501)
+                           Hash Cond: (mp.id = m.participation_id)
+                           Buffers: shared hit=15007
+                           ->  Seq Scan on merchant_participation mp (actual rows=20 loops=2501)
+                                 Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=2501
+                           ->  Hash (actual rows=1 loops=2501)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=12506
+                                 ->  Subquery Scan on m (actual rows=1 loops=2501)
+                                       Buffers: shared hit=12506
+                                       ->  Limit (actual rows=1 loops=2501)
+                                             Buffers: shared hit=12506
+                                             ->  Nested Loop (actual rows=1 loops=2501)
+                                                   Join Filter: (p.account_id = a.id)
+                                                   Rows Removed by Join Filter: 29
+                                                   Buffers: shared hit=12506
+                                                   ->  Index Scan using posting_transaction_id_line_no_key on posting p (actual rows=2 loops=2501)
+                                                         Index Cond: (transaction_id = t.id)
+                                                         Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+                                                         Buffers: shared hit=12505
+                                                   ->  Materialize (actual rows=15 loops=5002)
+                                                         Buffers: shared hit=1
+                                                         ->  Seq Scan on account a (actual rows=20 loops=1)
+                                                               Filter: ((purpose = 'MERCHANT'::text) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                                               Rows Removed by Filter: 3
+                                                               Buffers: shared hit=1
+               ->  Aggregate (actual rows=1 loops=2501)
+                     Buffers: shared hit=15006
+                     ->  Nested Loop (actual rows=1 loops=2501)
+                           Join Filter: (p_1.account_id = a_1.id)
+                           Buffers: shared hit=15006
+                           ->  Index Scan using posting_transaction_id_line_no_key on posting p_1 (actual rows=1 loops=2501)
+                                 Index Cond: (transaction_id = t.id)
+                                 Filter: ((amount > 0) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 1
+                                 Buffers: shared hit=12505
+                           ->  Seq Scan on account a_1 (actual rows=1 loops=2501)
+                                 Filter: ((purpose = ANY ('{WALLET_PAID,WALLET_PROMO}'::text[])) AND (operator_id = (current_setting('app.operator_id'::text, true))::uuid))
+                                 Rows Removed by Filter: 21
+                                 Buffers: shared hit=2501
+         ->  Index Scan using journal_transaction_reverses_once on journal_transaction r (actual rows=0 loops=2501)
+               Index Cond: (reverses_id = t.id)
+               Filter: (operator_id = (current_setting('app.operator_id'::text, true))::uuid)
+               Buffers: shared hit=5053
+ Planning:
+   Buffers: shared hit=996
+ Planning Time: 5.762 ms
+ Execution Time: 197.879 ms
+(96 rows)
+
