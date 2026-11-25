@@ -137,3 +137,5 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   retrait (ce rôle n'a pas de prestataire) : ajouter un cas avec prestataire attribué si possible ; NFR-001 de la
   recherche (200 000 bracelets) à mesurer hors `SKIP_LATENCY` avant la clôture ; relecture humaine : `search-scope.ts`,
   `search-rate-limit.ts`.
+- **WP11 (relecture de WP06, cycle 2)** : `SET LOCAL enable_sort = off` dans la liste des ventes est un contournement du
+  planificateur (dépend des statistiques, à réévaluer si la volumétrie change) : à consigner.
