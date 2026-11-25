@@ -146,3 +146,6 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   `channel IS NOT NULL` (équivalent tant que `channel` est non nul en table) ; forme en deux temps et `enable_sort = off`
   dépendent du planificateur ; REVERSED combiné à merchant_id/pos_id/vendor_id/MERCHANT_ADMIN reste sur la requête
   générale (non mesuré) ; le test de plan de `sales-latency.spec.ts` garde son propre SQL.
+- **Tous les lots (incident du 25/11)** : `apps/api/test/support/db.ts` lit `DATABASE_URL_*` et ignore `PGDATABASE` :
+  poser ces variables vers la base du lot (`cashless_wpNN`) avant Jest, sinon les tests visent `cashless_test` (déjà
+  polluée deux fois : remise à zéro avant la batterie de l'orchestrateur).
