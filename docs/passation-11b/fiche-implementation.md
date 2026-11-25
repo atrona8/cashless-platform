@@ -154,3 +154,7 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   fonctionnel de pages courtes / `has_more` faux, pas de fuite grâce à la vue externe et à la RLS) ; assertion « aucun
   identifiant de A dans le corps » dans le test d'isolement de la liste sans filtre ; le registre d'isolement balaie
   `?status=REVERSED` (cas unique par opération), la liste sans filtre n'est couverte que par `sales.spec.ts`.
+- **WP10, dérives x-roles (décision du porteur, 25/11)** : contrat qui déclare un rôle que le service refuse →
+  ALIGNER `x-roles` sur le code : retirer CASHIER de `listCashSessions`, OPERATOR_ADMIN de `setOrganizerOfflinePolicy`
+  et `setEventOfflinePolicy` (renforcement : aucun droit élargi) ; empreintes et types générés recalculés ;
+  `knownDrifts` vidé. Consigné par WP11 (écart qui renforce : fait puis consigné).
