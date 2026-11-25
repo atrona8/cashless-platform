@@ -149,3 +149,8 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
 - **Tous les lots (incident du 25/11)** : `apps/api/test/support/db.ts` lit `DATABASE_URL_*` et ignore `PGDATABASE` :
   poser ces variables vers la base du lot (`cashless_wpNN`) avant Jest, sinon les tests visent `cashless_test` (déjà
   polluée deux fois : remise à zéro avant la batterie de l'orchestrateur).
+- **WP11 (relecture de WP06, cycle 4, approuvé le 25/11)** : à consigner ou ajouter — test à deux événements du même
+  prestataire qui échoue si `t.event_id = $1` disparaît de la CTE de `reversedQuery` (mutation non vue : risque
+  fonctionnel de pages courtes / `has_more` faux, pas de fuite grâce à la vue externe et à la RLS) ; assertion « aucun
+  identifiant de A dans le corps » dans le test d'isolement de la liste sans filtre ; le registre d'isolement balaie
+  `?status=REVERSED` (cas unique par opération), la liste sans filtre n'est couverte que par `sales.spec.ts`.
