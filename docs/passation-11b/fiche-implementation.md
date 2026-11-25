@@ -105,3 +105,7 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   toujours `principal.userId` de la session, jamais une valeur de la requête ; un test le montre.
 - **Tous les lots** : WP01 a retenu `set_device_model(...)` et posé les droits dans `post-roles.sql` § 15 (voir
   `interfaces.md` §2). Toute fonction nouvelle appelable par `cashless_app` s'ajoute à `tests_execute_grants.sql`.
+- **WP07 (relecture de WP02)** : `anomaly_overview` expose `media_id` et `detail` (jsonb libre) : l'API ne les renvoie
+  pas tels quels ; seuls les champs du schéma du contrat sortent (test des clés de réponse).
+- **WP06 (relecture de WP02)** : le filtre « annulées » reste à 305 ms p95 sur 200 000 ventes (mesures dans
+  `docs/passation-11b/mesures-wp02/`) ; mesurer la route elle-même pour NFR-001.
