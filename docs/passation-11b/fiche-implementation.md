@@ -109,3 +109,15 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   pas tels quels ; seuls les champs du schéma du contrat sortent (test des clés de réponse).
 - **WP06 (relecture de WP02)** : le filtre « annulées » reste à 305 ms p95 sur 200 000 ventes (mesures dans
   `docs/passation-11b/mesures-wp02/`) ; mesurer la route elle-même pour NFR-001.
+
+## Décisions du porteur (25/11/2026)
+- **Nom affiché d'une personne de la plateforme (WP05)** : libellé fixe « Administration de la plateforme » gardé ;
+  le vrai nom devient un point ouvert (OP-N à numéroter par WP11, ADR non requis : écart fonctionnel, pas de sécurité).
+- **Test de gel `contract-additions-9b.spec.ts` (WP04)** : WP04 le retouche hors carte, au plus juste : pointeurs
+  `/x-roles` ignorés dans `violations()`, la ligne qui attend `x-roles` indéfini sur les 11 opérations de la mission
+  devient une vérification de présence. Tout autre changement du contrat reste refusé.
+- **8 opérations sans route (`posClient`)** : sans `x-roles`, listées dans `DOUBTS_ACCEPTED` ; WP11 les consigne en
+  point ouvert (la mission qui écrit ces routes déclare leurs rôles).
+- **CI (orchestrateur, renforcement)** : `x-roles.test.mjs` est le seul garde de la présence de `x-roles`
+  (`check.mjs` ne voit pas sa perte) : WP04 l'ajoute à `check:stability` (`package.json`) et à
+  `.github/workflows/ledger-tests.yml`, à côté de `check.test.mjs`.
