@@ -121,3 +121,6 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
 - **CI (orchestrateur, renforcement)** : `x-roles.test.mjs` est le seul garde de la présence de `x-roles`
   (`check.mjs` ne voit pas sa perte) : WP04 l'ajoute à `check:stability` (`package.json`) et à
   `.github/workflows/ledger-tests.yml`, à côté de `check.test.mjs`.
+- **WP10 (relecture de WP04, mineur)** : l'exemption `x-roles` de `contract-additions-9b.spec.ts` vaut pour toute clé
+  `x-roles` sous `paths`, à toute profondeur ; la resserrer au niveau de l'opération (`paths/<chemin>/<méthode>/x-roles`)
+  dans la retouche hors carte de WP10, avec une mutation (`x-roles` posé dans un paramètre ou une réponse → refus).
