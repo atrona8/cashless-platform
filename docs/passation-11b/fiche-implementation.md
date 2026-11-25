@@ -124,3 +124,8 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
 - **WP10 (relecture de WP04, mineur)** : l'exemption `x-roles` de `contract-additions-9b.spec.ts` vaut pour toute clé
   `x-roles` sous `paths`, à toute profondeur ; la resserrer au niveau de l'opération (`paths/<chemin>/<méthode>/x-roles`)
   dans la retouche hors carte de WP10, avec une mutation (`x-roles` posé dans un paramètre ou une réponse → refus).
+- **WP11 (relectures de WP06, WP07, WP09)** : à consigner — CL066 à CL069 traduits dans `anomalies.service.ts` et non
+  dans `sqlstate-map.ts` (corriger le commentaire d'en-tête de 0101 n'est pas permis : note ou ADR) ;
+  `reason: ANOMALY_KIND_NOT_CLASSIFIABLE` est une extension de premier niveau du 422, pas « dans le détail » (préciser la
+  doc) ; `media_id` sort dans `Anomaly` (conforme au contrat) ; `nfcLevelFor` asynchrone avec client SQL (≠ §4) ;
+  modèle déclaré par le terminal informatif et non vérifié ; points ouverts des décisions du 25/11.
