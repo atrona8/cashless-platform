@@ -163,3 +163,10 @@ téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** No
   99 opérations sans rôle déclaré abouti en 2xx (un rôle déclaré recevant un 403 autre que FORBIDDEN passerait sans
   bruit) ; SUPERVISOR de `approve/rejectApprovalRequest` déclaré par union d'actions, non vérifié pour l'action jouée ;
   échantillon élargi à tout le personnel (1281 appels, au lieu des ~470 de D3).
+- **Décisions du porteur sur WP11 (25/11 soir)** : mission 11c (résolutions d'anomalie qui écrivent de l'argent)
+  validée ; OP-N185 BLOQUE la production (confirmé). OP-N194 levé AVANT la fusion par un correctif d'intégration
+  (tests seulement, relecteur distinct) : test à deux événements du même prestataire pour la CTE de `reversedQuery`,
+  assertion « aucun identifiant de A » dans le 404 de la liste sans filtre, cas PLATFORM_ADMIN avec prestataire attribué
+  pour la recherche, extension de `consignation.spec.ts` aux OP-N185–198. Droits nouveaux de `cashless_app` (SELECT sur
+  `sale_overview`, `anomaly_overview`, `phone_model` ; EXECUTE sur 4 fonctions) confirmés tels que nommés dans ADR-235
+  (D5/D9) : la mention « aucun droit nouveau » de la fiche de lot est caduque.
