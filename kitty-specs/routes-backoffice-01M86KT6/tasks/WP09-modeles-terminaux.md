@@ -16,6 +16,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/routes-backoffice. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/routes-backoffice unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-routes-backoffice-01M86KT6
+base_commit: 8b2d8c483ec92f2eef984ed13d3c5aab1ac930b8
+created_at: '2026-11-25T09:56:31.788454+00:00'
 subtasks: [T034, T035, T036, T037]
 phase: Phase 2 - Routes
 agent: claude
