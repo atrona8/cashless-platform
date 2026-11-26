@@ -923,13 +923,13 @@ vendeurs et le catalogue : la mission les ajoute.
 > compte du portail Sonatel `developer.orange-sonatel.com` ; à ajouter dès que le porteur la fournit), SMS et WhatsApp,
 > serveur d'identité OIDC, matériel de clés de la passerelle, banque. Les faux de ces services restent tels quels.
 
-- [ ] /spec-kitty.specify Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis (SPECIFICATION §10.3, §11.1, §13.2, §13.7, ADR-65, ADR-70, ADR-72, ADR-131) : Wave, PayDunya, Stripe derrière `PspAdapter` (le port suit chaque fournisseur : mécanisme de notification propre, rotation, tolérance) ; AWS Secrets Manager, AWS KMS et S3 Object Lock derrière leurs ports. Seuls identifiants et clés restent à poser. Refus en production maintenu jusqu'à l'essai réel de chaque service ; une commande d'essai par service. PayDunya : notification = signal, crédit après confirmation par l'API.
+- [x] /spec-kitty.specify (26/11/2026, mission `adaptateurs-fournisseurs-choisis-01M8BXJA`, spec `d2ac2dcb` : 16 FR, 5 NFR, 6 C ; Stripe inclus, remboursement OP-N82 hors plateforme) Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis (SPECIFICATION §10.3, §11.1, §13.2, §13.7, ADR-65, ADR-70, ADR-72, ADR-131) : Wave, PayDunya, Stripe derrière `PspAdapter` (le port suit chaque fournisseur : mécanisme de notification propre, rotation, tolérance) ; AWS Secrets Manager, AWS KMS et S3 Object Lock derrière leurs ports. Seuls identifiants et clés restent à poser. Refus en production maintenu jusqu'à l'essai réel de chaque service ; une commande d'essai par service. PayDunya : notification = signal, crédit après confirmation par l'API.
 - [ ] /spec-kitty.plan Dépendances (`@aws-sdk/client-kms`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/client-s3`, client HTTP) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; vecteurs de signature tirés des documentations (exemples officiels) ; aucun appel réseau en test (serveurs locaux simulant les réponses documentées) ; écart PayDunya consigné (OP, ADR, test de borne).
 - [ ] /spec-kitty.tasks
-- [ ] spec-kitty next --agent claude --mission [slug réel]
-- [ ] /spec-kitty.review --mission [slug réel]
-- [ ] /spec-kitty.accept --mission [slug réel]
-- [ ] spec-kitty consolidate --mission [slug réel]
+- [ ] spec-kitty next --agent claude --mission adaptateurs-fournisseurs-choisis-01M8BXJA
+- [ ] /spec-kitty.review --mission adaptateurs-fournisseurs-choisis-01M8BXJA
+- [ ] /spec-kitty.accept --mission adaptateurs-fournisseurs-choisis-01M8BXJA
+- [ ] spec-kitty consolidate --mission adaptateurs-fournisseurs-choisis-01M8BXJA
 
 ---
 
