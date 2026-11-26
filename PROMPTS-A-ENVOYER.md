@@ -716,10 +716,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [x] /spec-kitty.specify Routes serveur dont le back-office web a besoin et que le contrat ne sert pas : (1) profil de la personne connectée du personnel, avec ses rôles et leurs portées (plateforme, prestataire, organisateur, événement, commerçant), pour construire menus et droits d'écran ; (2) rôles autorisés de chaque opération lisibles par machine (extension `x-roles` dans `openapi.yaml`) ; (3) liste filtrée et paginée des ventes et des paiements (par événement, point de vente, commerçant, vendeur, période), avec le détail d'une vente et ses lignes ; (4) liste filtrée des anomalies et leur résolution (liste fermée des types, SPECIFICATION §12.2), à deux personnes si la résolution touche l'argent ; (5) recherche : bracelet par UID ou par code imprimé, portefeuille, festivalier (par numéro vérifié), utile aussi au guichet pour l'identification (KYC) ; (6) modèles de téléphone et niveau de lecture NFC (référentiel des terminaux, SPECIFICATION §15 « Lecture NFC »). Cloisonnement par prestataire et par portée, aucune donnée personnelle au-delà du besoin, audit des recherches.
 - [x] /spec-kitty.plan Opérations et extension `x-roles` nouvelles seulement, présentées au porteur avant d'être codées ; inscrites dans `contract-baseline.json` ; aucune route existante modifiée. Lectures par vues ou fonctions de la base sous RLS ; latence et pagination bornées ; recherche limitée en débit.
 - [x] /spec-kitty.tasks (24/11/2026 : 11 lots, T001-T044)
-- [x] spec-kitty next --agent claude --mission routes-backoffice-01M86KT6 (WP01 à WP10 approuvés le 25/11/2026 par des relecteurs distincts ; WP11, consignation, en relecture)
-- [ ] /spec-kitty.review --mission routes-backoffice-01M86KT6
-- [ ] /spec-kitty.accept --mission routes-backoffice-01M86KT6
-- [ ] spec-kitty consolidate --mission routes-backoffice-01M86KT6
+- [x] spec-kitty next --agent claude --mission routes-backoffice-01M86KT6 (WP01 à WP11 approuvés les 24 et 25/11/2026 par des relecteurs distincts)
+- [x] /spec-kitty.review --mission routes-backoffice-01M86KT6 (25/11/2026, 11 lots sur 11)
+- [x] /spec-kitty.accept --mission routes-backoffice-01M86KT6 (26/11/2026, `bf409ffa`)
+- [x] spec-kitty consolidate --mission routes-backoffice-01M86KT6 (26/11/2026, squash `7a56d09b` sur `feat/routes-backoffice` ; revue post-fusion PASS WITH NOTES, `0d9e9d83`, 0 bloquant ; PR vers `main` après la #26)
 
 > **État au 25/11/2026 (WP11).** Lots WP01 à WP10 livrés : `GET /staff/me`, `x-roles` sur 226 opérations (huit sans route :
 > OP-N188), ventes (`listEventSales`, `getSale`), anomalies (`listAnomalies`, `classifyAnomaly`), recherche (`searchMedia`,
