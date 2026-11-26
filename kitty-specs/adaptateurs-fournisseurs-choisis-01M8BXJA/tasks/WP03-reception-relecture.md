@@ -13,6 +13,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/adaptateurs-fournisseurs-choisis. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/adaptateurs-fournisseurs-choisis unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-adaptateurs-fournisseurs-choisis-01M8BXJA
+base_commit: 0a2c8a64fb4e7fcd9a7eb3edcbe2fec93b8b5f72
+created_at: '2026-11-26T14:15:21.646862+00:00'
 subtasks: [T011, T012, T013, T014, T015]
 phase: Phase 2 - Réception et adaptateurs
 agent: claude
