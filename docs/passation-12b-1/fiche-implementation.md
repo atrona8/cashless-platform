@@ -110,3 +110,7 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   `dev/psp-simulation.service.ts` (`provider` passé au coffre) et des tests de `test/integration/webhooks/`. Pars de ces
   versions (ta lane fusionne la lane b). Le faux coffre accepte `key` et encore `adapter` (ancien nom, utilisé par
   `test/integration/topups/psp-fixtures.ts`) : ne le retire pas sans adapter ces tests.
+- **WP10 (livraison de WP01, `c6544602`)** : `loadConfig` n'exige `SEAL_COPY_BUCKET` que si `SEAL_COPY=real` est posé ;
+  en production (mode absent = `real`), c'est `createSealCopy` qui refuse de démarrer sans compartiment, et seulement
+  dans les processus qui construisent la copie (scellement). Tester les deux cas. `PspHttpClient` accepte un 2e
+  paramètre facultatif `sleep` (tests).
