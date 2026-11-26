@@ -54,10 +54,10 @@ const PRODUCTION_ENABLED_SERVICES: readonly ExternalService[] = []; // D6
 
 | Réglage | Valeurs | Défaut hors production | Production |
 |---|---|---|---|
-| `PSP_ADAPTERS` | `fake` \| `real` | `fake` | `real` exigé ; PSP hors liste indisponible |
-| `PSP_SECRET_STORE` | `fake` \| `real` | `fake` | `real` et `psp.secrets` dans la liste, sinon coffre indisponible (comportement actuel) |
-| `KMS_BACKEND` | `fake` \| `real` | `fake` | `real` et `kms` dans la liste, sinon refus de démarrer |
-| `SEAL_COPY` | `fake` \| `real` | `fake` | `real` et `seal-copy` dans la liste, sinon refus de démarrer |
+| `PSP_ADAPTERS` | `fake` \| `real` | `fake` | absent = `real` ; `fake` → refus ; PSP hors liste indisponible (démarrage permis) |
+| `PSP_SECRET_STORE` | `fake` \| `real` | `fake` | absent = `real` ; `fake` → refus ; hors liste : coffre indisponible (actuel) |
+| `KMS_BACKEND` | `fake` \| `real` | `fake` | absent = `real` ; `fake` → refus ; hors liste → refus de démarrer (actuel) |
+| `SEAL_COPY` | `fake` \| `real` | `fake` | absent = `real` ; `fake` → refus ; hors liste → refus de démarrer (actuel) |
 
 Paramètres de configuration nouveaux (aucun secret) : `AWS_REGION`, `SEAL_COPY_BUCKET`, `SEAL_COPY_RETENTION_DAYS`
 (3 650), `PSP_HTTP_TIMEOUT_MS` (10 000), `WAVE_API_BASE`, `PAYDUNYA_API_BASE`, `STRIPE_API_BASE` (défauts :

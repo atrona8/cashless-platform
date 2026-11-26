@@ -83,6 +83,7 @@ Numéros suivants (vérifie le dernier OP-N et ADR). À créer au minimum :
 - **Points « à confirmer à l'essai »** (statuts PayDunya `failed`/`cancelled`, échéance de facture, XOF sans décimale
   chez Stripe, éligibilité Sénégal chez Stripe) : un OP qui les liste, levé par les essais.
 - **Wave sans clé d'idempotence** (reprise par recherche) : limite.
+- **Borne des relectures en mémoire de chaque processus** (multipliée par le nombre d'instances ; analyse L1).
 - Écarts relevés par les relectures (notes de lane) : un OP chacun s'ils restent ouverts.
 
 ### T056 — Libellés « 12b »
@@ -104,7 +105,8 @@ Report des limites dans `PRD.md` (§2.8) et `PROMPTS-A-ENVOYER.md` (12b-1 : éta
 
 ### T059 — Preuves et note
 
-`preuves.md` : tableau critère → lot → test → commande → résultat (FR-001 à FR-016, NFR, C, SC), à partir des notes de
+`preuves.md` : inclut la preuve de C-006 (`npm run check:generated` ou équivalent, aucun `.sql` généré modifié :
+`git diff --stat <base>..HEAD -- packages/ledger-sql`). Tableau critère → lot → test → commande → résultat (FR-001 à FR-016, NFR, C, SC), à partir des notes de
 lane. `note-equipes.md` : ce qui change pour les équipes (PayDunya : notification en formulaire ; Stripe : événements
 à déclarer ; aucune route nouvelle), et pour le porteur (étapes du `quickstart.md`).
 

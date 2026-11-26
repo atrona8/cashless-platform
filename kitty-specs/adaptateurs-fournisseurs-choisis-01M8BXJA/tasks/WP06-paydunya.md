@@ -99,7 +99,7 @@ d'abord.
 1. `GET {base}/checkout-invoice/confirm/{token}` (mêmes en-têtes), `idempotent: true`.
 2. `status` : `completed` → `PAID` ; `pending` → `PENDING` ; `cancelled` → `CANCELLED` ; `failed` → `FAILED`
    (les deux derniers « à confirmer à l'essai », constante commentée) ; autre → `UNKNOWN`.
-3. `payment` : `amount = BigInt(invoice.total_amount)` (entier exigé), `currency = 'XOF'`, `merchantReference =
+3. `payment` : `amount = BigInt(invoice.total_amount)` (entier exigé), `currency = 'XOF'` (devise de la configuration : la confirmation n'en rend pas, analyse U1 ; « à confirmer à l'essai »), `merchantReference =
    custom_data.psp_topup_id`, `card = { fingerprint: null, threeDs: 'NOT_PERFORMED' }` (D7 : la confirmation ne porte ni
    preuve 3-D Secure ni empreinte ; le processeur rendra la recharge « reçue, non créditée »). Ne journalise jamais
    `customer`.

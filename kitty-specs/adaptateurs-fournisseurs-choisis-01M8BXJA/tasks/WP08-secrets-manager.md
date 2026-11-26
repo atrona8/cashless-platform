@@ -72,8 +72,7 @@ d'abord.
 2. `GetSecretValueCommand({ SecretId: secretRef })` ; `SecretString` JSON : `{ provider, credentials, notification,
    previous_valid_until }`. Construis `PspCredentials` selon `provider` (`WAVE` : `api_key`, `request_signing_secret` ;
    `PAYDUNYA` : `master_key`, `private_key`, `token` ; `STRIPE` : `secret_key`) ; champ manquant ou fournisseur inconnu →
-   `REF_INVALID`. Le fournisseur doit être celui de la configuration (passe-le dans `binding` si nécessaire : retouche
-   de compilation, note-la) ; sinon `REF_INVALID`.
+   `REF_INVALID`. Le fournisseur du secret doit être `binding.provider` (ajouté par WP02) ; sinon `REF_INVALID`.
 
 ### T035 — Rotation
 

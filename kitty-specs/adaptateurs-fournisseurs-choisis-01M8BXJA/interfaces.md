@@ -18,7 +18,7 @@ Chemins relatifs à `apps/api/` sauf mention.
 | `src/psp/stripe/**`, `test/unit/psp/stripe/**`, `test/support/fake-servers/stripe.ts` | WP07 |
 | `src/psp/aws/**`, `test/unit/psp/aws/**`, `test/support/fake-servers/secrets-manager.ts` | WP08 |
 | `src/kms/aws/**`, `src/sealing/s3-seal-copy.ts`, `test/unit/kms/aws/**`, `test/unit/sealing/s3-seal-copy.spec.ts`, `test/support/fake-servers/{kms,s3}.ts` | WP09 |
-| `src/external-services/{services,production-enabled}.ts`, `src/psp/psp.providers.ts`, `src/psp/psp.module.ts`, `src/kms/kms.module.ts`, `src/kms/production-guard.ts`, `src/sealing/sealing.module.ts`, `src/processes/bootstrap.ts`, `test/unit/production-guard.spec.ts`, `test/unit/external-services/production-enabled.spec.ts`, `test/unit/psp/psp-providers.spec.ts`, `test/unit/kms/kms-module.spec.ts`, `test/unit/architecture.spec.ts`, `<racine>/apps/gateway/test/e2e/production-refusals.spec.ts`, `<racine>/docs/essais/README.md` | WP10 |
+| `src/external-services/{services,production-enabled}.ts`, `src/psp/psp.providers.ts`, `src/psp/psp.module.ts`, `src/kms/kms.module.ts`, `src/kms/production-guard.ts`, `src/sealing/sealing.module.ts`, `src/processes/bootstrap.ts`, `test/unit/production-guard.spec.ts`, `test/unit/external-services/production-enabled.spec.ts`, `test/unit/psp/psp-providers.spec.ts`, `test/unit/kms/kms-module.spec.ts`, `test/unit/architecture.spec.ts`, `test/integration/topups/real-adapters-credit.spec.ts`, `<racine>/apps/gateway/test/e2e/production-refusals.spec.ts`, `<racine>/docs/essais/README.md` | WP10 |
 | `src/external-services/trial/**`, `test/unit/external-services/trial/**` | WP11 |
 | `src/attestation/**` (seulement en cas d'écart), `test/unit/attestation/**`, `<racine>/docs/passation-12b-1/attestations-comparaison.md` | WP12 |
 | `<racine>/docs/SERVICES-EXTERNES.md`, `<racine>/docs/POINTS_OUVERTS.md`, `<racine>/docs/DECISIONS_ADR.md`, `<racine>/PRD.md`, `<racine>/PROMPTS-A-ENVOYER.md`, `<racine>/docs/passation-12b-1/{preuves,note-equipes}.md`, `test/integration/invariants-cloture/consignation.spec.ts` | WP13 |
@@ -28,7 +28,7 @@ fichier non listé ; elle se limite à la compilation, et la note de lane la nom
 
 ## 2. Configuration (WP01, `src/config/config.ts`)
 
-Aucun secret en configuration. Clés nouvelles de `AppConfig` (lues de l'environnement, validées au démarrage) :
+Aucun secret en configuration. **Défaut des quatre modes : `fake` hors production ; en production, en production, réglage **absent** = `real` ; `fake` posé explicitement → refus de démarrer ; `real` hors liste → PSP et coffre **indisponibles** (comportement actuel : 503/404, démarrage permis), KMS et copie des scellements **refusent de démarrer** (comportement actuel) (analyse I1).** Clés nouvelles de `AppConfig` (lues de l'environnement, validées au démarrage) :
 
 | Clé `AppConfig` | Variable | Défaut | Règle |
 |---|---|---|---|
@@ -80,6 +80,8 @@ export type PspCredentials =
   | { provider: 'PAYDUNYA'; masterKey: Secret; privateKey: Secret; token: Secret }
   | { provider: 'STRIPE'; secretKey: Secret }
   | { provider: 'FAKE'; key: Secret | null };
+export interface PspSecretBinding { configurationId: string; holderPartyId: string; secretRef: string;
+  provider: PspProviderName }   // provider ajouté (analyse I2)
 export interface PspSecrets { credentials: PspCredentials;
   notification: { current: Secret; previous: Secret | null; previousValidUntil: Date | null } }
 

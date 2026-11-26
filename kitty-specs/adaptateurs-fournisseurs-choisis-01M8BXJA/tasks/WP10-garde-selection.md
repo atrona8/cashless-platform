@@ -28,6 +28,7 @@ create_intent:
 - apps/api/src/external-services/production-enabled.ts
 - apps/api/test/unit/external-services/production-enabled.spec.ts
 - docs/essais/README.md
+- apps/api/test/integration/topups/real-adapters-credit.spec.ts
 execution_mode: code_change
 model: sonnet
 owned_files:
@@ -44,6 +45,7 @@ owned_files:
 - apps/api/test/unit/psp/psp-providers.spec.ts
 - apps/api/test/unit/kms/kms-module.spec.ts
 - apps/api/test/unit/architecture.spec.ts
+- apps/api/test/integration/topups/real-adapters-credit.spec.ts
 - apps/gateway/test/e2e/production-refusals.spec.ts
 - docs/essais/README.md
 role: implementer
@@ -98,6 +100,7 @@ d'abord.
 
 ### T044 — Sélection dans les fabriques
 
+0. **Règle de production (analyse I1, fait foi)** : en production, réglage **absent** = `real` ; `fake` posé explicitement → refus de démarrer ; `real` hors liste → PSP et coffre **indisponibles** (comportement actuel : 503/404, démarrage permis), KMS et copie des scellements **refusent de démarrer** (comportement actuel). Hors production : défaut `fake`.
 1. `psp.providers.ts` : `createPspAdapters(config, deps)` : `externalModes.psp = 'fake'` → faux (hors production
    seulement, comme aujourd'hui) ; `'real'` → `WavePspAdapter`, `PayDunyaPspAdapter`, `StripePspAdapter` avec un
    `PspHttpClient` ; en production, seuls les fournisseurs dont le service est dans la liste entrent au registre
@@ -107,6 +110,13 @@ d'abord.
 2. `kms.module.ts` : `KMS_BACKEND=real` → `AwsKms(...).forCapabilities(<ports du processus>)` ; la répartition des
    ports par processus ne change pas. `sealing.module.ts` : `SEAL_COPY=real` → `S3SealCopy`.
 3. `psp.module.ts` : fournit `PspHttpClient`.
+4. **Indisponibilité au démarrage (analyse C2)** : aucun appel au coffre ni à KMS au démarrage ; une panne se voit à
+   l'usage, comme avec le faux (coffre : refus neutre ; KMS : erreur de l'opération). Test : démarrage du module avec un
+   faux serveur arrêté → démarre ; premier usage → erreur attendue, sans secret.
+5. **Crédit unique par PSP réel (analyse C1, NFR-005)** : `test/integration/topups/real-adapters-credit.spec.ts`, sur
+   `cashless_wp10`, adaptateurs réels contre les faux serveurs de WP05 à WP07 : 100 notifications Wave identiques en
+   parallèle → un crédit ; 100 notifications Stripe identiques → une seule relecture appliquée, un crédit ; 100 signaux
+   PayDunya → un crédit au plus (ici aucun : carte sans 3-D Secure, D7 ; vérifier « reçue, non créditée » une fois).
 
 ### T045 — Garde
 

@@ -81,7 +81,9 @@ d'abord.
 
 ### T007 — Identifiants (`psp-secret-store.port.ts`)
 
-1. `PspCredentials` (union discriminée par `provider`, avec `FAKE`) remplace `adapter: Secret | null` ; `PspSecrets`
+1. `PspSecretBinding` reçoit `provider: PspProviderName` (`interfaces.md` §4) ; les appelants (réception,
+   interrogation) le passent : retouche de compilation permise dans leur lot (WP03).
+   `PspCredentials` (union discriminée par `provider`, avec `FAKE`) remplace `adapter: Secret | null` ; `PspSecrets`
    devient `{ credentials, notification }`. `Secret` inchangé.
 2. Faux coffre : chaque entrée de démonstration rend `{ provider: 'FAKE', key }` ; la forme stockée par `put()` des tests
    suit (`{ key?, current, previous?, previousValidUntil? }`). L'isolement par détenteur (`psp/<titulaire>/…`) et les

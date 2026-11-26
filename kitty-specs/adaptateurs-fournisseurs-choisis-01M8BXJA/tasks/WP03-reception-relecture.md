@@ -92,7 +92,8 @@ d'abord.
    (`{ kind: 'UNKNOWN', reference }`, **aucun montant**), identifiant de notification = celui du verdict ; l'événement
    est marqué traité sans effet par le répartiteur (vérifie que `UNKNOWN_KIND` → `PROCESSED`, `NO_EFFECT`) ; doublon →
    `duplicate: true` comme aujourd'hui. Puis `confirmer.scheduleConfirmation(reference, configId)` **après** la réponse.
-4. Ordre des contrôles du contrat inchangé.
+4. Ordre des contrôles du contrat inchangé. Le `PspSecretBinding` passé au coffre porte `provider` (WP02), ici comme
+   dans le confirmateur.
 
 ### T013 — `PspStatusConfirmer` (`interfaces.md` §5)
 
