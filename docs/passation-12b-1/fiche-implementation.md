@@ -120,3 +120,17 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   Fichiers à faire relire par une personne : `no-external-network.ts`, `package-lock.json`.
 - **Tous les lots (orchestrateur)** : les dépendances de WP01 sont installées dans le checkout principal
   (`node_modules`, sans changement de fichier suivi) ; une lane qui fusionne la lane a les résout donc.
+
+## Décisions du porteur (26/11/2026, après les premières relectures)
+- **Android** : exception limitée à la racine `f92009e853b6b045` pour les certificats d'usine expirés (assouplissement
+  décidé ; WP12 cycle 2 ; test de borne). **WP13** : OP + ADR + report PROMPTS/PRD.
+- **Apple** : contrôle de `apple_validation_category_01` / `apple_bundle_version_01` en **mission 12** avec un vecteur
+  réel ; d'ici là écart ouvert. **WP13** : OP + ADR + report dans la section Mission 12 de PROMPTS et dans PRD.
+- **Stripe 3-D Secure** : `attempt_acknowledged` → `NOT_PERFORMED` (non crédité) ; seul `authenticated` vaut réussi
+  (WP07 cycle 2). **WP13** : ADR (lecture stricte de l'ADR-77).
+- **Litige Stripe** : rattaché à la recharge par relecture (WP07 cycle 2 : `resolvePaymentReference?` facultatif au port ;
+  puis **WP03 cycle suivant** : la réception conserve le litige « à relire », le confirmateur résout la référence par
+  l'adaptateur puis passe le litige normalisé (référence marchande remplie) au répartiteur existant ; sans résolution :
+  anomalie sans correspondance, comme aujourd'hui).
+- **Stripe, session `open` après un refus** : reste `PENDING` (le payeur peut réessayer) ; l'orchestrateur corrige le
+  tableau de `contracts/psp-fournisseurs.md`.

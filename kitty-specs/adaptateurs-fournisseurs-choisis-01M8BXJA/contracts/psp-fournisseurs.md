@@ -10,7 +10,7 @@ Source de chaque ligne : `research.md` (R-04 Wave, R-05 PayDunya, R-06 Stripe).
 | `getStatus` | `GET /v1/checkout/sessions/:id` | `GET checkout-invoice/confirm/{token}` | session + `payment_intents/:id?expand[]=latest_charge` |
 | `cancel` | `POST …/:id/expire` (409 → false) | `{ cancelled: false }` | `POST …/:id/expire` |
 | `readStatement` | `GET /v1/transactions?date=` par jour, curseur `after` | `{ supported: false }` | `GET /v1/balance_transactions` `created[gte/lte]`, `starting_after` |
-| carte | — | `threeDs: NOT_PERFORMED`, `fingerprint: null` (D7) | `three_d_secure.result`, `card.fingerprint` |
+| carte | — | `threeDs: NOT_PERFORMED`, `fingerprint: null` (D7) | `three_d_secure.result` (seul `authenticated` → SUCCEEDED, décision du 26/11/2026), `card.fingerprint` |
 
 Correspondance des statuts :
 
@@ -18,7 +18,7 @@ Correspondance des statuts :
 |---|---|---|---|
 | PAID | `complete` + `succeeded` | `completed` | session `complete` + `payment_status=paid` |
 | PENDING | `open`, `processing` | `pending` | `open`, `unpaid` |
-| FAILED | `cancelled` | `failed` [à confirmer] | PaymentIntent `requires_payment_method` après échec |
+| FAILED | `cancelled`, `failed` | `failed` [à confirmer] | — (session `open` après un refus : reste PENDING, le payeur peut réessayer ; décision du 26/11/2026) |
 | CANCELLED | — | `cancelled` [à confirmer] | — |
 | EXPIRED | `expired` | — | session `expired` |
 | UNKNOWN | autre valeur | autre valeur | autre valeur |
@@ -26,3 +26,6 @@ Correspondance des statuts :
 Écart de sécurité PayDunya (D2) : preuve d'origine fixe, sans corps signé ni horodatage. Compensation : signal seul,
 crédit par confirmation authentifiée, au plus une relecture par recharge et par minute. Test de borne : un signal
 PayDunya valide suivi d'une confirmation « pending » ou d'un montant différent ne crédite pas.
+
+Litige Stripe (décision du 26/11/2026) : `charge.dispute.created` → `DISPUTE` à relire ; la session est retrouvée par
+`GET /v1/checkout/sessions?payment_intent=<pi>` (`resolvePaymentReference?`, méthode facultative du port).
