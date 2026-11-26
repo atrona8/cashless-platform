@@ -19,4 +19,4 @@ Voir `docs/05-sequence-diagrams.md`, flux : « Recharge mobile money » (le flux
 
 ## Nécessaire pour cette mission ? Oui : une interaction inter-composants nouvelle et sensible (signal puis relecture avant tout crédit) (proposition de l'Agent, en attente de confirmation du porteur).
 ## Complet ? Oui pour le plan (26/11/2026) : le flux PayDunya est dessiné ; Wave, coffre, essai et S3 en texte ; à recaler à la review (proposition de l'Agent, en attente de confirmation du porteur).
-## Validé par : proposition de l'Agent le 26/11/2026, en attente de confirmation du porteur.
+## Validé par : proposition de l'Agent le 26/11/2026, confirmée par le porteur le 26/11/2026.

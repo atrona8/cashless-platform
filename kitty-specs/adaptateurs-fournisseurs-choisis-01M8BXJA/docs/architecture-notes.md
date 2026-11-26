@@ -41,4 +41,4 @@ Contribue à : `docs/04-architecture-diagram.md`, table « Détail par mission �
 
 ## Nécessaire pour cette mission ? Oui : décisions D1 à D9, dépendances nouvelles, écart de sécurité et garde de production à tracer, même sans conteneur nouveau (proposition de l'Agent, en attente de confirmation du porteur).
 ## Complet ? Oui pour le plan (26/11/2026) : composants, décisions, écarts à consigner, fichiers à relire ; à recaler à la review sur le code livré (proposition de l'Agent, en attente de confirmation du porteur).
-## Validé par : proposition de l'Agent le 26/11/2026, en attente de confirmation du porteur.
+## Validé par : proposition de l'Agent le 26/11/2026, confirmée par le porteur le 26/11/2026.

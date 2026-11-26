@@ -27,4 +27,4 @@ Contribue à : `docs/02-use-case-diagram.md`, domaine « Argent réel : PSP, cai
 
 ## Nécessaire pour cette mission ? Oui : sept cas d'usage de recharge, de coffre et de mise en production, dont un parcours (le signal) qui diffère des autres PSP (proposition de l'Agent, en attente de confirmation du porteur).
 ## Complet ? Oui pour le plan (26/11/2026) : sept cas d'usage, acteurs festivalier, prestataire et porteur, hors périmètre listé ; diagramme `/illustre` généré et relu (proposition de l'Agent, en attente de confirmation du porteur).
-## Validé par : proposition de l'Agent le 26/11/2026, en attente de confirmation du porteur.
+## Validé par : proposition de l'Agent le 26/11/2026, confirmée par le porteur le 26/11/2026.
