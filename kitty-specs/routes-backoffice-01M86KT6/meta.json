@@ -26,6 +26,7 @@
   "purpose_context": "Le back-office web (mission 11) ne peut pas piloter un événement sans ces routes, absentes du contrat partagé (OP-N170, dossier de design du back-office). La mission les ajoute côté serveur, de façon rétrocompatible, cloisonnées par prestataire et par portée, avant que l'équipe du back-office ne commence.",
   "purpose_tldr": "Servir au back-office web les lectures et actions qui lui manquent : profil du personnel, ventes, anomalies, recherche, modèles de téléphone, rôles par opération.",
   "slug": "routes-backoffice-01M86KT6",
+  "status_phase": "1",
   "target_branch": "feat/routes-backoffice",
   "topology": "coord",
   "vcs": "git",
