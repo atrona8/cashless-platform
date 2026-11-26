@@ -41,6 +41,10 @@ DeviceAdmin _$DeviceAdminFromJson(Map<String, dynamic> json) => DeviceAdmin(
     _$DeviceAdminProvidedByEnumMap,
     json['provided_by'],
   ),
+  deviceModel: json['device_model'] == null
+      ? null
+      : DeviceModel.fromJson(json['device_model'] as Map<String, dynamic>),
+  nfcLevel: $enumDecodeNullable(_$NfcLevelEnumMap, json['nfc_level']),
 );
 
 Map<String, dynamic> _$DeviceAdminToJson(DeviceAdmin instance) =>
@@ -64,6 +68,8 @@ Map<String, dynamic> _$DeviceAdminToJson(DeviceAdmin instance) =>
       'enrolled_at': instance.enrolledAt?.toIso8601String(),
       'last_seen_at': instance.lastSeenAt?.toIso8601String(),
       'cert_not_after': instance.certNotAfter?.toIso8601String(),
+      'device_model': instance.deviceModel,
+      'nfc_level': instance.nfcLevel,
     };
 
 const _$DeviceKindEnumMap = {DeviceKind.pos: 'POS', DeviceKind.topup: 'TOPUP'};
@@ -103,4 +109,10 @@ const _$DeviceAdminProvidedByEnumMap = {
   DeviceAdminProvidedBy.valueOperator: 'OPERATOR',
   DeviceAdminProvidedBy.organizer: 'ORGANIZER',
   DeviceAdminProvidedBy.merchant: 'MERCHANT',
+};
+
+const _$NfcLevelEnumMap = {
+  NfcLevel.recommended: 'RECOMMENDED',
+  NfcLevel.tolerated: 'TOLERATED',
+  NfcLevel.untested: 'UNTESTED',
 };

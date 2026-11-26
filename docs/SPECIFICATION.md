@@ -1273,32 +1273,35 @@ Tâches planifiées ; tout échec DOIT déclencher une alerte à l'exploitation.
 | Trous de séquence | Registre des numéros | À chaque synchronisation |
 | Échantillon de mots de passe stockés = recalcul KMS | §7.4 | Quotidien |
 
-**Types d'anomalie** (`anomaly.kind`). Liste fermée, imposée par une contrainte `CHECK` ; ajouter un type exige une migration, une ligne dans ce tableau et un test.
+**Types d'anomalie** (`anomaly.kind`). Liste fermée, imposée par une contrainte `CHECK` ; ajouter un type exige une migration, une ligne dans ce tableau et un test. La colonne « Classable » dit si le back-office peut classer l'anomalie « traitée » (`classifyAnomaly`, mission 11b) : **oui** pour les 10 types qui ne laissent aucun argent en attente, la base tenant la liste (`anomaly_classifiable`) ; **non** pour les 13 autres, dont le traitement exige une écriture d'argent ou a sa propre voie.
 
-| Type | Sens |
-|---|---|
-| `OFFLINE_SHORTFALL` | Vente hors ligne synchronisée dont une part n'est pas couverte par le portefeuille ; la part va en `S-ATTENTE` (§9.6) |
-| `COUNTER_DUPLICATE` | Même valeur de compteur vue deux fois pour un bracelet : copie suspectée (§7.6) |
-| `COUNTER_TIME_INVERSION` | Compteur plus petit sur un passage plus récent, au-delà de la tolérance (§7.6) |
-| `UID_MISMATCH` | UID lu différent de celui lié au bracelet (§7.6) |
-| `RETIRED_IDENTITY` | Passage avec une ancienne identité d'un bracelet `POOL` réattribué (§7.8) |
-| `SEQ_GAP` | Numéro de séquence d'un terminal sans résultat final ; levé par `waiveSeqGap` à deux (§9.5) |
-| `CHAIN_BROKEN` | Chaîne d'un lot de terminal ou de la passerelle différente de celle calculée par le central (§5.7) |
-| `CLOCK_SKEW` | Heure d'une opération hors bornes, ramenée à une borne ; original dans `metadata.device_occurred_at` (§9.6) |
-| `VOID_CONFLICT` | Numéro transmis abandonné (`VOID`) par le terminal alors que la clé existe déjà au central (`sync_protocol.md`, cas limites) |
-| `ONLINE_CONFIRMED_MISSING` | Opération confirmée en ligne (central ou passerelle) introuvable au central, traitée selon `sync_protocol.md` §7.3 (§9.5) |
-| `IDEMPOTENCY_CONFLICT` | Dans un lot, même clé ou même numéro qu'une opération existante, avec un autre contenu |
-| `NON_COMPLIANT_OPERATION` | Opération de lot rejetée pour non-conformité du terminal (`sync_protocol.md` §7.2), non garantie (§9.6) |
-| `LATE_OFFLINE_SYNC` | Opération hors ligne ou de passerelle synchronisée après le début du règlement (`SETTLING`) : vente ou annulation non écrite, à écrire par le back-office ; recharge ou caution en espèces écrite et signalée (§12.1, synchronisations tardives) |
-| `PSP_MISMATCH` | Notification PSP qui ne correspond pas à la recharge initiée (configuration, montant ou devise) : rien n'est écrit (§11.1) |
-| `PSP_TOPUP_OVER_LIMIT` | Recharge carte ou mobile reçue mais refusée par un plafond réglementaire : non créditée, à rembourser au payeur (§11.1) |
-| `EDGE_REPLAY_FAILED` | Activation ou caution en espèces décidée par la passerelle et impossible à rejouer au central : espèces au compte d'attente (sync_protocol §9.6) |
-| `LATE_CHARGEBACK` | Contestation carte reçue après le verrouillage du grand livre : demande d'approbation, puis écriture tardive (§12.1, ADR-77) |
-| `CARD_VELOCITY` | Plusieurs cartes différentes (au moins `event.card_alert_cards_per_wallet`) ont rechargé un même portefeuille (§11.1, ADR-77) |
-| `SIGNATURE_MISMATCH` | Signature d'originalité lue différente de celle enregistrée à la personnalisation : une autre puce se fait passer pour le bracelet (§7.6, ADR-59). Aussi : opération hors ligne reçue sans signature pour une puce qui en a une enregistrée (opération gardée, sans liste noire) |
-| `PERIOD_CLOSED_OPERATION` | Opération de lot rejetée parce que sa date est dans une période close ou que le grand livre est `LOCKED` ; le terminal n'est pas fautif, traitement manuel au back-office (`sync_protocol.md` §7.2, contrôles de période) |
-| `CASH_DIFF` | Écart de caisse (compté différent du théorique) à la fermeture d'une session (§11.2) |
-| `CASH_TOPUP_OVER_LIMIT` | Recharge en espèces hors ligne au-delà d'un plafond réglementaire : portefeuille crédité de la marge de recharge, reste en `L-ESP-A-RENDRE`, à rendre au client (ADR-63). L'anomalie DOIT porter `media_id` et `amount` (part créditée sur `L-ESP-A-RENDRE`) : `refund_cash_due` en tire le montant à rendre. Elle se clôt au rendu ; tant qu'elle est ouverte, la restitution du bracelet est refusée |
+| Type | Sens | Classable |
+|---|---|---|
+| `OFFLINE_SHORTFALL` | Vente hors ligne synchronisée dont une part n'est pas couverte par le portefeuille ; la part va en `S-ATTENTE` (§9.6) | Non |
+| `COUNTER_DUPLICATE` | Même valeur de compteur vue deux fois pour un bracelet : copie suspectée (§7.6) | Oui |
+| `COUNTER_TIME_INVERSION` | Compteur plus petit sur un passage plus récent, au-delà de la tolérance (§7.6) | Oui |
+| `UID_MISMATCH` | UID lu différent de celui lié au bracelet (§7.6) | Oui |
+| `RETIRED_IDENTITY` | Passage avec une ancienne identité d'un bracelet `POOL` réattribué (§7.8) | Oui |
+| `SEQ_GAP` | Numéro de séquence d'un terminal sans résultat final ; levé par `waiveSeqGap` à deux (§9.5) | Non |
+| `CHAIN_BROKEN` | Chaîne d'un lot de terminal ou de la passerelle différente de celle calculée par le central (§5.7) | Oui |
+| `CLOCK_SKEW` | Heure d'une opération hors bornes, ramenée à une borne ; original dans `metadata.device_occurred_at` (§9.6) | Oui |
+| `VOID_CONFLICT` | Numéro transmis abandonné (`VOID`) par le terminal alors que la clé existe déjà au central (`sync_protocol.md`, cas limites) | Non |
+| `ONLINE_CONFIRMED_MISSING` | Opération confirmée en ligne (central ou passerelle) introuvable au central, traitée selon `sync_protocol.md` §7.3 (§9.5) | Non |
+| `IDEMPOTENCY_CONFLICT` | Dans un lot, même clé ou même numéro qu'une opération existante, avec un autre contenu | Oui |
+| `NON_COMPLIANT_OPERATION` | Opération de lot rejetée pour non-conformité du terminal (`sync_protocol.md` §7.2), non garantie (§9.6) | Non |
+| `LATE_OFFLINE_SYNC` | Opération hors ligne ou de passerelle synchronisée après le début du règlement (`SETTLING`) : vente ou annulation non écrite, à écrire par le back-office ; recharge ou caution en espèces écrite et signalée (§12.1, synchronisations tardives) | Non |
+| `PSP_MISMATCH` | Notification PSP qui ne correspond pas à la recharge initiée (configuration, montant ou devise) : rien n'est écrit (§11.1) | Non |
+| `PSP_TOPUP_OVER_LIMIT` | Recharge carte ou mobile reçue mais refusée par un plafond réglementaire : non créditée, à rembourser au payeur (§11.1) | Non |
+| `PSP_TOPUP_NOT_CREDITED` | Paiement réussi chez le PSP mais non crédité hors plafond (3-D Secure, grand livre fermé) : montant encaissé et grand livre portés par l'anomalie, remboursement au payeur hors plateforme (§11.1, ADR-133, OP-N82) | Non |
+| `EDGE_REPLAY_FAILED` | Activation ou caution en espèces décidée par la passerelle et impossible à rejouer au central : espèces au compte d'attente (sync_protocol §9.6) | Non |
+| `LATE_CHARGEBACK` | Contestation carte reçue après le verrouillage du grand livre : demande d'approbation, puis écriture tardive (§12.1, ADR-77) | Non |
+| `CARD_VELOCITY` | Plusieurs cartes différentes (au moins `event.card_alert_cards_per_wallet`) ont rechargé un même portefeuille (§11.1, ADR-77) | Oui |
+| `SIGNATURE_MISMATCH` | Signature d'originalité lue différente de celle enregistrée à la personnalisation : une autre puce se fait passer pour le bracelet (§7.6, ADR-59). Aussi : opération hors ligne reçue sans signature pour une puce qui en a une enregistrée (opération gardée, sans liste noire) | Oui |
+| `PERIOD_CLOSED_OPERATION` | Opération de lot rejetée parce que sa date est dans une période close ou que le grand livre est `LOCKED` ; le terminal n'est pas fautif, traitement manuel au back-office (`sync_protocol.md` §7.2, contrôles de période) | Non |
+| `CASH_DIFF` | Écart de caisse (compté différent du théorique) à la fermeture d'une session (§11.2) | Oui |
+| `CASH_TOPUP_OVER_LIMIT` | Recharge en espèces hors ligne au-delà d'un plafond réglementaire : portefeuille crédité de la marge de recharge, reste en `L-ESP-A-RENDRE`, à rendre au client (ADR-63). L'anomalie DOIT porter `media_id` et `amount` (part créditée sur `L-ESP-A-RENDRE`) : `refund_cash_due` en tire le montant à rendre. Elle se clôt au rendu ; tant qu'elle est ouverte, la restitution du bracelet est refusée | Non |
+
+*Note du 24/11/2026 (décision du porteur, mission 11b, ADR-235).* Le schéma (`CHECK` de `anomaly.kind`, migration `0038`) compte **23 types** ; ce tableau en listait 22 : `PSP_TOPUP_NOT_CREDITED` (ADR-133) manquait. Le schéma prime (§0.3) : la ligne est ajoutée, **aucun type n'est ajouté ni retiré** de la base. La mission 11b n'écrit aucune résolution d'argent : les 13 types « non classables » gardent leur voie de traitement actuelle, ou attendent la mission des résolutions d'anomalie (OP-N185).
 
 ### 12.3 Relevés et exports
 
@@ -1438,7 +1441,7 @@ S23 : retiré (numéro non réutilisé).
 |---|---|
 | Charge | Cible V1 (ADR-45) : 200 terminaux par événement, 50 ventes par seconde sur l'ensemble du site, 20 par seconde sur un même stand. Le test de charge DOIT démontrer **deux fois** cette cible (400 terminaux, 100 ventes par seconde sur le site, 40 sur un stand) pendant 30 minutes, sans interblocage, sans écart dans `balance_drift`, en respectant les objectifs de latence « serveur seul » ci-dessous |
 | Latence (ADR-60) | Paiement en ligne, du bracelet présenté au succès affiché, découpé en trois tranches. **De bout en bout** : p95 ≤ 1,2 s, p99 ≤ 2 s. **NFC** (lecture, séquence de paiement) : p95 ≤ 300 ms (niveau « recommandé » d'ADR-39). **Réseau + serveur** (un seul aller-retour, `POST /payments` avec la lecture intégrée, jusqu'à la réponse reçue par le terminal) : p95 ≤ 800 ms, p99 ≤ 1,5 s. **Serveur seul** (de la réception de la requête par l'API à l'envoi de la réponse) : p95 ≤ 200 ms, p99 ≤ 500 ms, y compris pendant le test de charge. Le parcours nominal en ligne DOIT être un seul aller-retour pour le paiement lui-même. Il n'exige pas de snapshot : un terminal sans droit au hors ligne (§7.6, étape 2) obtient d'abord `PWD` et `PACK` par `POST /media/auth-keys`, appel qui n'entre pas dans la tranche « réseau + serveur ». Le chiffre de bout en bout est à confirmer par la mesure de latence réseau depuis Dakar (OP-N11) ; au-delà de 3 s sans réponse, le terminal bascule hors ligne (§9.8) |
-| Lecture NFC | Deux niveaux par modèle de téléphone, mesurés par le banc (ADR-39). « Recommandé » : 95 % des lectures en 300 ms ou moins et au plus 2 % d'échecs au premier essai. « Toléré » : 500 ms et 5 %. Le back-office DOIT tenir la liste des modèles avec leur niveau et signaler à l'organisateur un terminal enrôlé dont le modèle est « toléré » ou non testé |
+| Lecture NFC | Deux niveaux par modèle de téléphone, mesurés par le banc (ADR-39). « Recommandé » : 95 % des lectures en 300 ms ou moins et au plus 2 % d'échecs au premier essai. « Toléré » : 500 ms et 5 %. Le back-office DOIT tenir la liste des modèles avec leur niveau et signaler à l'organisateur un terminal enrôlé dont le modèle est « toléré » ou non testé. **Mise en œuvre (mission 11b, ADR-235).** La liste est tenue par la plateforme (table de plateforme, sans prestataire ; lecture par tous les administrateurs, écriture par `PLATFORM_ADMIN` seul) : fabricant, modèle, niveau (`RECOMMENDED` ou `TOLERATED`) et date de mesure. Le niveau d'un terminal est **calculé à la lecture** : `RECOMMENDED`, `TOLERATED`, ou `UNTESTED` si son modèle n'est pas dans la liste ou n'est pas connu. Le modèle est **déclaré par le terminal** (champ facultatif `device_model` à l'enrôlement et au signal de vie) : il est informatif et **non vérifié**, et le niveau ne refuse jamais un enrôlement ni l'usage d'un terminal |
 | Disponibilité | L'API centrale DEVRAIT viser 99,9 % pendant les événements `LIVE` ; le hors ligne et la passerelle couvrent le reste |
 | Volumétrie | `posting` DEVRAIT être partitionné par grand livre ou par mois au-delà de quelques millions de lignes |
 | Langues | Toutes les interfaces en français et en anglais |

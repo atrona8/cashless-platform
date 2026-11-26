@@ -228,9 +228,15 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Un PIN de vendeur n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 (ADR-126, 26/10/2026, mission 5b).
 - Authentification par type d'appelant ; jeton d'approbation pour la seconde personne au guichet. (§10.3)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
-  Routes encore absentes, vérifiées le 23/11/2026, confiées à la mission 11b (décision du porteur du 23/11/2026) : profil
-  et rôles de la personne connectée, `x-roles` lisible par machine, liste des ventes et paiements, liste et résolution des
-  anomalies, recherche (bracelet par UID ou code imprimé, portefeuille, festivalier), modèles de téléphone et niveau NFC.
+  Routes absentes, vérifiées le 23/11/2026, confiées à la mission 11b (décision du porteur du 23/11/2026) et **livrées le
+  25/11/2026** (ADR-235, ADR-236 ; OP-N170 levé) : profil et rôles de la personne connectée (`getStaffProfile`), `x-roles`
+  lisible par machine sur 226 opérations (huit sans route : OP-N188), liste et détail des ventes (`listEventSales`,
+  `getSale`), liste des anomalies et classement « traitée » sans écriture d'argent pour 10 types sur 23 (`listAnomalies`,
+  `classifyAnomaly`), recherche (`searchMedia`, `getWalletOverview`, `searchCustomerByPhone`, numéro exact, masqué, limité
+  en débit, audité sans le numéro), modèles de téléphone et niveau NFC (`listPhoneModels`, `upsertPhoneModel`,
+  `deletePhoneModel`, `device_model`, `nfc_level`). **Reporté : la résolution des anomalies qui écrivent de l'argent**
+  (13 types, OP-N185 : bloque la production, confirmé le 25/11/2026), mission 11c validée (`PROMPTS-A-ENVOYER.md`). Limites
+  consignées : OP-N185, OP-N186, OP-N187, OP-N188, OP-N189, OP-N190, OP-N191, OP-N192, OP-N193, OP-N194, OP-N195, OP-N196, OP-N197, OP-N198 ; OP-N194 levé avant la fusion.
 
 ### 2.8 Argent réel : PSP, caisses, rapprochements, versements (§11)
 - Configurations PSP par organisateur, choix par événement ; interface commune d'adaptateur et faux par fournisseur
@@ -403,7 +409,11 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        missions 11, 12 et 13).
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée) ; 10a fusionnée dans `main` le 23/11/2026 (PR #24, `ee5099a7`)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
-    11b. Routes serveur manquantes au back-office (nous ; ajoutée le 23/11/2026, après la 9c, avant la mission 11).
+    11b. Routes serveur manquantes au back-office (nous ; ajoutée le 23/11/2026, après la 9c, avant la mission 11). **Livrée**
+       (lots WP01 à WP11, ADR-235 et ADR-236, OP-N185 à OP-N198, report aux missions 11, 11c, 12 et 13).
+    11c. Résolutions d'anomalie qui écrivent de l'argent (nous ; proposée à la fin de la 11b et validée par le
+       porteur le 25/11/2026 ; hérite d'OP-N185 et d'OP-N196 : les 13 types non classables, type par type, et le contrôle de l'auteur du
+       classement par la base).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1

@@ -15,6 +15,9 @@ HeartbeatRequest _$HeartbeatRequestFromJson(Map<String, dynamic> json) =>
       pendingExposure: (json['pending_exposure'] as num?)?.toInt(),
       batteryPercent: (json['battery_percent'] as num?)?.toInt(),
       appVersion: json['app_version'] as String?,
+      deviceModel: json['device_model'] == null
+          ? null
+          : DeviceModel.fromJson(json['device_model'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$HeartbeatRequestToJson(HeartbeatRequest instance) =>
@@ -26,4 +29,5 @@ Map<String, dynamic> _$HeartbeatRequestToJson(HeartbeatRequest instance) =>
       'pending_exposure': instance.pendingExposure,
       'battery_percent': instance.batteryPercent,
       'app_version': instance.appVersion,
+      'device_model': instance.deviceModel,
     };

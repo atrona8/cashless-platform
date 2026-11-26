@@ -1,0 +1,395 @@
+{
+  "event_count": 127,
+  "last_event_id": "01M8B0B3M41GTFCJNJCJQP0CP1",
+  "materialized_at": "2026-11-26T04:03:12.644676+00:00",
+  "mission_number": "9",
+  "mission_slug": "routes-backoffice-01M86KT6",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 11,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0A6W5ASV2HKX61V7R1200",
+      "last_transition_at": "2026-11-26T04:02:43.206073+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP01 pret. Commit b0268aa2 (lane-a). Fichiers: 0101, tests_backoffice_writes.sql (68 tests verts). RETOUCHE HORS CARTE: packages/ledger-sql/post-roles.sql (section 15 ajoutee, rien d'existant modifie): migrate.ts rejoue roles.sql puis post-roles.sql apres les migrations; roles.sql re-accorde UPDATE(status,resolution_tx_id) sur anomaly, INSERT/UPDATE sur phone_model et EXECUTE sur toutes les fonctions, et post-roles §0 retire tout EXECUTE de cashless_app: sans cette section D4 ne tient pas et classify_anomaly n'est pas appelable. Les GRANT/REVOKE ne sont donc PAS dans 0101. Le garde spec-kitty signale ACTIVE_WP_SCOPE_VIOLATION (warning, commit passe). ECARTS: (1) search_path = public, pg_temp (pg_temp en dernier) et non 'public' seul: tests_definer_search_path.sql exige pg_temp en dernier, interfaces.md et prompt disent 'jamais pg_temp' (contradiction, renforcement/neutre). (2) Modele du terminal: set_device_model(p_device uuid, p_manufacturer text, p_model text) RETURNS void, DEFINER, EXECUTE cashless_app, au lieu de nouvelles signatures d'enroll_device/record_device_heartbeat: changer ces signatures casse tests_device_app_attest.sql (15 args, signature unique), tests_device_enrollment.sql, tests_enrollment_event_state.sql (hors carte, non modifiables) et obligerait a recopier un corps DEFINER sensible; corps non touches. WP09 appelle set_device_model(deviceId, manufacturer, model) dans la meme tx que enroll_device (apres) et record_device_heartbeat; NULL/NULL = no-op, une valeur NULL n'efface pas; erreurs CL001 (invalide), P0002 (introuvable/autre prestataire/sans session), 42501 (revoque). Valeurs normalisees par la base. (3) anomaly_classifiable renvoie false pour NULL (coalesce). D4: renforcement; aucun UPDATE anomaly dans apps/api/src (grep vide); INSERT direct conserve (statu quo). Preuve grep: grep -rnE 'UPDATE +(public\\.)?anomaly' apps/api/src = 0 resultat; clotures par fonctions DEFINER seulement (prosrc ~ update anomaly): refund_cash_due, replace_media, record_device_seq, attach_chargeback_tx, psp_complete_core, waive_seq_gap, reduce_offline_shortfall, mark_seq_gap_alerted, toutes prosecdef=t; apres reset-db has_column_privilege(cashless_app,anomaly,status,UPDATE)=false. Resultat: pas de risque a signaler 'affaiblit'. TESTS EXISTANTS QUI ECHOUENT et que l'orchestrateur doit mettre a jour (non modifies): tests_execute_grants.sql tests 5 et 110 (cashless_app +anomaly_classifiable(text), classify_anomaly(uuid,text,uuid), normalize_phone_model(text), set_device_model(uuid,text,text); cashless_platform +delete_phone_model(text,text,uuid), normalize_phone_model(text), upsert_phone_model(text,text,text,date,uuid)); tests_offline_rights.sql tests 1 (phone_model a ajouter a la liste des tables) et 11 (borne UPDATE de cashless_app sur anomaly: desormais vide, D4). Autres pgTAP relances verts: definer_search_path, definer_trigger_writers, default_acl, device_rights/enrollment/app_attest, enrollment_event_state, psp_topups, offline_anomalies, cash_psp_rights, payment_rights, 9b/11a/10a_rights, cash_sessions, replace_cash_due. MUTATIONS (toutes detectees): classifiable=true -> tests 1,2 echouent; retrait FOR UPDATE -> test 33 echoue (source) ET preuve reelle a deux connexions psql: la seconde recoit CL068 'deja traitee' apres attente; DROP CHECK classification -> tests 22,23,24; re-GRANT UPDATE(status,resolution_tx_id) -> tests 25,26,35; EXECUTE upsert a cashless_app -> test 36; normalize identite -> tests 42,46,50..; GRANT UPDATE(model) -> test 55. INDEX audit_log_actor_action_time_idx (actor_id, action, occurred_at): EXPLAIN = Index Only Scan, Index Cond sur les 3 colonnes. Colonnes reelles de audit_log conformes. A WP09: SELECT sur phone_model pour cashless_platform non accorde (prompt: cashless_app seul); la liste pour PLATFORM_ADMIN doit passer par le pool cashless_app ou etre decidee. A FAIRE RELIRE PAR UNE PERSONNE: 0101 (classify_anomaly, set_device_model, upsert_phone_model) et post-roles.sql section 15.",
+        "Relecture distincte (relecteur sonnet, 24/11/2026) : approuvé, aucun constat bloquant. Preuves relancées sur cashless_wp01r : tests_backoffice_writes (68), tests_execute_grants, tests_offline_rights, definer_search_path, definer_trigger_writers, default_acl et 12 suites des fonctions qui clôturent une anomalie, Jest architecture/production-guard/contracts/consignation/device-auth-matrix verts ; mutation REVOKE retiré de post-roles.sql détectée (4 échecs) ; verrou FOR UPDATE prouvé à deux sessions (CL068). Mineurs : classify_anomaly ne vérifie pas que p_actor appartient au prestataire (WP07 passe l'identité de la session) ; verrou prouvé en pgTAP par regex seulement. Verdict enregistré par l'orchestrateur après align-lane.sh a (interfaces.md seul, accord du porteur du 24/11/2026)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP01-base-ecritures/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP01-base-ecritures/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 41361,
+      "shell_pid_created_at": "1795535841.92551",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0ACMEPXR0NE5RZ5R4ATFT",
+      "last_transition_at": "2026-11-26T04:02:49.102952+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Vues sale_overview et anomaly_overview (security_invoker, SELECT seul), index journal_transaction_sales_idx (mesure 200 000 ventes : page 1 297->7 ms p95, annulees 603->305 ms, etc.). Retouches hors carte : post-roles.sql s16 (REVOKE INSERT/UPDATE/DELETE/TRUNCATE sur les deux vues, renforcement ; fichier de droits a faire relire par une personne), tests_payment_rights.sql (liste des vues du schema). Mutations : wallet_id ajoute -> columns_are echoue ; security_invoker retire -> 6 tests d'isolement echouent ; s16 retire -> tests de droits echouent ; index retire -> Seq Scan, annulees 603 ms > 500. Scripts de mesure : scratchpad gen_sales.sql, measure.sql, explain.sh, queries.txt, before.txt, after1.txt.",
+        "Relecture WP02 : vues security_invoker, SELECT seul, 42 pgTAP + gardes de droits relances verts, mutations (security_invoker, REVOKE 16) detectees"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP02-base-vues-lecture/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP02-base-vues-lecture/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 72152,
+      "shell_pid_created_at": "1795600273.731464",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0A9RW68RMJTNFCGPFA90E",
+      "last_transition_at": "2026-11-26T04:02:46.172815+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Contrat 11b (A1, A3 a A6, sans x-roles). 11 operations (10 chemins), x-process public, securite par defaut (jeton du personnel), Idempotency-Key seulement pour classifyAnomaly (searchCustomerByPhone, PUT/DELETE phone-models : sans, effet naturellement idempotent ; 429 TooManyRequests existant). 18 schemas : StaffProfile, StaffAssignment, SalePage, SaleSummary, SaleDetail, SaleDetailLine (RENOMME : SaleLine existe deja, c'est la ligne envoyee par le terminal ; interfaces.md a corriger), AnomalyPage, Anomaly, AnomalyClassificationCreate, MediaSearchResult (element ; reponse = {data:[<=1]} inline), WalletOverview, CustomerSearchRequest, CustomerSearchResult, PhoneModel, PhoneModelPage, PhoneModelUpsert, DeviceModel, NfcLevel. Proprietes facultatives : device_model sur DeviceEnrollmentRequest et HeartbeatRequest ; device_model et nfc_level sur DeviceAdmin (donc DeviceAdminDetail et DevicePage). Parametres de chemin et filtres inline, aucun parametre/reponse/en-tete de composant nouveau, aucun ProblemCode (generated/problem-codes.ts inchange). Schemas places en fin de components.schemas et filtres kind/status par $ref de propriete pour ne pas renumeroter les enums anonymes Dart existants (Kind, Status5...). contract-baseline.json : 32 entrees calculees par l'outil (10 path, 18 schema, 4 property) + _comment ; ADR-235 a ecrire par WP11 ; commit avec la ligne 'Decision du porteur : 24/11/2026 ADR-235' (check-baseline-decision OK). Fichier a faire relire par une personne : contract-baseline.json. RETOUCHE HORS CARTE : tools/contract-stability/check.test.mjs (T11 bis : 84 -> 116 admises) ; WP04 devra le remonter apres x-roles. Test de gel contract-additions-9b.spec.ts : listes 11b separees (base 9a inchangee, comme la 9c), sans tolerance generale. media-isolation.spec.ts balaie tout x-process : echouera sur les 11 operations tant que WP05 n'a pas ajoute MISSION_11B_OPERATIONS. Mutations : (1) retrait de x-process sur getStaffProfile -> contract-additions echoue (1 test) ; (2) device_model obligatoire sur HeartbeatRequest -> check.mjs REFUSEE (exit 2) + jest 2 echecs ; (3) entree PhoneModelUpsert retiree de la reference -> check.mjs exit 2 ; (4) operation non listee ajoutee -> 4 tests de gel echouent ; (5) wallet_id dans SaleSummary -> 1 echec. Verifs : check.mjs 0 refus (116 admises), node --test 42/42, npm run check (TS + Dart) vert, jest test/unit/contracts 16/16, tsc api vide, eslint vert. Dart installe : types generes (532 modeles).",
+        "Relecture distincte (relecteur sonnet, 24/11/2026) : approuvé, aucun constat bloquant. Preuves relancées dans la lane c : check.mjs 116 admises/0 refusée, node --test 42/42, npm run check contrats TS+Dart à jour, Jest unit/contracts+architecture+production-guard 91 verts ; diff openapi.yaml (patience) sans ligne retirée ; 32 entrées de référence exactement ; aucun ProblemCode nouveau ; mutations (NfcLevel retiré de la référence, device_model obligatoire, opération en trop, x-process retiré) détectées. Mineur : SaleDetail en allOf sur SaleSummary (additionalProperties: false) rejetterait lines sous un validateur strict : correction à porter par WP04 (retouche openapi.yaml et référence). Verdict enregistré par l'orchestrateur après align-lane.sh c (interfaces.md seul, accord du porteur du 24/11/2026)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP03-contrat/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP03-contrat/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 45001,
+      "shell_pid_created_at": "1795536127.217201",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AFGC01RV2KC3N0SPF3NZ",
+      "last_transition_at": "2026-11-26T04:02:52.045103+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "x-roles : 226 opérations annotées (table relue roles.json, source fichier:ligne), 8 douteuses laissées sans x-roles (posClient/payment-intents/webhook-endpoints, aucune route dans apps/api/src, DOUBTS_ACCEPTED explicite). Retouches hors carte : packages/contracts/openapi.yaml (226 lignes x-roles + SaleDetail autonome, correction consigne WP03), contract-baseline.json (194 entrées extension + 31 empreintes recalculées), generated/openapi.ts et dart/lib (SaleDetail), check.test.mjs (T11 bis 116 -> 310). Mutations : retrait x-roles, ADMIN, tableau vide, doublon, rôles de upsertPhoneModel, valeur modifiée (apply --check), entrée de référence retirée (check.mjs code 2) : toutes font échouer. ECART À SIGNALER : apps/api/test/unit/contracts/contract-additions-9b.spec.ts (fichier WP03, non touché) échoue sur 2 tests à cause de x-roles (violations() et ligne 463 toBeUndefined). Test x-roles hors du glob CI (package.json check:stability, ledger-tests.yml).",
+        "Cycle 2 : contract-additions-9b.spec.ts retouché au plus juste (clé x-roles ignorée sous paths dans violations(), ligne 463 -> présence) ; mutation x-process modifié sur une opération existante : échoue ; Jest test/unit/contracts 16/16. x-roles.test.mjs ajouté à check:stability (package.json) et ledger-tests.yml. Empreintes remplacées : 32 (28 chemins, 3 schémas, 2 opérations). Nouvelles retouches hors carte : contract-additions-9b.spec.ts, package.json, .github/workflows/ledger-tests.yml. 8 doutes inchangés.",
+        "Review passed (cycle 2) : gel 9b tolere x-roles seul, CI et check:stability lancent x-roles.test.mjs"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP04-x-roles/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP04-x-roles/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 3366,
+      "shell_pid_created_at": "1795601511.294681",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AJC7TMTJRSQGDA8FA5T1",
+      "last_transition_at": "2026-11-26T04:02:54.984272+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Commit ef819d68. Hors carte: aucune. Ecart: IdentityModule est charge par le processus de personnalisation (sans PlatformTx, test architecture 'processus des cles'), donc StaffProfileService n'utilise que TenantTx; une personne de la plateforme recoit le libelle fixe 'Administration de la plateforme' comme display_name (sa ligne app_user est invisible sous RLS) - soumis au porteur (options: module dans AppModule via WP07, ou fonction SQL SECURITY DEFINER hors 0101/0102). Sur le processus de personnalisation /staff/me echoue (cashless_perso sans SELECT app_user), ferme. Aucune copie de la liste AuditAction hors audit.service.ts. Mutations: courriel renvoye -> 2 echecs; cache des attributions -> 1 echec; sans cas staff-profile -> 3 echecs; selfScoped=false -> 1 echec; sans exclusion media-isolation -> 4 echecs; 10 operations non servies sautees et nommees. Non mutee: garde festivalier/terminal (garde globale, 401 prouve). Sans role actif: 200 assignments vide (a dire a WP11). media-isolation 48 inchange.",
+        "Cycle 2. Mutation WHERE id=$1 remplace par une autre personne du meme prestataire: 2 echecs (noms distincts asserts). Mutation shape neutre: 1 echec (nouveau test de detection sur routes a parametre deja servies). Correction: /staff/me repond 200 dans le processus de personnalisation (cashless_perso a SELECT sur app_user), profil de l'appelant seulement, 401 sans jeton; mon affirmation du cycle 1 etait inexacte. Libelle fixe plateforme inchange, decision du porteur en attente. Hors carte: aucune.",
+        "Cycle 2: mutations WHERE id et shape neutre detectees; staff-profile, isolation, media-isolation, architecture verts"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP05-socle-profil/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP05-socle-profil/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 76003,
+      "shell_pid_created_at": "1795600406.325152",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AN8G3KE1C3FZC0A2KK4R",
+      "last_transition_at": "2026-11-26T04:02:57.936796+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Impl WP06 (commit 6e5d469f). Retouche hors carte: test/integration/backoffice/sales-seed.ts (aide de test partagee par sales*.spec et sales.cases.ts). MISSION_11B_OPERATIONS non modifiee (liste figee, garde de backoffice-isolation; exemption de media-isolation toujours justifiee); device-auth-matrix sans entree (routes personnel). Ecarts: MERCHANT_ADMIN limite aux attributions de portee MERCHANT (renforcement); 403 si aucun role de lecture des ventes, 404 si hors portee; channel peut etre null pour vente sans attribution (contrat: requis). Mutations: portee WHERE retiree -> test commercant echoue; curseur > -> 4 echecs pagination; curseur en ms -> 3 echecs; cle wallet_id ajoutee -> 2 echecs; cas getSale retire -> backoffice-isolation echoue. Latence 200000 ventes (cashless_wp06, route HTTP, 50 appels): page1 116 ms, profonde 117, merchant 121, pos 145, REVERSED 371, MERCHANT_ADMIN 47, detail 44 (p95). Plans sans Seq Scan de journal_transaction; REVERSED parcourt ~2355 ventes pour 51 (index WP02 non selectif pour ce filtre). Commande: PGDATABASE=cashless_wp06 npx jest test/integration/backoffice/sales-latency.spec.ts --runInBand --forceExit. SaleDetail allOf/additionalProperties:false: non touche (WP04).",
+        "Cycle 2 : points 1 et 2 de la relecture du cycle 1 (11d4e1cf). Point 3 (channel null) soumis au porteur.",
+        "Cycle 3. (1) channel null : liste exclut les ventes sans sale_attribution (WHERE channel IS NOT NULL, y compris chemin annulees) ; SaleRow/SaleSummaryDto.channel non nul ; test sales.spec 'vente sans attribution' ; mutation (filtre retire) : 6 tests rouges, remis. Detail d'une telle vente : 200 avec channel null (contrat inchange, viole le schema ; a consigner WP11). (2) NFR-001 REVERSED : sans migration, requete en deux temps (page d'ids sur journal_transaction via journal_transaction_sales_idx + reverses_once, puis vue = ANY(ARRAY(...)) ; IN (sous-requete) donnait 900 ms) ; seulement sans filtre merchant/pos/vendor ni portee MERCHANT (sinon requete generale). p95 REVERSED 35.6/37.6/40.7 ms sur 3 passages (base remise a zero avant chacun, load 5.3/5.1/4.6), autres scenarios <= 52.6 ms. Retouche hors carte : aucune. Aucune migration, aucun index. Limite : le test de plan de sales-latency garde son SQL propre pour annulees (non celui du service).",
+        "Cycle 4: isolement et pagination du chemin rapide REVERSED testés; detail d'une vente non attribuee en 404 (decision du porteur)",
+        "Cycle 4 OK: chemin rapide REVERSED pagine (mutation < vers <= : 2 rouges), detail non attribue 404 identique a absent (mutation : 1 rouge), isolement liste sans filtre couvert par sales.spec 'hors portee'. Mineur WP11: retrait de t.event_id dans la CTE de reversedQuery non detecte (pas de fuite, vue externe filtre event_id)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP06-ventes/review-cycle-4.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP06-ventes/review-cycle-4.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 23518,
+      "shell_pid_created_at": "1795606673.547537",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AR3RPR3Z1RYY5QGCK4PM",
+      "last_transition_at": "2026-11-26T04:03:00.856486+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Retouches hors carte : aucune (app.module.ts : import + inscription). Ajout propre au lot : anomaly-scope.guard.ts (role 403 et portee 404 AVANT l'intercepteur d'idempotence : le balayage WP05 n'envoie pas d'Idempotency-Key, sans garde classifyAnomaly repondait 400 a B). Ecarts : aucun affaiblissement. CL066-CL069 traduits dans le service (sqlstate-map.ts hors carte, non modifie ; son en-tete 0101 dit 'lot WP07' : WP11/consolidation a trancher). F3 : anomalie sans grand livre = OPERATOR_ADMIN seul, ORGANIZER_ADMIN 404 (test). Auteur = principal.userId (test + corps/en-tete/query forges ignores). D4 : aucun UPDATE anomaly dans apps/api/src (grep vide), test cashless_app UPDATE -> 42501, waive_seq_gap clot toujours SEQ_GAP. Mutations verifiees : portee retiree (5 echecs), CL067 retire (3), UPDATE direct (20), auteur depuis en-tete (1), audit retire (13), garde retiree (balayage 400), cas retire (balayage echoue). MISSION_11B_OPERATIONS conserve (WP05, exemption media-isolation toujours justifiee par backoffice-isolation). Base cashless_wp07.",
+        "Review passed: 37 tests, gardes transverses vertes sur cashless_wp07r, mutations portee et auteur detectees. Mineurs: reason en extension de premier niveau, 21 lignes de commentaire > 100 car., traduction CL066-069 dans le service (a consigner en WP11)"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP07-anomalies/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP07-anomalies/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 99035,
+      "shell_pid_created_at": "1795601429.932476",
+      "subtasks": {
+        "T025": "done",
+        "T026": "done",
+        "T027": "done",
+        "T028": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0ATYG24S10D6P70Q652BZ",
+      "last_transition_at": "2026-11-26T04:03:03.760394+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Retouches hors carte: config.ts (STAFF_PHONE_SEARCH_PER_MINUTE, nommee) ; search-fixtures.ts (aide de test, non listee dans owned_files: search*.spec.ts). PLATFORM_ADMIN retire de searchCustomerByPhone (renforcement 24/11). Mutations toutes detectees: numero en audit, audit retire, seuil > au lieu de >=, comptage hors auteur, portee media retiree, E.164 relache (prefixe), CASHIER admis, cas d'isolement retire. p95 searchMedia 30 ms/200000. Pas d'ecart de securite.",
+        "Relecture WP08 : approuve. Tests lot (search*, config) 172 verts sur cashless_wp08 ; gardes transverses verts (isolation, architecture, production-guard, contracts, consignation). Mutations : portee festivalier retiree -> 2 rouges ; portee bracelet -> 1 rouge ; audit retire -> 4 rouges. PLATFORM_ADMIN exclu (renforcement) confirme. Mineurs a consigner en WP11 : 42 lignes > 100 car. (Prettier a la fusion) ; media 400 conforme au contrat (prompt disait 422)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP08-recherche/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP08-recherche/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5882,
+      "shell_pid_created_at": "1795604742.960923",
+      "subtasks": {
+        "T029": "done",
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AXV67TNB64G81WH01HEB",
+      "last_transition_at": "2026-11-26T04:03:06.727075+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP09 prêt. Retouche hors carte : device-auth-matrix.spec.ts (device_model ajouté au corps du heartbeat de base, demandé par l'orchestrateur ; garde ACTIVE_WP_SCOPE_VIOLATION en avertissement). Écarts : nfcLevelFor(client, manufacturer?, model?) async (SQL, normalisation de la base) au lieu de la signature sans client ; lecture de la liste par TenantTx.withoutTenant (cashless_platform n'a pas SELECT sur phone_model, D9), rôle contrôlé par PlatformAccess.reader ; set_device_model sous SAVEPOINT (C-003). Mutations : écriture directe -> 5 échecs ; valeur invalide refusée -> 2 échecs ; jointure sans normalisation -> 1 échec ; cas retiré -> backoffice-isolation échoue ; SUPERVISOR lecteur -> 3 échecs ; OPERATOR_ADMIN autorisé au PUT -> SURVIT (la base refuse EXECUTE, 42501 -> 403) : défense en profondeur, noté.",
+        "Review passed: 300 tests verts, gardes transverses verts. Mineurs consignes: M1/M2 survivantes, swallow non journalise, signature nfcLevelFor (WP11), doc withoutTenant.",
+        "Cycle 2. M1: test avec espion, service.upsert/remove jamais appelés pour OPERATOR_ADMIN/ORGANIZER_ADMIN (mutation reader(['OPERATOR_ADMIN']) -> 1 échec). M2: modèle 'a\\u0000b' passe parseDeviceModel, échoue en base, 201/200 (mutation throw dans catch -> 1 échec). Warn Logger avec sqlstate et deviceId seuls, jamais la valeur (mutation sans warn -> 1 échec). Notes WP11: nfcLevelFor(client, ...) est async avec TxClient; le commentaire de TenantTx.withoutTenant (seul usage: fonction DEFINER) est inexact, PhoneModelsService.read l'utilise pour lire phone_model.",
+        "Cycle 2: M1, M2, retrait du warn tuees (1 echec chacune); base 96 tests verts; diff limite aux 3 points"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP09-modeles-terminaux/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP09-modeles-terminaux/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 12711,
+      "shell_pid_created_at": "1795602164.655707",
+      "subtasks": {
+        "T034": "done",
+        "T035": "done",
+        "T036": "done",
+        "T037": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0B0PDYBDNDFMNTG4XXWYJ",
+      "last_transition_at": "2026-11-26T04:03:09.646072+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Matrice x-roles : 1281 appels en série sur cashless_wp10 (~25 s), 186 opérations jouées avec 7 rôles du personnel. Retouches hors carte : apps/api/jest.config.cjs (SKIP_LATENCY), .github/workflows/ledger-tests.yml (étape en série), apps/api/test/unit/contracts/contract-additions-9b.spec.ts (exemption x-roles au niveau opération + mutation paramètre/réponse/schéma). Mutations : (a) READERS jurisdiction sans ORGANIZER_ADMIN -> rouge ; (b) WIDE_ROLES sales sans SUPERVISOR -> rouge ; (c) READERS + MERCHANT_ADMIN -> rouge ; (d) x-roles retiré de getStaffProfile -> rouge ; (e) cas retiré -> rouge ; regex d'exemption élargie -> rouge. DERIVES (non corrigées, hors carte, point ouvert WP11) : listCashSessions déclare CASHIER mais le service refuse (cash-session-read.service.ts:106) ; setOrganizerOfflinePolicy et setEventOfflinePolicy déclarent OPERATOR_ADMIN mais le service refuse (offline-policy.service.ts:84-88) ; toutes trois consignées en knownDrifts (le test échoue si elles disparaissent). Corriger roles.json/x-roles est un RETRAIT de rôle déclaré (resserrement), à décider par le porteur. Limites : initiatePspTopup/getPspTopup/cancelPspTopup non jouables (garde PSP exige marqueur terminal, absent de l'identité de test en clair; preuve : topup-isolation) ; approve/rejectApprovalRequest SUPERVISOR conditionnel (union des actions) ; preuves partielles et opérations sans 2xx listées dans la sortie du spec. DEVICE/VENDOR/CUSTOMER/GATEWAY non rejoués (sonde seulement).",
+        "Cycle 2 : x-roles alignés sur le code (retrait de CASHIER de listCashSessions, d'OPERATOR_ADMIN de setOrganizerOfflinePolicy et setEventOfflinePolicy) via roles.json + apply.mjs ; 3 empreintes de contract-baseline.json recalculées ; types TS/Dart inchangés (npm run check ok) ; knownDrifts et son mécanisme retirés ; matrice 5 verts (1281 appels), contracts 17, node --test 53, check.mjs 0 refusée.",
+        "Cycle 2 : 3 rôles alignés (openapi, roles.json, 3 empreintes), knownDrifts retiré ; matrice 1281 appels verte, mutation CASHIER rouge, check.mjs 0 refusée, node --test 53 verts"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP10-matrice-x-roles/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP10-matrice-x-roles/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 42756,
+      "shell_pid_created_at": "1795619424.864305",
+      "subtasks": {
+        "T038": "done",
+        "T039": "done",
+        "T040": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0B3M41GTFCJNJCJQP0CP1",
+      "last_transition_at": "2026-11-26T04:03:12.644676+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Commit 39218ede (lane k). Fichiers : SPECIFICATION.md (§12.2 : 23 types, colonne Classable, note du 24/11 ; §15 Lecture NFC), DECISIONS_ADR.md (ADR-235, ADR-236), POINTS_OUVERTS.md (OP-N170 levé ; OP-N185 à OP-N198 ; §15), PRD.md, PROMPTS-A-ENVOYER.md (11b, 11, 11c proposée, 12, 13), passation-11b/preuves.md, note-equipes.md. Retouches hors carte : aucune. Contradiction §12.2 : le tableau avait 22 types (pas 21) ; seul PSP_TOPUP_NOT_CREDITED manquait (CASH_TOPUP_OVER_LIMIT y figurait). Schéma prime (§0.3), aucun type ajouté ni retiré. docs/06-docs-status.md non touché (hors lot, à rattraper). Gardes sur cashless_wp11 : consignation.spec.ts 57 verts ; architecture, production-guard, contracts 92 verts ; check.mjs 310 admises 0 refusée. consignation.spec.ts ne garde pas OP-N185 à OP-N198 (OP-N194). Fichiers à relire par une personne : POINTS_OUVERTS §15.",
+        "Review passed (relecteur distinct). Couverture OP-N185-198/ADR-235-236/OP-N170 complete; gardes relances verts (consignation 57, architecture+production-guard+contracts 92, check.mjs 310/0 refusee). Mineurs: 32 vs 31 empreintes (28+3+2=33) dans preuves.md; F3 (anomalie ledger_id NULL) et incident DATABASE_URL non consignes; OP-N194 garde consignation non etendu (non bloquant, dit explicitement).",
+        "Rouvert pour le correctif d'intégration décidé par le porteur (OP-N194 levé avant fusion)",
+        "Cycle 2, commit voir lane k. OP-N194 levé : sales-pagination.spec.ts (deux événements, mutation retrait de t.event_id : rouge), sales.spec.ts (aucun identifiant de A dans le 404 ; mutation fuite dans le détail : rouge), search-customer.spec.ts (PLATFORM_ADMIN rattaché par contournement du déclencheur ; mutation CUSTOMER_ROLES + PLATFORM_ADMIN : rouge), consignation.spec.ts étendu OP-N185-198 (mutation PRD : rouge). Hors carte : tests seulement. Docs : OP-N185 bloque la production (confirmé), 11c validée, F3 dans OP-N197, décompte baseline 310 = 84 + 32 + 194 (20 et 11 empreintes recalculées). Suites : 9 suites 236 verts sur cashless_wp11 ; eslint, tsc, prettier propres.",
+        "Cycle 2 OK: diff limite a 4 tests + docs, aucun code de production; 4 mutations rouges (event_id CTE 3 rouges; fuite 404 1 rouge; PLATFORM_ADMIN dans CUSTOMER_ROLES 1 rouge; OP-N190 retire de PRD 1 rouge); suites 127 vertes; session_replication_role en transaction sur connexion proprietaire; 310 admises.",
+        "Rouvert : correctif d'intégration issu de la batterie (régression D4 sur cash-due, balayages 5b et configuration)",
+        "Cycle 3 : FOR UPDATE retiré de cash-due.service.ts (aucun droit rendu, refund_cash_due re-verrouille et re-somme, seuil tenu par la base) ; garde architecture avec 2 mutations ; exclusion MISSION_11B_OPERATIONS dans payment-isolation et configuration-isolation (retouches hors carte autorisées) ; 7 suites citées vertes, gardes 195 verts, x-roles-matrix 5 verts.",
+        "Cycle 3 OK: FOR UPDATE retire (aucun droit rendu, ledger-sql inchange), refund_cash_due verrouille bracelet+anomalies OPEN, re-somme, exige approver<>actor au-dela de cash_refund_single_max; garde architecture: 2 mutations rouges; exclusions 11b strictes (liste figee verifiee contre le contrat); 7 suites + gardes + x-roles-matrix verts.",
+        "Deux commits de rattachement (c6bee45a, d0a96100) : SPECIFICATION.md et note-equipes.md touchés puis rétablis à l'identique (diff net vide) pour que la consolidation attribue ces fichiers à WP11 (39218ede précédait le premier tampon de prise).",
+        "Relecture courte: aucun code (apps, packages, tools, .github, package.json, PRD, PROMPTS) different de fb6a5fcc; c6bee45a/d0a96100 net nul, blobs de SPECIFICATION.md et note-equipes.md identiques a 39218ede; la difference docs (18 fichiers) vient des commits de coordination deja sur la branche de mission, apportes par les fusions de chainage"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "reference": "auto-approval:WP11:20261126",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 92146,
+      "shell_pid_created_at": "1795665580.528153",
+      "subtasks": {
+        "T041": "done",
+        "T042": "done",
+        "T043": "done",
+        "T044": "done"
+      }
+    }
+  }
+}

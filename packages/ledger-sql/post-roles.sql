@@ -1275,3 +1275,36 @@ GRANT EXECUTE ON FUNCTION
   reissuable_media(uuid, uuid, smallint),
   claim_key_version_max()
   TO cashless_claimadmin;
+
+-- -----------------------------------------------------------------------------------------------
+-- 15. Mission 11b routes-backoffice, lot WP01 (migration 0101 ; research D1, D4, D9 ; interfaces.md §2).
+-- A FAIRE RELIRE PAR UNE PERSONNE (droits de la base) : l'agent qui l'a écrite ne la relit pas.
+-- Rejoué après roles.sql, qui rend INSERT, UPDATE et EXECUTE sur tout : seul ce fichier fait tenir les retraits.
+-- -----------------------------------------------------------------------------------------------
+-- 15a. D4 (renforcement) : cashless_app ne clôt plus une anomalie en direct. Aucun code de l'API ne fait
+-- UPDATE anomaly (preuve par grep, note de lane) ; les clôtures passent par des fonctions DEFINER (waive_seq_gap,
+-- fonctions PSP de 0038, 0047, refund_cash_due, replace_media, classify_anomaly). INSERT reste (statu quo OP-N86).
+REVOKE UPDATE (status, resolution_tx_id) ON anomaly FROM cashless_app;
+-- 15b. phone_model : donnée de plateforme, lecture seule pour cashless_app, écriture par les fonctions seules.
+REVOKE ALL ON phone_model FROM PUBLIC, cashless_app, cashless_platform;
+GRANT SELECT ON phone_model TO cashless_app;
+-- 15c. EXECUTE : classement, modèle du terminal et prédicats purs à cashless_app ; écriture des modèles au rôle de
+-- plateforme seul (jamais cashless_app).
+GRANT EXECUTE ON FUNCTION
+  classify_anomaly(uuid, text, uuid), anomaly_classifiable(text), normalize_phone_model(text),
+  set_device_model(uuid, text, text)
+  TO cashless_app;
+REVOKE EXECUTE ON FUNCTION
+  upsert_phone_model(text, text, text, date, uuid), delete_phone_model(text, text, uuid)
+  FROM PUBLIC, cashless_app;
+GRANT EXECUTE ON FUNCTION
+  upsert_phone_model(text, text, text, date, uuid), delete_phone_model(text, text, uuid), normalize_phone_model(text)
+  TO cashless_platform;
+
+-- -----------------------------------------------------------------------------------------------
+-- 16. Mission 11b routes-backoffice, lot WP02 (migration 0102 ; research D5 ; interfaces.md §2).
+-- A FAIRE RELIRE PAR UNE PERSONNE (droits de la base) : l'agent qui l'a écrite ne la relit pas.
+-- Vues de lecture sale_overview et anomaly_overview : SELECT seulement. roles.sql rend INSERT et UPDATE à toute
+-- relation, vues comprises ; on les retire (SELECT accordé par la migration et par roles.sql).
+-- -----------------------------------------------------------------------------------------------
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON sale_overview, anomaly_overview FROM cashless_app;

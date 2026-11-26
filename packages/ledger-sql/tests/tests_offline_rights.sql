@@ -93,7 +93,7 @@ SELECT is((SELECT coalesce(string_agg(c.relname, ' ' ORDER BY c.relname), '') FR
  'media_batch', 'media_batch_status_history', 'media_batch_transition', 'media_claim', 'media_identity_history',
  'media_status_history', 'media_tap', 'media_transition', 'merchant_participation', 'offline_batch', 'offline_policy',
  'offline_policy_history', 'offline_snapshot', 'party', 'payment_request', 'payment_request_detail', 'payout',
- 'point_of_sale', 'point_of_sale_catalog_policy', 'posting', 'psp_chargeback', 'psp_configuration', 'psp_event',
+ 'phone_model', 'point_of_sale', 'point_of_sale_catalog_policy', 'posting', 'psp_chargeback', 'psp_configuration', 'psp_event',
  'psp_topup', 'psp_webhook_rejection', 'role_assignment', 'sale_attribution', 'sale_line', 'snapshot_signing_key',
  'tag_data_key', 'tag_key', 'tag_key_check_run', 'tag_key_job', 'vendor', 'vendor_pin_check', 'vendor_session',
  'wallet',
@@ -154,10 +154,19 @@ SELECT is((SELECT array_agg(rolname::text ORDER BY rolname) FROM pg_roles
 SELECT is((SELECT string_agg(p, ',' ORDER BY p) FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
             'REFERENCES', 'TRIGGER']) p WHERE has_table_privilege('cashless_app', 'anomaly', p)),
   'INSERT,SELECT', 'anomaly : cashless_app n''a que SELECT et INSERT au niveau table (ni DELETE, TRUNCATE, UPDATE)');
-SELECT is((SELECT string_agg(a.attname, ',' ORDER BY a.attname) FROM pg_attribute a
+-- Mission 11b, WP01 (D4, renforcement) : plus aucun UPDATE de colonne ; les clôtures passent par des fonctions DEFINER.
+SELECT is((SELECT coalesce(string_agg(a.attname, ',' ORDER BY a.attname), '') FROM pg_attribute a
             WHERE a.attrelid = 'anomaly'::regclass AND a.attnum > 0 AND NOT a.attisdropped
               AND has_column_privilege('cashless_app', 'anomaly', a.attname, 'UPDATE')),
-  'resolution_tx_id,status', 'anomaly : UPDATE de cashless_app limité à status et resolution_tx_id (borne)');
+  '', 'anomaly : cashless_app n''a plus aucun UPDATE de colonne (borne vide, D4)');
+-- phone_model (0101) : lecture seule pour cashless_app, aucun droit direct pour cashless_platform.
+SELECT is((SELECT string_agg(p, ',' ORDER BY p) FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
+            'REFERENCES', 'TRIGGER']) p WHERE has_table_privilege('cashless_app', 'phone_model', p)),
+  'SELECT', 'phone_model : cashless_app n''a que SELECT');
+SELECT is((SELECT count(*)::int FROM pg_roles r WHERE r.rolname ~ '^cashless_' AND r.rolname <> 'cashless_app'
+            AND (has_table_privilege(r.oid, 'phone_model', 'SELECT,INSERT,UPDATE,DELETE')
+                 OR has_any_column_privilege(r.oid, 'phone_model', 'SELECT,INSERT,UPDATE'))), 0,
+  'phone_model : aucun autre rôle cashless_* n''a de droit');
 -- M4 (décision du porteur, 02/11/2026) : la clé de contenu enveloppée n'est pas lisible par l'API.
 SELECT is((SELECT string_agg(a.attname, ',' ORDER BY a.attnum) FROM pg_attribute a
             WHERE a.attrelid = 'offline_snapshot'::regclass AND a.attnum > 0 AND NOT a.attisdropped

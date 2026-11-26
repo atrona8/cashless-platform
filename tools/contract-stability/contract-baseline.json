@@ -1,5 +1,5 @@
 {
-  "_comment": "Référence épinglée du contrat (mission 8). Changer ce fichier est une décision du porteur : ligne 'Décision du porteur : <date> <référence ADR>' exigée par check-baseline-decision.mjs. Fichier à faire relire par une personne. Mission 10a, décision du porteur du 20/11/2026 (ADR-225) : description du corps text/csv d'importClaimCodeAssociations, motifs BAD_PRINTED_NUMBER et PRINTED_NUMBER_TAKEN, réponse 422 de revokeKycVerification. Mission 9c (remboursement partiel en espèces), décision du porteur du 23/11/2026 (ADR-233) : opération refundPartialCash et schémas PartialCashRefundCreate et PartialCashRefund, propriété facultative cash_partial_refund_enabled d'Event et d'EventUpdate, descriptions d'Event, d'EventUpdate, de createOperatorConfigVersion et de getResolvedEventConfig.",
+  "_comment": "Référence épinglée du contrat (mission 8). Changer ce fichier est une décision du porteur : ligne 'Décision du porteur : <date> <référence ADR>' exigée par check-baseline-decision.mjs. Fichier à faire relire par une personne. Mission 10a, décision du porteur du 20/11/2026 (ADR-225) : description du corps text/csv d'importClaimCodeAssociations, motifs BAD_PRINTED_NUMBER et PRINTED_NUMBER_TAKEN, réponse 422 de revokeKycVerification. Mission 9c (remboursement partiel en espèces), décision du porteur du 23/11/2026 (ADR-233) : opération refundPartialCash et schémas PartialCashRefundCreate et PartialCashRefund, propriété facultative cash_partial_refund_enabled d'Event et d'EventUpdate, descriptions d'Event, d'EventUpdate, de createOperatorConfigVersion et de getResolvedEventConfig. Mission 11b (routes du back-office), décision du porteur du 24/11/2026 (ADR-235) : onze opérations (getStaffProfile, listEventSales, getSale, listAnomalies, classifyAnomaly, searchMedia, getWalletOverview, searchCustomerByPhone, listPhoneModels, upsertPhoneModel, deletePhoneModel) et dix-huit schémas (StaffProfile, StaffAssignment, SalePage, SaleSummary, SaleDetail, SaleDetailLine, AnomalyPage, Anomaly, AnomalyClassificationCreate, MediaSearchResult, WalletOverview, CustomerSearchRequest, CustomerSearchResult, PhoneModel, PhoneModelPage, PhoneModelUpsert, DeviceModel, NfcLevel), propriétés facultatives device_model de DeviceEnrollmentRequest et de HeartbeatRequest, device_model et nfc_level de DeviceAdmin (donc de DeviceAdminDetail et de DevicePage). Aucune description existante modifiée.",
   "baseline": {
     "commit": "d2a7c538c81a2a790c1aec6902aaf09283bab58f",
     "path": "packages/contracts/openapi.yaml",
@@ -157,97 +157,97 @@
     {
       "pointer": "/paths/~1refund-requests/post",
       "kind": "operation",
-      "sha256": "9c3811caf0fc39ce5d6467250ea1220720a76aaec21a72873aaf6b14e6eb0a5a"
+      "sha256": "7b8004e64f85acbae48dea7101bce278a3fbc6db1d2a7234a07fe8bfe42b0e28"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps",
       "kind": "path",
-      "sha256": "8c73a1fcf7ef9bd2a4bab7436cb5201acf89e168da088a82726ddf471fdadaf9"
+      "sha256": "d75787448104ed8cc465bb37b740962775f3a469ceea5c047c8d0e7cf5eb7b32"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps~1{step}~1preview",
       "kind": "path",
-      "sha256": "c042585953395b9b470d2ab4e83082ab57b4e97021d2fc9d820f365d1ed229e7"
+      "sha256": "6333db981254b225c7ec1b51aedeca6952de2d7f2605f027585c951faea9c552"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1closing-steps~1{step}",
       "kind": "path",
-      "sha256": "8a4c68c5a217a0ccd2a19a7a9f868136448747e66bb6b8483a55e2fa0425c38a"
+      "sha256": "f61ab9d224bf7c8bc797ebf5425ff35b94cf0a738c51c23509541037a5cca033"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1remaining-balances",
       "kind": "path",
-      "sha256": "6f755323b714e32969e2b293d85b7cba6bc0364451890f0add13e885e37475c1"
+      "sha256": "b81d5960e2c6fe94096afbb33c793f9046b5aadc883be766ccb523698d45033c"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-entitlements",
       "kind": "path",
-      "sha256": "64290e41904f975ea4254bff08fa72e35a9f8ee6cf273fa7fed21bc744cd7bf2"
+      "sha256": "3b2a801f0f3a343b6c6ee4fcde14b98a1e89ba27e11c87f888963b31fc6d03f1"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-batches~1approval-requests",
       "kind": "path",
-      "sha256": "6ddaf4cc4fcb03780a8d9e38d589d1599eb634c46d2ca9e582fddd43f8c979cb"
+      "sha256": "1755d40e848e3b8b0ce418284d28ac127fd28b307ffe1c6bcfcf9712a08edba9"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1payouts",
       "kind": "path",
-      "sha256": "4f126b1933f458d6709016bec8cbd89e7ec0f6590fe2beae7bb5c5143cca95da"
+      "sha256": "2d8bec708fb303ea36983e6cfc98eaf1912b0262ab8fd502d4d50fbe4a699abd"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1payout-batches~1{approval_request_id}~1export",
       "kind": "path",
-      "sha256": "9f43af94737565cf5187a2fcb8c5f537d9e41b044acb6d637387091cf48a2d4e"
+      "sha256": "46fe681dddc7d69e8e8dad45eeb1b322e2defdc4dffc718f672baad5cdb0bf22"
     },
     {
       "pointer": "/paths/~1payouts~1{payout_id}~1confirm",
       "kind": "path",
-      "sha256": "cd968f5f3494291616dd751d182f9de220166cbe6e449ca9f97ebd8e278aacf8"
+      "sha256": "b43b133b3aec92228b41055b80b2e2e014e5d78f20753a1b920607788e5b7678"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1accounts~1{account_id}~1statements",
       "kind": "path",
-      "sha256": "9f4138bec723e3f378cf34f0b0c66ab63403625438632489ef4301183911ba03"
+      "sha256": "44c9cb794045abe06860a0985fa618964cee6077e26a28212ae0458c53f32ca3"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1statement-lines",
       "kind": "path",
-      "sha256": "399a9b7c251405ad2751f3b4c8c980e15074672a745c3589635ae8100ef1e1ee"
+      "sha256": "82283cf40cc2beab044ab5e1361bb2c61a4063bd144c39891ef39d25c2b07cdd"
     },
     {
       "pointer": "/paths/~1statement-lines~1{statement_line_id}~1match",
       "kind": "path",
-      "sha256": "ca593cda1249d9246df9c8adbac2cdb095a22650df4d1e8e2bf34745abb92914"
+      "sha256": "e3dfc59ae1e62fd7dc0f852b80da8c52dc2cfcec56d3733d38d69c0400c03df9"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1reconciliation",
       "kind": "path",
-      "sha256": "7a1381c8c158a3891017b5d38a793d46b68f4d29b0a329fe51f2c9438704303e"
+      "sha256": "94ed3135cd67edf8227a81e640f03e96cc52973220c16f933dc57f3830059d08"
     },
     {
       "pointer": "/paths/~1ledgers~1{ledger_id}~1late-adjustments",
       "kind": "path",
-      "sha256": "694e93549f1e482a9ee505f4f20cf5fb98f50d1a57b14b5de6c3cc8bed79c1c3"
+      "sha256": "fa73278b79372172efce8da4ede8951d543ce4526af2bbfb4281e0571834ff09"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1statements~1{party_kind}",
       "kind": "path",
-      "sha256": "fb004b1c51e20d296551342c09ddb6781d70aa2430db011685470280f1a5c9fb"
+      "sha256": "a53b3034b13ecb5f09a5e290fab7715bfcd8d181516c158ac5f6bd70b46cb8ef"
     },
     {
       "pointer": "/paths/~1me~1wallets~1{wallet_id}~1statement",
       "kind": "path",
-      "sha256": "3843628ab97cd92d0fa0a214bc40d9c77b7e809e3951e163929aadc2b707f5e9"
+      "sha256": "01e8c6bab14347d77872f29bdb63adbe1919de43a0e8b8d17d656e7d175dbb50"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1account-mappings",
       "kind": "path",
-      "sha256": "f1f72ec2cf6a3c7faba2799fc7cbd8f7c042b5ccf08c42d52ede18dd5c07f1b1"
+      "sha256": "8e582dc06243dae8862beec51176546cdaed0a534ab3b9050ca4ffc96ce66840"
     },
     {
       "pointer": "/paths/~1operators~1{operator_id}~1accounting-exports",
       "kind": "path",
-      "sha256": "21e25e847eefe97ea74b6248159f78250826954c36ff27945786f94647f54269"
+      "sha256": "d6e1503da57ec96dc0e88a30f87e579bda2d0d00c6d958ac57d0ea3293ba502b"
     },
     {
       "pointer": "/components/parameters/IdempotencyKey/description",
@@ -403,7 +403,7 @@
     {
       "pointer": "/paths/~1media~1{media_id}~1partial-cash-refunds",
       "kind": "operation",
-      "sha256": "ba35e18eecc862adb08696a3e2d3fb284e9065e19cf3cdffa784980addd531e3"
+      "sha256": "d44de401d8f036733eb8f51bc74d4d0724361046b0625782c90d24def180ef9e"
     },
     {
       "pointer": "/components/schemas/Event/description",
@@ -436,6 +436,1136 @@
       "pointer": "/components/schemas/PartialCashRefund",
       "kind": "schema",
       "sha256": "451ace3825987d345f0ef674d25f5cacfa4b6d331c87c3de558cedcf3fa6c837"
+    },
+    {
+      "pointer": "/paths/~1staff~1me",
+      "kind": "path",
+      "sha256": "fbb9abaeedb20dcc391f8649046f1bbbbbfbbc42cd5427d9c08786238a990121"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1sales",
+      "kind": "path",
+      "sha256": "166e3b243b07be2bb4afa100ce40f56fe6ac98a907a95b888b426fcedcea3e68"
+    },
+    {
+      "pointer": "/paths/~1sales~1{transaction_id}",
+      "kind": "path",
+      "sha256": "8d39b717051a12106062b1f67d7583a001745147e95529b6d031198978713179"
+    },
+    {
+      "pointer": "/paths/~1anomalies",
+      "kind": "path",
+      "sha256": "3c2c07e125bcb5717d8a0208baccea59e2d6c8d6163547937b58a553a1fc88bc"
+    },
+    {
+      "pointer": "/paths/~1anomalies~1{anomaly_id}~1classification",
+      "kind": "path",
+      "sha256": "c4299df89884ae9cfeae992f53ed41c186c239c24a546f5ed81b109ec1ad0708"
+    },
+    {
+      "pointer": "/paths/~1search~1media",
+      "kind": "path",
+      "sha256": "b86b929bed749e72eb320fea5c630f9ed61fc169b4ac9161e89d9d8d9f4e1b6f"
+    },
+    {
+      "pointer": "/paths/~1search~1wallets~1{wallet_id}",
+      "kind": "path",
+      "sha256": "08eea8511fb0e70d0fbea9571eaf37d994f4a6eb6bab706f451c2ecbab624d5c"
+    },
+    {
+      "pointer": "/paths/~1search~1customers",
+      "kind": "path",
+      "sha256": "e3a5a39dd5471bfc1c1b610ed7d19350ad230d5e7ff64eec1b28f4474824121c"
+    },
+    {
+      "pointer": "/paths/~1phone-models",
+      "kind": "path",
+      "sha256": "f9a06905ebde366dd217ca0d07736d4c4d68556fed47f858d74cf365d9e62007"
+    },
+    {
+      "pointer": "/paths/~1phone-models~1{manufacturer}~1{model}",
+      "kind": "path",
+      "sha256": "09c8ac40d1ed54f22fb4bbbef59e5ac83978724dec5591196b55154ab84b2123"
+    },
+    {
+      "pointer": "/components/schemas/DeviceAdmin/properties/device_model",
+      "kind": "property",
+      "sha256": "a4ed0696bba71b491c1bf6ae2b07cf08ec6f3820baff2e6592278c97e365d075"
+    },
+    {
+      "pointer": "/components/schemas/DeviceAdmin/properties/nfc_level",
+      "kind": "property",
+      "sha256": "1654ec529700568537f346e474968a108c4f4a2fdfa0a038a72f3484909219e1"
+    },
+    {
+      "pointer": "/components/schemas/DeviceEnrollmentRequest/properties/device_model",
+      "kind": "property",
+      "sha256": "a4ed0696bba71b491c1bf6ae2b07cf08ec6f3820baff2e6592278c97e365d075"
+    },
+    {
+      "pointer": "/components/schemas/HeartbeatRequest/properties/device_model",
+      "kind": "property",
+      "sha256": "a4ed0696bba71b491c1bf6ae2b07cf08ec6f3820baff2e6592278c97e365d075"
+    },
+    {
+      "pointer": "/components/schemas/StaffAssignment",
+      "kind": "schema",
+      "sha256": "cd336e03ddfdac104adf8653a0055e90370d1a2fcef1f1c3144aa83597399989"
+    },
+    {
+      "pointer": "/components/schemas/StaffProfile",
+      "kind": "schema",
+      "sha256": "1ffd47405f85c49b9dbc519c4c46477362089dad80afd34a61a1cd7e066c19cb"
+    },
+    {
+      "pointer": "/components/schemas/SaleSummary",
+      "kind": "schema",
+      "sha256": "8c6ad147f2ae08b64da6fd709a7a10f7a387bbf31abd34eec6f8c5615804e34c"
+    },
+    {
+      "pointer": "/components/schemas/SaleDetailLine",
+      "kind": "schema",
+      "sha256": "4f961497899d395408978b939474c9249734c745535cc8e54b239253727a9361"
+    },
+    {
+      "pointer": "/components/schemas/SaleDetail",
+      "kind": "schema",
+      "sha256": "450e5ab44e0bfb81ad2cbbce79fa7c3ed6cbecc24f9fb8c9bcbf1f09dd40997f"
+    },
+    {
+      "pointer": "/components/schemas/SalePage",
+      "kind": "schema",
+      "sha256": "0a5ec4a8988196633651f28c05363c9f3436dccab64e69c4994617e3c9851869"
+    },
+    {
+      "pointer": "/components/schemas/Anomaly",
+      "kind": "schema",
+      "sha256": "e12f5a9fa291271c697d4646768f472e82a2ca102c25ae1e475395180eed0589"
+    },
+    {
+      "pointer": "/components/schemas/AnomalyPage",
+      "kind": "schema",
+      "sha256": "e67c765f6965b5b93bb02c58e10f0fb0e9b2fdd754c30f9d26dff6e93a50fe74"
+    },
+    {
+      "pointer": "/components/schemas/AnomalyClassificationCreate",
+      "kind": "schema",
+      "sha256": "a49d4b12b07385aaed62a2cf1c51e33b26c2b83ae866a0cab3329bd6345ce910"
+    },
+    {
+      "pointer": "/components/schemas/MediaSearchResult",
+      "kind": "schema",
+      "sha256": "ab443bcb952d90a00b625eb985525b6c439e08e914c55f4dd3c5ceb891037cec"
+    },
+    {
+      "pointer": "/components/schemas/WalletOverview",
+      "kind": "schema",
+      "sha256": "0a2eea8c67678ebe578472cdfc56341681d2cf8623b96003e84834ebb19aaa61"
+    },
+    {
+      "pointer": "/components/schemas/CustomerSearchRequest",
+      "kind": "schema",
+      "sha256": "97428d075da83791a8fa1e942ef6d406eb68ecc0a08ee68ac9c2fbbaeef8059c"
+    },
+    {
+      "pointer": "/components/schemas/CustomerSearchResult",
+      "kind": "schema",
+      "sha256": "d19860ce49ff5fd4e10d1cb6668e4cdba0fc13255778ba2af0132b112b5090ee"
+    },
+    {
+      "pointer": "/components/schemas/NfcLevel",
+      "kind": "schema",
+      "sha256": "1e866eb21364add7c6c33e32d7e98d769c16b6bb9ce6c40d5aa85c93bf66277b"
+    },
+    {
+      "pointer": "/components/schemas/DeviceModel",
+      "kind": "schema",
+      "sha256": "27296fb3fd7045e6f6e65529f52d4d9f3b25492c700327ad2628ec5b23d2fc5d"
+    },
+    {
+      "pointer": "/components/schemas/PhoneModel",
+      "kind": "schema",
+      "sha256": "f2cc24d74b5f5efb5d1a83f4a947c102ed0f987525c40769a36a71b40b78d016"
+    },
+    {
+      "pointer": "/components/schemas/PhoneModelPage",
+      "kind": "schema",
+      "sha256": "95991b3b1bd6163da04c6579a6a20b12d21207a3119f4bf8c20d41322327bdaa"
+    },
+    {
+      "pointer": "/components/schemas/PhoneModelUpsert",
+      "kind": "schema",
+      "sha256": "540b23caf8d73459f8943671f32d19425a9d353c136c2f46c43e1dc11647b235"
+    },
+    {
+      "pointer": "/paths/~1device-enrollment-codes/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1device-enrollment-codes/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1device-enrollments/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1device-tokens~1refresh/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1device~1config/get/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1device~1heartbeat/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1device~1seq-status/get/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1device-sync-status/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1suspend/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1reactivate/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1revoke/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1seq-gaps~1{seq}~1waive/post/x-roles",
+      "kind": "extension",
+      "sha256": "e377ffa3a342ce1495ac795cd2124cde8fdaec527cfad8f9a853acf321bdfee1"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1journal-imports/post/x-roles",
+      "kind": "extension",
+      "sha256": "e377ffa3a342ce1495ac795cd2124cde8fdaec527cfad8f9a853acf321bdfee1"
+    },
+    {
+      "pointer": "/paths/~1media~1auth-keys/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1taps/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1media~1activations/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1deposit/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1deposit~1refund/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1release/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1reassignment/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1replace/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1media~1{media_id}~1cash-due-refunds/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1payments/post/x-roles",
+      "kind": "extension",
+      "sha256": "e13ea75a612c57bbea9f8213ef6bc9b3ac38ca39fa538b1cbc8fe89f28d58521"
+    },
+    {
+      "pointer": "/paths/~1payments~1{transaction_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "5ec5a4e0a5b4c43dd9144f217da51d7ca04edc34024e8d702352282c68b054c6"
+    },
+    {
+      "pointer": "/paths/~1payments~1{transaction_id}~1reversal/post/x-roles",
+      "kind": "extension",
+      "sha256": "86fdd75c3240bba829e41e2315c72d92faae487966c6a77b813bcec7d76c0659"
+    },
+    {
+      "pointer": "/paths/~1merchants~1{merchant_id}~1vendors/get/x-roles",
+      "kind": "extension",
+      "sha256": "3578a1c254f5b05aeef36d909194ffbf65e1068e95043fcd62953982e07ff7c7"
+    },
+    {
+      "pointer": "/paths/~1merchants~1{merchant_id}~1vendors/post/x-roles",
+      "kind": "extension",
+      "sha256": "3578a1c254f5b05aeef36d909194ffbf65e1068e95043fcd62953982e07ff7c7"
+    },
+    {
+      "pointer": "/paths/~1vendors~1{vendor_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "3578a1c254f5b05aeef36d909194ffbf65e1068e95043fcd62953982e07ff7c7"
+    },
+    {
+      "pointer": "/paths/~1vendors~1{vendor_id}~1pin/post/x-roles",
+      "kind": "extension",
+      "sha256": "3578a1c254f5b05aeef36d909194ffbf65e1068e95043fcd62953982e07ff7c7"
+    },
+    {
+      "pointer": "/paths/~1vendors~1{vendor_id}~1status/post/x-roles",
+      "kind": "extension",
+      "sha256": "3578a1c254f5b05aeef36d909194ffbf65e1068e95043fcd62953982e07ff7c7"
+    },
+    {
+      "pointer": "/paths/~1vendor-sessions~1vendors/get/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1vendor-sessions/post/x-roles",
+      "kind": "extension",
+      "sha256": "e13ea75a612c57bbea9f8213ef6bc9b3ac38ca39fa538b1cbc8fe89f28d58521"
+    },
+    {
+      "pointer": "/paths/~1vendor-sessions~1current/delete/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1topups~1cash/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1topups~1psp/post/x-roles",
+      "kind": "extension",
+      "sha256": "b487ef5db2a67b9b089d565987942674c18d3411b80244fdd59e13eb29d65013"
+    },
+    {
+      "pointer": "/paths/~1topups~1psp~1{topup_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "3e3ba07d82e60dd447d79ca3a01170610198046fbb98e8867230d976007649a5"
+    },
+    {
+      "pointer": "/paths/~1topups~1psp~1{topup_id}~1cancel/post/x-roles",
+      "kind": "extension",
+      "sha256": "b487ef5db2a67b9b089d565987942674c18d3411b80244fdd59e13eb29d65013"
+    },
+    {
+      "pointer": "/paths/~1cash-sessions/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1cash-sessions~1{cash_session_id}~1counts/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1cash-sessions~1{cash_session_id}~1close/post/x-roles",
+      "kind": "extension",
+      "sha256": "d3de6c0f0b5fa4079fa726354e153de2a79a21599a0bfcfcbc0ab0bb2ad159f1"
+    },
+    {
+      "pointer": "/paths/~1cash-sessions~1{cash_session_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "11fa0f488b4a4247bb64bbd808f25e738a5111ff493aa981db4b9babdd4c2e36"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1cash-sessions/get/x-roles",
+      "kind": "extension",
+      "sha256": "45c5ff40f54dbf0ab24c70fbb2a9730ec36d515a6145dc08db70ecbc048e3a22"
+    },
+    {
+      "pointer": "/paths/~1kyc-verifications/post/x-roles",
+      "kind": "extension",
+      "sha256": "affd336c0ee2475e4fd1f6f45c406f0bb178526ddd801748ca6b01a9b150aea8"
+    },
+    {
+      "pointer": "/paths/~1kyc-verifications~1{kyc_verification_id}~1revoke/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1organizers~1{organizer_id}~1psp-configurations/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1organizers~1{organizer_id}~1psp-configurations/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1psp-configurations~1{psp_config_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1psp-configurations~1{psp_config_id}~1approval-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1psp-selections/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1psp-selections~1{method}/put/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1cash-deposits~1approval-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1wallets~1{wallet_id}~1unblock~1approval-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1chargebacks~1{chargeback_id}~1approval-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1webhooks~1{provider}~1{psp_config_id}/post/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1journal-imports~1{import_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "45c5ff40f54dbf0ab24c70fbb2a9730ec36d515a6145dc08db70ecbc048e3a22"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1offline-ceiling/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1offline-ceiling/put/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1organizers~1{organizer_id}~1offline-policy/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1organizers~1{organizer_id}~1offline-policy/put/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1offline-policy/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1offline-policy/put/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1offline-policy/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1devices~1{device_id}~1offline-policy/put/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1events~1{event_id}~1offline-risk/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1offline-snapshots~1current/get/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1offline-snapshots~1ack/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1offline-batches/post/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1offline-batches~1{batch_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "d05199800ff00790a4f05c714ed7b27b14bc2e5b2e89433291237863ac4d439c"
+    },
+    {
+      "pointer": "/paths/~1payment-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "e13ea75a612c57bbea9f8213ef6bc9b3ac38ca39fa538b1cbc8fe89f28d58521"
+    },
+    {
+      "pointer": "/paths/~1payment-requests~1{payment_request_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "26d68dcfd4d0b1a419d410904d13b9250239f25373f19623798fb2d7b3d5da18"
+    },
+    {
+      "pointer": "/paths/~1payment-requests~1{payment_request_id}~1pay/post/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1payment-requests~1{payment_request_id}~1cancel/post/x-roles",
+      "kind": "extension",
+      "sha256": "26d68dcfd4d0b1a419d410904d13b9250239f25373f19623798fb2d7b3d5da18"
+    },
+    {
+      "pointer": "/paths/~1customer-auth~1otp/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1customer-auth~1token/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1customer-auth~1refresh/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1me/get/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1wallets/get/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1wallets~1{wallet_id}~1transactions/get/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1public~1balance-lookups/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1me~1media/get/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1media/post/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1media~1claims~1confirmations/post/x-roles",
+      "kind": "extension",
+      "sha256": "1a9ccacf22df7c17ab56e835654e3d63d12b59ddfa89b98d50359a418349dfe2"
+    },
+    {
+      "pointer": "/paths/~1me~1media~1{media_id}~1report-lost/post/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1customer-qr-tokens/post/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1refund-requests/get/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1me~1refund-requests/post/x-roles",
+      "kind": "extension",
+      "sha256": "810fd8c8d4bfdc8afb7f82f457d59b9369383a2c43512d9b945127016e249d3a"
+    },
+    {
+      "pointer": "/paths/~1refund-requests/get/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1refund-requests~1{refund_request_id}~1holder-decision/post/x-roles",
+      "kind": "extension",
+      "sha256": "0e9006345811fa6bb5646f98fbb8c62976ff55d98f0f17353c0ad9921dd54dab"
+    },
+    {
+      "pointer": "/paths/~1refund-requests~1{refund_request_id}~1approve/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1refund-requests~1{refund_request_id}~1confirm/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1refund-requests~1{refund_request_id}~1reject/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1late-claims/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1approval-requests/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1approval-requests~1{approval_request_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1approval-requests~1{approval_request_id}~1approve/post/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1approval-requests~1{approval_request_id}~1reject/post/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1debit-authority/get/x-roles",
+      "kind": "extension",
+      "sha256": "6ec9061ed782d8149460537bf5a54cfe5dc26e81edbacc0081a22c54c54ffc47"
+    },
+    {
+      "pointer": "/paths/~1ledgers~1{ledger_id}~1debit-authority/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1edge~1handovers~1current/get/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1edge~1handovers~1{handover_id}~1ack/post/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1edge~1handovers~1{handover_id}~1release/post/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1edge~1replication-feed/get/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1edge~1sync-batches/post/x-roles",
+      "kind": "extension",
+      "sha256": "f990854b284fd7ed88934f617e057c00bca6e74d64df178218a67057b13f37ca"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1users/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1users/post/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1users~1{user_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1users~1{user_id}~1disable/post/x-roles",
+      "kind": "extension",
+      "sha256": "e3f2ed73a75ce74ea208181dd8672a2bd67b6be2d2aea9a4e482612da03df942"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1users~1{user_id}~1role-assignments/post/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1role-assignments~1{assignment_id}~1revoke/post/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1platform-admins/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1jurisdiction-profiles/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1jurisdiction-profiles/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1jurisdiction-profiles~1{profile_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1jurisdiction-profiles~1{profile_id}~1versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators/get/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "e3f2ed73a75ce74ea208181dd8672a2bd67b6be2d2aea9a4e482612da03df942"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1platform-contracts/get/x-roles",
+      "kind": "extension",
+      "sha256": "e3f2ed73a75ce74ea208181dd8672a2bd67b6be2d2aea9a4e482612da03df942"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1platform-contracts/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1platform-contracts~1{contract_id}~1versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1platform~1config-versions/get/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1platform~1config-versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1platform-fee-rules/get/x-roles",
+      "kind": "extension",
+      "sha256": "e3f2ed73a75ce74ea208181dd8672a2bd67b6be2d2aea9a4e482612da03df942"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1platform-fee-rules/post/x-roles",
+      "kind": "extension",
+      "sha256": "290f6bf93c4e6553e736e4ad89b78323192b3f853b42d40682702b9cd79bbd69"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1config-versions/get/x-roles",
+      "kind": "extension",
+      "sha256": "e3f2ed73a75ce74ea208181dd8672a2bd67b6be2d2aea9a4e482612da03df942"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1config-versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}~1config-versions/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}~1config-versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}~1contracts/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1organizers~1{organizer_id}~1contracts/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1contracts~1{contract_id}~1versions/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1merchants/get/x-roles",
+      "kind": "extension",
+      "sha256": "e871233557702ac54fec07d508c0f59ef3eac11a65d1d956c1eb69b4e29d66d7"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1merchants/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1merchants~1{merchant_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "e871233557702ac54fec07d508c0f59ef3eac11a65d1d956c1eb69b4e29d66d7"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1merchants~1{merchant_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1config/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1status-conditions/get/x-roles",
+      "kind": "extension",
+      "sha256": "6483aa73a033859f988f7408f5964b45fc7afa2cc914cc5aa0b4887762826562"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1status-transitions/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1participations/get/x-roles",
+      "kind": "extension",
+      "sha256": "46070644c1a56da187d575340e25e51fbe699aba7371c84ed283b522c3e3ebbe"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1events~1{event_id}~1participations/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1participations~1{participation_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "46070644c1a56da187d575340e25e51fbe699aba7371c84ed283b522c3e3ebbe"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1participations~1{participation_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1participations~1{participation_id}~1points-of-sale/get/x-roles",
+      "kind": "extension",
+      "sha256": "46070644c1a56da187d575340e25e51fbe699aba7371c84ed283b522c3e3ebbe"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1participations~1{participation_id}~1points-of-sale/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1points-of-sale~1{pos_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "46070644c1a56da187d575340e25e51fbe699aba7371c84ed283b522c3e3ebbe"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1points-of-sale~1{pos_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1points-of-sale~1{pos_id}~1catalog/get/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1points-of-sale~1{pos_id}~1catalog~1categories/post/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1catalog-categories~1{category_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1catalog-categories~1{category_id}~1items/post/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1catalog-items~1{item_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1points-of-sale~1{pos_id}~1catalog~1versions~1{version}/get/x-roles",
+      "kind": "extension",
+      "sha256": "619bbda597276b3a01ea2cebc8300ae6ded498ff55d0e16976e0f70a9c500396"
+    },
+    {
+      "pointer": "/paths/~1points-of-sale~1{pos_id}~1catalog-policy/put/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1fee-rules/get/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1fee-rules/post/x-roles",
+      "kind": "extension",
+      "sha256": "6f95846c5e16a6aae4bdbb28ade141c532eb03fd1a3bd1e524d89e5fdee973a3"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1fee-rules~1{fee_rule_id}~1replacements/post/x-roles",
+      "kind": "extension",
+      "sha256": "dbe5188f467aae13fee34ac7b57008d47c67a43af05a2f6eb1c9969027cfeaf6"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-keys/get/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-keys/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-keys~1{key_index}/get/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-keys~1{key_index}~1dek-rotations/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-keys~1{key_index}~1retirement/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-key-jobs/get/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-key-jobs~1{job_id}~1retry/post/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1tag-key-check-runs/get/x-roles",
+      "kind": "extension",
+      "sha256": "31781b6999d98820e7984d8247d8f3319ed75e85d202a2a1170450dbde880d06"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches/get/x-roles",
+      "kind": "extension",
+      "sha256": "a5638dc8a43b97dcb20a90bf37596957d415e749c8ca0dbddb6efba3369ada74"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "a5638dc8a43b97dcb20a90bf37596957d415e749c8ca0dbddb6efba3369ada74"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}/patch/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1status/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1inventory/get/x-roles",
+      "kind": "extension",
+      "sha256": "a5638dc8a43b97dcb20a90bf37596957d415e749c8ca0dbddb6efba3369ada74"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1claim-code-order/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1claim-code-associations/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1closure/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-batches~1{batch_id}~1preload-catchup/post/x-roles",
+      "kind": "extension",
+      "sha256": "f5717d08cdaa33c314a0744130e1bfccd26da15819e1ae678ce81f0fdf4bc383"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media/get/x-roles",
+      "kind": "extension",
+      "sha256": "a5638dc8a43b97dcb20a90bf37596957d415e749c8ca0dbddb6efba3369ada74"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media~1{media_id}/get/x-roles",
+      "kind": "extension",
+      "sha256": "a5638dc8a43b97dcb20a90bf37596957d415e749c8ca0dbddb6efba3369ada74"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media~1{media_id}~1blacklist/post/x-roles",
+      "kind": "extension",
+      "sha256": "e377ffa3a342ce1495ac795cd2124cde8fdaec527cfad8f9a853acf321bdfee1"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media~1{media_id}~1reinstatement/post/x-roles",
+      "kind": "extension",
+      "sha256": "e377ffa3a342ce1495ac795cd2124cde8fdaec527cfad8f9a853acf321bdfee1"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media~1{media_id}~1loss/post/x-roles",
+      "kind": "extension",
+      "sha256": "379d4de318e3ddcd2ebeff2e35e7fbbaa5950f6e8b4520c5565f2c442cfdab91"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media~1{media_id}~1recovery/post/x-roles",
+      "kind": "extension",
+      "sha256": "379d4de318e3ddcd2ebeff2e35e7fbbaa5950f6e8b4520c5565f2c442cfdab91"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-personalizations/post/x-roles",
+      "kind": "extension",
+      "sha256": "34c50292cd37e2ec6d3f28d5a9bd6232fcca7c17e2235c1d2881f2f1ee14044d"
+    },
+    {
+      "pointer": "/paths/~1operators~1{operator_id}~1media-personalizations~1{media_id}~1claim-code/post/x-roles",
+      "kind": "extension",
+      "sha256": "34c50292cd37e2ec6d3f28d5a9bd6232fcca7c17e2235c1d2881f2f1ee14044d"
     }
   ]
 }

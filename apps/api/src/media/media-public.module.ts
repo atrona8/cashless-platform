@@ -7,6 +7,7 @@ import { ClaimsModule } from './claims/claims.module';
 import { KeysPublicModule } from './keys/keys-public.module';
 import { LifecycleModule } from './lifecycle/lifecycle.module';
 import { ReturnModule } from './lifecycle/return.module';
+import { SearchModule } from '../search/search.module';
 import { TapsModule } from './taps/taps.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { TapsModule } from './taps/taps.module';
     ReturnModule,
     ClaimsModule,
     BlacklistModule,
+    SearchModule,
   ],
 })
 export class MediaPublicModule {}

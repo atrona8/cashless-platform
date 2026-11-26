@@ -8,6 +8,7 @@ import {
   objectBody,
   textField,
 } from '../../organization/platform/platform.dto';
+import { parseDeviceModel, type DeviceModel } from '../phone-models/phone-models.dto';
 
 /** Borne de `device.app_version` (contrôle de `record_device_heartbeat`). */
 const MAX_APP_VERSION = 64;
@@ -15,6 +16,8 @@ const MAX_APP_VERSION = 64;
 export interface HeartbeatInput {
   deviceTime: Date;
   appVersion: string | null;
+  /** Modèle déclaré (facultatif, jamais cause de refus : C-003) ; `null` si inexploitable. */
+  deviceModel: DeviceModel | null;
 }
 
 export function parseHeartbeat(raw: unknown): HeartbeatInput {
@@ -27,5 +30,5 @@ export function parseHeartbeat(raw: unknown): HeartbeatInput {
   intField(body, 'pending_exposure', 0, Number.MAX_SAFE_INTEGER, 'optional');
   intField(body, 'battery_percent', 0, 100, 'optional');
   const appVersion = textField(body, 'app_version', MAX_APP_VERSION, 'optional') ?? null;
-  return { deviceTime, appVersion };
+  return { deviceTime, appVersion, deviceModel: parseDeviceModel(body) };
 }

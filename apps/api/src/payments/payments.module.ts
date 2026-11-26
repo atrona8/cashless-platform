@@ -4,6 +4,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigResolverModule } from '../configuration/config-resolver.module';
 import { TapsModule } from '../media/taps/taps.module';
+import { SalesModule } from '../sales/sales.module';
 import { VendorsModule } from '../vendors/vendors.module';
 import { DeviceSeqRegistry } from './device-seq-registry';
 import { PaymentReadService } from './payment-read.service';
@@ -11,7 +12,7 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 
 @Module({
-  imports: [ConfigResolverModule, TapsModule, VendorsModule],
+  imports: [ConfigResolverModule, TapsModule, VendorsModule, SalesModule],
   controllers: [PaymentsController],
   providers: [PaymentsService, PaymentReadService, DeviceSeqRegistry],
   exports: [DeviceSeqRegistry, PaymentReadService],

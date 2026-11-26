@@ -10,6 +10,7 @@ import { DeviceTokenRefreshModule } from './tokens/tokens.module';
 import { DeviceAdminModule } from './admin/device-admin.module';
 import { OfflineSnapshotsModule } from '../offline/snapshots/offline-snapshots.module';
 import { HeartbeatModule } from './heartbeat/heartbeat.module';
+import { PhoneModelsModule } from './phone-models/phone-models.module';
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { HeartbeatModule } from './heartbeat/heartbeat.module';
     // Lot WP17 : configuration servie et battement de cœur.
     DeviceConfigModule,
     HeartbeatModule,
+    // Mission 11b, lot WP09 : modèles de téléphone et niveau NFC des terminaux.
+    PhoneModelsModule,
     // Mission 7, lot WP15 : snapshots hors ligne servis et accusés.
     OfflineSnapshotsModule,
   ],

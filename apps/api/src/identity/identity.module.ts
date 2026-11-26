@@ -3,6 +3,7 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { APP_CONFIG, type AppConfig } from '../config/config';
+import { StaffProfileModule } from '../staff-profile/staff-profile.module';
 import { TENANT_CONTEXT } from '../tenancy/tenant-context';
 import { AuthenticationGuard } from './authentication.guard';
 import { IdentityTenantContext } from './identity-tenant-context';
@@ -10,6 +11,7 @@ import { createIdentityVerifier, IDENTITY_VERIFIER } from './oidc-verifier';
 
 @Global()
 @Module({
+  imports: [StaffProfileModule],
   providers: [
     {
       provide: IDENTITY_VERIFIER,

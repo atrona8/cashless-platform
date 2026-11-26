@@ -19,6 +19,7 @@ import request from 'supertest';
 import { parse } from 'yaml';
 import { ClaimHasher } from '../../../src/kms/claim-hash';
 import { newMerchantToken, nonceHash } from '../../../src/payment-requests/qr-token';
+import { MISSION_11B_OPERATIONS } from '../../support/mission-11b-operations';
 import { MISSION_9B_OPERATIONS } from '../../support/mission-9b-operations';
 import { createKeyProcess, createTestApp, type KeyProcessApp } from '../../support/app';
 import { withOwner } from '../../support/db';
@@ -68,6 +69,8 @@ function missionRoutes(): Route[] {
       .filter((method) => operations[method]?.['x-process'] !== undefined)
       // Mission 9b : balayage dédié (`invariants-cloture/isolation-9b.spec.ts`), liste figée.
       .filter((method) => !MISSION_9B_OPERATIONS.includes(operations[method]!.operationId!))
+      // Mission 11b : balayage dédié (`backoffice-isolation.spec.ts`), liste figée.
+      .filter((method) => !MISSION_11B_OPERATIONS.includes(operations[method]!.operationId!))
       .map((method) => ({
         method: method as Method,
         path,

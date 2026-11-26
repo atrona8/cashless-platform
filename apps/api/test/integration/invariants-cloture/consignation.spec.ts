@@ -102,3 +102,58 @@ describe('consignation de la mission 9b', () => {
     expect(readFileSync(alertSources[0]!, 'utf8')).toContain('pg_notify');
   });
 });
+
+// Mission 11b, WP11 (cycle 2, OP-N194 levé) : même contrôle pour OP-N185 à OP-N198 et ADR-235, ADR-236.
+describe('consignation de la mission 11b', () => {
+  const OPS_11B = Array.from({ length: 14 }, (_, i) => `OP-N${185 + i}`);
+  const ops = read('docs/POINTS_OUVERTS.md');
+  const adr = read('docs/DECISIONS_ADR.md');
+  const prd = read('PRD.md');
+  const prompts = read('PROMPTS-A-ENVOYER.md');
+  const section15 = ops.slice(ops.indexOf('## 15. Mission 11b'));
+
+  it.each(OPS_11B)('%s : ligne du tableau, fiche du §15 et reprise par ADR-236', (op) => {
+    expect(ops).toMatch(new RegExp(`^\\| ${op} \\|`, 'm'));
+    expect(section15).toMatch(new RegExp(`^- \\*\\*${op}[ .(]`, 'm'));
+    const adr236 = adr.slice(adr.indexOf('## ADR-236'));
+    expect(adr236).toContain(op);
+  });
+
+  it.each(OPS_11B)('%s : reportée dans PRD.md et PROMPTS-A-ENVOYER.md', (op) => {
+    expect(prd).toContain(op);
+    expect(prompts).toContain(op);
+  });
+
+  it.each(['ADR-235', 'ADR-236'])('%s : fiche présente et rattachée à un OP', (id) => {
+    const match = adr.match(
+      new RegExp(`^## ${id} — [^\\n]*\\n([\\s\\S]*?)(?=^## ADR-|(?![\\s\\S]))`, 'm'),
+    );
+    expect(match).not.toBeNull();
+    expect(match![0]).toMatch(/OP-N\d+/);
+  });
+
+  it('OP-N170 est levé par la mission 11b ; OP-N194 est levé', () => {
+    expect(ops).toMatch(/^\| OP-N170 \|.*\*\*levé\*\* le 25\/11\/2026/m);
+    expect(ops).toMatch(/^\| OP-N194 \|.*\*\*Levé le 25\/11\/2026\*\*/m);
+  });
+
+  it('OP-N185 bloque la production (confirmé par le porteur)', () => {
+    expect(ops).toMatch(/^\| OP-N185 \|.*\| Non \| \*\*Oui\*\* \(confirmé par le porteur/m);
+  });
+
+  it('les tests cités dans le §15 existent', () => {
+    const names = new Set(
+      [...section15.matchAll(/`([\w./-]+\.(?:spec\.ts|sql))`/g)].map((m) => m[1]!),
+    );
+    const files = [
+      ...walk(join(ROOT, 'apps/api/test')),
+      ...walk(join(ROOT, 'packages/ledger-sql')),
+    ].map((f) => relative(ROOT, f));
+    const missing = [...names].filter((name) => {
+      const base = name.split('/').pop()!;
+      return !files.some((f) => f.endsWith(`/${base}`));
+    });
+    expect(missing.filter((m) => /spec\.ts$|tests_/.test(m))).toEqual([]);
+    expect(names.size).toBeGreaterThan(10);
+  });
+});

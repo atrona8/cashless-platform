@@ -53,8 +53,12 @@ export class CashDueService {
         media_status: status,
       });
     }
+    // Lecture simple, sans verrou de ligne : `cashless_app` n'a plus UPDATE sur `anomaly` (mission 11b, D4) et un
+    // `FOR UPDATE` l'exige. Le bracelet est déjà verrouillé par `lockCounterMedia`, et `refund_cash_due`
+    // (SECURITY DEFINER) reprend ce verrou, puis verrouille et re-somme elle-même les anomalies OPEN : le montant
+    // et le seuil de la seconde personne sont tenus par la base, cette lecture ne sert qu'à répondre.
     const due = await client.query<{ id: string; amount: bigint; ledger_id: string }>(
-      `SELECT id, amount, ledger_id FROM anomaly WHERE media_id = $1 AND kind = 'CASH_TOPUP_OVER_LIMIT' AND status = 'OPEN' ORDER BY id FOR UPDATE`,
+      `SELECT id, amount, ledger_id FROM anomaly WHERE media_id = $1 AND kind = 'CASH_TOPUP_OVER_LIMIT' AND status = 'OPEN' ORDER BY id`,
       [mediaId],
     );
     if (due.rows.length === 0)

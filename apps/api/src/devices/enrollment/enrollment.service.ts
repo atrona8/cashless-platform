@@ -43,6 +43,7 @@ import {
   type EnrollmentRequest,
 } from './enrollment.dto';
 import { newRefreshToken, refreshTokenHash } from './refresh-token';
+import { declareDeviceModel } from '../phone-models/declare-device-model';
 
 const DAY_MS = 86_400_000;
 /** Fenêtre des limites R-16 : un refus 429 invite à réessayer dans l'heure. */
@@ -196,6 +197,7 @@ export class EnrollmentService {
           ],
         )
       ).rows[0]!;
+      await declareDeviceModel(client, deviceId, input.deviceModel);
       const device = (
         await client.query<{ family_id: string; enrollment_code_id: string }>(
           `SELECT t.family_id, d.enrollment_code_id

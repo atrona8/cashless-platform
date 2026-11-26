@@ -177,7 +177,7 @@ jobs:
         run: |
           node tools/contract-stability/check.mjs
           node tools/contract-stability/check-baseline-decision.mjs
-          node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs
+          node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs tools/contract-stability/x-roles/x-roles.test.mjs
 
       - name: Types du contrat régénérés sans écart
         run: |
@@ -286,6 +286,11 @@ jobs:
       # p95 sur 50 rendus (NFR-001). Écartée de la passe parallèle (SKIP_LATENCY), lancée seule, en série.
       - name: Rendu partiel en espèces, concurrence et latence (suite seule, en série)
         run: npm test -w @cashless/api -- --runInBand media/partial-cash-refund-concurrency
+
+      # Mission routes-backoffice (WP10) : matrice des rôles autorisés (x-roles), ≈ 1 300 appels sur la base
+      # partagée. Écartée de la passe parallèle (SKIP_LATENCY), lancée seule, en série.
+      - name: Matrice des rôles autorisés, x-roles (suite seule, en série)
+        run: npm test -w @cashless/api -- --runInBand end-to-end/x-roles-matrix
 
       - name: Latence des routes de configuration (suite seule, sans nouvel essai)
         run: npm test -w @cashless/api -- configuration-latency

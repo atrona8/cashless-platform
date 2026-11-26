@@ -18,6 +18,7 @@ import type { TxClient } from '../../db/tenant-tx';
 import { ProblemException } from '../../errors/problem';
 import type { PageRequest } from '../../organization/platform/platform.dto';
 import { scopesHeld, type TenantActor } from '../../organization/tenant/tenant-access';
+import { NFC_LEVEL_JOIN } from '../phone-models/nfc-level';
 import {
   DEVICE_ADMIN_COLUMNS,
   deviceAdminDto,
@@ -71,6 +72,7 @@ export class DeviceAdminService {
     const { rows } = await client.query<DeviceAdminRow>(
       `SELECT ${DEVICE_ADMIN_COLUMNS}
          FROM device d
+         ${NFC_LEVEL_JOIN}
         WHERE d.operator_id = $1 AND ${scopeClause(2)}
           AND ($3::uuid IS NULL OR d.event_id = $3)
           AND ($4::uuid IS NULL OR d.pos_id = $4)
@@ -97,6 +99,7 @@ export class DeviceAdminService {
     const { rows } = await client.query<DeviceAdminRow>(
       `SELECT ${DEVICE_ADMIN_COLUMNS}
          FROM device d
+         ${NFC_LEVEL_JOIN}
         WHERE d.operator_id = $1 AND ${scopeClause(2)} AND d.id = $3`,
       [actor.operatorId, deviceScope(actor), deviceId],
     );

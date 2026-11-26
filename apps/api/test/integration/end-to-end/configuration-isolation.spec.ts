@@ -10,6 +10,7 @@ import request from 'supertest';
 import { parse } from 'yaml';
 import { createApiConfigFixture, type ApiConfigFixture } from '../../scenario/api-config-fixture';
 import { createTestApp } from '../../support/app';
+import { MISSION_11B_OPERATIONS } from '../../support/mission-11b-operations';
 import { MISSION_9B_OPERATIONS } from '../../support/mission-9b-operations';
 import { withOwner } from '../../support/db';
 import { FakeIdp, type TestPerson } from '../../support/fake-idp';
@@ -37,6 +38,8 @@ function missionRoutes(): Route[] {
       .filter((method) => !/PspConfiguration|PspSelection/.test(operations[method]!.operationId))
       // Mission 9b : balayage dédié (`invariants-cloture/isolation-9b.spec.ts`), liste figée.
       .filter((method) => !MISSION_9B_OPERATIONS.includes(operations[method]!.operationId))
+      // Mission 11b : balayage dédié (`backoffice-isolation.spec.ts`), liste figée.
+      .filter((method) => !MISSION_11B_OPERATIONS.includes(operations[method]!.operationId))
       .map((method) => ({ method, path, operationId: operations[method]!.operationId })),
   );
 }

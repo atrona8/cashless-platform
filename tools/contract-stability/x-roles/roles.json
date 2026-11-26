@@ -1,0 +1,1214 @@
+{
+  "_notes": [
+    "Table relue à la main (mission 11b, WP04) : une ligne par operationId du contrat, source = fichier:ligne du contrôle réel. Générée en squelette par script puis relue contre le code ; apply.mjs en tire les lignes x-roles de openapi.yaml.",
+    "Règle PLATFORM_ADMIN : le rôle n'est inscrit que si le code l'accepte explicitement (liste de rôles de la route, PlatformAccess.platform() et reader(), requiredRoles d'une action) ; exercisedRole() ne déduit aucun rôle par englobement de portée, donc aucun PLATFORM_ADMIN n'est ajouté par héritage.",
+    "x-roles liste les valeurs de rôle seulement, jamais la portée. DEVICE associé à des rôles du personnel : la route exige le terminal ET la personne (CounterAuth) ou l'un OU l'autre (DeviceOrCallerAuth, TerminalOrPersonAuth) ; la source dit lequel.",
+    "VENDOR : session de vendeur exigée (assert_vendor_session) ou PIN du vendeur ; le vendeur n'est pas un porteur de jeton. CUSTOMER : jeton festivalier. GATEWAY : edgeMtls ou pspHmac. PUBLIC : security: [].",
+    "Rôle conditionnel : MERCHANT_ADMIN sur les routes d'écriture du catalogue seulement si le commerçant gère son catalogue (catalog.service.ts:88).",
+    "doubt: true : contrôle absent du code (opération du contrat sans route dans apps/api/src) ; non annotée, à trancher par le porteur."
+  ],
+  "operations": {
+    "createJurisdictionProfile": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/jurisdiction.controller.ts:60",
+      "note": "@Roles PLATFORM"
+    },
+    "createJurisdictionProfileVersion": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/jurisdiction.controller.ts:81",
+      "note": "@Roles PLATFORM"
+    },
+    "listJurisdictionProfiles": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/platform/jurisdiction.controller.ts:48",
+      "note": "READERS (l.26) pour le personnel d'un prestataire ; PLATFORM_ADMIN par platform-access.ts:34 (assertPlatformAdmin)"
+    },
+    "getJurisdictionProfile": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/platform/jurisdiction.controller.ts:56",
+      "note": "READERS (l.26) ; PLATFORM_ADMIN par platform-access.ts:34"
+    },
+    "listOperators": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:55",
+      "note": "@Roles PLATFORM"
+    },
+    "createOperator": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:69",
+      "note": "@Roles PLATFORM"
+    },
+    "getOperator": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:90",
+      "note": "OWN_OPERATOR (l.44) + PLATFORM_ADMIN par platform-access.ts:34"
+    },
+    "updateOperator": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:95",
+      "note": "@Roles PLATFORM"
+    },
+    "listPlatformContracts": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:121",
+      "note": "OWN_OPERATOR (l.44) + PLATFORM_ADMIN par platform-access.ts:34"
+    },
+    "createPlatformContract": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:127",
+      "note": "@Roles PLATFORM"
+    },
+    "createPlatformContractVersion": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:152",
+      "note": "@Roles PLATFORM"
+    },
+    "listPlatformFeeRules": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:195",
+      "note": "OWN_OPERATOR (l.44) + PLATFORM_ADMIN par platform-access.ts:34"
+    },
+    "createPlatformFeeRule": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/organization/platform/operators.controller.ts:201",
+      "note": "@Roles PLATFORM"
+    },
+    "listPlatformConfigVersions": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/configuration/platform-config.controller.ts:50",
+      "note": "@Roles PLATFORM"
+    },
+    "createPlatformConfigVersion": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/configuration/platform-config.controller.ts:69",
+      "note": "@Roles PLATFORM"
+    },
+    "listOperatorConfigVersions": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:84",
+      "note": "SUPERVISORS (l.48), TenantAccess.actor"
+    },
+    "createOperatorConfigVersion": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:105",
+      "note": "TenantAccess.actor"
+    },
+    "listOrganizers": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:130",
+      "note": "ORGANIZER_READERS (l.49) ; ORGANIZER_ADMIN limité à ses organisateurs (filtre l.132)"
+    },
+    "createOrganizer": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:150",
+      "note": "createParty(..., ['OPERATOR_ADMIN']) -> actor() l.396"
+    },
+    "getOrganizer": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:155",
+      "note": "ORGANIZER_READERS (l.49)"
+    },
+    "updateOrganizer": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:169",
+      "note": "TenantAccess.actor"
+    },
+    "listOrganizerConfigVersions": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:184",
+      "note": "ORGANIZER_READERS (l.49)"
+    },
+    "createOrganizerConfigVersion": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:207",
+      "note": "TenantAccess.actor"
+    },
+    "listOrganizerContracts": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:237",
+      "note": "ORGANIZER_READERS (l.49)"
+    },
+    "createOrganizerContract": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:255",
+      "note": "TenantAccess.actor"
+    },
+    "createOrganizerContractVersion": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:284",
+      "note": "TenantAccess.actor"
+    },
+    "listMerchants": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:312",
+      "note": "ORGANIZER_READERS + MERCHANT_ADMIN ; MERCHANT_ADMIN limité à ses commerçants (l.314)"
+    },
+    "createMerchant": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:332",
+      "note": "MERCHANT_WRITERS (l.50) via createParty"
+    },
+    "getMerchant": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:337",
+      "note": "ORGANIZER_READERS + MERCHANT_ADMIN"
+    },
+    "updateMerchant": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/organization/tenant/tenant.controller.ts:359",
+      "note": "MERCHANT_WRITERS (l.50)"
+    },
+    "listUsers": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/identity/users/users.controller.ts:126",
+      "note": "context() -> staffAdminRole STAFF_ADMINS (role-rules.ts:121)"
+    },
+    "getUser": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/identity/users/users.controller.ts:126",
+      "note": "context() -> staffAdminRole STAFF_ADMINS (role-rules.ts:121)"
+    },
+    "createUser": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/identity/users/users.controller.ts:126",
+      "note": "context() -> staffAdminRole STAFF_ADMINS (role-rules.ts:121)"
+    },
+    "disableUser": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN"],
+      "source": "apps/api/src/identity/users/users.controller.ts:77",
+      "note": "context(req, ['PLATFORM_ADMIN','OPERATOR_ADMIN'])"
+    },
+    "grantRole": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/identity/users/role-rules.ts:75",
+      "note": "canGrant : GRANTERS l.36-41 ; rôle exact selon le rôle donné et sa portée"
+    },
+    "revokeRole": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/identity/users/users.service.ts:254",
+      "note": "canGrant (role-rules.ts:75), même règle que grantRole"
+    },
+    "createPlatformAdmin": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "apps/api/src/identity/users/platform-admins.controller.ts:20",
+      "note": "staffAdminRole(principal, ['PLATFORM_ADMIN'])"
+    },
+    "listEvents": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/events/events.controller.ts:85",
+      "note": "READERS (l.33)"
+    },
+    "createEvent": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/events.controller.ts:134",
+      "note": "WRITERS (l.39)"
+    },
+    "getEvent": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/events/events.controller.ts:158",
+      "note": "READERS (l.33)"
+    },
+    "updateEvent": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/events.controller.ts:173",
+      "note": "WRITERS (l.39)"
+    },
+    "getResolvedEventConfig": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/events/events.controller.ts:218",
+      "note": "READERS (l.33)"
+    },
+    "getEventStatusConditions": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/events/status/status.controller.ts:48",
+      "note": "READERS (l.26)"
+    },
+    "transitionEventStatus": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/status/status.controller.ts:75",
+      "note": "WRITERS (l.32)"
+    },
+    "listParticipations": {
+      "roles": [
+        "PLATFORM_ADMIN",
+        "OPERATOR_ADMIN",
+        "ORGANIZER_ADMIN",
+        "MERCHANT_ADMIN",
+        "SUPERVISOR"
+      ],
+      "source": "apps/api/src/events/participations/participations.controller.ts:63",
+      "note": "READERS (l.39)"
+    },
+    "createParticipation": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/participations.controller.ts:86",
+      "note": "WRITERS (l.46)"
+    },
+    "getParticipation": {
+      "roles": [
+        "PLATFORM_ADMIN",
+        "OPERATOR_ADMIN",
+        "ORGANIZER_ADMIN",
+        "MERCHANT_ADMIN",
+        "SUPERVISOR"
+      ],
+      "source": "apps/api/src/events/participations/participations.controller.ts:114",
+      "note": "READERS (l.39)"
+    },
+    "updateParticipation": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/participations.controller.ts:129",
+      "note": "WRITERS (l.46)"
+    },
+    "listPointsOfSale": {
+      "roles": [
+        "PLATFORM_ADMIN",
+        "OPERATOR_ADMIN",
+        "ORGANIZER_ADMIN",
+        "MERCHANT_ADMIN",
+        "SUPERVISOR"
+      ],
+      "source": "apps/api/src/events/participations/participations.controller.ts:160",
+      "note": "READERS (l.39)"
+    },
+    "createPointOfSale": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/participations.controller.ts:178",
+      "note": "WRITERS (l.46)"
+    },
+    "getPointOfSale": {
+      "roles": [
+        "PLATFORM_ADMIN",
+        "OPERATOR_ADMIN",
+        "ORGANIZER_ADMIN",
+        "MERCHANT_ADMIN",
+        "SUPERVISOR"
+      ],
+      "source": "apps/api/src/events/participations/participations.controller.ts:194",
+      "note": "READERS (l.39)"
+    },
+    "renamePointOfSale": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/participations.controller.ts:210",
+      "note": "WRITERS (l.46)"
+    },
+    "listFeeRules": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/fee-rules.controller.ts:61",
+      "note": "READERS (l.40)"
+    },
+    "createFeeRule": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/fee-rules.controller.ts:84",
+      "note": "WRITERS (l.41)"
+    },
+    "replaceFeeRule": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/events/participations/fee-rules.controller.ts:118",
+      "note": "WRITERS (l.41) ; PLATFORM_ADMIN : replacePlatformRule l.153 (règle PLATFORM_CONTRACT seulement)"
+    },
+    "getCatalog": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:84",
+      "note": "catalogAccess need=read ; CATALOG_ROLES l.51"
+    },
+    "getCatalogVersion": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:84",
+      "note": "catalogAccess need=read ; CATALOG_ROLES l.51"
+    },
+    "createCatalogCategory": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:88",
+      "note": "catalogAccess need=manage : MERCHANT_ADMIN seulement si merchantManages (conditionnel)"
+    },
+    "updateCatalogCategory": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:88",
+      "note": "catalogAccess need=manage : MERCHANT_ADMIN seulement si merchantManages (conditionnel)"
+    },
+    "createCatalogItem": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:88",
+      "note": "catalogAccess need=manage : MERCHANT_ADMIN seulement si merchantManages (conditionnel)"
+    },
+    "updateCatalogItem": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:88",
+      "note": "catalogAccess need=manage : MERCHANT_ADMIN seulement si merchantManages (conditionnel)"
+    },
+    "setCatalogPolicy": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/catalog/catalog.service.ts:89",
+      "note": "catalogAccess need=policy : MERCHANT_ADMIN refusé (403) ; route admet CATALOG_ROLES l.51"
+    },
+    "listMediaBatches": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:74",
+      "note": "READERS (l.53)"
+    },
+    "createMediaBatch": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:104",
+      "note": "WRITERS (l.54)"
+    },
+    "getMediaBatch": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:127",
+      "note": "READERS (l.53)"
+    },
+    "updateMediaBatch": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:141",
+      "note": "WRITERS (l.54)"
+    },
+    "setMediaBatchStatus": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:163",
+      "note": "WRITERS (l.54)"
+    },
+    "getMediaBatchInventory": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:179",
+      "note": "READERS (l.53)"
+    },
+    "issueClaimCodeOrder": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:194",
+      "note": "WRITERS (l.54)"
+    },
+    "importClaimCodeAssociations": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:214",
+      "note": "WRITERS (l.54)"
+    },
+    "closeMediaBatch": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:236",
+      "note": "WRITERS (l.54)"
+    },
+    "catchUpBatchPreload": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/media/batches/batches.controller.ts:250",
+      "note": "WRITERS (l.54)"
+    },
+    "listTagKeys": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:36",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "requestTagKey": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:52",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "getTagKey": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:72",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "requestDekRotation": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:158",
+      "note": "requestOnKey -> KEY_ADMINS (l.24)"
+    },
+    "requestTagKeyRetirement": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:158",
+      "note": "requestOnKey -> KEY_ADMINS (l.24)"
+    },
+    "listTagKeyJobs": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:117",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "retryTagKeyJob": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:132",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "listTagKeyCheckRuns": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/media/keys/keys.controller.ts:140",
+      "note": "KEY_ADMINS (l.24)"
+    },
+    "listMedia": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/lifecycle/media-read.controller.ts:66",
+      "note": "READERS (l.24)"
+    },
+    "getMediaAdmin": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/lifecycle/media-read.controller.ts:87",
+      "note": "READERS (l.24)"
+    },
+    "blacklistMedia": {
+      "roles": ["SUPERVISOR"],
+      "source": "apps/api/src/media/blacklist/blacklist.controller.ts:48",
+      "note": "BLACKLIST_ROLE = 'SUPERVISOR' (blacklist.service.ts:13)"
+    },
+    "requestMediaReinstatement": {
+      "roles": ["SUPERVISOR"],
+      "source": "apps/api/src/media/blacklist/blacklist.controller.ts:63",
+      "note": "BLACKLIST_ROLE = 'SUPERVISOR' (blacklist.service.ts:13)"
+    },
+    "reportMediaLost": {
+      "roles": ["SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/lifecycle/loss.controller.ts:35",
+      "note": "LOSS_ROLES (loss.service.ts:12)"
+    },
+    "recoverMedia": {
+      "roles": ["SUPERVISOR", "CASHIER"],
+      "source": "apps/api/src/media/lifecycle/loss.controller.ts:52",
+      "note": "LOSS_ROLES (loss.service.ts:12)"
+    },
+    "registerPersonalizedMedia": {
+      "roles": ["PERSONALIZER"],
+      "source": "apps/api/src/media/personalization/personalization.controller.ts:57",
+      "note": "personalizer() : PERSONALIZER sur le prestataire"
+    },
+    "associateClaimCode": {
+      "roles": ["PERSONALIZER"],
+      "source": "apps/api/src/media/personalization/personalization.controller.ts:57",
+      "note": "personalizer() : PERSONALIZER sur le prestataire"
+    },
+    "getMedia": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "activateMedia": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "takeDeposit": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "refundDeposit": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "releaseMedia": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27) ; jeton de SUPERVISOR facultatif (release.controller.ts:59)"
+    },
+    "refundPartialCash": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27) ; jeton de SUPERVISOR facultatif (partial-refund.controller.ts:48)"
+    },
+    "reassignPoolMedia": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "replaceMedia": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "refundCashDue": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth : terminal ET personne ; COUNTER_ROLES (l.27) ; jeton de SUPERVISOR facultatif (cash-due.controller.ts:47)"
+    },
+    "confirmMediaClaim": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth (claims.controller.ts:68) : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "createCashTopup": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/media/lifecycle/counter-access.ts:93",
+      "note": "CounterAuth (cash-topup.controller.ts:23) : terminal ET personne ; COUNTER_ROLES (l.27)"
+    },
+    "initiatePspTopup": {
+      "roles": ["SUPERVISOR", "CASHIER", "CUSTOMER", "DEVICE"],
+      "source": "apps/api/src/topups/psp/psp-topups.service.ts:181",
+      "note": "PspTopupCallerAuth allowPerson false (psp-topups.controller.ts:41) : guichet (CounterAccess, COUNTER_ROLES) ou festivalier"
+    },
+    "getPspTopup": {
+      "roles": ["ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER", "CUSTOMER", "DEVICE"],
+      "source": "apps/api/src/topups/psp/psp-topups.service.ts:494",
+      "note": "PspTopupCallerAuth allowPerson true (psp-topups.controller.ts:52) : guichet, festivalier, ou ORGANIZER_ADMIN de l'organisateur de l'événement"
+    },
+    "cancelPspTopup": {
+      "roles": ["SUPERVISOR", "CASHIER", "CUSTOMER", "DEVICE"],
+      "source": "apps/api/src/topups/psp/psp-topups.service.ts:181",
+      "note": "PspTopupCallerAuth allowPerson false (psp-topups.controller.ts:59) : guichet ou festivalier"
+    },
+    "openCashSession": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/cash-sessions/cash-sessions.service.ts:51",
+      "note": "CounterAuth (cash-sessions.controller.ts:29) : counter.authorize, COUNTER_ROLES (counter-access.ts:27)"
+    },
+    "countCashSession": {
+      "roles": ["SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/cash-sessions/cash-sessions.service.ts:51",
+      "note": "CounterAuth (cash-sessions.controller.ts:38) : counter.authorize, COUNTER_ROLES (counter-access.ts:27)"
+    },
+    "closeCashSession": {
+      "roles": ["SUPERVISOR", "DEVICE"],
+      "source": "apps/api/src/cash-sessions/cash-sessions.service.ts:238",
+      "note": "assertSupervisor : SUPERVISOR de l'événement, chemin terminal et chemin personne (TerminalOrPersonAuth, cash-sessions.controller.ts:52)"
+    },
+    "getCashSession": {
+      "roles": ["ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER", "DEVICE"],
+      "source": "apps/api/src/cash-sessions/cash-session-read.service.ts:51",
+      "note": "viewOf : MANAGER_ROLES (l.27) puis CASHIER (l.52) ; chemin terminal par counter.authorize"
+    },
+    "listCashSessions": {
+      "roles": ["ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/cash-sessions/cash-session-read.service.ts:51",
+      "note": "list : vue MANAGER exigée (MANAGER_ROLES l.27, contrôle l.106) ; CASHIER refusé (aligné sur le code, 25/11/2026)"
+    },
+    "createKycVerification": {
+      "roles": ["ORGANIZER_ADMIN", "CASHIER"],
+      "source": "apps/api/src/kyc/kyc.controller.ts:23",
+      "note": "KYC_DESK_ROLES (kyc.service.ts:16)"
+    },
+    "revokeKycVerification": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/kyc/kyc-revocation.controller.ts:39",
+      "note": "KYC_REVOCATION_ROLES (kyc-revocation-action.ts:31)"
+    },
+    "listPspConfigurations": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/psp-configurations/psp-configurations.controller.ts:51",
+      "note": "TenantAccess.actor"
+    },
+    "createPspConfiguration": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/psp-configurations/psp-configurations.controller.ts:37",
+      "note": "TenantAccess.actor"
+    },
+    "getPspConfiguration": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/psp-configurations/psp-configurations.controller.ts:64",
+      "note": "TenantAccess.actor"
+    },
+    "requestPspConfigurationChange": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/psp-configurations/psp-configurations.controller.ts:80",
+      "note": "TenantAccess.actor ; PSP_CONFIGURATION_ROLES (psp-configuration-action.ts:22)"
+    },
+    "getEventPspSelections": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/psp-configurations/event-psp-selection.controller.ts:31",
+      "note": "TenantAccess.actor"
+    },
+    "setEventPspSelection": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/psp-configurations/event-psp-selection.controller.ts:47",
+      "note": "TenantAccess.actor ; EVENT_PSP_SELECTION_ROLES (event-psp-selection-action.ts:18)"
+    },
+    "requestCashDeposit": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/cash-sessions/cash-deposit.controller.ts:34",
+      "note": "CASH_DEPOSIT_ROLES (cash-deposit-action.ts:21)"
+    },
+    "requestWalletUnblock": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/chargebacks/chargebacks.controller.ts:63",
+      "note": "WALLET_UNBLOCK_ROLE (wallet-unblock-action.ts:19)"
+    },
+    "requestLateChargeback": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/chargebacks/chargebacks.controller.ts:38",
+      "note": "LATE_CHARGEBACK_ROLES (late-chargeback-action.ts:22)"
+    },
+    "listApprovalRequests": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/approval/approval.service.ts:359",
+      "note": "canSee/roleOn : requiredRoles de chaque action enregistrée (action-registry.ts:85) ; union des actions = PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR ; personne de la plateforme : approval.controller.ts:119"
+    },
+    "getApprovalRequest": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/approval/approval.service.ts:256",
+      "note": "canSee/roleOn : rôle de l'action de la demande ; union des actions = PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR"
+    },
+    "approveApprovalRequest": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/approval/approval.service.ts:359",
+      "note": "roleOn : rôle de l'action de la demande ; union des actions = PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR"
+    },
+    "rejectApprovalRequest": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/approval/approval.service.ts:359",
+      "note": "roleOn : rôle de l'action de la demande ; union des actions = PLATFORM_ADMIN, OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR"
+    },
+    "getDebitAuthority": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "GATEWAY"],
+      "source": "apps/api/src/debit-authority/debit-authority.service.ts:32",
+      "note": "READ_ROLES ; GATEWAY : edge/control/debit-authority-edge.controller.ts:22 (EdgeAuth)"
+    },
+    "requestDebitAuthorityChange": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/debit-authority/debit-authority.service.ts:34",
+      "note": "CHANGE_ROLES"
+    },
+    "createPayment": {
+      "roles": ["VENDOR", "DEVICE"],
+      "source": "apps/api/src/payments/payments.controller.ts:34",
+      "note": "DeviceAuth ; session de vendeur exigée (vendor-session-guard.ts)"
+    },
+    "getPayment": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN", "SUPERVISOR", "DEVICE"],
+      "source": "apps/api/src/payments/payment-read.service.ts:95",
+      "note": "DeviceOrCallerAuth (payments.controller.ts:51) : terminal OU personne ; READ_ROLES"
+    },
+    "reversePayment": {
+      "roles": ["ORGANIZER_ADMIN", "SUPERVISOR", "VENDOR", "DEVICE"],
+      "source": "apps/api/src/reversals/reversals.controller.ts:108",
+      "note": "DeviceOrCallerAuth (l.70) : terminal (avec jeton de SUPERVISOR, l.67) OU personne SALE_REVERSAL_ROLES (sale-reversal-action.ts:24)"
+    },
+    "listVendors": {
+      "roles": ["OPERATOR_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/vendors/vendors.controller.ts:45",
+      "note": "VENDOR_ADMINS (l.27)"
+    },
+    "createVendor": {
+      "roles": ["OPERATOR_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/vendors/vendors.controller.ts:63",
+      "note": "VENDOR_ADMINS (l.27)"
+    },
+    "getVendor": {
+      "roles": ["OPERATOR_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/vendors/vendors.controller.ts:84",
+      "note": "VENDOR_ADMINS (l.27)"
+    },
+    "setVendorPin": {
+      "roles": ["OPERATOR_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/vendors/vendors.controller.ts:100",
+      "note": "VENDOR_ADMINS (l.27)"
+    },
+    "setVendorStatus": {
+      "roles": ["OPERATOR_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/vendors/vendors.controller.ts:115",
+      "note": "VENDOR_ADMINS (l.27)"
+    },
+    "listTerminalVendors": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/vendors/vendor-sessions.controller.ts:35",
+      "note": "DeviceAuth"
+    },
+    "openVendorSession": {
+      "roles": ["VENDOR", "DEVICE"],
+      "source": "apps/api/src/vendors/vendor-sessions.controller.ts:41",
+      "note": "DeviceAuth ; le vendeur se prouve par son PIN dans le corps"
+    },
+    "closeVendorSession": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/vendors/vendor-sessions.controller.ts:62",
+      "note": "DeviceAuth"
+    },
+    "listPayoutEntitlements": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/payouts/payout-batches.controller.ts:32",
+      "note": "PAYOUT_ROLES (payout-action.ts:54)"
+    },
+    "requestPayoutBatch": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/payouts/payout-batches.controller.ts:51",
+      "note": "PAYOUT_ROLES (payout-action.ts:54)"
+    },
+    "listPayouts": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/payouts/payout-batches.controller.ts:75",
+      "note": "PAYOUT_ROLES (payout-action.ts:54)"
+    },
+    "exportPayoutBatch": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/payouts/payout-batches.controller.ts:94",
+      "note": "PAYOUT_ROLES (payout-action.ts:54)"
+    },
+    "confirmPayout": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/payouts/payouts.controller.ts:33",
+      "note": "PAYOUT_ROLES (payout-action.ts:54)"
+    },
+    "importAccountStatement": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/reconciliation/statements.controller.ts:48",
+      "note": "STATEMENT_ROLES (l.27)"
+    },
+    "listStatementLines": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/reconciliation/statements.controller.ts:71",
+      "note": "STATEMENT_ROLES (l.27)"
+    },
+    "matchStatementLine": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/reconciliation/statements.controller.ts:89",
+      "note": "STATEMENT_ROLES (l.27)"
+    },
+    "getLedgerReconciliation": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/reconciliation/reconciliation.controller.ts:20",
+      "note": "READERS (l.9)"
+    },
+    "postLateClaim": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/late-claims/late-claims.controller.ts:39",
+      "note": "LATE_CLAIM_ROLES (late-claim-action.ts:33)"
+    },
+    "postLateAdjustment": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/late-claims/late-claims.controller.ts:65",
+      "note": "LATE_ADJUSTMENT_ROLES (late-adjustment-action.ts:25)"
+    },
+    "listEventClosingSteps": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/closing/closing.controller.ts:51",
+      "note": "READERS (l.22)"
+    },
+    "previewEventClosingStep": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/closing/closing.controller.ts:59",
+      "note": "WRITERS (l.23)"
+    },
+    "executeEventClosingStep": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/closing/closing.controller.ts:75",
+      "note": "WRITERS (l.23)"
+    },
+    "getEventRemainingBalances": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/closing/closing.controller.ts:92",
+      "note": "WRITERS (l.23)"
+    },
+    "getPartyStatement": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN"],
+      "source": "apps/api/src/statements/party-statement-scope.ts:11",
+      "note": "STATEMENT_ROLES par nature de partie, ALL_STATEMENT_ROLES (l.19) ; rôle exigé selon party_kind (party-statement.controller.ts:46)"
+    },
+    "listAccountMappings": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/statements/account-mappings.controller.ts:44",
+      "note": "READERS (l.18)"
+    },
+    "createAccountMappingVersion": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/statements/account-mappings.controller.ts:61",
+      "note": "WRITERS (l.19)"
+    },
+    "exportAccounting": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/statements/account-mappings.controller.ts:80",
+      "note": "READERS (l.18)"
+    },
+    "listRefundRequests": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/refunds/refund-requests.controller.ts:33",
+      "note": "REFUND_BACKOFFICE_ROLES (refund-requests.service.ts:26)"
+    },
+    "rejectRefundRequest": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/refunds/refund-requests.controller.ts:50",
+      "note": "REFUND_BACKOFFICE_ROLES (refund-requests.service.ts:26)"
+    },
+    "createRefundRequest": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/refunds/refund-backoffice-create.controller.ts:25",
+      "note": "REFUND_BACKOFFICE_ROLES (refund-requests.service.ts:26)"
+    },
+    "approveRefundRequest": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/refunds/refund-approve.controller.ts:50",
+      "note": "WALLET_REFUND_ROLES (wallet-refund-action.ts:28)"
+    },
+    "confirmRefundRequest": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/refunds/refund-approve.controller.ts:75",
+      "note": "WALLET_REFUND_ROLES (wallet-refund-action.ts:28)"
+    },
+    "decideRefundRequestAsHolder": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/refunds/holder-decision.controller.ts:42",
+      "note": "@Public : le titulaire se prouve par le code reçu sur son numéro"
+    },
+    "listDevices": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/admin/device-admin.controller.ts:40",
+      "note": "DEVICE_ADMINS (l.20)"
+    },
+    "getDevice": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/admin/device-admin.controller.ts:50",
+      "note": "DEVICE_ADMINS (l.20)"
+    },
+    "suspendDevice": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/admin/device-admin.controller.ts:98",
+      "note": "DEVICE_ADMINS (l.20) via transition()"
+    },
+    "reactivateDevice": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/admin/device-admin.controller.ts:98",
+      "note": "DEVICE_ADMINS (l.20) via transition()"
+    },
+    "revokeDevice": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/admin/device-admin.controller.ts:98",
+      "note": "DEVICE_ADMINS (l.20) via transition()"
+    },
+    "listDeviceEnrollmentCodes": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/enrollment-codes/enrollment-codes.controller.ts:53",
+      "note": "ADMINS (l.23)"
+    },
+    "createDeviceEnrollmentCode": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/devices/enrollment-codes/enrollment-codes.controller.ts:41",
+      "note": "ADMINS (l.23)"
+    },
+    "enrollDevice": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/devices/enrollment/enrollment.controller.ts:17",
+      "note": "@Public : le code d'enrôlement à usage unique du corps est la preuve (security: [])"
+    },
+    "refreshDeviceToken": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/devices/tokens/refresh.controller.ts:18",
+      "note": "contrat : deviceMtls ; @Public côté garde globale, preuve par mTLS et jeton de renouvellement"
+    },
+    "getDeviceConfig": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/devices/config/device-config.controller.ts:21",
+      "note": "DeviceAuth"
+    },
+    "postDeviceHeartbeat": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/devices/heartbeat/heartbeat.controller.ts:31",
+      "note": "DeviceAuth"
+    },
+    "getDeviceSeqStatus": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/offline/seq/seq-status.controller.ts:34",
+      "note": "DeviceAuth"
+    },
+    "getEventDeviceSyncStatus": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/seq/sync-status.controller.ts:26",
+      "note": "READERS (l.13)"
+    },
+    "waiveSeqGap": {
+      "roles": ["SUPERVISOR"],
+      "source": "apps/api/src/offline/seq/seq-gap.controller.ts:36",
+      "note": "WAIVE_SEQ_GAP_ROLES (waive-seq-gap.action.ts:19)"
+    },
+    "importDeviceJournal": {
+      "roles": ["SUPERVISOR"],
+      "source": "apps/api/src/offline/journal/journal-import.controller.ts:35",
+      "note": "JOURNAL_IMPORT_ROLES (journal-import.action.ts:35)"
+    },
+    "getDeviceJournalImport": {
+      "roles": ["ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "apps/api/src/offline/journal/journal-import.controller.ts:66",
+      "note": "TenantAccess.actor"
+    },
+    "getOfflineCeiling": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:56",
+      "note": "CEILING_READERS (l.21)"
+    },
+    "setOfflineCeiling": {
+      "roles": ["OPERATOR_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:67",
+      "note": "write(['OPERATOR_ADMIN'])"
+    },
+    "getOrganizerOfflinePolicy": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:72",
+      "note": "READERS (l.19)"
+    },
+    "setOrganizerOfflinePolicy": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:83",
+      "note": "WRITERS (l.20) ; droits fins dans offline-policy.service.ts:66"
+    },
+    "getEventOfflinePolicy": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:88",
+      "note": "READERS (l.19)"
+    },
+    "setEventOfflinePolicy": {
+      "roles": ["ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:99",
+      "note": "WRITERS (l.20) ; droits fins dans offline-policy.service.ts:66"
+    },
+    "getDeviceOfflinePolicy": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:104",
+      "note": "READERS (l.19)"
+    },
+    "setDeviceOfflinePolicy": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:115",
+      "note": "WRITERS (l.20) ; OPERATOR_ADMIN : coupure seulement (offline-policy.service.ts:86)"
+    },
+    "getEventOfflineRisk": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "apps/api/src/offline/policy/offline-policy.controller.ts:120",
+      "note": "READERS (l.19)"
+    },
+    "getOfflineSnapshot": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/offline/snapshots/offline-snapshots.controller.ts:26",
+      "note": "DeviceAuth"
+    },
+    "ackOfflineSnapshot": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/offline/snapshots/offline-snapshots.controller.ts:60",
+      "note": "DeviceAuth"
+    },
+    "submitOfflineBatch": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/offline/batches/offline-batches.controller.ts:21",
+      "note": "DeviceAuth"
+    },
+    "getOfflineBatchResult": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/offline/batches/offline-batches.controller.ts:40",
+      "note": "DeviceAuth"
+    },
+    "getMediaAuthKey": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/media/auth-keys/auth-keys.controller.ts:18",
+      "note": "DeviceAuth nfcOnly"
+    },
+    "createTap": {
+      "roles": ["DEVICE"],
+      "source": "apps/api/src/media/taps/taps.controller.ts:16",
+      "note": "DeviceAuth"
+    },
+    "createPaymentRequest": {
+      "roles": ["VENDOR", "DEVICE"],
+      "source": "apps/api/src/payment-requests/terminal-payment-requests.controller.ts:36",
+      "note": "DeviceAuth ; session de vendeur exigée (payment-request.service.ts)"
+    },
+    "getPaymentRequest": {
+      "roles": ["CUSTOMER", "DEVICE"],
+      "source": "apps/api/src/payment-requests/terminal-payment-requests.controller.ts:53",
+      "note": "DeviceOrCallerAuth other customer"
+    },
+    "cancelPaymentRequest": {
+      "roles": ["CUSTOMER", "DEVICE"],
+      "source": "apps/api/src/payment-requests/terminal-payment-requests.controller.ts:72",
+      "note": "DeviceOrCallerAuth other customer"
+    },
+    "payPaymentRequest": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/payment-requests/customer-payment-requests.controller.ts:31",
+      "note": "CustomerAuth"
+    },
+    "createCustomerQrToken": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/payment-requests/customer-payment-requests.controller.ts:50",
+      "note": "CustomerAuth"
+    },
+    "requestCustomerOtp": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/customer-auth/customer-auth.controller.ts:16",
+      "note": "@Public"
+    },
+    "exchangeCustomerOtp": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/customer-auth/customer-auth.controller.ts:32",
+      "note": "@Public"
+    },
+    "refreshCustomerToken": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/customer-auth/customer-auth.controller.ts:39",
+      "note": "@Public"
+    },
+    "getMe": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/customer-app/me.controller.ts:62",
+      "note": "CustomerAuth"
+    },
+    "listMyWallets": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/customer-app/me.controller.ts:68",
+      "note": "CustomerAuth"
+    },
+    "listMyWalletTransactions": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/customer-app/me.controller.ts:74",
+      "note": "CustomerAuth"
+    },
+    "listMyMedia": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/customer-app/me.controller.ts:90",
+      "note": "CustomerAuth"
+    },
+    "reportMyMediaLost": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/customer-app/me.controller.ts:97",
+      "note": "CustomerAuth"
+    },
+    "claimMedia": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/media/claims/claims.controller.ts:38",
+      "note": "CustomerAuth"
+    },
+    "lookupBalanceByClaimCode": {
+      "roles": ["PUBLIC"],
+      "source": "apps/api/src/media/claims/claims.controller.ts:79",
+      "note": "@Public (security: [])"
+    },
+    "listMyRefundRequests": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/refunds/my-refund-requests.controller.ts:38",
+      "note": "CustomerAuth"
+    },
+    "createMyRefundRequest": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/refunds/my-refund-requests.controller.ts:23",
+      "note": "CustomerAuth"
+    },
+    "getMyWalletStatement": {
+      "roles": ["CUSTOMER"],
+      "source": "apps/api/src/statements/my-wallet-statement.controller.ts:16",
+      "note": "CustomerAuth"
+    },
+    "receivePspWebhook": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/webhooks/webhooks.controller.ts:14",
+      "note": "@Public côté garde globale ; authentification = signature HMAC du PSP (pspHmac) vérifiée par WebhookIntake"
+    },
+    "getCurrentEdgeHandover": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/edge/control/current-handover.controller.ts:28",
+      "note": "EdgeAuth"
+    },
+    "ackEdgeHandover": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/edge/handover/handover.controller.ts:65",
+      "note": "EdgeAuth"
+    },
+    "releaseEdgeHandover": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/edge/handover/handover.controller.ts:76",
+      "note": "EdgeAuth"
+    },
+    "getEdgeReplicationFeed": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/edge/replication/replication-feed.controller.ts:46",
+      "note": "EdgeAuth"
+    },
+    "submitEdgeSyncBatch": {
+      "roles": ["GATEWAY"],
+      "source": "apps/api/src/edge/sync/edge-sync.controller.ts:20",
+      "note": "EdgeAuth"
+    },
+    "getStaffProfile": {
+      "roles": [
+        "PLATFORM_ADMIN",
+        "OPERATOR_ADMIN",
+        "ORGANIZER_ADMIN",
+        "MERCHANT_ADMIN",
+        "SUPERVISOR",
+        "CASHIER",
+        "PERSONALIZER"
+      ],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:98",
+      "note": "contrôle implémenté en WP05, tableau interfaces.md §3 : tous les rôles du personnel (ni VENDOR, ni CUSTOMER)"
+    },
+    "listEventSales": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN", "SUPERVISOR"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:99",
+      "note": "contrôle implémenté en WP06, tableau interfaces.md §3"
+    },
+    "getSale": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN", "SUPERVISOR"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:100",
+      "note": "contrôle implémenté en WP06, tableau interfaces.md §3"
+    },
+    "listAnomalies": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:101",
+      "note": "contrôle implémenté en WP07, tableau interfaces.md §3 ; une anomalie sans grand livre n'est lue que par OPERATOR_ADMIN (consigne F3)"
+    },
+    "classifyAnomaly": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:102",
+      "note": "contrôle implémenté en WP07, tableau interfaces.md §3 ; une anomalie sans grand livre n'est classée que par OPERATOR_ADMIN (consigne F3)"
+    },
+    "searchMedia": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "MERCHANT_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:103",
+      "note": "contrôle implémenté en WP08, tableau interfaces.md §3"
+    },
+    "getWalletOverview": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR", "CASHIER"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:104",
+      "note": "contrôle implémenté en WP08, tableau interfaces.md §3"
+    },
+    "searchCustomerByPhone": {
+      "roles": ["OPERATOR_ADMIN", "ORGANIZER_ADMIN", "SUPERVISOR"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:105",
+      "note": "contrôle implémenté en WP08, tableau interfaces.md §3 ; PLATFORM_ADMIN exclu (renforcement du 24/11/2026)"
+    },
+    "listPhoneModels": {
+      "roles": ["PLATFORM_ADMIN", "OPERATOR_ADMIN", "ORGANIZER_ADMIN"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:106",
+      "note": "contrôle implémenté en WP09, tableau interfaces.md §3"
+    },
+    "upsertPhoneModel": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:107",
+      "note": "contrôle implémenté en WP09, tableau interfaces.md §3"
+    },
+    "deletePhoneModel": {
+      "roles": ["PLATFORM_ADMIN"],
+      "source": "kitty-specs/routes-backoffice-01M86KT6/interfaces.md:108",
+      "note": "contrôle implémenté en WP09, tableau interfaces.md §3"
+    },
+    "createPaymentIntent": {
+      "doubt": true,
+      "question": "posClient (client credentials d un POS tiers) : aucune route dans apps/api/src ; aucune des 12 valeurs ne décrit ce client",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "getPaymentIntent": {
+      "doubt": true,
+      "question": "posClient ou terminal : aucune route dans apps/api/src",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "capturePaymentIntent": {
+      "doubt": true,
+      "question": "posClient : aucune route dans apps/api/src (seule mention : debit-authority/debit-paths.ts:114)",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "cancelPaymentIntent": {
+      "doubt": true,
+      "question": "posClient : aucune route dans apps/api/src",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "listDevicePaymentIntents": {
+      "doubt": true,
+      "question": "terminal (deviceMtls) : aucune route dans apps/api/src ; DEVICE probable mais non vérifiable",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "listWebhookEndpoints": {
+      "doubt": true,
+      "question": "posClient : aucune route dans apps/api/src",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "createWebhookEndpoint": {
+      "doubt": true,
+      "question": "posClient : aucune route dans apps/api/src",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    },
+    "deleteWebhookEndpoint": {
+      "doubt": true,
+      "question": "posClient : aucune route dans apps/api/src",
+      "source": "packages/contracts/openapi.yaml (schéma de sécurité posClient/deviceMtls) ; aucun contrôle dans apps/api/src"
+    }
+  }
+}

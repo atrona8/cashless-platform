@@ -171,7 +171,13 @@ export type AuditAction =
   | 'ACCOUNTING_EXPORTED'
   // Mission 10a, WP05 : identification au guichet et sa révocation (WP06)
   | 'KYC_VERIFIED'
-  | 'KYC_REVOKED';
+  | 'KYC_REVOKED'
+  // Mission routes-backoffice (11b)
+  | 'ANOMALY_CLASSIFIED'
+  | 'PHONE_MODEL_UPSERTED'
+  | 'PHONE_MODEL_DELETED'
+  | 'STAFF_CUSTOMER_SEARCH'
+  | 'STAFF_CUSTOMER_SEARCH_RATE_LIMITED';
 
 /** Qui agit, avec quel rôle, d'où, pour quelle requête (voir `auditContext`). */
 export interface AuditContext {

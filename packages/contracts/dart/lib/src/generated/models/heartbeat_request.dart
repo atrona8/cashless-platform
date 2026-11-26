@@ -4,6 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'device_model.dart';
 import 'timestamp.dart';
 
 part 'heartbeat_request.g.dart';
@@ -18,6 +19,7 @@ class HeartbeatRequest {
     this.pendingExposure,
     this.batteryPercent,
     this.appVersion,
+    this.deviceModel,
   });
 
   factory HeartbeatRequest.fromJson(Map<String, Object?> json) =>
@@ -39,6 +41,8 @@ class HeartbeatRequest {
   final int? batteryPercent;
   @JsonKey(name: 'app_version')
   final String? appVersion;
+  @JsonKey(name: 'device_model')
+  final DeviceModel? deviceModel;
 
   Map<String, Object?> toJson() => _$HeartbeatRequestToJson(this);
 }

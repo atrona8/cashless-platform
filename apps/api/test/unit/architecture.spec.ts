@@ -449,4 +449,22 @@ describe('architecture', () => {
     expect(bootstrap.match(/assertProcessIsSafe\(app\)/g)).toHaveLength(2);
     expect(bootstrap).toMatch(/assertNoFakeInProduction\(config\.production/);
   });
+
+  // Mission 11b, D4 : `cashless_app` n'a plus UPDATE sur `anomaly`. Un verrou de ligne (`FOR UPDATE`, `FOR SHARE`, ...)
+  // ou une écriture directe côté API échoue en 42501 en production (régression de `cash-due.service.ts`, cycle 3).
+  // Les clôtures passent par des fonctions SECURITY DEFINER de la base.
+  it('aucun verrou ni UPDATE/DELETE direct sur la table anomaly dans src/', () => {
+    const offenders = files
+      .filter((f) => /\b(?:FROM|UPDATE|DELETE\s+FROM)\s+(?:public\.)?anomaly\b/i.test(f.text))
+      .filter((f) => {
+        const text = f.text.replace(/\/\/.*$/gm, '');
+        const writes = /\b(?:UPDATE|DELETE\s+FROM)\s+(?:public\.)?anomaly\b/i.test(text);
+        const locks = [...text.matchAll(/`[^`]*\banomaly\b[^`]*`/gis)].some((m) =>
+          /\bFOR\s+(?:NO\s+KEY\s+)?(?:UPDATE|SHARE|KEY\s+SHARE)\b/i.test(m[0]),
+        );
+        return writes || locks;
+      })
+      .map((f) => f.path);
+    expect(offenders).toEqual([]);
+  });
 });

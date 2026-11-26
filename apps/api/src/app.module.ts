@@ -2,6 +2,7 @@
 // contexte de prestataire tiré de la personne authentifiée (IdentityModule).
 import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { AnomaliesModule } from './anomalies/anomalies.module';
 import { ApprovalModule } from './approval/approval.module';
 import { AuditModule } from './audit/audit.module';
 import { ConfigResolverModule } from './configuration/config-resolver.module';
@@ -112,6 +113,8 @@ import { WorkerRegistry } from './processes/worker';
     ClosingModule,
     // Mission 9b (lot WP13) : relevés des parties, relevé du festivalier, export comptable.
     StatementsModule,
+    // Mission 11b (lot WP07) : liste et classement des anomalies du back-office.
+    AnomaliesModule,
     // Simulation du paiement PSP : développement seulement, absente en production (OP-N121).
     ...devPspSimulationImports(),
   ],
