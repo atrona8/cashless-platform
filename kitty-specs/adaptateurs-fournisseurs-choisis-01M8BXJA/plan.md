@@ -179,9 +179,11 @@ mémoire, jamais journalisé. Détail : `contracts/aws.md`.
 
 ### IC-08 — Garde de production, sélection et commandes d'essai
 
-- `external-services/production-enabled.ts` : `PRODUCTION_ENABLED_SERVICES: readonly ExternalService[] = []` ; un test
-  échoue si la liste change sans que le compte rendu d'essai du service ne soit cité dans la PR (convention vérifiée à
-  la revue) et si un service hors périmètre y apparaît.
+- `external-services/production-enabled.ts` : `PRODUCTION_ENABLED_SERVICES: readonly ExternalService[] = []`.
+  Test de borne (règle 3 du porteur) : pour chaque service de la liste, un compte rendu d'essai réussi doit être
+  commité dans `docs/essais/<service>.json` (forme : `data-model.md`, `ok: true`, sans secret, vérifié par le test) ;
+  le test échoue si un service est listé sans ce fichier, si un nom inconnu apparaît, ou si un service hors périmètre
+  (Orange Money, SMS, WhatsApp, OIDC, matériel de la passerelle, banque) est listé. La PR relue (D6) reste exigée.
 - Sélection par service : `PSP_ADAPTERS`, `PSP_SECRET_STORE`, `KMS_BACKEND`, `SEAL_COPY` = `fake` (défaut hors
   production) | `real`. En production : `fake` refusé ; `real` refusé si le service n'est pas dans la liste ; message
   qui nomme le service (C-002, FR-013).
@@ -199,3 +201,6 @@ consigner la comparaison point par point ; corriger seulement un écart, sinon r
 `docs/SERVICES-EXTERNES.md` : par service, identifiants et clés, emplacement, commande d'essai (FR-015) ; OP et ADR des
 écarts D2 et D7 ; report dans PROMPTS et PRD ; preuves de la mission ; `COVERAGE` des faux de
 `production-refusals.spec.ts` à jour.
+Libellés « mission 12b » de `docs/SERVICES-EXTERNES.md`, `docs/POINTS_OUVERTS.md` (OP-N81, OP-N89…) et
+`docs/DECISIONS_ADR.md` (ADR-131…) précisés : « 12b-1 » pour ce qui est livré ici, « 12b » (reste) pour les
+fournisseurs non décidés et Orange Money.

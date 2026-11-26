@@ -2,7 +2,8 @@
 
 1. `apps/api/src/external-services/production-enabled.ts` est le **seul** endroit qui autorise un service réel en
    production. Il commence vide. L'ajout d'un service se fait par une PR relue qui joint le compte rendu de son essai
-   (D6). Un test fige la liste des services connus et refuse un nom inconnu.
+   (D6), et le compte rendu est commité dans `docs/essais/<service>.json`. Un test échoue si un service listé n'a pas
+   de compte rendu réussi, si un nom est inconnu, ou si un service hors périmètre est listé (règle 3 du porteur).
 2. Chaque fabrique (PSP, coffre, KMS, copie des scellements) lit son réglage (`fake` | `real`) :
    - hors production : `fake` par défaut, `real` permis (bac à sable, préproduction) ;
    - production : `fake` → `FakeInProductionError` ; `real` hors liste → `UntriedInProductionError` nommant le
