@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-26T03:50:14.628914+00:00",
+      "accepted_by": "xaamga",
+      "accepted_from_commit": "332567c0df28546237f441dcbb22b3c56b83ba8c"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-26T03:50:14.628914+00:00",
+  "accepted_by": "xaamga",
+  "accepted_from_commit": "332567c0df28546237f441dcbb22b3c56b83ba8c",
   "coordination_branch": "kitty/mission-routes-backoffice-01M86KT6",
   "created_at": "2026-11-24T11:07:18.072949+00:00",
   "flattened": false,
