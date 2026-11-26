@@ -153,3 +153,8 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   borne d'une résolution par minute coïncide avec la reprise des 24 h (litige rattachable devenu anomalie : échec
   sûr, à traiter à la main) ; mutation survivante sur le contrôle « déjà vu » de `expireUnmatchedDispute` (code
   antérieur). Fichiers à faire relire par une personne : `psp-status-confirmer.ts`, `event-dispatcher.ts`.
+- **WP13 (relecture de WP10 cycle 2, approuvé le 26/11/2026)** : `PRODUCTION_ENABLED_SERVICES` vide (D3/D6) ; marques
+  §6 ajoutées hors carte sur `S3SealCopy`, `PayDunyaPspAdapter`, `AwsKms` ; test d'architecture des sites de
+  construction (preuve d'injection sur `S3SealCopy` seul). Fichiers à faire relire par une personne :
+  `kms/production-guard.ts`, `external-services/production-enabled.ts`, `kms/kms.module.ts`,
+  `sealing/sealing.module.ts`, `psp/psp.providers.ts`, `s3-seal-copy.ts`, `aws-kms.ts`, `paydunya-adapter.ts`.
