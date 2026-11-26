@@ -104,3 +104,9 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   formulaire, description par fournisseur, description de `pspHmac`) avec la ligne « Décision du porteur : 26/11/2026 »
   lue par `check-baseline-decision.mjs` (aujourd'hui satisfait par ADR-169 seulement). Fichier à faire relire par une
   personne : `tools/contract-stability/contract-baseline.json`.
+- **WP03 (livraison de WP02, `2947b882`)** : WP02 a retouché, pour la compilation, `webhook-verifier.ts` (refus
+  provisoire `BODY_MALFORMED` de `SIGNAL` et de `confirmationRequired` : **à remplacer** par T011),
+  `webhook-intake.service.ts`, `psp-topup-poller.worker.ts`, `topups/psp/psp-topups.service.ts`,
+  `dev/psp-simulation.service.ts` (`provider` passé au coffre) et des tests de `test/integration/webhooks/`. Pars de ces
+  versions (ta lane fusionne la lane b). Le faux coffre accepte `key` et encore `adapter` (ancien nom, utilisé par
+  `test/integration/topups/psp-fixtures.ts`) : ne le retire pas sans adapter ces tests.
