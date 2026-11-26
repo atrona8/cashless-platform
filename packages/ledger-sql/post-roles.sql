@@ -1305,6 +1305,8 @@ GRANT EXECUTE ON FUNCTION
 -- 16. Mission 11b routes-backoffice, lot WP02 (migration 0102 ; research D5 ; interfaces.md §2).
 -- A FAIRE RELIRE PAR UNE PERSONNE (droits de la base) : l'agent qui l'a écrite ne la relit pas.
 -- Vues de lecture sale_overview et anomaly_overview : SELECT seulement. roles.sql rend INSERT et UPDATE à toute
--- relation, vues comprises ; on les retire (SELECT accordé par la migration et par roles.sql).
+-- relation, vues comprises ; on les retire. SELECT posé ici (et par roles.sql), jamais par la migration : le rôle
+-- n'existe pas encore quand la série s'applique sur une base neuve (correctif CI du 26/11/2026).
 -- -----------------------------------------------------------------------------------------------
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON sale_overview, anomaly_overview FROM cashless_app;
+GRANT SELECT ON sale_overview, anomaly_overview TO cashless_app;

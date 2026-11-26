@@ -73,6 +73,12 @@ Renforcements faits puis consignés : retrait de `UPDATE (status, resolution_tx_
   en local, PASS.
 - **N8 (info)** : `x-roles-matrix.spec.ts` n'est pas dans la passe jest par défaut ; il tourne par un pas CI dédié
   (`ledger-tests.yml` l. 293). Une perte de ce pas ne ferait pas échouer `npm test`.
+- **N9 (corrigé après la revue, 26/11/2026)** : la CI de la PR #27 a échoué à la migration `0102` sur une base neuve
+  (`role "cashless_app" does not exist`) : la migration accordait `SELECT` sur ses vues alors que les rôles ne sont
+  créés que par `roles.sql`, après la série (convention de la `0033`). Invisible en local, où les rôles existent
+  déjà dans le cluster. Correctif : `GRANT` retirés de la migration et posés dans `post-roles.sql` § 16 ; mêmes droits
+  au final, vérifiés sur un cluster Postgres 17 neuf (`SELECT` oui, écriture non, `PUBLIC` rien). La revue s'est fiée
+  à des bases déjà migrées : rejouer la série sur un cluster vierge avant de conclure.
 
 ## Fichiers à faire relire par une personne (règle 4)
 1. `packages/ledger-sql/migrations/0101_anomaly_classification_phone_models.sql` (`classify_anomaly`, `set_device_model`,

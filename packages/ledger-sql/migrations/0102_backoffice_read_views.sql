@@ -54,7 +54,8 @@ SELECT t.id                       AS transaction_id,
   LEFT JOIN journal_transaction r ON r.reverses_id = t.id
  WHERE t.type = 'PURCHASE';
 REVOKE ALL ON sale_overview FROM PUBLIC;
-GRANT SELECT ON sale_overview TO cashless_app;
+-- Aucun GRANT ici (convention 0033) : cashless_app n'existe pas encore sur une base neuve ; SELECT posé par
+-- roles.sql et post-roles.sql § 16.
 
 -- 2. anomaly_overview : colonnes d'anomaly + événement + devise + « classable » (0101).
 -- event_id : l'événement de la transaction liée ; à défaut celui du grand livre s'il est de portée EVENT ; NULL
@@ -71,4 +72,5 @@ SELECT an.id, an.operator_id, an.ledger_id, an.kind, an.media_id, an.device_id, 
   LEFT JOIN ledger l ON l.id = an.ledger_id
   LEFT JOIN journal_transaction tx ON tx.id = an.transaction_id;
 REVOKE ALL ON anomaly_overview FROM PUBLIC;
-GRANT SELECT ON anomaly_overview TO cashless_app;
+-- Aucun GRANT ici (convention 0033) : cashless_app n'existe pas encore sur une base neuve ; SELECT posé par
+-- roles.sql et post-roles.sql § 16.
