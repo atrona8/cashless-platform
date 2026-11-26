@@ -1,0 +1,86 @@
+# Fiche commune — implémentation et relecture des lots (mission 12b-1)
+
+Dépôt : `/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform` (`<R>`). Mission :
+`adaptateurs-fournisseurs-choisis-01M8BXJA` (`<M>` = `<R>/kitty-specs/<mission>`). Planification et fusion sur
+`feat/adaptateurs-fournisseurs-choisis`. Ne relis pas CLAUDE.md, README ni la SPECIFICATION en entier : l'essentiel
+est ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=C`**.
+
+## Démarrer
+1. `cd <R>` puis `LC_ALL=C LANG=C spec-kitty agent action implement WPxx --agent claude --mission
+   adaptateurs-fournisseurs-choisis-01M8BXJA` (implémenteur) ou `… action review WPxx …` (relecteur). La commande
+   affiche le prompt du lot : c'est la source du lot. Lis aussi `<M>/interfaces.md` (fait foi sur les noms).
+   **Prends le lot (claim) avant ton premier commit** : un commit fait avant n'est pas attribuable (leçon de la 11b).
+2. Travaille **uniquement** dans le worktree de la lane (`<R>/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-lane-x`) :
+   `cd <lane> || exit 1` avant toute commande. Écrire dans le checkout principal est une faute grave.
+3. Si ta lane dépend d'autres lanes : `bash <R>/docs/passation-12b-1/scripts/merge-deps.sh <lettre>` d'abord.
+4. Si `node_modules/@cashless/{api,contracts,ledger-sql,shared-rules}` manque dans la lane : `mkdir -p
+   node_modules/@cashless` puis liens `ln -s ../../apps/api` et `../../packages/{shared-rules,contracts,ledger-sql}`.
+   Les dépendances nouvelles (WP01) s'installent dans le checkout principal par l'orchestrateur après la fusion de
+   WP01 ; une lane qui en a besoin le signale si elles manquent.
+
+## Ce que fait la mission
+Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis : Wave, PayDunya, Stripe
+(`PspAdapter`), AWS Secrets Manager (`PspSecretStore`), AWS KMS (5 ports), S3 Object Lock (`SealExternalCopy`). Port PSP
+révisé : verdict `NOTIFICATION` ou `SIGNAL` ; un crédit après un signal ou une notification « à relire » ne vient que
+d'un `getStatus` authentifié. Garde : un service réel ne tourne en production que s'il figure dans
+`PRODUCTION_ENABLED_SERVICES` (vide). Commande d'essai par service. **Aucun appel réseau en test.**
+
+## Règles du projet (résumé obligatoire)
+- **Sécurité (règle 1)** : tout écart qui affaiblit la sécurité (droit plus large, contrôle retiré ou reporté, secret
+  plus exposé, faux gardé) est soumis au porteur **avant d'être codé** : décris-le dans ton compte rendu (risque,
+  options), ne le code pas, continue le reste. Un renforcement se fait puis se signale.
+- **Décisions du porteur (26/11/2026)** : D1 Orange Money hors périmètre (n'y touche pas) ; D2 notification PayDunya =
+  signal, crédit après `checkout-invoice/confirm/{token}` ; D3/D6 refus en production jusqu'à l'essai réel, liste dans
+  le code ; D4 Stripe inclus ; D5 aucun remboursement au payeur ; D7 carte PayDunya sans preuve 3-D Secure : non
+  créditée ; D8 rétention 10 ans ; D9 ajout rétrocompatible à `receivePspWebhook` (WP04 seul).
+- **Sources** : tests exécutables > schéma SQL, `openapi.yaml` > SPECIFICATION > PRD. Dans la mission, `interfaces.md`
+  fait foi ; pour un fournisseur, `research.md` (pages lues le 26/11/2026). Ce que la documentation ne dit pas est
+  « à confirmer à l'essai » : isole-le dans une constante commentée, ne l'invente pas.
+- **Aucune migration**, aucun `.sql` généré modifié, aucun `GRANT`. **Dépendances** : seulement celles de WP01
+  (`axios` 1.21.1, `@aws-sdk/client-{kms,secrets-manager,s3}` 3.1172.0).
+- **Aucun secret** (clé, jeton, secret de notification, corps complet, référence de secret) dans un journal, un message
+  d'erreur, une note de lane ou un compte rendu ; tout secret reste dans `Secret` jusqu'à l'appel.
+- **Tests sans réseau** : faux serveurs locaux (`test/support/fake-servers/`), jamais un hôte externe ; les vecteurs
+  de signature viennent des exemples publiés quand la documentation en donne.
+- Fichiers : seulement les `owned_files` du lot (+ retouches de compilation nommées dans la note de lane). Lignes de
+  100 caractères au plus.
+- **Chaque contrôle ajouté a une mutation vérifiée** : retire-le, constate l'échec du test, remets-le ; note la mutation.
+
+## Base de données (Docker, partagée)
+- Serveur : `PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres`. **`cashless_test` est réservée à l'orchestrateur.** Chaque
+  lot utilise `cashless_wpXX`. Avant tout test : `docker ps` montre `cashless-platform-pg17`, sinon arrête-toi.
+- Remise à zéro depuis la lane : `PGDATABASE=cashless_wpXX bash packages/ledger-sql/scripts/reset-db.sh`.
+- Jest, depuis `apps/api` de la lane, **dans le même appel Bash** : `export PGDATABASE=cashless_wpXX; source
+  ../../tools/dev-db/env.sh; env | grep DATABASE_URL` (**toutes** les URL doivent viser ta base : `test/support/db.ts`
+  lit `DATABASE_URL_*`, pas `PGDATABASE`) puis `SKIP_LATENCY=1 npx jest <chemin> --runInBand --forceExit`.
+- Jamais de batterie complète, jamais en tâche de fond. **API partagée du porteur (ngrok, `exports/cashless-api`) :
+  n'y touche jamais.** Aucun `pkill`.
+- Instabilités connues : `claim-code-order.spec.ts`, `auth-keys.spec.ts`, `transverse/migrate-lock.spec.ts`,
+  `tests_offline_snapshot_source_no_stats.sql`.
+
+## Fin d'implémentation
+1. `npx eslint <tes fichiers>`, `npx prettier --check <tes fichiers>` et `npx tsc --noEmit -p apps/api/tsconfig.json`.
+2. Dans la lane : `git add <tes fichiers>`, `git commit -m "feat(WPxx): …"` (terminer par `Co-Authored-By: Claude
+   Sonnet 5.5 <noreply@anthropic.com>`). Jamais de push.
+3. `LC_ALL=C LANG=C spec-kitty agent tasks mark-status <Txxx…> --status done --mission
+   adaptateurs-fournisseurs-choisis-01M8BXJA`.
+4. `bash <R>/docs/passation-12b-1/scripts/align-lane.sh <lettre>` avant `move-task`. Garde `kitty-specs` bloquant :
+   **pas de `--force`**, signale-le.
+5. `LC_ALL=C LANG=C spec-kitty agent tasks move-task WPxx --to for_review --mission
+   adaptateurs-fournisseurs-choisis-01M8BXJA --note "…"` : retouches hors carte, écarts, mutations.
+6. Compte rendu final (≤ 25 lignes) : commits, fichiers, retouches hors carte, écarts (renforce ou affaiblit), points
+   soumis au porteur, points « à confirmer à l'essai », fichiers à faire relire par une personne, preuves.
+
+## Relecture (agent distinct de l'implémenteur)
+- Compare chaque appel à `research.md` et au contrat du lot : chemin, méthode, en-têtes, forme du corps, statuts. Un
+  écart à la documentation est bloquant.
+- Tente de casser : notification forgée, rejouée, hors délai, signature du mauvais schéma (point ou non), entrée
+  inconnue, secret précédent échu, crédit sur un signal, secret dans un journal, appel réseau réel en test, nouvel
+  essai d'une création non idempotente, isolement des détenteurs de fonds dans le coffre.
+- **Gardes transverses à relancer** : `test/unit/architecture.spec.ts`, `test/unit/production-guard.spec.ts`,
+  `test/unit/psp`, `test/integration/webhooks`, `test/integration/topups`.
+- Verdict : `… move-task WPxx --to approved --note "…"` ou `--to planned --review-feedback-file <fichier>`. Pas de
+  `--force`. Compte rendu final (≤ 20 lignes).
+
+## Consignes issues de l'analyse et des relectures
+(Complété par l'orchestrateur au fil de la mission.)

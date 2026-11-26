@@ -123,9 +123,10 @@ docs/SERVICES-EXTERNES.md             # paramètres à poser par service (IC-10)
 - Réception : corps `application/x-www-form-urlencoded` accepté pour `paydunya` seulement (taille contrôlée avant
   lecture, comme aujourd'hui) ; un signal ou une notification à relire est **conservé** puis marqué traité **sans
   effet** ; aucun crédit pendant la réception, aucun appel sortant.
-- Relecture : le travailleur d'interrogation (`psp-topup-poller`) interroge en priorité les recharges qui ont reçu un
-  signal (délai 0 au lieu de 2 min), lit le statut complet par `getStatus` (montant, devise, carte), puis le processeur
-  existant applique. Une recharge sans signal garde le délai actuel.
+- Relecture : service commun `PspStatusConfirmer` extrait du travailleur d'interrogation (lecture du statut hors
+  transaction, puis processeur existant) ; la réception le sollicite de façon asynchrone après avoir répondu (au plus
+  une relecture par recharge et par minute) ; le travailleur (recharges `PENDING` de plus de 2 min) reste le filet.
+  Aucune migration (R-07).
 - Contrat `openapi.yaml` (D9) : `application/x-www-form-urlencoded` ajouté à `receivePspWebhook`, description par
   fournisseur ; `contract-baseline.json` mis à jour.
 

@@ -111,15 +111,18 @@ sont vérifiés par la commande d'essai du service (IC-08) ; l'adaptateur les is
   → DISPUTE ; autres → UNKNOWN.
 - Éligibilité d'un marchand établi au Sénégal : non vérifiée (liste des pays en 404) ; à la charge du porteur (D4).
 
-## R-07 — Relecture des signaux sans migration
+## R-07 — Relecture des signaux sans migration (révisé au découpage, 26/11/2026)
 
-- **Décision** : le signal est conservé dans `psp_event` (normalisé `UNKNOWN`, sans effet, PROCESSED) ; la recharge
-  reste `PENDING` ; le travailleur d'interrogation prend d'abord les recharges dont un signal ou une notification à
-  relire est arrivé depuis leur dernière interrogation (lecture de `psp_event` par référence), sans attendre 2 min.
-- **Raison** : aucun changement de schéma ; le crédit garde son chemin unique (processeur WP11, verrou de la
-  recharge, clé de paiement), donc NFR-005 est hérité.
-- **À vérifier au lot** : la fonction de lecture des candidats (`psp_poll_candidates`) ; si une colonne ou une fonction
-  est nécessaire, migration nouvelle (jamais d'édition des `.sql` générés, C-006) présentée au porteur.
+- **Constat** : `psp_poll_candidates` (migration `0038`) ne rend que les recharges `PENDING` de plus de 2 minutes, en
+  dur ; la priorité aux recharges signalées demanderait une migration.
+- **Décision** : la logique « relire une recharge chez le PSP puis appliquer » est extraite du travailleur dans un
+  service commun `PspStatusConfirmer` (`topups/psp/psp-status-confirmer.ts`). La réception, après avoir conservé un
+  signal ou une notification à relire et **après avoir répondu**, demande au confirmateur une relecture asynchrone de
+  la recharge désignée (`setImmediate`, hors de la requête, au plus une par recharge et par minute dans le processus).
+  Le travailleur d'interrogation (2 min) reste le filet : une relecture perdue (redémarrage, panne) est reprise.
+- **Raison** : aucune migration, crédit par le chemin unique du processeur (verrou, clé de paiement : NFR-005 hérité),
+  réponse au PSP inchangée.
+- **Alternative** : migration `0103` remplaçant `psp_poll_candidates` (écartée : plus lourde, même effet à 2 min près).
 
 ## R-08 — Secrets Manager
 

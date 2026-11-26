@@ -42,8 +42,8 @@ authentifié ; jamais sur un signal.
 
 ## Relecture d'une recharge
 
-État inchangé (`PENDING`) ; priorité donnée par la présence, dans `psp_event`, d'un événement de la recharge reçu
-après sa dernière interrogation. Au plus une relecture par recharge et par minute (borne d'un signal forgé, R-05).
+État inchangé (`PENDING`). Relecture asynchrone demandée par la réception après réponse, au plus une par recharge
+et par minute (borne d'un signal forgé, R-05) ; filet : interrogation des recharges `PENDING` de plus de 2 min.
 
 ## Services externes
 
