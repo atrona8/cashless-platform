@@ -1677,6 +1677,77 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
 
+  /media/{media_id}/partial-cash-refunds:
+    post:
+      tags: [Bracelets]
+      operationId: refundPartialCash
+      x-process: public
+      summary: Rendre en espèces une partie du solde payé sans restituer le bracelet
+      description: |
+        Permis seulement si le prestataire l'autorise (`cash_partial_refund_allowed`) et si l'événement l'active
+        (`cash_partial_refund_enabled`) ; sinon `422 REFUND_NOT_ALLOWED` (raison `PARTIAL_CASH_REFUND_DISABLED`).
+        Terminal `TOPUP_DESK` et personne `CASHIER` ou `SUPERVISOR` de l'événement. Session de caisse `OPEN` du
+        terminal (sans session ouverte : `409 CONFLICT_STATE`).
+        Le bracelet est lu et reste actif. Le passage est obligatoire : `tap_id` (passage déjà enregistré) OU `tap`
+        (lecture en ligne), exactement comme `releaseMedia` ; aucun des deux, ou les deux : `400`.
+        Le montant est débité du solde payé (montant brut). Les espèces remises valent le montant moins les frais de
+        `refund_policy`. Les crédits offerts et la caution restent inchangés.
+        Seconde personne obligatoire, par jeton d'approbation sur place (en-tête `X-Approval-Token`, ADR-74), quand le
+        cumul du jour UTC des rendus partiels du portefeuille (tous ses bracelets), montant compris, dépasse
+        `event.cash_refund_single_max` (ADR-53) ; sans jeton `403 APPROVAL_REQUIRED`, jeton refusé
+        `403 APPROVAL_INVALID`.
+        Indisponible pendant `EDGE` (`409 DEBIT_AUTHORITY_EDGE`, sync_protocol.md §9.6).
+        Codes possibles (tous déjà définis) : `403` `APPROVAL_REQUIRED`, `APPROVAL_INVALID`, `FORBIDDEN` ; `409`
+        `CONFLICT_STATE`, `DEBIT_AUTHORITY_EDGE`, `MEDIA_STATE_INVALID` ; `422` `REFUND_NOT_ALLOWED`,
+        `AMOUNT_OUT_OF_RANGE`, `INSUFFICIENT_FUNDS`, `VALIDATION_FAILED`.
+      security:
+        - deviceMtls: []
+          deviceToken: []
+          deviceSignature: []
+          staffBearer: []
+      parameters:
+        - $ref: '#/components/parameters/MediaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ApprovalToken'
+        - $ref: '#/components/parameters/DeviceRequestId'
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartialCashRefundCreate'
+            example:
+              tap_id: 918301
+              amount: 2000
+      responses:
+        '201':
+          description: Montant rendu en espèces, bracelet toujours actif.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartialCashRefund'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
   /media/{media_id}/reassignment:
     post:
       tags: [Bracelets]
@@ -8128,6 +8199,8 @@ paths:
         Crée la version suivante du niveau `OPERATOR` (contenu complet). Contrôles dans l'ordre : type, bornes fixes
         du catalogue, maximum du niveau supérieur ; premier échec : `422 VALIDATION_FAILED` (`violations`). Écriture
         concurrente : `409 CONFLICT_STATE`. Journalisé (`CONFIG_VERSION_CREATED`). Rôle : `OPERATOR_ADMIN`.
+        Clé `cash_partial_refund_allowed` : autorise le rendu partiel en espèces (niveau prestataire seul,
+        `OPERATOR_ADMIN`, défaut `false`).
       parameters:
         - $ref: '#/components/parameters/OperatorId'
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -8908,6 +8981,8 @@ paths:
         Résout la cascade `PLATFORM → OPERATOR → ORGANIZER → EVENT` (§4.2) à la date `at` : pour chaque clé, la valeur
         du niveau le plus précis qui la définit, son niveau et sa version d'origine ; à défaut la valeur par défaut du
         catalogue, marquée `provisional` si elle vient de §17.2. `participation_id` ajoute le niveau `PARTICIPATION`.
+        Clé `cash_partial_refund_allowed` (niveau prestataire, `OPERATOR_ADMIN`, défaut `false`) : autorise le rendu
+        partiel en espèces.
         Rôles : lecture de l'événement.
       parameters:
         - $ref: '#/components/parameters/OperatorId'
@@ -14123,6 +14198,69 @@ components:
           $ref: '#/components/schemas/CashMovement'
         settle_balance:
           $ref: '#/components/schemas/CashMovement'
+    PartialCashRefundCreate:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      description: |
+        Passage obligatoire, par `tap_id` (passage déjà enregistré) OU `tap` (lecture en ligne), exactement comme
+        `releaseMedia` ; aucun des deux, ou les deux : `400`.
+      properties:
+        tap_id:
+          type: integer
+          format: int64
+          minimum: 0
+        tap:
+          $ref: '#/components/schemas/TapInput'
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Montant débité du solde payé, en unités mineures.
+    PartialCashRefund:
+      type: object
+      description: Rendu partiel en espèces. Montants en unités mineures.
+      required: [transaction_id, media_id, wallet_id, amount_debited, fee, cash_handed, paid_balance_after,
+                 day_cumulative, approved_by, cash_session_id]
+      properties:
+        transaction_id:
+          type: string
+          format: uuid
+        media_id:
+          type: string
+          format: uuid
+        wallet_id:
+          type: string
+          format: uuid
+        amount_debited:
+          type: integer
+          format: int64
+          description: Montant débité du solde payé (brut).
+        fee:
+          type: integer
+          format: int64
+          description: Frais retenus (`refund_policy`).
+        cash_handed:
+          type: integer
+          format: int64
+          description: Espèces remises, soit le montant débité moins les frais.
+        paid_balance_after:
+          type: integer
+          format: int64
+          description: Solde payé du portefeuille après le rendu.
+        day_cumulative:
+          type: integer
+          format: int64
+          description: Cumul du jour UTC des rendus partiels du portefeuille, ce rendu compris.
+        approved_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Seconde personne (`sub` du jeton d'approbation) ; null si elle n'était pas requise.
+        cash_session_id:
+          type: string
+          format: uuid
     MediaReleaseResponse:
       type: object
       required: [media_id, media_status]
@@ -17908,8 +18046,11 @@ components:
       description: |
         Événement (`event`, §4.2, §9.8, §12.1). Montants en unités mineures de `currency`. Réglés par
         l'`ORGANIZER_ADMIN` : nom, dates, `refund_deadline`, `identity_mode`, `activation_modes`,
-        `lost_media_policy`, `cash_refund_single_max`, `reversal_window_minutes`. Réglés par l'`OPERATOR_ADMIN` : les
-        réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`, `refund_new_number_*`, `card_*`.
+        `lost_media_policy`, `cash_refund_single_max`, `cash_partial_refund_enabled`, `reversal_window_minutes`. Réglés
+        par l'`OPERATOR_ADMIN` : les réglages des terminaux, `tap_replay_window_seconds`, `sync_deadline_hours`,
+        `refund_new_number_*`, `card_*`. `cash_partial_refund_enabled` (facultatif, défaut `false`) active le rendu
+        partiel en espèces au guichet (`refundPartialCash`) ; l'activer alors que le prestataire ne l'autorise pas :
+        `422 VALIDATION_FAILED` (règle `operator.cash_partial_refund_allowed`).
       required: [event_id, operator_id, organizer_id, name, currency, timezone, status, starts_at, ends_at,
                  refund_deadline, refund_deadline_source, jurisdiction_id, contract_id, funds_holder,
                  funds_holder_party_id, issuer, identity_mode, activation_modes, lost_media_policy,
@@ -18002,6 +18143,9 @@ components:
           format: int64
           minimum: 0
           description: Remboursement en espèces par une seule personne jusqu'à ce montant (ADR-53), plafonné par le prestataire.
+        cash_partial_refund_enabled:
+          type: boolean
+          description: Rendu partiel en espèces activé pour l'événement (défaut `false`) ; exige l'autorisation du prestataire.
         sync_deadline_hours:
           type: integer
           minimum: 1
@@ -18143,8 +18287,10 @@ components:
         Modification d'un événement ; au moins une clé. Clés de l'`ORGANIZER_ADMIN` : `name`, `starts_at`, `ends_at`,
         `refund_deadline`, `jurisdiction_id`, `contract_id`, `funds_holder`, `funds_holder_party_id`, `issuer`,
         `identity_mode`, `activation_modes`, `lost_media_policy`, `cash_refund_single_max`,
-        `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres. Devise, fuseau et organisateur ne
-        changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+        `cash_partial_refund_enabled`, `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres.
+        Devise, fuseau et organisateur ne changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+        `cash_partial_refund_enabled` à `true` alors que le prestataire ne l'autorise pas (clé
+        `cash_partial_refund_allowed`) : `422 VALIDATION_FAILED` (règle `operator.cash_partial_refund_allowed`).
       minProperties: 1
       additionalProperties: false
       properties:
@@ -18202,6 +18348,8 @@ components:
           type: integer
           format: int64
           minimum: 0
+        cash_partial_refund_enabled:
+          type: boolean
         reversal_window_minutes:
           type: integer
           minimum: 0

@@ -147,6 +147,18 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N168 | `pending_offline_notice` : approximation assumée (tous statuts de lot comptent, dernier lot du terminal sur le grand livre du portefeuille, grands livres ORGANIZER et OPERATOR_BILLING toujours faux) (mission 10a, ADR-230) | Non | Non | Mission 13 (recette) |
 | OP-N169 | Mineurs de la 10a : course `CL065` non testée, personnalisation sans test du cas d'ancien code, `seed-demo` sans version de code, version du secret globale à la base (suite en série), compteurs d'adresse remis à zéro à la rotation, lignes de plus de 100 caractères (mission 10a, ADR-231) | Non | Non | Mission 13 |
 | OP-N172 | Secret des codes de rattachement : rien ne vérifie qu'un changement de `CLAIM_CODE_HMAC_KEY` s'accompagne d'une hausse de `CLAIM_CODE_HMAC_KEY_VERSION` (seule une baisse de version est refusée au démarrage) ; un secret changé sans hausse rend inutilisables les codes émis, sans message clair (revue post-fusion de la 10a, M-5 ; consigné sur décision du porteur du 23/11/2026, ADR-232 ; numéros OP-N170 et OP-N171 réservés au dossier du back-office) | Non | Non | Mission 12b (secret porté par le KMS réel) |
+| OP-N173 | Rendu partiel en espèces : un `REVERSAL` d'un rendu partiel n'est pas déduit du cumul du jour (choix prudent : le seuil de la seconde personne est atteint plus vite) (mission 9c, ADR-234) | Non | Non | Mission 13 (recette) |
+| OP-N174 | Rendu partiel en espèces : les espèces dues (`L-ESP-A-RENDRE`) ne sont pas rendues par ce chemin (L2) ; `refundCashDue` reste la seule voie (mission 9c, ADR-234) | Non | Non | Sans objet (voulu, C-002 : guichet de retour inchangé) |
+| OP-N175 | Rendu partiel en espèces : le refus `operator.cash_partial_refund_allowed` n'a pas de message localisé propre (message de repli qui cite la règle) (mission 9c, ADR-234) | Non | Non | Mission 11 (back-office, messages d'écran) |
+| OP-N176 | Rendu partiel en espèces : `422 WALLET_BLOCKED` n'est pas listé dans la description de `refundPartialCash` (code existant du catalogue, contrat gelé) (mission 9c, ADR-234) | Non | Non | Mission 12 (écran du guichet) ; description à compléter par un ajout rétrocompatible signalé au porteur |
+| OP-N177 | Rendu partiel en espèces : une `refund_policy` sans `channels` est refusée (renforcement par rapport au guichet de retour) (mission 9c, ADR-234) | Non | Non | Sans objet (renforcement voulu) ; mission 13 pour confirmer en recette |
+| OP-N178 | Rendu partiel en espèces : pas de contrôle explicite du mode `TOPUP_DESK`, comme le guichet de retour (la session de caisse ouverte exigée n'existe que pour ce mode) (mission 9c, ADR-234) | Non | Non | Sans objet (aligné sur le guichet de retour) |
+| OP-N179 | Rendu partiel en espèces : les phases d'événement sont tenues par la matrice du moteur (`status-matrix.ts`), non par le code de l'opération : `WALLET_REFUND` `ONLINE` permis de `LIVE` à `CLOSED` non verrouillé, refusé en `DRAFT` (mission 9c, ADR-234) | Non | Non | Mission 13 (recette des phases) |
+| OP-N180 | Rendu partiel en espèces : deux tests absents, « paiement suivant accepté » (US1) et `VENDOR` explicite (mission 9c, ADR-234) | Non | Non | Mission 13 |
+| OP-N181 | Rendu partiel en espèces : la mutation du verrou du solde payé n'est détectée qu'environ 4 fois sur 5 (test de concurrence probabiliste) (mission 9c, ADR-234) | Non | Non | Mission 13 |
+| OP-N182 | Rendu partiel en espèces : le choix de l'index partiel `journal_transaction_partial_refund_idx` n'est pas mesuré à volume réel (sur 73 lignes le planificateur prend un autre index) (mission 9c, ADR-234) | Non | Non | Mission 13 (volume de recette) |
+| OP-N183 | Rendu partiel en espèces : le filtre `p.amount > 0` du cumul est défensif et n'est couvert par aucun test (sa mutation ne fait échouer aucun test) (mission 9c, ADR-234) | Non | Non | Mission 13 |
+| OP-N184 | Rendu partiel en espèces : des lignes de plus de 100 caractères (reformatage à la fusion) (mission 9c, ADR-234) | Non | Non | Fusion de la mission (Prettier, décision du 14/10/2026) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -3104,3 +3116,103 @@ relecteurs (voir `docs/passation-10a/preuves.md`). **Non figé, consigné comme 
 `wallet_pending_offline_notice` (OP-N168) ; (c) course `CL065` (OP-N169) ; (d) `scope_type = 'EVENT'` de `0098`
 prouvé seulement depuis le cycle 2 de WP03 ; (e) délais réels de 10 s et 20 s (faux seulement, minuteries
 simulées) : mission 12b ; (f) auteur de la révocation non contrôlé par la base (OP-N165).
+
+---
+
+## 13. Mission 9c (rendu partiel en espèces au guichet) : consignation du 23/11/2026
+
+Écrit par WP06 à partir des notes de lane de WP01 à WP05 (journal d'états de la mission), des comptes rendus de
+relecture et des décisions du porteur du 23/11/2026. Mission Spec Kitty `remboursement-partiel-especes-01M84932`.
+Décision : ADR-233 ; limites : ADR-234 (OP-N173 à OP-N184). OP-N170 et OP-N171 restent réservés au dossier du
+back-office. **Preuves par FR, NFR, SC et contrainte** : `docs/passation-9c/preuves.md`. Aucun écart n'affaiblit la
+sécurité : le cumul par portefeuille et le refus d'une `refund_policy` sans `channels` la renforcent. Aucun droit
+nouveau pour `cashless_app`.
+
+### Lots de la mission
+
+| Lot | Contenu | Migrations et tests principaux |
+|---|---|---|
+| WP01 | Colonne `event.cash_partial_refund_enabled`, index partiel du cumul | `0100` ; `tests_cash_partial_refund.sql` |
+| WP02 | Contrat : `refundPartialCash`, deux schémas, propriété d'`Event` et d'`EventUpdate`, baseline | `contract-additions-9b.spec.ts` ; `check.mjs` |
+| WP03 | Réglages : catalogue, règle croisée `operator.cash_partial_refund_allowed` | `integration/configuration/partial-refund-settings.spec.ts` |
+| WP04 | Cumul du jour du portefeuille et seconde personne | `integration/media/partial-refund-threshold.spec.ts` |
+| WP05 | Opération `refundPartialCash` (contrôleur, service, audit) | `integration/media/partial-cash-refund.spec.ts`, `partial-cash-refund-concurrency.spec.ts` |
+| WP06 | Spécification, ADR, points ouverts, preuves | aucun code |
+
+### Décisions du porteur du 23/11/2026 (ADR-233)
+
+Cumul par portefeuille (renforcement du choix initial par bracelet) ; bracelets anonymes acceptés, frais à chaque
+rendu ; le prestataire autorise, l'organisateur active ; montant saisi débité, espèces remises nettes des frais ;
+ajouts au contrat acceptés. `SPECIFICATION.md` §8.5 et §17 amendés sans changer le numéro de version.
+
+### Limites et écarts (ADR-234)
+
+Chaque entrée : **Bloque la production : non.** Mission qui la lève et condition dans le tableau de la section 2.
+
+- **OP-N173.** WP04 : un `REVERSAL` d'un rendu partiel n'est pas déduit du cumul (choix prudent, seuil atteint plus
+  vite). Test de borne : `partial-refund-threshold.spec.ts` (somme exacte du brut des rendus). **Condition de levée :**
+  décision du porteur de déduire les annulations, avec test.
+- **OP-N174.** Limite L2 : les espèces dues ne sont pas rendues par ce chemin. **Absence de test assumée** (absence de
+  fonction) ; `refundCashDue` reste la seule voie (C-002).
+- **OP-N175.** WP03 (relecture) : pas de message localisé propre pour `operator.cash_partial_refund_allowed`.
+  Test de borne : `partial-refund-settings.spec.ts` (« sans autorisation du prestataire : 422 »).
+- **OP-N176.** WP05 : `422 WALLET_BLOCKED` absent de la description de `refundPartialCash` (`interfaces.md` le
+  donne). Test : `partial-cash-refund.spec.ts` (« portefeuille bloqué : 422 WALLET_BLOCKED »). Le contrat est gelé :
+  tout ajout est rétrocompatible et signalé au porteur avant.
+- **OP-N177.** WP05 : `refund_policy` sans `channels` refusée (renforcement). Test :
+  `partial-cash-refund.spec.ts` (« politique fermée ou sans canal CASH : même refus »).
+- **OP-N178.** WP05 : pas de contrôle explicite du mode `TOPUP_DESK` (comme le guichet de retour) ; la session
+  ouverte exigée n'existe que pour ce mode, ce qui évite un `DEVICE_MODE_NOT_ALLOWED` hors contrat. Test :
+  `partial-cash-refund.spec.ts` (« terminal sans session de caisse ouverte : 409 »).
+- **OP-N179.** WP05 : phases d'événement tenues par la matrice du moteur (`status-matrix.ts`), non par le code de
+  l'opération ; aucun contrôle ajouté, donc aucune mutation possible dans le code du lot. Test :
+  `partial-cash-refund.spec.ts` (« phase de l'événement refusée : 422 ; phase permise (clôture) »). **Condition de
+  levée :** décision du porteur d'un contrôle de phase propre à l'opération.
+- **OP-N180.** WP05 (relecture) : tests absents « paiement suivant accepté » (US1, le bracelet ACTIVE et le solde
+  sont relus seulement) et `VENDOR` explicite. **Absence assumée.**
+- **OP-N181.** WP05 (relecture) : mutation du verrou `lockWalletPaidBalance` détectée 4 fois sur 5 seulement. Test :
+  `partial-cash-refund-concurrency.spec.ts` (20 envois, exactement 10 rendus ; 20 envois sur deux bracelets,
+  maximum 5 000, exactement 5). Le verrou du bracelet suffit à une file unique par bracelet ; seul le cas de deux
+  bracelets du même portefeuille exerce le verrou du portefeuille.
+- **OP-N182.** WP01 et WP04 : le plan retenu par le planificateur n'est mesuré que sur 73 lignes (index
+  `journal_transaction_ledger_id_occurred_at_idx`) ; l'index partiel n'est pris qu'en forçant les réglages.
+  Test de borne : `tests_cash_partial_refund.sql` (existence de l'index), qui ne prouve pas son choix à volume
+  réel.
+- **OP-N183.** WP04 : filtre `p.amount > 0` défensif, sa mutation ne fait échouer aucun test ; juste puisque les
+  débits du portefeuille payé sont positifs. **Absence assumée.**
+- **OP-N184.** Lignes de plus de 100 caractères dans plusieurs fichiers du lot (reformatage à la fusion).
+- **Faits consignés sans OP.** (a) WP03 : la création d'événement ignore `cash_partial_refund_enabled`
+  (`EventCreate` inchangé, défaut `false` conservé ; test `partial-refund-settings.spec.ts`, « la création ne peut pas
+  activer le réglage »). (b) WP04 : écart à `interfaces.md`, paramètre `ledgerId` ajouté aux signatures de
+  `partialRefundDayTotal` et de `requireApprovalOverDailyCumul` (index partiel en tête `ledger_id`), accepté par
+  l'orchestrateur ; WP05 passe le grand livre du terminal ; test : `partial-refund-threshold.spec.ts` (« le grand livre
+  filtre »).
+- **Mission qui les lève.** 11, 12 et 13 selon le tableau de la section 2. **Report.** `PROMPTS-A-ENVOYER.md` (11,
+  12, 13) et `PRD.md`.
+
+### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
+
+L'agent qui a écrit le code ne vaut pas relecture indépendante. Droits de la base, argent, contrat :
+
+- `apps/api/src/media/lifecycle/partial-refund.service.ts` (ordre des verrous, cumul, droits, frais, écriture de la
+  caisse) ;
+- `apps/api/src/media/lifecycle/partial-refund-threshold.ts` (cumul du jour du portefeuille, seconde personne, lu sous
+  le verrou du solde payé) ;
+- `packages/ledger-sql/migrations/0100_event_cash_partial_refund.sql` (colonne, index partiel, aucun `GRANT`) ;
+- `apps/api/src/configuration/bounds-validator.ts` (règle croisée `operator.cash_partial_refund_allowed`) ;
+- `apps/api/src/configuration/settings-catalog.ts` (matrice des droits de réglage : `setBy` `OPERATOR_ADMIN` pour
+  `cash_partial_refund_allowed`, `ORGANIZER_ADMIN` pour `cash_partial_refund_enabled`) ;
+- `packages/contracts/openapi.yaml`, `tools/contract-stability/contract-baseline.json` et le test de gel
+  `apps/api/test/unit/contracts/contract-additions-9b.spec.ts` (décision du porteur).
+
+Exhaustivité revérifiée le 23/11/2026 par `git diff --name-only $(git merge-base main HEAD)..HEAD` : les autres
+fichiers modifiés hors tests et documentation sont de câblage sans droit ni secret
+(`partial-refund.controller.ts`, `return.module.ts`, `audit.service.ts` : une valeur d'union,
+`MEDIA_PARTIAL_CASH_REFUNDED`), de configuration d'essai (`jest.config.cjs`, `.github/workflows/ledger-tests.yml` :
+étape seule de la concurrence) ou générés (`packages/contracts/generated/openapi.ts`, fichiers Dart de
+`packages/contracts/dart/`).
+
+### Tests de borne écrits avec la mission et ce qui reste non figé
+
+Mutations rejouées par les relecteurs (voir `docs/passation-9c/preuves.md`). **Non figé, consigné comme limite :**
+(a) OP-N180 ; (b) OP-N181 ; (c) OP-N182 ; (d) OP-N183 ; (e) OP-N174.

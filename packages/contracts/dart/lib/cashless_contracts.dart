@@ -333,6 +333,8 @@ export 'src/generated/models/outbound_event.dart';
 export 'src/generated/models/outbound_event_type.dart';
 export 'src/generated/models/outcome.dart';
 export 'src/generated/models/page_meta.dart';
+export 'src/generated/models/partial_cash_refund.dart';
+export 'src/generated/models/partial_cash_refund_create.dart';
 export 'src/generated/models/participation.dart';
 export 'src/generated/models/participation_create.dart';
 export 'src/generated/models/participation_create_link_type.dart';

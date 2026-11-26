@@ -66,6 +66,12 @@ const ALLOWED_CHANGE = {
 };
 
 /**
+ * Mission 9c (rendu partiel en espèces) : contrôleur NOUVEAU, absent à la fin de la mission 4. Aucun contrôleur de la
+ * mission 4 n'est modifié par la 9c ; ce seul chemin exact est exclu, sans élargir la garde.
+ */
+const MISSION_9C_NEW_CONTROLLER = 'apps/api/src/media/lifecycle/partial-refund.controller.ts';
+
+/**
  * Contrôleurs de la mission 4 modifiés par la mission 6 (lot WP09 : rattachement de la session de
  * caisse aux espèces dues, à la caution et à la libération avec espèces, prévu par le plan de la
  * mission 6, FR-006 ; décision du porteur du 29/10/2026). Liste fermée : tout autre contrôleur
@@ -431,7 +437,10 @@ describe('SC-007 : les routes de terminal de la mission 4 servies par l’identi
       .filter((file) => file.endsWith('.controller.ts'));
     expect(
       changed.filter(
-        (file) => file !== ALLOWED_CHANGE.file && !MISSION_6_CONTROLLERS.includes(file),
+        (file) =>
+          file !== ALLOWED_CHANGE.file &&
+          !MISSION_6_CONTROLLERS.includes(file) &&
+          file !== MISSION_9C_NEW_CONTROLLER,
       ),
     ).toEqual([]);
     // Contenu des trois contrôleurs de WP09 borné : au plus 40 lignes ajoutées et 15 retirées par

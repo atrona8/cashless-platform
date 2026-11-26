@@ -15,8 +15,10 @@ part 'event_update.g.dart';
 /// Modification d'un événement ; au moins une clé. Clés de l'`ORGANIZER_ADMIN` : `name`, `starts_at`, `ends_at`,.
 /// `refund_deadline`, `jurisdiction_id`, `contract_id`, `funds_holder`, `funds_holder_party_id`, `issuer`,.
 /// `identity_mode`, `activation_modes`, `lost_media_policy`, `cash_refund_single_max`,.
-/// `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres. Devise, fuseau et organisateur ne.
-/// changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+/// `cash_partial_refund_enabled`, `reversal_window_minutes`. Clés de l'`OPERATOR_ADMIN` : toutes les autres.
+/// Devise, fuseau et organisateur ne changent pas ; `funds_holder` et `issuer` seulement en `DRAFT`.
+/// `cash_partial_refund_enabled` à `true` alors que le prestataire ne l'autorise pas (clé.
+/// `cash_partial_refund_allowed`) : `422 VALIDATION_FAILED` (règle `operator.cash_partial_refund_allowed`).
 ///
 @JsonSerializable()
 class EventUpdate {
@@ -34,6 +36,7 @@ class EventUpdate {
     this.activationModes,
     this.lostMediaPolicy,
     this.cashRefundSingleMax,
+    this.cashPartialRefundEnabled,
     this.reversalWindowMinutes,
     this.tapReplayWindowSeconds,
     this.syncDeadlineHours,
@@ -77,6 +80,8 @@ class EventUpdate {
   final EventUpdateLostMediaPolicy? lostMediaPolicy;
   @JsonKey(name: 'cash_refund_single_max')
   final int? cashRefundSingleMax;
+  @JsonKey(name: 'cash_partial_refund_enabled')
+  final bool? cashPartialRefundEnabled;
   @JsonKey(name: 'reversal_window_minutes')
   final int? reversalWindowMinutes;
   @JsonKey(name: 'tap_replay_window_seconds')

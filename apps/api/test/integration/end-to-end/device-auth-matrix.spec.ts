@@ -100,6 +100,7 @@ const BASE_CONTROLLERS = [
   'ReleaseController',
   'ReplaceController',
   'CashDueController',
+  'PartialRefundController',
   'ClaimsController',
 ];
 
@@ -184,6 +185,11 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
       server: 'api',
       counter: true,
       path: () => `${unknownMedia()}/replace`,
+    },
+    'POST /media/{}/partial-cash-refunds': {
+      server: 'api',
+      counter: true,
+      path: () => `${unknownMedia()}/partial-cash-refunds`,
     },
     'POST /media/{}/cash-due-refunds': {
       server: 'api',

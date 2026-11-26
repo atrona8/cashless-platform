@@ -193,6 +193,10 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
       body: () => ({ new_media_tap: tapBody(mFresh, next()), reason: INTRUS }),
     },
     refundCashDue: { who: 'counter', body: () => ({ tap: tapBody(mActive, next()) }) },
+    refundPartialCash: {
+      who: 'counter',
+      body: () => ({ tap: tapBody(mActive, next()), amount: 100 }),
+    },
     confirmMediaClaim: {
       who: 'counter',
       // Lecture valide du terminal de B (sur un bracelet de B) et code imprimé d'un
@@ -686,9 +690,9 @@ describe('balayage d’isolation des routes des bracelets (NFR-004, SC-005)', ()
       return rows[0] as Record<string, unknown>;
     });
 
-  it('le contrat déclare les 47 opérations, chacune a un cas, aucun cas n’est orphelin', () => {
-    expect(routes).toHaveLength(47);
-    expect(new Set(routes.map((route) => route.operationId)).size).toBe(47);
+  it('le contrat déclare les 48 opérations, chacune a un cas, aucun cas n’est orphelin', () => {
+    expect(routes).toHaveLength(48);
+    expect(new Set(routes.map((route) => route.operationId)).size).toBe(48);
     for (const route of routes) expect(PROCESSES).toContain(route.process);
     expect(
       routes.filter((route) => !(route.operationId in cases)).map((route) => route.operationId),

@@ -139,6 +139,13 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   pour chaque événement (désactivé par défaut) ; seconde personne au-delà de `event.cash_refund_single_max` ; crédits
   offerts et caution non touchés. Aujourd'hui le solde ne se rend en espèces qu'à la restitution (`releaseMedia`) : écart
   avec SPECIFICATION §8.5 relevé le 23/11/2026, résolu par cette mission (route et réglage nouveaux, soumis au porteur).
+  Réalise ADR-53 (point 3) ; seuil de la seconde personne appliqué au cumul des rendus partiels (ADR-190).
+  **Livrée (mission 9c `remboursement-partiel-especes-01M84932`, 23/11/2026)** : lots WP01 à WP05 approuvés,
+  consignation WP06. Décisions du porteur du 23/11/2026 (ADR-233) : cumul du jour **par portefeuille** (tous bracelets ;
+  renforcement du choix initial par bracelet) ; bracelets anonymes acceptés, frais à chaque rendu ; le prestataire
+  autorise (`cash_partial_refund_allowed`), l'organisateur active (`event.cash_partial_refund_enabled`) ; le montant saisi
+  est débité, les espèces remises sont nettes des frais ; ajouts au contrat acceptés (`refundPartialCash`). Limites
+  OP-N173 à OP-N184 (ADR-234). `SPECIFICATION.md` §8.5 et §17 amendés sans changer le numéro de version.
 - App festivalier : compte par téléphone, rattachement, perte, consultation anonyme du solde. (§8.5)
 - Gestion des clients par une application cliente (décision du porteur du 05/11/2026, mission 10c) : l'application
   s'authentifie de serveur à serveur, crée ou retrouve un client par son identifiant externe, liste, recherche,
@@ -221,6 +228,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
 - Un PIN de vendeur n'entre dans l'empreinte d'idempotence que sous un dérivé argon2 (ADR-126, 26/10/2026, mission 5b).
 - Authentification par type d'appelant ; jeton d'approbation pour la seconde personne au guichet. (§10.3)
 - Endpoints back-office à ajouter au contrat (organisateurs, événements, catalogues, lots, clôture, versements…). (§10.4)
+  Routes encore absentes, vérifiées le 23/11/2026, confiées à la mission 11b (décision du porteur du 23/11/2026) : profil
+  et rôles de la personne connectée, `x-roles` lisible par machine, liste des ventes et paiements, liste et résolution des
+  anomalies, recherche (bracelet par UID ou code imprimé, portefeuille, festivalier), modèles de téléphone et niveau NFC.
 
 ### 2.8 Argent réel : PSP, caisses, rapprochements, versements (§11)
 - Configurations PSP par organisateur, choix par événement ; interface commune d'adaptateur et faux par fournisseur
@@ -389,9 +399,11 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        Limites consignées : OP-N133 à OP-N138, OP-N140 à OP-N145, OP-N148 (reste d'OP-N126 : alerte dédiée en 12b, ADR-212), OP-N149 (balayage d'isolation entre organisateurs d'un même prestataire, 13) ; renforcements : OP-N146 (dont le renommage des enums Dart, ADR-213) ; OP-N147 levé (ADR-211). Note aux équipes clientes :
        `docs/REPONSE-ENDPOINTS-BACKOFFICE-9B.md`.
    9c. Remboursement partiel en espèces au guichet sans restitution du bracelet, permis par l'organisateur (ajoutée le
-       23/11/2026, décision du porteur ; après 9a, indépendante de 10c).
+       23/11/2026, décision du porteur ; après 9a, indépendante de 10c). **Livrée** (lots WP01 à WP06, ADR-233 et ADR-234, report aux
+       missions 11, 12 et 13).
 10. App festivalier, coupée le 29/10/2026 : 10a serveur (nous), 10b app (déléguée) ; 10a fusionnée dans `main` le 23/11/2026 (PR #24, `ee5099a7`)
 11. Back-office web (déléguée) ; 11a durcissements serveur hérités (nous)
+    11b. Routes serveur manquantes au back-office (nous ; ajoutée le 23/11/2026, après la 9c, avant la mission 11).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1

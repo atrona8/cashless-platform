@@ -437,16 +437,25 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 9c — Remboursement partiel en espèces au guichet, sans restitution du bracelet
 
+> **État (24/11/2026) : mission `remboursement-partiel-especes-01M84932` livrée : lots WP01 à WP06 approuvés, acceptée, consolidée (`4365e93b`), revue post-fusion PASS WITH NOTES, PR #26 (fusion sur accord du porteur).** Décisions du porteur du 23/11/2026 : cumul par portefeuille (renforcement), bracelets anonymes avec frais à chaque rendu, le prestataire autorise et l'organisateur active, montant saisi débité et espèces nettes des frais, ajouts au contrat acceptés : ADR-233. Limites OP-N173 à OP-N184 : ADR-234, `docs/POINTS_OUVERTS.md` §13. Preuves : `docs/passation-9c/preuves.md`. `SPECIFICATION.md` §8.5 et §17 amendés sans changer le numéro de version.
+
 > **Décidée par le porteur le 23/11/2026** : aujourd'hui, au guichet, le solde payé ne se rend en espèces qu'en rendant le
 > bracelet (`releaseMedia`, guichet de retour). Le porteur veut permettre au festivalier de récupérer **tout ou partie** de
 > son solde payé en espèces **en gardant son bracelet**, et que ce soit **l'organisateur qui décide**, événement par
 > événement, si c'est permis. Ajout au contrat partagé (route et réglage d'événement nouveaux, rétrocompatibles) :
 > soumis au porteur au plan, avant d'être codé. Écart actuel entre `SPECIFICATION.md` §8.5 (« sur présentation du
 > bracelet ») et le contrat (restitution obligatoire), relevé le 23/11/2026 : cette mission le résout.
+>
+> **Décisions existantes à respecter** (`DECISIONS_ADR.md`) : **ADR-53** point 3 permet déjà le remboursement en espèces
+> « sur présentation du bracelet lu par le terminal », bracelet anonyme compris, sans exiger la restitution ; **ADR-91** a
+> rangé ce rendu dans le seul guichet de retour (`releaseMedia`) : la 9c réalise donc ADR-53. **ADR-190** (renforcement du
+> 16/11/2026) compare le seuil de la seconde personne au **cumul** des espèces sorties pour empêcher le fractionnement :
+> des remboursements partiels répétés ne doivent pas le contourner (cumul par bracelet et par période à trancher au
+> specify). **ADR-195** (OP-N128) : `approved_by` porté par l'écriture et cumul relu sous verrou du portefeuille.
 
-- [ ] /spec-kitty.specify Remboursement partiel en espèces au guichet sans restitution du bracelet. Un nouveau réglage d'événement, réglé par l'organisateur (`ORGANIZER_ADMIN`) et désactivé par défaut, permet au guichet (terminal `TOPUP_DESK`, personne `CASHIER` ou `SUPERVISOR`, session de caisse ouverte) de rendre en espèces un montant choisi, au plus le solde payé du portefeuille du bracelet lu (lecture `POST /taps` valide) ; le bracelet reste actif et rattaché. Écriture `WALLET_REFUND` depuis la caisse de la session, frais de remboursement éventuels selon la règle de frais ; les crédits offerts ne sont jamais rendus et ne bougent pas ; caution non touchée. Seconde personne au-delà de `event.cash_refund_single_max` (jeton d'approbation sur place, comme `releaseMedia`). Ouvert aux bracelets anonymes comme le guichet de retour. Refus explicite si le réglage est désactivé. Indisponible pendant `EDGE`. Plafonds et contrôles anti-fraude à préciser (nombre de remboursements partiels par bracelet et par jour ?). Sections : SPECIFICATION §7.9, §8.5, §11.2 ; ADR-53, ADR-74.
-- [ ] /spec-kitty.plan Route nouvelle et champ d'événement nouveau seulement, rétrocompatibles, présentés au porteur avant d'être codés (contrat stable depuis le 05/11/2026) ; inscrits dans `contract-baseline.json` ; aucune route existante modifiée. Écriture par une fonction `DEFINER` de la base, idempotente ; contrôle de la session de caisse comme `releaseMedia`. Amendement de `SPECIFICATION.md` §8.5 (remboursement sans restitution, si l'organisateur l'a permis).
-- [ ] /spec-kitty.tasks
+- [x] /spec-kitty.specify Remboursement partiel en espèces au guichet sans restitution du bracelet. Un nouveau réglage d'événement, réglé par l'organisateur (`ORGANIZER_ADMIN`) et désactivé par défaut, permet au guichet (terminal `TOPUP_DESK`, personne `CASHIER` ou `SUPERVISOR`, session de caisse ouverte) de rendre en espèces un montant choisi, au plus le solde payé du portefeuille du bracelet lu (lecture `POST /taps` valide) ; le bracelet reste actif et rattaché. Écriture `WALLET_REFUND` depuis la caisse de la session, frais de remboursement éventuels selon la règle de frais ; les crédits offerts ne sont jamais rendus et ne bougent pas ; caution non touchée. Seconde personne au-delà de `event.cash_refund_single_max` (jeton d'approbation sur place, comme `releaseMedia`). Ouvert aux bracelets anonymes comme le guichet de retour. Refus explicite si le réglage est désactivé. Indisponible pendant `EDGE`. Plafonds et contrôles anti-fraude à préciser (nombre de remboursements partiels par bracelet et par jour ?). Seuil de la seconde personne appliqué au cumul des rendus partiels du bracelet (ADR-190), pour qu'un fractionnement ne l'évite pas. Sections : SPECIFICATION §7.9, §8.5, §11.2 ; ADR-53, ADR-74, ADR-91, ADR-190, ADR-195.
+- [x] /spec-kitty.plan Route nouvelle et champ d'événement nouveau seulement, rétrocompatibles, présentés au porteur avant d'être codés (contrat stable depuis le 05/11/2026) ; inscrits dans `contract-baseline.json` ; aucune route existante modifiée. Écriture par une fonction `DEFINER` de la base, idempotente ; contrôle de la session de caisse comme `releaseMedia`. Amendement de `SPECIFICATION.md` §8.5 (remboursement sans restitution, si l'organisateur l'a permis).
+- [x] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission [slug réel]
 - [ ] /spec-kitty.review --mission [slug réel]
 - [ ] /spec-kitty.accept --mission [slug réel]
@@ -647,6 +656,13 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 11 — Back-office web (déléguée)
 
+> **Hérité de la 9c (23/11/2026, ADR-233, ADR-234, OP-N173, OP-N175)** : réglages du rendu partiel en espèces :
+> l'organisateur (`ORGANIZER_ADMIN`) active `cash_partial_refund_enabled` pour chaque événement (`updateEvent`, demande à
+> deux personnes en `LIVE`), le prestataire (`OPERATOR_ADMIN`) autorise par la clé `cash_partial_refund_allowed` de la
+> configuration du prestataire. L'activation sans autorisation est refusée (`422`, règle
+> `operator.cash_partial_refund_allowed`) : **l'écran affiche un message propre**, le serveur n'en a qu'un de repli
+> (OP-N175). Un `REVERSAL` d'un rendu partiel ne diminue pas le cumul du jour (OP-N173).
+
 > **Déléguée à une équipe cliente (29/10/2026).** Code contre `packages/contracts/openapi.yaml` ; types TypeScript
 > générés par `@cashless/contracts`. Les routes des missions 1 à 6 sont servies ; les écrans de la politique hors
 > ligne (7), de la clôture et des versements (9) s'ajoutent quand ces missions sont fusionnées. Les dettes serveur
@@ -675,7 +691,32 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission back-office
 - [ ] spec-kitty merge --mission back-office
 
+## Mission 11b — Routes serveur manquantes au back-office
+
+> **Décidée par le porteur le 23/11/2026** (« ce dont on a besoin pour faire un back-office »), après la 9c et avant la
+> mission 11 déléguée. Manques relevés par le dossier de design du back-office (16/11/2026, revu le 17/11/2026) et
+> vérifiés dans `openapi.yaml` le 23/11/2026 : aucune de ces opérations n'existe. Ajouts au contrat partagé, rétrocompatibles,
+> soumis au porteur au plan avant d'être codés. Le dossier de design lui-même est à reverser au dépôt (perdu du
+> checkout le 23/11/2026, copie en ligne) ; ses points ouverts prendront OP-N170 et OP-N171.
+
+- [ ] /spec-kitty.specify Routes serveur dont le back-office web a besoin et que le contrat ne sert pas : (1) profil de la personne connectée du personnel, avec ses rôles et leurs portées (plateforme, prestataire, organisateur, événement, commerçant), pour construire menus et droits d'écran ; (2) rôles autorisés de chaque opération lisibles par machine (extension `x-roles` dans `openapi.yaml`) ; (3) liste filtrée et paginée des ventes et des paiements (par événement, point de vente, commerçant, vendeur, période), avec le détail d'une vente et ses lignes ; (4) liste filtrée des anomalies et leur résolution (liste fermée des types, SPECIFICATION §12.2), à deux personnes si la résolution touche l'argent ; (5) recherche : bracelet par UID ou par code imprimé, portefeuille, festivalier (par numéro vérifié), utile aussi au guichet pour l'identification (KYC) ; (6) modèles de téléphone et niveau de lecture NFC (référentiel des terminaux, SPECIFICATION §15 « Lecture NFC »). Cloisonnement par prestataire et par portée, aucune donnée personnelle au-delà du besoin, audit des recherches.
+- [ ] /spec-kitty.plan Opérations et extension `x-roles` nouvelles seulement, présentées au porteur avant d'être codées ; inscrites dans `contract-baseline.json` ; aucune route existante modifiée. Lectures par vues ou fonctions de la base sous RLS ; latence et pagination bornées ; recherche limitée en débit.
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty consolidate --mission [slug réel]
+
 ## Mission 12 — App terminal (déléguée)
+
+> **Hérité de la 9c (23/11/2026, ADR-233, ADR-234)** : écran du guichet de rendu partiel
+> (`POST /media/{media_id}/partial-cash-refunds`, `refundPartialCash`, terminal `TOPUP_DESK`, session de caisse ouverte) :
+> saisir le montant **débité** ; afficher les espèces à remettre (montant moins frais, réponse `201` : `amount_debited`,
+> `fee`, `cash_handed`, `day_cumulative`) ; demander la seconde personne sur `403 APPROVAL_REQUIRED` (cumul du jour du
+> **portefeuille**, tous bracelets, montant compris) ; distinguer `422 REFUND_NOT_ALLOWED` (raison
+> `PARTIAL_CASH_REFUND_DISABLED`), `422 AMOUNT_OUT_OF_RANGE`, `422 INSUFFICIENT_FUNDS`, `422 WALLET_BLOCKED` (non listé
+> dans la description de l'opération, OP-N176), `409 CONFLICT_STATE` (session fermée), `409 DEBIT_AUTHORITY_EDGE`. Les
+> espèces dues ne sont pas rendues par cet écran (OP-N174). Détail : `docs/passation-9c/note-equipes.md`.
 
 > **Déléguée à une équipe cliente (29/10/2026).** Partie en ligne dès maintenant (routes des missions 5a, 5b, 6
 > servies) ; hors ligne après les missions 7 et 8 ; lecture NFC après les actions 1 et 2. Côté serveur : OP-N46 en
@@ -815,6 +856,12 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la 9c (23/11/2026, ADR-234)** : relevé des limites OP-N173 à OP-N184 : mesurer le choix de l'index
+> partiel `journal_transaction_partial_refund_idx` à volume réel (OP-N182) ; tests « paiement suivant accepté »
+> et `VENDOR` explicite (OP-N180) ; fiabiliser le test de concurrence du verrou du solde payé, détecté 4 fois sur 5
+> (OP-N181) ; filtre `p.amount > 0` sans test (OP-N183) ; recette des phases d'événement (OP-N179) ; décision sur la
+> déduction d'un `REVERSAL` du cumul (OP-N173) ; reformatage des lignes de plus de 100 caractères (OP-N184).
 
 > **Hérité de la 10a (20/11/2026, ADR-228, ADR-230, ADR-231)** : (1) exécuter
 > `docs/procedure-rotation-codes-rattachement.md` **sur un lot réel** (rotation, réémission par la commande, ancien
