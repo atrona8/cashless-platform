@@ -93,3 +93,10 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
     preuve réelle est en WP06 et WP10.
   - **Règle de production (I1, fait foi)** : en production, réglage absent = `real` ; `fake` posé → refus ; `real` hors
     liste : PSP et coffre indisponibles (démarrage permis), KMS et copie des scellements refusent de démarrer.
+- **WP13 (relecture de WP12, approuvé le 26/11/2026)** : consigner (OP + ADR + report PROMPTS/PRD, règle 3) l'écart
+  **déjà présent** d'App Attest : `apple_validation_category_01` et `apple_bundle_version_01` de `authData.extensions`
+  ne sont pas contrôlés (une attestation de catégorie invalide est acceptée aujourd'hui) ; décision du porteur
+  attendue (proposition : contrôle en mission 12 avec un vecteur réel). Consigner aussi le point Android (certificats
+  d'usine expirés sous la racine `f92009e853b6b045` : refus gardé, échec fermé) et, en mineur, l'aaguid de production
+  admis en environnement `development`. Fichiers à faire relire par une personne : `android-key-attestation.ts`,
+  `ios-app-attest.ts`, `ios-app-attest-assertion.ts`.
