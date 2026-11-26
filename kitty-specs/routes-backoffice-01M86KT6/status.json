@@ -1,0 +1,207 @@
+{
+  "event_count": 127,
+  "last_event_id": "01M8B0B3M41GTFCJNJCJQP0CP1",
+  "materialized_at": "2026-11-26T04:03:12.644676+00:00",
+  "mission_number": "",
+  "mission_slug": "routes-backoffice-01M86KT6",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 11,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0A6W5ASV2HKX61V7R1200",
+      "last_transition_at": "2026-11-26T04:02:43.206073+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP01-base-ecritures/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP01-base-ecritures/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 32131,
+      "shell_pid_created_at": "1795535152.567793"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0ACMEPXR0NE5RZ5R4ATFT",
+      "last_transition_at": "2026-11-26T04:02:49.102952+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP02-base-vues-lecture/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP02-base-vues-lecture/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 51871,
+      "shell_pid_created_at": "1795537312.274178"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0A9RW68RMJTNFCGPFA90E",
+      "last_transition_at": "2026-11-26T04:02:46.172815+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP03-contrat/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP03-contrat/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 32125,
+      "shell_pid_created_at": "1795535151.022259"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AFGC01RV2KC3N0SPF3NZ",
+      "last_transition_at": "2026-11-26T04:02:52.045103+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP04-x-roles/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP04-x-roles/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 94955,
+      "shell_pid_created_at": "1795601304.317277"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AJC7TMTJRSQGDA8FA5T1",
+      "last_transition_at": "2026-11-26T04:02:54.984272+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP05-socle-profil/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP05-socle-profil/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 70221,
+      "shell_pid_created_at": "1795600199.135435"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AN8G3KE1C3FZC0A2KK4R",
+      "last_transition_at": "2026-11-26T04:02:57.936796+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP06-ventes/review-cycle-4.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP06-ventes/review-cycle-4.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20504,
+      "shell_pid_created_at": "1795606382.887657"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AR3RPR3Z1RYY5QGCK4PM",
+      "last_transition_at": "2026-11-26T04:03:00.856486+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP07-anomalies/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP07-anomalies/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 81828,
+      "shell_pid_created_at": "1795600606.769863"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0ATYG24S10D6P70Q652BZ",
+      "last_transition_at": "2026-11-26T04:03:03.760394+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP08-recherche/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP08-recherche/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 79018,
+      "shell_pid_created_at": "1795600565.834035"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0AXV67TNB64G81WH01HEB",
+      "last_transition_at": "2026-11-26T04:03:06.727075+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP09-modeles-terminaux/review-cycle-1.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP09-modeles-terminaux/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 9677,
+      "shell_pid_created_at": "1795601911.675147"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0B0PDYBDNDFMNTG4XXWYJ",
+      "last_transition_at": "2026-11-26T04:03:09.646072+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/routes-backoffice-01M86KT6-coord/kitty-specs/routes-backoffice-01M86KT6/tasks/WP10-matrice-x-roles/review-cycle-2.md",
+        "reference": "review-cycle://routes-backoffice-01M86KT6/WP10-matrice-x-roles/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 38632,
+      "shell_pid_created_at": "1795618946.826887"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8B0B3M41GTFCJNJCJQP0CP1",
+      "last_transition_at": "2026-11-26T04:03:12.644676+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP11:20261126",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 71965,
+      "shell_pid_created_at": "1795658999.961555"
+    }
+  }
+}

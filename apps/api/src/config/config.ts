@@ -66,6 +66,8 @@ export interface AppConfig {
    * 0 : aucun proxy, l'adresse est celle de la connexion. Obligatoire en production, aucun défaut.
    */
   trustProxyHops: number;
+  /** Recherches par numéro par personne et par minute (`STAFF_PHONE_SEARCH_PER_MINUTE`, 1 à 1000, 20). */
+  staffPhoneSearchPerMinute: number;
 
   // ----- Mission identite-enrolement-terminaux (research R-03, R-07, R-09, R-13) -----
   /**
@@ -1080,6 +1082,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     tagWrappingKeyRef: tagWrappingKeyRef(env.TAG_WRAPPING_KEY_REF, production),
     claimCodeDomain: claimCodeDomain(env.CLAIM_CODE_DOMAIN, production),
     trustProxyHops: trustProxyHops(env.TRUST_PROXY_HOPS, production),
+    staffPhoneSearchPerMinute: optionalInt(env, 'STAFF_PHONE_SEARCH_PER_MINUTE', {
+      min: 1,
+      max: 1000,
+      default: 20,
+    }),
     ...deviceSettings(env, production, claimKey),
     vendorPinUrl: vendorPinUrl(env.VENDOR_PIN_URL, production),
     pinDatabaseUrl: tagUrl('DATABASE_URL_PIN'),

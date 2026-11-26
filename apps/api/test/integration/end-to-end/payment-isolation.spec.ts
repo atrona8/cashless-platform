@@ -11,6 +11,7 @@
 //      les lignes de B (contrôle : A en a bien, lues par le propriétaire).
 //
 // Écritures directes en base : amorçage seulement (prestataire B, commerçants, personnes, festivaliers).
+import { MISSION_11B_OPERATIONS } from '../../support/mission-11b-operations';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -43,6 +44,9 @@ function missionOperations(): string[] {
   for (const operations of Object.values(contract.paths))
     for (const operation of Object.values(operations)) {
       if (typeof operation !== 'object' || !operation?.operationId) continue;
+      // Mission 11b : balayage dédié (`backoffice-isolation.spec.ts`), liste figée ; sans cette exclusion `getSale` et
+      // `listEventSales` (étiquette de la mission) seraient exigés ici sans cas. Le reste du contrôle est inchangé.
+      if (MISSION_11B_OPERATIONS.includes(operation.operationId)) continue;
       if (
         EXTRA_OPERATIONS.includes(operation.operationId) ||
         (operation.tags ?? []).some((tag) => MISSION_TAGS.includes(tag))

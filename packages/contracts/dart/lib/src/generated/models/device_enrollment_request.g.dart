@@ -19,6 +19,9 @@ DeviceEnrollmentRequest _$DeviceEnrollmentRequestFromJson(
       .map((e) => e as String)
       .toList(),
   csrPem: json['csr_pem'] as String,
+  deviceModel: json['device_model'] == null
+      ? null
+      : DeviceModel.fromJson(json['device_model'] as Map<String, dynamic>),
   agreementAttestationChain:
       (json['agreement_attestation_chain'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -32,6 +35,7 @@ Map<String, dynamic> _$DeviceEnrollmentRequestToJson(
   'serial': instance.serial,
   'os': instance.os,
   'app_version': instance.appVersion,
+  'device_model': instance.deviceModel,
   'signing_public_key': instance.signingPublicKey,
   'agreement_public_key': instance.agreementPublicKey,
   'key_attestation_chain': instance.keyAttestationChain,

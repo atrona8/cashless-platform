@@ -60,6 +60,8 @@ module.exports = {
           'media/claim-rotation',
           'cli/reissue-claim-codes',
           'media/partial-cash-refund-concurrency',
+          // Mission routes-backoffice (WP10) : ≈ 1 300 appels, base partagée.
+          'end-to-end/x-roles-matrix',
         ]
       : []),
   ],

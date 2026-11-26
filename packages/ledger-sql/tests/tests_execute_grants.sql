@@ -186,6 +186,9 @@ SELECT is(pg_temp.fns('cashless_app'), pg_temp.sigs(ARRAY[
   'assert_vendor_session_at(uuid,uuid,timestamptz)',
   'record_sale_attribution_at(uuid,uuid,text,uuid,timestamptz)',
   'set_device_station_name(uuid,text,uuid)',
+  -- mission 11b, WP01 (0101, post-roles.sql §15) : classement d'anomalie, modèle du terminal, prédicats purs
+  'classify_anomaly(uuid,text,uuid)', 'anomaly_classifiable(text)', 'normalize_phone_model(text)',
+  'set_device_model(uuid,text,text)',
   'offline_device_exposure(uuid,uuid,bigint,timestamptz,interval)', 'lock_device(uuid,text)',
   -- 0051 (WP21 partie D) : enveloppe étroite de la remontée des terminaux ; les deux fonctions qu'elle appelle
   -- (event_device_sync_status, event_sync_deadline) restent refusées à cashless_app
@@ -300,7 +303,10 @@ SELECT ok(NOT has_function_privilege('cashless_app', f, 'EXECUTE'),
                     'ops_unmatched_statements(interval)', 'ops_new_open_anomalies(timestamptz)',
                     'ops_raise_alert(integer,jsonb)', 'ops_long_transactions(interval)']) f;
 SELECT is(pg_temp.fns('cashless_platform'), pg_temp.sigs(ARRAY[
-  'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()'
+  'decide_approval_request(uuid,uuid,boolean,text)', 'platform_session()',
+  -- mission 11b, WP01 (0101, post-roles.sql §15) : écriture des modèles de téléphone, rôle de plateforme seul
+  'upsert_phone_model(text,text,text,date,uuid)', 'delete_phone_model(text,text,uuid)',
+  'normalize_phone_model(text)'
 ]::text[]::regprocedure[]),
   'cashless_platform : liste exacte des fonctions exécutables');
 SELECT is(pg_temp.fns('cashless_tagkeys'), pg_temp.sigs(ARRAY[

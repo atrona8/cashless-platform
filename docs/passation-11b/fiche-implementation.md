@@ -1,0 +1,172 @@
+# Fiche commune — implémentation et relecture des lots (mission 11b)
+
+Dépôt : `/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform` (`<R>`). Mission :
+`routes-backoffice-01M86KT6` (`<M>` = `<R>/kitty-specs/<mission>`). Planification et fusion sur
+`feat/routes-backoffice`. Ne relis pas CLAUDE.md, README ni la SPECIFICATION en entier : l'essentiel est
+ici. **Toute commande `spec-kitty` se lance avec `LC_ALL=C LANG=C`**.
+
+## Démarrer
+1. `cd <R>` puis `LC_ALL=C LANG=C spec-kitty agent action implement WPxx --agent claude --mission
+   routes-backoffice-01M86KT6` (implémenteur) ou `… action review WPxx …` (relecteur). La commande affiche
+   le prompt du lot : lis-le, c'est la source du lot. Lis aussi `<M>/interfaces.md` (fait foi sur les noms).
+2. Travaille **uniquement** dans le worktree de la lane (`<R>/.worktrees/routes-backoffice-01M86KT6-lane-x`) :
+   `cd <lane> || exit 1` avant toute commande. Écrire dans le checkout principal est une faute grave.
+3. Si `node_modules/@cashless/{api,contracts,ledger-sql,shared-rules}` manque dans la lane : `mkdir -p
+   node_modules/@cashless` puis liens `ln -s ../../apps/api` et `../../packages/{shared-rules,contracts,ledger-sql}`.
+
+## Ce que fait la mission
+Ajoute côté serveur ce dont le back-office web a besoin (OP-N170) : profil du personnel (`GET /staff/me`), rôles
+autorisés de chaque opération (`x-roles`), liste et détail des ventes, liste et classement des anomalies (sans écriture
+au grand livre), recherche (bracelet par UID ou code imprimé, portefeuille, festivalier par numéro exact), modèles de
+téléphone et niveau NFC des terminaux. **Aucune écriture au grand livre.** Noms, signatures, codes et propriétaires :
+`<M>/interfaces.md` (fait foi). Décisions : `<M>/research.md` D1 à D10.
+
+## Règles du projet (résumé obligatoire)
+- **Sécurité (règle 1)** : tout écart qui affaiblit la sécurité (droit plus large, contrôle retiré ou reporté, secret
+  plus exposé) est soumis au porteur **avant d'être codé** : décris-le dans ton compte rendu (risque, options), ne le
+  code pas, continue le reste. Un renforcement se fait puis se signale. Ne rouvre jamais un droit pour faire passer un test.
+- **Décisions du porteur (24/11/2026)** : 10 types d'anomalie classables tenus dans la base (D1) ; modèle de téléphone
+  déclaré par le terminal, champ facultatif (D2) ; matrice échantillon pour `x-roles` (D3) ; retrait du droit direct de
+  clore une anomalie (D4, renforcement) ; audit de la recherche par numéro **sans le numéro** (D7) ; table de plateforme
+  des modèles (D9) ; **aucun code d'erreur nouveau** (D10) ; ajouts au contrat de `<M>/contracts/backoffice-routes.md`,
+  **et seulement eux**.
+- **Sources** : tests exécutables > schéma SQL, `openapi.yaml` > SPECIFICATION > PRD. Dans la mission, `interfaces.md` fait foi.
+- **Contrat** : seuls ajouts permis : ceux de `interfaces.md` §3 (WP03) et `x-roles` (WP04). Aucune route existante
+  modifiée hormis les ajouts facultatifs `device_model` / `nfc_level`. Tout ajout inscrit dans `contract-baseline.json` ;
+  `node tools/contract-stability/check.mjs` à 0 refus.
+- **Jamais** modifier un `.sql` généré de `packages/ledger-sql/`, `schema_grand_livre_cashless.sql` ni une migration
+  existante : migrations `0101` (WP01) et `0102` (WP02) seulement. **Aucun droit** nouveau pour `cashless_app` (pas de `GRANT`).
+- **Aucune dépendance nouvelle**. Lignes de 100 caractères au plus.
+- Fichiers : seulement les `owned_files` du lot, plus les retouches hors carte nommées par le prompt, listées dans la note
+  de lane.
+- **Chaque contrôle ajouté a une mutation vérifiée** : retire le contrôle, constate que ton test échoue, remets-le ; note la
+  mutation et son résultat dans la note de lane.
+- **Isolement** : chaque route nouvelle a son cas dans `backoffice-isolation-cases/<lot>.cases.ts` DANS le lot qui la
+  crée (leçon de la 9c) ; une donnée personnelle (numéro, nom, adresse) n'apparaît jamais dans une réponse ni un journal.
+- **Comptages en test** : toujours limités au prestataire, au portefeuille ou à l'objet du test, jamais toute la base.
+
+## Base de données (Docker, partagée)
+- Serveur : `PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres`. **`cashless_test` est réservée à l'orchestrateur.** Chaque
+  lot utilise `PGDATABASE=cashless_wpXX` (XX = numéro du lot). Avant tout test : `docker ps` montre
+  `cashless-platform-pg17`, sinon arrête-toi.
+- **Le serveur local est en `trust`** : un mauvais mot de passe passe. Un test qui change le mot de passe d'un rôle casse la
+  CI : passe toujours à `migrate()` les mots de passe en vigueur (`process.env.CASHLESS_<ROLE>_PASSWORD ?? cashless_<role>_local`).
+- Remise à zéro depuis la lane : `PGDATABASE=cashless_wpXX bash packages/ledger-sql/scripts/reset-db.sh`.
+- pgTAP : `export PATH=<R>/docs/passation-9a/scripts/bin:/Library/PostgreSQL/18/bin:$PATH`, puis depuis
+  `packages/ledger-sql/` de ta lane : `pg_prove -d cashless_wpXX tests/<fichier>.sql`.
+- Jest, depuis `apps/api` de la lane, **dans le même appel Bash** : `export PGDATABASE=cashless_wpXX; source
+  ../../tools/dev-db/env.sh; env | grep DATABASE_URL` (toutes les URL doivent viser ta base) puis `SKIP_LATENCY=1 npx
+  jest <chemin> --runInBand --forceExit`. Après un Jest, refais `reset-db`.
+- Jamais de batterie complète, jamais en tâche de fond, toujours `--runInBand`.
+- **API partagée du porteur (ngrok, `exports/cashless-api`, port 80, base sur 5434) : n'y touche jamais.** Aucun `pkill`.
+- Instabilités connues : `claim-code-order.spec.ts`, `auth-keys.spec.ts`, `vendor-pin-bounds.spec.ts`,
+  `transverse/migrate-lock.spec.ts`, `tests_offline_snapshot_source_no_stats.sql`.
+
+## Fin d'implémentation
+1. `npx eslint <tes fichiers>` et `npx tsc --noEmit -p apps/api/tsconfig.json` depuis la lane.
+2. Dans la lane : `git add <tes fichiers>`, `git commit -m "feat(WPxx): …"` (terminer par `Co-Authored-By: Claude
+   Sonnet 5.5 <noreply@anthropic.com>`). Jamais de push.
+3. `LC_ALL=C LANG=C spec-kitty agent tasks mark-status <Txxx…> --status done --mission routes-backoffice-01M86KT6`.
+4. `bash <R>/docs/passation-11b/scripts/align-lane.sh <lettre de ta lane>` avant `move-task`. Si un garde `kitty-specs`
+   bloque : **pas de `--force`**, signale-le.
+5. `LC_ALL=C LANG=C spec-kitty agent tasks move-task WPxx --to for_review --mission
+   routes-backoffice-01M86KT6 --note "…"` : la note liste retouches hors carte, écarts, mutations.
+6. Compte rendu final (≤ 25 lignes) : commits, fichiers, retouches hors carte, écarts au plan (renforce ou affaiblit),
+   points soumis au porteur, fichiers à faire relire par une personne, critères couverts avec commande de preuve et résultat.
+
+## Relecture (agent distinct de l'implémenteur)
+- Pars de « Ce que le relecteur doit casser ». Tente aussi : droits de la base, contournement de garde (réglages,
+  seconde personne, session de caisse), isolation entre prestataires, tests qui ne prouvent pas ce qu'ils disent,
+  comptages sur toute la base, écarts à `interfaces.md` non signalés. Relance toi-même les tests sur `cashless_wpXX`.
+- **Lance aussi les gardes transverses** (leçon de la 10a) : `test/unit/architecture.spec.ts`,
+  `test/unit/production-guard.spec.ts`, `test/unit/contracts`, `test/integration/invariants-cloture/consignation.spec.ts`,
+  `test/integration/end-to-end/backoffice-isolation.spec.ts` (dès WP05), `media-isolation.spec.ts`, `device-auth-matrix.spec.ts`.
+- Verdict : `… move-task WPxx --to approved --note "…"` ou `--to planned --review-feedback-file <fichier>` (constats
+  numérotés, gravité, correction). Pas de `--force`.
+- Compte rendu final (≤ 20 lignes) : verdict, constats bloquants, mineurs, preuves relancées.
+
+## Consignes issues de l'analyse (24/11/2026, `analysis-report.md`, verdict `ready`)
+- **WP07 (F3)** : une anomalie sans grand livre (`ledger_id IS NULL`, signal de sécurité d'un bracelet sans portefeuille)
+  n'a pas d'événement : seule une personne `OPERATOR_ADMIN` du prestataire la lit et la classe ; `ORGANIZER_ADMIN` ne la
+  voit pas (liste) et reçoit `404` (classement). Le tester et l'écrire dans la note de lane.
+- **WP11 (F1, F4, F5, F7)** : ADR-235 cite nommément les droits nouveaux de `cashless_app` (`SELECT` sur `sale_overview`,
+  `anomaly_overview`, `phone_model` ; `EXECUTE` des fonctions de 0101), couverts par D5 et D9 ; le retrait de
+  `PLATFORM_ADMIN` de `searchCustomerByPhone` (renforcement) ; l'exception à C-001 (`device_model`, `nfc_level`) ;
+  l'amendement de §12.2 (23 types).
+- **Consolidation (F2)** : WP04 retouche des fichiers de WP03 depuis une autre lane : chaîner les lanes en `--no-ff` et
+  faire relire à WP04 le diff exact de `openapi.yaml` et `contract-baseline.json`.
+
+## Consignes issues des relectures
+- **WP04 (relecture de WP03)** : `SaleDetail` est un `allOf` sur `SaleSummary`, qui porte `additionalProperties: false` :
+  un validateur strict rejette `lines`. Corriger dans la retouche hors carte d'`openapi.yaml` (`SaleDetail` autonome, ou
+  `additionalProperties` retiré de la base), avec les empreintes de `contract-baseline.json` et les types générés
+  recalculés ; remonter aussi « T11 bis » de `check.test.mjs`. Le dire dans la note de lane.
+- **WP07 (relecture de WP01)** : `classify_anomaly` ne vérifie pas que `p_actor` appartient au prestataire : l'API passe
+  toujours `principal.userId` de la session, jamais une valeur de la requête ; un test le montre.
+- **Tous les lots** : WP01 a retenu `set_device_model(...)` et posé les droits dans `post-roles.sql` § 15 (voir
+  `interfaces.md` §2). Toute fonction nouvelle appelable par `cashless_app` s'ajoute à `tests_execute_grants.sql`.
+- **WP07 (relecture de WP02)** : `anomaly_overview` expose `media_id` et `detail` (jsonb libre) : l'API ne les renvoie
+  pas tels quels ; seuls les champs du schéma du contrat sortent (test des clés de réponse).
+- **WP06 (relecture de WP02)** : le filtre « annulées » reste à 305 ms p95 sur 200 000 ventes (mesures dans
+  `docs/passation-11b/mesures-wp02/`) ; mesurer la route elle-même pour NFR-001.
+
+## Décisions du porteur (25/11/2026)
+- **Nom affiché d'une personne de la plateforme (WP05)** : libellé fixe « Administration de la plateforme » gardé ;
+  le vrai nom devient un point ouvert (OP-N à numéroter par WP11, ADR non requis : écart fonctionnel, pas de sécurité).
+- **Test de gel `contract-additions-9b.spec.ts` (WP04)** : WP04 le retouche hors carte, au plus juste : pointeurs
+  `/x-roles` ignorés dans `violations()`, la ligne qui attend `x-roles` indéfini sur les 11 opérations de la mission
+  devient une vérification de présence. Tout autre changement du contrat reste refusé.
+- **8 opérations sans route (`posClient`)** : sans `x-roles`, listées dans `DOUBTS_ACCEPTED` ; WP11 les consigne en
+  point ouvert (la mission qui écrit ces routes déclare leurs rôles).
+- **CI (orchestrateur, renforcement)** : `x-roles.test.mjs` est le seul garde de la présence de `x-roles`
+  (`check.mjs` ne voit pas sa perte) : WP04 l'ajoute à `check:stability` (`package.json`) et à
+  `.github/workflows/ledger-tests.yml`, à côté de `check.test.mjs`.
+- **WP06, `channel` null (décision du 25/11, relecture du cycle 1, point 3)** : les ventes sans `sale_attribution`
+  (canal inconnu, ventes de back-office) sont EXCLUES de la liste des ventes ; contrat inchangé ; un test couvre le cas.
+  WP11 consigne la limite en point ouvert (ventes non attribuées invisibles dans la liste).
+- **WP10 (relecture de WP04, mineur)** : l'exemption `x-roles` de `contract-additions-9b.spec.ts` vaut pour toute clé
+  `x-roles` sous `paths`, à toute profondeur ; la resserrer au niveau de l'opération (`paths/<chemin>/<méthode>/x-roles`)
+  dans la retouche hors carte de WP10, avec une mutation (`x-roles` posé dans un paramètre ou une réponse → refus).
+- **WP11 (relectures de WP06, WP07, WP09)** : à consigner — CL066 à CL069 traduits dans `anomalies.service.ts` et non
+  dans `sqlstate-map.ts` (corriger le commentaire d'en-tête de 0101 n'est pas permis : note ou ADR) ;
+  `reason: ANOMALY_KIND_NOT_CLASSIFIABLE` est une extension de premier niveau du 422, pas « dans le détail » (préciser la
+  doc) ; `media_id` sort dans `Anomaly` (conforme au contrat) ; `nfcLevelFor` asynchrone avec client SQL (≠ §4) ;
+  modèle déclaré par le terminal informatif et non vérifié ; points ouverts des décisions du 25/11.
+- **WP11 (relecture de WP08, approuvé le 25/11)** : à consigner — `searchMedia` rend 400 (contrat) et non 422 (prompt
+  T029) : écart prompt/contrat ; code imprimé mal formé → liste vide ; test 403 de PLATFORM_ADMIN ne prouve pas seul le
+  retrait (ce rôle n'a pas de prestataire) : ajouter un cas avec prestataire attribué si possible ; NFR-001 de la
+  recherche (200 000 bracelets) à mesurer hors `SKIP_LATENCY` avant la clôture ; relecture humaine : `search-scope.ts`,
+  `search-rate-limit.ts`.
+- **WP11 (relecture de WP06, cycle 2)** : `SET LOCAL enable_sort = off` dans la liste des ventes est un contournement du
+  planificateur (dépend des statistiques, à réévaluer si la volumétrie change) : à consigner.
+- **WP06, détail d'une vente non attribuée (décision du porteur, 25/11)** : `GET /sales/{id}` d'une vente sans
+  `sale_attribution` rend 404 (cohérent avec la liste ; contrat inchangé). WP11 consigne la limite avec l'exclusion de la
+  liste (même OP-N).
+- **WP11 (relecture de WP06, cycle 3)** : le chemin rapide des annulées teste `EXISTS sale_attribution` et la vue
+  `channel IS NOT NULL` (équivalent tant que `channel` est non nul en table) ; forme en deux temps et `enable_sort = off`
+  dépendent du planificateur ; REVERSED combiné à merchant_id/pos_id/vendor_id/MERCHANT_ADMIN reste sur la requête
+  générale (non mesuré) ; le test de plan de `sales-latency.spec.ts` garde son propre SQL.
+- **Tous les lots (incident du 25/11)** : `apps/api/test/support/db.ts` lit `DATABASE_URL_*` et ignore `PGDATABASE` :
+  poser ces variables vers la base du lot (`cashless_wpNN`) avant Jest, sinon les tests visent `cashless_test` (déjà
+  polluée deux fois : remise à zéro avant la batterie de l'orchestrateur).
+- **WP11 (relecture de WP06, cycle 4, approuvé le 25/11)** : à consigner ou ajouter — test à deux événements du même
+  prestataire qui échoue si `t.event_id = $1` disparaît de la CTE de `reversedQuery` (mutation non vue : risque
+  fonctionnel de pages courtes / `has_more` faux, pas de fuite grâce à la vue externe et à la RLS) ; assertion « aucun
+  identifiant de A dans le corps » dans le test d'isolement de la liste sans filtre ; le registre d'isolement balaie
+  `?status=REVERSED` (cas unique par opération), la liste sans filtre n'est couverte que par `sales.spec.ts`.
+- **WP10, dérives x-roles (décision du porteur, 25/11)** : contrat qui déclare un rôle que le service refuse →
+  ALIGNER `x-roles` sur le code : retirer CASHIER de `listCashSessions`, OPERATOR_ADMIN de `setOrganizerOfflinePolicy`
+  et `setEventOfflinePolicy` (renforcement : aucun droit élargi) ; empreintes et types générés recalculés ;
+  `knownDrifts` vidé. Consigné par WP11 (écart qui renforce : fait puis consigné).
+- **WP11 (relecture de WP10, cycle 1)** : à nommer dans le bilan de FR-004 — `initiatePspTopup`, `getPspTopup`,
+  `cancelPspTopup` non jouées par la matrice (401 de la garde terminal ; preuve restante : topup-isolation) ;
+  99 opérations sans rôle déclaré abouti en 2xx (un rôle déclaré recevant un 403 autre que FORBIDDEN passerait sans
+  bruit) ; SUPERVISOR de `approve/rejectApprovalRequest` déclaré par union d'actions, non vérifié pour l'action jouée ;
+  échantillon élargi à tout le personnel (1281 appels, au lieu des ~470 de D3).
+- **Décisions du porteur sur WP11 (25/11 soir)** : mission 11c (résolutions d'anomalie qui écrivent de l'argent)
+  validée ; OP-N185 BLOQUE la production (confirmé). OP-N194 levé AVANT la fusion par un correctif d'intégration
+  (tests seulement, relecteur distinct) : test à deux événements du même prestataire pour la CTE de `reversedQuery`,
+  assertion « aucun identifiant de A » dans le 404 de la liste sans filtre, cas PLATFORM_ADMIN avec prestataire attribué
+  pour la recherche, extension de `consignation.spec.ts` aux OP-N185–198. Droits nouveaux de `cashless_app` (SELECT sur
+  `sale_overview`, `anomaly_overview`, `phone_model` ; EXECUTE sur 4 fonctions) confirmés tels que nommés dans ADR-235
+  (D5/D9) : la mention « aucun droit nouveau » de la fiche de lot est caduque.

@@ -135,6 +135,8 @@ describe('NFR-002, SC-002, OP-N70 : chaque route de terminal, chaque preuve', ()
     pending_exposure: 0,
     battery_percent: 80,
     app_version: '1.0.0-test',
+    // Mission 11b, WP09 : modèle déclaré (facultatif) ; la preuve d'identité ne dépend pas du corps.
+    device_model: { manufacturer: 'matrice', model: 'modele-1' },
   });
   /** Bracelet inconnu : la route de guichet le cherche, la garde a déjà servi la requête. */
   const unknownMedia = () => `/media/${randomUUID()}`;

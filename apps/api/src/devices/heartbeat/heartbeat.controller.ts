@@ -14,6 +14,7 @@ import { requestDevice } from '../../device-identity/device-identity.port';
 import { pickLanguage } from '../../http/language';
 import { DeviceConfigService } from '../config/device-config.service';
 import { OfflineSnapshotsService } from '../../offline/snapshots/offline-snapshots.service';
+import { declareDeviceModel } from '../phone-models/declare-device-model';
 import { parseHeartbeat } from './heartbeat.dto';
 
 type HeartbeatResponse = components['schemas']['HeartbeatResponse'];
@@ -40,6 +41,7 @@ export class HeartbeatController {
         input.appVersion,
         input.deviceTime,
       ]);
+      await declareDeviceModel(client, device.deviceId, input.deviceModel);
       const served = await this.configs.build(client, device, language);
       const state = await this.snapshots.heartbeatState(client, device);
       return {

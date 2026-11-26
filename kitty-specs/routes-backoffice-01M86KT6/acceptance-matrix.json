@@ -1,0 +1,317 @@
+{
+  "mission_slug": "routes-backoffice-01M86KT6",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 \u2014 Profil du personnel",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 au cycle 2 (bb997480) : staff-profile.spec.ts vert ; mutations WHERE id et forme neutre d\u00e9tect\u00e9es.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP05. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 \u2014 Profil r\u00e9serv\u00e9 au personnel",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuv\u00e9 (bb997480) : staff-profile.spec.ts (profil r\u00e9serv\u00e9 au personnel) ; isolation et media-isolation verts.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP05. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 \u2014 R\u00f4les autoris\u00e9s par op\u00e9ration",
+      "proof_type": "automated_test",
+      "evidence": "WP04 approuv\u00e9 au cycle 2 : x-roles sur chaque op\u00e9ration servie, x-roles.test.mjs en CI et check:stability ; gel 9b ne tol\u00e8re que x-roles. 8 op\u00e9rations posClient sans route en DOUBTS_ACCEPTED (d\u00e9cision du 25/11, OP-N en WP11).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP04. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 \u2014 R\u00f4les d\u00e9clar\u00e9s fid\u00e8les",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuv\u00e9 au cycle 2 (lane j, f89e9407) : x-roles-matrix.spec.ts, 7 r\u00f4les du personnel sur chaque op\u00e9ration d\u00e9clarant des r\u00f4les (1281 appels) ; 3 d\u00e9rives (contrat d\u00e9clarait, service refusait) align\u00e9es sur le code par d\u00e9cision du porteur (CASHIER de listCashSessions, OPERATOR_ADMIN de set{Organizer,Event}OfflinePolicy) ; aucune d\u00e9rive inverse ; mutations rouges (r\u00f4le retir\u00e9 d une garde, garde \u00e9largie, CASHIER remis). Limites nomm\u00e9es en WP11 : PSP topup non jou\u00e9es, 99 op\u00e9rations sans 2xx, SUPERVISOR par union d actions.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T16:00:00Z",
+      "notes": "Lot porteur : WP10. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 \u2014 Liste des ventes",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 au cycle 4 (lane f, b9d8ac16) : sales.spec.ts, sales-pagination.spec.ts ; ventes sans attribution exclues (d\u00e9cision du 25/11, mutation \u2192 6 rouges) ; dates impossibles \u2192 422 (mutation \u2192 2 rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "Lot porteur : WP06. WP02 approuv\u00e9 (997c8a2e) : vue sale_overview (security_invoker, SELECT seul) et index journal_transaction_sales_idx ; tests_backoffice_read_views.sql 42/42 relanc\u00e9 par le relecteur."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 \u2014 D\u00e9tail d'une vente",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 : d\u00e9tail de vente ; vente non attribu\u00e9e \u2192 404 identique \u00e0 absente (d\u00e9cision du 25/11, mutation \u2192 1 rouge).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "Lot porteur : WP06. WP02 approuv\u00e9 (997c8a2e) : occurred_at = date d'origine (test\u00e9 sur OFFLINE_SYNC), une ligne de vue par vente \u00e0 deux lignes. WP03 approuv\u00e9 : sch\u00e9ma SaleDetail (correction allOf en WP04)."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 \u2014 Ventes du commer\u00e7ant",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 : ventes du commer\u00e7ant (filtre merchant_id, port\u00e9e MERCHANT_ADMIN) couvertes par sales.spec.ts et sales-latency.spec.ts.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "Lot porteur : WP06. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 \u2014 Liste des anomalies",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 (37 tests, cashless_wp07r) ; seuls les champs du contrat sortent ; mutations port\u00e9e et auteur d\u00e9tect\u00e9es.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP07. WP02 approuv\u00e9 : vue anomaly_overview (event_id par transaction, sinon grand livre EVENT, sinon NULL). Relecture : WP07 ne doit pas renvoyer detail ni media_id tels quels."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 \u2014 Classement d'une anomalie",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 : classify_anomaly appel\u00e9e avec principal.userId de la session (test) ; mutation auteur d\u00e9tect\u00e9e.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP07. WP01 approuv\u00e9 : classify_anomaly (fonction SECURITY DEFINER, migration 0101). WP07 doit passer principal.userId."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 \u2014 Types non classables refus\u00e9s",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuv\u00e9 : 422 reason ANOMALY_KIND_NOT_CLASSIFIABLE (extension de premier niveau, \u00e0 pr\u00e9ciser en WP11).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP07. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 \u2014 Recherche par bracelet",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (3a21cc8c) : search*.spec.ts 172 verts ; mutation port\u00e9e du bracelet \u2192 1 rouge. Code imprim\u00e9 mal form\u00e9 \u2192 liste vide.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP08. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 \u2014 Recherche par portefeuille",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 (3a21cc8c) : search*.spec.ts ; 400 conforme au contrat (prompt T029 disait 422, \u00e0 consigner en WP11).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP08. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 \u2014 Recherche par num\u00e9ro",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 : num\u00e9ro E.164 exact, \u00e9galit\u00e9 SQL, r\u00e9ponse masqu\u00e9e (maskPhone, customer_ref opaque) ; mutation port\u00e9e festivalier \u2192 2 rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP08. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 \u2014 Recherche par num\u00e9ro encadr\u00e9e",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 : r\u00f4les OPERATOR_ADMIN, ORGANIZER_ADMIN, SUPERVISOR ; PLATFORM_ADMIN exclu (renforcement), 403 sans audit ; audit \u00e0 0 r\u00e9sultat (mutation audit \u2192 4 rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP08. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 \u2014 Liste des mod\u00e8les de t\u00e9l\u00e9phone",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuv\u00e9 (cycles 1-2) : 300 tests verts ; gardes transverses verts.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP09. WP01 approuv\u00e9 : table phone_model, upsert_phone_model/delete_phone_model r\u00e9serv\u00e9es \u00e0 cashless_platform."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 \u2014 Signalement des terminaux",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuv\u00e9 : set_device_model, mod\u00e8le d\u00e9clar\u00e9 par le terminal (informatif, non v\u00e9rifi\u00e9 : WP11) ; mutations M1/M2 tu\u00e9es au cycle 2.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP09. WP01 approuv\u00e9 : set_device_model(...) retenu."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017 \u2014 Cloisonnement",
+      "proof_type": "automated_test",
+      "evidence": "WP06-WP09 approuv\u00e9s : cas du registre backoffice-isolation par op\u00e9ration servie (ventes : ?status=REVERSED ; liste sans filtre par sales.spec.ts \u00ab hors port\u00e9e : 404 \u00bb) ; mutations de port\u00e9e d\u00e9tect\u00e9es (WP07, WP08).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "Lot porteur : WP06-WP09 (cas backoffice-isolation par lot). WP02 approuv\u00e9 : RLS tenant_isolation sur toutes les tables jointes des deux vues ; mutation security_invoker=false \u2192 4 \u00e9checs (relecteur). WP07, WP08, WP09 approuv\u00e9s avec cas d isolement ; reste WP06."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018 \u2014 Tra\u00e7abilit\u00e9",
+      "proof_type": "automated_test",
+      "evidence": "WP07, WP08, WP09 approuv\u00e9s : audit des classements (WP07), de chaque recherche par num\u00e9ro m\u00eame sans r\u00e9sultat (WP08), des signalements (WP09).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "Lot porteur : WP07, WP08, WP09. Aucune preuve encore (lot non approuv\u00e9)."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 \u2014 Rapidit\u00e9 des listes",
+      "proof_type": "automated_test",
+      "evidence": "WP06 cycle 3-4 : sales-latency.spec.ts sans SKIP_LATENCY, 200 000 ventes : REVERSED p95 36-41 ms (160 ms sous charge), page 1 \u2264 35 ms, merchant_id/pos_id/MERCHANT_ADMIN \u2264 234 ms sous charge, d\u00e9tail \u2264 27 ms (< 500 ms). Recherche (WP08) : latence 200 000 bracelets \u00e0 mesurer hors SKIP_LATENCY \u00e0 la batterie. Batterie de l orchestrateur (26/11, lane k \u00e0 ce8f5f46, cashless_test remise \u00e0 z\u00e9ro, suites une \u00e0 une sans SKIP_LATENCY) : sales-latency 8/8 (p95 37-48 ms) ; search.spec.ts recherche sur 200 000 bracelets p95 31 ms ; search-customer et search-rate-limit verts.",
+      "pass_fail": "pass",
+      "verified_by": "orchestrateur (batterie) + relecteurs distincts",
+      "verified_at": "2026-11-26T03:10:00Z",
+      "notes": "listAnomalies, getWalletOverview, searchCustomerByPhone non mesur\u00e9s \u00e0 200 000 (OP-N195)."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 \u2014 Pages born\u00e9es",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuv\u00e9 : pagination par curseur born\u00e9e ; chemin rapide des annul\u00e9es test\u00e9 (limit=1 et 3, has_more et next_cursor ; mutation < \u2192 <= : 2 rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "WP06 (pagination par curseur)."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 \u2014 Cloisonnement v\u00e9rifi\u00e9",
+      "proof_type": "automated_test",
+      "evidence": "WP05 (balayage) et WP06-WP09 (cas par op\u00e9ration servie) approuv\u00e9s ; end-to-end/backoffice-isolation.spec.ts vert (38/38 avec les ventes).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T13:00:00Z",
+      "notes": "WP05 en cycle 2 (balayage backoffice-isolation) ; cas par lot WP06-WP09. WP07, WP08, WP09 approuv\u00e9s avec cas d isolement ; reste WP06."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 \u2014 D\u00e9bit de la recherche par num\u00e9ro",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuv\u00e9 : d\u00e9bit compt\u00e9 en base par auteur (60 s, verrou consultatif), 21e requ\u00eate \u2192 429 + Retry-After, refus audit\u00e9 ; STAFF_PHONE_SEARCH_PER_MINUTE born\u00e9 1-1000, d\u00e9faut 20.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T11:30:00Z",
+      "notes": "WP08."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 \u2014 Aucun droit \u00e9largi",
+      "proof_type": "automated_test",
+      "evidence": "WP01/WP02 : SELECT seul sur sale_overview/anomaly_overview/phone_model, EXECUTE sur 4 fonctions SECURITY DEFINER, nomm\u00e9s dans ADR-235 et confirm\u00e9s par le porteur (25/11) ; \u00a7 16 de post-roles.sql retire INSERT/UPDATE/DELETE/TRUNCATE (mutation \u2192 2 \u00e9checs) ; UPDATE anomaly retir\u00e9 \u00e0 cashless_app (D4) ; tests_execute_grants \u00e0 jour. Relecture humaine de post-roles.sql \u00a715-16 demand\u00e9e (POINTS_OUVERTS \u00a715).",
+      "pass_fail": "pass",
+      "verified_by": "relecteurs distincts (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:35:00Z",
+      "notes": "WP02 : SELECT seul sur les deux vues, \u00a7 16 de post-roles.sql retire INSERT/UPDATE/DELETE/TRUNCATE (mutation \u2192 2 \u00e9checs). Droits \u00e0 faire relire par une personne."
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006 \u2014 Minimisation",
+      "proof_type": "automated_test",
+      "evidence": "WP05 : /staff/me sans courriel, subject, issuer ; WP02 : sale_overview sans portefeuille, bracelet ni num\u00e9ro ; WP08 : num\u00e9ro masqu\u00e9 (maskPhone), customer_ref opaque, audit sans num\u00e9ro (test NFR-006 sur audit_log et journaux) ; WP07 : seuls les champs du contrat sortent (media_id/detail filtr\u00e9s).",
+      "pass_fail": "pass",
+      "verified_by": "relecteurs distincts (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:35:00Z",
+      "notes": "WP05 cycle 1 : cl\u00e9s de /staff/me sans courriel, subject, issuer ; WP02 : sale_overview sans portefeuille, bracelet ni num\u00e9ro."
+    },
+    {
+      "criterion_id": "C-001",
+      "description": "C-001 \u2014 Contrat stable",
+      "proof_type": "manual_review",
+      "evidence": "Contrat : seuls ajouts admis par check.mjs (310 admises, 0 refus\u00e9e) ; 3 r\u00f4les retir\u00e9s de x-roles (renforcement, d\u00e9cision du porteur) ; gel 9b ne tol\u00e8re x-roles qu au niveau op\u00e9ration (mutation rouge) ; aucun ProblemCode nouveau (D10) ; x-roles.test.mjs et check.test.mjs en CI (53 verts).",
+      "pass_fail": "pass",
+      "verified_by": "orchestrateur + relecteurs distincts",
+      "verified_at": "2026-11-26T04:00:00Z",
+      "notes": "WP03 approuv\u00e9 (116 admises) ; WP04 en cours. WP10 : seul changement du contrat = 3 r\u00f4les retir\u00e9s de x-roles (renforcement, d\u00e9cision du porteur) ; check.mjs 0 refus\u00e9e ; exemption de contract-additions-9b resserr\u00e9e au niveau op\u00e9ration (mutation rouge). Reste la v\u00e9rification de consolidation."
+    },
+    {
+      "criterion_id": "C-002",
+      "description": "C-002 \u2014 Pas d'\u00e9criture d'argent",
+      "proof_type": "manual_review",
+      "evidence": "WP11 approuv\u00e9 (cycle 2, e32df355) : aucune \u00e9criture d argent ; r\u00e9solutions des 13 types non classables report\u00e9es \u00e0 la mission 11c (OP-N185, bloque la production, d\u00e9cision du porteur). Vues non modifiables (WP02).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:30:00Z",
+      "notes": "WP01/WP02 : aucune \u00e9criture au grand livre ; vues non modifiables (55000)."
+    },
+    {
+      "criterion_id": "C-003",
+      "description": "C-003 \u2014 Aucun refus d'enr\u00f4lement",
+      "proof_type": "manual_review",
+      "evidence": "WP09 approuv\u00e9 : mod\u00e8le d\u00e9clar\u00e9 par le terminal informatif, aucun refus d enr\u00f4lement ni de heartbeat (OP-N186 consign\u00e9 en WP11).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:30:00Z",
+      "notes": "WP09."
+    },
+    {
+      "criterion_id": "C-004",
+      "description": "C-004 \u2014 \u00c9cart de s\u00e9curit\u00e9 soumis",
+      "proof_type": "manual_review",
+      "evidence": "\u00c9carts soumis au porteur avant code et tranch\u00e9s le 25/11 : libell\u00e9 plateforme, channel null (exclusion + 404), d\u00e9rives x-roles (align\u00e9es), 8 op\u00e9rations posClient sans route, OP-N194 lev\u00e9 avant fusion, droits ADR-235 confirm\u00e9s ; consign\u00e9s en ADR-235/236, OP-N185\u2013198 ; consignation.spec.ts \u00e9tendu (mutation rouge).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:30:00Z",
+      "notes": "\u00c9cart soumis au porteur (25/11) : libell\u00e9 fixe du nom affich\u00e9 des personnes de la plateforme (WP05), fonctionnel, non s\u00e9curit\u00e9."
+    },
+    {
+      "criterion_id": "C-005",
+      "description": "C-005 \u2014 Liste ferm\u00e9e des anomalies",
+      "proof_type": "manual_review",
+      "evidence": "WP01 + WP11 : 10 types classables en base, SPECIFICATION \u00a712.2 \u00e0 23 lignes (10 oui, 13 non), contradiction 22/23 signal\u00e9e et r\u00e9gl\u00e9e par \u00a70.3 (ADR-235).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-25T19:30:00Z",
+      "notes": "WP01 : 10 types classables tenus en base ; amendement \u00a712.2 (23 types) en WP11."
+    },
+    {
+      "criterion_id": "C-006",
+      "description": "C-006 \u2014 Pas d'\u00e9cran",
+      "proof_type": "manual_review",
+      "evidence": "Aucun \u00e9cran : le diff de la mission (lane k contre feat) ne touche que apps/api, packages/contracts, packages/ledger-sql, tools/contract-stability, la CI et les docs ; aucune application web ou mobile dans le d\u00e9p\u00f4t touch\u00e9e.",
+      "pass_fail": "pass",
+      "verified_by": "orchestrateur + relecteurs distincts",
+      "verified_at": "2026-11-26T04:00:00Z",
+      "notes": "Aucun \u00e9cran : \u00e0 v\u00e9rifier \u00e0 la consolidation (aucun fichier sous apps/*-web ni app mobile dans le diff de la mission)."
+    }
+  ],
+  "negative_invariants": [],
+  "battery": {
+    "date": "2026-11-26",
+    "head": "lane k ce8f5f46",
+    "jest_skip_latency": "4525 verts / 6 \u00e9checs dans 4 suites (vendor-pin-bounds, claim-code-order, personalization, replication-feed), toutes vertes relanc\u00e9es seules sur cashless_test remise \u00e0 z\u00e9ro",
+    "latence_une_a_une": "11b vertes (sales p95 37-48 ms, recherche 31 ms) ; payment/refund/device/offline/snapshot/statement en \u00e9chec SOUS CHARGE (load 6-8), identiques sur le code d avant la mission (a881ec5c) : pas de r\u00e9gression",
+    "lint_typecheck": "verts (avant le cycle 3 ; cycle 3 : eslint/tsc propres par l impl\u00e9menteur et le relecteur)",
+    "pgtap": "laiss\u00e9 \u00e0 la CI de la PR (pg_prove absent en local)"
+  }
+}

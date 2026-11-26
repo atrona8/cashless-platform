@@ -4881,6 +4881,235 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/staff/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter son profil et ses attributions (back-office)
+         * @description Profil de la personne du personnel authentifiée : identifiant, nom affiché, prestataire (`null` pour la
+         *     plateforme) et attributions de rôles (rôle, type et identifiant de portée). Jeton du personnel seulement :
+         *     un jeton festivalier ou un terminal est refusé (`401` ou `403`). Aucune écriture.
+         */
+        get: operations["getStaffProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{event_id}/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les ventes d'un événement (back-office)
+         * @description Ventes (transactions `PURCHASE`) de l'événement, de la plus récente à la plus ancienne, dans la portée de la
+         *     personne : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR`, `MERCHANT_ADMIN` (ce dernier ne voit que les
+         *     ventes de son commerçant). Événement hors de la portée ou d'un autre prestataire : `404`. Aucun portefeuille
+         *     ni donnée du festivalier dans la réponse. `from` et `to` sont des instants UTC ; `from` inclus, `to` exclu.
+         *     Pagination par curseur ; curseur invalide : `422 VALIDATION_FAILED`.
+         */
+        get: operations["listEventSales"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales/{transaction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter une vente et ses lignes (back-office)
+         * @description Vente (transaction `PURCHASE`) et ses lignes, dans la portée de la personne (mêmes rôles que
+         *     `listEventSales`). Aucun identifiant de portefeuille ni donnée du festivalier. Vente hors de la portée ou
+         *     d'un autre prestataire : `404` (réponse neutre).
+         */
+        get: operations["getSale"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/anomalies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les anomalies (back-office)
+         * @description Anomalies du prestataire dans la portée de la personne (`OPERATOR_ADMIN`, `ORGANIZER_ADMIN`), de la plus
+         *     récente à la plus ancienne. `classifiable` indique si le type admet un classement sans écriture au grand
+         *     livre (`classifyAnomaly`). Lecture seule. Pagination par curseur ; curseur invalide :
+         *     `422 VALIDATION_FAILED`.
+         */
+        get: operations["listAnomalies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/anomalies/{anomaly_id}/classification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Classer une anomalie sans suite financière (back-office)
+         * @description Passe l'anomalie `OPEN` à `RESOLVED` avec un motif (1 à 500 caractères), sans aucune écriture au grand
+         *     livre. Seuls les types classables sont admis : un autre type est refusé par
+         *     `422 VALIDATION_FAILED` avec la raison `ANOMALY_KIND_NOT_CLASSIFIABLE` (raison dans le détail, pas un code).
+         *     Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`. Anomalie déjà traitée : `409 CONFLICT_STATE`. Anomalie
+         *     inconnue, hors de la portée ou d'un autre prestataire : `404`.
+         */
+        post: operations["classifyAnomaly"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rechercher un bracelet par UID ou par code imprimé (back-office)
+         * @description Un seul des deux critères (`nfc_uid` ou `printed_code`), correspondance exacte ; aucun ou les deux :
+         *     `400`. Réponse : zéro ou un bracelet de la portée de la personne (`data`) ; un bracelet hors de la portée ou
+         *     d'un autre prestataire n'est pas distinguable d'un bracelet inconnu. Lecture seule.
+         */
+        get: operations["searchMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/wallets/{wallet_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consulter un portefeuille, ses soldes et ses bracelets (back-office)
+         * @description Statut, soldes, caution et bracelets d'un portefeuille de la portée de la personne. La référence du
+         *     festivalier est masquée. Portefeuille hors de la portée ou d'un autre prestataire : `404`. Lecture seule.
+         */
+        get: operations["getWalletOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechercher les portefeuilles d'un festivalier par son numéro (back-office)
+         * @description Numéro vérifié exact (E.164 strict), jamais partiel, transmis dans le corps et jamais dans le chemin ni dans
+         *     la requête. Rôles : `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`, `SUPERVISOR` (pas `PLATFORM_ADMIN`). Réponse : numéro
+         *     masqué et portefeuilles de la portée de la personne (liste vide si aucun). Le numéro n'est ni journalisé ni
+         *     renvoyé en clair. Limite de débit par personne : au-delà, `429 RATE_LIMITED` avec `Retry-After`. Recherche
+         *     sans effet : pas d'`Idempotency-Key` (comme les autres lectures).
+         */
+        post: operations["searchCustomerByPhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/phone-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lister les modèles de téléphone testés (back-office)
+         * @description Table de la plateforme : niveau NFC mesuré de chaque modèle de téléphone (`RECOMMENDED`, `TOLERATED`).
+         *     Un modèle absent de la table est `UNTESTED`. Rôles : `PLATFORM_ADMIN`, `OPERATOR_ADMIN`, `ORGANIZER_ADMIN`.
+         *     Pagination par curseur.
+         */
+        get: operations["listPhoneModels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/phone-models/{manufacturer}/{model}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Créer ou mettre à jour un modèle de téléphone (plateforme)
+         * @description Rôle `PLATFORM_ADMIN` seulement. Fabricant et modèle sont normalisés (minuscules, espaces réduits) ; le
+         *     même modèle ne crée jamais deux lignes. Écriture idempotente par nature : même corps, même résultat.
+         */
+        put: operations["upsertPhoneModel"];
+        post?: never;
+        /**
+         * Retirer un modèle de téléphone de la table (plateforme)
+         * @description Rôle `PLATFORM_ADMIN` seulement. Le modèle redevient `UNTESTED`. Modèle absent : `404`.
+         */
+        delete: operations["deletePhoneModel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = {
     paymentIntentSucceeded: {
@@ -5259,6 +5488,8 @@ export type components = {
              * @description Fin de validité du certificat client.
              */
             cert_not_after: string | null;
+            device_model?: components["schemas"]["DeviceModel"];
+            nfc_level?: components["schemas"]["NfcLevel"];
         };
         /** @description Changement de statut d'un terminal (ajout seul). */
         DeviceStatusHistoryEntry: {
@@ -5367,6 +5598,7 @@ export type components = {
             /** @enum {string} */
             os: "ANDROID" | "IOS";
             app_version: string;
+            device_model?: components["schemas"]["DeviceModel"];
             /**
              * @description Clé publique ECDSA P-256 : SubjectPublicKeyInfo DER canonique (point non compressé, 91 octets) →
              *     `device.public_key`. Le serveur réencode la clé et exige les mêmes octets ; les défis hachent ces
@@ -5688,6 +5920,7 @@ export type components = {
             pending_exposure?: number;
             battery_percent?: number;
             app_version?: string;
+            device_model?: components["schemas"]["DeviceModel"];
         };
         HeartbeatResponse: {
             server_time: components["schemas"]["Timestamp"];
@@ -9325,6 +9558,239 @@ export type components = {
             /** Format: uuid */
             readonly created_by?: string;
             mappings: components["schemas"]["AccountMapping"][];
+        };
+        /** @description Attribution d'un rôle du personnel sur une portée. */
+        StaffAssignment: {
+            /** @enum {string} */
+            role: "PLATFORM_ADMIN" | "OPERATOR_ADMIN" | "ORGANIZER_ADMIN" | "MERCHANT_ADMIN" | "SUPERVISOR" | "CASHIER" | "PERSONALIZER";
+            /** @enum {string} */
+            scope_type: "PLATFORM" | "OPERATOR" | "ORGANIZER" | "EVENT" | "MERCHANT";
+            /**
+             * Format: uuid
+             * @description Identifiant de la portée (`null` pour `PLATFORM`).
+             */
+            scope_id: string | null;
+        };
+        /** @description Profil de la personne du personnel authentifiée. */
+        StaffProfile: {
+            /** Format: uuid */
+            user_id: string;
+            display_name: string;
+            /**
+             * Format: uuid
+             * @description Prestataire de la personne (`null` pour la plateforme).
+             */
+            operator_id: string | null;
+            assignments: components["schemas"]["StaffAssignment"][];
+        };
+        /**
+         * @description Vente (transaction `PURCHASE`). Montant en unités mineures de `currency`. Aucun identifiant de portefeuille
+         *     ni donnée du festivalier.
+         */
+        SaleSummary: {
+            /** Format: uuid */
+            transaction_id: string;
+            /** Format: uuid */
+            event_id: string;
+            occurred_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            amount: number;
+            currency: components["schemas"]["Currency"];
+            /** Format: uuid */
+            pos_id: string | null;
+            /** Format: uuid */
+            merchant_id: string | null;
+            /** Format: uuid */
+            vendor_id: string | null;
+            /** Format: uuid */
+            device_id: string | null;
+            /** @enum {string} */
+            source: "ONLINE" | "EDGE_SYNC" | "OFFLINE_SYNC";
+            /** @enum {string} */
+            channel: "NFC" | "MERCHANT_QR" | "CUSTOMER_QR";
+            /** @enum {string} */
+            status: "VALID" | "REVERSED";
+            /**
+             * Format: uuid
+             * @description Annulation de la vente (présente quand `status = REVERSED`).
+             */
+            reversal_transaction_id?: string | null;
+        };
+        /** @description Ligne d'une vente. Montants en unités mineures. */
+        SaleDetailLine: {
+            line_no: number;
+            /** Format: uuid */
+            item_id: string | null;
+            label_fr: string;
+            label_en: string;
+            quantity: number;
+            /** Format: int64 */
+            unit_price: number;
+            /** @description Taux de TVA en points de base. */
+            vat_rate_bps: number;
+            /** Format: int64 */
+            line_total: number;
+        };
+        /** @description Vente et ses lignes. Aucun identifiant de portefeuille ni donnée du festivalier. */
+        SaleDetail: {
+            /** Format: uuid */
+            transaction_id: string;
+            /** Format: uuid */
+            event_id: string;
+            occurred_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            amount: number;
+            currency: components["schemas"]["Currency"];
+            /** Format: uuid */
+            pos_id: string | null;
+            /** Format: uuid */
+            merchant_id: string | null;
+            /** Format: uuid */
+            vendor_id: string | null;
+            /** Format: uuid */
+            device_id: string | null;
+            /** @enum {string} */
+            source: "ONLINE" | "EDGE_SYNC" | "OFFLINE_SYNC";
+            /** @enum {string} */
+            channel: "NFC" | "MERCHANT_QR" | "CUSTOMER_QR";
+            /** @enum {string} */
+            status: "VALID" | "REVERSED";
+            /**
+             * Format: uuid
+             * @description Annulation de la vente (présente quand `status = REVERSED`).
+             */
+            reversal_transaction_id?: string | null;
+            lines: components["schemas"]["SaleDetailLine"][];
+        };
+        SalePage: {
+            data: components["schemas"]["SaleSummary"][];
+            next_cursor: string | null;
+            has_more: boolean;
+        };
+        /**
+         * @description Anomalie vue du back-office. Montant en unités mineures de `currency` ; `event_id`, `amount` et `currency`
+         *     sont `null` quand l'anomalie n'a pas de grand livre. `classification` n'est présente que pour une anomalie
+         *     classée (`classifyAnomaly`).
+         */
+        Anomaly: {
+            /** Format: uuid */
+            anomaly_id: string;
+            /** @enum {string} */
+            kind: "OFFLINE_SHORTFALL" | "COUNTER_DUPLICATE" | "COUNTER_TIME_INVERSION" | "UID_MISMATCH" | "RETIRED_IDENTITY" | "SEQ_GAP" | "CHAIN_BROKEN" | "CLOCK_SKEW" | "VOID_CONFLICT" | "ONLINE_CONFIRMED_MISSING" | "IDEMPOTENCY_CONFLICT" | "NON_COMPLIANT_OPERATION" | "PERIOD_CLOSED_OPERATION" | "LATE_OFFLINE_SYNC" | "SIGNATURE_MISMATCH" | "CASH_TOPUP_OVER_LIMIT" | "CASH_DIFF" | "PSP_MISMATCH" | "PSP_TOPUP_OVER_LIMIT" | "EDGE_REPLAY_FAILED" | "LATE_CHARGEBACK" | "CARD_VELOCITY" | "PSP_TOPUP_NOT_CREDITED";
+            /** @enum {string} */
+            status: "OPEN" | "RESOLVED";
+            /** Format: uuid */
+            event_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            amount: number | null;
+            currency: string | null;
+            /** Format: uuid */
+            media_id: string | null;
+            /** Format: uuid */
+            device_id: string | null;
+            /** Format: uuid */
+            transaction_id: string | null;
+            /** @description Vrai si le type admet un classement sans écriture au grand livre. */
+            classifiable: boolean;
+            classification?: {
+                reason: string;
+                /** Format: uuid */
+                classified_by: string;
+                classified_at: components["schemas"]["Timestamp"];
+            };
+        };
+        AnomalyPage: {
+            data: components["schemas"]["Anomaly"][];
+            next_cursor: string | null;
+            has_more: boolean;
+        };
+        AnomalyClassificationCreate: {
+            /** @description Motif du classement. */
+            reason: string;
+        };
+        /**
+         * @description Bracelet trouvé, avec les soldes de son portefeuille (unités mineures). `wallet_id` et les soldes sont
+         *     `null` pour un bracelet sans portefeuille.
+         */
+        MediaSearchResult: {
+            /** Format: uuid */
+            media_id: string;
+            status: components["schemas"]["MediaStatus"];
+            /** Format: uuid */
+            event_id: string | null;
+            /** Format: uuid */
+            wallet_id: string | null;
+            printed_number: string | null;
+            /** Format: int64 */
+            paid_balance: number | null;
+            /** Format: int64 */
+            promo_balance: number | null;
+            /** Format: int64 */
+            deposit: number | null;
+        };
+        /** @description Portefeuille vu du back-office. Montants en unités mineures de `currency`. `customer_ref` est masqué. */
+        WalletOverview: {
+            /** Format: uuid */
+            wallet_id: string;
+            status: components["schemas"]["WalletStatus"];
+            /** Format: uuid */
+            event_id: string;
+            currency: components["schemas"]["Currency"];
+            /** Format: int64 */
+            paid_balance: number;
+            /** Format: int64 */
+            promo_balance: number;
+            /** Format: int64 */
+            deposit: number;
+            media: {
+                /** Format: uuid */
+                media_id: string;
+                status: components["schemas"]["MediaStatus"];
+                printed_number: string | null;
+            }[];
+            /** @description Référence du festivalier, masquée. */
+            customer_ref: string | null;
+        };
+        CustomerSearchRequest: {
+            /** @description Numéro E.164 strict, exact (jamais partiel). */
+            phone: string;
+        };
+        CustomerSearchResult: {
+            /** @description Numéro masqué (indicatif, deux chiffres, étoiles, deux derniers chiffres). */
+            masked_phone: string;
+            wallets: components["schemas"]["WalletOverview"][];
+        };
+        /**
+         * @description Niveau NFC d'un modèle de téléphone ; `UNTESTED` si le modèle n'est pas dans la table.
+         * @enum {string}
+         */
+        NfcLevel: "RECOMMENDED" | "TOLERATED" | "UNTESTED";
+        /** @description Modèle du terminal, déclaré par l'app (valeur informative). */
+        DeviceModel: {
+            manufacturer: string;
+            model: string;
+        };
+        /** @description Modèle de téléphone testé (table de la plateforme). */
+        PhoneModel: {
+            manufacturer: string;
+            model: string;
+            /** @enum {string} */
+            nfc_level: "RECOMMENDED" | "TOLERATED";
+            /** Format: date */
+            measured_at: string;
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        PhoneModelPage: {
+            data: components["schemas"]["PhoneModel"][];
+            next_cursor: string | null;
+            has_more: boolean;
+        };
+        PhoneModelUpsert: {
+            /** @enum {string} */
+            nfc_level: "RECOMMENDED" | "TOLERATED";
+            /** Format: date */
+            measured_at: string;
         };
     };
     responses: {
@@ -22848,6 +23314,469 @@ export interface operations {
                      */
                     "text/csv": string;
                 };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getStaffProfile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Profil et attributions. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffProfile"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listEventSales: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Ventes de ce point de vente. */
+                pos_id?: string;
+                /** @description Ventes de ce commerçant. */
+                merchant_id?: string;
+                /** @description Ventes de ce vendeur. */
+                vendor_id?: string;
+                /** @description Début (UTC, inclus). */
+                from?: string;
+                /** @description Fin (UTC, exclue). */
+                to?: string;
+                /** @description Statut de la vente. */
+                status?: components["schemas"]["SaleSummary"]["status"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Événement du prestataire du chemin (sinon `404`). */
+                event_id: components["parameters"]["EventPathId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de ventes. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    getSale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                transaction_id: components["parameters"]["TransactionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vente et ses lignes. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAnomalies: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                /** @description Anomalies de cet événement. */
+                event_id?: string;
+                /** @description Type d'anomalie. */
+                kind?: components["schemas"]["Anomaly"]["kind"];
+                /** @description Statut de l'anomalie. */
+                status?: components["schemas"]["Anomaly"]["status"];
+                /** @description Création à partir de cet instant (UTC, inclus). */
+                from?: string;
+                /** @description Création avant cet instant (UTC, exclu). */
+                to?: string;
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page d'anomalies. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnomalyPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    classifyAnomaly: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Clé d'idempotence. Terminaux : `<device_serial>:<seq>` (seq ≥ 1, au moins 4 chiffres). Autres : UUID.
+                 *     Conservée au moins 30 jours (terminaux : pour toujours, c'est la clé du grand livre).
+                 *     Terminal : `<device_serial>` DOIT être le `serial` du terminal authentifié, sinon `422 VALIDATION_FAILED`
+                 *     sans aucune écriture. Les refus non définitifs `409 DEBIT_AUTHORITY_MOVING` et `409 DEBIT_AUTHORITY_EDGE`
+                 *     ne sont pas enregistrés : ni réponse d'idempotence ni numéro consommé, la même clé est rejouable.
+                 *     Exception : `openVendorSession` et `closeVendorSession` (sessions de vendeur) prennent une clé UUID (portée
+                 *     `device:<device_id>:`), car aucun numéro `<seq>` n'y est enregistré dans le registre des numéros du
+                 *     terminal (un tel numéro laisserait un trou dans `contiguous_acked_seq`).
+                 *     Routes à réponse non conservée (`openVendorSession`, `closeVendorSession`, `createPaymentRequest`,
+                 *     `createCustomerQrToken`, `createDeviceEnrollmentCode`, `exportPayoutBatch`) : aucune réponse n'est enregistrée ; un renvoi de la
+                 *     même clé reçoit `409 CONFLICT_STATE`, sans rien de la réponse d'origine.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                anomaly_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Écart de caisse constaté et expliqué par le responsable."
+                 *     }
+                 */
+                "application/json": components["schemas"]["AnomalyClassificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Anomalie classée. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    "Idempotency-Replayed": components["headers"]["Idempotency-Replayed"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Anomaly"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    searchMedia: {
+        parameters: {
+            query?: {
+                /** @description UID du bracelet (7 octets, hexadécimal minuscule). */
+                nfc_uid?: components["schemas"]["NfcUid"];
+                /** @description Code imprimé sur le bracelet. */
+                printed_code?: string;
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zéro ou un bracelet. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MediaSearchResult"][];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getWalletOverview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                wallet_id: components["parameters"]["WalletId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Portefeuille. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletOverview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    searchCustomerByPhone: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "phone": "+221771234512"
+                 *     }
+                 */
+                "application/json": components["schemas"]["CustomerSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Numéro masqué et portefeuilles trouvés. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSearchResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["Unprocessable"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listPhoneModels: {
+        parameters: {
+            query?: {
+                /** @description Curseur opaque renvoyé par la page précédente (`next_cursor`). */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page de modèles. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneModelPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    upsertPhoneModel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Fabricant du téléphone (encodage d'URL, 1 à 100 caractères). */
+                manufacturer: string;
+                /** @description Modèle du téléphone (encodage d'URL, 1 à 100 caractères). */
+                model: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "nfc_level": "RECOMMENDED",
+                 *       "measured_at": "2026-11-20"
+                 *     }
+                 */
+                "application/json": components["schemas"]["PhoneModelUpsert"];
+            };
+        };
+        responses: {
+            /** @description Modèle enregistré. */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneModel"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["Unprocessable"];
+        };
+    };
+    deletePhoneModel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Identifiant de corrélation fourni par le client. */
+                "X-Request-Id"?: components["parameters"]["RequestId"];
+                /**
+                 * @description Langue des messages lisibles (`title`, `detail` des erreurs, libellés). Valeurs `fr` ou `en` ;
+                 *     défaut `fr` (en-tête absent ou sans langue prise en charge). Sans effet sur les codes stables.
+                 */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Fabricant du téléphone (encodage d'URL, 1 à 100 caractères). */
+                manufacturer: string;
+                /** @description Modèle du téléphone (encodage d'URL, 1 à 100 caractères). */
+                model: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Modèle retiré. */
+            204: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];

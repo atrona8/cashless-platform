@@ -5,6 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'device_enrollment_request_os.dart';
+import 'device_model.dart';
 
 part 'device_enrollment_request.g.dart';
 
@@ -24,6 +25,7 @@ class DeviceEnrollmentRequest {
     required this.agreementPublicKey,
     required this.keyAttestationChain,
     required this.csrPem,
+    this.deviceModel,
     this.agreementAttestationChain,
   });
 
@@ -38,6 +40,8 @@ class DeviceEnrollmentRequest {
   final DeviceEnrollmentRequestOs os;
   @JsonKey(name: 'app_version')
   final String appVersion;
+  @JsonKey(name: 'device_model')
+  final DeviceModel? deviceModel;
 
   /// Clé publique ECDSA P-256 : SubjectPublicKeyInfo DER canonique (point non compressé, 91 octets) →.
   /// `device.public_key`. Le serveur réencode la clé et exige les mêmes octets ; les défis hachent ces.

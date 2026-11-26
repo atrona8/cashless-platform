@@ -1,9 +1,9 @@
 # Services externes à gérer
 
-État au 06/11/2026. Liste de tout ce qui vient de l'extérieur du dépôt : comptes à ouvrir, accès à obtenir, et comment
+État au 24/11/2026 (missions 1 à 10a, 11a et 9c livrées ; 11b en cours). Liste de tout ce qui vient de l'extérieur du dépôt : comptes à ouvrir, accès à obtenir, et comment
 chaque service se branche dans le code. Sources : `docs/POINTS_OUVERTS.md` (§ 7, actions du porteur),
 `docs/SPECIFICATION.md` (§ 10.3, § 11.1, § 13.2, § 13.7), `docs/08-pile-logicielle.md`, `PROMPTS-A-ENVOYER.md`
-(missions 10a et 12b). Ce fichier résume, il ne remplace pas ces sources : en cas d'écart, elles font foi.
+(missions 11b et 12b). Ce fichier résume, il ne remplace pas ces sources : en cas d'écart, elles font foi.
 
 **Règle commune à tous les services** (CLAUDE.md, règle 2) : tant que l'adaptateur réel n'est pas écrit et essayé
 contre le vrai service, le code utilise un faux, et la configuration de production **refuse de démarrer** avec ce
@@ -18,23 +18,24 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 | 2 | AWS RDS PostgreSQL 17 | Base centrale | PostgreSQL 17 local en Docker | Porteur + nous | Quelques jours | Mise en ligne |
 | 3 | AWS KMS | Clés des bracelets, snapshots, autorité des terminaux, jetons d'appareil | Faux (`fake-kms`), refusés en production | Porteur (compte) + nous (mission 12b) | Après le compte AWS | Bracelets, hors ligne, terminaux en production |
 | 4 | AWS Secrets Manager | Identifiants PSP et secrets de webhooks, par détenteur des fonds | Faux coffre, refusé en production | Nous (mission 12b) | Après le compte AWS | Paiements réels |
-| 5 | AWS S3 Object Lock (compte distinct) | Copie du scellement du journal, en écriture unique | Non branché | Porteur (second compte) + nous | Après le compte AWS | Scellement hors base (SPEC § 13.7) |
+| 5 | AWS S3 Object Lock (compte distinct) | Copie du scellement du journal, en écriture unique | Faux (`sealing/fake-seal-copy.ts`), refusé en production | Porteur (second compte) + nous | Après le compte AWS | Scellement hors base (SPEC § 13.7) |
 | 6 | AWS CloudWatch (+ OpenTelemetry) | Journaux et mesures | Journal JSON local | Nous | À la mise en ligne | Exploitation |
 | 7 | Wave Business | Recharges mobile money | Faux adaptateur | Porteur (compte) + nous | Quelques semaines | Recharges Wave |
 | 8 | Orange Money (marchand) | Recharges mobile money | Faux adaptateur | Porteur (compte) + nous | **Plusieurs semaines** : à lancer maintenant | Recharges Orange Money |
 | 9 | PayDunya | Carte, agrégateur local | Faux adaptateur | Porteur (accès de test) + nous | Quelques jours à semaines | Carte via agrégateur |
 | 10 | Stripe | Carte, PSP international | Faux adaptateur | Porteur (vérifier XOF et Sénégal) + nous | Incertain : éligibilité à vérifier | Carte internationale |
-| 11 | SMS principal local | Codes à usage unique (Orange, Free, Expresso) | Pas encore de code (mission 10a, faux) | Porteur (devis, nom d'expéditeur) + nous | 5 à 10 jours pour le nom d'expéditeur (RCCM) | Connexion festivalier |
-| 12 | SMS de repli international | Repli des codes | Idem | Porteur (devis) + nous | Quelques jours | Fiabilité des codes |
-| 13 | WhatsApp (fournisseur agréé Meta) | Premier canal des codes | Idem | Porteur (devis, modèle de message) + nous | Validation du modèle par Meta | Codes par WhatsApp |
-| 14 | Serveur d'identité OIDC | Connexion des personnes (back-office, approbations) | Faux serveur en test seulement ; rien en local (`ACCES-API.md` § 3) | Porteur (choix) + nous | Selon le choix | Back-office, approbations réelles (OP-N56) |
+| 11 | SMS principal local | Codes à usage unique (Orange, Free, Expresso) | Chaîne livrée (mission 10a) avec faux fournisseurs, refusés en production | Porteur (devis, nom d'expéditeur) + nous | 5 à 10 jours pour le nom d'expéditeur (RCCM) | Connexion festivalier |
+| 12 | SMS de repli international | Repli des codes | Idem (mission 10a) | Porteur (devis) + nous | Quelques jours | Fiabilité des codes |
+| 13 | WhatsApp (fournisseur agréé Meta) | Premier canal des codes | Idem (mission 10a) | Porteur (devis, modèle de message) + nous | Validation du modèle par Meta | Codes par WhatsApp |
+| 14 | Serveur d'identité OIDC | Connexion des personnes (back-office, approbations), invitation du personnel | Faux serveur en test seulement ; rien en local (`ACCES-API.md` § 3) | Porteur (choix) + nous | Selon le choix | Back-office, approbations réelles (OP-N56), invitation (OP-N171) |
 | 15 | NXP (puce des bracelets) | Signature d'originalité des puces | Vérifiée par le poste seulement (OP-N46) | Porteur (bracelets réels, action 1) | Demi-journée de tests | Personnalisation et lecture réelles |
 | 16 | Google, attestation Android (Key Attestation) | Prouver qu'un terminal Android est authentique | Branché, racines en configuration | Nous (configuration) | Aucun compte | Enrôlement Android |
 | 17 | Apple App Attest | Prouver qu'un terminal iOS est authentique | Branché, racine en configuration | Porteur (compte développeur Apple) | Ouverture du compte | Enrôlement iOS |
 | 18 | Matériel de clés de la passerelle | Clés non exportables du mini-PC | Faux en mémoire ; `hardware` refuse de démarrer faute d'adaptateur | Porteur (choix du matériel) + nous | Selon le matériel | Passerelle en production |
-| 19 | GitHub | Dépôt et intégration continue | En place (`.github/workflows/ledger-tests.yml`) | — | — | — |
-| 20 | jsDelivr (CDN) | Page `/docs` (Swagger UI) | En place, hors production seulement | — | — | — |
-| 21 | ngrok | Partager l'API locale de test | En place (`demarrer-local.sh`) | Porteur (jeton ngrok) | — | Intégration par une équipe cliente |
+| 19 | Banque du détenteur des fonds | Versements (virements) et relevés à rapprocher | Import de relevés CSV et confirmation des versements livrés (mission 9b) ; aucun lien direct avec la banque | Porteur (banque, exemple de relevé) | Quelques jours | Rapprochement, versements réels |
+| 20 | GitHub | Dépôt et intégration continue | En place (`.github/workflows/ledger-tests.yml`) | — | — | — |
+| 21 | jsDelivr (CDN) | Page `/docs` (Swagger UI) | En place, hors production seulement | — | — | — |
+| 22 | ngrok | Partager l'API locale de test | En place (`demarrer-local.sh`) | Porteur (jeton ngrok) | — | Intégration par une équipe cliente |
 
 ## 2. Détail, service par service
 
@@ -73,8 +74,10 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 ### 2.4 AWS Secrets Manager
 
 - **Sert à** : identifiants PSP et secrets de webhooks, **rangés par détenteur des fonds**, jamais partagés entre
-  détenteurs (SPEC § 11.1) ; secrets applicatifs (`VENDOR_PIN_SECRET`, `IDEMPOTENCY_HMAC_KEY`,
-  `CLAIM_CODE_HMAC_KEY`, `ENROLLMENT_CODE_HMAC_KEY`…) et mots de passe des rôles de base.
+  détenteurs (SPEC § 11.1) ; secrets applicatifs (`VENDOR_PIN_SECRET`, `VENDOR_PIN_IDEMPOTENCY_SECRET`,
+  `VENDOR_PIN_CALL_KEY`, `IDEMPOTENCY_HMAC_KEY`, `CLAIM_CODE_HMAC_KEY` et sa version `CLAIM_CODE_HMAC_KEY_VERSION`,
+  `ENROLLMENT_CODE_HMAC_KEY`, `CUSTOMER_AUTH_HMAC_KEY` (mission 10a), trousseau de chiffrement des IBAN
+  `IBAN_KEYRING` / `IBAN_ACTIVE_KID` (mission 9b)…) et mots de passe des rôles de base.
 - **Comment** : adaptateur AWS derrière le port du coffre (`PSP_SECRET_STORE`), mission 12b ; dépendance vérifiée et
   épinglée selon `docs/08-pile-logicielle.md`.
 
@@ -82,7 +85,10 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 
 - **Sert à** : copier chaque scellement du journal (`ledger_seal`) hors de la base, en écriture unique (mode
   conformité), sous un compte AWS distinct de celui de la base (SPEC § 13.7).
-- **Comment** : bucket avec Object Lock activé à la création ; un rôle qui peut seulement écrire.
+- **Aujourd'hui** : port `SealExternalCopy` ; faux `sealing/fake-seal-copy.ts`, refusé en production ; le travailleur
+  de scellement recopie les scellements manquants (`sealing/audit-seal.worker.ts`).
+- **Comment** : bucket avec Object Lock activé à la création ; un rôle qui peut seulement écrire ; adaptateur S3
+  derrière le port, mission 12b.
 
 ### 2.6 Observabilité (CloudWatch, OpenTelemetry)
 
@@ -111,10 +117,10 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
   Expresso, d'un **SMS de repli international** et d'un **fournisseur WhatsApp agréé Meta** ; lancer la validation du
   **nom d'expéditeur SMS** (RCCM, 5 à 10 jours) et du **modèle de message WhatsApp**.
 - **Comment** : port `OtpSender`, chaîne WhatsApp, puis SMS principal (bascule à 10 s, `otp_whatsapp_timeout_seconds`),
-  puis SMS de repli (20 s, `otp_sms_failover_seconds`) ; limites `429 OTP_RATE_LIMITED`. Routes
-  `/customer-auth/otp` et suivantes : déclarées dans `openapi.yaml`, **pas encore implémentées** (mission 10a, avec des
-  faux fournisseurs) ; fournisseurs réels en mission 12b. D'ici là, le serveur simulé Prism (`ACCES-API.md`) répond à
-  ces routes avec les exemples du contrat.
+  puis SMS de repli ; attentes réglables `OTP_WHATSAPP_TIMEOUT_MS` (10 s par défaut) et `OTP_SMS_PRIMARY_TIMEOUT_MS`
+  (20 s par défaut), code gardé 35 s au plus (ADR-225) ; limites `429 OTP_RATE_LIMITED`, `CUSTOMER_OTP_IP_HOURLY_MAX`.
+  Routes `/customer-auth/*` **livrées** par la mission 10a (dans `main` le 23/11/2026) avec de faux fournisseurs
+  (`customer-auth/otp-providers.ts`), refusés en production ; fournisseurs réels en mission 12b.
 
 ### 2.14 Serveur d'identité OIDC
 
@@ -123,7 +129,9 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 - **À faire (porteur)** : choisir le fournisseur (géré ou hébergé), l'ouvrir dans la région retenue.
 - **Comment** : l'API vérifie les jetons (bibliothèque `jose`) avec `OIDC_ISSUER`, `OIDC_JWKS_URI`, `OIDC_AUDIENCE`,
   `OIDC_APPROVAL_AUDIENCE`. Aujourd'hui, seul un faux serveur existe dans les tests (`apps/api/test/support/fake-idp.ts`).
-  Mission 12b (OP-N56 : preuve de la personne qui décide une approbation).
+  Mission 12b (OP-N56 : preuve de la personne qui décide une approbation ; OP-N171 : créer une personne exige
+  aujourd'hui son `issuer` et son `subject`, le serveur retenu doit permettre un parcours d'invitation). Le back-office
+  lit le profil et les rôles de la personne connectée par `GET /staff/me` (mission 11b).
 
 ### 2.15 NXP (signature d'originalité des puces)
 
@@ -155,7 +163,17 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 - **À faire (porteur)** : choisir le matériel (puce TPM du mini-PC ou clé matérielle) ; mission de l'adaptateur **à
   fixer** (proposée : 12b).
 
-### 2.19 à 2.21 Outils de développement
+### 2.19 Banque du détenteur des fonds
+
+- **Sert à** : recevoir les versements (organisateur, commerçants, prestataire, plateforme) et fournir les relevés
+  rapprochés avec le grand livre (SPEC § 12.1, mission 9b).
+- **Aujourd'hui** : aucun lien direct avec la banque. Les relevés s'importent en CSV (`importAccountStatement`) puis se
+  rapprochent (`matchStatementLine`) ; un lot de versements validé à deux est payé par virement hors du système, puis
+  confirmé (`confirmPayout`). Les IBAN des bénéficiaires sont chiffrés (trousseau `IBAN_KEYRING`, § 2.4).
+- **À faire (porteur)** : banque retenue par détenteur des fonds ; un **exemple réel de relevé exporté** (format, séparateur,
+  colonnes) pour caler l'import ; procédure de virement et délai de valeur.
+
+### 2.20 à 2.22 Outils de développement
 
 - **GitHub** : dépôt et intégration continue (`ledger-tests.yml`) ; aucune clé de service en clair dans les workflows.
 - **jsDelivr** : Swagger UI 5.34.0, version épinglée avec intégrité SRI, page `/docs` absente en production (ADR-153).
@@ -170,13 +188,14 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 | 6, 7 | Auditeur de sécurité : revue de conception, puis test d'intrusion | Choix maintenant ; intrusion avant le premier pilote | Mise en production (ADR-44) |
 | 8 | Juriste (droit bancaire UEMOA) : régime, plafonds, pièces KYC, conservation, localisation | Choix maintenant ; réponse écrite avant le premier événement réel | Région (OP-N11), plafonds, OP-N12, OP-N108 |
 | 9 | Expert-comptable SYSCOHADA | Maintenant ; réponse avant la production | OP-N3 (casse, taxes, caution) |
-| 1, 2, 4 | Fournisseur de bracelets, campagne de mesure des téléphones | Avant le code de l'app terminal | Lecture NFC, liste des téléphones |
+| 1, 2, 4 | Fournisseur de bracelets, campagne de mesure des téléphones | Avant le code de l'app terminal | Lecture NFC, liste des modèles et de leur niveau (saisie par l'administrateur plateforme, mission 11b) |
 
 ## 4. Ordre conseillé
 
 1. **Maintenant** : Orange Money et Wave (délais longs), devis OTP et nom d'expéditeur SMS, choix de l'auditeur et du
    juriste, questions à l'expert-comptable.
 2. **Puis** : mesure de latence, confirmation de la région, compte AWS (et second compte pour le scellement), compte
-   développeur Apple, choix du serveur d'identité et du matériel de clés de la passerelle.
+   développeur Apple, choix du serveur d'identité (avec invitation du personnel) et du matériel de clés de la
+   passerelle, banque et exemple de relevé de chaque détenteur des fonds.
 3. **Mission 12b** : tous les adaptateurs réels, chacun essayé contre le bac à sable du service, puis levée de la garde
    de production port par port.

@@ -1,0 +1,6 @@
+page1	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51
+cursor_deep	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' AND (occurred_at, transaction_id) < ('2026-06-10 00:00+00', 'ffffffff-ffff-ffff-ffff-ffffffffffff') ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51
+pos	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' AND pos_id = '00000000-0000-0000-0000-0000000f5003' ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51
+merchant	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' AND merchant_id = '00000000-0000-0000-0000-0000000f2005' ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51
+range	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' AND occurred_at >= '2026-06-15' AND occurred_at < '2026-06-16' ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51
+reversed	SELECT * FROM sale_overview WHERE event_id = '00000000-0000-0000-0000-00000000fd01' AND reversal_transaction_id IS NOT NULL ORDER BY occurred_at DESC, transaction_id DESC LIMIT 51

@@ -162,14 +162,20 @@ describe('Bornes des écarts de la mission 11a (OP-N151, OP-N158, OP-N159)', () 
     const asText = (col: string, type: string): string =>
       type === 'bytea' ? `encode("${col}", 'escape')` : `"${col}"::text`;
 
-    /** Occurrences de chacun des PIN dans toute la base : `schema.table.colonne` → PIN. */
+    /**
+     * Occurrences de chacun des PIN dans toute la base : `schema.table.colonne` → PIN.
+     * Une valeur faite seulement de 32 chiffres hexadécimaux ou plus (empreinte ou HMAC, ex.
+     * `api_idempotency.request_hash`) est écartée : elle contient une suite de 6 chiffres par hasard
+     * (faux positif vu en CI le 26/11/2026), jamais un PIN en clair.
+     */
     async function findInDatabase(pins: string[]): Promise<string[]> {
       const found: string[] = [];
       for (const { schema, tbl, col, type } of await textColumns()) {
         const expr = asText(col, type);
         const hits = await ownerRows<{ n: string }>(
           `SELECT count(*) AS n FROM "${schema}"."${tbl}"
-            WHERE ${pins.map((_, i) => `${expr} LIKE $${i + 1}`).join(' OR ')}`,
+            WHERE (${pins.map((_, i) => `${expr} LIKE $${i + 1}`).join(' OR ')})
+              AND ${expr} !~ '^[0-9a-f]{32,}$'`,
           pins.map((p) => `%${p}%`),
         );
         if (Number(hits[0]!.n) > 0) found.push(`${schema}.${tbl}.${col}`);

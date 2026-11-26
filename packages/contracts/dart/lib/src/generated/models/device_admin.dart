@@ -10,7 +10,9 @@ import 'device_admin_os.dart';
 import 'device_admin_provided_by.dart';
 import 'device_app_mode.dart';
 import 'device_kind.dart';
+import 'device_model.dart';
 import 'device_status.dart';
+import 'nfc_level.dart';
 
 part 'device_admin.g.dart';
 
@@ -40,6 +42,8 @@ class DeviceAdmin {
     required this.lastSeenAt,
     required this.certNotAfter,
     this.providedBy,
+    this.deviceModel,
+    this.nfcLevel,
   });
 
   factory DeviceAdmin.fromJson(Map<String, Object?> json) =>
@@ -89,6 +93,10 @@ class DeviceAdmin {
   /// Fin de validité du certificat client.
   @JsonKey(name: 'cert_not_after')
   final DateTime? certNotAfter;
+  @JsonKey(name: 'device_model')
+  final DeviceModel? deviceModel;
+  @JsonKey(name: 'nfc_level')
+  final NfcLevel? nfcLevel;
 
   Map<String, Object?> toJson() => _$DeviceAdminToJson(this);
 }

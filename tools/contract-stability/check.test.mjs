@@ -149,8 +149,11 @@ test('T11 les seuls ajouts de l extrait : code 0, uniquement ADMISE', () => {
 test('T11 bis : le openapi.yaml réel du dépôt est admis', () => {
   const { code, out } = runTool(['--candidate', REAL]);
   assert.equal(code, 0, out);
-  // 29 ajouts de la mission 8, puis 42 de la mission 9b (ADR-215), puis 4 de la mission 10a (ADR-225).
-  assert.match(out, /84 admise\(s\), 0 refusée/);
+  // 29 ajouts de la mission 8, puis 42 de la mission 9b (ADR-215), puis 4 de la mission 10a (ADR-225),
+  // puis 32 de la mission 11b (ADR-235) : 10 chemins, 18 schémas, 4 propriétés facultatives, puis 194 lignes
+  // `x-roles` des opérations déjà présentes dans la référence (WP04 ; les opérations ajoutées par les
+  // missions portent la leur dans l'empreinte de leur chemin ou de leur opération) : 116 + 194 = 310.
+  assert.match(out, /310 admise\(s\), 0 refusée/);
 });
 test('T12 SHA-256 épinglée fausse : code 1', () => {
   const wrong = join(TMP, 'baseline-wrong.json');

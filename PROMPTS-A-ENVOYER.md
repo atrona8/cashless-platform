@@ -656,6 +656,20 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 11 — Back-office web (déléguée)
 
+> **Hérité de la 11b (25/11/2026, ADR-235, ADR-236, OP-N185 à OP-N198 ; OP-N170 levé)** : routes servies, à coder contre
+> `packages/contracts/openapi.yaml` (types générés) : `getStaffProfile` (`GET /staff/me`, menus et droits d'écran),
+> `listEventSales` et `getSale` (ventes, pagination par curseur opaque, `limit` au plus 200), `listAnomalies` et
+> `classifyAnomaly` (classer « traitée » sans écriture d'argent ; lire `classifiable` au lieu de recopier la liste des
+> types ; `422` avec `reason = ANOMALY_KIND_NOT_CLASSIFIABLE`, `409 CONFLICT_STATE`), `searchMedia`, `getWalletOverview`,
+> `searchCustomerByPhone` (numéro E.164 dans le corps, masqué en réponse, `429 RATE_LIMITED` avec `Retry-After`),
+> `listPhoneModels`, `upsertPhoneModel`, `deletePhoneModel`, et `device_model` / `nfc_level` sur les fiches de terminaux
+> (signalement, jamais un blocage). **`x-roles`** de chaque opération : masquer les actions que la personne ne peut pas
+> faire ; huit opérations sans route n'en ont pas (OP-N188). Écrans à construire : tableau des ventes et détail, liste des
+> anomalies et classement (les 13 types non classables s'affichent sans action : OP-N185), recherche (bracelet, portefeuille,
+> numéro), liste des modèles de téléphone, signalement NFC. Limites à connaître : une personne de la plateforme s'appelle
+> « Administration de la plateforme » (OP-N191) ; les ventes sans attribution sont invisibles (OP-N192) ; niveau NFC sans
+> historique (OP-N190). Détail : `docs/passation-11b/note-equipes.md`.
+
 > **Hérité de la 9c (23/11/2026, ADR-233, ADR-234, OP-N173, OP-N175)** : réglages du rendu partiel en espèces :
 > l'organisateur (`ORGANIZER_ADMIN`) active `cash_partial_refund_enabled` pour chaque événement (`updateEvent`, demande à
 > deux personnes en `LIVE`), le prestataire (`OPERATOR_ADMIN`) autorise par la clé `cash_partial_refund_allowed` de la
@@ -699,8 +713,31 @@ vendeurs et le catalogue : la mission les ajoute.
 > soumis au porteur au plan avant d'être codés. Le dossier de design lui-même est à reverser au dépôt (perdu du
 > checkout le 23/11/2026, copie en ligne) ; ses points ouverts prendront OP-N170 et OP-N171.
 
-- [ ] /spec-kitty.specify Routes serveur dont le back-office web a besoin et que le contrat ne sert pas : (1) profil de la personne connectée du personnel, avec ses rôles et leurs portées (plateforme, prestataire, organisateur, événement, commerçant), pour construire menus et droits d'écran ; (2) rôles autorisés de chaque opération lisibles par machine (extension `x-roles` dans `openapi.yaml`) ; (3) liste filtrée et paginée des ventes et des paiements (par événement, point de vente, commerçant, vendeur, période), avec le détail d'une vente et ses lignes ; (4) liste filtrée des anomalies et leur résolution (liste fermée des types, SPECIFICATION §12.2), à deux personnes si la résolution touche l'argent ; (5) recherche : bracelet par UID ou par code imprimé, portefeuille, festivalier (par numéro vérifié), utile aussi au guichet pour l'identification (KYC) ; (6) modèles de téléphone et niveau de lecture NFC (référentiel des terminaux, SPECIFICATION §15 « Lecture NFC »). Cloisonnement par prestataire et par portée, aucune donnée personnelle au-delà du besoin, audit des recherches.
-- [ ] /spec-kitty.plan Opérations et extension `x-roles` nouvelles seulement, présentées au porteur avant d'être codées ; inscrites dans `contract-baseline.json` ; aucune route existante modifiée. Lectures par vues ou fonctions de la base sous RLS ; latence et pagination bornées ; recherche limitée en débit.
+- [x] /spec-kitty.specify Routes serveur dont le back-office web a besoin et que le contrat ne sert pas : (1) profil de la personne connectée du personnel, avec ses rôles et leurs portées (plateforme, prestataire, organisateur, événement, commerçant), pour construire menus et droits d'écran ; (2) rôles autorisés de chaque opération lisibles par machine (extension `x-roles` dans `openapi.yaml`) ; (3) liste filtrée et paginée des ventes et des paiements (par événement, point de vente, commerçant, vendeur, période), avec le détail d'une vente et ses lignes ; (4) liste filtrée des anomalies et leur résolution (liste fermée des types, SPECIFICATION §12.2), à deux personnes si la résolution touche l'argent ; (5) recherche : bracelet par UID ou par code imprimé, portefeuille, festivalier (par numéro vérifié), utile aussi au guichet pour l'identification (KYC) ; (6) modèles de téléphone et niveau de lecture NFC (référentiel des terminaux, SPECIFICATION §15 « Lecture NFC »). Cloisonnement par prestataire et par portée, aucune donnée personnelle au-delà du besoin, audit des recherches.
+- [x] /spec-kitty.plan Opérations et extension `x-roles` nouvelles seulement, présentées au porteur avant d'être codées ; inscrites dans `contract-baseline.json` ; aucune route existante modifiée. Lectures par vues ou fonctions de la base sous RLS ; latence et pagination bornées ; recherche limitée en débit.
+- [x] /spec-kitty.tasks (24/11/2026 : 11 lots, T001-T044)
+- [x] spec-kitty next --agent claude --mission routes-backoffice-01M86KT6 (WP01 à WP11 approuvés les 24 et 25/11/2026 par des relecteurs distincts)
+- [x] /spec-kitty.review --mission routes-backoffice-01M86KT6 (25/11/2026, 11 lots sur 11)
+- [x] /spec-kitty.accept --mission routes-backoffice-01M86KT6 (26/11/2026, `bf409ffa`)
+- [x] spec-kitty consolidate --mission routes-backoffice-01M86KT6 (26/11/2026, squash `7a56d09b` sur `feat/routes-backoffice` ; revue post-fusion PASS WITH NOTES, `0d9e9d83`, 0 bloquant ; PR vers `main` après la #26)
+
+> **État au 25/11/2026 (WP11).** Lots WP01 à WP10 livrés : `GET /staff/me`, `x-roles` sur 226 opérations (huit sans route :
+> OP-N188), ventes (`listEventSales`, `getSale`), anomalies (`listAnomalies`, `classifyAnomaly`), recherche (`searchMedia`,
+> `getWalletOverview`, `searchCustomerByPhone`), modèles de téléphone (`listPhoneModels`, `upsertPhoneModel`,
+> `deletePhoneModel`), `device_model` et `nfc_level`. **OP-N170 levé** (ADR-235). Limites : ADR-236, OP-N185 à OP-N198 ;
+> **OP-N194 levé le 25/11/2026** avant la fusion (trois tests et garde de consignation étendu). Limites reportées : OP-N185, OP-N186, OP-N187, OP-N188, OP-N189, OP-N190, OP-N191, OP-N192, OP-N193, OP-N194, OP-N195, OP-N196, OP-N197, OP-N198 (détail au §15 de `docs/POINTS_OUVERTS.md`).
+> Preuves : `docs/passation-11b/preuves.md` ; note aux équipes : `docs/passation-11b/note-equipes.md`. Aucun écran (C-006).
+
+## Mission 11c — Résolutions d'anomalie qui écrivent de l'argent
+
+> **Validée par le porteur le 25/11/2026** ; OP-N185 **bloque la production** (confirmé). Hérite d'OP-N185
+> (résolutions d'argent reportées, **type par type**) et d'OP-N196 (auteur du classement non vérifié par la base). La 11b
+> classe seulement les 10 types sans argent en attente (`classifyAnomaly`, `anomaly_classifiable`) ; aucune écriture au grand
+> livre. SPECIFICATION §12.2 (colonne « Classable »), ADR-235, ADR-236 ; approbation à deux personnes : `ANOMALY_RESOLUTION`
+> (§10.3).
+
+- [ ] /spec-kitty.specify Résolution des anomalies dont le traitement écrit de l'argent (SPECIFICATION §12.2, colonne « Classable » = Non ; §9.5, §9.6, §11.1, §11.2 ; ADR-63, ADR-133, ADR-235). Types concernés, un par un : `OFFLINE_SHORTFALL`, `VOID_CONFLICT`, `ONLINE_CONFIRMED_MISSING`, `NON_COMPLIANT_OPERATION`, `LATE_OFFLINE_SYNC`, `PSP_MISMATCH`, `PSP_TOPUP_OVER_LIMIT`, `PSP_TOPUP_NOT_CREDITED`, `EDGE_REPLAY_FAILED`, `LATE_CHARGEBACK`, `PERIOD_CLOSED_OPERATION`, `CASH_TOPUP_OVER_LIMIT` ; `SEQ_GAP` garde `waiveSeqGap`. Pour chaque type : la voie existante de la base (fonction, écriture, approbation à deux), la route à ajouter au contrat, ou la décision de ne rien faire. Corriger OP-N196 : `classify_anomaly` vérifie que l'auteur appartient au prestataire. Aucun type d'anomalie ajouté ni retiré.
+- [ ] /spec-kitty.plan Résolutions par fonctions de la base `SECURITY DEFINER`, jamais par `UPDATE anomaly` direct (droit retiré à `cashless_app` par la 11b, `post-roles.sql` § 15a) ; écriture au grand livre par les constructeurs existants, seconde personne par `ANOMALY_RESOLUTION` quand la politique l'exige ; ajouts au contrat rétrocompatibles présentés au porteur avant d'être codés, inscrits dans `contract-baseline.json`, avec `x-roles` ; aucun code d'erreur nouveau sans décision ; matrice `x-roles` et balayage d'isolement étendus ; tout droit nouveau de `cashless_app` nommé dans un ADR.
 - [ ] /spec-kitty.tasks
 - [ ] spec-kitty next --agent claude --mission [slug réel]
 - [ ] /spec-kitty.review --mission [slug réel]
@@ -708,6 +745,11 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty consolidate --mission [slug réel]
 
 ## Mission 12 — App terminal (déléguée)
+
+> **Hérité de la 11b (25/11/2026, ADR-235, OP-N186)** : l'app envoie le modèle du téléphone, champ facultatif
+> `device_model { manufacturer, model }`, dans `DeviceEnrollmentRequest` et `HeartbeatRequest` ; valeur informative, non
+> vérifiée ; une valeur absente, inconnue ou mal formée ne fait jamais refuser l'enrôlement ni l'usage (C-003). Le niveau
+> NFC du modèle (`nfc_level`) est affiché au back-office seulement. Détail : `docs/passation-11b/note-equipes.md`.
 
 > **Hérité de la 9c (23/11/2026, ADR-233, ADR-234)** : écran du guichet de rendu partiel
 > (`POST /media/{media_id}/partial-cash-refunds`, `refundPartialCash`, terminal `TOPUP_DESK`, session de caisse ouverte) :
@@ -856,6 +898,14 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission integrations-reelles
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la 11b (25/11/2026, ADR-236)** : relevé des limites OP-N185 à OP-N198 : jouer la matrice `x-roles` complète
+> et les trois recharges PSP non jouées, les 99 opérations sans rôle déclaré abouti en 2xx et le `SUPERVISOR` des
+> approbations (OP-N187) ; mesurer NFR-001 de `listAnomalies`, `getWalletOverview`, `searchCustomerByPhone` et rejouer
+> `searchMedia` hors `SKIP_LATENCY` (OP-N195) ; volumétrie de recette de la liste des ventes (`enable_sort = off`, chemin rapide
+> des annulées, filtres combinés : OP-N193) ; ventes sans attribution invisibles du back-office (OP-N192) ; trois tests
+> manquants et garde de consignation étendu (OP-N194, levé avant la fusion) ; reformatage des lignes de plus de 100
+> caractères (OP-N198).
 
 > **Hérité de la 9c (23/11/2026, ADR-234)** : relevé des limites OP-N173 à OP-N184 : mesurer le choix de l'index
 > partiel `journal_transaction_partial_refund_idx` à volume réel (OP-N182) ; tests « paiement suivant accepté »

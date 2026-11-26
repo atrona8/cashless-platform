@@ -146,6 +146,8 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N167 | Commande `reissue-claim-codes` : fichier de codes en clair (orphelin si le processus est tué entre le fichier et la base, conservé si l'issue du COMMIT est incertaine), disque plein et COMMIT d'issue incertaine sans test, spec d'intégration absent de la passe parallèle (mission 10a, ADR-228) | Non | Non | Mission 13 (recette : procédure jouée sur un lot réel) |
 | OP-N168 | `pending_offline_notice` : approximation assumée (tous statuts de lot comptent, dernier lot du terminal sur le grand livre du portefeuille, grands livres ORGANIZER et OPERATOR_BILLING toujours faux) (mission 10a, ADR-230) | Non | Non | Mission 13 (recette) |
 | OP-N169 | Mineurs de la 10a : course `CL065` non testée, personnalisation sans test du cas d'ancien code, `seed-demo` sans version de code, version du secret globale à la base (suite en série), compteurs d'adresse remis à zéro à la rotation, lignes de plus de 100 caractères (mission 10a, ADR-231) | Non | Non | Mission 13 |
+| OP-N170 | Back-office : routes de lecture absentes du contrat (profil « qui suis-je » du personnel avec rôles et portées, liste des ventes et paiements, liste et résolution des anomalies, recherche de bracelet, portefeuille ou festivalier, modèles de téléphone et niveau NFC, extension `x-roles`) ; manques 1, 2, 3, 5, 6 et 8 de `docs/DOSSIER-DESIGN-BACKOFFICE.md` | Non | **Oui** (back-office inutilisable pour piloter un événement) | Mission 11b (décision du porteur du 23/11/2026) — **levé** le 25/11/2026 par la mission 11b (11 opérations, `x-roles`, ADR-235) |
+| OP-N171 | Back-office : créer une personne exige son `issuer` et son `subject` OIDC, aucun parcours d'invitation (manque 7 de `docs/DOSSIER-DESIGN-BACKOFFICE.md`) | Non | Non | Mission 12b (lié au choix du serveur d'identité) |
 | OP-N172 | Secret des codes de rattachement : rien ne vérifie qu'un changement de `CLAIM_CODE_HMAC_KEY` s'accompagne d'une hausse de `CLAIM_CODE_HMAC_KEY_VERSION` (seule une baisse de version est refusée au démarrage) ; un secret changé sans hausse rend inutilisables les codes émis, sans message clair (revue post-fusion de la 10a, M-5 ; consigné sur décision du porteur du 23/11/2026, ADR-232 ; numéros OP-N170 et OP-N171 réservés au dossier du back-office) | Non | Non | Mission 12b (secret porté par le KMS réel) |
 | OP-N173 | Rendu partiel en espèces : un `REVERSAL` d'un rendu partiel n'est pas déduit du cumul du jour (choix prudent : le seuil de la seconde personne est atteint plus vite) (mission 9c, ADR-234) | Non | Non | Mission 13 (recette) |
 | OP-N174 | Rendu partiel en espèces : les espèces dues (`L-ESP-A-RENDRE`) ne sont pas rendues par ce chemin (L2) ; `refundCashDue` reste la seule voie (mission 9c, ADR-234) | Non | Non | Sans objet (voulu, C-002 : guichet de retour inchangé) |
@@ -159,6 +161,20 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N182 | Rendu partiel en espèces : le choix de l'index partiel `journal_transaction_partial_refund_idx` n'est pas mesuré à volume réel (sur 73 lignes le planificateur prend un autre index) (mission 9c, ADR-234) | Non | Non | Mission 13 (volume de recette) |
 | OP-N183 | Rendu partiel en espèces : le filtre `p.amount > 0` du cumul est défensif et n'est couvert par aucun test (sa mutation ne fait échouer aucun test) (mission 9c, ADR-234) | Non | Non | Mission 13 |
 | OP-N184 | Rendu partiel en espèces : des lignes de plus de 100 caractères (reformatage à la fusion) (mission 9c, ADR-234) | Non | Non | Fusion de la mission (Prettier, décision du 14/10/2026) |
+| OP-N185 | Résolutions d'anomalie qui écrivent de l'argent : seuls 10 types sont classables sans écriture ; les 13 autres (dont `PSP_TOPUP_NOT_CREDITED`, `CASH_TOPUP_OVER_LIMIT`, `OFFLINE_SHORTFALL`) ne se traitent pas depuis le back-office et leur classement est refusé (mission 11b, ADR-236) | Non | **Oui** (confirmé par le porteur le 25/11/2026) | Mission 11c (résolutions d'anomalie, report type par type ; mission validée le 25/11/2026) |
+| OP-N186 | Le modèle de téléphone est déclaré par le terminal et n'est pas vérifié : un terminal compromis peut se déclarer d'un modèle « recommandé » ; le niveau est informatif et ne refuse jamais rien (C-003) (mission 11b, ADR-236) | Non | Non | Mission 12 (si l'attestation du terminal porte le modèle) |
+| OP-N187 | Matrice `x-roles` par échantillon (1 281 appels, 7 rôles du personnel) : un rôle oublié mais refusé à juste titre n'est pas détecté ; `initiatePspTopup`, `getPspTopup`, `cancelPspTopup` non jouées ; 99 opérations sans rôle déclaré abouti en 2xx ; `SUPERVISOR` d'`approveApprovalRequest` et `rejectApprovalRequest` déclaré par union d'actions ; `DEVICE`, `VENDOR`, `CUSTOMER`, `GATEWAY` non rejoués (mission 11b, ADR-236) | Non | Non | Mission 13 (recette) |
+| OP-N188 | Huit opérations sans route dans `apps/api/src` restent sans `x-roles` (`createPaymentIntent`, `getPaymentIntent`, `capturePaymentIntent`, `cancelPaymentIntent`, `listDevicePaymentIntents`, `listWebhookEndpoints`, `createWebhookEndpoint`, `deleteWebhookEndpoint`) : liste `DOUBTS_ACCEPTED` (mission 11b, ADR-236) | Non | Non | Mission qui écrit ces routes (elle déclare leurs rôles et vide la liste) |
+| OP-N189 | Recherche par numéro : la limite de débit est par personne, pas par numéro (plusieurs comptes complices contournent) ; l'audit ne garde pas le numéro, donc « qui a cherché ce numéro » ne se retrouve pas (mission 11b, ADR-236) | Non | Non | Décision du porteur (mission 12b si une empreinte devient acceptable) |
+| OP-N190 | Niveau NFC calculé à la lecture, sans historique (un changement de la liste change le niveau de tous les terminaux, sans trace) ; `nfcLevelFor` est asynchrone et prend un client SQL, contre la signature de `interfaces.md` §4 (mission 11b, ADR-236) | Non | Non | Mission 11 (écran) |
+| OP-N191 | Une personne de la plateforme reçoit le nom affiché fixe « Administration de la plateforme » (sa ligne `app_user` est invisible sous la RLS) (mission 11b, ADR-236 ; écart fonctionnel) | Non | Non | Mission 11 ou 12b |
+| OP-N192 | Ventes sans `sale_attribution` (canal inconnu, ventes de back-office) : absentes de la liste et `GET /sales/{id}` en `404` ; elles restent invisibles du back-office (mission 11b, décision du porteur du 25/11/2026, ADR-236) | Non | Non | Mission 13 (recette) |
+| OP-N193 | Liste des ventes : `SET LOCAL enable_sort = off` et chemin rapide « annulées » en deux temps dépendent du planificateur et des statistiques ; `REVERSED` combiné à `merchant_id`, `pos_id`, `vendor_id` ou `MERCHANT_ADMIN` reste sur la requête générale (non mesuré) ; le test de plan garde son propre SQL (mission 11b, ADR-236) | Non | Non | Mission 13 (volume de recette) |
+| OP-N194 | **Levé le 25/11/2026** (correctif d'intégration avant la fusion, décision du porteur) : test à deux événements de `reversedQuery`, assertion « aucun identifiant de A » du `404` de la liste sans filtre, cas `PLATFORM_ADMIN` rattaché à un prestataire pour la recherche par numéro, garde de consignation étendu à OP-N185–OP-N198 (mission 11b, ADR-236) | Non | Non | — (levé) |
+| OP-N195 | NFR-001 non mesuré pour `listAnomalies`, `getWalletOverview` et `searchCustomerByPhone` ; les chiffres de `searchMedia` et des ventes viennent de notes de lane, hors passe `SKIP_LATENCY` ; p95 `REVERSED` variable selon la charge de la machine (mission 11b, ADR-236) | Non | Non | Mission 13 |
+| OP-N196 | `classify_anomaly` ne vérifie pas que `p_actor` appartient au prestataire : l'API passe toujours l'identité de la session, mais une application compromise pourrait écrire un autre auteur (mission 11b, ADR-236) | Non | Non | Mission 11c |
+| OP-N197 | Écarts de forme et de documentation de la 11b (liste au §15) (mission 11b, ADR-236) | Non | Non | Mission 11 |
+| OP-N198 | Lignes de plus de 100 caractères dans plusieurs fichiers de la 11b (WP07, WP08 ; reformatage à la fusion) (mission 11b, ADR-236) | Non | Non | Fusion de la mission (Prettier, décision du 14/10/2026) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -3216,3 +3232,149 @@ fichiers modifiés hors tests et documentation sont de câblage sans droit ni se
 
 Mutations rejouées par les relecteurs (voir `docs/passation-9c/preuves.md`). **Non figé, consigné comme limite :**
 (a) OP-N180 ; (b) OP-N181 ; (c) OP-N182 ; (d) OP-N183 ; (e) OP-N174.
+
+## 14. Dossier de design du back-office : consignation du 24/11/2026
+
+Numéros réservés le 23/11/2026 et consignés le 24/11/2026, au reversement du dossier
+(`docs/DOSSIER-DESIGN-BACKOFFICE.md`, copie du document de travail en ligne).
+
+- **OP-N170.** Manques 1, 2, 3, 5, 6 et 8 du dossier (« Manques de l'API »), vérifiés absents de `openapi.yaml` le
+  23/11/2026. Le dossier les rangeait sous OP-N164, numéro repris entre-temps par la mission 10a. Levée : mission 11b. **Levé le 25/11/2026** (ADR-235 ; fiche au §15).
+- **OP-N171.** Manque 7 : pas de parcours d'invitation d'une personne du personnel ; sa création exige `issuer` et
+  `subject` OIDC. Lié au choix du serveur d'identité (PRD §4). Levée : mission 12b.
+
+---
+
+## 15. Mission 11b (routes serveur du back-office) : consignation du 25/11/2026
+
+Écrit par WP11 à partir des notes de lane de WP01 à WP10 (journal d'états de la mission), des comptes rendus de relecture
+et des décisions du porteur des 24 et 25/11/2026. Mission Spec Kitty `routes-backoffice-01M86KT6`. Décisions :
+ADR-235 ; limites : ADR-236 (OP-N185 à OP-N198). **OP-N170 levé.** OP-N171 (invitation du personnel) reste à la mission
+12b. **Preuves par FR, NFR, SC et contrainte** : `docs/passation-11b/preuves.md`. **Note aux équipes** :
+`docs/passation-11b/note-equipes.md`. Aucun écart n'affaiblit la sécurité sans décision du porteur ; les renforcements sont
+dans ADR-235. **Droits nouveaux de `cashless_app`**, nommés dans ADR-235 : `SELECT` sur `sale_overview`,
+`anomaly_overview`, `phone_model` ; `EXECUTE` sur `classify_anomaly`, `anomaly_classifiable`, `normalize_phone_model`,
+`set_device_model`.
+
+### Lots de la mission
+
+| Lot | Contenu | Migrations et tests principaux |
+|---|---|---|
+| WP01 | Classement d'anomalie (`classify_anomaly`), modèles de téléphone, `set_device_model`, droits (D4) | `0101` ; `post-roles.sql` § 15 ; `tests_backoffice_writes.sql` |
+| WP02 | Vues `sale_overview` et `anomaly_overview`, index des ventes | `0102` ; `post-roles.sql` § 16 ; `tests_backoffice_read_views.sql` |
+| WP03 | Contrat : 11 opérations, schémas, `device_model`, `nfc_level`, baseline | `contract-additions-9b.spec.ts` ; `check.mjs` |
+| WP04 | `x-roles` sur 226 opérations, garde de présence | `x-roles.test.mjs` ; `check.mjs` |
+| WP05 | Profil du personnel `GET /staff/me`, balayage d'isolement | `staff-profile.spec.ts` ; `backoffice-isolation.spec.ts` |
+| WP06 | Ventes (liste, détail, pagination, latence) | `sales.spec.ts`, `sales-pagination.spec.ts`, `sales-latency.spec.ts` |
+| WP07 | Anomalies (liste, classement) | `anomalies.spec.ts`, `anomalies-classification.spec.ts`, `anomalies-concurrency.spec.ts` |
+| WP08 | Recherche (bracelet, portefeuille, numéro), débit, audit | `search.spec.ts`, `search-customer.spec.ts`, `search-rate-limit.spec.ts` |
+| WP09 | Modèles de téléphone, niveau NFC, `device_model` des terminaux | `phone-models.spec.ts`, `phone-models-devices.spec.ts` |
+| WP10 | Matrice de fidélité de `x-roles` | `x-roles-matrix.spec.ts` |
+| WP11 | Spécification, ADR, points ouverts, preuves | aucun code |
+
+### Décisions du porteur (ADR-235)
+
+D1 à D10 du 24/11/2026 (types classables tenus par la base, modèle déclaré par le terminal, matrice échantillon, retrait du
+droit direct de clore une anomalie, audit sans numéro, table de plateforme, aucun code d'erreur nouveau). Du 25/11/2026 :
+libellé fixe de la plateforme, ventes sans attribution exclues, `x-roles` alignés sur le code (3 rôles retirés), gel
+`contract-additions-9b.spec.ts` retouché au plus juste, `x-roles.test.mjs` en CI. `SPECIFICATION.md` §12.2 et §15 amendés
+le 24/11/2026 **sans changer le numéro de version**. **Contradiction §12.2 :** le schéma compte 23 types, le tableau en
+listait 22 (et non 21 comme le disait `research.md`) : seul `PSP_TOPUP_NOT_CREDITED` manquait, `CASH_TOPUP_OVER_LIMIT`
+y figurait déjà ; le schéma prime (§0.3), aucun type ajouté ni retiré de la base (C-005).
+
+### Limites et écarts (ADR-236)
+
+- **OP-N185.** Résolutions d'argent reportées, **type par type** : les 13 types non classables sont `OFFLINE_SHORTFALL`,
+  `VOID_CONFLICT`, `ONLINE_CONFIRMED_MISSING`, `NON_COMPLIANT_OPERATION`, `LATE_OFFLINE_SYNC`, `PSP_MISMATCH`,
+  `PSP_TOPUP_OVER_LIMIT`, `PSP_TOPUP_NOT_CREDITED`, `EDGE_REPLAY_FAILED`, `LATE_CHARGEBACK`, `PERIOD_CLOSED_OPERATION`,
+  `CASH_TOPUP_OVER_LIMIT` et `SEQ_GAP` (levé par `waiveSeqGap`, deux personnes, qui garde sa voie). `PSP_TOPUP_NOT_CREDITED` :
+  remboursement au payeur hors plateforme (OP-N82). `CASH_TOPUP_OVER_LIMIT` : se clôt au rendu (`refund_cash_due`).
+  Le refus est testé (`anomalies-classification.spec.ts`). Condition de levée : une route de résolution par type, avec
+  écriture au grand livre et seconde personne si la politique l'exige.
+- **OP-N186.** Modèle déclaré, non vérifié. Test : `phone-models-devices.spec.ts` (« C-003 : valeur inconnue, mal formée ou
+  énorme : toujours enrôlé, jamais 4xx »). Condition : attestation du terminal portant le modèle, ou limite acceptée.
+- **OP-N187.** Matrice par échantillon (D3). **Chiffres** : 1 281 appels, 186 opérations jouées, 7 rôles du personnel
+  (note de lane de WP10, ~25 s) au lieu des ~470 de D3 ; 99 opérations sans rôle déclaré abouti en 2xx (un rôle déclaré
+  recevant un 403 autre que `FORBIDDEN` y passerait sans bruit) ; `initiatePspTopup`, `getPspTopup`, `cancelPspTopup` non
+  jouées (401 de la garde du terminal ; preuve restante : `topup-isolation`). Trois dérives trouvées par la matrice
+  (`listCashSessions`, `setOrganizerOfflinePolicy`, `setEventOfflinePolicy`) alignées sur le code le 25/11/2026 :
+  renforcement, voir ADR-235. Condition : matrice complète à la recette.
+- **OP-N188.** Huit opérations sans route : voir la ligne du tableau. Test : `x-roles.test.mjs` (la liste est explicite ; une
+  opération qui n'est plus douteuse doit en sortir).
+- **OP-N189.** Débit par personne ; audit sans numéro. Tests : `search-rate-limit.spec.ts`, `search-customer.spec.ts`
+  (« NFR-006 : le numéro n'apparaît ni en audit, ni en journal, ni en réponse en clair »).
+- **OP-N190.** Niveau NFC sans historique ; `nfcLevelFor(client, manufacturer?, model?)` asynchrone avec client SQL
+  (WP09), contre `nfcLevelFor(manufacturer?, model?)` de `interfaces.md` §4. Le commentaire de `TenantTx.withoutTenant`
+  (seul usage prévu : fonction `SECURITY DEFINER`) est devenu inexact : `PhoneModelsService.read` l'emploie pour lire
+  `phone_model`, car `cashless_platform` n'a pas `SELECT` sur cette table (D9).
+- **OP-N191.** Nom affiché de la plateforme (décision du porteur du 25/11/2026) : le vrai nom reste à lire par une voie
+  autorisée (fonction `SECURITY DEFINER` hors `0101` et `0102`, ou module chargé par `AppModule`). Pas d'ADR propre : écart
+  fonctionnel, non de sécurité (mais cité dans ADR-236).
+- **OP-N192.** Ventes sans `sale_attribution` : exclues de la liste (`sales.spec.ts`, « vente sans attribution (canal nul) :
+  absente de la liste, et la page reste conforme » ; mutation : 6 tests rouges), `404` pour le détail (relecture de WP06,
+  cycle 4 : mutation, 1 rouge). Le contrat reste inchangé (`channel` requis).
+- **OP-N193.** `SET LOCAL enable_sort = off` : contournement du planificateur, dépend des statistiques, à réévaluer si la
+  volumétrie change. Chemin rapide `REVERSED` : teste `EXISTS sale_attribution` tandis que la vue teste `channel IS NOT
+  NULL` (équivalent tant que `channel` est non nul en table). Forme en deux temps : `IN (sous-requête)` mesurait 900 ms,
+  `= ANY(ARRAY(...))` environ 37 ms. `REVERSED` combiné à `merchant_id`, `pos_id`, `vendor_id` ou `MERCHANT_ADMIN` : requête
+  générale, non mesurée. Le test de plan de `sales-latency.spec.ts` garde son propre SQL pour les annulées.
+- **OP-N194 (levé le 25/11/2026).** Tests ajoutés avant la fusion, sans code de production, chacun avec sa mutation rejouée
+  puis annulée : (1) `sales-pagination.spec.ts`, « deux événements du même prestataire : aucune vente de l'autre, pages
+  pleines, has_more exact » (retrait de `t.event_id = $1` de la CTE de `reversedQuery` : 8 tests rouges dans le fichier, dont
+  celui-ci) ; (2) `sales.spec.ts`, « hors portée : 404 » : aucun identifiant de A dans le corps de l'erreur de la liste
+  sans filtre et du détail (détail de l'erreur qui rend un identifiant de commerçant de A : rouge) ; (3)
+  `search-customer.spec.ts`, « PLATFORM_ADMIN rattaché à un prestataire : 403 quand même, sans audit » (`PLATFORM_ADMIN` ajouté
+  à `CUSTOMER_ROLES` : rouge ; la base refuse de rattacher ce rôle, le test le rattache en contournant le déclencheur avec
+  `session_replication_role = replica`) ; (4) `consignation.spec.ts` couvre OP-N185 à OP-N198 et ADR-235, ADR-236.
+- **OP-N195.** NFR-001 : `searchMedia` mesuré à 30 ms de p95 sur 200 000 bracelets (note de lane de WP08 ; test de
+  `search.spec.ts` écarté par `SKIP_LATENCY`, à rejouer hors `SKIP_LATENCY` avant la clôture) ; `getWalletOverview`,
+  `searchCustomerByPhone`, `listAnomalies` : **non établi**.
+- **OP-N196.** `classify_anomaly` : l'auteur vient de la session (test, corps, en-tête et paramètre forgés ignorés) ; la base
+  ne vérifie pas son prestataire ; seule `cashless_app` peut exécuter la fonction. Test : `anomalies-classification.spec.ts`
+  (« l'auteur est toujours la personne de la session »). Condition : contrôle de l'auteur dans la fonction.
+- **OP-N197.** Écarts de forme et de documentation, sans effet sur la sécurité : (a) les erreurs `CL066` à `CL069` sont
+  traduites dans `anomalies.service.ts` et non dans `sqlstate-map.ts`, dont l'en-tête (et celui de `0101`) dit « lot
+  WP07 » : corriger le commentaire de `0101` n'est pas permis (migration existante), cette note en tient lieu ;
+  (b) `reason: ANOMALY_KIND_NOT_CLASSIFIABLE` est une extension de premier niveau du `422`, pas « dans le détail » comme le
+  disait `interfaces.md` ; (c) `media_id` sort dans `Anomaly` (conforme au contrat) ; `detail` et `ledger_id` ne sortent pas ;
+  (d) `searchMedia` rend `400` (contrat) et non `422` (prompt de T029) ; un code imprimé mal formé rend une liste vide ;
+  (e) `GET /staff/me` d'une personne sans rôle actif répond `200` avec `assignments` vide ; (f) `contracts/backoffice-routes.md`
+  dit 230 entrées de référence au 24/11/2026, WP04 en compte 226 annotées et 8 douteuses : écart de décompte non expliqué ;
+  (g) **anomalie sans grand livre (`ledger_id IS NULL`, signal de sécurité d'un bracelet sans portefeuille) : seul
+  `OPERATOR_ADMIN` du prestataire la lit et la classe** ; `ORGANIZER_ADMIN` ne la voit pas dans la liste et reçoit `404` au
+  classement (analyse F3, `anomalies.spec.ts`, `anomalies-classification.spec.ts`) ; elle n'a ni événement, ni montant, ni devise.
+- **OP-N198.** Lignes de plus de 100 caractères : 21 lignes de commentaire de WP07 et 42 lignes de WP08 (relectures).
+
+### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
+
+L'agent qui a écrit le code ne vaut pas relecture indépendante. Clés, droits de la base, cryptographie, donnée personnelle :
+
+- `packages/ledger-sql/post-roles.sql` § 15 et § 16 (retrait de `UPDATE (status, resolution_tx_id)`, `GRANT` de
+  `cashless_app`, `REVOKE` sur les vues) ;
+- `packages/ledger-sql/migrations/0101_anomaly_classification_phone_models.sql` (cinq fonctions `SECURITY DEFINER`,
+  `search_path = public, pg_temp`, contraintes de classement, verrou `FOR UPDATE`) et
+  `packages/ledger-sql/migrations/0102_backoffice_read_views.sql` (vues `security_invoker`, index) ;
+- `apps/api/src/search/search-scope.ts` (portée de la recherche, hors portée = vide ou `404`) et
+  `apps/api/src/search/search-rate-limit.ts` (débit compté en base sur l'audit) ; `apps/api/src/search/search.service.ts`
+  et `phone-mask.ts` (numéro de téléphone : jamais en audit, masqué en réponse) ;
+- `apps/api/src/anomalies/anomalies.service.ts` et `anomaly-scope.guard.ts` (portée, auteur de la session, traduction des
+  erreurs `CL066` à `CL069`) ;
+- `apps/api/src/devices/phone-models/phone-models.service.ts` (connexion de plateforme, `withoutTenant`),
+  `declare-device-model.ts` (sous `SAVEPOINT`, C-003), et les retouches de `enrollment.service.ts` et
+  `heartbeat.controller.ts` (chemins d'authentification des terminaux) ;
+- `apps/api/src/sales/sales.service.ts` (filtre de portée du commerçant dans la requête, `enable_sort = off`) ;
+- `apps/api/src/staff-profile/staff-profile.service.ts` (profil de l'appelant seulement) ;
+- `packages/contracts/openapi.yaml`, `tools/contract-stability/contract-baseline.json` et
+  `tools/contract-stability/x-roles/roles.json` (table des rôles déclarés, source de la matrice) ; le test de gel
+  `apps/api/test/unit/contracts/contract-additions-9b.spec.ts` (retouche de WP04 et de WP10, exemption `x-roles`).
+
+Exhaustivité revérifiée le 25/11/2026 par `git diff --name-only $(git merge-base HEAD feat/routes-backoffice)..HEAD` : les
+autres fichiers modifiés hors tests et documentation sont de câblage sans droit ni secret (modules et contrôleurs,
+`audit.service.ts` : cinq valeurs d'union, `config.ts` : `STAFF_PHONE_SEARCH_PER_MINUTE`), de configuration d'essai
+(`jest.config.cjs`, `ledger-tests.yml`, `package.json` : `check:stability`) ou générés (`packages/contracts/generated/`,
+`packages/contracts/dart/`).
+
+### Tests de borne écrits avec la mission et ce qui reste non figé
+
+Mutations rejouées par les relecteurs (voir `docs/passation-11b/preuves.md`). **Non figé, consigné comme limite :**
+OP-N185, OP-N187, OP-N188, OP-N190, OP-N191, OP-N193, OP-N195, OP-N197.

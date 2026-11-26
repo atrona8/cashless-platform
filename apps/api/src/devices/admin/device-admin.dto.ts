@@ -17,7 +17,7 @@ const APP_MODES: readonly string[] = ['CATALOG_POS', 'KEYPAD_TPE', 'TOPUP_DESK',
 export const DEVICE_ADMIN_COLUMNS = `d.id, d.serial, d.kind, d.app_mode, d.os, d.personal_phone,
        d.nfc_enabled, d.provided_by, d.status, d.status_reason, d.event_id, d.pos_id,
        d.station_name, d.app_version, d.attestation_kind, d.attestation_security_level,
-       d.enrolled_at, d.last_seen_at, d.cert_not_after`;
+       d.enrolled_at, d.last_seen_at, d.cert_not_after, d.manufacturer, d.model, pm.nfc_level`;
 
 export interface DeviceAdminRow {
   id: string;
@@ -39,6 +39,10 @@ export interface DeviceAdminRow {
   enrolled_at: Date | null;
   last_seen_at: Date | null;
   cert_not_after: Date | null;
+  manufacturer: string | null;
+  model: string | null;
+  /** Niveau mesuré (jointure `phone_model`) ; `null` : modèle absent de la table (`UNTESTED`). */
+  nfc_level: 'RECOMMENDED' | 'TOLERATED' | null;
 }
 
 export interface DeviceHistoryRow {
@@ -73,6 +77,11 @@ export function deviceAdminDto(row: DeviceAdminRow): DeviceAdmin {
     enrolled_at: iso(row.enrolled_at),
     last_seen_at: iso(row.last_seen_at),
     cert_not_after: iso(row.cert_not_after),
+    // Ajouts facultatifs de la mission 11b (exception à C-001) : modèle déclaré et niveau NFC.
+    ...(row.manufacturer !== null && row.model !== null
+      ? { device_model: { manufacturer: row.manufacturer, model: row.model } }
+      : {}),
+    nfc_level: row.nfc_level ?? 'UNTESTED',
   };
 }
 

@@ -138,6 +138,64 @@ const ADDED_OPERATIONS_9C = ['refundPartialCash'];
 const ADDED_SCHEMAS_9C = ['PartialCashRefundCreate', 'PartialCashRefund'];
 const ADDED_PATHS_9C = ['/media/{media_id}/partial-cash-refunds'];
 
+/**
+ * Mission routes-backoffice (11b), décision du porteur du 24/11/2026, ADR-235 : onze opérations (dix chemins), dix-huit
+ * schémas et quatre propriétés facultatives, inscrits dans `contract-baseline.json`. Listes explicites, sans
+ * tolérance générale : tout autre ajout reste un échec. Base de comparaison inchangée (fin de la 9a), avec les
+ * ajouts de la 9c et de la 11b en listes séparées, comme le fichier le fait déjà pour la 9c.
+ */
+const ADDED_BY_11B = [
+  'components.schemas.DeviceAdmin.properties.device_model : clé ajoutée',
+  'components.schemas.DeviceAdmin.properties.nfc_level : clé ajoutée',
+  'components.schemas.DeviceEnrollmentRequest.properties.device_model : clé ajoutée',
+  'components.schemas.HeartbeatRequest.properties.device_model : clé ajoutée',
+];
+const ADDED_OPERATIONS_11B = [
+  'getStaffProfile',
+  'listEventSales',
+  'getSale',
+  'listAnomalies',
+  'classifyAnomaly',
+  'searchMedia',
+  'getWalletOverview',
+  'searchCustomerByPhone',
+  'listPhoneModels',
+  'upsertPhoneModel',
+  'deletePhoneModel',
+];
+const ADDED_SCHEMAS_11B = [
+  'StaffProfile',
+  'StaffAssignment',
+  'SalePage',
+  'SaleSummary',
+  'SaleDetail',
+  'SaleDetailLine',
+  'AnomalyPage',
+  'Anomaly',
+  'AnomalyClassificationCreate',
+  'MediaSearchResult',
+  'WalletOverview',
+  'CustomerSearchRequest',
+  'CustomerSearchResult',
+  'PhoneModel',
+  'PhoneModelPage',
+  'PhoneModelUpsert',
+  'DeviceModel',
+  'NfcLevel',
+];
+const ADDED_PATHS_11B = [
+  '/staff/me',
+  '/events/{event_id}/sales',
+  '/sales/{transaction_id}',
+  '/anomalies',
+  '/anomalies/{anomaly_id}/classification',
+  '/search/media',
+  '/search/wallets/{wallet_id}',
+  '/search/customers',
+  '/phone-models',
+  '/phone-models/{manufacturer}/{model}',
+];
+
 function obj(value: Json | undefined, what: string): Obj {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${what} : objet attendu`);
@@ -170,6 +228,9 @@ const EDITED_TEXT = new Set([
 ]);
 const EXTENDED_ENUM = 'components.schemas.ProblemCode.enum';
 
+/** Chemin d'une opération du contrat : `paths['/chemin'].get` (méthode HTTP), sans plus profond. */
+const OPERATION_PATH = /^paths\['[^']+'\]\.(get|put|post|patch|delete|options|head|trace)$/;
+
 /** Écarts entre le contrat de base et le nouveau : l'existant reste à l'identique. */
 function violations(a: Json, b: Json | undefined, path: string, out: string[]): void {
   if (b === undefined) {
@@ -194,6 +255,11 @@ function violations(a: Json, b: Json | undefined, path: string, out: string[]): 
     }
     if (!EXTENSIBLE.has(path)) {
       for (const key of Object.keys(b)) {
+        // `x-roles` (11b, WP04) : seule clé ajoutée admise sur une opération existante ; sa présence et ses
+        // valeurs sont gardées par tools/contract-stability/x-roles/x-roles.test.mjs.
+        // Exemption au niveau de l'OPÉRATION seulement (`paths['<chemin>'].<méthode>['x-roles']`) : posée dans un
+        // paramètre, une réponse ou un schéma, elle reste refusée (WP10, décision du porteur du 25/11/2026).
+        if (key === 'x-roles' && OPERATION_PATH.test(path)) continue;
         if (!(key in a)) out.push(`${path}.${key} : clé ajoutée`);
       }
     }
@@ -237,10 +303,55 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ne modifie ni ne retire rien d existant (champs, required, enum, réponses)', () => {
     const found: string[] = [];
     violations(base, next, '', found);
-    // Seuls les ajouts de la 10a (ADR-225) et de la 9c (ADR-233) sont admis ; chacun est vérifié à part.
+    // Seuls les ajouts de la 10a (ADR-225), de la 9c (ADR-233) et de la 11b (ADR-235) sont admis ; chacun est
+    // vérifié à part.
     expect(
-      found.filter((entry) => !ADDED_BY_10A.includes(entry) && !ADDED_BY_9C.includes(entry)),
+      found.filter(
+        (entry) =>
+          !ADDED_BY_10A.includes(entry) &&
+          !ADDED_BY_9C.includes(entry) &&
+          !ADDED_BY_11B.includes(entry),
+      ),
     ).toEqual([]);
+  });
+
+  it('x-roles : exemption au niveau de l’opération seulement (mutation : paramètre, réponse, schéma)', () => {
+    interface Op {
+      responses: Record<string, Record<string, unknown>>;
+      parameters?: Record<string, unknown>[];
+      [key: string]: unknown;
+    }
+    interface Doc {
+      paths: Record<string, Record<string, Op>>;
+      components: { schemas: Record<string, Record<string, unknown>> };
+    }
+    const METHODS = ['get', 'put', 'post', 'patch', 'delete'];
+    const plant = (mutate: (doc: Doc) => void): string[] => {
+      const doc = JSON.parse(JSON.stringify(base)) as Doc;
+      mutate(doc);
+      const found: string[] = [];
+      violations(base, doc as unknown as Json, '', found);
+      return found.filter((e) => e.includes('x-roles'));
+    };
+    const first = (doc: Doc, withParameters = false): Op => {
+      for (const ops of Object.values(doc.paths))
+        for (const [method, op] of Object.entries(ops))
+          if (METHODS.includes(method) && (!withParameters || (op.parameters?.length ?? 0) > 0))
+            return op;
+      throw new Error('aucune opération');
+    };
+    // Sur l'opération : admis.
+    expect(plant((d) => (first(d)['x-roles'] = ['OPERATOR_ADMIN']))).toEqual([]);
+    // Dans une réponse, un schéma de composant, un paramètre : refusé.
+    const response = (d: Doc) => Object.values(first(d).responses)[0]!;
+    expect(plant((d) => (response(d)['x-roles'] = ['OPERATOR_ADMIN'])).length).toBeGreaterThan(0);
+    expect(
+      plant((d) => (Object.values(d.components.schemas)[0]!['x-roles'] = ['OPERATOR_ADMIN']))
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      plant((d) => (first(d, true).parameters![0]!['x-roles'] = ['CASHIER'])).length,
+    ).toBeGreaterThan(0);
   });
 
   it('contrat de la mission 10a (ADR-225) : exactement les trois ajouts décidés, rien de plus', () => {
@@ -308,13 +419,19 @@ describe('contrat de la mission 9b (C-002)', () => {
     const added = (names: string[], all: string[]): string[] =>
       all.filter((name) => !names.includes(name));
     // Un seul objet nouveau de chaque sorte : l'opération, son chemin et ses deux schémas.
-    const newOps = [...nextOps.keys()].filter((id) => !baseOps.has(id));
+    const newOps = [...nextOps.keys()].filter(
+      (id) => !baseOps.has(id) && !ADDED_OPERATIONS_11B.includes(id),
+    );
     expect(added(ADDED_OPERATIONS, newOps)).toEqual(ADDED_OPERATIONS_9C);
     const basePaths = Object.keys(obj(base.paths, 'paths'));
-    const newPaths = Object.keys(obj(next.paths, 'paths')).filter((p) => !basePaths.includes(p));
+    const newPaths = Object.keys(obj(next.paths, 'paths')).filter(
+      (p) => !basePaths.includes(p) && !ADDED_PATHS_11B.includes(p),
+    );
     expect(added(ADDED_PATHS, newPaths)).toEqual(ADDED_PATHS_9C);
     const schemas = (doc: Obj): Obj => obj(obj(doc.components, 'c').schemas, 's');
-    const newSchemas = Object.keys(schemas(next)).filter((n) => !(n in schemas(base)));
+    const newSchemas = Object.keys(schemas(next)).filter(
+      (n) => !(n in schemas(base)) && !ADDED_SCHEMAS_11B.includes(n),
+    );
     expect(added(ADDED_SCHEMAS, newSchemas).sort()).toEqual([...ADDED_SCHEMAS_9C].sort());
     // Aucun code d'erreur nouveau : l'énumération des problèmes garde ses seules valeurs de la 9b.
     const codes = (doc: Obj): Json[] => (obj(schemas(doc).ProblemCode, 'p').enum as Json[]) ?? [];
@@ -342,9 +459,73 @@ describe('contrat de la mission 9b (C-002)', () => {
     );
   });
 
+  it('contrat de la mission 11b (ADR-235) : exactement les ajouts décidés, rien de plus', () => {
+    const found: string[] = [];
+    violations(base, next, '', found);
+    expect(found.filter((entry) => ADDED_BY_11B.includes(entry)).sort()).toEqual(
+      [...ADDED_BY_11B].sort(),
+    );
+    // Onze opérations, dix chemins, dix-huit schémas : les listes ci-dessus, ni plus ni moins.
+    const newOps = [...nextOps.keys()].filter(
+      (id) =>
+        !baseOps.has(id) && !ADDED_OPERATIONS.includes(id) && !ADDED_OPERATIONS_9C.includes(id),
+    );
+    expect(newOps.sort()).toEqual([...ADDED_OPERATIONS_11B].sort());
+    expect(newOps).toHaveLength(11);
+    const basePaths = Object.keys(obj(base.paths, 'paths'));
+    const newPaths = Object.keys(obj(next.paths, 'paths')).filter(
+      (p) => !basePaths.includes(p) && !ADDED_PATHS.includes(p) && !ADDED_PATHS_9C.includes(p),
+    );
+    expect(newPaths.sort()).toEqual([...ADDED_PATHS_11B].sort());
+    const schemas = (doc: Obj): Obj => obj(obj(doc.components, 'c').schemas, 's');
+    const newSchemas = Object.keys(schemas(next)).filter(
+      (n) => !(n in schemas(base)) && !ADDED_SCHEMAS.includes(n) && !ADDED_SCHEMAS_9C.includes(n),
+    );
+    expect(newSchemas.sort()).toEqual([...ADDED_SCHEMAS_11B].sort());
+    expect(newSchemas).toHaveLength(18);
+    // Aucun paramètre, réponse ni en-tête de composant nouveau ; aucun code d'erreur nouveau (D10).
+    for (const section of ['parameters', 'responses', 'headers', 'securitySchemes']) {
+      const keys = (doc: Obj): string[] =>
+        Object.keys(obj(obj(doc.components, 'c')[section], section));
+      expect(keys(next).filter((k) => !keys(base).includes(k))).toEqual([]);
+    }
+    const codes = (doc: Obj): Json[] => (obj(schemas(doc).ProblemCode, 'p').enum as Json[]) ?? [];
+    expect(codes(next)).toEqual([...codes(base), 'PAYOUT_EXCEEDS_ENTITLEMENT']);
+    // Propriétés ajoutées à l'existant : facultatives, jamais dans `required`, `required` inchangé.
+    for (const name of ['DeviceAdmin', 'DeviceEnrollmentRequest', 'HeartbeatRequest']) {
+      expect(obj(schemas(next)[name], name).required).toEqual(
+        obj(schemas(base)[name], name).required,
+      );
+    }
+    const props = (name: string): string[] =>
+      Object.keys(obj(obj(schemas(next)[name], name).properties, 'p'));
+    expect(props('HeartbeatRequest')).toContain('device_model');
+    expect(props('DeviceEnrollmentRequest')).toContain('device_model');
+    expect(props('DeviceAdmin')).toEqual(expect.arrayContaining(['device_model', 'nfc_level']));
+    // Toute opération ajoutée : x-process public, sécurité par défaut (jeton du personnel), `x-roles` présent (WP04).
+    for (const id of ADDED_OPERATIONS_11B) {
+      const entry = nextOps.get(id);
+      expect(entry?.op['x-process']).toBe('public');
+      expect(entry?.op.security).toBeUndefined();
+      expect(Array.isArray(entry?.op['x-roles']) && entry.op['x-roles'].length > 0).toBe(true);
+    }
+    // Idempotency-Key exigée pour le classement seulement.
+    const keyed = (id: string): boolean =>
+      JSON.stringify(nextOps.get(id)?.op.parameters ?? []).includes(
+        '#/components/parameters/IdempotencyKey',
+      );
+    expect(ADDED_OPERATIONS_11B.filter(keyed)).toEqual(['classifyAnomaly']);
+    // Aucun champ de portefeuille ni de festivalier dans les ventes (noms de propriétés, pas les descriptions).
+    const field = /"[a-z_]*(wallet|customer|phone|msisdn)[a-z_]*":\{/i;
+    for (const name of ['SaleSummary', 'SaleDetail', 'SaleDetailLine', 'SalePage']) {
+      expect([name, field.test(JSON.stringify(schemas(next)[name]))]).toEqual([name, false]);
+    }
+  });
+
   it('ajoute exactement les 20 opérations listées', () => {
     const added = [...nextOps.keys()].filter(
-      (id) => !baseOps.has(id) && !ADDED_OPERATIONS_9C.includes(id),
+      (id) =>
+        !baseOps.has(id) && !ADDED_OPERATIONS_9C.includes(id) && !ADDED_OPERATIONS_11B.includes(id),
     );
     expect(added.sort()).toEqual([...ADDED_OPERATIONS].sort());
     expect(added).toHaveLength(20);
@@ -353,7 +534,7 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ajoute exactement 18 chemins (le 19e est un ajout de méthode à /refund-requests)', () => {
     const basePaths = Object.keys(obj(base.paths, 'paths'));
     const added = Object.keys(obj(next.paths, 'paths')).filter(
-      (p) => !basePaths.includes(p) && !ADDED_PATHS_9C.includes(p),
+      (p) => !basePaths.includes(p) && !ADDED_PATHS_9C.includes(p) && !ADDED_PATHS_11B.includes(p),
     );
     expect(added.sort()).toEqual([...ADDED_PATHS].sort());
     const refund = obj(obj(next.paths, 'paths')['/refund-requests'], '/refund-requests');
@@ -367,7 +548,10 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ajoute exactement les 19 schémas listés', () => {
     const baseSchemas = Object.keys(obj(obj(base.components, 'c').schemas, 's'));
     const added = Object.keys(obj(obj(next.components, 'c').schemas, 's')).filter(
-      (name) => !baseSchemas.includes(name) && !ADDED_SCHEMAS_9C.includes(name),
+      (name) =>
+        !baseSchemas.includes(name) &&
+        !ADDED_SCHEMAS_9C.includes(name) &&
+        !ADDED_SCHEMAS_11B.includes(name),
     );
     expect(added.sort()).toEqual([...ADDED_SCHEMAS].sort());
     expect(added).toHaveLength(19);

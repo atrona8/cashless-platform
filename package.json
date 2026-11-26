@@ -22,7 +22,7 @@
     "format": "prettier --write \"**/*.{ts,js,cjs,mjs}\"",
     "format:check": "prettier --check \"**/*.{ts,js,cjs,mjs}\"",
     "edge-admin": "npm run edge-admin -w @cashless/edge-admin --",
-    "check:stability": "node tools/contract-stability/check.mjs && node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs"
+    "check:stability": "node tools/contract-stability/check.mjs && node --test tools/contract-stability/check.test.mjs tools/contract-stability/check-baseline-decision.test.mjs tools/contract-stability/x-roles/x-roles.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

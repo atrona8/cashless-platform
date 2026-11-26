@@ -16,6 +16,8 @@ import {
   normalizeEnrollmentCode,
 } from '../../enrollment-code/enrollment-code';
 import { invalid, objectBody, unprocessable } from '../../organization/platform/platform.dto';
+import { parseDeviceModel } from '../phone-models/phone-models.dto';
+import type { DeviceModel } from '../phone-models/phone-models.dto';
 
 const SERIAL = /^[A-Za-z0-9._-]{3,64}$/;
 const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
@@ -38,6 +40,8 @@ export interface EnrollmentRequest {
   keyAttestationChain: Buffer[];
   agreementAttestationChain: Buffer[] | null;
   csrPem: string;
+  /** Modèle déclaré (facultatif, jamais cause de refus : C-003) ; `null` si inexploitable. */
+  deviceModel: DeviceModel | null;
 }
 
 /** Code normalisé de la saisie, ou `null` (absente, pas un texte, mal formée). Ne lève jamais. */
@@ -104,6 +108,7 @@ export function parseEnrollment(raw: unknown): EnrollmentRequest {
     keyAttestationChain,
     agreementAttestationChain,
     csrPem,
+    deviceModel: parseDeviceModel(body),
   };
 }
 

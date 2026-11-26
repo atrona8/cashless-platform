@@ -230,7 +230,7 @@ SELECT is((SELECT array_agg(viewname::text ORDER BY viewname) FROM pg_views
             WHERE schemaname = 'public'
               AND (has_table_privilege('cashless_app', format('public.%I', viewname), 'INSERT')
                    OR has_table_privilege('cashless_app', format('public.%I', viewname), 'UPDATE'))
-              AND viewname IN ('vendor_public')), NULL::text[],
+              AND viewname IN ('vendor_public', 'sale_overview', 'anomaly_overview')), NULL::text[],
   'vues de la mission : aucune modifiable par cashless_app');
 -- Vues des extensions (pgTAP : pg_all_foreign_keys, tap_funky) écartées : elles ne sont pas au
 -- schéma de l'application.
@@ -244,9 +244,9 @@ SELECT is((SELECT array_agg(viewname::text ORDER BY viewname) FROM pg_views v
               'trial_balance', 'party_position', 'ledger_invariant', 'hot_account_side_check',
               'balance_drift', 'counter_time_inversion', 'batch_inventory', 'ledgers_to_seal',
               'offline_snapshot_rows')),
-  ARRAY['edge_device_seq_acked', 'vendor_public'],
-  'vues : vendor_public et edge_device_seq_acked (0063, passerelle) sont les seules vues ajoutées depuis la mission 5a '
-  || '(une vue nouvelle doit être fermée en écriture ici)');
+  ARRAY['anomaly_overview', 'edge_device_seq_acked', 'sale_overview', 'vendor_public'],
+  'vues : vendor_public, edge_device_seq_acked (0063, passerelle), sale_overview et anomaly_overview (0102, mission '
+  || '11b) sont les seules vues ajoutées depuis la mission 5a (une vue nouvelle doit être fermée en écriture ici)');
 -- edge_device_seq_acked (0063) : lecture étroite des terminaux de l'événement de la passerelle appelante. Ni PUBLIC ni
 -- aucun rôle cashless_* autre que cashless_app n'y écrit. cashless_app : roles.sql lui redonne arw sur toutes les vues
 -- (WP09 le retire) ; l'écriture est donc seulement bornée ici pour les autres rôles, et reste à fermer en WP09.

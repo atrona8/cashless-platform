@@ -1,5 +1,5 @@
 {
-  "derniere_verification_globale": "2026-11-23T14:00:00Z",
+  "derniere_verification_globale": "2026-11-25T20:00:00Z",
   "missions": {
     "fondations-grand-livre-01M4AY8M": {
       "statut": "mergée",
@@ -95,6 +95,13 @@
     "remboursement-partiel-especes-01M84932": {
       "statut": "relue le 23/11/2026 (6 lots approuvés), non acceptée, non fusionnée (code dans les lanes a à f, tout dans la lane f)",
       "verifie_le": "2026-11-23T18:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
+    },
+    "routes-backoffice-01M86KT6": {
+      "statut": "relue le 25/11/2026 (11 lots sur 11 approuvés, WP11 cycle 2 `e32df355`), non acceptée, non fusionnée (code dans la lane k)",
+      "verifie_le": "2026-11-25T20:00:00Z",
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true

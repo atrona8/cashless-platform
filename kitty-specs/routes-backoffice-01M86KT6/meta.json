@@ -1,0 +1,37 @@
+{
+  "accept_commit": "bf409ffab77c9987d6a00d40fd0a89dc836c60ee",
+  "acceptance_history": [
+    {
+      "accept_commit": "bf409ffab77c9987d6a00d40fd0a89dc836c60ee",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-26T03:50:14.628914+00:00",
+      "accepted_by": "xaamga",
+      "accepted_from_commit": "332567c0df28546237f441dcbb22b3c56b83ba8c"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-26T03:50:14.628914+00:00",
+  "accepted_by": "xaamga",
+  "accepted_from_commit": "332567c0df28546237f441dcbb22b3c56b83ba8c",
+  "baseline_merge_commit": "2fec96626daa0918dcb793acc767dc9afdbcc679",
+  "coordination_branch": "kitty/mission-routes-backoffice-01M86KT6",
+  "created_at": "2026-11-24T11:07:18.072949+00:00",
+  "flattened": false,
+  "friendly_name": "Routes serveur du back-office",
+  "merged_at": "2026-11-26T04:03:24.056803+00:00",
+  "merged_commit": "7a56d09b9a02e4fedaded28febc15b1893ab5dfb",
+  "mid8": "01M86KT6",
+  "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+  "mission_number": 9,
+  "mission_slug": "routes-backoffice-01M86KT6",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Le back-office web (mission 11) ne peut pas piloter un événement sans ces routes, absentes du contrat partagé (OP-N170, dossier de design du back-office). La mission les ajoute côté serveur, de façon rétrocompatible, cloisonnées par prestataire et par portée, avant que l'équipe du back-office ne commence.",
+  "purpose_tldr": "Servir au back-office web les lectures et actions qui lui manquent : profil du personnel, ventes, anomalies, recherche, modèles de téléphone, rôles par opération.",
+  "slug": "routes-backoffice-01M86KT6",
+  "status_phase": "1",
+  "target_branch": "feat/routes-backoffice",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-24T15:46:05.736257+00:00"
+}

@@ -1,0 +1,152 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-24T11:07:53.943802Z",
+      "decision_id": "01M86KV9PQKAX02D2M0DGJ1QDP",
+      "final_answer": "Liste et classement : la 11b liste et filtre les anomalies et permet de les classer trait\u00e9es avec un motif, sans \u00e9criture ; les r\u00e9solutions qui \u00e9crivent de l'argent vont dans une mission suivante, type par type.",
+      "input_key": "anomaly_resolution_scope",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Liste et r\u00e9solution sans \u00e9criture ; \u00e9critures plus tard",
+        "Liste et r\u00e9solution compl\u00e8te, \u00e9critures \u00e0 deux comprises",
+        "Liste seulement",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "La r\u00e9solution des anomalies qui touchent l'argent (\u00e9criture \u00e0 deux personnes) fait-elle partie de la 11b, ou la 11b se limite-t-elle \u00e0 les lister et \u00e0 les marquer trait\u00e9es sans \u00e9criture ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T11:56:47.345579Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.anomaly-resolution",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T11:56:54.834239Z",
+      "decision_id": "01M86PN1NJ4KYYTCHWY64A4YJ4",
+      "final_answer": "Administrateurs dans leur port\u00e9e et superviseur au guichet ; num\u00e9ro exact seulement, jamais de recherche partielle ; r\u00e9ponse : portefeuilles et bracelets avec num\u00e9ro masqu\u00e9 ; chaque recherche journalis\u00e9e, d\u00e9bit limit\u00e9.",
+      "input_key": "search_personal_data",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Guichet et admins, num\u00e9ro masqu\u00e9",
+        "Admins seulement",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Qui peut chercher un festivalier par num\u00e9ro de t\u00e9l\u00e9phone, et que voit-il ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T12:41:01.758863Z",
+      "resolved_by": null,
+      "slot_key": "specify.search.personal-data",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T12:41:11.699326Z",
+      "decision_id": "01M86S648KZ9MG63YNHGDCKTBJ",
+      "final_answer": "L'administrateur plateforme tient la liste (mod\u00e8le, niveau, date de mesure) ; la fiche d'un terminal et la liste des terminaux d'un \u00e9v\u00e9nement signalent un mod\u00e8le tol\u00e9r\u00e9 ou non test\u00e9 ; aucun refus d'enr\u00f4lement.",
+      "input_key": "phone_model_referential",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Plateforme tient la liste, alerte seulement",
+        "Plateforme tient la liste, enr\u00f4lement refus\u00e9 si non test\u00e9",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Qui tient la liste des mod\u00e8les de t\u00e9l\u00e9phone et leur niveau NFC, et que se passe-t-il pour un terminal dont le mod\u00e8le est tol\u00e9r\u00e9 ou non test\u00e9 ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T12:42:14.510606Z",
+      "resolved_by": null,
+      "slot_key": "specify.devices.model-referential",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T13:07:20.785750Z",
+      "decision_id": "01M86TP0JH9S6SGW81JCCPB5Y3",
+      "final_answer": "Proposition : 10 types classables (CASH_DIFF, CLOCK_SKEW, CARD_VELOCITY, IDEMPOTENCY_CONFLICT, CHAIN_BROKEN, COUNTER_DUPLICATE, COUNTER_TIME_INVERSION, UID_MISMATCH, RETIRED_IDENTITY, SIGNATURE_MISMATCH), liste tenue dans la base ; 12 non classables. Classer ne bloque ni ne d\u00e9bloque aucun bracelet.",
+      "input_key": "classable_anomaly_kinds",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Liste propos\u00e9e (aucun argent en attente)",
+        "Liste propos\u00e9e sans les anomalies de s\u00e9curit\u00e9 du bracelet",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Quels types d'anomalie peut-on classer trait\u00e9e sans \u00e9criture au grand livre ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:08:15.520844Z",
+      "resolved_by": null,
+      "slot_key": "plan.anomalies.classable-kinds",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T13:08:23.131538Z",
+      "decision_id": "01M86TQXEVQ7T1K5G7A52E8NGW",
+      "final_answer": "D\u00e9clar\u00e9 par le terminal : fabricant et mod\u00e8le dans un champ facultatif \u00e0 l'enr\u00f4lement et au heartbeat ; valeur informative ; exception \u00e0 C-001 accept\u00e9e (ajout facultatif \u00e0 deux requ\u00eates existantes).",
+      "input_key": "device_model_source",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "D\u00e9clar\u00e9 par le terminal (champ facultatif ajout\u00e9)",
+        "Saisi par un administrateur",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "D'o\u00f9 vient le mod\u00e8le de t\u00e9l\u00e9phone d'un terminal, absent de la base aujourd'hui ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:14:59.667203Z",
+      "resolved_by": null,
+      "slot_key": "plan.devices.model-source",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T13:15:07.714735Z",
+      "decision_id": "01M86V48J2DR35738Z85B7RCEW",
+      "final_answer": "Matrice \u00e9chantillon : pour chaque op\u00e9ration, un appel avec un r\u00f4le d\u00e9clar\u00e9 (pas de refus pour droit) et un avec un r\u00f4le non d\u00e9clar\u00e9 (refus attendu).",
+      "input_key": "x_roles_fidelity",
+      "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+      "mission_slug": "routes-backoffice-01M86KT6",
+      "opened_by": "cli",
+      "options": [
+        "Matrice: un r\u00f4le permis et un r\u00f4le refus\u00e9 par op\u00e9ration",
+        "Matrice compl\u00e8te de tous les r\u00f4les",
+        "Registre unique des r\u00f4les",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Comment prouver que les r\u00f4les d\u00e9clar\u00e9s (x-roles) restent fid\u00e8les aux contr\u00f4les r\u00e9els ?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:16:01.413051Z",
+      "resolved_by": null,
+      "slot_key": "plan.contract.x-roles-fidelity",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M86KT6JR372SV3SK41E5ZQJX",
+  "version": 1
+}
