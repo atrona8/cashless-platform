@@ -138,3 +138,9 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   relecture de WP03 (approuvé le 26/11/2026) : relecture déclenchée aussi sur `close` de la réponse (connexion coupée
   avant `finish`), avec un test ; borne par minute posée seulement après une relecture aboutie (`APPLIED`/`PENDING`), pas
   après `FAILED` ; fichier à faire relire par une personne : `psp-status-confirmer.ts`.
+- **WP13 (relecture de WP12 cycle 2, approuvé le 26/11/2026)** : dans l'OP/ADR de l'exception Android, noter que
+  l'exception exclut les chaînes RKP (OID 1.3.6.1.4.1.11129.2.1.30), plus strict que la décision, mais sans test
+  (mutation survivante) : test à ajouter en mission 12 (report PROMPTS/PRD). Le certificat racine lui-même est aussi
+  exempté de sa date de fin (dans la racine exemptée).
+- **Orchestrateur** : `test/integration/webhooks/receive.spec.ts` a échoué une fois (3 tests, « request entity too
+  large ») sur la lane l, vert en relance isolée ; à surveiller sur la lane c (WP03) et à la fusion.
