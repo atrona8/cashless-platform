@@ -929,7 +929,9 @@ describe('Sessions de vendeur (WP09, T040 à T043)', () => {
       const audits = await openedAudits();
       const res = await openOn(wrongKey, t, v);
       expect([res.status, res.body.code]).toEqual([500, 'INTERNAL_ERROR']);
-      expect(res.text).not.toMatch(new RegExp(`${PIN}|signature|401`, 'i'));
+      // `instance` (identifiant aléatoire de la requête) écarté : il contient « 401 » par hasard (CI, 26/11/2026).
+      const { instance: _instance, ...problem } = res.body as Record<string, unknown>;
+      expect(JSON.stringify(problem)).not.toMatch(new RegExp(`${PIN}|signature|401`, 'i'));
       await noSession(t, v, audits);
     } finally {
       await wrongKey.close();
