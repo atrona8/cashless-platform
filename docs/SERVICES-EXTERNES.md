@@ -1,6 +1,6 @@
 # Services externes à gérer
 
-État au 24/11/2026 (missions 1 à 10a, 11a et 9c livrées ; 11b en cours). Liste de tout ce qui vient de l'extérieur du dépôt : comptes à ouvrir, accès à obtenir, et comment
+État au 26/11/2026 (missions 1 à 10a, 11a et 9c livrées ; 11b consolidée, pas encore dans `main` ; **mission 12b-1 planifiée le 26/11/2026 : rien n'est codé, les états « adaptateur conforme, à essayer » ci-dessous sont prévus, pas livrés**). Liste de tout ce qui vient de l'extérieur du dépôt : comptes à ouvrir, accès à obtenir, et comment
 chaque service se branche dans le code. Sources : `docs/POINTS_OUVERTS.md` (§ 7, actions du porteur),
 `docs/SPECIFICATION.md` (§ 10.3, § 11.1, § 13.2, § 13.7), `docs/08-pile-logicielle.md`, `PROMPTS-A-ENVOYER.md`
 (missions 11b et 12b). Ce fichier résume, il ne remplace pas ces sources : en cas d'écart, elles font foi.
@@ -16,14 +16,14 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 |---|---|---|---|---|---|---|
 | 1 | Compte AWS (région) | Héberger tout le reste | Région `eu-west-3` provisoire (OP-N11, ADR-65) | Porteur | Après mesure de latence (action 3) et avis du juriste | Tous les services AWS |
 | 2 | AWS RDS PostgreSQL 17 | Base centrale | PostgreSQL 17 local en Docker | Porteur + nous | Quelques jours | Mise en ligne |
-| 3 | AWS KMS | Clés des bracelets, snapshots, autorité des terminaux, jetons d'appareil | Faux (`fake-kms`), refusés en production | Porteur (compte) + nous (mission 12b) | Après le compte AWS | Bracelets, hors ligne, terminaux en production |
-| 4 | AWS Secrets Manager | Identifiants PSP et secrets de webhooks, par détenteur des fonds | Faux coffre, refusé en production | Nous (mission 12b) | Après le compte AWS | Paiements réels |
-| 5 | AWS S3 Object Lock (compte distinct) | Copie du scellement du journal, en écriture unique | Faux (`sealing/fake-seal-copy.ts`), refusé en production | Porteur (second compte) + nous | Après le compte AWS | Scellement hors base (SPEC § 13.7) |
+| 3 | AWS KMS | Clés des bracelets, snapshots, autorité des terminaux, jetons d'appareil | Faux (`fake-kms`), refusés en production ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé)** | Porteur (compte) + nous (mission 12b-1) | Après le compte AWS | Bracelets, hors ligne, terminaux en production |
+| 4 | AWS Secrets Manager | Identifiants PSP et secrets de webhooks, par détenteur des fonds | Faux coffre, refusé en production ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé)** | Nous (mission 12b-1) | Après le compte AWS | Paiements réels |
+| 5 | AWS S3 Object Lock (compte distinct) | Copie du scellement du journal, en écriture unique | Faux (`sealing/fake-seal-copy.ts`), refusé en production ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé)** | Porteur (second compte) + nous | Après le compte AWS | Scellement hors base (SPEC § 13.7) |
 | 6 | AWS CloudWatch (+ OpenTelemetry) | Journaux et mesures | Journal JSON local | Nous | À la mise en ligne | Exploitation |
-| 7 | Wave Business | Recharges mobile money | Faux adaptateur | Porteur (compte) + nous | Quelques semaines | Recharges Wave |
-| 8 | Orange Money (marchand) | Recharges mobile money | Faux adaptateur | Porteur (compte) + nous | **Plusieurs semaines** : à lancer maintenant | Recharges Orange Money |
-| 9 | PayDunya | Carte, agrégateur local | Faux adaptateur | Porteur (accès de test) + nous | Quelques jours à semaines | Carte via agrégateur |
-| 10 | Stripe | Carte, PSP international | Faux adaptateur | Porteur (vérifier XOF et Sénégal) + nous | Incertain : éligibilité à vérifier | Carte internationale |
+| 7 | Wave Business | Recharges mobile money | Faux adaptateur ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé)** | Porteur (compte) + nous | Quelques semaines | Recharges Wave |
+| 8 | Orange Money (marchand) | Recharges mobile money | Faux adaptateur ; **documentation non publique, portail Sonatel par compte : hors périmètre de la mission 12b-1 (D1)** | Porteur (compte) + nous | **Plusieurs semaines** : à lancer maintenant | Recharges Orange Money |
+| 9 | PayDunya | Carte, agrégateur local | Faux adaptateur ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé) ; notification traitée comme un signal** | Porteur (accès de test) + nous | Quelques jours à semaines | Carte via agrégateur |
+| 10 | Stripe | Carte, PSP international | Faux adaptateur ; **prévu : adaptateur conforme, à essayer (mission 12b-1, planifiée, rien n'est codé)** | Porteur (vérifier XOF et Sénégal) + nous | Incertain : éligibilité à vérifier | Carte internationale |
 | 11 | SMS principal local | Codes à usage unique (Orange, Free, Expresso) | Chaîne livrée (mission 10a) avec faux fournisseurs, refusés en production | Porteur (devis, nom d'expéditeur) + nous | 5 à 10 jours pour le nom d'expéditeur (RCCM) | Connexion festivalier |
 | 12 | SMS de repli international | Repli des codes | Idem (mission 10a) | Porteur (devis) + nous | Quelques jours | Fiabilité des codes |
 | 13 | WhatsApp (fournisseur agréé Meta) | Premier canal des codes | Idem (mission 10a) | Porteur (devis, modèle de message) + nous | Validation du modèle par Meta | Codes par WhatsApp |
@@ -66,8 +66,9 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
   autorité des terminaux et signataire des jetons d'appareil (OP-N73).
 - **Aujourd'hui** : faux (`apps/api/src/kms/fake-kms.ts`, clés dérivées d'une graine écrite dans le code). La garde de
   démarrage refuse ce faux en production (`production-guard.spec.ts`).
+- **Mission 12b-1 (planifiée le 26/11/2026, rien n'est codé)** : adaptateur conforme à la documentation de KMS pour les cinq ports (MAC `HMAC_SHA_256`, clé de données `AES_256`, déchiffrement, signature `ECDSA_SHA_256`, administration), droits par processus inchangés ; commande d'essai `npm run essai -w @cashless/api -- kms`. À poser par le porteur : rôle IAM par processus, clés créées par `key-admin`, `AWS_REGION`. Le faux reste refusé en production, et l'adaptateur aussi tant que `kms` n'est pas dans la liste des services essayés.
 - **Comment** : créer les clés dans KMS, donner leur référence à l'API (par exemple `SNAPSHOT_SIGNING_KEY_REF`), écrire
-  les adaptateurs AWS derrière les ports existants (mission 12b), puis lever la garde de production **port par port**,
+  les adaptateurs AWS derrière les ports existants (mission 12b-1), puis lever la garde de production **port par port**,
   seulement pour un adaptateur essayé contre le vrai KMS.
 - **Exception** : la clé de signature des snapshots de la passerelle n'est pas dans KMS (SPEC § 9.4) ; voir § 2.18.
 
@@ -78,7 +79,8 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
   `VENDOR_PIN_CALL_KEY`, `IDEMPOTENCY_HMAC_KEY`, `CLAIM_CODE_HMAC_KEY` et sa version `CLAIM_CODE_HMAC_KEY_VERSION`,
   `ENROLLMENT_CODE_HMAC_KEY`, `CUSTOMER_AUTH_HMAC_KEY` (mission 10a), trousseau de chiffrement des IBAN
   `IBAN_KEYRING` / `IBAN_ACTIVE_KID` (mission 9b)…) et mots de passe des rôles de base.
-- **Comment** : adaptateur AWS derrière le port du coffre (`PSP_SECRET_STORE`), mission 12b ; dépendance vérifiée et
+- **Mission 12b-1 (planifiée le 26/11/2026, rien n'est codé)** : adaptateur conforme à la documentation de Secrets Manager (un secret JSON par configuration, nom `psp/<holder_party_id>/<nom>`, valeur courante et précédente à échéance) ; commande d'essai `npm run essai -w @cashless/api -- psp.secrets` ; à poser par le porteur : les secrets eux-mêmes et le rôle IAM de lecture.
+- **Comment** : adaptateur AWS derrière le port du coffre (`PSP_SECRET_STORE`), mission 12b-1 ; dépendance vérifiée et
   épinglée selon `docs/08-pile-logicielle.md`.
 
 ### 2.5 S3 Object Lock (compte distinct)
@@ -88,7 +90,7 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 - **Aujourd'hui** : port `SealExternalCopy` ; faux `sealing/fake-seal-copy.ts`, refusé en production ; le travailleur
   de scellement recopie les scellements manquants (`sealing/audit-seal.worker.ts`).
 - **Comment** : bucket avec Object Lock activé à la création ; un rôle qui peut seulement écrire ; adaptateur S3
-  derrière le port, mission 12b.
+  derrière le port, mission 12b-1 (planifiée le 26/11/2026, rien n'est codé) : écriture en mode conformité, rétention de 10 ans réglable (`SEAL_COPY_RETENTION_DAYS`), jamais d'écrasement ; à poser par le porteur : `SEAL_COPY_BUCKET`, `AWS_REGION`, rôle d'écriture sans `s3:DeleteObject` ; essai : `... -- seal-copy`.
 
 ### 2.6 Observabilité (CloudWatch, OpenTelemetry)
 
@@ -96,6 +98,16 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
   (`docs/08-pile-logicielle.md` § 1). Aucun secret ni donnée personnelle dans les journaux.
 
 ### 2.7 à 2.10 Prestataires de paiement (Wave, Orange Money, PayDunya, Stripe)
+
+**Mission 12b-1 (planifiée le 26/11/2026, rien n'est codé) : état prévu « adaptateur conforme à la documentation, à essayer » pour Wave, PayDunya et Stripe.** Orange Money : documentation non publique (portail Sonatel par compte), hors périmètre jusqu'à ce que le porteur la fournisse. Chaque adaptateur reste refusé en production jusqu'à un essai réel réussi, puis levé service par service par une PR relue qui ajoute le service à la liste du code (`external-services/production-enabled.ts`, vide au départ).
+
+| Service | À poser (identifiants et clés, jamais dans le dépôt) | Particularité | Essai |
+|---|---|---|---|
+| Wave | clé d'API, secret de webhook (`wave_sn_WHS_…`), facultatif secret de signature des requêtes ; déclarer chez Wave l'URL `https://<api>/v1/webhooks/wave/<psp_config_id>` | notification signée (`Wave-Signature`, ±300 s) | `-- psp.wave` |
+| PayDunya | clé maître, clé privée, jeton ; URL de notification transmise à chaque facture | notification = signal (D2) : crédit seulement après relecture authentifiée ; écart de sécurité à consigner par la mission ; carte sans preuve 3-D Secure : reçue, non créditée (D7) ; ni relevé ni annulation documentés | `-- psp.paydunya` |
+| Stripe | clé secrète (`sk_…`), secret de webhook (`whsec_…`) ; déclarer `https://<api>/v1/webhooks/stripe/<psp_config_id>` | éligibilité d'un marchand établi au Sénégal et devise XOF à vérifier par le porteur (D4) | `-- psp.stripe` |
+
+Commande d'essai : `npm run essai -w @cashless/api -- <service>` (hors production). Le remboursement d'un paiement non crédité reste hors plateforme (D5, OP-N82).
 
 - **À faire (porteur, action 11, ADR-70)** : ouvrir un compte **Wave Business** et un compte **marchand Orange
   Money** (accès de test et documentation des API ; Orange Money prend plusieurs semaines) ; obtenir les accès de test
@@ -197,5 +209,5 @@ message : les clés vont dans AWS KMS, les secrets applicatifs dans AWS Secrets 
 2. **Puis** : mesure de latence, confirmation de la région, compte AWS (et second compte pour le scellement), compte
    développeur Apple, choix du serveur d'identité (avec invitation du personnel) et du matériel de clés de la
    passerelle, banque et exemple de relevé de chaque détenteur des fonds.
-3. **Mission 12b** : tous les adaptateurs réels, chacun essayé contre le bac à sable du service, puis levée de la garde
-   de production port par port.
+3. **Mission 12b-1 (planifiée le 26/11/2026, rien n'est codé)** : adaptateurs conformes de Wave, PayDunya, Stripe, Secrets Manager, KMS et S3 ; puis, hors de cette mission, les fournisseurs non décidés (Orange Money, SMS, WhatsApp, OIDC, matériel de la passerelle, banque). Chaque adaptateur réel est essayé contre le bac à sable du service, puis la garde
+   de production est levée service par service.

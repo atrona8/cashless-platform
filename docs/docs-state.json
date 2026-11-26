@@ -105,6 +105,13 @@
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true
+    },
+    "adaptateurs-fournisseurs-choisis-01M8BXJA": {
+      "statut": "planifiée : plan finalisé le 26/11/2026 (plan commité 64a7f01c, artefacts 944b47ff), rien n'est codé",
+      "verifie_le": "2026-11-26T20:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": false,
+      "spec_index_a_jour": true
     }
   }
 }
