@@ -1,0 +1,289 @@
+{
+  "version": 1,
+  "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+  "mission_branch": "kitty/mission-adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "target_branch": "feat/adaptateurs-fournisseurs-choisis",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "apps/api/jest.config.cjs",
+        "apps/api/package.json",
+        "apps/api/src/config/config.ts",
+        "apps/api/src/psp/http/**",
+        "apps/api/test/support/fake-servers/http-fake.ts",
+        "apps/api/test/support/no-external-network.ts",
+        "apps/api/test/unit/config.spec.ts",
+        "apps/api/test/unit/psp/psp-http.spec.ts",
+        "package-lock.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "apps/api/src/psp/fake/**",
+        "apps/api/src/psp/hmac-signature.ts",
+        "apps/api/src/psp/psp-adapter.port.ts",
+        "apps/api/src/psp/psp-secret-store.port.ts",
+        "apps/api/src/psp/psp.types.ts",
+        "apps/api/src/psp/unavailable/**",
+        "apps/api/test/unit/psp/fake-psp-adapter.spec.ts",
+        "apps/api/test/unit/psp/fake-secret-store.spec.ts",
+        "apps/api/test/unit/psp/hmac-signature.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "apps/api/test/unit/contracts/receive-psp-webhook-12b1.spec.ts",
+        "packages/contracts/dart/lib/**",
+        "packages/contracts/generated/**",
+        "packages/contracts/openapi.yaml",
+        "tools/contract-stability/contract-baseline.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "apps/api/src/attestation/**",
+        "apps/api/test/unit/attestation/**",
+        "docs/passation-12b-1/attestations-comparaison.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "apps/api/src/topups/poller/**",
+        "apps/api/src/topups/psp/psp-status-confirmer.ts",
+        "apps/api/src/topups/psp/psp-topups.module.ts",
+        "apps/api/src/webhooks/**",
+        "apps/api/test/integration/topups/poller-status.spec.ts",
+        "apps/api/test/integration/topups/signal-relecture.spec.ts",
+        "apps/api/test/integration/webhooks/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "apps/api/src/psp/wave/**",
+        "apps/api/test/support/fake-servers/wave.ts",
+        "apps/api/test/unit/psp/wave/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "apps/api/src/psp/paydunya/**",
+        "apps/api/test/support/fake-servers/paydunya.ts",
+        "apps/api/test/unit/psp/paydunya/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "apps/api/src/psp/stripe/**",
+        "apps/api/test/support/fake-servers/stripe.ts",
+        "apps/api/test/unit/psp/stripe/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "apps/api/src/psp/aws/**",
+        "apps/api/test/support/fake-servers/secrets-manager.ts",
+        "apps/api/test/unit/psp/aws/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "apps/api/src/kms/aws/**",
+        "apps/api/src/sealing/s3-seal-copy.ts",
+        "apps/api/test/support/fake-servers/kms.ts",
+        "apps/api/test/support/fake-servers/s3.ts",
+        "apps/api/test/unit/kms/aws/**",
+        "apps/api/test/unit/sealing/s3-seal-copy.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "apps/api/src/external-services/production-enabled.ts",
+        "apps/api/src/external-services/services.ts",
+        "apps/api/src/kms/kms.module.ts",
+        "apps/api/src/kms/production-guard.ts",
+        "apps/api/src/processes/bootstrap.ts",
+        "apps/api/src/psp/psp.module.ts",
+        "apps/api/src/psp/psp.providers.ts",
+        "apps/api/src/sealing/sealing.module.ts",
+        "apps/api/test/unit/architecture.spec.ts",
+        "apps/api/test/unit/external-services/production-enabled.spec.ts",
+        "apps/api/test/unit/kms/kms-module.spec.ts",
+        "apps/api/test/unit/production-guard.spec.ts",
+        "apps/api/test/unit/psp/psp-providers.spec.ts",
+        "apps/gateway/test/e2e/production-refusals.spec.ts",
+        "docs/essais/README.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "apps/api/src/external-services/trial/**",
+        "apps/api/test/unit/external-services/trial/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "PRD.md",
+        "PROMPTS-A-ENVOYER.md",
+        "apps/api/test/integration/invariants-cloture/consignation.spec.ts",
+        "docs/DECISIONS_ADR.md",
+        "docs/POINTS_OUVERTS.md",
+        "docs/SERVICES-EXTERNES.md",
+        "docs/passation-12b-1/note-equipes.md",
+        "docs/passation-12b-1/preuves.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-k",
+        "lane-l"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-26T13:25:58.217012+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "9dba73961d4b147af59735a0ed33d27eaab9bfc2"
+}
