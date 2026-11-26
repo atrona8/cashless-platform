@@ -218,6 +218,7 @@
         "apps/api/src/psp/psp.module.ts",
         "apps/api/src/psp/psp.providers.ts",
         "apps/api/src/sealing/sealing.module.ts",
+        "apps/api/test/integration/topups/real-adapters-credit.spec.ts",
         "apps/api/test/unit/architecture.spec.ts",
         "apps/api/test/unit/external-services/production-enabled.spec.ts",
         "apps/api/test/unit/kms/kms-module.spec.ts",
@@ -282,8 +283,8 @@
       "parallel_group": 4
     }
   ],
-  "computed_at": "2026-11-26T13:25:58.217012+00:00",
+  "computed_at": "2026-11-26T13:28:52.854112+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "9dba73961d4b147af59735a0ed33d27eaab9bfc2"
+  "planning_commit_sha": "426cdf0cc4f219224a57c11d510453ad54025ad2"
 }
