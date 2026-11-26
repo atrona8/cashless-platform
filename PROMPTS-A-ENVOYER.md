@@ -897,6 +897,42 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] /spec-kitty.accept --mission integrations-reelles
 - [ ] spec-kitty merge --mission integrations-reelles
 
+## Mission 12b-1 — Adaptateurs conformes aux documentations des fournisseurs déjà choisis
+
+> **Décidée par le porteur le 26/11/2026** : « si les placeholders des services externes ne prennent pas en compte leur
+> fonctionnement, rends-les conformes à leur documentation en ligne, pour qu'il ne reste qu'à mettre les identifiants et
+> les clés. Pour les fournisseurs pas encore décidés, ne rien faire. » Première partie de la 12b, sans accès extérieur.
+> Constat du 26/11/2026 : le port `PspAdapter` est calqué sur Stripe (HMAC sur `t.corps`, ±300 s, deux secrets) ; Wave
+> signe `t + corps` **sans séparateur**, plusieurs `v1=` en rotation (docs.wave.com/webhook) ; PayDunya prouve l'origine
+> de son IPN par `data[hash] = sha512(clé maître)`, en formulaire, sans corps signé ni horodatage (SDK officiels
+> `paydunyadev/*`, le site de documentation refusant la lecture automatique).
+>
+> **Décisions du porteur du 26/11/2026** : (1) notification PayDunya = simple signal : valeur vérifiée, puis crédit
+> seulement après relecture du statut par `checkout-invoice/confirm/{token}` (appel authentifié par nos clés) ; écart à
+> consigner (OP et ADR) ; (2) garde de production : chaque adaptateur reste **refusé en production** jusqu'à un essai
+> réussi contre le vrai service (commande d'essai fournie par service), levée service par service par une modification
+> relue ; (3) mission Spec Kitty.
+>
+> **Dans le périmètre** : Wave (Checkout API, webhooks signés, relevé `GET /v1/transactions`, remboursement), PayDunya
+> (facture `checkout-invoice/create`, confirmation, IPN), Stripe (PaymentIntents, 3-D Secure, `Stripe-Signature`,
+> remboursement, relevé `balance_transactions` ; éligibilité XOF/Sénégal à vérifier par le porteur), AWS Secrets Manager
+> (`PspSecretStore`), AWS KMS (`MacPort`, `DataKeyPort`, `DecryptPort`, `SignPort`, `KeyAdminPort`), S3 Object Lock
+> (`SealExternalCopy`). Vérifier aussi que l'attestation Android et Apple App Attest, déjà branchées, suivent les
+> documentations de Google et d'Apple.
+> **Hors périmètre (fournisseur non choisi ou documentation non publique)** : Orange Money (documentation derrière un
+> compte du portail Sonatel `developer.orange-sonatel.com` ; à ajouter dès que le porteur la fournit), SMS et WhatsApp,
+> serveur d'identité OIDC, matériel de clés de la passerelle, banque. Les faux de ces services restent tels quels.
+
+- [ ] /spec-kitty.specify Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis (SPECIFICATION §10.3, §11.1, §13.2, §13.7, ADR-65, ADR-70, ADR-72, ADR-131) : Wave, PayDunya, Stripe derrière `PspAdapter` (le port suit chaque fournisseur : mécanisme de notification propre, rotation, tolérance) ; AWS Secrets Manager, AWS KMS et S3 Object Lock derrière leurs ports. Seuls identifiants et clés restent à poser. Refus en production maintenu jusqu'à l'essai réel de chaque service ; une commande d'essai par service. PayDunya : notification = signal, crédit après confirmation par l'API.
+- [ ] /spec-kitty.plan Dépendances (`@aws-sdk/client-kms`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/client-s3`, client HTTP) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; vecteurs de signature tirés des documentations (exemples officiels) ; aucun appel réseau en test (serveurs locaux simulant les réponses documentées) ; écart PayDunya consigné (OP, ADR, test de borne).
+- [ ] /spec-kitty.tasks
+- [ ] spec-kitty next --agent claude --mission [slug réel]
+- [ ] /spec-kitty.review --mission [slug réel]
+- [ ] /spec-kitty.accept --mission [slug réel]
+- [ ] spec-kitty consolidate --mission [slug réel]
+
+---
+
 ## Mission 13 — Recette V1
 
 > **Hérité de la 11b (25/11/2026, ADR-236)** : relevé des limites OP-N185 à OP-N198 : jouer la matrice `x-roles` complète

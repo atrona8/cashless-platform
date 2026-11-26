@@ -243,6 +243,11 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   (mission 6). Adaptateurs Wave, Orange Money, PayDunya, Stripe et coffre AWS des secrets : mission « Adaptateurs
   PSP réels », dès les accès de test obtenus (décision du porteur du 27/10/2026, OP-N81, ADR-131) ; d'ici là, aucune
   recharge en ligne en production. Remboursement au payeur d'un paiement non crédité : hors plateforme (OP-N82). (§11.1)
+- Mission 12b-1 (décision du porteur du 26/11/2026) : adaptateurs Wave, PayDunya et Stripe conformes à leur
+  documentation publique (le port suit le mécanisme de notification de chaque fournisseur), coffre AWS Secrets Manager,
+  KMS et S3 Object Lock ; il ne reste qu'identifiants et clés à poser. Chaque adaptateur reste refusé en production
+  jusqu'à un essai réel réussi. PayDunya : notification traitée comme un signal, crédit après confirmation par son API.
+  Orange Money attend sa documentation (portail Sonatel, accès par compte). (§11.1, §13.2, §13.7)
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
@@ -415,6 +420,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        porteur le 25/11/2026 ; hérite d'OP-N185 et d'OP-N196 : les 13 types non classables, type par type, et le contrôle de l'auteur du
        classement par la base).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
+12b-1. Adaptateurs conformes aux documentations des fournisseurs déjà choisis (26/11/2026)
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1
 
