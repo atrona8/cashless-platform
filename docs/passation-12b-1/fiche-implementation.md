@@ -114,3 +114,9 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   en production (mode absent = `real`), c'est `createSealCopy` qui refuse de démarrer sans compartiment, et seulement
   dans les processus qui construisent la copie (scellement). Tester les deux cas. `PspHttpClient` accepte un 2e
   paramètre facultatif `sleep` (tests).
+- **WP13 (relecture de WP01, approuvé le 26/11/2026)** : consigner (OP, limite des tests) que la garde réseau
+  `test/support/no-external-network.ts` se contourne par `http.request({ host: 'localhost', lookup: <personnalisé> })`
+  (rien dans la mission ne l'utilise) ; durcissement proposé : refuser `options.lookup` ou contrôler l'adresse résolue.
+  Fichiers à faire relire par une personne : `no-external-network.ts`, `package-lock.json`.
+- **Tous les lots (orchestrateur)** : les dépendances de WP01 sont installées dans le checkout principal
+  (`node_modules`, sans changement de fichier suivi) ; une lane qui fusionne la lane a les résout donc.
