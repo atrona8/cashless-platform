@@ -148,3 +148,8 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   « sans correspondance » (`UNMATCHED`, nouvelles tentatives, anomalie `UNMATCHED_EXPIRED` à 24 h), comme les autres
   litiges ; le cycle 2 (journal seul) retirait ce contrôle et a été refusé. **WP13** : à mentionner dans l'ADR du
   litige Stripe. `event-dispatcher.ts` modifié hors carte par WP03 (à surveiller à la fusion).
+- **WP13 (relecture de WP03 cycles 2-3, approuvé le 26/11/2026)** : consigner (OP, limites des tests) : aucun test ne
+  prouve l'absence de transaction ouverte pendant `resolvePaymentReference` (vérifié par lecture) ; cas limite où la
+  borne d'une résolution par minute coïncide avec la reprise des 24 h (litige rattachable devenu anomalie : échec
+  sûr, à traiter à la main) ; mutation survivante sur le contrôle « déjà vu » de `expireUnmatchedDispute` (code
+  antérieur). Fichiers à faire relire par une personne : `psp-status-confirmer.ts`, `event-dispatcher.ts`.
