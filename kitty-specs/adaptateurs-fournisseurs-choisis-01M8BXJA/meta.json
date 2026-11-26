@@ -13,5 +13,7 @@
   "purpose_tldr": "Rendre les adaptateurs Wave, PayDunya, Stripe et AWS conformes à leur documentation publique, pour qu'il ne reste qu'identifiants et clés à poser.",
   "slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
   "target_branch": "feat/adaptateurs-fournisseurs-choisis",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-26T13:31:21.717046+00:00"
 }
