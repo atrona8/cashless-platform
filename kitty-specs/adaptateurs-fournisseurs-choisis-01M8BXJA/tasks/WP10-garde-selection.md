@@ -14,6 +14,9 @@ branch_strategy: >-
   Planning artifacts for this mission were generated on feat/adaptateurs-fournisseurs-choisis. During
   /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must
   merge back into feat/adaptateurs-fournisseurs-choisis unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-adaptateurs-fournisseurs-choisis-01M8BXJA
+base_commit: 8c1e6a50319d770a90d1669d6a4206711a4b1d14
+created_at: '2026-11-26T16:04:37.498756+00:00'
 subtasks: [T043, T044, T045, T046, T047]
 phase: Phase 3 - Garde, essais, consignation
 agent: claude
