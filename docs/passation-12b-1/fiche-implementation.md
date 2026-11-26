@@ -84,3 +84,12 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
 
 ## Consignes issues de l'analyse et des relectures
 (Complété par l'orchestrateur au fil de la mission.)
+- **Analyse (26/11/2026, verdict `ready` après corrections `426cdf0c`)** :
+  - **WP08 (L4)** : un secret PayDunya dont `notification` diffère de `credentials.master_key` est refusé
+    (`REF_INVALID`), avec un test et sa mutation.
+  - **WP01 (L3)** : une suite existante qui appelle le réseau n'est jamais affaiblie ; nomme-la dans ta note de lane,
+    l'orchestrateur décide.
+  - **WP03 (L5)** : le cas « JSON envoyé à `/webhooks/paydunya` » de T015 passe par le faux du registre de test ; la
+    preuve réelle est en WP06 et WP10.
+  - **Règle de production (I1, fait foi)** : en production, réglage absent = `real` ; `fake` posé → refus ; `real` hors
+    liste : PSP et coffre indisponibles (démarrage permis), KMS et copie des scellements refusent de démarrer.
