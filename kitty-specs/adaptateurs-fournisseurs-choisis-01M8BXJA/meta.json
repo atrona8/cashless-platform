@@ -1,0 +1,17 @@
+{
+  "coordination_branch": "kitty/mission-adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "created_at": "2026-11-26T12:33:57.440894+00:00",
+  "flattened": false,
+  "friendly_name": "Mission 12b-1 : adaptateurs conformes aux documentations des fournisseurs choisis",
+  "mid8": "01M8BXJA",
+  "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+  "mission_number": null,
+  "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Les faux des services externes suivent un modèle générique (calqué sur Stripe) qui ne correspond pas au fonctionnement réel de Wave ou de PayDunya. Le porteur veut des adaptateurs conformes aux documentations des fournisseurs déjà choisis (PSP et AWS), refusés en production jusqu'à un essai réel, sans toucher aux fournisseurs pas encore décidés.",
+  "purpose_tldr": "Rendre les adaptateurs Wave, PayDunya, Stripe et AWS conformes à leur documentation publique, pour qu'il ne reste qu'identifiants et clés à poser.",
+  "slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "target_branch": "feat/adaptateurs-fournisseurs-choisis",
+  "topology": "coord"
+}
