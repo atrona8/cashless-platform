@@ -144,3 +144,7 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   exempté de sa date de fin (dans la racine exemptée).
 - **Orchestrateur** : `test/integration/webhooks/receive.spec.ts` a échoué une fois (3 tests, « request entity too
   large ») sur la lane l, vert en relance isolée ; à surveiller sur la lane c (WP03) et à la fusion.
+- **Décision du porteur (26/11/2026, WP03 cycle 3)** : un litige Stripe non rattaché par relecture garde la voie
+  « sans correspondance » (`UNMATCHED`, nouvelles tentatives, anomalie `UNMATCHED_EXPIRED` à 24 h), comme les autres
+  litiges ; le cycle 2 (journal seul) retirait ce contrôle et a été refusé. **WP13** : à mentionner dans l'ADR du
+  litige Stripe. `event-dispatcher.ts` modifié hors carte par WP03 (à surveiller à la fusion).
