@@ -100,3 +100,7 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   d'usine expirés sous la racine `f92009e853b6b045` : refus gardé, échec fermé) et, en mineur, l'aaguid de production
   admis en environnement `development`. Fichiers à faire relire par une personne : `android-key-attestation.ts`,
   `ios-app-attest.ts`, `ios-app-attest-assertion.ts`.
+- **WP13 (WP04, 26/11/2026)** : écrire l'ADR de D9 (ajout rétrocompatible à `receivePspWebhook` : contenu en
+  formulaire, description par fournisseur, description de `pspHmac`) avec la ligne « Décision du porteur : 26/11/2026 »
+  lue par `check-baseline-decision.mjs` (aujourd'hui satisfait par ADR-169 seulement). Fichier à faire relire par une
+  personne : `tools/contract-stability/contract-baseline.json`.
