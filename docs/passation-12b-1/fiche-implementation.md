@@ -134,3 +134,7 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   anomalie sans correspondance, comme aujourd'hui).
 - **Stripe, session `open` après un refus** : reste `PENDING` (le payeur peut réessayer) ; l'orchestrateur corrige le
   tableau de `contracts/psp-fournisseurs.md`.
+- **WP03 cycle 2 (après l'approbation de WP07 cycle 2)** : brancher le litige Stripe (ci-dessus) ; et, issus de la
+  relecture de WP03 (approuvé le 26/11/2026) : relecture déclenchée aussi sur `close` de la réponse (connexion coupée
+  avant `finish`), avec un test ; borne par minute posée seulement après une relecture aboutie (`APPLIED`/`PENDING`), pas
+  après `FAILED` ; fichier à faire relire par une personne : `psp-status-confirmer.ts`.
