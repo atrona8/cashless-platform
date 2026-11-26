@@ -1,9 +1,13 @@
 # Cas d'usage : mission adaptateurs-fournisseurs-choisis-01M8BXJA
 
 > État : **plan finalisé le 26/11/2026 (plan commité `64a7f01c`, artefacts `944b47ff`) : PLANIFIÉ, rien n'est codé**. Décisions D1 à D9 du porteur du 26/11/2026.
-> Aucun diagramme de cas d'usage pour cette mission : consigne de l'orchestrateur, un seul diagramme au plus (la séquence du signal PayDunya, voir [`sequence.md`](sequence.md)). Les cas d'usage sont décrits par le tableau ci-dessous.
+> Diagramme `/illustre` (police sans empattement, rendu relu), source et générateur dans [`diagrams/`](diagrams/) (`generate.py`).
 
 ## Cas d'usage propres à cette mission
+
+![Cas d'usage des adaptateurs des fournisseurs choisis](diagrams/usecase-adaptateurs-fournisseurs.png)
+
+Sources : [`usecase-adaptateurs-fournisseurs.excalidraw`](diagrams/usecase-adaptateurs-fournisseurs.excalidraw), [`usecase-adaptateurs-fournisseurs.svg`](diagrams/usecase-adaptateurs-fournisseurs.svg).
 
 | Cas d'usage | Acteur | Règle prévue | Opération concernée |
 |---|---|---|---|
@@ -22,5 +26,5 @@ Hors périmètre : Orange Money (D1, documentation derrière un compte Sonatel),
 Contribue à : `docs/02-use-case-diagram.md`, domaine « Argent réel : PSP, caisses, rapprochements, versements » (recharges Wave, PayDunya, Stripe, rapprochement) ; aucun domaine nouveau, aucun renommage ni fusion de cas d'usage globaux. Les cas « ranger les identifiants » et « essayer puis passer en production » sont des actions du porteur, décrites dans `docs/SERVICES-EXTERNES.md`.
 
 ## Nécessaire pour cette mission ? Oui : sept cas d'usage de recharge, de coffre et de mise en production, dont un parcours (le signal) qui diffère des autres PSP (proposition de l'Agent, en attente de confirmation du porteur).
-## Complet ? Oui pour le plan (26/11/2026) : sept cas d'usage, acteurs festivalier, prestataire et porteur, hors périmètre listé ; pas de diagramme de cas d'usage (consigne de l'orchestrateur : un diagramme au plus, la séquence) (proposition de l'Agent, en attente de confirmation du porteur).
+## Complet ? Oui pour le plan (26/11/2026) : sept cas d'usage, acteurs festivalier, prestataire et porteur, hors périmètre listé ; diagramme `/illustre` généré et relu (proposition de l'Agent, en attente de confirmation du porteur).
 ## Validé par : proposition de l'Agent le 26/11/2026, en attente de confirmation du porteur.

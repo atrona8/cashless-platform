@@ -90,6 +90,12 @@ files=[]
 P=lambda k,l,s='neutral':(k,l,s)
 spec=importlib.util.spec_from_file_location('r',RENDER); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 r._FONT_FAMILY="Helvetica Neue, Helvetica, Arial, sans-serif"; r._font_face_css=lambda: ""
+files.append(usecase('usecase-adaptateurs-fournisseurs','Adaptateurs des fournisseurs choisis : qui recharge, qui pose les clés','Wave, PayDunya, Stripe, coffre AWS, KMS, S3 ; chaque service refusé en production jusqu’à son essai réel',
+ ['Festivalier','Prestataire','Porteur'],
+ [('Recharger par Wave','primary'),('Recharger par PayDunya','primary'),('Recharger par carte Stripe','primary'),('Rapprocher les paiements','second'),('Ranger les identifiants au coffre','accent'),('Clés et scellements sur AWS','accent'),('Essayer puis lever la garde','accent')],
+ [('Festivalier','Recharger par Wave'),('Festivalier','Recharger par PayDunya'),('Festivalier','Recharger par carte Stripe'),('Prestataire','Rapprocher les paiements'),
+  ('Porteur','Ranger les identifiants au coffre'),('Porteur','Clés et scellements sur AWS'),('Porteur','Essayer puis lever la garde')],
+ note="Planifié le 26/11/2026, rien n’est codé. Décisions D1 à D9 du porteur : Orange Money hors périmètre, PayDunya traité comme un signal,\nrefus en production jusqu’à l’essai réel (liste dans le code, PR relue), remboursement d’un paiement non crédité hors plateforme.",H=800))
 files.append(sequence('sequence-signal-relecture-credit','Signal, relecture, puis crédit (PayDunya)','La notification ne prouve pas son contenu : seule la relecture authentifiée peut créditer',
  [P('f','PayDunya','data'),P('a','API (réception)','primary'),P('d','Base'),P('w','Travailleur d’interrogation','accent')],
  [('f','a','Notification (formulaire, data[hash])'),('a','a','Preuve d’origine fausse ? refus, rien conservé','self'),
