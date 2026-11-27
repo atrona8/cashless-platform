@@ -1,8 +1,8 @@
 # Intégration continue — `ledger-tests`
 
 Workflow : [`.github/workflows/ledger-tests.yml`](workflows/ledger-tests.yml). Deux jobs, tous deux sur
-`ubuntu-24.04` avec un service `postgres:17`, déclenchés à chaque `push` et `pull_request` (une exécution par branche :
-la précédente est annulée) : `ledger` (étapes ci-dessous, arrêté au bout de **45 minutes**) et `gateway-e2e` (mission
+`ubuntu-24.04` avec un service `postgres:17`, déclenchés par chaque `pull_request` et chaque `push` sur `main` (depuis le 27/11/2026 ; une exécution par branche :
+la précédente est annulée) : `ledger` (étapes ci-dessous, arrêté au bout de **90 minutes**) et `gateway-e2e` (mission
 passerelle-locale, preuves de bout en bout de la passerelle, arrêté au bout de **90 minutes**, voir plus bas). Chaque
 job échoue à la première étape rouge.
 
@@ -10,6 +10,27 @@ job échoue à la première étape rouge.
 > [37771506938](https://github.com/atrona8/cashless-platform/actions/runs/37771506938), commit `ea20434`, toutes
 > les étapes vertes). Les étapes avaient d'abord été répétées en local, dans l'ordre, sur le cluster privé (voir plus
 > bas).
+
+## Délais et coût (relevé du 27/11/2026)
+
+- **Exécuteurs** (référence GitHub, « GitHub-hosted runners ») : `ubuntu-24.04` a **4 vCPU et 16 Go** pour un dépôt
+  public, **2 vCPU et 8 Go** pour un dépôt privé. Le dépôt est privé depuis le 27/11/2026 : le job `ledger` est passé
+  de 43 min à 50-58 min, et le banc de débit de la passerelle (NFR-001, plancher de 100 débits/s) a mesuré une fois
+  85/s.
+- **Minutes** (plan Free) : l'usage est gratuit et sans limite pour un dépôt public ; pour un dépôt privé, 12 USD de
+  calcul inclus par mois (environ 2 000 minutes Linux 2 cœurs), puis blocage sans moyen de paiement. Une exécution
+  complète coûte environ 75 minutes (`ledger` 55 + `gateway-e2e` 16) ; avant le 27/11/2026, chaque push d'une branche
+  avec PR en lançait deux (push et PR), soit environ 150 minutes.
+- **Durées par étape** (`ledger`, exécution 46005921995) : tests Jest 23 min, latences hors ligne 12,5 min,
+  intégration de la passerelle 5 min, pgTAP 1,5 min, le reste moins d'une minute chacun. `gateway-e2e` : preuves de
+  bout en bout 14 min, balayage de l'image 1 min.
+- **Fait** : une seule exécution par changement (PR, fusion dans `main`) ; délai du job `ledger` à 90 min.
+- **Pistes, non faites** (à décider) : (1) découper `ledger` en jobs parallèles (Jest, latences, passerelle), chacun
+  avec son service PostgreSQL : environ 25 min d'attente au lieu de 55, mais un peu plus de minutes au total
+  (installation répétée) ; (2) répartir Jest avec `--shard` sur une matrice : même compromis ; (3) cache npm
+  (`actions/setup-node` avec `cache: npm`) : gain de l'ordre d'une minute par job ; (4) lancer les mesures de latence
+  (12,5 min) seulement sur `main` et à la demande, pas sur chaque PR : gain réel, mais un contrôle de plus seulement
+  après fusion ; (5) redevenir public : 4 cœurs et minutes gratuites.
 
 ## Étapes
 

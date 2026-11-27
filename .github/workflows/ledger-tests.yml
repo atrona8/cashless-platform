@@ -17,7 +17,12 @@
 # séparé `gateway-e2e` (preuves de bout en bout en série, image construite puis balayée, NFR-001 à 100
 # débits/s). Toutes les actions tierces sont épinglées par SHA de commit (test ci-workflow.spec.ts).
 name: ledger-tests
-on: [push, pull_request]
+# Une seule exécution par changement (27/11/2026, dépôt privé : minutes comptées) : chaque PR et chaque fusion dans
+# `main`. Un push sur une branche sans PR ne lance plus rien (avant : deux exécutions identiques, push et PR).
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,8 +31,8 @@ concurrency:
 jobs:
   ledger:
     runs-on: ubuntu-24.04
-    # 60 min : la batterie dure de 43 à 45 min depuis la mission 12b-1 (run annulé à 45 min le 27/11/2026).
-    timeout-minutes: 60
+    # 90 min : 43 min sur un exécuteur à 4 cœurs (dépôt public), 50 à 58 min sur 2 cœurs (dépôt privé, 27/11/2026).
+    timeout-minutes: 90
     services:
       postgres:
         image: postgres:17
