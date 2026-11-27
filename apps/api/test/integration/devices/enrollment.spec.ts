@@ -850,7 +850,14 @@ describe('aucun faux d’attestation en production (relecture WP10)', () => {
     },
   };
   const compile = (attestation?: object) => {
-    const config: AppConfig = { ...loadConfig(), production: true, androidAttestationRoots: null };
+    // Règle I1 : `real` hors PRODUCTION_ENABLED_SERVICES = PSP et coffre indisponibles, démarrage
+    // permis ; `fake` serait refusé (et nommé) avant le faux d'attestation que ce test isole.
+    const config: AppConfig = {
+      ...loadConfig(),
+      production: true,
+      androidAttestationRoots: null,
+      externalModes: { psp: 'real', pspSecrets: 'real', kms: 'real', sealCopy: 'real' },
+    };
     const builder = Test.createTestingModule({ imports: [PublicProcessModule] })
       .overrideProvider(APP_CONFIG)
       .useValue(config)

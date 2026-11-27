@@ -50,6 +50,7 @@ export class PspSimulationService {
       throw conflict(`Cette recharge est déjà ${row.status} : elle ne peut plus être simulée.`);
     }
     const secrets = await this.secrets.get({
+      provider: row.provider as PspProviderName,
       configurationId: row.configurationId,
       holderPartyId: found.config.holder_party_id,
       secretRef: found.config.secret_ref,

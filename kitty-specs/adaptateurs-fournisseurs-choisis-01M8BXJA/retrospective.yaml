@@ -1,0 +1,230 @@
+schema_version: 1
+mission_id: 01M8BXJA32Q43G7G9PBG231J2X
+mission_slug: adaptateurs-fournisseurs-choisis-01M8BXJA
+mission_number: 10
+friendly_name: 'Mission 12b-1 : adaptateurs conformes aux documentations des fournisseurs choisis'
+mission_type: software-dev
+target_branch: feat/adaptateurs-fournisseurs-choisis
+created_at: '2026-11-27T11:37:24.934232+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-27T11:37:24.934232+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-003
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-004
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-005
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-018
+- id: h-006
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-018
+not_helpful:
+- id: n-009
+  category: doc
+  summary: analysis-report.md records 3 finding(s)
+  evidence_refs:
+  - e-027
+  details: The analysis-report.md artifact for this mission records 3 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-008
+  category: process
+  summary: WP13 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-026
+  details: WP WP13 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP03 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP04 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-020
+  details: WP WP04 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-021
+  details: WP WP05 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP07 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-022
+  details: WP WP07 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP10 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-023
+  details: WP WP10 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-006
+  category: review_loop
+  summary: WP12 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-024
+  details: WP WP12 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-007
+  category: review_loop
+  summary: WP13 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-025
+  details: WP WP13 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP01-socle.md
+- id: e-006
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP02-port-psp.md
+- id: e-007
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP03-reception-relecture.md
+- id: e-008
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP04-contrat.md
+- id: e-009
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP05-wave.md
+- id: e-010
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP06-paydunya.md
+- id: e-011
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP07-stripe.md
+- id: e-012
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP08-secrets-manager.md
+- id: e-013
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP09-kms-s3.md
+- id: e-014
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP10-garde-selection.md
+- id: e-015
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP11-essais.md
+- id: e-016
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP12-attestations.md
+- id: e-017
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP13-consignation.md
+- id: e-018
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+- id: e-019
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8C84VC7NFJT69159HCG4V1B..01M8C8P8H2HZRNNMTNWZ33HK5R
+- id: e-020
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8C3F3S71QDG2HVZ6P03K793
+- id: e-021
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8C6S1AES9F3TRBMST9G72TZ
+- id: e-022
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8C6SACWXYZ4B2HQPDKN0DKK
+- id: e-023
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8CB28ETT2G4KD1CHZK1217D
+- id: e-024
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8C6RCY9BTNTCXDMC6NH70XT
+- id: e-025
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8E862EHVVF2T4TWS2KM6DR0
+- id: e-026
+  kind: event_range
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/status.events.jsonl
+  range: 01M8EAEW8E7B9WFGBTZ9Y18W5A
+- id: e-027
+  kind: file
+  path: kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

@@ -76,10 +76,15 @@ export interface PspStatusResult {
   payment: NormalizedPayment | null;
 }
 
-/** Signature seulement : le relevé est livré avec les adaptateurs réels. */
 export interface PspStatementLine {
   reference: string;
+  providerPaymentRef: string | null;
   amount: bigint;
+  fee: bigint;
   currency: string;
   date: Date;
+  reversal: boolean;
 }
+
+/** `supported: false` : le fournisseur n'offre pas de relevé, le rapprochement reste manuel. */
+export type PspStatement = { supported: true; lines: PspStatementLine[] } | { supported: false };

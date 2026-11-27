@@ -17,10 +17,14 @@
     "start:snapshot-signer": "node --require tsx/cjs dist/main.snapshot-signer.js",
     "start:key-admin": "node --require tsx/cjs dist/main.key-admin.js",
     "start:snapshot-content": "node --require tsx/cjs dist/main.snapshot-content.js",
+    "essai": "tsx src/external-services/trial/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest"
   },
   "dependencies": {
+    "@aws-sdk/client-kms": "3.1172.0",
+    "@aws-sdk/client-s3": "3.1172.0",
+    "@aws-sdk/client-secrets-manager": "3.1172.0",
     "@cashless/shared-rules": "0.0.0",
     "@cashless/tag-format": "0.0.0",
     "@nestjs/common": "11.2.7",
@@ -31,6 +35,7 @@
     "@peculiar/asn1-x509": "2.10.0",
     "@peculiar/x509": "2.1.0",
     "argon2": "0.44.0",
+    "axios": "1.21.1",
     "canonicalize": "5.1.0",
     "cbor2": "2.3.0",
     "jose": "6.2.12",

@@ -1,3 +1,4 @@
+import type { Type } from '@nestjs/common';
 // Les cinq processus (mission bracelets-nfc, research R-01) : chacun démarre avec son rôle de base et ses seuls droits
 // sur le service de clés ; aucun ne démarre en production avec un faux (NFR-010).
 import { Test } from '@nestjs/testing';
@@ -9,7 +10,7 @@ import { DEVICE_IDENTITY } from '../../src/device-identity/device-identity.port'
 import { FakeKms } from '../../src/kms/fake-kms';
 import { KMS_PROVIDER } from '../../src/kms/kms.module';
 import { DATA_KEY_PORT, DECRYPT_PORT, KEY_ADMIN_PORT, MAC_PORT } from '../../src/kms/kms.ports';
-import { FakeInProductionError } from '../../src/kms/production-guard';
+import { FakeInProductionError, UntriedInProductionError } from '../../src/kms/production-guard';
 import { assertProcessIsSafe } from '../../src/processes/bootstrap';
 import { KeyAdminProcessModule } from '../../src/processes/key-admin.module';
 import { PersonalizationProcessModule } from '../../src/processes/personalization.module';
@@ -177,17 +178,54 @@ describe('aucun faux en production (démarrage réel)', () => {
     Object.assign(process.env, saved);
   });
 
+  // Cause exacte du refus par processus : classe d'erreur, et l'élément fautif (faux nommé, ou service non essayé).
   it.each([
-    ['API publique', PublicProcessModule],
-    ['clés de bracelet', TagKeysProcessModule],
-    ['personnalisation', PersonalizationProcessModule],
-    ['contrôle quotidien', TagCheckProcessModule],
-    ['commande d’administration', KeyAdminProcessModule],
-  ])('%s : refuse de démarrer en production tant que seul un faux existe', async (_name, root) => {
-    await expect(Test.createTestingModule({ imports: [root] }).compile()).rejects.toThrow(
+    [
+      'API publique',
+      PublicProcessModule,
       FakeInProductionError,
-    );
-  });
+      /le signataire des jetons d’appareil est un faux/,
+    ],
+    [
+      'clés de bracelet',
+      TagKeysProcessModule,
+      FakeInProductionError,
+      /le signataire des jetons d’appareil est un faux/,
+    ],
+    [
+      'personnalisation',
+      PersonalizationProcessModule,
+      UntriedInProductionError,
+      /kms n'a pas été essayé/,
+    ],
+    [
+      'contrôle quotidien',
+      TagCheckProcessModule,
+      UntriedInProductionError,
+      /kms n'a pas été essayé/,
+    ],
+    [
+      'commande d’administration',
+      KeyAdminProcessModule,
+      UntriedInProductionError,
+      /kms n'a pas été essayé/,
+    ],
+  ] as Array<[string, Type<unknown>, new (...a: never[]) => Error, RegExp]>)(
+    '%s : refuse de démarrer en production, pour la cause attendue',
+    async (_name, root, errorClass, culprit) => {
+      // Mission 12b-1 : le service de clés non réglé vaut `real` en production, refusé tant que `kms` n'est pas dans la
+      // liste des services essayés ; un processus sans KMS reste refusé pour son faux.
+      const error = await Test.createTestingModule({ imports: [root] })
+        .compile()
+        .then(
+          () => null,
+          (e: unknown) => e as Error,
+        );
+      expect(error).toBeInstanceOf(errorClass);
+      expect(error?.constructor).toBe(errorClass);
+      expect(error?.message).toMatch(culprit);
+    },
+  );
 
   // Contradiction signalée (WP07, R-20/A5) : le processus public ne démarre pas en production, mais
   // à cause de l'identité du festivalier seule (préexistante) ; les ports PSP n'ajoutent aucun refus.

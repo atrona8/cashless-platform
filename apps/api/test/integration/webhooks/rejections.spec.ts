@@ -2,10 +2,11 @@
 // livre ni au registre brut : seulement le compteur sans corps, un journal et une alerte bornée.
 import { randomUUID } from 'node:crypto';
 import { TenantTx } from '../../../src/db/tenant-tx';
-import { computeSignature } from '../../../src/psp/hmac-signature';
+import { computeSignature, FAKE_SCHEME } from '../../../src/psp/hmac-signature';
 import { PspAdapterRegistry } from '../../../src/psp/psp-adapter-registry';
 import { Secret } from '../../../src/psp/secret';
 import { UnavailablePspSecretStore } from '../../../src/psp/unavailable/unavailable-psp';
+import { PspStatusConfirmer } from '../../../src/topups/psp/psp-status-confirmer';
 import { EventDispatcher } from '../../../src/webhooks/event-dispatcher';
 import { WebhookIntake } from '../../../src/webhooks/webhook-intake.service';
 import { WebhookRejections } from '../../../src/webhooks/webhook-rejections';
@@ -264,7 +265,7 @@ describe('notifications refusées', () => {
     const secret = await w.secretOf('WAVE');
     const ts = Math.floor(Date.now() / 1000);
     const body = '{"valide":"json mais pas une notification"}';
-    const signature = computeSignature(Secret.of(secret), ts, Buffer.from(body));
+    const signature = computeSignature(Secret.of(secret), ts, Buffer.from(body), FAKE_SCHEME);
     const before = await w.footprint();
     const res = await w.raw(body, { 'wave-signature': `t=${ts},v1=${signature}` });
     expect(res.status).toBe(400);
@@ -288,6 +289,7 @@ describe('notifications refusées', () => {
       app.get(TenantTx, { strict: false }),
       app.get(WebhookRejections, { strict: false }),
       app.get(EventDispatcher, { strict: false }),
+      app.get(PspStatusConfirmer, { strict: false }),
       new PspAdapterRegistry([], false),
       new UnavailablePspSecretStore(),
     );

@@ -7,6 +7,7 @@ import { AuditService, type AuditContext } from '../audit/audit.service';
 import { TenantTx, type TxClient } from '../db/tenant-tx';
 import { isSqlError } from '../errors/sqlstate-map';
 import type { NormalizedNotification } from '../psp/psp.types';
+import { PspStatusConfirmer } from '../topups/psp/psp-status-confirmer';
 import type { PaymentOutcome, PaymentResult } from '../topups/psp/psp-payment-types';
 import { PspPaymentProcessor } from '../topups/psp/psp-payment-processor';
 import { errorReason, logPspAlert } from './psp-alert-log';
@@ -51,6 +52,7 @@ export class EventDispatcher {
     private readonly processor: PspPaymentProcessor,
     private readonly audit: AuditService,
     @Optional() @Inject(PSP_DISPUTE_HANDLER) private readonly disputes?: DisputeHandler,
+    @Optional() private readonly confirmer?: PspStatusConfirmer,
   ) {}
 
   /** Aiguillage dans la transaction de l'appelant (aucune écriture de l'événement ici). */
@@ -106,6 +108,15 @@ export class EventDispatcher {
     options: { expireUnmatched?: boolean } = {},
   ): Promise<EventResult> {
     let result: DispatchOutcome | 'ALREADY_PROCESSED';
+    // Litige « à relire » (sans référence marchande) : rattaché par relecture du PSP, HORS transaction (R-12). Non
+    // rattaché, il garde sa forme d'origine : `UNMATCHED`, retenté, anomalie à 24 h (jamais marqué traité avant).
+    if (
+      notification.kind === 'DISPUTE' &&
+      notification.payment.merchantReference === null &&
+      this.confirmer !== undefined
+    )
+      notification =
+        (await this.confirmer.resolveDispute(event.configurationId, notification)) ?? notification;
     try {
       result = await this.tx.run(event.operatorId, async (client) => {
         await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [

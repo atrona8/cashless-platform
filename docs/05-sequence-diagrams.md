@@ -15,6 +15,7 @@
 > Complément du 25/11/2026 (mission 11b, relue le 25/11/2026 (11 lots sur 11 approuvés ; WP11 au cycle 2, `e32df355`, tout le code réuni dans la lane k), non acceptée, non fusionnée) : deux flux locaux recalés sur le code (classement d'une anomalie, recherche par numéro), diagrammes régénérés et relus ; flux globaux non redessinés.
 > Recalé le 23/11/2026 : mission 10a relue (11 lots sur 11 approuvés), non fusionnée ; les trois diagrammes locaux sont régénérés sur le code réel (fichier de réémission à cinq colonnes, plafond de 35 s sans repli, révocation d'une identification déjà révoquée refusée à l'exécution) ; flux global non redessiné.
 > Complément du 20/11/2026 : mission 10a (serveur de l'app festivalier), plan finalisé le 20/11/2026 : trois flux internes nouveaux, identification et révocation à deux, chaîne d'envoi des codes (WhatsApp, SMS principal, SMS de repli), rotation du secret des codes de rattachement et réémission (diagrammes locaux `sequence-kyc`, `sequence-chaine-codes`, `sequence-rotation`). Aucun flux global à redessiner au plan.
+> Complément du 26/11/2026 (mission 12b-1, plan finalisé, **review du 27/11/2026, recalé sur le code**) : un flux local nouveau, « Signal, relecture, puis crédit » (PayDunya ; Stripe carte pour la relecture), diagramme `/illustre` dans le détail local ; le flux global « Recharge mobile money » est complété d'un renvoi, non redessiné.
 
 ## Flux : Paiement en ligne par bracelet (un seul aller-retour, §7.6)
 
@@ -64,6 +65,8 @@ Sources : [`sequence-bascule-passerelle.excalidraw`](diagrams/sequence-bascule-p
 ![Recharge mobile money](diagrams/sequence-recharge-mobile-money.png)
 
 Sources : [`sequence-recharge-mobile-money.excalidraw`](diagrams/sequence-recharge-mobile-money.excalidraw), [`sequence-recharge-mobile-money.svg`](diagrams/sequence-recharge-mobile-money.svg), produits par [`diagrams/generate.py`](diagrams/generate.py).
+
+Complément du 27/11/2026 (mission 12b-1, **review du 27/11/2026, code livré, jamais essayé en réel**) : pour PayDunya, la notification n'est qu'un **signal** (preuve d'origine seule, contenu non cru) ; elle est conservée sans effet, puis, la réponse écrite, la réception lance la relecture de la facture auprès de PayDunya (le travailleur d'interrogation reste le filet à 2 minutes) et seule cette relecture authentifiée peut créditer. Stripe carte : même relecture. Wave : le flux ci-dessus reste juste. Voir [`sequence.md`](../kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/docs/sequence.md).
 
 ## Flux : Double validation au back-office (§3.2)
 
@@ -117,6 +120,7 @@ Sources et autres flux de la mission (session de vendeur, paiement par bracelet,
 | Identification d'un festivalier au guichet et révocation à deux ; chaîne d'envoi des codes ; rotation du secret des codes de rattachement et réémission | Caissier, administrateurs, app festivalier, API, base, commande d'exploitation | `serveur-app-festivalier-01M7WB69` (🔍 relue le 23/11/2026, non fusionnée) : diagrammes locaux dans `kitty-specs/serveur-app-festivalier-01M7WB69/docs/sequence.md` |
 | Rendu partiel en espèces au guichet ; réglages prestataire et organisateur | Caissier, seconde personne, prestataire, organisateur, API, base | `remboursement-partiel-especes-01M84932` (🔍 relue le 23/11/2026, non fusionnée) : deux diagrammes locaux `/illustre` régénérés, détail dans [`sequence.md`](../kitty-specs/remboursement-partiel-especes-01M84932/docs/sequence.md) |
 | Recherche et classement au back-office (ventes, anomalies, numéro de festivalier) | Personnel, API, base | `routes-backoffice-01M86KT6` (🔎 relue le 25/11/2026, non fusionnée) : deux diagrammes locaux `/illustre`, détail dans [`sequence.md`](../kitty-specs/routes-backoffice-01M86KT6/docs/sequence.md) |
+| Signal, relecture, puis crédit (PayDunya ; Stripe carte) | PSP, API, base, travailleur d'interrogation | `adaptateurs-fournisseurs-choisis-01M8BXJA` (🔎 relue le 27/11/2026, non fusionnée) : un diagramme local `/illustre`, détail dans [`sequence.md`](../kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/docs/sequence.md) |
 
 ## Questions de nécessité/complétude posées lors de la dernière révision
 - Nécessaire pour ce projet ? Voir `06-docs-status.md`.

@@ -1,0 +1,276 @@
+{
+  "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 — Port des PSP fidèle à chaque fournisseur",
+      "proof_type": "automated_test",
+      "evidence": "WP02 approuvé (7372c072, 2026-11-26) et WP03 approuvé aux cycles 2-3 (fe53e5b9) : apps/api/test/unit/psp/hmac-signature.spec.ts, unit/psp/fake-signal-psp-adapter.spec.ts, integration/topups/signal-relecture.spec.ts ; mutations WP02 : séparateur de Wave, entrées inconnues, second calcul supprimé, précédent échu accepté (rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:14:19Z",
+      "notes": "Lots porteurs : WP02, WP03. Port à deux verdicts (signature / signal) sans affaiblir le faux."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 — Session de paiement Wave",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuvé au cycle 2 (af40f16f, 2026-11-26) : apps/api/test/unit/psp/wave/wave-adapter.spec.ts ; 8 mutations rejouées par le relecteur (filtre client_reference, montant et devise de la reprise, id de session, 429, 5xx, 31 jours, devise des lignes), toutes rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:44:34Z",
+      "notes": "Lot porteur : WP05. Montant entier XOF, création non rejouée, recherche d'abord. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 — Notification Wave (signature, délai)",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuvé (af40f16f) : wave-adapter.spec.ts, vecteur de docs.wave.com/webhook (secret et t publiés) accepté, forgé refusé, hors délai (> 300 s, deux sens) refusé ; WP02 : hmac-signature.spec.ts (plusieurs v1, secret précédent échu).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:44:34Z",
+      "notes": "Lots : WP05, WP02. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 — Statut, annulation et relevé Wave",
+      "proof_type": "automated_test",
+      "evidence": "WP05 approuvé (af40f16f) : wave-adapter.spec.ts (getStatus, cancel, relevé d'une journée) ; mutations : 429, 5xx, bornes du relevé (31 jours).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:44:34Z",
+      "notes": "Lot porteur : WP05. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 — Facture PayDunya",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuvé (c38117d0, 2026-11-26) : apps/api/test/unit/psp/paydunya/paydunya-adapter.spec.ts ; comparaison aux SDK officiels (URLs, en-têtes, corps, response_code/token) ; mutations : montant non entier, carte NOT_PERFORMED (3DS) rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:32:37Z",
+      "notes": "Lot porteur : WP06. D7 (carte sans preuve 3-D Secure non créditée). Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 — Notification PayDunya traitée comme un signal",
+      "proof_type": "automated_test",
+      "evidence": "WP06 approuvé (c38117d0) : paydunya-adapter.spec.ts (IPN sha512 temps constant, signal sans montant, JSON refusé, précédent jamais utilisé) ; WP03 approuvé (fe53e5b9) : apps/api/test/integration/topups/signal-relecture.spec.ts (aucun crédit sans getStatus, borne par recharge, formulaire seul), real-adapters-credit.spec.ts ; mutations rouges (timingSafeEqual remplacé par !==, NOTIFICATION, JSON, précédent, borne, formulaire).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T16:03:20Z",
+      "notes": "Lots : WP06, WP03. Décision du porteur D2 (26/11/2026) : signal puis confirm/{token} ; écart consigné OP-N199 à OP-N201, ADR-238. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 — Paiement par carte Stripe",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuvé au cycle 2 (62aaac2a, 2026-11-26) : apps/api/test/unit/psp/stripe/stripe-adapter.spec.ts ; 13 mutations (cycle 1) et 5 (cycle 2 : attempt_acknowledged NOT_PERFORMED, expires_at stable) rouges ; 3-D Secure strict.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:20:39Z",
+      "notes": "Lot porteur : WP07. Décision D4 (Stripe inclus). Limite relecteur : mémoire processus (redémarrage / multi-instance). Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 — Notification, statut, annulation et relevé Stripe",
+      "proof_type": "automated_test",
+      "evidence": "WP07 approuvé (62aaac2a) : stripe-adapter.spec.ts ; WP03 approuvé (fe53e5b9) : apps/api/test/integration/topups/dispute-relecture.spec.ts (litige relu hors transaction, UNMATCHED retenté, anomalie à 24 h) ; mutations M1,M3,M4,M5,M7,M8 tuées.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T16:03:20Z",
+      "notes": "Lots : WP07, WP03. Limite OP-N208 (transaction ouverte pendant la résolution du litige) sans test de borne. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 — Coffre AWS des secrets PSP",
+      "proof_type": "automated_test",
+      "evidence": "WP08 approuvé (5e5e9353, 2026-11-26) : apps/api/test/unit/psp/aws/secrets-manager-store.spec.ts ; 258 tests verts ; mutations rejouées : préfixe détenteur, segment vide, fournisseur en cache, précédent PayDunya (rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:29:13Z",
+      "notes": "Lot porteur : WP08. Mineur non couvert : segment '.' sans test (mutation survivante). Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 — Clés des bracelets et des snapshots sur KMS",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuvé (d391e0c7, 2026-11-26) : apps/api/test/unit/kms/aws/aws-kms.spec.ts, unit/kms/kms-module.spec.ts ; 145 tests verts ; mutations : DIGEST, forCapabilities exposant tout, mise à zéro, borne 4096, DER, message du SDK dans l'erreur.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:31:21Z",
+      "notes": "Lot porteur : WP09. Mineurs : DER vérifié en enveloppe seulement, Decrypt ne contrôle pas le KeyId rendu. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 — Copie des scellements sur S3 à écriture unique",
+      "proof_type": "automated_test",
+      "evidence": "WP09 approuvé (d391e0c7) : apps/api/test/unit/sealing/s3-seal-copy.spec.ts ; mutations IfNoneMatch, GOVERNANCE (rétention COMPLIANCE, D8 10 ans), empreinte divergente rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:31:21Z",
+      "notes": "Lot porteur : WP09. Mineur : 412 avec même empreinte ne vérifie pas le verrou de l'objet existant. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 — Attestations Android et Apple vérifiées",
+      "proof_type": "automated_test",
+      "evidence": "WP12 approuvé au cycle 2 (6fe3ed16, 2026-11-26) : docs/passation-12b-1/attestations-comparaison.md (échantillon de 7 points Android et 7 Apple relu contre les documentations) ; apps/api/test/unit/attestation/android.spec.ts ; exception bornée à la racine f92009e853b6b045 (SPKI SHA-256), 3 mutations de borne rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:43:34Z",
+      "notes": "Lot porteur : WP12. Deux écarts décidés par le porteur (OP-N202, OP-N203) ; tests de borne manquants pour OP-N202 (chaîne RKP) et OP-N203 (extensions Apple), consignés. Preuve du comparatif : relecture humaine (manual_qa) autant que test."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 — Garde de production par service",
+      "proof_type": "automated_test",
+      "evidence": "WP10 approuvé au cycle 2 (7be60223, 2026-11-26) : apps/api/test/unit/external-services/production-enabled.spec.ts, unit/production-guard.spec.ts, unit/processes.spec.ts, unit/psp/psp-providers.spec.ts, unit/architecture.spec.ts ; 36 suites vertes ; mutations : service retiré de la liste, défaut absent = real, refus du faux, allowed = true, marques sur les six adaptateurs, sites de construction.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T16:36:46Z",
+      "notes": "Lot porteur : WP10. Décisions D3/D6 (26/11/2026) : refus en production jusqu'à l'essai réel, PRODUCTION_ENABLED_SERVICES vide. Nuance (règle I1) : PSP et coffre non listés restent indisponibles sans refuser le démarrage ; KMS et copie refusent le démarrage."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014 — Commande d'essai par service",
+      "proof_type": "automated_test",
+      "evidence": "WP11 approuvé (5ad41245, 2026-11-27) : apps/api/test/unit/external-services/trial/trial.spec.ts ; appels via fabriques de production, refus NODE_ENV=production, clés KMS désactivées en finally, S3 id aléatoire + If-None-Match ; 17 mutations rouges, 594 tests de gardes verts.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-27T09:57:01Z",
+      "notes": "Lot porteur : WP11. La commande est livrée et testée contre des serveurs locaux ; son exécution contre un vrai service reste à faire (OP-N206, OP-N209, D3/D6). Mineurs : rétention par défaut 3650 j COMPLIANCE sans --retention-days ; refs de clés KMS non listées si la désactivation échoue."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015 — Liste des paramètres à poser",
+      "proof_type": "manual_qa",
+      "evidence": "WP13 approuvé au cycle 2 (f221fcb4, 2026-11-27 ; contrôle des correctifs 7a9e43e6) : relecture de docs/SERVICES-EXTERNES.md §2.3 à 2.10 et §5 (six services : identifiants, clés, emplacement, adresse de notification, commande d'essai, levée) ; garde apps/api/test/integration/invariants-cloture/consignation.spec.ts 129/129 ; 2 mutations rouges.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-27T10:23:58Z",
+      "notes": "Lot porteur : WP13. Preuve en lecture plus garde de consignation. Aucun essai réel n'a validé les listes. Mineur : PROMPTS ne reprend pas la mention OP-N202."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016 — Fournisseurs non décidés inchangés",
+      "proof_type": "code_review",
+      "evidence": "WP10 approuvé (7be60223) et WP13 : git diff 825263fc..HEAD vide sur apps/api/src/customer-auth, device-ca, device-tokens et apps/gateway/src ; seul un commentaire ajouté dans apps/gateway/test/e2e/production-refusals.spec.ts. Faux conservés vérifiés par apps/api/test/unit/production-guard.spec.ts et unit/processes.spec.ts (test du faux conservé, WP13 7a9e43e6).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T16:36:46Z",
+      "notes": "Lots : WP10, WP13. Décision D1 (26/11/2026) : Orange Money hors périmètre, non touché. Preuve par différence git (pas de test dédié qui échoue si un faux change)."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001 — Aucun réseau en test",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuvé (d0e9837a, 2026-11-26) : apps/api/test/support/no-external-network.ts (setupFiles de jest.config.cjs), unit/psp/psp-http.spec.ts ; batterie Jest complète lane m : 4930 verts, 2 échecs connus verts en relance isolée, aucun échec dû à la garde ; mutations : garde réseau (installation, connexion), redirections, rejeu de POST.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T14:16:04Z",
+      "notes": "Lot porteur : WP01. Limite connue et consignée (OP-N207) : garde contournable par http.request({host:'localhost', lookup:custom}) ; durcissement proposé, non fait."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002 — Vecteurs tirés des documentations",
+      "proof_type": "automated_test",
+      "evidence": "Cas forgé, rejoué et hors délai testés : apps/api/test/unit/psp/hmac-signature.spec.ts, unit/psp/wave/wave-adapter.spec.ts (vecteur publié par docs.wave.com/webhook, hors délai 300 s deux sens), unit/psp/stripe/stripe-adapter.spec.ts (signature recalculée indépendamment, pas d'exemple publié cité), unit/psp/paydunya/paydunya-adapter.spec.ts (sha512 recalculé).",
+      "pass_fail": "pass",
+      "verified_by": "orchestrateur, recherche documentaire (sous-agent sonnet) ; décision du porteur du 27/11/2026",
+      "verified_at": "2026-11-27T13:00:00Z",
+      "notes": "Clause « lorsqu'elle en publie un » sans objet pour Stripe et PayDunya (recherche du 27/11/2026). Stripe : docs.stripe.com/webhooks.md lu en entier, en-tête d'exemple sans secret (masqué) ni corps, aucune sortie vérifiable. PayDunya : doc/FR/http_json publie une clé et un hash d'exemple incohérents (sha512(clé) ne donne pas le hash), SDK officiels sans vecteur ; incohérence consignée en OP-N212 (à confirmer à l'essai réel). Wave : exemple publié testé. Cas forgé, rejoué et hors délai testés pour les trois. Décision du porteur du 27/11/2026 : pass."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003 — Aucun secret journalisé",
+      "proof_type": "automated_test",
+      "evidence": "WP01, WP08, WP09, WP11 approuvés : apps/api/test/unit/psp/psp-http.spec.ts (journal), integration/topups/signal-relecture.spec.ts (aucun secret dans le journal), unit/psp/aws/secrets-manager-store.spec.ts, unit/kms/aws/aws-kms.spec.ts, unit/external-services/trial/trial.spec.ts (motifs fermes, seen + looksSecret) ; mutations : journal des en-têtes, message du SDK dans l'erreur, fuite de la valeur lue (rouges).",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-27T09:57:01Z",
+      "notes": "Lots : WP01, WP08, WP09, WP11 (dernière approbation WP11, 5ad41245)."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004 — Délais bornés",
+      "proof_type": "automated_test",
+      "evidence": "WP01 approuvé (d0e9837a) : apps/api/test/unit/psp/psp-http.spec.ts (délai, 2 nouveaux essais au plus, rejeu de POST refusé) ; WP05 approuvé (af40f16f) : wave-adapter.spec.ts (création non rejouée, recherche d'abord) ; WP07 : rejeu d'un 503 avec la même clé d'idempotence ; mutation « rejeu de POST » rouge.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T15:44:34Z",
+      "notes": "Lots : WP01, WP05, WP07. Aucun essai contre un vrai service (OP-N206, D3/D6) : conformité à la documentation, rejouée sur serveurs locaux ; l'essai réel est hors de cette matrice."
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005 — Crédit unique",
+      "proof_type": "automated_test",
+      "evidence": "WP03 approuvé aux cycles 2-3 (fe53e5b9) et WP10 approuvé (7be60223) : apps/api/test/integration/topups/real-adapters-credit.spec.ts (Wave, Stripe, PayDunya : 100 notifications identiques en parallèle, un seul crédit, vraie base), integration/topups/signal-relecture.spec.ts ; mutations : marquage « traité » remis (6 rouges), garde « déjà traité » retirée.",
+      "pass_fail": "pass",
+      "verified_by": "relecteur distinct (sonnet), report par l orchestrateur",
+      "verified_at": "2026-11-26T16:36:46Z",
+      "notes": "Lots : WP03, WP10. Limite consignée : OP-N205 (instances multiples)."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "Aucun appel réseau vers un service externe pendant les tests (NFR-001)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit/psp/psp-http.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "test/support/no-external-network.ts (setupFiles de jest.config.cjs), psp-http.spec.ts ; Batterie Jest complète de la lane m : 4930 tests verts, 2 échecs connus verts en relance isolée. Limite OP-N207 (contournement par lookup)."
+    },
+    {
+      "invariant_id": "NI-002",
+      "description": "Aucun faux en production : le démarrage est refusé ou le service indisponible, en nommant le service",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit/production-guard.spec.ts test/unit/processes.spec.ts test/unit/psp/psp-providers.spec.ts test/unit/external-services/production-enabled.spec.ts test/unit/architecture.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "production-guard.spec.ts, processes.spec.ts, psp-providers.spec.ts, production-enabled.spec.ts, architecture.spec.ts, device-latency et enrollment (NFR-001 de l'ancien lot, alignés par 7a9e43e6, mutation sealing.module.ts rouge). WP10 approuvé 7be60223, WP13 7a9e43e6. Batterie Jest complète de la lane m : 4930 tests verts, 2 échecs connus verts en relance isolée."
+    },
+    {
+      "invariant_id": "NI-003",
+      "description": "Aucun crédit sur un signal seul (PayDunya) : crédit uniquement après getStatus authentifié",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/integration/topups/signal-relecture.spec.ts test/integration/topups/real-adapters-credit.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "signal-relecture.spec.ts, real-adapters-credit.spec.ts ; WP03 mutations rouges (borne, formulaire, secret précédent, marquage traité) ; WP06 mutations rouges. Batterie Jest complète de la lane m : 4930 tests verts, 2 échecs connus verts en relance isolée."
+    },
+    {
+      "invariant_id": "NI-004",
+      "description": "Aucun secret, clé, identifiant ni corps de notification complet dans un journal, un message d'erreur ou un compte rendu d'essai",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit/psp/psp-http.spec.ts test/unit/psp/aws test/unit/kms/aws test/unit/external-services/trial test/integration/topups/signal-relecture.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "psp-http.spec.ts, secrets-manager-store.spec.ts, aws-kms.spec.ts, trial.spec.ts, signal-relecture.spec.ts ; mutations rouges : journal des en-têtes, message du SDK, fuite de la valeur lue ; relecture WP11 : motifs fermes, looksSecret. Batterie Jest complète de la lane m : 4930 tests verts, 2 échecs connus verts en relance isolée."
+    },
+    {
+      "invariant_id": "NI-005",
+      "description": "PRODUCTION_ENABLED_SERVICES est vide (aucun service levé sans essai réel, D3/D6)",
+      "verification_method": "custom_command",
+      "verification_command": "cd apps/api && export PGHOST=127.0.0.1 PGPORT=5433 PGUSER=postgres PGDATABASE=cashless_test; source ../../tools/dev-db/env.sh; SKIP_LATENCY=1 npx jest --runInBand test/unit/external-services/production-enabled.spec.ts",
+      "result": "confirmed_absent",
+      "evidence": "production-enabled.spec.ts (expect(PRODUCTION_ENABLED_SERVICES).toEqual([])) ; relu vide en WP10 (7be60223) et WP13 (7a9e43e6). Batterie Jest complète de la lane m : 4930 tests verts, 2 échecs connus verts en relance isolée."
+    },
+    {
+      "invariant_id": "NI-006",
+      "description": "Aucune migration et aucun fichier .sql généré modifié (packages/ledger-sql intact)",
+      "verification_method": "custom_command",
+      "verification_command": "git diff --quiet 825263fc..HEAD -- packages/ledger-sql && ! git diff --name-only 825263fc..HEAD | grep -E 'migrations|[.]sql$'",
+      "result": "confirmed_absent",
+      "evidence": "git diff 825263fc..HEAD sur packages/ledger-sql vide ; aucun nom de fichier migration ou .sql dans les 169 fichiers modifiés (vérifié dans la lane m, tête 7a9e43e6) ; check-generated.sh : « suites pgTAP à jour » (preuves.md)."
+    }
+  ],
+  "battery": {
+    "date": "2026-11-27",
+    "head": "lane m 7a9e43e6",
+    "jest": "4930 verts, 2 échecs connus verts en relance isolée",
+    "reseau": "aucun appel réseau externe (garde no-external-network.ts ; limite OP-N207)",
+    "essai_reel": "aucun essai contre un vrai service (OP-N206, OP-N209) ; D3/D6 : PRODUCTION_ENABLED_SERVICES vide",
+    "pgtap": "non relancé ici ; preuves.md : suites pgTAP à jour (check-generated.sh)"
+  }
+}

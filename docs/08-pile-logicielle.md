@@ -25,7 +25,7 @@ Légende « Statut » : **en place** (déjà dans le dépôt) · **cible** (à i
 | Authentification | argon2 | 0.44.0 | cible (vendeurs, S2 ; mission 5b) | empreinte argon2id du code PIN des vendeurs, avec un secret hors base (`VENDOR_PIN_SECRET`, plus `VENDOR_PIN_IDEMPOTENCY_SECRET` pour le dérivé de l'empreinte d'idempotence, ADR-126). 0.44.0 et non 0.45 (décision du porteur du 22/10/2026) : la 0.45 ne livre plus de binaire macOS Intel (`darwin-x64`), inutilisable sur le poste du porteur avec `ignore-scripts=true` ; aucun correctif de sécurité en 0.45 (journal des versions) |
 | Limitation de débit | @nestjs/throttler | 6 | cible | compteurs en mémoire ; stockage partagé à décider avec le déploiement multi-instance |
 | Validation | zod | 3.25 | cible (facultatif) | les routes livrées valident explicitement ; à adopter route par route si utile |
-| HTTP sortant | axios | 1 | cible (PSP, mission 6) | |
+| HTTP sortant | axios | 1 (1.21.1) | installée (PSP, mission 12b-1, review du 27/11/2026, non fusionnée) | version exacte, `--ignore-scripts`, intégrité au lockfile (R-01 de la mission) |
 | Observabilité | pino / nestjs-pino | 9.14 / 4 | cible | remplace le journal JSON maison sans changer son contenu (`X-Request-Id`, une ligne par requête) |
 | Observabilité | @opentelemetry/sdk-node, auto-instrumentations-node | à fixer à l'introduction | cible | le document ne donnait pas de version exploitable pour la seconde |
 | Observabilité | AWS CloudWatch | service managé | cible | |
@@ -102,7 +102,20 @@ exactes (ADR-78) ; `tools/edge-admin` : `@peculiar/x509`, `pg`, `reflect-metadat
 |---|---|---|---|---|
 | Image de la passerelle | `node:22-bookworm-slim` | épinglée par condensat (relevé le 10/11/2026) | en place (branche de la mission 8) | `apps/gateway/Dockerfile` : exécution par `tsx` comme l'API, utilisateur non-root, aucun secret dans l'image, sonde de santé en HTTPS ; contexte de construction : racine du dépôt |
 | Base locale du site | PostgreSQL | `postgres:17` épinglée par condensat (`docker-compose.site.yml`) | en place (branche de la mission 8) | rôle unique `edge_app` (OP-N111, ADR-166) ; migrations `edge-0001` à `edge-0010` |
-| Balayage de l'image | Trivy | image épinglée par condensat dans le job CI `gateway-e2e` | en place (branche de la mission 8) | bloquant sur HIGH et CRITICAL corrigeables (`--ignore-unfixed`, décision 56) ; à éprouver sur un exécuteur réel (base de vulnérabilités, durée) |
+| Balayage de l'image | Trivy | image épinglée par condensat dans le job CI `gateway-e2e` | en place (branche de la mission 8) | bloquant sur HIGH et CRITICAL corrigeables (`--ignore-unfixed`, décision 56) ; à éprouver sur un exécuteur réel (base de vulnérabilités, durée) ; 27/11/2026 (PR #29) : correctifs Debian appliqués à la construction (`apt-get upgrade` dans l'étage d'exécution), la base officielle épinglée n'ayant pas le correctif de CVE-2025-6020 (libpam, deb12u3) ; balayage relancé localement : 0 HIGH ou CRITICAL corrigeable |
 | Stockage matériel de clés | module à choisir (HSM, TPM ou PKCS#11) | — | cible (mission 12b) | faux refusé en production ; clé TLS client en fichier durci jusqu'alors (OP-N100, OP-N113, ADR-168) ; purge des secrets : limites OP-N106 et OP-N118 |
 
 Enrôlement : le `central_url` du fichier d'enrôlement doit finir par `/v1` (le client de la passerelle ajoute les chemins `/edge/*` à cette base).
+
+## 8. Adaptateurs des fournisseurs choisis (mission 12b-1, review du 27/11/2026, non fusionnée)
+
+Quatre dépendances nouvelles installées dans `apps/api/package.json` et `package-lock.json` (32 paquets ajoutés au verrou, `registry.npmjs.org` avec intégrité, aucun script d'installation, relecture de WP01), versions exactes vérifiées au plan (registre officiel, mainteneur, aucun script `preinstall`/`install`/`postinstall`, version d'au moins une semaine ; revue contradictoire faite, `kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/research.md` R-01) :
+
+| Domaine | Logiciel | Version | Statut | Remarque |
+|---|---|---|---|---|
+| HTTP sortant des PSP | axios | 1.21.1 (publiée le 09/11/2026) | installée (mission 12b-1) | cible déjà fixée par la pile ; `fetch` natif écarté pour respecter ADR-78 |
+| AWS | @aws-sdk/client-kms | 3.1172.0 (18/11/2026) | installée (mission 12b-1) | clés des bracelets et des snapshots |
+| AWS | @aws-sdk/client-secrets-manager | 3.1172.0 | installée (mission 12b-1) | identifiants des PSP, par détenteur des fonds |
+| AWS | @aws-sdk/client-s3 | 3.1172.0 | installée (mission 12b-1) | copie des scellements, Object Lock |
+
+Écartées : bibliothèques officielles Stripe et PayDunya (surface large pour quelques appels). Installation avec `--ignore-scripts` puis vérification du lockfile ; les paquets transitifs `@smithy/*` du SDK AWS sont relus à la revue.

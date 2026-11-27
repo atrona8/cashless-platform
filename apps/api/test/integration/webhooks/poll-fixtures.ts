@@ -25,7 +25,7 @@ export async function registerPayment(
       notificationUrl: 'https://notifications.invalid/psp',
     },
     {
-      adapter: null,
+      credentials: { provider: 'FAKE', key: null },
       notification: { current: Secret.of('x'), previous: null, previousValidUntil: null },
     },
   );

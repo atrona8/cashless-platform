@@ -1,0 +1,149 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-26T12:34:25.104331Z",
+      "decision_id": "01M8BXK56GVMNXBB2J6RVRSBYK",
+      "final_answer": "Inclure Stripe",
+      "input_key": "stripe_scope",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "Inclure Stripe",
+        "Attendre la v\u00e9rification",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Stripe : son ouverture de compte et le versement en XOF pour un marchand \u00e9tabli au S\u00e9n\u00e9gal ne sont pas v\u00e9rifi\u00e9s (le S\u00e9n\u00e9gal ne figure pas parmi les pays o\u00f9 Stripe ouvre des comptes). Inclut-on l'adaptateur Stripe dans la 12b-1 ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T12:39:49.710707Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.stripe",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-26T12:34:32.699249Z",
+      "decision_id": "01M8BXKCKV4SB2MWPA02J1Q8GK",
+      "final_answer": "Laisser hors plateforme",
+      "input_key": "psp_refund_scope",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "Ajouter pour Wave et Stripe",
+        "Laisser hors plateforme",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Remboursement au payeur d'un paiement non cr\u00e9dit\u00e9 (OP-N82, aujourd'hui hors plateforme) : Wave et Stripe ont une API de remboursement, PayDunya n'en documente aucune. L'ajoute-t-on au port dans la 12b-1 ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T12:39:57.165735Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.refund",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-26T12:48:21.965003Z",
+      "decision_id": "01M8BYCPECQM6KZPXQ8Q8GT661",
+      "final_answer": "Liste dans le code, modifi\u00e9e par PR relue avec le compte rendu d'essai",
+      "input_key": "guard_lift",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "Liste dans le code, modifi\u00e9e par PR relue",
+        "R\u00e9glage de configuration",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Comment lever la garde de production d'un service apr\u00e8s son essai r\u00e9el ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T13:00:56.917545Z",
+      "resolved_by": null,
+      "slot_key": "plan.guard.lift",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-26T12:48:29.389177Z",
+      "decision_id": "01M8BYCXPD1MMDY7KS6B4R6F16",
+      "final_answer": "Garder la r\u00e8gle : paiement carte PayDunya sans preuve 3-D Secure re\u00e7u non cr\u00e9dit\u00e9, r\u00e9examen apr\u00e8s essai en bac \u00e0 sable",
+      "input_key": "paydunya_card_rules",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "Garder la r\u00e8gle : non cr\u00e9dit\u00e9s",
+        "Assouplir pour PayDunya",
+        "PayDunya en paiement mobile seulement",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "PayDunya ne rend ni r\u00e9sultat 3-D Secure ni empreinte de carte \u00e0 la confirmation (d apr\u00e8s ses SDK) ; que faire des paiements carte PayDunya ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T13:01:04.443599Z",
+      "resolved_by": null,
+      "slot_key": "plan.paydunya.card",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-26T12:48:36.905410Z",
+      "decision_id": "01M8BYD519K089ZZ3QXKXRQ5MM",
+      "final_answer": "10 ans, r\u00e9glable",
+      "input_key": "seal_retention",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "10 ans",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Dur\u00e9e de r\u00e9tention en \u00e9criture unique des copies de scellement sur S3 ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T13:01:11.925533Z",
+      "resolved_by": null,
+      "slot_key": "plan.seal.retention",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-26T12:48:44.591649Z",
+      "decision_id": "01M8BYDCHFDWWS7A4QXBB85CRV",
+      "final_answer": "Accepter l'ajout r\u00e9trocompatible (formulaire PayDunya, description par fournisseur)",
+      "input_key": "webhook_contract",
+      "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+      "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+      "opened_by": "cli",
+      "options": [
+        "Accepter l ajout",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Ajout r\u00e9trocompatible au contrat de receivePspWebhook : corps en formulaire pour PayDunya et description par fournisseur ?",
+      "rationale": null,
+      "resolved_at": "2026-11-26T13:01:19.583461Z",
+      "resolved_by": null,
+      "slot_key": "plan.contract.webhook",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M8BXJA32Q43G7G9PBG231J2X",
+  "version": 1
+}

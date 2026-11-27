@@ -3935,8 +3935,14 @@ paths:
            `ACTIVE` du `provider` de l'URL (inconnue, inactive ou d'un autre `provider` : `404 NOT_FOUND`, réponse
            neutre) → signature HMAC-SHA256 sur le corps BRUT, comparaison à temps constant, deux secrets en
            rotation (`401 WEBHOOK_SIGNATURE_INVALID`) → horodatage, tolérance ±300 s
-           (`401 WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`) → conservation puis traitement. L'en-tête dépend du PSP
-           (Wave : `Wave-Signature: t=…,v1=…` ; autres : `X-Webhook-Signature`) ; un adaptateur par PSP normalise.
+           (`401 WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`) → conservation puis traitement. La preuve d'origine dépend
+           du PSP (un adaptateur par PSP normalise) :
+           - `wave` : `Wave-Signature: t=…,v1=…` (HMAC-SHA256 de l'horodatage suivi du corps brut), tolérance ±300 s ;
+           - `stripe` : `Stripe-Signature: t=…,v1=…` (HMAC-SHA256 de `horodatage.corps brut`), tolérance ±300 s ;
+           - `paydunya` : corps en formulaire, preuve d'origine `data[hash]` ; la notification n'est qu'un signal :
+             le paiement est relu auprès de PayDunya avant tout crédit (réponse `200`, aucune écriture au grand
+             livre à la réception ; la notification est conservée) ;
+           - `orange-money` : inchangé (adaptateur à venir).
            Un refus (413, 404, 401) n'écrit RIEN au grand livre ni au registre brut des notifications ; il est
            signalé : journal de sécurité `psp.webhook.rejected`, alerte bornée, compteur sans corps.
         2. Le tenant est celui de la configuration. La recharge référencée DOIT avoir été initiée avec cette
@@ -4001,6 +4007,11 @@ paths:
                 payment_status: succeeded
                 transaction_id: WV-88121
                 when_completed: '2026-12-01T10:12:00Z'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              description: Utilisé par `paydunya` seulement ; refusé `400 VALIDATION_FAILED` pour les autres fournisseurs.
+              additionalProperties: true
       responses:
         '200':
           description: Événement reçu (traité ou doublon).
@@ -12798,9 +12809,10 @@ components:
       in: header
       name: X-Webhook-Signature
       description: |
-        `t=<unix>,v1=<hex HMAC-SHA256(secret_psp, t + "." + corps_brut)>` (Wave : en-tête `Wave-Signature`,
-        même format). Tolérance d'horodatage 300 s ; secret par configuration PSP (`psp_config_id` de l'URL),
-        rotation avec deux secrets valides simultanément.
+        `t=<unix>,v1=<hex>` : Stripe (`Stripe-Signature`) signe `t + "." + corps_brut` ; Wave (`Wave-Signature`)
+        signe `t` suivi du corps brut, sans séparateur. Tolérance d'horodatage 300 s ; secret par configuration
+        PSP (`psp_config_id` de l'URL), rotation avec deux secrets valides simultanément. PayDunya prouve son
+        origine par `data[hash]` (corps en formulaire), non par cet en-tête.
 
   headers:
     X-Request-Id:

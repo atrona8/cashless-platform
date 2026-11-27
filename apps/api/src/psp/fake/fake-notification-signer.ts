@@ -1,5 +1,5 @@
 // Outil de test : fabrique une notification signée au schéma du contrat. Hors production seulement.
-import { computeSignature } from '../hmac-signature';
+import { computeSignature, FAKE_SCHEME } from '../hmac-signature';
 import type { PspProviderName } from '../psp.types';
 import { Secret } from '../secret';
 import { signatureHeaderName, type FakeCardInput } from './fake-psp-adapter';
@@ -50,7 +50,7 @@ export function signFakeNotification(input: {
   const timestamp = input.timestamp ?? Math.floor(Date.now() / 1000);
   const signedBody = Buffer.from(JSON.stringify(input.event), 'utf8');
   const secret = typeof input.secret === 'string' ? Secret.of(input.secret) : input.secret;
-  const signature = computeSignature(secret, timestamp, signedBody);
+  const signature = computeSignature(secret, timestamp, signedBody, FAKE_SCHEME);
   const headerName = signatureHeaderName(input.provider);
   return {
     rawBody: input.rawBody ?? signedBody,

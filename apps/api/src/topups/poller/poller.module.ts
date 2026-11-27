@@ -10,6 +10,7 @@ import { CHARGEBACK_DISPUTE_PROVIDERS } from '../../chargebacks/dispute-provider
 import { EventDispatcher } from '../../webhooks/event-dispatcher';
 import { CardChecks } from '../psp/card-checks';
 import { PspPaymentProcessor } from '../psp/psp-payment-processor';
+import { PspStatusConfirmer } from '../psp/psp-status-confirmer';
 import { PspTopupLookup } from '../psp/psp-topup-lookup';
 import { PspEventPurgeWorker } from './psp-event-purge.worker';
 import { PspEventRetryWorker } from './psp-event-retry.worker';
@@ -22,6 +23,7 @@ import { PspTopupPollerWorker } from './psp-topup-poller.worker';
     CardChecks,
     DepositService,
     PspPaymentProcessor,
+    PspStatusConfirmer,
     EventDispatcher,
     ...CHARGEBACK_DISPUTE_PROVIDERS,
     PspTopupPollerWorker,

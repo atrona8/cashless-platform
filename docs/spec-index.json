@@ -1516,5 +1516,94 @@
       "NFR-006 : aucune donnée personnelle en clair dans les nouvelles réponses"
     ],
     "source": "kitty-specs/routes-backoffice-01M86KT6/spec.md"
+  },
+  {
+    "mission": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+    "titre_cas_usage": "Adaptateurs conformes aux documentations des fournisseurs choisis",
+    "statut": "mergée sur feat le 27/11/2026 (acceptée, revue post-fusion PASS WITH NOTES), pas encore dans main ; aucun essai réel, aucun service autorisé en production",
+    "user_stories": [
+      {
+        "titre": "Recharger par Wave",
+        "detail": "En tant que festivalier, je veux recharger mon portefeuille par Wave : le serveur ouvre une session Wave, Wave notifie avec une signature vérifiée, et le portefeuille est crédité une seule fois."
+      },
+      {
+        "titre": "Recharger par PayDunya",
+        "detail": "En tant que festivalier, je veux recharger par PayDunya : la notification n'est qu'un signal d'origine vérifiée, et le serveur relit le statut de la facture auprès de PayDunya, après l'écriture de la réponse, avant de créditer ; une carte sans preuve 3-D Secure est reçue mais non créditée."
+      },
+      {
+        "titre": "Recharger par carte Stripe",
+        "detail": "En tant que festivalier, je veux payer par carte avec 3-D Secure via Stripe ; la notification est relue avant le crédit, qui a lieu une seule fois ; seul un 3-D Secure authentifié vaut un succès, et un litige est rattaché à la recharge par relecture."
+      },
+      {
+        "titre": "Secrets PSP dans le coffre",
+        "detail": "En tant que porteur, je veux ranger les identifiants de chaque PSP, par détenteur des fonds, dans AWS Secrets Manager ; un détenteur ne lit jamais les secrets d'un autre."
+      },
+      {
+        "titre": "Clés et scellements sur AWS",
+        "detail": "En tant que porteur, je veux que les processus de clés, de signature des snapshots et de copie des scellements utilisent AWS KMS et S3 à écriture unique, avec des résultats au même format qu'aujourd'hui."
+      },
+      {
+        "titre": "Essayer puis passer en production",
+        "detail": "En tant que porteur, je veux poser identifiants et clés, lancer l'essai réel d'un service (npm run essai), puis lever la garde de production de ce seul service par une modification relue de la liste PRODUCTION_ENABLED_SERVICES, vide aujourd'hui."
+      }
+    ],
+    "entites_cles": [
+      "Adaptateur réel (PSP, coffre, KMS, copie S3)",
+      "Notification et signal",
+      "Configuration PSP",
+      "Liste des services essayés (garde de production)",
+      "Compte rendu d'essai"
+    ],
+    "resultat_mesurable": "6 services (Wave, PayDunya, Stripe, Secrets Manager, KMS, S3) livrés avec une liste de paramètres sans étape de code ; notifications forgées, rejouées ou hors délai refusées et 0 crédit PayDunya sans confirmation, 0 double crédit sur 100 notifications identiques, prouvés par des tests (aucun appel réseau en test) ; 100 % des services réels refusés ou indisponibles en production (liste vide) ; 0 faux de fournisseur non décidé modifié ; 313 différences de contrat admises, 0 refusée ; aucun essai contre un vrai service (OP-N206)",
+    "hypotheses": [
+      "Les ports existants restent la frontière ; seul PspAdapter évolue (deux verdicts, résolution facultative d'une référence de litige)",
+      "Comptes, clés et bacs à sable des fournisseurs indisponibles pendant la mission : les essais réels sont lancés par le porteur après",
+      "Région AWS eu-west-3 provisoire (OP-N11), réglée par configuration",
+      "Wave : délai 5 minutes ; Stripe : 300 s ; PayDunya : aucun horodatage, relevé ni remboursement documenté",
+      "Remboursement d'un paiement non crédité hors plateforme (OP-N82)",
+      "Orange Money entrera dans une mission suivante dès que la documentation sera fournie",
+      "Décisions D1 à D9 du porteur du 26/11/2026",
+      "Décisions des relectures du 26/11/2026 : 3-D Secure strict chez Stripe, litige relu puis sans correspondance si non rattaché, exception Android bornée à une racine ; décisions du 27/11/2026 sur OP-N203, OP-N207, OP-N208, OP-N211"
+    ],
+    "contraintes": [
+      "Contrat d'API stable : seul ajout rétrocompatible livré (D9, 313 différences admises)",
+      "Aucun faux ni adaptateur non essayé en production, test à l'appui",
+      "Écart PayDunya consigné par la mission (OP-N199, ADR-238) avec test de borne ; exception Android (OP-N202) et extensions Apple (OP-N203) consignées",
+      "Dépendances épinglées selon docs/08-pile-logicielle.md",
+      "Un droit par processus (KMS, coffre)",
+      "Fichiers .sql générés de packages/ledger-sql/ intacts",
+      "Aucune migration"
+    ],
+    "cas_limites": [
+      "Notification reçue deux fois : un seul crédit",
+      "Montant notifié différent du montant demandé : refus et anomalie",
+      "Devise autre que XOF : refus",
+      "PSP injoignable à la relecture : reprise plus tard, rien n'est crédité",
+      "Rotation de la clé de notification : l'ancienne refusée après son échéance",
+      "Carte PayDunya sans preuve 3-D Secure : reçue, non créditée",
+      "Coffre ou KMS indisponible au démarrage : PSP et coffre indisponibles, KMS et copie des scellements refusent de démarrer (règle I1)",
+      "Stripe : session ouverte après un refus : reste en attente ; 3-D Secure « attempt_acknowledged » : non crédité",
+      "Litige Stripe non rattaché : sans correspondance, anomalie à 24 h"
+    ],
+    "fonctionnel": [
+      "Port des PSP fidèle à chaque fournisseur (notification ou signal)",
+      "Session, notification, statut, annulation et relevé Wave",
+      "Facture et signal PayDunya, relecture après la réponse, crédit après confirmation",
+      "Paiement, notification, statut, annulation et relevé Stripe",
+      "Coffre AWS des secrets PSP",
+      "Cinq ports de clés sur KMS",
+      "Copie des scellements sur S3 Object Lock (10 ans)",
+      "Attestations Android et Apple comparées aux documentations : exception Android bornée, contrôles Apple reportés en mission 12",
+      "Garde de production par service (liste vide), commande d'essai npm run essai, liste des paramètres à poser (docs/SERVICES-EXTERNES.md)",
+      "Fournisseurs non décidés inchangés (Orange Money, SMS, WhatsApp, OIDC, passerelle, banque)"
+    ],
+    "non_fonctionnel": [
+      "Aucun réseau en test",
+      "Vecteurs de signature tirés des documentations",
+      "Aucun secret journalisé",
+      "Délai de 10 s par appel et 2 nouveaux essais au plus",
+      "Crédit unique"
+    ],
+    "source": "kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/spec.md"
   }
 ]

@@ -937,3 +937,129 @@ describe('loadConfig', () => {
     });
   });
 });
+
+describe('loadConfig : services externes (mission 12b-1)', () => {
+  it('hors production : quatre modes fake et défauts documentés', () => {
+    const config = loadConfig(LOCAL);
+    expect(config.externalModes).toEqual({
+      psp: 'fake',
+      pspSecrets: 'fake',
+      kms: 'fake',
+      sealCopy: 'fake',
+    });
+    expect(config.pspHttpTimeoutMs).toBe(10000);
+    expect(config.pspBases).toEqual({
+      wave: 'https://api.wave.com',
+      paydunya: 'https://app.paydunya.com/api/v1',
+      stripe: 'https://api.stripe.com',
+    });
+    expect(config.waveDefaultUrls).toEqual({ success: null, error: null });
+    expect(config.aws).toEqual({ region: 'eu-west-3', endpoint: null });
+    expect(config.sealCopy).toEqual({ bucket: null, retentionDays: 3650 });
+  });
+
+  it('en production : modes absents = real ; SEAL_COPY=real posé exige son seau', () => {
+    expect(() => loadConfig({ ...PRODUCTION, SEAL_COPY: 'real' })).toThrow(/SEAL_COPY_BUCKET/);
+    const config = loadConfig({ ...PRODUCTION, SEAL_COPY_BUCKET: 'scellements' });
+    expect(config.externalModes).toEqual({
+      psp: 'real',
+      pspSecrets: 'real',
+      kms: 'real',
+      sealCopy: 'real',
+    });
+    expect(config.sealCopy.bucket).toBe('scellements');
+  });
+
+  it.each(['PSP_ADAPTERS', 'PSP_SECRET_STORE', 'KMS_BACKEND', 'SEAL_COPY'])(
+    '%s : valeur hors liste refusée, fake refusé en production',
+    (name) => {
+      expect(() => loadConfig({ ...LOCAL, [name]: 'autre' })).toThrow(new RegExp(`${name} :`));
+      expect(loadConfig({ ...LOCAL, [name]: 'fake' }).production).toBe(false);
+      expect(() => loadConfig({ ...PRODUCTION, SEAL_COPY_BUCKET: 'b', [name]: 'fake' })).toThrow(
+        new RegExp(`${name} : « fake » refusé en production`),
+      );
+    },
+  );
+
+  it('SEAL_COPY=real sans SEAL_COPY_BUCKET : refus', () => {
+    expect(() => loadConfig({ ...LOCAL, SEAL_COPY: 'real' })).toThrow(/SEAL_COPY_BUCKET/);
+    expect(loadConfig({ ...LOCAL, SEAL_COPY: 'real', SEAL_COPY_BUCKET: 'b' }).sealCopy.bucket).toBe(
+      'b',
+    );
+  });
+
+  it('AWS_ENDPOINT_URL : permis hors production, refusé en production', () => {
+    const local = loadConfig({ ...LOCAL, AWS_ENDPOINT_URL: 'http://127.0.0.1:4566' });
+    expect(local.aws.endpoint).toBe('http://127.0.0.1:4566');
+    expect(() =>
+      loadConfig({
+        ...PRODUCTION,
+        SEAL_COPY_BUCKET: 'b',
+        AWS_ENDPOINT_URL: 'https://kms.eu-west-3.amazonaws.com',
+      }),
+    ).toThrow(/AWS_ENDPOINT_URL/);
+  });
+
+  it('PSP_HTTP_TIMEOUT_MS : 1 000 à 30 000', () => {
+    expect(loadConfig({ ...LOCAL, PSP_HTTP_TIMEOUT_MS: '5000' }).pspHttpTimeoutMs).toBe(5000);
+    expect(() => loadConfig({ ...LOCAL, PSP_HTTP_TIMEOUT_MS: '999' })).toThrow(
+      /PSP_HTTP_TIMEOUT_MS/,
+    );
+    expect(() => loadConfig({ ...LOCAL, PSP_HTTP_TIMEOUT_MS: '30001' })).toThrow(
+      /PSP_HTTP_TIMEOUT_MS/,
+    );
+  });
+
+  it('SEAL_COPY_RETENTION_DAYS : 1 à 36 500', () => {
+    expect(loadConfig({ ...LOCAL, SEAL_COPY_RETENTION_DAYS: '36500' }).sealCopy.retentionDays).toBe(
+      36500,
+    );
+    expect(() => loadConfig({ ...LOCAL, SEAL_COPY_RETENTION_DAYS: '0' })).toThrow(
+      /SEAL_COPY_RETENTION_DAYS/,
+    );
+    expect(() => loadConfig({ ...LOCAL, SEAL_COPY_RETENTION_DAYS: '36501' })).toThrow(
+      /SEAL_COPY_RETENTION_DAYS/,
+    );
+  });
+
+  it('adresses de base : https exigé ; http local permis hors production seulement', () => {
+    const local = loadConfig({ ...LOCAL, WAVE_API_BASE: 'http://127.0.0.1:5555/' });
+    expect(local.pspBases.wave).toBe('http://127.0.0.1:5555');
+    expect(loadConfig({ ...LOCAL, STRIPE_API_BASE: 'http://localhost:1' }).pspBases.stripe).toBe(
+      'http://localhost:1',
+    );
+    expect(() => loadConfig({ ...LOCAL, PAYDUNYA_API_BASE: 'http://paydunya.example' })).toThrow(
+      /PAYDUNYA_API_BASE : https attendu/,
+    );
+    expect(() => loadConfig({ ...LOCAL, WAVE_API_BASE: 'pas une url' })).toThrow(/WAVE_API_BASE/);
+    expect(() =>
+      loadConfig({
+        ...PRODUCTION,
+        SEAL_COPY_BUCKET: 'b',
+        WAVE_API_BASE: 'http://127.0.0.1:5555',
+      }),
+    ).toThrow(/WAVE_API_BASE : https attendu/);
+    expect(
+      loadConfig({
+        ...PRODUCTION,
+        SEAL_COPY_BUCKET: 'b',
+        PAYDUNYA_API_BASE: 'https://app.paydunya.com/sandbox-api/v1',
+      }).pspBases.paydunya,
+    ).toBe('https://app.paydunya.com/sandbox-api/v1');
+  });
+
+  it('adresses de retour Wave : https si posées', () => {
+    const config = loadConfig({
+      ...LOCAL,
+      WAVE_DEFAULT_SUCCESS_URL: 'https://app.example.org/ok',
+      WAVE_DEFAULT_ERROR_URL: 'https://app.example.org/ko',
+    });
+    expect(config.waveDefaultUrls).toEqual({
+      success: 'https://app.example.org/ok',
+      error: 'https://app.example.org/ko',
+    });
+    expect(() => loadConfig({ ...LOCAL, WAVE_DEFAULT_ERROR_URL: 'http://127.0.0.1/ko' })).toThrow(
+      /WAVE_DEFAULT_ERROR_URL/,
+    );
+  });
+});

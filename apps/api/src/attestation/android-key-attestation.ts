@@ -8,7 +8,13 @@
 // à UNE exception près : `attestationApplicationId` (voir `applicationId`, écart OP-N67 / ADR-110).
 //
 // À FAIRE RELIRE PAR UNE PERSONNE (cryptographie, CLAUDE.md « Revue »).
-import { createPublicKey, timingSafeEqual, X509Certificate, type KeyObject } from 'node:crypto';
+import {
+  createHash,
+  createPublicKey,
+  timingSafeEqual,
+  X509Certificate,
+  type KeyObject,
+} from 'node:crypto';
 import {
   AttestationApplicationId,
   AuthorizationList,
@@ -38,6 +44,19 @@ export const KM_EC_CURVE_P_256 = 1;
 export const KM_ORIGIN_GENERATED = 0;
 /** KeyMint 1 (Android 12) : première version où la clé d'accord est matérielle (R-05). */
 export const MIN_ATTESTATION_VERSION = 100;
+/**
+ * ASSOUPLISSEMENT DÉCIDÉ PAR LE PORTEUR (26/11/2026, WP12 cycle 2 ; à consigner par WP13) : la documentation de Google
+ * demande de continuer à faire confiance aux chaînes de la racine d'usine `SERIALNUMBER=f92009e853b6b045` malgré une
+ * validité échue (appareils d'avant 2021). Exception limitée à cette SEULE racine, reconnue par le SHA-256 de sa clé
+ * publique (SPKI DER, calculé le 26/11/2026 sur le certificat publié par Google) ; elle ne lève que la période de
+ * validité des certificats AUTRES que la feuille : signatures, autorité, racine configurée, liste de révocation et
+ * validité de la feuille restent exigées. Les chaînes RKP restent datées (la doc l'exige) : une chaîne qui porte
+ * l'extension d'information de provisionnement `1.3.6.1.4.1.11129.2.1.30` n'a aucune exception (OID à confirmer à
+ * l'essai ; il ne fait que resserrer).
+ */
+export const GOOGLE_FACTORY_ROOT_SPKI_SHA256 =
+  'feb2ea7551ee316ed4bb443c8293b884dbfdea40b603ee3e4f4a897e4580fbae';
+const PROVISIONING_INFO_EXTENSION_OID = '1.3.6.1.4.1.11129.2.1.30';
 /** Borne de la longueur d'une chaîne (renforcement : une chaîne démesurée est refusée avant tout calcul). */
 const MAX_CHAIN_LENGTH = 10;
 
@@ -51,6 +70,11 @@ export interface AndroidAttestationSettings {
   /** Niveau de correctif minimal `AAAAMM` (`ANDROID_MIN_PATCH_LEVEL`). */
   minPatchLevel: number;
   revocation: RevocationCheck;
+  /**
+   * Empreintes SHA-256 (hexadécimal minuscule) de clés de racines dont les certificats autres que la feuille peuvent
+   * être échus. Défaut : la racine d'usine de Google. Non réglable par la configuration ; surchargé seulement en test.
+   */
+  expiredExemptRootKeys?: readonly string[];
   /** Horloge (tests). */
   now?: () => Date;
 }
@@ -130,6 +154,7 @@ export class AndroidKeyAttestationVerifier implements AttestationVerifier {
   private readonly roots: readonly Buffer[];
   private readonly digests: ReadonlySet<string>;
   private readonly now: () => Date;
+  private readonly exemptRootKeys: ReadonlySet<string>;
 
   constructor(private readonly settings: AndroidAttestationSettings) {
     if (settings.roots.length === 0)
@@ -139,6 +164,11 @@ export class AndroidKeyAttestationVerifier implements AttestationVerifier {
     this.roots = settings.roots.map((root) => Buffer.from(root));
     this.digests = new Set(settings.signingDigests.map((digest) => digest.toLowerCase()));
     this.now = settings.now ?? (() => new Date());
+    this.exemptRootKeys = new Set(
+      (settings.expiredExemptRootKeys ?? [GOOGLE_FACTORY_ROOT_SPKI_SHA256]).map((key) =>
+        key.toLowerCase(),
+      ),
+    );
   }
 
   async verify(input: AttestationInput): Promise<AttestationResult> {
@@ -223,11 +253,14 @@ export class AndroidKeyAttestationVerifier implements AttestationVerifier {
     if (chain.length > MAX_CHAIN_LENGTH) fail(role, 'chaîne trop longue');
     const certs = chain.map((der, index) => parseCert(der, role, index));
     const now = this.now().getTime();
+    const expiryExempt = this.expiredCertificatesTolerated(certs);
 
     certs.forEach((cert, index) => {
       const notBefore = new Date(cert.x509.validFrom).getTime();
       const notAfter = new Date(cert.x509.validTo).getTime();
-      if (!(notBefore <= now && now <= notAfter))
+      // La feuille (index 0, la clé attestée) est toujours datée ; une date de début future est toujours refusée.
+      const expiredButTolerated = expiryExempt && index > 0 && notBefore <= now;
+      if (!expiredButTolerated && !(notBefore <= now && now <= notAfter))
         fail(role, `certificat ${index} hors de sa période de validité`);
       const next = certs[index + 1];
       if (next) {
@@ -248,6 +281,17 @@ export class AndroidKeyAttestationVerifier implements AttestationVerifier {
     const last = certs[certs.length - 1]!;
     if (!this.roots.some((root) => sameBytes(root, last.x509.raw))) fail(role, 'racine inconnue');
     return certs;
+  }
+
+  /** Exception décidée par le porteur (voir `GOOGLE_FACTORY_ROOT_SPKI_SHA256`) : racine d'usine, chaîne non RKP. */
+  private expiredCertificatesTolerated(certs: readonly ParsedCert[]): boolean {
+    const rootKey = certs[certs.length - 1]!.x509.publicKey.export({ type: 'spki', format: 'der' });
+    if (!this.exemptRootKeys.has(createHash('sha256').update(rootKey).digest('hex'))) return false;
+    return !certs.some((cert) =>
+      (cert.asn.tbsCertificate.extensions ?? []).some(
+        (extension) => extension.extnID === PROVISIONING_INFO_EXTENSION_OID,
+      ),
+    );
   }
 
   /** La clé publique de la feuille est la clé annoncée, P-256. */

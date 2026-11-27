@@ -11,7 +11,7 @@ import { Secret } from '../../../src/psp/secret';
 
 const SECRET = 'secret-de-test';
 const secrets: PspSecrets = {
-  adapter: null,
+  credentials: { provider: 'FAKE', key: null },
   notification: { current: Secret.of(SECRET), previous: null, previousValidUntil: null },
 };
 const NOW = new Date();
@@ -34,6 +34,7 @@ const request = (provider: (typeof PSP_PROVIDERS)[number]) => ({
 const verify = (adapter: FakePspAdapter, signed: ReturnType<typeof signFakeNotification>) =>
   adapter.verifyNotification({
     rawBody: signed.rawBody,
+    contentType: 'json',
     headers: signed.headers,
     secrets,
     now: NOW,
@@ -68,6 +69,8 @@ describe.each(PSP_PROVIDERS)('faux %s', (provider) => {
     const result = verify(adapter, signFakeNotification({ provider, secret: SECRET, event }));
     expect(result).toMatchObject({
       ok: true,
+      kind: 'NOTIFICATION',
+      confirmationRequired: false,
       notification: {
         kind: 'DISPUTE',
         dispute: { providerDisputeId: 'dp1', amount: 1000n },
@@ -103,17 +106,30 @@ describe('en-têtes', () => {
     const w = new FakePspAdapter('WAVE');
     const upper = { 'Wave-Signature': wave.headers['wave-signature'] };
     expect(
-      w.verifyNotification({ rawBody: wave.rawBody, headers: upper, secrets, now: NOW }).ok,
+      w.verifyNotification({
+        rawBody: wave.rawBody,
+        contentType: 'json',
+        headers: upper,
+        secrets,
+        now: NOW,
+      }).ok,
     ).toBe(true);
     // Mauvais nom d'en-tête pour le fournisseur : absent.
     expect(
-      w.verifyNotification({ rawBody: stripe.rawBody, headers: stripe.headers, secrets, now: NOW }),
+      w.verifyNotification({
+        rawBody: stripe.rawBody,
+        contentType: 'json',
+        headers: stripe.headers,
+        secrets,
+        now: NOW,
+      }),
     ).toEqual({
       ok: false,
       reason: 'SIGNATURE_MISSING',
     });
     const first = new FakePspAdapter('STRIPE').verifyNotification({
       rawBody: stripe.rawBody,
+      contentType: 'json',
       headers: {
         'x-webhook-signature': [stripe.headers['x-webhook-signature'] ?? '', 't=1,v1=00'],
       },
@@ -142,6 +158,8 @@ describe('normalisation et cohérence avec getStatus', () => {
     const result = verify(adapter, signed);
     expect(result).toMatchObject({
       ok: true,
+      kind: 'NOTIFICATION',
+      confirmationRequired: false,
       notification: { payment: { card: { fingerprint, threeDs } } },
     });
   });
@@ -154,6 +172,8 @@ describe('normalisation et cohérence avec getStatus', () => {
     });
     expect(verify(adapter, signed)).toMatchObject({
       ok: true,
+      kind: 'NOTIFICATION',
+      confirmationRequired: false,
       notification: { payment: { card: null } },
     });
   });
@@ -178,7 +198,9 @@ describe('normalisation et cohérence avec getStatus', () => {
       secrets,
     );
     expect(status.state).toBe('PAID');
-    expect(notified.ok && notified.notification.payment).toEqual(status.payment);
+    expect(
+      notified.ok && notified.kind === 'NOTIFICATION' && notified.notification.payment,
+    ).toEqual(status.payment);
   });
 
   it('référence inconnue -> UNKNOWN', async () => {
@@ -199,11 +221,12 @@ describe('refus', () => {
   it('JSON invalide après bonne signature -> BODY_MALFORMED', () => {
     const raw = Buffer.from('pas du json');
     const t = Math.floor(Date.now() / 1000);
-    const { computeSignature } = jest.requireActual('../../../src/psp/hmac-signature');
-    const header = `t=${t},v1=${computeSignature(Secret.of(SECRET), t, raw)}`;
+    const { computeSignature, FAKE_SCHEME } = jest.requireActual('../../../src/psp/hmac-signature');
+    const header = `t=${t},v1=${computeSignature(Secret.of(SECRET), t, raw, FAKE_SCHEME)}`;
     expect(
       adapter.verifyNotification({
         rawBody: raw,
+        contentType: 'json',
         headers: { 'wave-signature': header },
         secrets,
         now: NOW,
@@ -230,11 +253,12 @@ describe('refus', () => {
 
   it('corps vide signé -> BODY_MALFORMED', () => {
     const t = Math.floor(Date.now() / 1000);
-    const { computeSignature } = jest.requireActual('../../../src/psp/hmac-signature');
-    const header = `t=${t},v1=${computeSignature(Secret.of(SECRET), t, Buffer.alloc(0))}`;
+    const { computeSignature, FAKE_SCHEME } = jest.requireActual('../../../src/psp/hmac-signature');
+    const header = `t=${t},v1=${computeSignature(Secret.of(SECRET), t, Buffer.alloc(0), FAKE_SCHEME)}`;
     expect(
       adapter.verifyNotification({
         rawBody: Buffer.alloc(0),
+        contentType: 'json',
         headers: { 'wave-signature': header },
         secrets,
         now: NOW,
@@ -300,7 +324,10 @@ describe('pilotage', () => {
     a.acceptCancel(true);
     expect(await a.cancel(q, secrets)).toEqual({ cancelled: true });
     expect((await a.getStatus(q, secrets)).state).toBe('CANCELLED');
-    expect(await a.readStatement({ from: NOW, to: NOW }, secrets)).toEqual([]);
+    expect(await a.readStatement({ from: NOW, to: NOW }, secrets)).toEqual({
+      supported: true,
+      lines: [],
+    });
     a.reset();
     expect(a.initiated).toHaveLength(0);
     expect((await a.getStatus(q, secrets)).state).toBe('UNKNOWN');

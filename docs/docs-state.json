@@ -105,6 +105,13 @@
       "addendum_plan_applique": true,
       "addendum_review_applique": true,
       "spec_index_a_jour": true
+    },
+    "adaptateurs-fournisseurs-choisis-01M8BXJA": {
+      "statut": "mergée sur feat/adaptateurs-fournisseurs-choisis le 27/11/2026 (squash 52876ff5), pas encore dans main",
+      "verifie_le": "2026-11-27T14:00:00Z",
+      "addendum_plan_applique": true,
+      "addendum_review_applique": true,
+      "spec_index_a_jour": true
     }
   }
 }

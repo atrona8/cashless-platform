@@ -32,6 +32,12 @@ COPY --chown=node:node apps/gateway ./apps/gateway
 # Le volume de la passerelle (marqueur de purge, fichiers montés) appartient à l'utilisateur
 # non-root.
 RUN mkdir -p /var/lib/gateway && chown node:node /var/lib/gateway
+# Correctifs de sécurité Debian publiés après l'image de base (ex. CVE-2025-6020, libpam, corrigée
+# en 1.5.2-6+deb12u3, absente de l'image officielle au 27/11/2026) : le balayage bloquant refuse
+# toute vulnérabilité HIGH ou CRITICAL corrigée.
+RUN apt-get update \
+  && apt-get -y upgrade --no-install-recommends \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Ni npm, ni npx, ni corepack, ni yarn dans l'image d'exécution : la passerelle ne lance que `node` ;
 # leurs paquets embarqués (pacote, sigstore, ip-address, picomatch, brace-expansion) portaient des
 # vulnérabilités sans usage ici (balayage bloquant, décision 56).

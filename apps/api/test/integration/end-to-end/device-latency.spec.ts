@@ -323,7 +323,13 @@ describe('NFR-001 : aucun faux en production, un test par faux sur le graphe ré
 
   /** API publique en production : chaque port réel-neutre, sauf `fake` posé sur son jeton. */
   const compile = (fake?: { token: symbol; provider: object }, neutral: symbol[] = NEUTRAL) => {
-    const config: AppConfig = { ...loadConfig(), production: true };
+    // Règle I1 : en production `fake` est refusé ; `real` hors PRODUCTION_ENABLED_SERVICES donne
+    // un PSP et un coffre indisponibles (démarrage permis). Les seuls faux sont ceux posés ici.
+    const config: AppConfig = {
+      ...loadConfig(),
+      production: true,
+      externalModes: { psp: 'real', pspSecrets: 'real', kms: 'real', sealCopy: 'real' },
+    };
     const builder = Test.createTestingModule({ imports: [PublicProcessModule] })
       .overrideProvider(APP_CONFIG)
       .useValue(config);

@@ -1,0 +1,241 @@
+{
+  "event_count": 135,
+  "last_event_id": "01M8ECPW79FE4P86SDQFJHMVHP",
+  "materialized_at": "2026-11-27T11:37:04.489813+00:00",
+  "mission_number": "",
+  "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 13,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECNS1W7P58KST4SC24V2GF",
+      "last_transition_at": "2026-11-27T11:36:28.476883+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP01-socle/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP01-socle/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 18281,
+      "shell_pid_created_at": "1795699858.192778"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECNVYYG9NE0FNM0YVW4A04",
+      "last_transition_at": "2026-11-27T11:36:31.454577+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP02-port-psp/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP02-port-psp/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20885,
+      "shell_pid_created_at": "1795699909.536738"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECP4K7BCEFPP00B0GTCXRS",
+      "last_transition_at": "2026-11-27T11:36:40.295558+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP03-reception-relecture/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP03-reception-relecture/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3951,
+      "shell_pid_created_at": "1795708115.259783"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECNYTND387KCTBSD88TE25",
+      "last_transition_at": "2026-11-27T11:36:34.390257+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP04-contrat/review-cycle-2.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP04-contrat/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 46329,
+      "shell_pid_created_at": "1795702664.309826"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECP7FCMRFXSMXB54BC8BZC",
+      "last_transition_at": "2026-11-27T11:36:43.244501+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP05-wave/review-cycle-2.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP05-wave/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 81546,
+      "shell_pid_created_at": "1795706151.839472"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPAAMA9YZD7RPXDCA5YYM",
+      "last_transition_at": "2026-11-27T11:36:46.164748+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP06-paydunya/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP06-paydunya/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44980,
+      "shell_pid_created_at": "1795702638.686605"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPD7RCHGSE7F3X21C9ENR",
+      "last_transition_at": "2026-11-27T11:36:49.144734+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP07-stripe/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP07-stripe/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 81555,
+      "shell_pid_created_at": "1795706152.573879"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPGB3GKEN1A2MF4107PFS",
+      "last_transition_at": "2026-11-27T11:36:52.324085+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP08-secrets-manager/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP08-secrets-manager/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 48903,
+      "shell_pid_created_at": "1795702704.837128"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPKG46B8Q59ZH8MK07FNJ",
+      "last_transition_at": "2026-11-27T11:36:55.556679+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP09-kms-s3/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP09-kms-s3/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 44976,
+      "shell_pid_created_at": "1795702638.166877"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPPDVZXDJNQ7JCGZX7S7H",
+      "last_transition_at": "2026-11-27T11:36:58.555297+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP10-garde-selection/review-cycle-2.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP10-garde-selection/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 20046,
+      "shell_pid_created_at": "1795710621.374999"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPSAZFNRSF24Q7YRJD51R",
+      "last_transition_at": "2026-11-27T11:37:01.535413+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP11-essais/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP11-essais/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 24304,
+      "shell_pid_created_at": "1795711041.004656"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECP1PFD9PJ0MZ5YPA3C1AG",
+      "last_transition_at": "2026-11-27T11:36:37.327672+00:00",
+      "review_result": {
+        "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP12-attestations/review-cycle-1.md",
+        "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP12-attestations/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 81550,
+      "shell_pid_created_at": "1795706152.379451"
+    },
+    "WP13": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M8ECPW79FE4P86SDQFJHMVHP",
+      "last_transition_at": "2026-11-27T11:37:04.489813+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP13:20261127",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 14504,
+      "shell_pid_created_at": "1795774768.722603"
+    }
+  }
+}

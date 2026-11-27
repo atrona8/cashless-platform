@@ -243,6 +243,29 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   (mission 6). Adaptateurs Wave, Orange Money, PayDunya, Stripe et coffre AWS des secrets : mission « Adaptateurs
   PSP réels », dès les accès de test obtenus (décision du porteur du 27/10/2026, OP-N81, ADR-131) ; d'ici là, aucune
   recharge en ligne en production. Remboursement au payeur d'un paiement non crédité : hors plateforme (OP-N82). (§11.1)
+- Mission 12b-1 (décision du porteur du 26/11/2026) : adaptateurs Wave, PayDunya et Stripe conformes à leur
+  documentation publique (le port suit le mécanisme de notification de chaque fournisseur), coffre AWS Secrets Manager,
+  KMS et S3 Object Lock ; il ne reste qu'identifiants et clés à poser. Chaque adaptateur reste refusé en production
+  jusqu'à un essai réel réussi. PayDunya : notification traitée comme un signal, crédit après confirmation par son API.
+  Orange Money attend sa documentation (portail Sonatel, accès par compte). (§11.1, §13.2, §13.7)
+  **Consignée le 27/11/2026 (ADR-237 à ADR-240, OP-N199 à OP-N212 ; preuves : `docs/passation-12b-1/preuves.md`).**
+  Rien n'est en production : `PRODUCTION_ENABLED_SERVICES` est vide, chaque service est levé après son essai réel
+  (commande `npm run essai -w @cashless/api -- <service>`) par une PR relue (OP-N209, OP-N206). Écarts de sécurité décidés
+  par le porteur le 26/11/2026 : preuve d'origine PayDunya fixe (OP-N199, ADR-238), carte PayDunya non créditée faute de
+  preuve 3-D Secure (OP-N200), PayDunya sans relevé ni annulation, rapprochement manuel (OP-N201) ; exception Android des
+  certificats d'usine expirés sous la seule racine Google `f92009e853b6b045` (OP-N202, ADR-239) ; contrôle des extensions
+  `apple_validation_category_01` et `apple_bundle_version_01` d'App Attest reporté à la mission 12 avec un vecteur réel
+  d'Apple (OP-N203, ADR-239). Limites : Wave sans clé d'idempotence (OP-N204), relectures et `expires_at` en mémoire de
+  chaque processus (OP-N205), points « à confirmer à l'essai » (OP-N206), garde réseau des tests contournable par
+  `lookup` (OP-N207), litige Stripe relu (OP-N208, décision du porteur : un litige non rattaché garde la voie « sans
+  correspondance » jusqu'à l'anomalie à 24 h), mineurs de l'essai et des relectures (OP-N210, OP-N211). Contrat : ajout
+  rétrocompatible D9 à `receivePspWebhook` (ADR-237). Stripe : seul `authenticated` vaut un succès 3-D Secure
+  (`attempt_acknowledged` : non crédité, lecture stricte d'ADR-77). Héritages : mission 12 (OP-N202, OP-N203), mission 12b
+  (Orange Money, OTP, OIDC, matériel de la passerelle, autorité des terminaux : OP-N73), mission 13 (OP-N207, OP-N208, OP-N211, décision du porteur du 27/11/2026) ; OP-N205 : mesure à la recette avec plusieurs
+  instances, puis décision du porteur (aucune mission affectée). OP-N203 ne bloque pas la production (décision du 27/11/2026) ;
+  OP-N202 ne bloque pas la production non plus (décision du porteur du 27/11/2026). OP-N212 (recherche du 27/11/2026) :
+  l'exemple de hash publié par PayDunya (`sha512(clé principale)` ne le redonne pas) est à confirmer à l'essai réel (mission 12b),
+  avant toute mise en production de PayDunya (déjà hors de `PRODUCTION_ENABLED_SERVICES`).
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
@@ -415,6 +438,9 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        porteur le 25/11/2026 ; hérite d'OP-N185 et d'OP-N196 : les 13 types non classables, type par type, et le contrôle de l'auteur du
        classement par la base).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
+12b-1. Adaptateurs conformes aux documentations des fournisseurs déjà choisis (26/11/2026) (nous ; **adaptateurs écrits, en attente de la fusion et des essais réels** : lots
+    WP01 à WP13, ADR-237 à ADR-240, OP-N199 à OP-N212, report aux missions 12, 12b et 13). Levés côté code, en attente de
+    l'essai : OP-N41, OP-N89, OP-N131 et les adaptateurs Wave, PayDunya, Stripe et coffre d'OP-N81.
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1
 

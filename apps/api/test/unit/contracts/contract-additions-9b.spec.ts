@@ -144,6 +144,15 @@ const ADDED_PATHS_9C = ['/media/{media_id}/partial-cash-refunds'];
  * tolérance générale : tout autre ajout reste un échec. Base de comparaison inchangée (fin de la 9a), avec les
  * ajouts de la 9c et de la 11b en listes séparées, comme le fichier le fait déjà pour la 9c.
  */
+/**
+ * Mission adaptateurs-fournisseurs-choisis (12b-1), décision du porteur du 26/11/2026 (D9) : trois différences
+ * exactes de `receivePspWebhook` et de `pspHmac`, inscrites dans `contract-baseline.json`. Aucun motif large.
+ */
+const ADDED_BY_12B1 = [
+  "paths['/webhooks/{provider}/{psp_config_id}'].post.description : valeur modifiée",
+  "paths['/webhooks/{provider}/{psp_config_id}'].post.requestBody.content.application/x-www-form-urlencoded : clé ajoutée",
+  'components.securitySchemes.pspHmac.description : valeur modifiée',
+];
 const ADDED_BY_11B = [
   'components.schemas.DeviceAdmin.properties.device_model : clé ajoutée',
   'components.schemas.DeviceAdmin.properties.nfc_level : clé ajoutée',
@@ -303,14 +312,15 @@ describe('contrat de la mission 9b (C-002)', () => {
   it('ne modifie ni ne retire rien d existant (champs, required, enum, réponses)', () => {
     const found: string[] = [];
     violations(base, next, '', found);
-    // Seuls les ajouts de la 10a (ADR-225), de la 9c (ADR-233) et de la 11b (ADR-235) sont admis ; chacun est
+    // Seuls les ajouts de la 10a (ADR-225), de la 9c (ADR-233), de la 11b (ADR-235) et de la 12b-1 (D9) sont admis ; chacun est
     // vérifié à part.
     expect(
       found.filter(
         (entry) =>
           !ADDED_BY_10A.includes(entry) &&
           !ADDED_BY_9C.includes(entry) &&
-          !ADDED_BY_11B.includes(entry),
+          !ADDED_BY_11B.includes(entry) &&
+          !ADDED_BY_12B1.includes(entry),
       ),
     ).toEqual([]);
   });
@@ -625,5 +635,27 @@ describe('contrat de la mission 9b (C-002)', () => {
       const text = JSON.stringify(schemas[name]);
       expect([name, /"(iban|msisdn)"/.test(text)]).toEqual([name, false]);
     }
+  });
+
+  it('contrat de la mission 12b-1 (D9) : exactement trois différences, un 4e changement reste refusé', () => {
+    const found: string[] = [];
+    violations(base, next, '', found);
+    expect(found.filter((entry) => ADDED_BY_12B1.includes(entry)).sort()).toEqual(
+      [...ADDED_BY_12B1].sort(),
+    );
+    // Mutation : un changement hors des trois pointeurs exacts n'est pas exempté.
+    const mutated = structuredClone(next);
+    const comps = obj(mutated.components, 'c');
+    obj(comps.securitySchemes, 's').pspHmac = { type: 'apiKey', in: 'header', name: 'X-Autre' };
+    const after: string[] = [];
+    violations(base, mutated, '', after);
+    const refused = after.filter(
+      (e) =>
+        !ADDED_BY_10A.includes(e) &&
+        !ADDED_BY_9C.includes(e) &&
+        !ADDED_BY_11B.includes(e) &&
+        !ADDED_BY_12B1.includes(e),
+    );
+    expect(refused.length).toBeGreaterThan(0);
   });
 });
