@@ -8,6 +8,7 @@ import { TapsModule } from '../../media/taps/taps.module';
 import { TenantModule } from '../../organization/tenant/tenant.module';
 import { CardChecks } from './card-checks';
 import { PspPaymentProcessor } from './psp-payment-processor';
+import { PspStatusConfirmer } from './psp-status-confirmer';
 import { PspTopupCallerGuard } from './psp-topup-caller.guard';
 import { PspTopupLookup } from './psp-topup-lookup';
 import { PspTopupsController } from './psp-topups.controller';
@@ -20,10 +21,11 @@ import { PspTopupsService } from './psp-topups.service';
     PspTopupsService,
     PspPaymentProcessor,
     PspTopupLookup,
+    PspStatusConfirmer,
     CardChecks,
     PspTopupCallerGuard,
     SqlConfigResolver,
   ],
-  exports: [PspPaymentProcessor, PspTopupLookup],
+  exports: [PspPaymentProcessor, PspTopupLookup, PspStatusConfirmer],
 })
 export class PspTopupsModule {}

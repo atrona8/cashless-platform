@@ -746,6 +746,15 @@ vendeurs et le catalogue : la mission les ajoute.
 
 ## Mission 12 — App terminal (déléguée)
 
+> **Hérité de la 12b-1 (27/11/2026, ADR-239, OP-N202, OP-N203 ; décisions du porteur du 26/11/2026)** : (1) **Apple** : contrôler
+> `apple_validation_category_01` et `apple_bundle_version_01` de `authData.extensions` (étapes 10 et 11 de la validation de
+> l'attestation) et la catégorie et la version de l'assertion (7 et 8), **avec un vecteur réel d'Apple** ; d'ici là, une attestation
+> de catégorie invalide est acceptée (écart ouvert) ; test dans `apps/api/test/unit/attestation/ios.spec.ts` ; mineur : refuser
+> l'aaguid de production en environnement `development`. Mettre à jour OP-N203 et le test de `consignation.spec.ts` à la levée.
+> (2) **Android** : écrire le test qui refuse une chaîne RKP (extension `1.3.6.1.4.1.11129.2.1.30`) expirée sous la racine d'usine
+> `f92009e853b6b045` (exclusion codée, sans test : mutation survivante) et confirmer l'OID sur une chaîne réelle ;
+> test dans `apps/api/test/unit/attestation/android.spec.ts` ; l'exception reste limitée à cette racine (OP-N202).
+
 > **Hérité de la 11b (25/11/2026, ADR-235, OP-N186)** : l'app envoie le modèle du téléphone, champ facultatif
 > `device_model { manufacturer, model }`, dans `DeviceEnrollmentRequest` et `HeartbeatRequest` ; valeur informative, non
 > vérifiée ; une valeur absente, inconnue ou mal formée ne fait jamais refuser l'enrôlement ni l'usage (C-003). Le niveau
@@ -816,6 +825,15 @@ vendeurs et le catalogue : la mission les ajoute.
 - [ ] spec-kitty merge --mission app-terminal
 
 ## Mission 12b — Intégrations réelles (services externes)
+
+> **Précision du 27/11/2026 (mission 12b-1, ADR-237 à ADR-240)** : la 12b-1 a écrit les adaptateurs Wave, PayDunya, Stripe, du
+> coffre des secrets des PSP, d'AWS KMS (cinq ports) et de la copie S3 des scellements ; **leur essai réel et la levée de la garde
+> de production, service par service, restent à faire** (OP-N206, OP-N209 : commande `npm run essai -w @cashless/api --
+> <service>`, puis PR relue). **Reste à la 12b (« 12b » sans suffixe)** : Orange Money (documentation non publique, D1), fournisseurs
+> OTP, serveur d'identité OIDC (OP-N56, OP-N171), signature NXP (OP-N46), matériel de clés de la passerelle (OP-N100, OP-N101),
+> autorité des terminaux et signataire des jetons d'appareil (OP-N73 : les processus public et `tag-keys` refusent de démarrer en
+> production tant qu'il est un faux), notificateur d'alertes (OP-N132), clé de l'IBAN par le KMS (OP-N150), secrets applicatifs
+> dans le coffre (OP-N154), banque. PayDunya : écarts OP-N199 à OP-N201 à réexaminer à l'essai en bac à sable.
 
 > **Hérité de la 10a (23/11/2026, OP-N172, ADR-232)** : rendre impossible ou refuser au démarrage un changement du
 > secret des codes de rattachement sans hausse de sa version (aujourd'hui seule la baisse est refusée). Avec le KMS réel,
@@ -923,6 +941,17 @@ vendeurs et le catalogue : la mission les ajoute.
 > compte du portail Sonatel `developer.orange-sonatel.com` ; à ajouter dès que le porteur la fournit), SMS et WhatsApp,
 > serveur d'identité OIDC, matériel de clés de la passerelle, banque. Les faux de ces services restent tels quels.
 
+> **État au 27/11/2026 (WP13, consignation ; ADR-237 à ADR-240, OP-N199 à OP-N211)** : adaptateurs Wave, PayDunya, Stripe,
+> coffre AWS Secrets Manager, AWS KMS et copie S3 Object Lock écrits (lots WP01 à WP12), **aucun en production** :
+> `PRODUCTION_ENABLED_SERVICES` est vide (OP-N209) ; chaque service se lève après sa commande d'essai réelle, par une PR relue
+> (D6 ; paramètres à poser : `docs/SERVICES-EXTERNES.md`, étapes : `quickstart.md` de la mission, preuves :
+> `docs/passation-12b-1/preuves.md`, note aux équipes : `docs/passation-12b-1/note-equipes.md`). Écarts de sécurité décidés par le
+> porteur le 26/11/2026 : preuve d'origine PayDunya fixe (OP-N199), carte PayDunya non créditée (OP-N200), PayDunya sans relevé
+> (OP-N201), exception Android des certificats d'usine expirés (OP-N202), contrôle Apple reporté (OP-N203). Limites : OP-N204
+> (Wave sans clé d'idempotence), OP-N205 (bornes en mémoire de chaque processus), OP-N206 (« à confirmer à l'essai »), OP-N207
+> (garde réseau des tests contournable par `lookup`), OP-N208 (litige Stripe relu), OP-N210 et OP-N211 (mineurs). **Levés côté code,
+> en attente de l'essai** : OP-N41, OP-N89, OP-N131 et la partie « Wave, PayDunya, Stripe, coffre » d'OP-N81.
+
 - [x] /spec-kitty.specify (26/11/2026, mission `adaptateurs-fournisseurs-choisis-01M8BXJA`, spec `d2ac2dcb` : 16 FR, 5 NFR, 6 C ; Stripe inclus, remboursement OP-N82 hors plateforme) Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis (SPECIFICATION §10.3, §11.1, §13.2, §13.7, ADR-65, ADR-70, ADR-72, ADR-131) : Wave, PayDunya, Stripe derrière `PspAdapter` (le port suit chaque fournisseur : mécanisme de notification propre, rotation, tolérance) ; AWS Secrets Manager, AWS KMS et S3 Object Lock derrière leurs ports. Seuls identifiants et clés restent à poser. Refus en production maintenu jusqu'à l'essai réel de chaque service ; une commande d'essai par service. PayDunya : notification = signal, crédit après confirmation par l'API.
 - [x] /spec-kitty.plan (26/11/2026, plan `64a7f01c` ; décisions du porteur : levée de la garde par liste dans le code et PR relue, règle 3-D Secure gardée pour la carte PayDunya, rétention 10 ans des copies de scellement, ajout rétrocompatible au contrat de `receivePspWebhook` ; `axios` 1.21.1, SDK AWS 3.1172.0) Dépendances (`@aws-sdk/client-kms`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/client-s3`, client HTTP) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; vecteurs de signature tirés des documentations (exemples officiels) ; aucun appel réseau en test (serveurs locaux simulant les réponses documentées) ; écart PayDunya consigné (OP, ADR, test de borne).
 - [x] /spec-kitty.tasks (26/11/2026, `4d7f0752` : 13 lots, T001-T059, 13 lanes a…m ; fiche `docs/passation-12b-1/fiche-implementation.md`, `interfaces.md`)
@@ -934,6 +963,13 @@ vendeurs et le catalogue : la mission les ajoute.
 ---
 
 ## Mission 13 — Recette V1
+
+> **Hérité de la 12b-1 (27/11/2026, ADR-240 ; mission 13 décidée par le porteur le 27/11/2026 pour OP-N207, OP-N208, OP-N211)** :
+> OP-N205 (mesurer à la recette, avec plusieurs instances, la borne « une relecture par recharge et par minute » ; **la décision
+> sur un état partagé en base revient ensuite au porteur** ; aucune mission affectée), OP-N207 (durcir la garde réseau des tests : refuser
+> `options.lookup` ou contrôler l'adresse résolue ; test `apps/api/test/unit/support/no-external-network.spec.ts`), OP-N208
+> (litige Stripe relu : prouver l'absence de transaction ouverte pendant `resolvePaymentReference`, borne d'une résolution par
+> minute face à la reprise des 24 h, mutation survivante de `expireUnmatchedDispute`), OP-N211 (mineurs des relectures).
 
 > **Hérité de la 11b (25/11/2026, ADR-236)** : relevé des limites OP-N185 à OP-N198 : jouer la matrice `x-roles` complète
 > et les trois recharges PSP non jouées, les 99 opérations sans rôle déclaré abouti en 2xx et le `SUPERVISOR` des

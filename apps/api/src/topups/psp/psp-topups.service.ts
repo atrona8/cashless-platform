@@ -332,6 +332,7 @@ export class PspTopupsService {
     try {
       const adapter = this.adapters.forProvider(row.provider as PspProviderName);
       const secrets = await this.secrets.get({
+        provider: row.provider as PspProviderName,
         configurationId: row.configurationId,
         holderPartyId: prepared.holderPartyId,
         secretRef: prepared.secretRef,
@@ -442,6 +443,7 @@ export class PspTopupsService {
   ): Promise<PspSecrets> {
     try {
       return await this.secrets.get({
+        provider: row.provider as PspProviderName,
         configurationId: row.configurationId,
         holderPartyId,
         secretRef,

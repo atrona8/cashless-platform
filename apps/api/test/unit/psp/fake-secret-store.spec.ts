@@ -8,6 +8,7 @@ const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 const CANARI = 'CANARI-9f3a77c1';
 const bind = (holder: string, ref: string) => ({
+  provider: 'WAVE' as const,
   configurationId: 'c',
   holderPartyId: holder,
   secretRef: ref,
@@ -25,12 +26,12 @@ async function codeOf(promise: Promise<unknown>): Promise<{ code: string; messag
 
 describe('FakePspSecretStore', () => {
   const store = new FakePspSecretStore();
-  store.put(`psp/${A}/wave`, { adapter: CANARI, current: `${CANARI}-n` });
+  store.put(`psp/${A}/wave`, { key: CANARI, current: `${CANARI}-n` });
 
   it('lit un secret de son titulaire (casse du titulaire indifférente)', async () => {
     const got = await store.get(bind(A.toUpperCase(), `psp/${A}/wave`));
     expect(got.notification.current.reveal()).toBe(`${CANARI}-n`);
-    expect(got.adapter?.reveal()).toBe(CANARI);
+    expect((got.credentials as { key: Secret | null }).key?.reveal()).toBe(CANARI);
   });
 
   it('titulaire croisé : HOLDER_MISMATCH sans valeur ni titulaire attendu', async () => {
@@ -73,7 +74,7 @@ describe('FakePspSecretStore', () => {
   it('canari : jamais affiché par String, JSON, inspect ni un message d’erreur', async () => {
     const got = await store.get(bind(A, `psp/${A}/wave`));
     const shown = [
-      String(got.adapter),
+      String((got.credentials as { key: Secret | null }).key),
       JSON.stringify(got),
       inspect(got, { depth: 10 }),
       `${got.notification.current}`,

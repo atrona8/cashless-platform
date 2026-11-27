@@ -1552,8 +1552,14 @@ export type paths = {
          *        `ACTIVE` du `provider` de l'URL (inconnue, inactive ou d'un autre `provider` : `404 NOT_FOUND`, réponse
          *        neutre) → signature HMAC-SHA256 sur le corps BRUT, comparaison à temps constant, deux secrets en
          *        rotation (`401 WEBHOOK_SIGNATURE_INVALID`) → horodatage, tolérance ±300 s
-         *        (`401 WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`) → conservation puis traitement. L'en-tête dépend du PSP
-         *        (Wave : `Wave-Signature: t=…,v1=…` ; autres : `X-Webhook-Signature`) ; un adaptateur par PSP normalise.
+         *        (`401 WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`) → conservation puis traitement. La preuve d'origine dépend
+         *        du PSP (un adaptateur par PSP normalise) :
+         *        - `wave` : `Wave-Signature: t=…,v1=…` (HMAC-SHA256 de l'horodatage suivi du corps brut), tolérance ±300 s ;
+         *        - `stripe` : `Stripe-Signature: t=…,v1=…` (HMAC-SHA256 de `horodatage.corps brut`), tolérance ±300 s ;
+         *        - `paydunya` : corps en formulaire, preuve d'origine `data[hash]` ; la notification n'est qu'un signal :
+         *          le paiement est relu auprès de PayDunya avant tout crédit (réponse `200`, aucune écriture au grand
+         *          livre à la réception ; la notification est conservée) ;
+         *        - `orange-money` : inchangé (adaptateur à venir).
          *        Un refus (413, 404, 401) n'écrit RIEN au grand livre ni au registre brut des notifications ; il est
          *        signalé : journal de sécurité `psp.webhook.rejected`, alerte bornée, compteur sans corps.
          *     2. Le tenant est celui de la configuration. La recharge référencée DOIT avoir été initiée avec cette
@@ -14394,6 +14400,9 @@ export interface operations {
                  *     }
                  */
                 "application/json": components["schemas"]["PspWebhookEvent"];
+                "application/x-www-form-urlencoded": {
+                    [key: string]: unknown;
+                };
             };
         };
         responses: {

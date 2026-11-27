@@ -6,6 +6,8 @@ module.exports = {
   rootDir: '.',
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.spec.ts'],
+  // Mission adaptateurs-fournisseurs-choisis (WP01) : aucun appel réseau externe en test (127.0.0.1, ::1, localhost seuls).
+  setupFiles: ['<rootDir>/test/support/no-external-network.ts'],
   // `canonicalize` (JCS, RFC 8785), `jose` (JWT, OIDC) et `cbor2` (objet App Attest, avec sa
   // dépendance `@cto.af/wtf8`) ne sont publiés qu'en module ES : SWC les convertit en CommonJS.
   // `SKIP_LATENCY=1` : les mesures de temps (latence NFR-003 et NFR-006, indistinction des codes NFR-007) sont écartées

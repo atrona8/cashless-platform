@@ -2,9 +2,15 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { APP_CONFIG } from '../../../src/config/config';
+import { APP_CONFIG, loadConfig, type ExternalModes } from '../../../src/config/config';
 import { ProblemException } from '../../../src/errors/problem';
 import { assertNoFakeInProduction, FakeInProductionError } from '../../../src/kms/production-guard';
+import { AwsSecretsManagerStore } from '../../../src/psp/aws/secrets-manager-store';
+import { PayDunyaPspAdapter } from '../../../src/psp/paydunya/paydunya-adapter';
+import { PspSecretError, type PspSecretStore } from '../../../src/psp/psp-secret-store.port';
+import { StripePspAdapter } from '../../../src/psp/stripe/stripe-adapter';
+import { WavePspAdapter } from '../../../src/psp/wave/wave-adapter';
+import { startFakeServer } from '../../support/fake-servers/http-fake';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
 import { FakePspAdapter } from '../../../src/psp/fake/fake-psp-adapter';
 import { FakePspSecretStore } from '../../../src/psp/fake/fake-psp-secret-store';
@@ -162,5 +168,168 @@ describe('borne OP-N81 : les faux ne se répandent pas', () => {
       .filter((file) => reference.test(readFileSync(join(src, file), 'utf8')));
     expect(offenders).toEqual([]);
     expect(readFileSync(join(src, 'psp/psp.providers.ts'), 'utf8')).toMatch(reference);
+  });
+});
+
+// ----- Mission 12b-1, WP10 : faux ou réel, listé ou non (décisions D3 et D6 du porteur, 26/11/2026) -----
+
+const asConfig = (env: NodeJS.ProcessEnv) => loadConfig({ NODE_ENV: 'test', ...env });
+const prod = (modes: Partial<ExternalModes>) => ({
+  production: true,
+  externalModes: {
+    psp: 'real',
+    pspSecrets: 'real',
+    kms: 'real',
+    sealCopy: 'real',
+    ...modes,
+  } as ExternalModes,
+  ...pick(asConfig({}), ['pspBases', 'waveDefaultUrls', 'pspHttpTimeoutMs', 'aws']),
+});
+
+function pick<T extends object, K extends keyof T>(source: T, keys: K[]): Pick<T, K> {
+  return Object.fromEntries(keys.map((key) => [key, source[key]])) as Pick<T, K>;
+}
+
+const unavailable = (registry: PspAdapterRegistry, provider: (typeof PSP_PROVIDERS)[number]) => {
+  try {
+    registry.forProvider(provider);
+  } catch (error) {
+    return (error as { code?: string }).code === 'PSP_UNAVAILABLE';
+  }
+  return false;
+};
+
+describe('sélection des adaptateurs PSP : production × fake/real × listé/non listé', () => {
+  it('production, fake posé : refus de construire, nommé', () => {
+    expect(() => createPspAdapters(prod({ psp: 'fake' }))).toThrow(FakeInProductionError);
+    expect(() => createPspAdapters(prod({ psp: 'fake' }))).toThrow(/les adaptateurs PSP/);
+    expect(() => createPspAdapters(prod({ psp: 'fake' }), undefined, ['psp.wave'])).toThrow(
+      FakeInProductionError,
+    );
+  });
+
+  it('production, réel non listé (liste du code, vide) : registre vide et indisponible, aucun réel construit', () => {
+    const registry = createPspAdapters(prod({}));
+    expect(registry.available).toBe(false);
+    for (const provider of PSP_PROVIDERS) expect(unavailable(registry, provider)).toBe(true);
+    // Réglage absent en production = réel : même résultat.
+    expect(createPspAdapters({ production: true }).available).toBe(false);
+  });
+
+  it('production, réel listé : seuls les fournisseurs listés entrent, jamais Orange Money', () => {
+    const one = createPspAdapters(prod({}), undefined, ['psp.wave']);
+    expect(one.available).toBe(true);
+    expect(one.forProvider('WAVE')).toBeInstanceOf(WavePspAdapter);
+    for (const other of ['PAYDUNYA', 'STRIPE', 'ORANGE_MONEY'] as const)
+      expect(unavailable(one, other)).toBe(true);
+
+    const all = createPspAdapters(prod({}), undefined, ['psp.wave', 'psp.paydunya', 'psp.stripe']);
+    expect(all.forProvider('PAYDUNYA')).toBeInstanceOf(PayDunyaPspAdapter);
+    expect(all.forProvider('STRIPE')).toBeInstanceOf(StripePspAdapter);
+    expect(unavailable(all, 'ORANGE_MONEY')).toBe(true);
+    expect(all.isFake).toBeUndefined();
+    // Le service du coffre ou du service de clés ne suffit pas à ouvrir un PSP.
+    expect(createPspAdapters(prod({}), undefined, ['psp.secrets', 'kms']).available).toBe(false);
+  });
+
+  it('hors production : fake par défaut, real permis (trois adaptateurs, pas d’Orange Money)', () => {
+    expect(createPspAdapters(asConfig({})).isFake).toBe(true);
+    const real = createPspAdapters(asConfig({ PSP_ADAPTERS: 'real' }));
+    expect(real.available).toBe(true);
+    expect(real.isFake).toBeUndefined();
+    expect(real.forProvider('WAVE')).toBeInstanceOf(WavePspAdapter);
+    expect(real.forProvider('PAYDUNYA')).toBeInstanceOf(PayDunyaPspAdapter);
+    expect(real.forProvider('STRIPE')).toBeInstanceOf(StripePspAdapter);
+    expect(unavailable(real, 'ORANGE_MONEY')).toBe(true);
+    for (const provider of ['WAVE', 'PAYDUNYA', 'STRIPE'] as const)
+      expect(real.forProvider(provider).isFake).not.toBe(true);
+  });
+
+  it('la liste ne vient jamais de l’environnement', () => {
+    const saved = { ...process.env };
+    Object.assign(process.env, { PRODUCTION_ENABLED_SERVICES: 'psp.wave,psp.stripe,kms' });
+    try {
+      expect(createPspAdapters(prod({})).available).toBe(false);
+      expect(createPspSecretStore(prod({}))).toBeInstanceOf(UnavailablePspSecretStore);
+    } finally {
+      process.env = saved;
+    }
+  });
+});
+
+describe('sélection du coffre des secrets : production × fake/real × listé/non listé', () => {
+  it('production, fake posé : refus, nommé', () => {
+    expect(() => createPspSecretStore(prod({ pspSecrets: 'fake' }))).toThrow(FakeInProductionError);
+    expect(() => createPspSecretStore(prod({ pspSecrets: 'fake' }))).toThrow(
+      /le coffre des secrets PSP/,
+    );
+  });
+
+  it('production, réel non listé : coffre indisponible (démarrage permis), pas le réel', async () => {
+    const store = createPspSecretStore(prod({}));
+    expect(store).toBeInstanceOf(UnavailablePspSecretStore);
+    expect((store as { isFake?: boolean }).isFake).toBeUndefined();
+    // Un autre service listé n'ouvre pas le coffre.
+    expect(createPspSecretStore(prod({}), ['psp.wave', 'kms'])).toBeInstanceOf(
+      UnavailablePspSecretStore,
+    );
+  });
+
+  it('production, réel listé : le coffre AWS', () => {
+    const store = createPspSecretStore(prod({}), ['psp.secrets']);
+    expect(store).toBeInstanceOf(AwsSecretsManagerStore);
+    expect(store.isFake).toBe(false);
+  });
+
+  it('hors production : fake par défaut, real permis', () => {
+    expect(createPspSecretStore(asConfig({}))).toBeInstanceOf(FakePspSecretStore);
+    expect(createPspSecretStore(asConfig({ PSP_SECRET_STORE: 'real' }))).toBeInstanceOf(
+      AwsSecretsManagerStore,
+    );
+  });
+});
+
+describe('indisponibilité d’un service au démarrage : le module démarre, l’usage échoue sans secret', () => {
+  let closedUrl: string;
+  const saved = { ...process.env };
+
+  beforeAll(async () => {
+    // Faux serveur local démarré puis ARRÊTÉ : le port est libre, toute connexion est refusée.
+    const server = await startFakeServer(() => undefined);
+    closedUrl = server.url;
+    await server.close();
+    Object.assign(process.env, {
+      AWS_ACCESS_KEY_ID: 'test',
+      AWS_SECRET_ACCESS_KEY: 'test',
+      AWS_MAX_ATTEMPTS: '1',
+      AWS_EC2_METADATA_DISABLED: 'true',
+    });
+  });
+  afterAll(() => {
+    process.env = saved;
+  });
+
+  it('coffre réel : le module compile (aucun appel au démarrage) ; la lecture échoue sans exposer la référence', async () => {
+    const config = asConfig({
+      PSP_ADAPTERS: 'real',
+      PSP_SECRET_STORE: 'real',
+      AWS_ENDPOINT_URL: closedUrl,
+    });
+    @Global()
+    @Module({ providers: [{ provide: APP_CONFIG, useValue: config }], exports: [APP_CONFIG] })
+    class RealConfig {}
+    const module = await Test.createTestingModule({ imports: [RealConfig, PspModule] }).compile();
+    const store = module.get<PspSecretStore>(PSP_SECRET_STORE);
+    expect(store).toBeInstanceOf(AwsSecretsManagerStore);
+    const holder = '11111111-2222-4333-8444-555555555555';
+    const secretRef = `psp/${holder}/ref-tres-secrete`;
+    const error = await store
+      .get({ configurationId: 'c', holderPartyId: holder, secretRef, provider: 'WAVE' })
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(PspSecretError);
+    expect(JSON.stringify(error) + String((error as Error).message)).not.toContain(
+      'ref-tres-secrete',
+    );
+    await module.close();
   });
 });

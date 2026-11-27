@@ -467,4 +467,103 @@ describe('architecture', () => {
       .map((f) => f.path);
     expect(offenders).toEqual([]);
   });
+
+  // ----- Mission 12b-1, WP10 : clients des services externes (décisions D3 et D6 du porteur, 26/11/2026) -----
+
+  /** Fichiers hors de `allowedPrefix` dont le code importe `pkg` (import, import dynamique, require). */
+  const importersOf = (
+    list: ReadonlyArray<{ path: string; text: string }>,
+    pkg: string,
+    allowedPrefix: string,
+  ): string[] => {
+    const escaped = pkg.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+    const pattern = new RegExp(
+      `(?:from|import\\s*\\(|require\\s*\\()\\s*['"]${escaped}(?:/[^'"]*)?['"]`,
+    );
+    return list
+      .filter((file) => !file.path.startsWith(allowedPrefix))
+      .filter((file) => pattern.test(code(file.text)))
+      .map((file) => file.path);
+  };
+
+  it('(a) @aws-sdk/client-kms n’est importé que sous src/kms/aws/', () => {
+    expect(importersOf(files, '@aws-sdk/client-kms', 'kms/aws/')).toEqual([]);
+    // Le garde-fou voit bien un import interdit (mutation : un import ajouté ailleurs ferait échouer le test).
+    const mutated = [
+      ...files,
+      { path: 'kms/kms.module.ts', text: "import { KMSClient } from '@aws-sdk/client-kms';" },
+      { path: 'x/dynamic.ts', text: "const m = await import('@aws-sdk/client-kms');" },
+      { path: 'x/required.ts', text: "const m = require('@aws-sdk/client-kms');" },
+    ];
+    expect(importersOf(mutated, '@aws-sdk/client-kms', 'kms/aws/')).toEqual([
+      'kms/kms.module.ts',
+      'x/dynamic.ts',
+      'x/required.ts',
+    ]);
+    // Les deux autres clients AWS restent dans leur dossier.
+    expect(importersOf(files, '@aws-sdk/client-secrets-manager', 'psp/')).toEqual([]);
+    expect(importersOf(files, '@aws-sdk/client-s3', 'sealing/')).toEqual([]);
+  });
+
+  it('(b) aucun module chargé par le processus public (main.ts) n’importe src/kms/aws/', () => {
+    for (const entry of ['main.ts', ROOTS.public]) {
+      const seen = reachable(entry);
+      expect(seen.size).toBeGreaterThan(10);
+      expect([...seen].filter((path) => path.startsWith('kms/aws/'))).toEqual([]);
+      expect(seen.has('kms/kms.module.ts')).toBe(false);
+    }
+    // Seul kms.module.ts atteint le client réel, et c'est lui que le public n'atteint pas.
+    const users = files
+      .filter((file) => !file.path.startsWith('kms/aws/'))
+      .filter((file) =>
+        imports(file.text).some((source) =>
+          file.path.startsWith('kms/') ? /^\.\/aws\//.test(source) : /\/kms\/aws\//.test(source),
+        ),
+      )
+      .map((file) => file.path);
+    expect(users).toEqual(['kms/kms.module.ts']);
+  });
+
+  it('(c) src/psp/fake/ n’est importé que par psp.providers.ts', () => {
+    const offenders = files
+      .filter((file) => !file.path.startsWith('psp/fake/') && file.path !== 'psp/psp.providers.ts')
+      .filter((file) => imports(file.text).some((source) => /(^|\/)fake\//.test(source)))
+      .map((file) => file.path);
+    expect(offenders).toEqual([]);
+  });
+
+  it('(d) les adaptateurs wave, paydunya et stripe n’importent pas axios : seul psp/http/ le fait', () => {
+    const adapters = files.filter((file) => /^psp\/(wave|paydunya|stripe)\//.test(file.path));
+    expect(adapters.length).toBeGreaterThanOrEqual(3);
+    expect(importersOf(adapters, 'axios', 'psp/http/')).toEqual([]);
+    expect(importersOf(files, 'axios', 'psp/http/')).toEqual([]);
+    expect(
+      importersOf(
+        [...adapters, { path: 'psp/wave/x.ts', text: "import axios from 'axios';" }],
+        'axios',
+        'psp/http/',
+      ),
+    ).toEqual(['psp/wave/x.ts']);
+  });
+
+  it('les adaptateurs réels ne sont construits que par leurs fabriques', () => {
+    const sites = (klass: string, allowed: string[], list = files) =>
+      list
+        .filter((file) => new RegExp(`\\bnew\\s+${klass}\\s*\\(`).test(code(file.text)))
+        .map((file) => file.path)
+        .filter((path) => !allowed.includes(path));
+    const rules: Array<[string, string[]]> = [
+      ['S3SealCopy', ['sealing/sealing.module.ts']],
+      ['AwsKms', ['kms/kms.module.ts']],
+      ['PayDunyaPspAdapter', ['psp/psp.providers.ts']],
+      ['WavePspAdapter', ['psp/psp.providers.ts']],
+      ['StripePspAdapter', ['psp/psp.providers.ts']],
+      ['AwsSecretsManagerStore', ['psp/psp.providers.ts']],
+    ];
+    for (const [klass, allowed] of rules)
+      expect({ klass, hors: sites(klass, allowed) }).toEqual({ klass, hors: [] });
+    // Mutation : une construction ailleurs est vue.
+    const mutated = [...files, { path: 'x/y.ts', text: 'const c = new S3SealCopy(client, cfg);' }];
+    expect(sites('S3SealCopy', ['sealing/sealing.module.ts'], mutated)).toEqual(['x/y.ts']);
+  });
 });

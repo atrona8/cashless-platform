@@ -1,4 +1,5 @@
-// Signature des notifications PSP : en-tête `t=<unix>,v1=<hex>[,v1=<hex>]`, HMAC-SHA256 sur `t.corps_brut`.
+// Signature des notifications PSP : en-tête `t=<unix>,v1=<hex>[,v1=<hex>]`, HMAC-SHA256 sur `t<sép>corps_brut`
+// (séparateur et entrées inconnues selon le schéma : faux, Wave, Stripe).
 // Partagé avec WP12. Les deux secrets sont toujours évalués contre toutes les signatures, sans sortie
 // anticipée ; la signature est jugée avant l'horodatage.
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -7,8 +8,31 @@ import { Secret } from './secret';
 
 export const WEBHOOK_TOLERANCE_SECONDS = 300;
 
+/** Variantes de la signature `t` + séparateur + corps : séparateur, entrées inconnues, tolérance. */
+export interface HmacScheme {
+  separator: '' | '.';
+  allowUnknownEntries: boolean;
+  toleranceSeconds: number;
+}
+export const FAKE_SCHEME: HmacScheme = {
+  separator: '.',
+  allowUnknownEntries: false,
+  toleranceSeconds: WEBHOOK_TOLERANCE_SECONDS,
+};
+export const WAVE_SCHEME: HmacScheme = {
+  separator: '',
+  allowUnknownEntries: false,
+  toleranceSeconds: WEBHOOK_TOLERANCE_SECONDS,
+};
+export const STRIPE_SCHEME: HmacScheme = {
+  separator: '.',
+  allowUnknownEntries: true,
+  toleranceSeconds: WEBHOOK_TOLERANCE_SECONDS,
+};
+
 export function parseSignatureHeader(
   value: string,
+  scheme: HmacScheme,
 ): { timestamp: number; signatures: string[] } | null {
   let timestamp: number | null = null;
   const signatures: string[] = [];
@@ -24,15 +48,20 @@ export function parseSignatureHeader(
     } else if (key === 'v1') {
       if (!/^(?:[0-9a-fA-F]{2})+$/.test(val)) return null;
       signatures.push(val.toLowerCase());
-    } else return null;
+    } else if (!scheme.allowUnknownEntries) return null;
   }
   if (timestamp === null || signatures.length === 0) return null;
   return { timestamp, signatures };
 }
 
-export function computeSignature(secret: Secret, timestamp: number, rawBody: Buffer): string {
+export function computeSignature(
+  secret: Secret,
+  timestamp: number,
+  rawBody: Buffer,
+  scheme: HmacScheme,
+): string {
   return createHmac('sha256', secret.reveal())
-    .update(`${timestamp}.`)
+    .update(`${timestamp}${scheme.separator}`)
     .update(rawBody)
     .digest('hex');
 }
@@ -63,17 +92,23 @@ export function verifyHmacSignature(input: {
   rawBody: Buffer;
   secrets: PspSecrets;
   now: Date;
+  scheme: HmacScheme;
 }): HmacVerification {
   if (input.header === undefined || input.header.trim() === '')
     return { ok: false, reason: 'SIGNATURE_MISSING' };
-  const parsed = parseSignatureHeader(input.header);
+  const parsed = parseSignatureHeader(input.header, input.scheme);
   if (parsed === null) return { ok: false, reason: 'SIGNATURE_MALFORMED' };
 
   const { current, previous, previousValidUntil } = input.secrets.notification;
   // Secret précédent absent : secret factice aléatoire, pour évaluer toujours deux secrets.
   const previousOrDummy = previous ?? Secret.of(randomBytes(32).toString('hex'));
-  const expectedCurrent = computeSignature(current, parsed.timestamp, input.rawBody);
-  const expectedPrevious = computeSignature(previousOrDummy, parsed.timestamp, input.rawBody);
+  const expectedCurrent = computeSignature(current, parsed.timestamp, input.rawBody, input.scheme);
+  const expectedPrevious = computeSignature(
+    previousOrDummy,
+    parsed.timestamp,
+    input.rawBody,
+    input.scheme,
+  );
   let currentMatches = false;
   let previousMatches = false;
   for (const received of parsed.signatures) {
@@ -91,7 +126,7 @@ export function verifyHmacSignature(input: {
   else return { ok: false, reason: 'SIGNATURE_INVALID' };
 
   const signedAtMs = parsed.timestamp * 1000;
-  if (Math.abs(signedAtMs - input.now.getTime()) > WEBHOOK_TOLERANCE_SECONDS * 1000)
+  if (Math.abs(signedAtMs - input.now.getTime()) > input.scheme.toleranceSeconds * 1000)
     return { ok: false, reason: 'TIMESTAMP_OUT_OF_TOLERANCE' };
   return { ok: true, signedAt: new Date(signedAtMs), secretUsed };
 }

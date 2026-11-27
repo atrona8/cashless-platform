@@ -1,7 +1,7 @@
 // Faux PSP (un par fournisseur), hors production seulement : jamais un modèle de sécurité. Importé par le seul
 // `psp.providers.ts` (borne OP-N81). Domaine factice en `.invalid`, aucun secret par défaut.
 import { randomBytes } from 'node:crypto';
-import { verifyHmacSignature } from '../hmac-signature';
+import { FAKE_SCHEME, verifyHmacSignature } from '../hmac-signature';
 import type { PspAdapter, PspVerification, VerifyNotificationInput } from '../psp-adapter.port';
 import { PspProviderError } from '../psp-errors';
 import type { PspSecrets } from '../psp-secret-store.port';
@@ -13,7 +13,7 @@ import {
   type PspInitiateRequest,
   type PspInitiateResult,
   type PspProviderName,
-  type PspStatementLine,
+  type PspStatement,
   type PspStatusQuery,
   type PspStatusResult,
 } from '../psp.types';
@@ -157,15 +157,18 @@ export class FakePspAdapter implements PspAdapter {
       rawBody: input.rawBody,
       secrets: input.secrets,
       now: input.now,
+      scheme: FAKE_SCHEME,
     });
     if (!verified.ok) return verified;
     const notification = this.parseBody(input.rawBody);
     if (notification === null) return { ok: false, reason: 'BODY_MALFORMED' };
     return {
       ok: true,
+      kind: 'NOTIFICATION',
       notification,
       signedAt: verified.signedAt,
       secretUsed: verified.secretUsed,
+      confirmationRequired: false,
     };
   }
 
@@ -230,10 +233,7 @@ export class FakePspAdapter implements PspAdapter {
     return Promise.resolve({ cancelled });
   }
 
-  readStatement(
-    _period: { from: Date; to: Date },
-    _secrets: PspSecrets,
-  ): Promise<PspStatementLine[]> {
-    return Promise.resolve([]);
+  readStatement(_period: { from: Date; to: Date }, _secrets: PspSecrets): Promise<PspStatement> {
+    return Promise.resolve({ supported: true, lines: [] });
   }
 }

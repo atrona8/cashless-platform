@@ -17,7 +17,7 @@ const adapter = new FakePspAdapter('WAVE');
 const secrets = (
   previousValidUntil: Date | null = new Date(NOW.getTime() + 60_000),
 ): PspSecrets => ({
-  adapter: null,
+  credentials: { provider: 'FAKE', key: null },
   notification: {
     current: Secret.of(CURRENT),
     previous: previousValidUntil === null ? null : Secret.of(PREVIOUS),
@@ -43,7 +43,14 @@ function signed(secret: string, offsetSeconds = 0) {
 }
 
 const verify = (s: ReturnType<typeof signed>, secretSet = secrets(), now = NOW) =>
-  verifyWebhook({ adapter, rawBody: s.rawBody, headers: s.headers, secrets: secretSet, now });
+  verifyWebhook({
+    adapter,
+    rawBody: s.rawBody,
+    contentType: 'json',
+    headers: s.headers,
+    secrets: secretSet,
+    now,
+  });
 
 describe('vérification des notifications', () => {
   afterEach(() => jest.restoreAllMocks());
@@ -118,15 +125,20 @@ describe('vérification des notifications', () => {
     });
     const notification = adapter.verifyNotification({
       rawBody: signed(CURRENT).rawBody,
+      contentType: 'json',
       headers: signed(CURRENT).headers,
       secrets: secrets(),
       now: NOW,
     });
-    const base = notification.ok ? notification.notification : (null as never);
+    const base =
+      notification.ok && notification.kind === 'NOTIFICATION'
+        ? notification.notification
+        : (null as never);
     const call = (verdict: PspVerification, secretSet = secrets()) =>
       verifyWebhook({
         adapter: lying(verdict),
         rawBody: Buffer.from('{}'),
+        contentType: 'json',
         headers: {},
         secrets: secretSet,
         now: NOW,
@@ -135,14 +147,31 @@ describe('vérification des notifications', () => {
     it('horodatage hors tolérance malgré un « ok » de l’adaptateur', () => {
       const stale = new Date(NOW.getTime() - 3600_000);
       expect(
-        call({ ok: true, notification: base, signedAt: stale, secretUsed: 'current' }),
+        call({
+          ok: true,
+          kind: 'NOTIFICATION',
+          confirmationRequired: false,
+          notification: base,
+          signedAt: stale,
+          secretUsed: 'current',
+        }),
       ).toEqual({ ok: false, reason: 'TIMESTAMP_OUT_OF_TOLERANCE' });
     });
 
     it('secret précédent échu malgré un « ok » de l’adaptateur', () => {
       const expired = secrets(new Date(NOW.getTime() - 1));
       expect(
-        call({ ok: true, notification: base, signedAt: NOW, secretUsed: 'previous' }, expired),
+        call(
+          {
+            ok: true,
+            kind: 'NOTIFICATION',
+            confirmationRequired: false,
+            notification: base,
+            signedAt: NOW,
+            secretUsed: 'previous',
+          },
+          expired,
+        ),
       ).toEqual({ ok: false, reason: 'SIGNATURE_INVALID' });
     });
 
@@ -151,11 +180,55 @@ describe('vérification des notifications', () => {
         expect(
           call({
             ok: true,
+            kind: 'NOTIFICATION',
+            confirmationRequired: false,
             notification: { ...base, notificationId: id },
             signedAt: NOW,
             secretUsed: 'current',
           }),
         ).toEqual({ ok: false, reason: 'BODY_MALFORMED' });
+    });
+
+    describe('signal', () => {
+      const signal = (over: Partial<{ id: string; used: string }> = {}) =>
+        call({
+          ok: true,
+          kind: 'SIGNAL',
+          notificationId: over.id ?? 'sig-1',
+          reference: { merchantReference: 'm-1', providerPaymentRef: 'p-1' },
+          secretUsed: (over.used ?? 'current') as 'current',
+        });
+
+      it('accepté avec le secret courant, sans horodatage ni montant', () => {
+        expect(signal()).toEqual({
+          ok: true,
+          kind: 'SIGNAL',
+          notificationId: 'sig-1',
+          reference: { merchantReference: 'm-1', providerPaymentRef: 'p-1' },
+          secretUsed: 'current',
+        });
+      });
+
+      it('secret précédent : refusé, même non échu', () => {
+        expect(signal({ used: 'previous' })).toEqual({ ok: false, reason: 'SIGNATURE_INVALID' });
+      });
+
+      it('identifiant vide ou trop long : corps illisible', () => {
+        for (const id of ['', 'x'.repeat(201)])
+          expect(signal({ id })).toEqual({ ok: false, reason: 'BODY_MALFORMED' });
+      });
+    });
+
+    it('le verdict « confirmation requise » est rendu tel quel', () => {
+      const verdict = call({
+        ok: true,
+        kind: 'NOTIFICATION',
+        confirmationRequired: true,
+        notification: base,
+        signedAt: NOW,
+        secretUsed: 'current',
+      });
+      expect(verdict).toMatchObject({ ok: true, kind: 'NOTIFICATION', confirmationRequired: true });
     });
 
     it('un adaptateur qui lève une exception est un refus, jamais une exception', () => {
@@ -167,6 +240,7 @@ describe('vérification des notifications', () => {
       const verdict = verifyWebhook({
         adapter: throwing,
         rawBody: Buffer.from('{}'),
+        contentType: 'json',
         headers: {},
         secrets: secrets(),
         now: NOW,

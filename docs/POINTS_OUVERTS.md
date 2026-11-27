@@ -19,7 +19,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N13 | Algorithme de signature des snapshots | Non | Non | Agent (vérification technique) |
 | OP-N36 | Capture différée dans la cible V2 (reporté au cadrage V2) | Non | Non | Porteur du projet, avec le premier partenaire de caisse |
 | OP-N37 | Outils de sécurité en CI (reporté) | Non | Non | Porteur du projet |
-| OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 12b (déplacée de la mission 7 le 29/10/2026, ADR-138), après OP-N11 |
+| OP-N41 | Service de clés des bracelets : faux seulement, adaptateur AWS KMS à écrire | Non | **Oui** | Mission 12b (déplacée de la mission 7 le 29/10/2026, ADR-138), après OP-N11. **Mission 12b-1 (27/11/2026, ADR-237) : levé côté code (`AwsKms`, cinq ports), en attente de l'essai réel** (`-- kms`, puis service `kms` dans `PRODUCTION_ENABLED_SERVICES`) |
 | OP-N42 | Identité du terminal — **levé** le 21/10/2026 par la mission 5a (jeton lié, mTLS et signature de chaque requête, ADR-107 ; `device-auth-matrix.spec.ts`, `production-guard.spec.ts`) | Non | Non | — |
 | OP-N43 | Identité du festivalier : **jeton d'accès réel disponible depuis le 10/11/2026** (`/customer-auth/*`, `TokenCustomerIdentity`, hors Spec Kitty, ADR-180) ; en production le jeton seul est cru (en-têtes `X-Test-*` ignorés), hors production les en-têtes restent admis en l'absence d'`Authorization`. KYC au guichet et OP-N47 **levés par la mission 10a le 20/11/2026** (ADR-226, ADR-228) ; reste l'envoi réel du code (OP-N120, mission 12b) | Non | **Oui** (tant qu'OP-N120 n'est pas levé : le faux envoyeur refuse le démarrage en production) | Mission 12b (la 10a a levé le reste, 20/11/2026) |
 | OP-N44 | `EXECUTE` hérité de `PUBLIC` — **levé** le 21/10/2026 par la mission 5a (droits rôle par rôle, `tests_execute_grants.sql`) | Non | Non | — |
@@ -51,7 +51,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N70 | Suites de la mission 4 sous le faux d'identité du terminal — **levé** le 21/10/2026 par WP18 de la mission 5a (chaque route de terminal en HTTPS réel, test de couverture : `device-auth-matrix.spec.ts`) | Non | Non | — |
 | OP-N71 | Idempotence : rejeu sur une autre ressource et entre personnes — **levé** le 21/10/2026 par WP18 de la mission 5a (chemin concret et appelant dans l'empreinte, ADR-116 ; `admin.spec.ts`, `request-hash.spec.ts`) ; même consigne de déploiement qu'OP-N54 | Non | Non | Exploitation (consigne de déploiement) |
 | OP-N72 | Enrôlement : chaque refus d'un code inconnu prend le verrou de la chaîne d'audit de la plateforme, et la limite par adresse (/64 en IPv6) ne borne pas un attaquant qui dispose de nombreuses adresses ; aucune limite en amont (répartiteur) sur `POST /v1/device-enrollments` (ADR-117) | Non | Non (limite résiduelle acceptée) | Mission 13 (recette V1) : proposée par l'agent, confirmée par le porteur le 21/10/2026 |
-| OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 12b, avec OP-N41 (déplacée de la mission 7 le 29/10/2026, ADR-138) |
+| OP-N73 | Autorité des terminaux (`DEVICE_CA`) et signataire des jetons d'appareil (`TOKEN_SIGNER`) : faux seulement, aucun adaptateur réel (C-004 de la mission 5a, ADR-119) | Non | **Oui** (démarrage refusé en production) | Mission 12b, avec OP-N41 (déplacée de la mission 7 le 29/10/2026, ADR-138). **Reste à la 12b** : la 12b-1 (OP-N41) ne livre pas l'autorité des terminaux ni le signataire des jetons d'appareil, toujours des faux refusés en production |
 | OP-N74 | Enrôlement sur un code lié à un événement clos ou à un point de vente supprimé — **levé** le 26/10/2026 par la mission 5b (migration `0035_enrollment_event_state.sql` : `create_device_enrollment_code` et `enroll_device` refusent `CLOSED` pour tout mode et, dès `CLOSING`, `CATALOG_POS`/`KEYPAD_TPE`, et un point de vente absent de l'événement du code ; `tests_enrollment_event_state.sql`, ADR-120) | Non | Non | — |
 | OP-N76 | **LEVÉ le 19/11/2026 par la mission 11a** : processus `vendor-pin` et rôle `cashless_pin`, seuls à lire l'empreinte et ouvrir la session ; `cashless_app` sans `EXECUTE` ; API sans `VENDOR_PIN_SECRET`, appel signé HMAC sans repli, anti-rejeu (`vendor-pin-process.spec.ts`, `vendor-sessions.spec.ts`, `tests_11a_rights.sql` ; ADR-217). Reste nommé : PIN en transit (OP-N151) | Non | Non (levé) | Levé |
 | OP-N75 | Purges des nonces et des essais d'enrôlement exécutées par `cashless_app` — **levé** le 04/11/2026 par la mission 7 (rôle `cashless_maint` et processus `maintenance`, `post-roles.sql` §8g ; ADR-114 ; `tests_device_purge_window.sql`, `tests_execute_grants.sql`) | Non | Non | — |
@@ -59,15 +59,15 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N78 | `vendor_pin_check` (registre des essais de PIN des vendeurs) sans fonction de purge : la table grossit sans limite (relecture WP07 de la mission 5b ; ADR-127) | Non | Non (décision du porteur du 26/10/2026) | Mission 13 (recette V1) |
 | OP-N79 | **LEVÉ le 18/11/2026 par la mission 11a** : clé étrangère `sale_attribution_session_vendor_fk` sur `(vendor_session_id, vendor_id)` (migration 0090 ; `tests_vendor_session_key.sql` ; ADR-216) | Non | Non (levé) | Levé |
 | OP-N80 | Ouverture de session de vendeur : le verrou d'essai de PIN (`SessionLock`) tient une connexion du pool dédié pendant toute la requête (argon2 compris) ; au-delà de `poolSize` terminaux qui ouvrent une session en même temps, `pool.connect` attend 10 s puis rend `500` au lieu de `429` (relecture WP09 cycle 3, mission 5b) | Non | Non (dimensionnement, aucun droit élargi) | Mission 13 (recette V1) : mesure en charge, puis taille du pool ou `429` ; report accepté par le porteur le 26/10/2026 (ADR-130) |
-| OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026 |
-| OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur). **Partie rapprochement levée le 17/11/2026 par la mission 9b** (anomalies PSP prises en compte par le contrôle « grand livre = relevé », ADR-210) |
+| OP-N81 | Adaptateurs PSP réels (Wave, Orange Money, PayDunya, Stripe) et coffre des secrets AWS non livrés : la mission 6 ne livre que l'interface commune, un faux par fournisseur et un faux coffre, refusés au démarrage en production (ADR-131) | Non | **Oui** (aucune recharge en ligne en production) | Mission « Adaptateurs PSP réels », dès les accès de test obtenus (action 11) ; décision du porteur du 27/10/2026. **Mission 12b-1 (27/11/2026, ADR-237) : Wave, PayDunya, Stripe et coffre AWS des secrets des PSP levés côté code, en attente de l'essai réel ; Orange Money reste à la 12b** (D1) |
+| OP-N82 | Paiement réussi chez le PSP mais non crédité (plafond, 3-D Secure, plafond de carte, grand livre fermé) : remboursement au payeur fait hors de la plateforme (tableau de bord du PSP), clôturé par résolution d'anomalie à deux ; aucun canal intégré | Non | Non (rien n'est crédité ; argent suivi par l'anomalie) | Mission « Adaptateurs PSP réels » (remboursement par l'adaptateur) ; **12b-1 : inchangé, remboursement au payeur hors plateforme (D5)**. **Partie rapprochement levée le 17/11/2026 par la mission 9b** (anomalies PSP prises en compte par le contrôle « grand livre = relevé », ADR-210) |
 | OP-N83 | Cause d'un blocage de portefeuille : corrigée par la migration `0042` (WP14 cycle 2, décision du porteur du 29/10/2026) ; reste : un chemin qui écrit lui-même `ACTIVE` lève aussi la cause de contestation | Non | Non | Levé pour l'ordre des événements ; ADR-134 |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2) : `take_deposit`, `refund_deposit`, `refund_cash_due` ne sont plus accordées à `cashless_app` | Non | Non | Levé ; ADR-135 |
 | OP-N85 | Caution due non prise si le processus s'arrête entre le COMMIT du crédit et l'appel qui la prend (fenêtre étroite, reprise au rejeu d'une autre notification seulement) | Non | Non | Mission 13 (recette V1) ou lot de reprise ; ADR-135 |
 | OP-N86 | Droits de `cashless_app` plus larges que nécessaire : `psp_poll_candidates(int)` et `psp_events_to_retry(int)` (0038) voient les recharges et notifications de tous les prestataires ; le `psp-poller` tourne sous `cashless_app` sans rôle dédié ; INSERT direct sur `anomaly` gardé (5 sites de la mission 6) | Non | Non (limite connue, bornée par tests) | Mission 13 (recette V1) : rôle dédié au `psp-poller`, retrait des deux fonctions et de l'INSERT sur `anomaly` au profit d'une fonction de la base ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N87 | `posting_cash_desk_guard` (0036) lit `cash_desk` sous RLS forcée : la garde « aucune espèce sans session » ne vaut que si le propriétaire de la fonction contourne la RLS ; sinon elle laisse passer sans bruit | Non | Non (dépend du déploiement, borné par un test) | Mission 13 (déploiement) : rôle propriétaire contrôlé, ou garde qui refuse si la recherche est impossible ; décision du porteur du 29/10/2026 (ADR-136) |
 | OP-N88 | Soldes lus sans verrou avant l'écriture : `CHARGEBACK` verrouille le solde payé en détournant `wallet_topup_headroom` (correctif de la PR #8) ; `PURCHASE` (mission 5b) lit encore les soldes promo et payé sans verrou | Non | Non (aucun argent créé : la base refuse le découvert ; refus à tort sous concurrence) | Mission 13 : fonction SQL dédiée qui verrouille les comptes de l'écriture dans l'ordre des identifiants avant la lecture, utilisée par `CHARGEBACK` et `PURCHASE` ; décision du porteur du 29/10/2026 |
-| OP-N89 | Signature des snapshots hors ligne et clés de contenu par un faux KMS (`SignPort`, `DataKeyPort` simulés) : aucun snapshot servi en production avant la mission 12b (plan de la mission 7, ADR-138) | Non | **Oui** (démarrage refusé en production) | Mission 12b |
+| OP-N89 | Signature des snapshots hors ligne et clés de contenu par un faux KMS (`SignPort`, `DataKeyPort` simulés) : aucun snapshot servi en production avant la mission 12b (plan de la mission 7, ADR-138) | Non | **Oui** (démarrage refusé en production) | Mission 12b. **Mission 12b-1 (27/11/2026, ADR-237) : levé côté code (`SignPort`, `DataKeyPort`, `DecryptPort` sur `AwsKms`), en attente de l'essai réel** |
 | OP-N90 | Rejet réessayable d'un lot (4e `CL007`) : un numéro sans résultat final admis à la clôture du lot sur une trace `offline_batch_retry` écrite par la base (écart à l'invariant I2, décision du porteur du 30/10/2026, ADR-139) | Non | Non (alerte à 24 h) | — (écart permanent, revu en mission 13) |
 | OP-N91 | Droits ajoutés au contrat de la mission 7 : `cashless_snapsign` exécute `discard_offline_snapshot_draft` et `mark_offline_retry_alerted` ; `cashless_snapcontent` jette ses brouillons ; `cashless_app` lit les identifiants des imports de journal en cours de tous les prestataires (`device_journal_imports_processing`) (décisions du porteur du 30/10/2026, ADR-140) | Non | Non | — (écart permanent, revu en mission 13) |
 | OP-N92 | Clés de signature des snapshots : `cashless_keyadmin` lit cinq colonnes de `snapshot_signing_key`, `cashless_snapsign` exécute `snapshot_public_keys`, rotation sans approbation à deux et acteur non vérifié (décisions du porteur des 30/10 et 02/11/2026, ADR-142 et ADR-143) | Non | Non (limite acceptée) | Mission 13 (recette V1), avec OP-N56 |
@@ -107,7 +107,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N128 | **LEVÉ le 17/11/2026 par la mission 9b** : `approved_by` porté par l'écriture, cumul sous verrou du portefeuille (`journey.spec.ts` OP-N128 (a), `release-cumul-lock.spec.ts`, ADR-210) (avant : Guichet enchaîné : `approved_by` nul sur la caution seule au-dessus du seuil ; cumul lu sous le verrou du bracelet) | Non | Non | Levé
 | OP-N129 | Décision du titulaire : lien du contrat (`otp_request_id`, `refund_request_id`) — **levé** le 16/11/2026 par la mission 9a (décision 14 : l'envoyeur de codes les reçoit ; `holder-link.spec.ts`, `journey.spec.ts`) | Non | Non | — |
 | OP-N130 | **LEVÉ le 17/11/2026 par la mission 9b** : déclencheur `refund_request_transition_guard`, montant et frais figés après `PROCESSING` (`tests_refund_transitions.sql`, 169 assertions ; ADR-210) (avant : Remboursement : l'ordre des états d'une demande n'est gardé que par l'API ; la base laisse `cashless_app` modifier les colonnes de transition) | Non | Non | Levé
-| OP-N131 | Copie externe des scellements simulée jusqu'à la 12b : un scellement et sa copie sont dans la même base (mission 9b, WP12, décision du porteur du 17/11/2026, ADR-197) | Non | Oui (le faux refuse le démarrage en production) | Mission 12b |
+| OP-N131 | Copie externe des scellements simulée jusqu'à la 12b : un scellement et sa copie sont dans la même base (mission 9b, WP12, décision du porteur du 17/11/2026, ADR-197) | Non | Oui (le faux refuse le démarrage en production) | Mission 12b. **Mission 12b-1 (27/11/2026, ADR-237) : levé côté code (`S3SealCopy`, COMPLIANCE, 10 ans), en attente de l'essai réel** |
 | OP-N132 | Alertes d'exploitation sans envoi à une personne : audit, `pg_notify` et journal seulement (mission 9b, WP12, C-010, ADR-198) | Non | Oui | Mission 12b |
 | OP-N133 | Propriétaire des fonctions `ops_*` : superutilisateur ou `BYPASSRLS` exigé ; `pg_read_all_stats` à lui accorder (mission 9b, WP05 et WP06, ADR-199) | Non | Oui (réglage de déploiement) | Mission 12b |
 | OP-N134 | Relevé importé : `closing_balance` déclaré jamais recoupé avec la somme des lignes (mission 9b, WP02, ADR-200) | Non | Non | À proposer au porteur |
@@ -175,6 +175,19 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N196 | `classify_anomaly` ne vérifie pas que `p_actor` appartient au prestataire : l'API passe toujours l'identité de la session, mais une application compromise pourrait écrire un autre auteur (mission 11b, ADR-236) | Non | Non | Mission 11c |
 | OP-N197 | Écarts de forme et de documentation de la 11b (liste au §15) (mission 11b, ADR-236) | Non | Non | Mission 11 |
 | OP-N198 | Lignes de plus de 100 caractères dans plusieurs fichiers de la 11b (WP07, WP08 ; reformatage à la fusion) (mission 11b, ADR-236) | Non | Non | Fusion de la mission (Prettier, décision du 14/10/2026) |
+| OP-N199 | PayDunya : la preuve d'origine d'une notification est une valeur fixe (`data[hash]` = SHA-512 de la clé maître), sans signature du contenu ni horodatage : qui connaît la valeur forge un signal ; effet borné à une relecture authentifiée (`checkout-invoice/confirm/{token}`), au plus une par recharge et par minute et par processus ; aucun crédit sur le signal (mission 12b-1, D2, ADR-238 ; **écart de sécurité décidé par le porteur le 26/11/2026**) | Non | Non (écart accepté ; PayDunya reste refusé en production jusqu'à l'essai : OP-N209) | Aucune mission tant que PayDunya ne signe pas son contenu ; réexamen à l'essai réel (porteur) |
+| OP-N200 | PayDunya : une recharge par carte est reçue mais non créditée (la confirmation ne porte ni preuve 3-D Secure ni empreinte : `threeDs: 'NOT_PERFORMED'`, règle d'ADR-77 gardée) ; anomalie, remboursement au payeur hors plateforme (OP-N82) (mission 12b-1, D7, ADR-238) | Non | Non (conséquence fonctionnelle acceptée) | Porteur, après l'essai de PayDunya en bac à sable |
+| OP-N201 | PayDunya : ni relevé, ni annulation, ni remboursement documentés ; `readStatement` rend une liste vide, `cancel` rend `cancelled: false` ; rapprochement des paiements PayDunya manuel (mission 12b-1, ADR-238) | Non | Non | Porteur ; levé si PayDunya publie un relevé (mission à ouvrir) |
+| OP-N202 | Attestation Android : les certificats d'usine expirés sont acceptés sous la seule racine Google `f92009e853b6b045` (assouplissement décidé par le porteur le 26/11/2026) ; l'exclusion des chaînes RKP (extension `1.3.6.1.4.1.11129.2.1.30`) n'a **aucun test** (mutation survivante) (mission 12b-1, WP12, ADR-239) | Non | Non : **proposition de l'Agent, en attente du porteur** (l'assouplissement est décidé, pas son caractère non bloquant) | Mission 12 (test RKP, OID à confirmer à l'essai) |
+| OP-N203 | Attestation Apple (App Attest) : `apple_validation_category_01` et `apple_bundle_version_01` de `authData.extensions` ne sont pas contrôlés (étapes 10 et 11, assertion 7 et 8) : une attestation de catégorie invalide est acceptée aujourd'hui ; mineur : l'aaguid de production est admis en environnement `development` (mission 12b-1, WP12, ADR-239) | Non | Non (**Décision du porteur : 27/11/2026** : ne bloque pas la production ; écart ouvert jusqu'à la mission 12, décision du 26/11/2026 ; l'accès iOS à `/media/auth-keys` reste refusé : OP-N64) | Mission 12, avec un vecteur réel d'Apple |
+| OP-N204 | Wave : aucune clé d'idempotence documentée pour la création d'une session ; sur délai ou 5xx/429, la reprise passe par la recherche `client_reference` (filtrée sur la référence, montant et devise égaux), jamais par une seconde création à l'aveugle (mission 12b-1, WP05, ADR-240) | Non | Non | Essai réel de Wave (porteur) ; levé si Wave documente une clé |
+| OP-N205 | Relectures et `expires_at` Stripe tenus **en mémoire de chaque processus** : la borne « une relecture par recharge et par minute » est multipliée par le nombre d'instances ; perdue au redémarrage (filet : interrogation des recharges `PENDING` de plus de 2 min) ; mémoires bornées (10 000 et 5 000 entrées) (mission 12b-1, WP03, WP07, ADR-240) | Non | Non | Mesure à la recette avec plusieurs instances, puis décision du porteur (état partagé en base si nécessaire, décision du 27/11/2026) ; aucune mission affectée |
+| OP-N206 | Points « à confirmer à l'essai » de la mission 12b-1 (liste au §16) : levés ou consignés par la commande d'essai de chaque service avant d'ajouter le service à `PRODUCTION_ENABLED_SERVICES` (mission 12b-1, ADR-240) | Non | **Oui** (par service, via la garde : OP-N209) | Essais réels du porteur, service par service |
+| OP-N207 | Garde réseau des tests (`test/support/no-external-network.ts`) contournable par `http.request({ host: 'localhost', lookup: <personnalisé> })` ; rien dans la mission ne l'utilise (mission 12b-1, WP01, ADR-240) | Non | Non | Mission 13 (décision du porteur du 27/11/2026) ; durcissement proposé (en attente du porteur) : refuser `options.lookup` ou contrôler l'adresse résolue |
+| OP-N208 | Litige Stripe rattaché par relecture : aucun test ne prouve l'absence de transaction ouverte pendant `resolvePaymentReference` ; la borne d'une résolution par minute peut coïncider avec la reprise des 24 h (litige rattachable devenu anomalie `UNMATCHED_EXPIRED` : échec sûr, à traiter à la main) ; mutation survivante sur le contrôle « déjà vu » de `expireUnmatchedDispute` (code antérieur) (mission 12b-1, WP03, ADR-240) | Non | Non | Mission 13 (décision du porteur du 27/11/2026) |
+| OP-N209 | Aucun service réel de la 12b-1 ne tourne en production : `PRODUCTION_ENABLED_SERVICES` est vide (D3, D6) ; PSP et coffre : indisponibles (démarrage permis) ; KMS et copie des scellements : démarrage refusé. Les processus public et `tag-keys` refusent aussi de démarrer tant que le signataire des jetons d'appareil est un faux (OP-N73) ; limite : la preuve d'injection du test d'architecture des sites de construction ne porte que sur `S3SealCopy` (mission 12b-1, WP10, ADR-240) | Non | **Oui** | Essai réel de chaque service, puis PR relue qui l'ajoute à la liste (D6) |
+| OP-N210 | Commande d'essai : sans `--retention-days`, l'objet S3 de test prend la rétention de la configuration (3 650 jours, COMPLIANCE, irrévocable) ; si la désactivation des clés KMS de test échoue, leurs références ne sont pas affichées (à retrouver dans la console AWS) ; le compte rendu `psp.paydunya.sandbox` ne vaut pas preuve du service réel (mission 12b-1, WP11, ADR-240) | Non | Non | Porteur, à l'essai |
+| OP-N211 | Mineurs des relectures de la 12b-1, sans effet de sécurité connu (liste au §16) (mission 12b-1, ADR-240) | Non | Non | Mission 13 (décision du porteur du 27/11/2026) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -248,7 +261,7 @@ exploitation », qui ne sont pas des missions du découpage. Raisons :
 | OP-N45 | Les routes de la mission sont servies par trois processus (`x-process` du contrat) ; rien, dans le dépôt, n'aiguille une requête vers le bon | Une route de clés exposée par erreur sur l'API publique répondrait 404 (elle n'y est pas chargée) ; le risque est une indisponibilité, pas une fuite | Test d'isolation : chaque opération n'est servie que par son processus | **Mission 13** (recette V1) : aiguillage décrit et vérifié sur l'environnement de recette (confirmé par le porteur le 15/10/2026 ; ADR-101) | L'aiguillage par chemin est décrit et déployé ; `POST /media/auth-keys` et `/media-personalizations` n'atteignent que leur processus |
 | OP-N46 | À la personnalisation, la signature d'originalité NXP est vérifiée par le poste, pas par le serveur, qui n'en garde que l'empreinte (comparée à chaque lecture) | Un poste compromis enregistre une puce contrefaite comme authentique | Rôle `PERSONALIZER` dédié ; toute personnalisation est tracée avec son auteur | **Mission 12** (app terminal), avec l'auditeur sécurité (ADR-44) (confirmé par le porteur le 15/10/2026 ; ADR-101) | Le kit fournit la clé publique NXP et des vecteurs de signature, et le serveur vérifie lui aussi |
 | OP-N47 | Changer `CLAIM_CODE_HMAC_KEY` invalide toutes les empreintes de codes existantes ; aucune procédure de rotation | Une fuite de ce secret ne se répare qu'en réimprimant les codes | Le secret est hors de la base, obligatoire en production, 32 octets au moins | **Mission 10** (app festivalier) : proposée par l'agent le 16/10/2026, **à confirmer par le porteur** (ADR-104) ; elle reprend les flux qui lisent ces empreintes (rattachement, code de confirmation, consultation anonyme) | **Ancienne condition, écartée par la décision du porteur du 20/11/2026 :** une procédure de rotation (double empreinte pendant une période) est écrite et testée : un code émis sous l'ancien secret se rattache pendant la période, plus après. **LEVÉ le 20/11/2026 par la mission 10a, par une rotation immédiate (aucune période de double empreinte).** Mécanisme réel : `CLAIM_CODE_HMAC_KEY_VERSION` ; colonnes `media.claim_key_version`, `claim_code.key_version`, `media_claim.key_version` et signatures versionnées (migration `0097`) ; une empreinte d'une autre version compte comme absente ; démarrage de l'API refusé si la version est inférieure à `claim_key_version_max()` ; `reissue_claim_codes` et `reissuable_media` ; rôle `cashless_claimadmin` (`post-roles.sql` §14) ; commande `apps/api/src/cli/reissue-claim-codes.ts` ; procédure `docs/procedure-rotation-codes-rattachement.md`. **Test de levée :** `apps/api/test/integration/media/claim-rotation.spec.ts` (ancien code refusé comme inconnu, NFR-002), `apps/api/test/integration/cli/reissue-claim-codes.spec.ts` (« SC-003 »), `packages/ledger-sql/tests/tests_claim_key_version.sql`. **Test de borne inversé :** un ancien code ne se rattache plus après la rotation (l'ancienne condition exigeait qu'il se rattache pendant la période) ; ces mêmes tests échouent si une période de double empreinte réapparaît. **Mutations :** voir ADR-228 et `docs/passation-10a/preuves.md` (FR-007, FR-008). Limites : OP-N167 |
-| OP-N81 | Les PSP et le coffre des secrets sont des faux (un par fournisseur, `apps/api/src/psp/`) : un faux PSP produit des notifications signées avec des secrets de test | Crédits de portefeuille fabriqués par quiconque connaît le faux ; secrets de test au lieu de secrets par détenteur des fonds | Chaque faux porte `isFake` ; `assertProcessIsSafe` refuse le démarrage en production (processus public et `psp-poller`), test `production-guard.spec.ts` | Mission « Adaptateurs PSP réels » | Adaptateurs essayés contre le bac à sable de chaque PSP, coffre AWS réel, faux retirés de la production (ADR-131) |
+| OP-N81 | Les PSP et le coffre des secrets sont des faux (un par fournisseur, `apps/api/src/psp/`) : un faux PSP produit des notifications signées avec des secrets de test | Crédits de portefeuille fabriqués par quiconque connaît le faux ; secrets de test au lieu de secrets par détenteur des fonds | Chaque faux porte `isFake` ; `assertProcessIsSafe` refuse le démarrage en production (processus public et `psp-poller`), test `production-guard.spec.ts` | Mission « Adaptateurs PSP réels » | Adaptateurs essayés contre le bac à sable de chaque PSP, coffre AWS réel, faux retirés de la production (ADR-131). 12b-1 (ADR-237) : adaptateurs Wave, PayDunya, Stripe et coffre écrits, en attente de l'essai ; Orange Money reste à la 12b |
 | OP-N83 | CORRIGÉ en cycle 2 de WP14 (migration `0042`) : `wallet.other_block` tenu par le déclencheur `wallet_block_cause_guard` ; le déblocage « contestation » refuse (CL029) dès qu'une autre cause est active, quel que soit l'ordre | Un chemin de blocage qui écrirait `ACTIVE` lui-même lève aussi la contestation (comportement voulu : une personne habilitée de l'autre cause) | `unblock_wallet` refuse si `other_block` ; `block_wallet_after_chargeback` ne marque pas si `other_block` ; `tests_psp_topups.sql` (perte puis contestation, contestation puis perte, cause tierce puis deux contestations) ; `wallet-unblock.spec.ts` | Mission 13 (revue) | Un futur chemin de blocage (perte, fraude) à relire : il doit écrire `BLOCKED` sans annoncer l'origine « contestation » |
 | OP-N84 | LEVÉ le 29/10/2026 (WP14 cycle 2, décision du porteur) : `take_deposit(uuid,uuid)`, `refund_deposit(uuid,uuid)`, `refund_cash_due(...)` retirées de `post-roles.sql` (section 4) ; le moteur passe par `take_deposit_for_session`, `refund_deposit_for_session`, `refund_cash_due_for_session` et, sans compte désigné (mode `FROM_BALANCE`), par `take_deposit_from_balance` / `refund_deposit_from_balance` (0041) | Aucun : droit plus étroit que celui retiré | `tests_cash_psp_rights.sql` (`[A8-DETTE levée]` : EXECUTE refusé), `tests_execute_grants.sql`, `engine.spec.ts` (compte désigné refusé) | Levé | Aucune ; fonctions à faire relire par une personne |
 | OP-N85 | Reprise de la caution due : faite à l'écriture d'un crédit suivant, jamais seule | Un bracelet crédité sans sa caution due prise tant qu'aucun autre crédit n'arrive | Le travailleur de reprise (WP12) rejoue l'événement ; la caution est idempotente | Mission 13 (recette V1) | Reprise des cautions `DUE` par le travailleur, avec un test qui tue le processus entre COMMIT et `afterCommit` |
@@ -3378,3 +3391,167 @@ autres fichiers modifiés hors tests et documentation sont de câblage sans droi
 
 Mutations rejouées par les relecteurs (voir `docs/passation-11b/preuves.md`). **Non figé, consigné comme limite :**
 OP-N185, OP-N187, OP-N188, OP-N190, OP-N191, OP-N193, OP-N195, OP-N197.
+
+## 16. Mission 12b-1 (adaptateurs des fournisseurs déjà choisis) : consignation du 27/11/2026
+
+Écrit par WP13 à partir des notes de lane de WP01 à WP12 (journal d'états de la mission, `status.events.jsonl`), des comptes
+rendus de relecture (`tasks/WPxx-*/review-cycle-N.md`) et des décisions du porteur du 26/11/2026. Mission Spec Kitty
+`adaptateurs-fournisseurs-choisis-01M8BXJA`. Décisions : ADR-237 ; PayDunya : ADR-238 ; attestations : ADR-239 ; limites :
+ADR-240 (OP-N199 à OP-N211). **Preuves par FR, NFR, SC et contrainte** : `docs/passation-12b-1/preuves.md`. **Note aux
+équipes et au porteur** : `docs/passation-12b-1/note-equipes.md`. Comparaison aux documentations d'Android et d'Apple :
+`docs/passation-12b-1/attestations-comparaison.md`. **Aucune migration, aucun `.sql` généré modifié (C-006), aucun droit
+nouveau de la base.**
+
+**Libellés « 12b » précisés (T056), rien d'effacé.** « 12b-1 » nomme ce que cette mission livre : adaptateurs conformes de
+Wave, PayDunya et Stripe, coffre AWS Secrets Manager (secrets des PSP), AWS KMS (cinq ports), copie S3 Object Lock des
+scellements, garde de production par service, commande d'essai par service. « 12b » (reste) nomme ce que la 12b-1 ne livre
+pas : Orange Money (documentation non publique, D1), fournisseurs OTP (WhatsApp, SMS), serveur d'identité OIDC (OP-N56,
+OP-N171), signature NXP (OP-N46), matériel de clés de la passerelle (OP-N100, OP-N101, OP-N113), notificateur d'alertes
+(OP-N132), secrets applicatifs dans le coffre (OP-N154), clé de l'IBAN par le KMS (OP-N150), autorité des terminaux et
+signataire des jetons d'appareil (OP-N73), banque. **Levés côté code, en attente de l'essai réel** (le point n'est retiré
+qu'après l'essai et la PR qui lève la garde) : OP-N41 (service de clés, cinq ports), OP-N89 (signature et clés de contenu
+des snapshots), OP-N131 (copie externe des scellements), et la partie « adaptateurs Wave, PayDunya, Stripe et coffre des
+secrets des PSP » d'OP-N81. OP-N82 : inchangé (le remboursement au payeur reste hors plateforme, D5).
+
+### Lots de la mission
+
+| Lot | Contenu | Tests principaux (sous `apps/api/test/`) |
+|---|---|---|
+| WP01 | Socle : `axios` 1.21.1 et SDK AWS 3.1172.0 épinglés, client HTTP commun (délai, essais bornés, journal sans secret), réglages, garde réseau des tests | `unit/psp/psp-http.spec.ts`, `support/no-external-network.ts` |
+| WP02 | Port PSP à deux verdicts (`NOTIFICATION`, `SIGNAL`), signature HMAC paramétrée | `unit/psp/hmac-signature.spec.ts`, `unit/psp/fake-signal-psp-adapter.spec.ts` |
+| WP03 | Réception d'un signal, relecture asynchrone, litige Stripe relu | `integration/topups/signal-relecture.spec.ts`, `integration/topups/dispute-relecture.spec.ts`, `unit/webhooks/after-response.spec.ts` |
+| WP04 | Contrat D9 : `receivePspWebhook` en formulaire, description par fournisseur | `unit/contracts/receive-psp-webhook-12b1.spec.ts`, `unit/contracts/contract-additions-9b.spec.ts` |
+| WP05 | Adaptateur Wave | `unit/psp/wave/wave-adapter.spec.ts` |
+| WP06 | Adaptateur PayDunya | `unit/psp/paydunya/paydunya-adapter.spec.ts` |
+| WP07 | Adaptateur Stripe | `unit/psp/stripe/stripe-adapter.spec.ts` |
+| WP08 | Coffre AWS Secrets Manager | `unit/psp/aws/secrets-manager-store.spec.ts` |
+| WP09 | AWS KMS (cinq ports) et copie S3 Object Lock | `unit/kms/aws/aws-kms.spec.ts`, `unit/sealing/s3-seal-copy.spec.ts` |
+| WP10 | Garde de production par service, sélection faux / réel | `unit/external-services/production-enabled.spec.ts`, `unit/production-guard.spec.ts`, `unit/processes.spec.ts`, `integration/topups/real-adapters-credit.spec.ts` |
+| WP11 | Commande d'essai par service | `unit/external-services/trial/trial.spec.ts` |
+| WP12 | Attestations Android et Apple comparées aux documentations | `unit/attestation/android.spec.ts` |
+| WP13 | Consignation, preuves, note aux équipes | `integration/invariants-cloture/consignation.spec.ts` |
+
+### Retouches hors carte relevées (notes de lane)
+
+WP02 (compilation, signature de `PspSecretBinding` et verdicts) : `webhook-verifier.ts`, `webhook-intake.service.ts`,
+`psp-topup-poller.worker.ts`, `psp-topups.service.ts`, `psp-simulation.service.ts` et des tests de `integration/webhooks/` ;
+le refus provisoire de `SIGNAL` dans `webhook-verifier.ts` a été remplacé par WP03. WP03 : `rejections.spec.ts`,
+`verifier.spec.ts`, `event-dispatcher.ts` (résolution du litige, à surveiller à la fusion), `dispute-relecture.spec.ts` et
+`unit/webhooks/after-response.spec.ts` (nouveaux, hors `owned_files`). WP04 : `tools/contract-stability/check.test.mjs`
+(313 entrées admises) et `contract-additions-9b.spec.ts` (trois pointeurs D9 exacts). WP07 : `psp-adapter.port.ts`
+(méthode facultative `resolvePaymentReference`). WP10 : `kms/aws/aws-kms-client.ts` (nouveau), `processes.spec.ts`,
+`crypto-production.spec.ts`, `psp-production.spec.ts`, et les marques de `s3-seal-copy.ts`, `paydunya-adapter.ts`,
+`aws-kms.ts`. WP12 : `android-key-attestation.ts` (exception, cycle 2). `contracts/psp-fournisseurs.md` (tableau :
+`attempt_acknowledged`, litige, session `open` après un refus) est corrigé par l'orchestrateur, non par WP13.
+
+### Écarts qui renforcent la sécurité, faits puis consignés (règle 1 de `CLAUDE.md`)
+
+Détail dans ADR-237. Corps brut d'un signal non conservé (WP03) ; session Stripe d'une autre recharge : `UNKNOWN`, `cancel`
+vrai seulement si la session est `expired`, relevé de plus de 100 pages en erreur, jamais tronqué (WP07) ; recherche Wave
+filtrée sur la référence, reprise à montant et devise égaux, relevé borné à 31 jours (WP05) ; secret PayDunya dont
+`notification` diffère de `credentials.master_key` refusé `REF_INVALID` (WP08, analyse L4) ; refus d'un faux au niveau des
+fabriques de production et marques sur les six adaptateurs (WP10) ; sortie de la commande d'essai refusée si elle porte une
+valeur lue, une référence ou un compartiment (WP11) ; `AWS_ENDPOINT_URL` et adresses de PSP non `https` refusés en
+production (WP01).
+
+### Limites et écarts (ADR-237 à ADR-240)
+
+- **OP-N199.** Preuve d'origine PayDunya fixe (D2). **Écart de sécurité décidé par le porteur le 26/11/2026.** Risque : qui
+  connaît le SHA-512 de la clé maître (ou lit une notification passée) forge un signal ; l'effet est borné à une relecture
+  authentifiée au plus par recharge et par minute et par processus (`CONFIRM_MIN_INTERVAL_MS`), sans montant ni crédit.
+  Compensations : le signal ne porte ni montant ni devise ; le crédit n'a lieu que sur `getStatus` (appel à
+  `checkout-invoice/confirm/{token}` avec les clés de la configuration), au montant confirmé, devise de la configuration (XOF) ;
+  comparaison du hash à temps constant. **Tests de borne** : `paydunya-adapter.spec.ts` (« borne OP PayDunya (D2) » : « un signal
+  valide ne porte aucun montant, aucune devise, aucune carte », « signal « completed » mais confirmation pending : rien n'est
+  PAID »), `signal-relecture.spec.ts` (« 100 signaux d'identifiants distincts : une relecture (borne par minute), un seul
+  crédit », « signal valide mais montant différent chez le PSP : aucune écriture, anomalie PSP_MISMATCH », « signal à preuve
+  fausse : 401, rien conservé, aucun appel à getStatus »), `real-adapters-credit.spec.ts` (PayDunya). Condition de levée :
+  PayDunya signe son contenu ; réexamen à l'essai réel.
+- **OP-N200.** Carte PayDunya non créditée (D7). Conséquence : le festivalier qui paie par carte via PayDunya voit sa recharge
+  « reçue, non créditée » et une anomalie est ouverte ; remboursement hors plateforme (OP-N82). Tests :
+  `paydunya-adapter.spec.ts` (« carte jamais déclarée 3-D Secure (D7) »), `real-adapters-credit.spec.ts` (« PayDunya : 100
+  signaux identiques, une relecture, aucun crédit (carte sans 3-D Secure, D7) »). Condition de levée : l'essai en bac à sable
+  montre une preuve 3-D Secure dans la confirmation ; décision du porteur.
+- **OP-N201.** PayDunya sans relevé ni annulation. Test : `paydunya-adapter.spec.ts` (« sans appel : non annulé, relevé non pris
+  en charge »). Le rapprochement « grand livre = relevé » ne voit aucune ligne PayDunya : à faire à la main (anomalies PSP
+  existantes, OP-N82).
+- **OP-N202.** Exception Android. Risque : un certificat intermédiaire ou racine expiré, sous la racine d'usine Google
+  `f92009e853b6b045` (reconnue par le SHA-256 de sa clé publique, `GOOGLE_FACTORY_ROOT_SPKI_SHA256`), est accepté ; sont
+  inchangés : chaîne vérifiée cryptographiquement, racine configurée, liste de révocation, validité de la feuille, début de
+  validité futur refusé. Le certificat racine lui-même est exempté de sa date de fin (il est dans la racine exemptée). Une chaîne
+  qui porte l'extension de provisionnement RKP est censée n'avoir aucune exception (plus strict que la décision) : **aucun test
+  ne le prouve** (mutation survivante) et l'OID reste à confirmer à l'essai. Tests de borne : `android.spec.ts` (« exception des
+  certificats d'usine expirés (racine Google f92009e853b6b045 seule) » : intermédiaire expiré accepté, feuille expirée refusée,
+  pas encore valide refusé, certificat révoqué refusé). Test manquant : une chaîne RKP expirée sous la racine d'exception est
+  refusée (à écrire en mission 12 dans `apps/api/test/unit/attestation/android.spec.ts`, hors carte de WP13).
+- **OP-N203.** Apple : contrôle de `apple_validation_category_01` et `apple_bundle_version_01` reporté en mission 12 avec un vecteur
+  réel d'Apple (décision du porteur du 26/11/2026). **Décision du porteur : 27/11/2026** : ne bloque pas la production ; écart ouvert jusqu'à la mission 12. Test de borne manquant : à écrire en mission 12
+  (`apps/api/test/unit/attestation/ios.spec.ts`, hors carte) ; en attendant, `consignation.spec.ts` échoue si le code de
+  `ios-app-attest.ts` lit ces extensions sans que cette fiche soit mise à jour.
+- **OP-N204.** Wave sans clé d'idempotence. Tests : `wave-adapter.spec.ts` (« délai à la création : recherche, une seule
+  création, session ouverte rendue », « délai et aucune session trouvée : erreur, jamais de seconde création », « recherche :
+  ignore une session d'une autre référence (getStatus et cancel) »).
+- **OP-N205.** Bornes en mémoire de chaque processus (`PspStatusConfirmer.lastRun`, `CONFIRM_MEMORY_MAX` 10 000 ;
+  `StripePspAdapter.expiryByTopup`, 5 000 entrées, clé d'idempotence de Stripe gardée 24 h). Avec N instances, la borne devient N
+  relectures par minute et par recharge ; un redémarrage perd `expires_at` : une reprise après redémarrage dans les 24 h peut
+  alors envoyer la même `Idempotency-Key` avec un autre corps, ce que Stripe refuse en `idempotency_error` (commentaire de
+  `expiresAtSeconds` dans `stripe-adapter.ts`) ; effet non essayé contre le vrai Stripe. Tests :
+  `signal-relecture.spec.ts` (« deux signaux de la même recharge à 1 s d'écart : une seule relecture »),
+  `stripe-adapter.spec.ts` (« expires_at stable pour un même pspTopupId : reprise = même corps, même clé »). Le multiplicateur
+  d'instances n'est pas testé (limite de méthode).
+- **OP-N206.** « À confirmer à l'essai » (constantes commentées dans les adaptateurs) : **Wave** : statuts hors documentation,
+  forme exacte de l'erreur `{code, message}`, type des montants du relevé, signature des requêtes (`t + corps`, doc silencieuse sur
+  le chemin pour un `GET`) ; **PayDunya** : échéance de facture 30 min (`PAYDUNYA_INVOICE_TTL_MS`), statuts `cancelled` et `failed`,
+  devise XOF, hash IPN ; **Stripe** : XOF sans décimale, éligibilité d'un marchand établi au Sénégal (D4), litige correlé par
+  `payment_intent` ; **Secrets Manager** : forme réelle du JSON du secret, nom d'erreur `AccessDenied` ; **KMS** : `GetPublicKey` sur
+  une clé réelle, clé utilisable aussitôt après sa création ; **S3** : réponse réelle 412 (`PreconditionFailed`), objet de test
+  verrouillé COMPLIANCE ; **essais** : montant minimal de 100 XOF par PSP, relevés vides, clés de test désactivées mais jamais
+  supprimées (décision humaine), `httpStatus` absent des étapes AWS ; **attestations** : présence des deux racines Google et de la
+  racine Apple dans la configuration de production, format réel de `extensions` d'`authData`, OID RKP, liste de révocation réelle.
+  Test de borne : `production-enabled.spec.ts` (tout service listé a un compte rendu réussi dans `docs/essais/<service>.json`).
+- **OP-N207.** Garde réseau contournable par `lookup` : aucun test ne l'exerce ; test manquant à écrire (par exemple
+  apps/api/test/unit/support/no-external-network.spec.ts (fichier à créer), hors carte). `psp-http.spec.ts` couvre la forme usuelle.
+- **OP-N208.** Litige Stripe : décision du porteur du 26/11/2026 (cycle 3 de WP03) : un litige non rattaché garde la voie « sans
+  correspondance » (`UNMATCHED`, nouvelles tentatives, anomalie `UNMATCHED_EXPIRED` à 24 h par `expireUnmatched`), comme les autres
+  litiges ; la proposition du cycle 2 (journal seul, événement marqué traité) retirait ce contrôle et a été refusée. Tests :
+  `dispute-relecture.spec.ts` (« non rattaché (résolution `null`) : UNMATCHED, jamais traité, aucune écriture », « non rattaché
+  après 24 h : anomalie UNMATCHED_EXPIRED, une seule fois », « rattaché à une tentative suivante : répartiteur appelé une seule
+  fois »). Limites : voir OP-N208 au tableau (transaction ouverte non prouvée par un test, borne d'une résolution par minute
+  face à la reprise des 24 h, mutation survivante de `expireUnmatchedDispute`).
+- **OP-N209.** Aucun service réel en production. Limite : la preuve d'injection du test d'architecture des sites de construction ne porte que sur `S3SealCopy` (fiche de WP10). Tests : `production-enabled.spec.ts` (liste vide aujourd'hui ; chaque service listé
+  exige un compte rendu réussi sans secret ; aucun nom hors périmètre), `production-guard.spec.ts`, `processes.spec.ts` (classe
+  d'erreur exacte et élément fautif par processus), `psp-providers.spec.ts`.
+- **OP-N210.** Mineurs de la commande d'essai (WP11, relecture du 27/11/2026).
+- **OP-N211.** Mineurs des relectures (sans effet de sécurité connu) : WP08, segment `.` du nom du secret sans test (mutation
+  survivante), `Content-Type` de la requête non vérifié par le faux serveur, version précédente mise en cache jusqu'à 60 s mais
+  neutralisée par `previousValidUntil` chez les consommateurs ; WP09, signature DER vérifiée seulement dans son enveloppe (`0x30`,
+  longueur, au plus 72 octets), SPKI de 91 octets sans test de longueur isolé, réponse 412 de S3 avec la même empreinte sans
+  contrôle du verrou de l'objet existant, `Decrypt` sans contrôle du `KeyId` rendu ; WP12, `Cache-Control` de la liste de
+  révocation de Google non lu (rafraîchissement fixe d'une heure, refus au-delà de 24 h : échec fermé) ; WP01, huit retraits de
+  `dev: true` dans `package-lock.json` (dépendances transitives d'`axios` devenues de production) ; WP03, relecture liée à `finish`
+  avant la correction sur `close` (filet de 2 min) ; orchestrateur, `integration/webhooks/receive.spec.ts` a échoué une fois (3 tests,
+  « request entity too large ») sur la lane l, vert en relance isolée.
+
+### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
+
+L'agent qui a écrit le code ne vaut pas relecture indépendante. Clés, cryptographie, secrets, droits :
+
+- `apps/api/src/attestation/android-key-attestation.ts`, `ios-app-attest.ts`, `ios-app-attest-assertion.ts` (exception de
+  validité, extensions Apple non contrôlées) ;
+- `apps/api/src/psp/hmac-signature.ts` (séparateur, entrées inconnues, deux secrets sans sortie anticipée) ;
+- `apps/api/src/psp/paydunya/paydunya-adapter.ts` (preuve IPN), `psp/stripe/stripe-adapter.ts` (signature, 3-D Secure),
+  `psp/aws/secrets-manager-store.ts` (isolement des détenteurs, secrets) ;
+- `apps/api/src/kms/aws/aws-kms.ts`, `sealing/s3-seal-copy.ts` (MAC, clés de données, signature, verrou COMPLIANCE) ;
+- `apps/api/src/topups/psp/psp-status-confirmer.ts` et `webhooks/event-dispatcher.ts` (crédit sur relecture, litige, bornes) ;
+- `apps/api/src/kms/production-guard.ts`, `external-services/production-enabled.ts`, `kms/kms.module.ts`,
+  `sealing/sealing.module.ts`, `psp/psp.providers.ts` (garde de production) ;
+- `apps/api/src/external-services/trial/psp-trial.ts`, `aws-trial.ts`, `main.ts`, `report.ts` (aucun secret en sortie) ;
+- `apps/api/test/support/no-external-network.ts` et `package-lock.json` (chaîne d'approvisionnement) ;
+- `tools/contract-stability/contract-baseline.json` (trois entrées D9, ADR-237) ;
+- `docs/POINTS_OUVERTS.md` §16 et `docs/DECISIONS_ADR.md` ADR-237 à ADR-240.
+
+### Tests de borne écrits avec la mission et ce qui reste non figé
+
+Mutations rejouées par les relecteurs (voir `docs/passation-12b-1/preuves.md`). **Test de borne manquant, consigné comme limite
+:** OP-N202 (chaîne RKP), OP-N203 (extensions Apple), OP-N207 (`lookup`), OP-N205 (multiplicateur d'instances), OP-N208 (transaction
+ouverte pendant la résolution). **Non figé par nature :** OP-N206, OP-N210, OP-N211.

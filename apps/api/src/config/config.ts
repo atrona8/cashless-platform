@@ -170,6 +170,30 @@ export interface AppConfig {
    * production seulement.
    */
   deviceRequestAuthorities: string[];
+  /**
+   * Mode des quatre services externes (mission 12b-1) : `PSP_ADAPTERS`, `PSP_SECRET_STORE`, `KMS_BACKEND`,
+   * `SEAL_COPY`. Hors production : `fake` par défaut. En production : absent = `real`, `fake` posé = refus de
+   * démarrer ; la liste `PRODUCTION_ENABLED_SERVICES` (WP10) décide ensuite si le service réel tourne.
+   */
+  externalModes: ExternalModes;
+  /** Délai d'un appel sortant vers un PSP (`PSP_HTTP_TIMEOUT_MS`, 1 000 à 30 000 ms, défaut 10 000). */
+  pspHttpTimeoutMs: number;
+  /** Adresses de base des API des PSP (`WAVE_API_BASE`, `PAYDUNYA_API_BASE`, `STRIPE_API_BASE`). */
+  pspBases: { wave: string; paydunya: string; stripe: string };
+  /** Adresses de retour par défaut de Wave (`WAVE_DEFAULT_SUCCESS_URL`, `WAVE_DEFAULT_ERROR_URL`). */
+  waveDefaultUrls: { success: string | null; error: string | null };
+  /** AWS : région (`AWS_REGION`) et adresse de service de test (`AWS_ENDPOINT_URL`, refusée en production). */
+  aws: { region: string; endpoint: string | null };
+  /** Copie externe des scellements : seau (`SEAL_COPY_BUCKET`) et rétention (`SEAL_COPY_RETENTION_DAYS`). */
+  sealCopy: { bucket: string | null; retentionDays: number };
+}
+
+export type ExternalMode = 'fake' | 'real';
+export interface ExternalModes {
+  psp: ExternalMode;
+  pspSecrets: ExternalMode;
+  kms: ExternalMode;
+  sealCopy: ExternalMode;
 }
 
 export const IOS_APP_ATTEST_ENVIRONMENTS = ['production', 'development'] as const;
@@ -1015,6 +1039,104 @@ export function corsAllowAll(env: NodeJS.ProcessEnv = process.env): boolean {
   return true;
 }
 
+/** Mode d'un service externe : `fake` par défaut hors production ; en production, absent = `real`, `fake` refusé. */
+function externalMode(env: NodeJS.ProcessEnv, name: string, production: boolean): ExternalMode {
+  const value = env[name];
+  if (value === undefined || value === '') return production ? 'real' : 'fake';
+  if (value !== 'fake' && value !== 'real')
+    throw new Error(`${name} : « fake » ou « real » attendu`);
+  if (production && value === 'fake')
+    throw new Error(`${name} : « fake » refusé en production (aucun faux en production)`);
+  return value;
+}
+
+/**
+ * Adresse de base d'un PSP : `https:` exigé ; hors production, `http://127.0.0.1` ou `http://localhost` permis (faux
+ * serveurs de test). Sans identifiants, requête ni fragment ; la barre finale est retirée.
+ */
+function pspBase(env: NodeJS.ProcessEnv, name: string, fallback: string, production: boolean) {
+  return httpsUrl(env, name, production, true) ?? fallback;
+}
+
+function httpsUrl(
+  env: NodeJS.ProcessEnv,
+  name: string,
+  production: boolean,
+  allowLocalHttp: boolean,
+): string | null {
+  const value = env[name];
+  if (value === undefined || value === '') return null;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} : URL invalide`);
+  }
+  const local = url.hostname === '127.0.0.1' || url.hostname === 'localhost';
+  const localHttp = allowLocalHttp && !production && url.protocol === 'http:' && local;
+  if (url.protocol !== 'https:' && !localHttp)
+    throw new Error(
+      `${name} : https attendu${allowLocalHttp && !production ? ' (http://127.0.0.1 permis hors production)' : ''}`,
+    );
+  if (url.username || url.password || url.search || url.hash)
+    throw new Error(`${name} : ni identifiants, ni requête, ni fragment attendus`);
+  return value.replace(/\/+$/, '');
+}
+
+/** Réglages des services externes (mission 12b-1, `interfaces.md` §2). Aucun secret : ils vivent dans le coffre. */
+function externalServiceSettings(
+  env: NodeJS.ProcessEnv,
+  production: boolean,
+): Pick<
+  AppConfig,
+  'externalModes' | 'pspHttpTimeoutMs' | 'pspBases' | 'waveDefaultUrls' | 'aws' | 'sealCopy'
+> {
+  const externalModes: ExternalModes = {
+    psp: externalMode(env, 'PSP_ADAPTERS', production),
+    pspSecrets: externalMode(env, 'PSP_SECRET_STORE', production),
+    kms: externalMode(env, 'KMS_BACKEND', production),
+    sealCopy: externalMode(env, 'SEAL_COPY', production),
+  };
+  const endpoint = env.AWS_ENDPOINT_URL;
+  if (production && endpoint !== undefined && endpoint !== '')
+    throw new Error('AWS_ENDPOINT_URL posé : adresse de service de test interdite en production');
+  const bucket = env.SEAL_COPY_BUCKET || null;
+  // Posé explicitement seulement : en production, `real` par défaut sans seau est refusé plus loin (garde de
+  // WP10 : copie des scellements non activée ou seau absent = démarrage refusé), pas ici, pour ne pas empêcher
+  // le démarrage des processus qui n'en ont pas besoin (comportement actuel).
+  if (env.SEAL_COPY === 'real' && bucket === null)
+    throw new Error('SEAL_COPY_BUCKET manquant : seau exigé quand SEAL_COPY=real');
+  return {
+    externalModes,
+    pspHttpTimeoutMs: optionalInt(env, 'PSP_HTTP_TIMEOUT_MS', {
+      min: 1000,
+      max: 30000,
+      default: 10000,
+    }),
+    pspBases: {
+      wave: pspBase(env, 'WAVE_API_BASE', 'https://api.wave.com', production),
+      paydunya: pspBase(env, 'PAYDUNYA_API_BASE', 'https://app.paydunya.com/api/v1', production),
+      stripe: pspBase(env, 'STRIPE_API_BASE', 'https://api.stripe.com', production),
+    },
+    waveDefaultUrls: {
+      success: httpsUrl(env, 'WAVE_DEFAULT_SUCCESS_URL', production, false),
+      error: httpsUrl(env, 'WAVE_DEFAULT_ERROR_URL', production, false),
+    },
+    aws: {
+      region: env.AWS_REGION || 'eu-west-3',
+      endpoint: endpoint === undefined || endpoint === '' ? null : endpoint,
+    },
+    sealCopy: {
+      bucket,
+      retentionDays: optionalInt(env, 'SEAL_COPY_RETENTION_DAYS', {
+        min: 1,
+        max: 36500,
+        default: 3650,
+      }),
+    },
+  };
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const production = nodeEnv(env.NODE_ENV) === 'production';
   const databaseUrl = env.DATABASE_URL_APP;
@@ -1091,6 +1213,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     vendorPinUrl: vendorPinUrl(env.VENDOR_PIN_URL, production),
     pinDatabaseUrl: tagUrl('DATABASE_URL_PIN'),
     ...ibanKeyring(env, production),
+    ...externalServiceSettings(env, production),
   };
 }
 

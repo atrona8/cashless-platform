@@ -3,7 +3,7 @@
 // place ; le faux service de clés refuse le démarrage en production (aucun faux en production,
 // NFR-010).
 import { Test } from '@nestjs/testing';
-import { FakeInProductionError } from '../../../src/kms/production-guard';
+import { FakeInProductionError, UntriedInProductionError } from '../../../src/kms/production-guard';
 import { FakeKms } from '../../../src/kms/fake-kms';
 import { KMS_PROVIDER } from '../../../src/kms/kms.module';
 import { assertProcessIsSafe } from '../../../src/processes/bootstrap';
@@ -54,11 +54,12 @@ describe('processus snapshot-content : câblage du chiffrement', () => {
     }
   });
 
-  it('production : le faux service de clés refuse le démarrage du processus', async () => {
+  it('production : le service de clés non essayé refuse le démarrage du processus', async () => {
     Object.assign(process.env, PRODUCTION);
+    // Mission 12b-1 : réglage absent = `real` en production, refusé tant que `kms` n'est pas dans la liste du code.
     await expect(
       Test.createTestingModule({ imports: [SnapshotContentProcessModule] }).compile(),
-    ).rejects.toThrow(FakeInProductionError);
+    ).rejects.toThrow(UntriedInProductionError);
   });
 
   it('production : la garde de démarrage refuse un faux service de clés déjà construit', () => {

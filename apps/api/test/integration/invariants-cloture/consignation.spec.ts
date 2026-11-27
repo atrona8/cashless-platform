@@ -157,3 +157,134 @@ describe('consignation de la mission 11b', () => {
     expect(names.size).toBeGreaterThan(10);
   });
 });
+
+// Mission 12b-1, WP13 (règle 3 de CLAUDE.md) : OP-N199 à OP-N211 et ADR-237 à ADR-240.
+// Aucune base : lit les documents et deux fichiers de code dont l'état est une limite consignée
+// (exception Android, extensions Apple).
+describe('consignation de la mission 12b-1', () => {
+  const OPS_12B1 = Array.from({ length: 13 }, (_, i) => `OP-N${199 + i}`);
+  // Chaque OP est repris par l'ADR qui porte son écart ou sa limite.
+  const ADR_OF: Record<string, string> = {
+    'OP-N199': 'ADR-238',
+    'OP-N200': 'ADR-238',
+    'OP-N201': 'ADR-238',
+    'OP-N202': 'ADR-239',
+    'OP-N203': 'ADR-239',
+  };
+  const ops = read('docs/POINTS_OUVERTS.md');
+  const adr = read('docs/DECISIONS_ADR.md');
+  const prd = read('PRD.md');
+  const prompts = read('PROMPTS-A-ENVOYER.md');
+  const section16 = ops.slice(ops.indexOf('## 16. Mission 12b-1'));
+  const adrSection = (id: string): string => {
+    const match = adr.match(
+      new RegExp(`^## ${id} — [^\\n]*\\n([\\s\\S]*?)(?=^## ADR-|(?![\\s\\S]))`, 'm'),
+    );
+    expect(match).not.toBeNull();
+    return match![0];
+  };
+
+  it('le §16 existe et les OP sont numérotés sans trou ni doublon', () => {
+    expect(section16.startsWith('## 16. Mission 12b-1')).toBe(true);
+    const rows = [...ops.matchAll(/^\| (OP-N\d+) \|/gm)].map((m) => m[1]!);
+    expect(rows.filter((op) => op === 'OP-N198')).toHaveLength(1);
+    for (const op of OPS_12B1) expect(rows.filter((r) => r === op)).toHaveLength(1);
+    expect(rows.filter((r) => Number(r.slice(4)) > 211)).toEqual([]);
+  });
+
+  it.each(OPS_12B1)('%s : ligne du tableau, fiche du §16 et reprise par un ADR', (op) => {
+    expect(ops).toMatch(new RegExp(`^\\| ${op} \\|`, 'm'));
+    expect(section16).toMatch(new RegExp(`^- \\*\\*${op}[ .(]`, 'm'));
+    expect(adrSection(ADR_OF[op] ?? 'ADR-240')).toContain(op);
+  });
+
+  it.each(OPS_12B1)('%s : reportée dans PRD.md et PROMPTS-A-ENVOYER.md', (op) => {
+    expect(prd).toContain(op);
+    expect(prompts).toContain(op);
+  });
+
+  it.each(['ADR-237', 'ADR-238', 'ADR-239', 'ADR-240'])(
+    '%s : fiche présente, rattachée à un OP, avec risque ou raison et report',
+    (id) => {
+      const text = adrSection(id);
+      expect(text).toMatch(/OP-N\d+/);
+      expect(text).toMatch(/\*\*Report\.\*\*/);
+      if (id !== 'ADR-237') expect(text).toMatch(/Mission qui le lève|Missions qui les lèvent/);
+    },
+  );
+
+  it('ADR-237 porte la ligne lue par check-baseline-decision.mjs (D9)', () => {
+    expect(adrSection('ADR-237')).toMatch(/^Décision du porteur : 26\/11\/2026 ADR-237$/m);
+  });
+
+  it('les écarts de sécurité ont un risque, une mission et une condition de levée', () => {
+    for (const id of ['ADR-238', 'ADR-239']) {
+      const text = adrSection(id);
+      expect(text).toMatch(/\*\*Risque\.\*\*/);
+      expect(text).toMatch(/\*\*Mission qui le lève\.\*\*/);
+      expect(text).toMatch(/\*\*Condition de levée\.\*\*/);
+      expect(text).toMatch(/\*\*Test de borne/);
+    }
+  });
+
+  it('décisions du porteur du 27/11/2026 et propositions en attente', () => {
+    const row = (op: string) => ops.match(new RegExp(`^\\| ${op} \\|.*$`, 'm'))![0];
+    expect(row('OP-N203')).toContain('Décision du porteur : 27/11/2026');
+    expect(row('OP-N202')).toMatch(/proposition de l'Agent, en attente du porteur/);
+    for (const op of ['OP-N207', 'OP-N208', 'OP-N211'])
+      expect(row(op)).toContain('Mission 13 (décision du porteur du 27/11/2026)');
+    expect(row('OP-N205')).toMatch(/puis décision du porteur/);
+    expect(row('OP-N205')).not.toContain('Mission 13');
+    expect(row('OP-N209')).toContain('`S3SealCopy`');
+    expect(adrSection('ADR-240')).not.toMatch(/ou décision du porteur/);
+  });
+
+  it('Apple et RKP sont reportés à la mission 12 dans PROMPTS et PRD', () => {
+    const mission12 = prompts.slice(
+      prompts.indexOf('## Mission 12 — App terminal'),
+      prompts.indexOf('## Mission 12b — '),
+    );
+    expect(mission12).toContain('OP-N202');
+    expect(mission12).toContain('OP-N203');
+    expect(mission12).toContain('apple_validation_category_01');
+    expect(prd).toMatch(/OP-N203[^]*mission 12/);
+  });
+
+  it('OP-N209 bloque la production et la liste des services essayés est vide', () => {
+    expect(ops).toMatch(/^\| OP-N209 \|.*\| Non \| \*\*Oui\*\* \|/m);
+    const list = read('apps/api/src/external-services/production-enabled.ts');
+    expect(list).toMatch(/PRODUCTION_ENABLED_SERVICES: readonly ExternalService\[\] = \[\];/);
+  });
+
+  it('les tests cités dans le §16 existent', () => {
+    // Les tests manquants (OP-N202, OP-N203, OP-N207) sont nommés sans apostrophes inversées.
+    const names = new Set(
+      [...section16.matchAll(/`([\w./-]+\.(?:spec\.ts|sql))`/g)].map((m) => m[1]!),
+    );
+    const files = [
+      ...walk(join(ROOT, 'apps/api/test')),
+      ...walk(join(ROOT, 'packages/ledger-sql')),
+    ].map((f) => relative(ROOT, f));
+    const missing = [...names].filter((name) => {
+      const base = name.split('/').pop()!;
+      return !files.some((f) => f.endsWith(`/${base}`));
+    });
+    expect(missing).toEqual([]);
+    expect(names.size).toBeGreaterThan(15);
+  });
+
+  it('OP-N202 : l’exception Android reste limitée à une seule racine', () => {
+    const src = read('apps/api/src/attestation/android-key-attestation.ts');
+    expect(src).toContain('settings.expiredExemptRootKeys ?? [GOOGLE_FACTORY_ROOT_SPKI_SHA256]');
+    // Une seule empreinte de 64 caractères hexadécimaux : celle de la racine d'usine.
+    expect(src.match(/\b[0-9a-f]{64}\b/g)).toHaveLength(1);
+  });
+
+  it('OP-N203 : App Attest ne contrôle pas encore les extensions Apple (mission 12)', () => {
+    for (const file of ['ios-app-attest.ts', 'ios-app-attest-assertion.ts']) {
+      const src = read(`apps/api/src/attestation/${file}`);
+      expect(src).not.toContain('apple_validation_category_01');
+      expect(src).not.toContain('apple_bundle_version_01');
+    }
+  });
+});

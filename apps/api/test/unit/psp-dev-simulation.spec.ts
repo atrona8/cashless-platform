@@ -18,6 +18,7 @@ import { Secret } from '../../src/psp/secret';
 const HOLDER = '670e7622-7536-491a-8217-92df69fa9b61';
 const OTHER = '707b372c-eb22-4070-b9d8-49200b1804ba';
 const bind = (holder: string, name: string) => ({
+  provider: 'WAVE' as const,
   configurationId: 'c',
   holderPartyId: holder,
   secretRef: `psp/${holder}/${name}`,
@@ -31,7 +32,8 @@ describe('faux coffre PSP : secrets de démo', () => {
     const b = await new FakePspSecretStore().get(bind(HOLDER, name));
     expect(a.notification.current.reveal()).toBe(b.notification.current.reveal());
     expect(a.notification.current.reveal()).toMatch(/^[0-9a-f]{64}$/);
-    expect(a.adapter).not.toBeNull();
+    expect(a.credentials).toMatchObject({ provider: 'FAKE' });
+    expect((a.credentials as { key: unknown }).key).not.toBeNull();
   });
 
   it('secrets distincts par titulaire et par moyen', async () => {

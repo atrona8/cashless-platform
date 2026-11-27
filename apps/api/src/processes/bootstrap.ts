@@ -25,9 +25,12 @@ import {
   OTP_SMS_PRIMARY_PROVIDER,
   OTP_WHATSAPP_PROVIDER,
 } from '../customer-auth/otp-providers';
-import { KMS_PROVIDER } from '../kms/kms.module';
 import { SIGN_PORT } from '../kms/kms.ports';
-import { assertNoFakeInProduction, assertSafeTransport } from '../kms/production-guard';
+import {
+  assertNoFakeInProduction,
+  assertSafeTransport,
+  KMS_PROVIDER,
+} from '../kms/production-guard';
 import {
   ATTESTATION_VERIFIER,
   DEVICE_CA,

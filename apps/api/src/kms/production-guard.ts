@@ -3,8 +3,16 @@
 // vérificateur d'attestation, ou une fausse copie externe des scellements (mission 9b, WP12) refuse de démarrer en
 // configuration de production. Aucun réglage ne désactive cette garde. Chaque point d'entrée l'appelle avant d'écouter.
 
+import { PRODUCTION_ENABLED_SERVICES } from '../external-services/production-enabled';
+import type { ExternalService } from '../external-services/services';
+
+/** Fournisseur du service de clés du processus, quel qu'il soit : lu par la garde de production. */
+export const KMS_PROVIDER = Symbol('KMS_PROVIDER');
+
 export interface MaybeFake {
   readonly isFake?: boolean;
+  /** Service externe d'un adaptateur RÉEL (`isFake === false`) : il doit figurer dans la liste des services essayés. */
+  readonly service?: string;
 }
 
 export class FakeInProductionError extends Error {
@@ -16,16 +24,42 @@ export class FakeInProductionError extends Error {
   }
 }
 
-/** `providers` : nom lisible → fournisseur réellement injecté dans le processus. */
+/**
+ * Un service réel qui n'a pas été essayé contre le vrai service (décisions D3 et D6 du porteur, 26/11/2026) : en
+ * production, refus de démarrer, comme pour un faux. `service` est le nom de la liste `PRODUCTION_ENABLED_SERVICES`.
+ */
+export class UntriedInProductionError extends Error {
+  constructor(readonly service: string) {
+    super(
+      `Démarrage refusé : ${service} n'a pas été essayé contre le vrai service ` +
+        '(liste PRODUCTION_ENABLED_SERVICES)',
+    );
+    this.name = 'UntriedInProductionError';
+  }
+}
+
+/**
+ * `providers` : nom lisible → fournisseur réellement injecté dans le processus. Refuse un faux (`isFake === true`),
+ * puis un adaptateur réel (`isFake === false`) dont le `service` n'est pas dans `enabled` (la liste du code ; le
+ * paramètre ne sert qu'aux tests).
+ */
 export function assertNoFakeInProduction(
   production: boolean,
   providers: Record<string, object | null | undefined>,
+  enabled: readonly ExternalService[] = PRODUCTION_ENABLED_SERVICES,
 ): void {
   if (!production) return;
-  const fakes = Object.entries(providers)
-    .filter(([, provider]) => (provider as MaybeFake | null | undefined)?.isFake === true)
-    .map(([name]) => name);
+  const entries = Object.entries(providers) as Array<[string, MaybeFake | null | undefined]>;
+  const fakes = entries.filter(([, provider]) => provider?.isFake === true).map(([name]) => name);
   if (fakes.length > 0) throw new FakeInProductionError(fakes);
+  for (const [, provider] of entries) {
+    if (
+      provider?.isFake === false &&
+      typeof provider.service === 'string' &&
+      !(enabled as readonly string[]).includes(provider.service)
+    )
+      throw new UntriedInProductionError(provider.service);
+  }
 }
 
 /** Ce que le processus sert réellement : HTTPS (certificat configuré) ou clair, et ses répartiteurs de confiance. */

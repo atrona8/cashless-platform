@@ -66,7 +66,12 @@ export function uncovered(classes: string[], guardSpec: string): string[] {
   });
 }
 
-const PRODUCTION = (config: AppConfig): AppConfig => ({ ...config, production: true });
+// Une configuration de production n'a jamais `fake` (le chargement le refuse) : les quatre réglages sont `real`.
+const PRODUCTION = (config: AppConfig): AppConfig => ({
+  ...config,
+  production: true,
+  externalModes: { psp: 'real', pspSecrets: 'real', kms: 'real', sealCopy: 'real' },
+});
 
 describe('SC-008, C-007 : gardes de production de la mission 6', () => {
   it('(a) toute classe `isFake` de src/ est couverte par production-guard.spec.ts', () => {

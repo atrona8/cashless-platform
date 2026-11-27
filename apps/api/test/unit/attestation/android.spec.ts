@@ -1,12 +1,14 @@
 // Attestation Android (WP10, T051) : un cas nominal, puis un refus par contrôle de T047 (chaîne), T048 (KeyDescription)
 // et T049 (liste de révocation) ; câblage du module (aucun faux ni racine de test en production). Aucun réseau, aucune
 // base : la liste de révocation vient d'une source injectée, la PKI de test est générée à l'exécution.
+import { createHash, X509Certificate } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SecurityLevel, VerifiedBootState } from '@peculiar/asn1-android';
 import {
   AndroidKeyAttestationVerifier,
+  GOOGLE_FACTORY_ROOT_SPKI_SHA256,
   KM_PURPOSE_SIGN,
 } from '../../../src/attestation/android-key-attestation';
 import { AttestationError, type AttestationInput } from '../../../src/attestation/attestation.port';
@@ -70,7 +72,11 @@ function cache(entries: Record<string, { status: string }> = {}): GoogleRevocati
 }
 
 function verifier(
-  options: { revocation?: GoogleRevocationCache; minPatchLevel?: number } = {},
+  options: {
+    revocation?: GoogleRevocationCache;
+    minPatchLevel?: number;
+    expiredExemptRootKeys?: readonly string[];
+  } = {},
 ): AndroidKeyAttestationVerifier {
   return new AndroidKeyAttestationVerifier({
     roots: [pki.rootDer],
@@ -78,6 +84,7 @@ function verifier(
     signingDigests: [TEST_ANDROID_SIGNING_DIGEST.toString('hex')],
     minPatchLevel: options.minPatchLevel ?? MIN_PATCH,
     revocation: options.revocation ?? cache(),
+    ...(options.expiredExemptRootKeys && { expiredExemptRootKeys: options.expiredExemptRootKeys }),
   });
 }
 
@@ -313,6 +320,79 @@ describe('attestation Android — chaîne (T047)', () => {
       verifier().verify(await input({ agreement: { intermediate: expired } })),
       /^clé accord : certificat 1 hors de sa période de validité$/,
     );
+  });
+
+  // Exception décidée par le porteur le 26/11/2026 : seule la racine d'usine de Google (empreinte figée).
+  describe("exception des certificats d'usine expirés (racine Google f92009e853b6b045 seule)", () => {
+    const expired = {
+      notBefore: new Date(Date.now() - 2 * DAY),
+      notAfter: new Date(Date.now() - 60_000),
+    };
+    const exemptKeys = (): string[] => [
+      createHash('sha256')
+        .update(new X509Certificate(pki.rootDer).publicKey.export({ type: 'spki', format: 'der' }))
+        .digest('hex'),
+    ];
+
+    it("l'empreinte figée est celle de la clé publique de la racine publiée par Google", () => {
+      expect(GOOGLE_FACTORY_ROOT_SPKI_SHA256).toMatch(/^[0-9a-f]{64}$/);
+    });
+
+    it("intermédiaire expiré sous la racine d'exception : accepté", async () => {
+      const result = await verifier({ expiredExemptRootKeys: exemptKeys() }).verify(
+        await input({ signing: { intermediate: expired }, agreement: { intermediate: expired } }),
+      );
+      expect(result.kind).toBe('ANDROID_KEY_ATTESTATION');
+    });
+
+    it('intermédiaire expiré sous une AUTRE racine : refusé', async () => {
+      await refusal(
+        verifier({ expiredExemptRootKeys: [GOOGLE_FACTORY_ROOT_SPKI_SHA256] }).verify(
+          await input({ agreement: { intermediate: expired } }),
+        ),
+        /^clé accord : certificat 1 hors de sa période de validité$/,
+      );
+    });
+
+    it("feuille expirée sous la racine d'exception : refusée", async () => {
+      await refusal(
+        verifier({ expiredExemptRootKeys: exemptKeys() }).verify(
+          await input({ signing: { leafNotAfter: new Date(Date.now() - 60_000) } }),
+        ),
+        /signature : certificat 0 hors de sa période/,
+      );
+    });
+
+    it("intermédiaire pas encore valide sous la racine d'exception : refusé", async () => {
+      await refusal(
+        verifier({ expiredExemptRootKeys: exemptKeys() }).verify(
+          await input({
+            signing: {
+              intermediate: {
+                notBefore: new Date(Date.now() + HOUR),
+                notAfter: new Date(Date.now() + DAY),
+              },
+            },
+          }),
+        ),
+        /certificat 1 hors de sa période/,
+      );
+    });
+
+    it("certificat révoqué sous la racine d'exception : refusé", async () => {
+      await refusal(
+        verifier({
+          expiredExemptRootKeys: exemptKeys(),
+          revocation: cache({ ab12: { status: 'REVOKED' } }),
+        }).verify(
+          await input({
+            signing: { intermediate: expired },
+            agreement: { leafSerial: '00ab12' },
+          }),
+        ),
+        /ab12 : statut REVOKED/,
+      );
+    });
   });
 
   it('certificat illisible', async () => {

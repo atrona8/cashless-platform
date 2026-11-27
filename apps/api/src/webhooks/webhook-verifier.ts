@@ -15,15 +15,26 @@ export const NOTIFICATION_ID_MAX = 200;
 export type WebhookVerification =
   | {
       ok: true;
+      kind: 'NOTIFICATION';
       notification: NormalizedNotification;
       signedAt: Date;
       secretUsed: 'current' | 'previous';
+      /** Le statut du corps n'est pas cru : la recharge n'est créditée que par une relecture authentifiée. */
+      confirmationRequired: boolean;
+    }
+  | {
+      ok: true;
+      kind: 'SIGNAL';
+      notificationId: string;
+      reference: { merchantReference: string | null; providerPaymentRef: string };
+      secretUsed: 'current';
     }
   | { ok: false; reason: WebhookRejectionReason };
 
 export interface VerifyWebhookInput {
   adapter: Pick<PspAdapter, 'verifyNotification'>;
   rawBody: Buffer;
+  contentType: 'json' | 'form';
   headers: Record<string, string | string[] | undefined>;
   secrets: PspSecrets;
   /** Horloge de Node : seule tolérance (±300 s), jamais comparée à celle de la base. */
@@ -35,6 +46,7 @@ export function verifyWebhook(input: VerifyWebhookInput): WebhookVerification {
   try {
     verdict = input.adapter.verifyNotification({
       rawBody: input.rawBody,
+      contentType: input.contentType,
       headers: input.headers,
       secrets: input.secrets,
       now: input.now,
@@ -43,6 +55,27 @@ export function verifyWebhook(input: VerifyWebhookInput): WebhookVerification {
     return { ok: false, reason: 'SIGNATURE_INVALID' };
   }
   if (!verdict.ok) return { ok: false, reason: verdict.reason };
+
+  if (verdict.kind === 'SIGNAL') {
+    // Un signal n'a ni horodatage ni montant : seuls l'identifiant borné et le secret COURANT comptent. Un secret
+    // précédent ne suffit jamais à lui seul pour provoquer une relecture (défense en profondeur).
+    if ((verdict.secretUsed as string) !== 'current')
+      return { ok: false, reason: 'SIGNATURE_INVALID' };
+    const signalId = verdict.notificationId;
+    if (
+      typeof signalId !== 'string' ||
+      signalId.length < 1 ||
+      signalId.length > NOTIFICATION_ID_MAX
+    )
+      return { ok: false, reason: 'BODY_MALFORMED' };
+    return {
+      ok: true,
+      kind: 'SIGNAL',
+      notificationId: signalId,
+      reference: verdict.reference,
+      secretUsed: 'current',
+    };
+  }
 
   // Défense en profondeur : horodatage signé dans la tolérance.
   const skew = Math.abs(verdict.signedAt.getTime() - input.now.getTime());
@@ -65,8 +98,10 @@ export function verifyWebhook(input: VerifyWebhookInput): WebhookVerification {
     return { ok: false, reason: 'BODY_MALFORMED' };
   return {
     ok: true,
+    kind: 'NOTIFICATION',
     notification: verdict.notification,
     signedAt: verdict.signedAt,
     secretUsed: verdict.secretUsed,
+    confirmationRequired: verdict.confirmationRequired,
   };
 }

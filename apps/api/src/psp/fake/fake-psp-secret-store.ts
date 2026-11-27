@@ -37,7 +37,7 @@ function demoSecrets(holder: string, name: string): PspSecrets {
         .digest('hex'),
     );
   return {
-    adapter: derive('adapter'),
+    credentials: { provider: 'FAKE', key: derive('adapter') },
     notification: { current: derive('notification'), previous: null, previousValidUntil: null },
   };
 }
@@ -52,6 +52,8 @@ export class FakePspSecretStore implements PspSecretStore {
   put(
     secretRef: string,
     value: {
+      key?: string | Secret;
+      /** Ancien nom de `key`, gardé pour les tests hors de la carte du lot. */
       adapter?: string | Secret;
       current: string | Secret;
       previous?: string | Secret;
@@ -63,7 +65,13 @@ export class FakePspSecretStore implements PspSecretStore {
     if (value.previous !== undefined && value.previousValidUntil === undefined)
       throw new Error('secret précédent sans échéance refusé');
     this.entries.set(`${holder}/${name}`, {
-      adapter: value.adapter === undefined ? null : asSecret(value.adapter),
+      credentials: {
+        provider: 'FAKE',
+        key:
+          (value.key ?? value.adapter) === undefined
+            ? null
+            : asSecret((value.key ?? value.adapter)!),
+      },
       notification: {
         current: asSecret(value.current),
         previous: value.previous === undefined ? null : asSecret(value.previous),
@@ -83,7 +91,10 @@ export class FakePspSecretStore implements PspSecretStore {
         if (DEMO_NAME.test(name)) return Promise.resolve(demoSecrets(holder, name));
         throw new PspSecretError('NOT_FOUND');
       }
-      return Promise.resolve({ adapter: found.adapter, notification: { ...found.notification } });
+      return Promise.resolve({
+        credentials: { ...found.credentials },
+        notification: { ...found.notification },
+      });
     } catch (error) {
       return Promise.reject(error);
     }

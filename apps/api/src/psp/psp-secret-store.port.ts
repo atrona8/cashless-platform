@@ -1,15 +1,25 @@
 // Coffre des secrets PSP : lecture par référence opaque `psp/<holder_party_id>/<nom>`, liée au titulaire
 // des fonds (A10). Un coffre ne journalise ni ne renvoie jamais un secret ailleurs que dans `Secret`.
+import type { PspProviderName } from './psp.types';
 import type { Secret } from './secret';
 
 export interface PspSecretBinding {
   configurationId: string;
   holderPartyId: string;
   secretRef: string;
+  /** Fournisseur de la configuration : le coffre rend les identifiants de cette forme. */
+  provider: PspProviderName;
 }
 
+/** Identifiants d'appel sortant, typés par fournisseur. */
+export type PspCredentials =
+  | { provider: 'WAVE'; apiKey: Secret; requestSigningSecret: Secret | null }
+  | { provider: 'PAYDUNYA'; masterKey: Secret; privateKey: Secret; token: Secret }
+  | { provider: 'STRIPE'; secretKey: Secret }
+  | { provider: 'FAKE'; key: Secret | null };
+
 export interface PspSecrets {
-  adapter: Secret | null;
+  credentials: PspCredentials;
   notification: {
     current: Secret;
     previous: Secret | null;

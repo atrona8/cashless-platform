@@ -64,6 +64,7 @@ export class WebhookWorld {
       [configId],
     );
     const secrets = await this.p.store.get({
+      provider: PROVIDER[method],
       configurationId: configId,
       holderPartyId: this.p.holderId,
       secretRef: row!.secret_ref,

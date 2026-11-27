@@ -1,5 +1,5 @@
 // Aucun faux en production (règle du porteur du 13/10/2026, NFR-010) : un test par faux.
-import { APP_CONFIG, loadConfig } from '../../src/config/config';
+import { APP_CONFIG, loadConfig, type ExternalModes } from '../../src/config/config';
 import { CustomerAccessTokens } from '../../src/customer-identity/customer-access-token';
 import { createCustomerIdentity } from '../../src/customer-identity/customer-identity.module';
 import { FakeCustomerIdentity } from '../../src/customer-identity/fake-customer-identity';
@@ -27,14 +27,28 @@ import { OFFLINE_OPERATION_PROCESSOR } from '../../src/offline/batches/batch.typ
 import { createEntryEncryptor } from '../../src/snapshots-content/entry-encryptor';
 import { PspAdapterRegistry } from '../../src/psp/psp-adapter-registry';
 import { FakePspAdapter } from '../../src/psp/fake/fake-psp-adapter';
+import { FakeSignalPspAdapter } from '../../src/psp/fake/fake-signal-psp-adapter';
 import { FakePspSecretStore } from '../../src/psp/fake/fake-psp-secret-store';
+import { PspHttpClient } from '../../src/psp/http/psp-http';
+import { WavePspAdapter } from '../../src/psp/wave/wave-adapter';
+import { PayDunyaPspAdapter } from '../../src/psp/paydunya/paydunya-adapter';
+import { StripePspAdapter } from '../../src/psp/stripe/stripe-adapter';
+import { AwsSecretsManagerStore } from '../../src/psp/aws/secrets-manager-store';
+import { AwsKms } from '../../src/kms/aws/aws-kms';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { KMSClient } from '@aws-sdk/client-kms';
+import { EXTERNAL_SERVICES } from '../../src/external-services/services';
 import { createKms, KMS_PROVIDER } from '../../src/kms/kms.module';
+import { S3Client } from '@aws-sdk/client-s3';
+import { S3SealCopy } from '../../src/sealing/s3-seal-copy';
+import { startFakeServer } from '../support/fake-servers/http-fake';
 import { SIGN_PORT } from '../../src/kms/kms.ports';
 import {
   assertNoFakeInProduction,
   assertSafeTransport,
   FakeInProductionError,
   UnsafeTransportError,
+  UntriedInProductionError,
 } from '../../src/kms/production-guard';
 import { assertProcessIsSafe, tlsServerOptions } from '../../src/processes/bootstrap';
 import {
@@ -49,6 +63,14 @@ import { DEVICE_PRODUCTION, testTls } from '../support/tls';
 
 const PRODUCTION = { production: true };
 const LOCAL = { production: false };
+/** Production avec le réglage posé EXPLICITEMENT à `fake` (la configuration le refuse déjà au chargement). */
+const modes = (over: Partial<ExternalModes>): ExternalModes => ({
+  psp: 'real',
+  pspSecrets: 'real',
+  kms: 'real',
+  sealCopy: 'real',
+  ...over,
+});
 
 // Identité du terminal (mission 5a, lot WP12) : réelle par défaut ; le faux n'existe que hors
 // production et sur demande explicite (DEVICE_IDENTITY_FAKE=1). Dépendances jamais appelées ici.
@@ -62,7 +84,8 @@ const device = (production: boolean, env: NodeJS.ProcessEnv) =>
 
 describe('aucun faux en production', () => {
   it('faux service de clés : construction refusée en production', () => {
-    expect(() => createKms(PRODUCTION)).toThrow(FakeInProductionError);
+    const fake = { production: true, externalModes: modes({ kms: 'fake' }) };
+    expect(() => createKms(fake)).toThrow(FakeInProductionError);
     expect(createKms(LOCAL)).toBeInstanceOf(FakeKms);
   });
 
@@ -154,8 +177,9 @@ describe('aucun faux en production', () => {
 
   // Copie externe des scellements (9b, WP12 ; décision du porteur : simulée jusqu'à la mission 12b).
   it('faux de la copie externe des scellements : construction refusée en production', () => {
-    expect(() => createSealCopy(PRODUCTION)).toThrow(FakeInProductionError);
-    expect(() => createSealCopy(PRODUCTION)).toThrow(/la copie externe des scellements/);
+    const fake = { production: true, externalModes: modes({ sealCopy: 'fake' }) };
+    expect(() => createSealCopy(fake)).toThrow(FakeInProductionError);
+    expect(() => createSealCopy(fake)).toThrow(/la copie externe des scellements/);
     expect(createSealCopy(LOCAL)).toBeInstanceOf(FakeSealCopy);
     expect((createSealCopy(LOCAL) as { isFake?: boolean }).isFake).toBe(true);
   });
@@ -222,7 +246,13 @@ describe('aucun faux en production', () => {
       FAKE_KMS: 'true',
       DISABLE_PRODUCTION_GUARD: 'yes',
     });
-    expect(() => createKms(config)).toThrow(FakeInProductionError);
+    // Réglage absent = réel en production : refusé tant que `kms` n'est pas dans la liste du code (jamais un faux).
+    expect(() => createKms(config)).toThrow(UntriedInProductionError);
+    // Copie des scellements : réglage absent = réel ; `SEAL_COPY_BUCKET` absent n'empêche pas le chargement
+    // (les processus sans scellement démarrent) ; c'est la fabrique qui refuse, avant même le compartiment.
+    expect(config.externalModes.sealCopy).toBe('real');
+    expect(config.sealCopy.bucket).toBeNull();
+    expect(() => createSealCopy(config)).toThrow(UntriedInProductionError);
     expect(() =>
       createDeviceIdentity(config, DEVICE_DEPS, { ...process.env, DEVICE_IDENTITY_FAKE: '1' }),
     ).toThrow(FakeInProductionError);
@@ -295,8 +325,10 @@ describe('aucun faux en production', () => {
   });
 
   it('signataire de snapshots : createKms({production: true}) refuse le faux (a)', () => {
-    expect(() => createKms({ production: true })).toThrow(FakeInProductionError);
-    expect(createKms({ production: false }).isFake).toBe(true);
+    expect(() => createKms({ production: true, externalModes: modes({ kms: 'fake' }) })).toThrow(
+      FakeInProductionError,
+    );
+    expect((createKms({ production: false }) as { isFake?: boolean }).isFake).toBe(true);
   });
 
   it('signataire de snapshots : un faux SIGN_PORT fait refuser la production (b), pas ailleurs (c)', () => {
@@ -352,5 +384,189 @@ describe('aucun faux en production', () => {
         deviceCaCertFile: null,
       }),
     ).toThrow(/DEVICE_CA_CERT_FILE manquant/);
+  });
+});
+
+// ----- Mission 12b-1, WP10 : services réels non essayés (décisions D3 et D6 du porteur, 26/11/2026) -----
+
+describe('copie externe des scellements : production × fake/real × listé/non listé', () => {
+  const sealConfig = (over: object = {}) => ({
+    production: true,
+    externalModes: modes({}),
+    aws: { region: 'eu-west-3', endpoint: null },
+    sealCopy: { bucket: 'compartiment-test', retentionDays: 3650 },
+    ...over,
+  });
+
+  it('production, fake posé : refus, même listé', () => {
+    const config = sealConfig({ externalModes: modes({ sealCopy: 'fake' }) });
+    expect(() => createSealCopy(config)).toThrow(FakeInProductionError);
+    expect(() => createSealCopy(config, ['seal-copy'])).toThrow(FakeInProductionError);
+  });
+
+  it('production, réglage absent : réel par défaut, refus Untried (jamais le faux)', () => {
+    const absent = { production: true };
+    expect(() => createSealCopy(absent)).toThrow(UntriedInProductionError);
+    expect(() => createSealCopy(absent)).not.toThrow(FakeInProductionError);
+    expect(() => createSealCopy(absent)).toThrow(/seal-copy n'a pas été essayé/);
+  });
+
+  it('production, réel non listé : démarrage refusé, avec ou sans compartiment', () => {
+    expect(() => createSealCopy(sealConfig())).toThrow(UntriedInProductionError);
+    expect(() => createSealCopy(sealConfig())).toThrow(
+      /Démarrage refusé : seal-copy n'a pas été essayé contre le vrai service/,
+    );
+    const noBucket = sealConfig({ sealCopy: { bucket: null, retentionDays: 3650 } });
+    expect(() => createSealCopy(noBucket)).toThrow(UntriedInProductionError);
+    expect(() => createSealCopy(sealConfig(), ['kms', 'psp.secrets'])).toThrow(
+      UntriedInProductionError,
+    );
+  });
+
+  it('production, réel listé : la copie S3 ; sans compartiment, refus de démarrer', () => {
+    const copy = createSealCopy(sealConfig(), ['seal-copy']);
+    expect(copy).toBeInstanceOf(S3SealCopy);
+    expect(copy.isFake).toBe(false);
+    const noBucket = sealConfig({ sealCopy: { bucket: null, retentionDays: 3650 } });
+    expect(() => createSealCopy(noBucket, ['seal-copy'])).toThrow(/compartiment non configuré/);
+  });
+
+  it('hors production : fake par défaut, real permis avec un compartiment', () => {
+    expect(createSealCopy(loadConfig({ NODE_ENV: 'test' }))).toBeInstanceOf(FakeSealCopy);
+    const config = loadConfig({
+      NODE_ENV: 'test',
+      SEAL_COPY: 'real',
+      SEAL_COPY_BUCKET: 'compartiment-test',
+    });
+    expect(createSealCopy(config)).toBeInstanceOf(S3SealCopy);
+    expect(() => loadConfig({ NODE_ENV: 'test', SEAL_COPY: 'real' })).toThrow(/SEAL_COPY_BUCKET/);
+  });
+
+  it('serveur arrêté : la construction ne contacte rien ; l’écriture échoue sans nommer le compartiment', async () => {
+    const server = await startFakeServer(() => undefined);
+    const url = server.url;
+    await server.close();
+    const config = loadConfig({
+      NODE_ENV: 'test',
+      SEAL_COPY: 'real',
+      SEAL_COPY_BUCKET: 'compartiment-secret-xyz',
+      AWS_ENDPOINT_URL: url,
+    });
+    const client = new S3Client({
+      region: 'eu-west-3',
+      endpoint: url,
+      forcePathStyle: true,
+      credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
+      maxAttempts: 1,
+    });
+    const copy = createSealCopy(config, [], client);
+    const error: unknown = await copy
+      .write({ kind: 'LEDGER', id: 'x', sealNo: 1 } as never, Buffer.alloc(32))
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(Error);
+    expect(String((error as Error).message)).not.toContain('compartiment-secret-xyz');
+  });
+});
+
+describe('faux adaptateur à signal (FakeSignalPspAdapter) : refusé en production', () => {
+  it.each(['WAVE', 'PAYDUNYA'] as const)('registre portant le faux à signal %s', (provider) => {
+    const registry = new PspAdapterRegistry([new FakeSignalPspAdapter(provider)], true);
+    expect(registry.isFake).toBe(true);
+    expect(() => assertNoFakeInProduction(true, { 'les adaptateurs PSP': registry })).toThrow(
+      FakeInProductionError,
+    );
+    expect(() => assertNoFakeInProduction(false, { x: registry })).not.toThrow();
+  });
+});
+
+describe('marques des adaptateurs réels (interfaces §6) lues par la garde de démarrage', () => {
+  const http = new PspHttpClient({ pspHttpTimeoutMs: 5000 });
+  const cfg = loadConfig({ NODE_ENV: 'test', SEAL_COPY: 'real', SEAL_COPY_BUCKET: 'b-test' });
+  const real: Array<[string, object, string]> = [
+    ['Wave', new WavePspAdapter(http, cfg), 'psp.wave'],
+    ['PayDunya', new PayDunyaPspAdapter(http, cfg), 'psp.paydunya'],
+    ['Stripe', new StripePspAdapter(http, cfg), 'psp.stripe'],
+    [
+      'coffre',
+      new AwsSecretsManagerStore(new SecretsManagerClient({ region: 'eu-west-3' })),
+      'psp.secrets',
+    ],
+    ['KMS', new AwsKms(new KMSClient({ region: 'eu-west-3' })), 'kms'],
+    ['copie', new S3SealCopy(new S3Client({ region: 'eu-west-3' }), cfg), 'seal-copy'],
+  ];
+
+  it.each(real)(
+    '%s : isFake false et service attendu, dans EXTERNAL_SERVICES',
+    (_n, adapter, service) => {
+      expect((adapter as { isFake?: boolean }).isFake).toBe(false);
+      expect((adapter as { service?: string }).service).toBe(service);
+      expect(EXTERNAL_SERVICES as readonly string[]).toContain(service);
+    },
+  );
+
+  it.each(real)(
+    '%s construit directement : refusé en production s’il n’est pas listé',
+    (_n, adapter, service) => {
+      expect(() => assertNoFakeInProduction(true, { x: adapter })).toThrow(
+        UntriedInProductionError,
+      );
+      expect(() =>
+        assertNoFakeInProduction(true, { x: adapter }, [service as never]),
+      ).not.toThrow();
+      expect(() => assertNoFakeInProduction(false, { x: adapter })).not.toThrow();
+    },
+  );
+});
+
+describe('garde de démarrage : un service réel non listé est refusé comme un faux', () => {
+  const real = { isFake: false, service: 'kms' };
+  const processWith = (production: boolean, token: symbol, provider: object) => ({
+    get: (wanted: unknown) => {
+      if (wanted === token) return provider;
+      if (wanted === APP_CONFIG) return { production };
+      throw new Error('absent');
+    },
+  });
+
+  it('production : un réel dont le service n’est pas dans la liste du code → UntriedInProductionError', () => {
+    expect(() => assertNoFakeInProduction(true, { 'le service de clés': real })).toThrow(
+      UntriedInProductionError,
+    );
+    expect(() =>
+      assertNoFakeInProduction(true, { x: { isFake: false, service: 'psp.wave' } }),
+    ).toThrow(/psp\.wave n'a pas été essayé/);
+  });
+
+  it('production : listé (liste injectée par le test, jamais la liste du code) → passe', () => {
+    expect(() => assertNoFakeInProduction(true, { x: real }, ['kms'])).not.toThrow();
+    expect(() => assertNoFakeInProduction(true, { x: real }, ['seal-copy'])).toThrow(
+      UntriedInProductionError,
+    );
+  });
+
+  it('hors production : aucun refus', () => {
+    expect(() => assertNoFakeInProduction(false, { x: real })).not.toThrow();
+  });
+
+  it('un faux reste refusé d’abord, listé ou non', () => {
+    expect(() =>
+      assertNoFakeInProduction(true, { a: real, b: { isFake: true, service: 'kms' } }, ['kms']),
+    ).toThrow(FakeInProductionError);
+  });
+
+  it('assertProcessIsSafe : le service de clés réel non listé fait refuser le processus', () => {
+    const kms = createKms(
+      {
+        production: true,
+        externalModes: modes({}),
+        aws: { region: 'eu-west-3', endpoint: null },
+      },
+      ['sign'],
+      ['kms'], // construit seulement ; la garde de démarrage relit la liste du code, vide
+    );
+    expect(() => assertProcessIsSafe(processWith(true, SIGN_PORT, kms) as never)).toThrow(
+      UntriedInProductionError,
+    );
+    expect(() => assertProcessIsSafe(processWith(false, SIGN_PORT, kms) as never)).not.toThrow();
   });
 });

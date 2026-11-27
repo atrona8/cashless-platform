@@ -438,6 +438,9 @@ describe('central : aucun faux en production', () => {
       suite: 'test/unit/customer-auth/otp-chain.spec.ts',
     },
     // Mission 9b (WP12, OP-N131, ADR-197) : copie externe des scellements simulée jusqu'à la 12b.
+    // Mission 12b-1 (WP10) : les libellés de la garde ne changent pas ; ils couvrent aussi le service réel non
+    // essayé (`PRODUCTION_ENABLED_SERVICES` vide, D3/D6), prouvé par `production-guard.spec.ts` (copie, clés) et
+    // `psp-providers.spec.ts` (PSP et coffre : indisponibles, démarrage permis).
     'la copie externe des scellements': {
       edgeProcess: false,
       suite: 'test/unit/production-guard.spec.ts',
