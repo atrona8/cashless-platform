@@ -158,11 +158,11 @@ describe('consignation de la mission 11b', () => {
   });
 });
 
-// Mission 12b-1, WP13 (règle 3 de CLAUDE.md) : OP-N199 à OP-N211 et ADR-237 à ADR-240.
+// Mission 12b-1, WP13 (règle 3 de CLAUDE.md) : OP-N199 à OP-N212 et ADR-237 à ADR-240.
 // Aucune base : lit les documents et deux fichiers de code dont l'état est une limite consignée
 // (exception Android, extensions Apple).
 describe('consignation de la mission 12b-1', () => {
-  const OPS_12B1 = Array.from({ length: 13 }, (_, i) => `OP-N${199 + i}`);
+  const OPS_12B1 = Array.from({ length: 14 }, (_, i) => `OP-N${199 + i}`);
   // Chaque OP est repris par l'ADR qui porte son écart ou sa limite.
   const ADR_OF: Record<string, string> = {
     'OP-N199': 'ADR-238',
@@ -170,6 +170,7 @@ describe('consignation de la mission 12b-1', () => {
     'OP-N201': 'ADR-238',
     'OP-N202': 'ADR-239',
     'OP-N203': 'ADR-239',
+    'OP-N212': 'ADR-238',
   };
   const ops = read('docs/POINTS_OUVERTS.md');
   const adr = read('docs/DECISIONS_ADR.md');
@@ -189,7 +190,7 @@ describe('consignation de la mission 12b-1', () => {
     const rows = [...ops.matchAll(/^\| (OP-N\d+) \|/gm)].map((m) => m[1]!);
     expect(rows.filter((op) => op === 'OP-N198')).toHaveLength(1);
     for (const op of OPS_12B1) expect(rows.filter((r) => r === op)).toHaveLength(1);
-    expect(rows.filter((r) => Number(r.slice(4)) > 211)).toEqual([]);
+    expect(rows.filter((r) => Number(r.slice(4)) > 212)).toEqual([]);
   });
 
   it.each(OPS_12B1)('%s : ligne du tableau, fiche du §16 et reprise par un ADR', (op) => {
@@ -251,6 +252,14 @@ describe('consignation de la mission 12b-1', () => {
     expect(mission12).toContain('OP-N203');
     expect(mission12).toContain('apple_validation_category_01');
     expect(prd).toMatch(/OP-N203[^]*mission 12/);
+  });
+
+  it('OP-N212 : exemple de hash PayDunya à confirmer, bloque la mise en production de PayDunya', () => {
+    expect(ops).toMatch(/^\| OP-N212 \|.*\| Mission 12b \(essai réel/m);
+    expect(section16).toContain('27/11/2026');
+    expect(adrSection('ADR-238')).toContain('OP-N212');
+    expect(prd).toMatch(/OP-N212[^]*essai réel/);
+    expect(prompts).toMatch(/OP-N212\*\*[^]*essai réel/);
   });
 
   it('OP-N209 bloque la production et la liste des services essayés est vide', () => {

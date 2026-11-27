@@ -188,6 +188,7 @@ Quand un point est tranché : on ajoute une fiche dans `DECISIONS_ADR.md`, on me
 | OP-N209 | Aucun service réel de la 12b-1 ne tourne en production : `PRODUCTION_ENABLED_SERVICES` est vide (D3, D6) ; PSP et coffre : indisponibles (démarrage permis) ; KMS et copie des scellements : démarrage refusé. Les processus public et `tag-keys` refusent aussi de démarrer tant que le signataire des jetons d'appareil est un faux (OP-N73) ; limite : la preuve d'injection du test d'architecture des sites de construction ne porte que sur `S3SealCopy` (mission 12b-1, WP10, ADR-240) | Non | **Oui** | Essai réel de chaque service, puis PR relue qui l'ajoute à la liste (D6) |
 | OP-N210 | Commande d'essai : sans `--retention-days`, l'objet S3 de test prend la rétention de la configuration (3 650 jours, COMPLIANCE, irrévocable) ; si la désactivation des clés KMS de test échoue, leurs références ne sont pas affichées (à retrouver dans la console AWS) ; le compte rendu `psp.paydunya.sandbox` ne vaut pas preuve du service réel (mission 12b-1, WP11, ADR-240) | Non | Non | Porteur, à l'essai |
 | OP-N211 | Mineurs des relectures de la 12b-1, sans effet de sécurité connu (liste au §16) (mission 12b-1, ADR-240) | Non | Non | Mission 13 (décision du porteur du 27/11/2026) |
+| OP-N212 | PayDunya : la page `developers.paydunya.com/doc/FR/http_json` publie une clé principale d'exemple et des hash d'exemple (réponse `confirm`, IPN) ; `sha512(clé)` ne redonne aucun des deux (vérifié localement le 27/11/2026, plusieurs variantes) ; l'adaptateur compare `data[hash]` au SHA-512 de la clé principale, selon le texte de la documentation : **à confirmer à l'essai réel** (mission 12b-1, recherche du 27/11/2026, ADR-238) | Non | **Oui, pour la mise en production de PayDunya** (PayDunya est déjà hors de `PRODUCTION_ENABLED_SERVICES`, OP-N209) ; décision du porteur du 27/11/2026 | Mission 12b (essai réel de `psp.paydunya`) |
 
 Les points sont détaillés aux sections 2 (points non bloquants), 6 (reportés) et 9 (questions de la revue n° 2). OP-N21 à OP-N37 viennent de la revue de cohérence du 30 septembre 2026 (§8) : OP-N21 à OP-N35 sont tranchés, ainsi qu'OP-N38, né de la décision OP-N28 (§5) ; OP-N36 et OP-N37 sont reportés (§6). Aucun ne bloque le code. Q1 à Q6 viennent de la revue n° 2 du 2 octobre 2026 (§9) : toutes sont tranchées (ADR-72 à ADR-77).
 
@@ -3397,7 +3398,7 @@ OP-N185, OP-N187, OP-N188, OP-N190, OP-N191, OP-N193, OP-N195, OP-N197.
 Écrit par WP13 à partir des notes de lane de WP01 à WP12 (journal d'états de la mission, `status.events.jsonl`), des comptes
 rendus de relecture (`tasks/WPxx-*/review-cycle-N.md`) et des décisions du porteur du 26/11/2026. Mission Spec Kitty
 `adaptateurs-fournisseurs-choisis-01M8BXJA`. Décisions : ADR-237 ; PayDunya : ADR-238 ; attestations : ADR-239 ; limites :
-ADR-240 (OP-N199 à OP-N211). **Preuves par FR, NFR, SC et contrainte** : `docs/passation-12b-1/preuves.md`. **Note aux
+ADR-240 (OP-N199 à OP-N212). **Preuves par FR, NFR, SC et contrainte** : `docs/passation-12b-1/preuves.md`. **Note aux
 équipes et au porteur** : `docs/passation-12b-1/note-equipes.md`. Comparaison aux documentations d'Android et d'Apple :
 `docs/passation-12b-1/attestations-comparaison.md`. **Aucune migration, aucun `.sql` généré modifié (C-006), aucun droit
 nouveau de la base.**
@@ -3532,6 +3533,14 @@ production (WP01).
   `dev: true` dans `package-lock.json` (dépendances transitives d'`axios` devenues de production) ; WP03, relecture liée à `finish`
   avant la correction sur `close` (filet de 2 min) ; orchestrateur, `integration/webhooks/receive.spec.ts` a échoué une fois (3 tests,
   « request entity too large ») sur la lane l, vert en relance isolée.
+
+- **OP-N212.** PayDunya, incohérence de l'exemple de hash (recherche du 27/11/2026 dans les sources officielles, décision du
+  porteur du même jour). La page https://developers.paydunya.com/doc/FR/http_json publie une clé principale d'exemple et des
+  hash d'exemple (réponse `confirm` et IPN). `sha512(clé)` ne redonne aucun des deux, vérifié localement le 27/11/2026 avec
+  plusieurs variantes. L'adaptateur (`apps/api/src/psp/paydunya/paydunya-adapter.ts`) compare `data[hash]` au SHA-512 de la clé
+  principale, selon le texte de la documentation. À confirmer à l'essai réel, avant toute mise en production de PayDunya ;
+  mission qui le lève : l'essai réel (12b). Reste ouvert : bloque la mise en production de PayDunya, mais PayDunya est déjà
+  hors de `PRODUCTION_ENABLED_SERVICES` (OP-N209). Voir ADR-238.
 
 ### Fichiers à faire relire par une personne (règle 4 de `CLAUDE.md`)
 

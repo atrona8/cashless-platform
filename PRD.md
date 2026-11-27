@@ -248,7 +248,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   KMS et S3 Object Lock ; il ne reste qu'identifiants et clés à poser. Chaque adaptateur reste refusé en production
   jusqu'à un essai réel réussi. PayDunya : notification traitée comme un signal, crédit après confirmation par son API.
   Orange Money attend sa documentation (portail Sonatel, accès par compte). (§11.1, §13.2, §13.7)
-  **Consignée le 27/11/2026 (ADR-237 à ADR-240, OP-N199 à OP-N211 ; preuves : `docs/passation-12b-1/preuves.md`).**
+  **Consignée le 27/11/2026 (ADR-237 à ADR-240, OP-N199 à OP-N212 ; preuves : `docs/passation-12b-1/preuves.md`).**
   Rien n'est en production : `PRODUCTION_ENABLED_SERVICES` est vide, chaque service est levé après son essai réel
   (commande `npm run essai -w @cashless/api -- <service>`) par une PR relue (OP-N209, OP-N206). Écarts de sécurité décidés
   par le porteur le 26/11/2026 : preuve d'origine PayDunya fixe (OP-N199, ADR-238), carte PayDunya non créditée faute de
@@ -263,7 +263,9 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   (`attempt_acknowledged` : non crédité, lecture stricte d'ADR-77). Héritages : mission 12 (OP-N202, OP-N203), mission 12b
   (Orange Money, OTP, OIDC, matériel de la passerelle, autorité des terminaux : OP-N73), mission 13 (OP-N207, OP-N208, OP-N211, décision du porteur du 27/11/2026) ; OP-N205 : mesure à la recette avec plusieurs
   instances, puis décision du porteur (aucune mission affectée). OP-N203 ne bloque pas la production (décision du 27/11/2026) ;
-  OP-N202 ne bloque pas la production non plus (décision du porteur du 27/11/2026).
+  OP-N202 ne bloque pas la production non plus (décision du porteur du 27/11/2026). OP-N212 (recherche du 27/11/2026) :
+  l'exemple de hash publié par PayDunya (`sha512(clé principale)` ne le redonne pas) est à confirmer à l'essai réel (mission 12b),
+  avant toute mise en production de PayDunya (déjà hors de `PRODUCTION_ENABLED_SERVICES`).
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)
@@ -437,7 +439,7 @@ Découpage validé le 07/10/2026 (détail et commandes dans `PROMPTS-A-ENVOYER.m
        classement par la base).
 12. App terminal (déléguée ; NFC après la validation sur vrais bracelets)
 12b-1. Adaptateurs conformes aux documentations des fournisseurs déjà choisis (26/11/2026) (nous ; **adaptateurs écrits, en attente de la fusion et des essais réels** : lots
-    WP01 à WP13, ADR-237 à ADR-240, OP-N199 à OP-N211, report aux missions 12, 12b et 13). Levés côté code, en attente de
+    WP01 à WP13, ADR-237 à ADR-240, OP-N199 à OP-N212, report aux missions 12, 12b et 13). Levés côté code, en attente de
     l'essai : OP-N41, OP-N89, OP-N131 et les adaptateurs Wave, PayDunya, Stripe et coffre d'OP-N81.
 12b. Intégrations réelles (services externes), avant la recette
 13. Recette V1

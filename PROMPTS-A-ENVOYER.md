@@ -833,7 +833,9 @@ vendeurs et le catalogue : la mission les ajoute.
 > OTP, serveur d'identité OIDC (OP-N56, OP-N171), signature NXP (OP-N46), matériel de clés de la passerelle (OP-N100, OP-N101),
 > autorité des terminaux et signataire des jetons d'appareil (OP-N73 : les processus public et `tag-keys` refusent de démarrer en
 > production tant qu'il est un faux), notificateur d'alertes (OP-N132), clé de l'IBAN par le KMS (OP-N150), secrets applicatifs
-> dans le coffre (OP-N154), banque. PayDunya : écarts OP-N199 à OP-N201 à réexaminer à l'essai en bac à sable.
+> dans le coffre (OP-N154), banque. PayDunya : écarts OP-N199 à OP-N201 à réexaminer à l'essai en bac à sable ; **OP-N212** : l'exemple de hash publié par PayDunya
+> (réponse `confirm`, IPN) n'est pas `sha512(clé principale)` (vérifié le 27/11/2026) : à confirmer à l'essai réel, avant toute mise en
+> production de PayDunya.
 
 > **Hérité de la 10a (23/11/2026, OP-N172, ADR-232)** : rendre impossible ou refuser au démarrage un changement du
 > secret des codes de rattachement sans hausse de sa version (aujourd'hui seule la baisse est refusée). Avec le KMS réel,
@@ -941,7 +943,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > compte du portail Sonatel `developer.orange-sonatel.com` ; à ajouter dès que le porteur la fournit), SMS et WhatsApp,
 > serveur d'identité OIDC, matériel de clés de la passerelle, banque. Les faux de ces services restent tels quels.
 
-> **État au 27/11/2026 (WP13, consignation ; ADR-237 à ADR-240, OP-N199 à OP-N211)** : adaptateurs Wave, PayDunya, Stripe,
+> **État au 27/11/2026 (WP13, consignation ; ADR-237 à ADR-240, OP-N199 à OP-N212)** : adaptateurs Wave, PayDunya, Stripe,
 > coffre AWS Secrets Manager, AWS KMS et copie S3 Object Lock écrits (lots WP01 à WP12), **aucun en production** :
 > `PRODUCTION_ENABLED_SERVICES` est vide (OP-N209) ; chaque service se lève après sa commande d'essai réelle, par une PR relue
 > (D6 ; paramètres à poser : `docs/SERVICES-EXTERNES.md`, étapes : `quickstart.md` de la mission, preuves :
