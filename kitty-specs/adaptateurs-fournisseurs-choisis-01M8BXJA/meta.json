@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-27T11:31:09.247440+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "6fb8ea50c16829be03c3f4021d68f725fd92b8ad"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-27T11:31:09.247440+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "6fb8ea50c16829be03c3f4021d68f725fd92b8ad",
   "coordination_branch": "kitty/mission-adaptateurs-fournisseurs-choisis-01M8BXJA",
   "created_at": "2026-11-26T12:33:57.440894+00:00",
   "flattened": false,
