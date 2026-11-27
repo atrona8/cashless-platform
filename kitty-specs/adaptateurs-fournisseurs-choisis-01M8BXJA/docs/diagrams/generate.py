@@ -28,7 +28,7 @@ class D:
         json.dump(dict(type='excalidraw',version=2,source='https://excalidraw.com',elements=s.e,appState=dict(viewBackgroundColor='#FFFFFF',gridSize=None),files={}),open(p,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
         return p
 def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Planifié le 26/11/2026, rien n’est codé','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 27/11/2026, jamais essayé en réel','decision','rectangle',20)
     ah,uh=96,84; top=170
     ay={a:top+i*(H/len(actors))+(H/len(actors)-ah)/2 for i,a in enumerate(actors)}
     uy={u:top+i*(H/len(ucs))+(H/len(ucs)-uh)/2 for i,(u,_) in enumerate(ucs)}
@@ -47,7 +47,7 @@ def usecase(name,title,sub,actors,ucs,links,includes=(),note=None,H=820):
 def sequence(name,title,sub,parts,msgs,note=None):
     # Styles de message : call, ret (pointillé), bad, self (action interne), note (Note over, a..b),
     # et cadres : ('#open', libellé) / ('#else', libellé) / ('#close',) (loop, alt).
-    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Planifié le 26/11/2026, rien n’est codé','decision','rectangle',20)
+    d=D(); d.text(60,30,1300,50,title,34,'#0F172A','left'); d.text(60,84,1800,34,sub,22,'#64748B','left'); d.box(1400,30,460,44,'Relu le 27/11/2026, jamais essayé en réel','decision','rectangle',20)
     n=len(parts); pw=250; gap=(1800-pw)/(n-1) if n>1 else 0; top=160
     rows=sum(1 for m in msgs if m[0]!='#close'); step=max(min((1000-top-110)/max(rows,1),104),76)
     cx={k:60+pw/2+i*gap for i,(k,_,_) in enumerate(parts)}
@@ -95,13 +95,14 @@ files.append(usecase('usecase-adaptateurs-fournisseurs','Adaptateurs des fournis
  [('Recharger par Wave','primary'),('Recharger par PayDunya','primary'),('Recharger par carte Stripe','primary'),('Rapprocher les paiements','second'),('Ranger les identifiants au coffre','accent'),('Clés et scellements sur AWS','accent'),('Essayer puis lever la garde','accent')],
  [('Festivalier','Recharger par Wave'),('Festivalier','Recharger par PayDunya'),('Festivalier','Recharger par carte Stripe'),('Prestataire','Rapprocher les paiements'),
   ('Porteur','Ranger les identifiants au coffre'),('Porteur','Clés et scellements sur AWS'),('Porteur','Essayer puis lever la garde')],
- note="Planifié le 26/11/2026, rien n’est codé. Décisions D1 à D9 du porteur : Orange Money hors périmètre, PayDunya traité comme un signal,\nrefus en production jusqu’à l’essai réel (liste dans le code, PR relue), remboursement d’un paiement non crédité hors plateforme.",H=800))
+ note="Relu le 27/11/2026 : code livré, aucun essai réel, liste PRODUCTION_ENABLED_SERVICES vide. Décisions D1 à D9 du porteur : Orange Money hors périmètre,\nPayDunya traité comme un signal, refus en production jusqu’à l’essai réel (liste dans le code, PR relue), remboursement hors plateforme.",H=800))
 files.append(sequence('sequence-signal-relecture-credit','Signal, relecture, puis crédit (PayDunya)','La notification ne prouve pas son contenu : seule la relecture authentifiée peut créditer',
- [P('f','PayDunya','data'),P('a','API (réception)','primary'),P('d','Base'),P('w','Travailleur d’interrogation','accent')],
- [('f','a','Notification (formulaire, data[hash])'),('a','a','Preuve d’origine fausse ? refus, rien conservé','self'),
+ [P('f','PayDunya','data'),P('a','API (réception)','primary'),P('d','Base'),P('w','Relecture après réponse','accent')],
+ [('f','a','Notification (formulaire, data[hash])'),('a','a','Preuve d’origine fausse ? 401, rien conservé','self'),
   ('a','d','Signal conservé, sans effet'),('a','f','200 immédiat, aucun appel sortant','ret'),
-  ('w','d','Recharges avec signal reçu (délai 0)'),('w','f','Lire la facture (clés, jeton)'),('f','w','Statut, montant, devise','ret'),
-  ('#open','alt non payée, ou montant ou devise différents'),('w','w','Rien crédité, anomalie','bad'),('#close',),
+  ('a','w','Réponse écrite : relecture programmée'),('w','d','Retrouver la recharge en attente'),
+  ('w','f','Lire la facture (clés, jeton)'),('f','w','Statut, montant, devise','ret'),
+  ('#open','alt non payée, montant ou devise différents, carte sans 3-D Secure'),('w','w','Rien crédité, anomalie','bad'),('#close',),
   ('w','d','Crédit unique par le processeur existant')],
- note="Planifié le 26/11/2026, rien n’est codé (D2). Écart de sécurité : la preuve d’origine PayDunya est une valeur fixe ; au plus une relecture par recharge et par minute. Stripe carte : même relecture."))
+ note="Relu le 27/11/2026 (D2). Écart de sécurité consigné (OP-N199) : preuve d’origine fixe ; au plus une relecture par recharge et par minute. Filet : interrogation toutes les 2 min. Stripe carte : même relecture."))
 for f in files: print(r.render(f))

@@ -1,59 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1248" viewBox="0 0 2066 1248">
+<svg xmlns="http://www.w3.org/2000/svg" width="2066" height="1324" viewBox="0 0 2066 1324">
 <rect width="100%" height="100%" fill="#FFFFFF"/>
 <g transform="translate(66,50)">
 <rect x="1400" y="30" width="460" height="44" rx="12" ry="12" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
 <ellipse cx="185.0" cy="198.0" rx="125.0" ry="38.0" fill="#CCE0FF" stroke="#0052D6" stroke-width="2"/>
-<polyline points="185.0,236 185.0,1060" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="185.0,236 185.0,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="576.6666666666666" y="160" width="250" height="76" rx="12" ry="12" fill="#0061FF" stroke="#0047CC" stroke-width="2"/>
-<polyline points="701.6666666666666,236 701.6666666666666,1060" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="701.6666666666666,236 701.6666666666666,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1093.3333333333333" y="160" width="250" height="76" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
-<polyline points="1218.3333333333333,236 1218.3333333333333,1060" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1218.3333333333333,236 1218.3333333333333,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <rect x="1610.0" y="160" width="250" height="76" rx="12" ry="12" fill="#FF8A00" stroke="#CC6E00" stroke-width="2"/>
-<polyline points="1735.0,236 1735.0,1060" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1735.0,236 1735.0,1136" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
 <polyline points="191.0,290.72 693.6666666666666,290.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="693.6666666666666,290.72 674.3598503050785,301.2673618492925 674.3598503050785,280.17263815070754" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="240.9333333333333" y="253.72000000000003" width="404.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="451.66666666666663" y="336.72" width="500" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+<rect x="461.66666666666663" y="336.72" width="480" height="56" rx="12" ry="12" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
 <polyline points="707.6666666666666,442.71999999999997 1210.3333333333333,442.71999999999997" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1210.3333333333333,442.71999999999997 1191.026516971745,453.26736184929246 1191.026516971745,432.1726381507075" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
 <rect x="809.6" y="405.71999999999997" width="300.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <polyline points="695.6666666666666,518.72 193.0,518.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="193.0,518.72 212.3068163615882,508.17263815070754 212.3068163615882,529.2673618492925" fill="#047857" stroke="#047857" stroke-width="1"/>
 <rect x="261.73333333333335" y="481.72" width="363.2" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1729.0,594.72 1226.3333333333333,594.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1226.3333333333333,594.72 1245.6401496949215,584.1726381507076 1245.6401496949215,605.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1279.4666666666665" y="557.72" width="394.40000000000003" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="1729.0,670.72 193.0,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="193.0,670.72 212.3068163615882,660.1726381507076 212.3068163615882,681.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="799.2" y="633.72" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<polyline points="191.0,746.72 1727.0,746.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1727.0,746.72 1707.6931836384117,757.2673618492925 1707.6931836384117,736.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
-<rect x="830.4" y="709.72" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="70" y="796.72" width="474" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
-<rect x="1585.0" y="868.72" width="300" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
-<rect x="64" y="790.72" width="1856.0" height="141.27999999999997" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
-<polyline points="1729.0,1008.92 1226.3333333333333,1008.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1226.3333333333333,1008.92 1245.6401496949215,998.3726381507075 1245.6401496949215,1019.4673618492924" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
-<rect x="1258.6666666666665" y="971.92" width="436.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="707.6666666666666,594.72 1727.0,594.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1727.0,594.72 1707.6931836384117,605.2673618492925 1707.6931836384117,584.1726381507076" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1015.9333333333333" y="557.72" width="404.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,670.72 1226.3333333333333,670.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1226.3333333333333,670.72 1245.6401496949215,660.1726381507076 1245.6401496949215,681.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1300.2666666666664" y="633.72" width="352.8" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="1729.0,746.72 193.0,746.72" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="193.0,746.72 212.3068163615882,736.1726381507076 212.3068163615882,757.2673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="799.2" y="709.72" width="321.6" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<polyline points="191.0,822.72 1727.0,822.72" fill="none" stroke="#047857" stroke-width="2" stroke-dasharray="8,6"/><polygon points="1727.0,822.72 1707.6931836384117,833.2673618492925 1707.6931836384117,812.1726381507076" fill="#047857" stroke="#047857" stroke-width="1"/>
+<rect x="830.4" y="785.72" width="259.20000000000005" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="70" y="872.72" width="674" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="1585.0" y="944.72" width="300" height="56" rx="12" ry="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<rect x="64" y="866.72" width="1856.0" height="141.27999999999997" rx="0" ry="0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8,6"/>
+<polyline points="1729.0,1084.92 1226.3333333333333,1084.92" fill="none" stroke="#0047CC" stroke-width="2"/><polygon points="1226.3333333333333,1084.92 1245.6401496949215,1074.3726381507076 1245.6401496949215,1095.4673618492925" fill="#0047CC" stroke="#0047CC" stroke-width="1"/>
+<rect x="1258.6666666666665" y="1047.92" width="436.0" height="28" rx="0" ry="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Signal, relecture, puis crédit (PayDunya)</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">La notification ne prouve pas son contenu : seule la relecture authentifiée peut créditer</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Planifié le 26/11/2026, rien n’est codé</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 27/11/2026, jamais essayé en réel</text>
 <text x="185.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">PayDunya</text>
 <text x="701.6666666666666" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#FFFFFF" text-anchor="middle">API (réception)</text>
 <text x="1218.3333333333333" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#374151" text-anchor="middle">Base</text>
-<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Travailleur d’interrogation</text>
+<text x="1735.0" y="202.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relecture après réponse</text>
 <text x="443.3333333333333" y="271.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Notification (formulaire, data[hash])</text>
 <text x="34.0" y="293.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">1</text>
-<text x="701.6666666666666" y="368.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Preuve d’origine fausse ? refus, rien conservé</text>
+<text x="701.6666666666666" y="368.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#374151" text-anchor="middle">Preuve d’origine fausse ? 401, rien conservé</text>
 <text x="34.0" y="369.77000000000004" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">2</text>
 <text x="960.0" y="423.99499999999995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Signal conservé, sans effet</text>
 <text x="34.0" y="445.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">3</text>
 <text x="443.3333333333333" y="499.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">200 immédiat, aucun appel sortant</text>
 <text x="34.0" y="521.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">4</text>
-<text x="1476.6666666666665" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Recharges avec signal reçu (délai 0)</text>
+<text x="1218.3333333333335" y="575.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Réponse écrite : relecture programmée</text>
 <text x="34.0" y="597.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">5</text>
-<text x="960.0" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire la facture (clés, jeton)</text>
+<text x="1476.6666666666665" y="651.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Retrouver la recharge en attente</text>
 <text x="34.0" y="673.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">6</text>
-<text x="960.0" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut, montant, devise</text>
+<text x="960.0" y="727.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Lire la facture (clés, jeton)</text>
 <text x="34.0" y="749.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">7</text>
-<text x="74" y="814.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt non payée, ou montant ou devise différents</text>
-<text x="1735.0" y="900.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rien crédité, anomalie</text>
-<text x="34.0" y="901.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
-<text x="1476.6666666666665" y="990.1949999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Crédit unique par le processeur existant</text>
-<text x="34.0" y="1011.9699999999999" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
-<text x="60" y="1105.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Planifié le 26/11/2026, rien n’est codé (D2). Écart de sécurité : la preuve d’origine PayDunya est une valeur fixe ; au plus une relecture par recharge et par minute. Stripe carte : même relecture.</text>
+<text x="960.0" y="803.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Statut, montant, devise</text>
+<text x="34.0" y="825.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">8</text>
+<text x="74" y="890.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#64748B" text-anchor="start">alt non payée, montant ou devise différents, carte sans 3-D Secure</text>
+<text x="1735.0" y="976.995" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Rien crédité, anomalie</text>
+<text x="34.0" y="977.77" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">9</text>
+<text x="1476.6666666666665" y="1066.1950000000002" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#0F172A" text-anchor="middle">Crédit unique par le processeur existant</text>
+<text x="34.0" y="1087.97" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#94A3B8" text-anchor="middle">10</text>
+<text x="60" y="1181.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 27/11/2026 (D2). Écart de sécurité consigné (OP-N199) : preuve d’origine fixe ; au plus une relecture par recharge et par minute. Filet : interrogation toutes les 2 min. Stripe carte : même relecture.</text>
 </g>
 </svg>

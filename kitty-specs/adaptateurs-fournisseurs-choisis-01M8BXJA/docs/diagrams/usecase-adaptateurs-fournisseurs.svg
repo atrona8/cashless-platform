@@ -21,7 +21,7 @@
 <polyline points="448,836.6666666666667 1000,912.8571428571429" fill="none" stroke="#0052D6" stroke-width="2"/><polygon points="1000,912.8571428571429 979.4323662072262,920.6656279961662 982.3166463557211,899.7690183203207" fill="#0052D6" stroke="#0052D6" stroke-width="1"/>
 <text x="60" y="62.65" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#0F172A" text-anchor="start">Adaptateurs des fournisseurs choisis : qui recharge, qui pose les clés</text>
 <text x="60" y="105.95" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#64748B" text-anchor="start">Wave, PayDunya, Stripe, coffre AWS, KMS, S3 ; chaque service refusé en production jusqu’à son essai réel</text>
-<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Planifié le 26/11/2026, rien n’est codé</text>
+<text x="1630.0" y="56.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0F172A" text-anchor="middle">Relu le 27/11/2026, jamais essayé en réel</text>
 <text x="275.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Acteurs</text>
 <text x="1225.0" y="145.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#0061FF" text-anchor="middle">Cas d&#x27;usage</text>
 <text x="275.0" y="308.28333333333336" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Festivalier</text>
@@ -34,7 +34,7 @@
 <text x="1225.0" y="689.2357142857143" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Ranger les identifiants au coffre</text>
 <text x="1225.0" y="803.5214285714286" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Clés et scellements sur AWS</text>
 <text x="1225.0" y="917.8071428571429" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#0F172A" text-anchor="middle">Essayer puis lever la garde</text>
-<text x="60" y="1011.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Planifié le 26/11/2026, rien n’est codé. Décisions D1 à D9 du porteur : Orange Money hors périmètre, PayDunya traité comme un signal,</text>
-<text x="60" y="1043.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">refus en production jusqu’à l’essai réel (liste dans le code, PR relue), remboursement d’un paiement non crédité hors plateforme.</text>
+<text x="60" y="1011.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">Relu le 27/11/2026 : code livré, aucun essai réel, liste PRODUCTION_ENABLED_SERVICES vide. Décisions D1 à D9 du porteur : Orange Money hors périmètre,</text>
+<text x="60" y="1043.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#64748B" text-anchor="start">PayDunya traité comme un signal, refus en production jusqu’à l’essai réel (liste dans le code, PR relue), remboursement hors plateforme.</text>
 </g>
 </svg>

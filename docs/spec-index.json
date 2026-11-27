@@ -1520,7 +1520,7 @@
   {
     "mission": "adaptateurs-fournisseurs-choisis-01M8BXJA",
     "titre_cas_usage": "Adaptateurs conformes aux documentations des fournisseurs choisis",
-    "statut": "planifiée : plan finalisé le 26/11/2026 (plan commité 64a7f01c, artefacts 944b47ff), rien n'est codé",
+    "statut": "relue le 27/11/2026 (13 lots approuvés), non acceptée, non fusionnée (code dans la lane m ; aucun essai réel)",
     "user_stories": [
       {
         "titre": "Recharger par Wave",
@@ -1528,11 +1528,11 @@
       },
       {
         "titre": "Recharger par PayDunya",
-        "detail": "En tant que festivalier, je veux recharger par PayDunya : la notification n'est qu'un signal d'origine vérifiée, et le serveur relit le statut de la facture auprès de PayDunya avant de créditer."
+        "detail": "En tant que festivalier, je veux recharger par PayDunya : la notification n'est qu'un signal d'origine vérifiée, et le serveur relit le statut de la facture auprès de PayDunya, après l'écriture de la réponse, avant de créditer ; une carte sans preuve 3-D Secure est reçue mais non créditée."
       },
       {
         "titre": "Recharger par carte Stripe",
-        "detail": "En tant que festivalier, je veux payer par carte avec 3-D Secure via Stripe ; la notification est relue avant le crédit, qui a lieu une seule fois."
+        "detail": "En tant que festivalier, je veux payer par carte avec 3-D Secure via Stripe ; la notification est relue avant le crédit, qui a lieu une seule fois ; seul un 3-D Secure authentifié vaut un succès, et un litige est rattaché à la recharge par relecture."
       },
       {
         "titre": "Secrets PSP dans le coffre",
@@ -1544,7 +1544,7 @@
       },
       {
         "titre": "Essayer puis passer en production",
-        "detail": "En tant que porteur, je veux poser identifiants et clés, lancer l'essai réel d'un service, puis lever la garde de production de ce seul service par une modification relue."
+        "detail": "En tant que porteur, je veux poser identifiants et clés, lancer l'essai réel d'un service (npm run essai), puis lever la garde de production de ce seul service par une modification relue de la liste PRODUCTION_ENABLED_SERVICES, vide aujourd'hui."
       }
     ],
     "entites_cles": [
@@ -1554,23 +1554,25 @@
       "Liste des services essayés (garde de production)",
       "Compte rendu d'essai"
     ],
-    "resultat_mesurable": "6 services (Wave, PayDunya, Stripe, Secrets Manager, KMS, S3) avec une liste de paramètres sans aucune étape de code ; 100 % des notifications forgées, rejouées ou hors délai refusées et 0 crédit PayDunya sans confirmation ; 100 % des processus de production refusent un faux ou un adaptateur non essayé en nommant le service ; 0 faux de fournisseur non décidé modifié ; 0 double crédit sur 100 notifications rejouées en parallèle ; 0 appel réseau en test (prévu, rien n'est mesuré)",
+    "resultat_mesurable": "6 services (Wave, PayDunya, Stripe, Secrets Manager, KMS, S3) livrés avec une liste de paramètres sans étape de code ; notifications forgées, rejouées ou hors délai refusées et 0 crédit PayDunya sans confirmation, 0 double crédit sur 100 notifications identiques, prouvés par des tests (aucun appel réseau en test) ; 100 % des services réels refusés ou indisponibles en production (liste vide) ; 0 faux de fournisseur non décidé modifié ; 313 différences de contrat admises, 0 refusée ; aucun essai contre un vrai service (OP-N206)",
     "hypotheses": [
-      "Les ports existants restent la frontière ; seul PspAdapter évolue (deux verdicts)",
+      "Les ports existants restent la frontière ; seul PspAdapter évolue (deux verdicts, résolution facultative d'une référence de litige)",
       "Comptes, clés et bacs à sable des fournisseurs indisponibles pendant la mission : les essais réels sont lancés par le porteur après",
       "Région AWS eu-west-3 provisoire (OP-N11), réglée par configuration",
       "Wave : délai 5 minutes ; Stripe : 300 s ; PayDunya : aucun horodatage, relevé ni remboursement documenté",
       "Remboursement d'un paiement non crédité hors plateforme (OP-N82)",
       "Orange Money entrera dans une mission suivante dès que la documentation sera fournie",
-      "Décisions D1 à D9 du porteur du 26/11/2026"
+      "Décisions D1 à D9 du porteur du 26/11/2026",
+      "Décisions des relectures du 26/11/2026 : 3-D Secure strict chez Stripe, litige relu puis sans correspondance si non rattaché, exception Android bornée à une racine ; décisions du 27/11/2026 sur OP-N203, OP-N207, OP-N208, OP-N211"
     ],
     "contraintes": [
-      "Contrat d'API stable : seul ajout rétrocompatible présenté au porteur (D9, accepté)",
+      "Contrat d'API stable : seul ajout rétrocompatible livré (D9, 313 différences admises)",
       "Aucun faux ni adaptateur non essayé en production, test à l'appui",
-      "Écart PayDunya consigné par la mission : OP, ADR, test qui échoue si un crédit a lieu sans confirmation",
+      "Écart PayDunya consigné par la mission (OP-N199, ADR-238) avec test de borne ; exception Android (OP-N202) et extensions Apple (OP-N203) consignées",
       "Dépendances épinglées selon docs/08-pile-logicielle.md",
       "Un droit par processus (KMS, coffre)",
-      "Fichiers .sql générés de packages/ledger-sql/ intacts"
+      "Fichiers .sql générés de packages/ledger-sql/ intacts",
+      "Aucune migration"
     ],
     "cas_limites": [
       "Notification reçue deux fois : un seul crédit",
@@ -1579,18 +1581,20 @@
       "PSP injoignable à la relecture : reprise plus tard, rien n'est crédité",
       "Rotation de la clé de notification : l'ancienne refusée après son échéance",
       "Carte PayDunya sans preuve 3-D Secure : reçue, non créditée",
-      "Coffre ou KMS indisponible au démarrage : mode dégradé ou refus"
+      "Coffre ou KMS indisponible au démarrage : PSP et coffre indisponibles, KMS et copie des scellements refusent de démarrer (règle I1)",
+      "Stripe : session ouverte après un refus : reste en attente ; 3-D Secure « attempt_acknowledged » : non crédité",
+      "Litige Stripe non rattaché : sans correspondance, anomalie à 24 h"
     ],
     "fonctionnel": [
       "Port des PSP fidèle à chaque fournisseur (notification ou signal)",
       "Session, notification, statut, annulation et relevé Wave",
-      "Facture et signal PayDunya, crédit après confirmation",
+      "Facture et signal PayDunya, relecture après la réponse, crédit après confirmation",
       "Paiement, notification, statut, annulation et relevé Stripe",
       "Coffre AWS des secrets PSP",
       "Cinq ports de clés sur KMS",
       "Copie des scellements sur S3 Object Lock (10 ans)",
-      "Attestations Android et Apple comparées aux documentations (correctif seulement si écart)",
-      "Garde de production par service, commande d'essai, liste des paramètres à poser",
+      "Attestations Android et Apple comparées aux documentations : exception Android bornée, contrôles Apple reportés en mission 12",
+      "Garde de production par service (liste vide), commande d'essai npm run essai, liste des paramètres à poser (docs/SERVICES-EXTERNES.md)",
       "Fournisseurs non décidés inchangés (Orange Money, SMS, WhatsApp, OIDC, passerelle, banque)"
     ],
     "non_fonctionnel": [
