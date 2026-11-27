@@ -165,3 +165,10 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   si la désactivation KMS échoue, les références des clés créées ne sont pas affichées (à retrouver dans la console).
   Le compte rendu `psp.paydunya.sandbox` ne vaut pas preuve du service réel (D3/D6 inchangés). Fichiers à faire
   relire par une personne : `trial/psp-trial.ts`, `trial/aws-trial.ts`, `trial/main.ts`, `trial/report.ts`.
+- **Décisions du porteur (27/11/2026, après la relecture de WP13 cycle 1, renvoyé en `planned`)** :
+  OP-N203 (extensions Apple non contrôlées) **ne bloque pas la production**, écart ouvert jusqu'à la mission 12 ;
+  OP-N207, N208 et N211 levés par la **mission 13** ; OP-N205 (bornes en mémoire par processus) : **mesure à la
+  recette avec plusieurs instances, décision ensuite** (état partagé en base si nécessaire), pas d'affectation à une
+  mission. OP-N202 « bloque la production : Non » n'a pas été tranché : l'écrire comme proposition en attente.
+  **WP13 cycle 2** : remplacer les propositions par ces décisions (OP, ADR-239/240, PRD §2.8, PROMPTS, `note-equipes.md`
+  §3 pour ce qui reste en attente) ; ajouter à OP-N209 la limite « preuve d'injection sur `S3SealCopy` seul ».
