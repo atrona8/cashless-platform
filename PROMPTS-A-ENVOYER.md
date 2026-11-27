@@ -957,10 +957,10 @@ vendeurs et le catalogue : la mission les ajoute.
 - [x] /spec-kitty.specify (26/11/2026, mission `adaptateurs-fournisseurs-choisis-01M8BXJA`, spec `d2ac2dcb` : 16 FR, 5 NFR, 6 C ; Stripe inclus, remboursement OP-N82 hors plateforme) Adaptateurs réels, conformes aux documentations publiques, des fournisseurs déjà choisis (SPECIFICATION §10.3, §11.1, §13.2, §13.7, ADR-65, ADR-70, ADR-72, ADR-131) : Wave, PayDunya, Stripe derrière `PspAdapter` (le port suit chaque fournisseur : mécanisme de notification propre, rotation, tolérance) ; AWS Secrets Manager, AWS KMS et S3 Object Lock derrière leurs ports. Seuls identifiants et clés restent à poser. Refus en production maintenu jusqu'à l'essai réel de chaque service ; une commande d'essai par service. PayDunya : notification = signal, crédit après confirmation par l'API.
 - [x] /spec-kitty.plan (26/11/2026, plan `64a7f01c` ; décisions du porteur : levée de la garde par liste dans le code et PR relue, règle 3-D Secure gardée pour la carte PayDunya, rétention 10 ans des copies de scellement, ajout rétrocompatible au contrat de `receivePspWebhook` ; `axios` 1.21.1, SDK AWS 3.1172.0) Dépendances (`@aws-sdk/client-kms`, `@aws-sdk/client-secrets-manager`, `@aws-sdk/client-s3`, client HTTP) vérifiées et épinglées selon `docs/08-pile-logicielle.md` ; vecteurs de signature tirés des documentations (exemples officiels) ; aucun appel réseau en test (serveurs locaux simulant les réponses documentées) ; écart PayDunya consigné (OP, ADR, test de borne).
 - [x] /spec-kitty.tasks (26/11/2026, `4d7f0752` : 13 lots, T001-T059, 13 lanes a…m ; fiche `docs/passation-12b-1/fiche-implementation.md`, `interfaces.md`) ; analyze : 1re passe `blocked` (I1 règle de production, 4 moyens), corrections `426cdf0c`, 2e passe `ready` (`f6b1eb72`)
-- [ ] spec-kitty next --agent claude --mission adaptateurs-fournisseurs-choisis-01M8BXJA
-- [ ] /spec-kitty.review --mission adaptateurs-fournisseurs-choisis-01M8BXJA
-- [ ] /spec-kitty.accept --mission adaptateurs-fournisseurs-choisis-01M8BXJA
-- [ ] spec-kitty consolidate --mission adaptateurs-fournisseurs-choisis-01M8BXJA
+- [x] implémentation en boucle CLI (26-27/11/2026 : 13 lots approuvés par des relecteurs distincts ; WP13 au cycle 2) --mission adaptateurs-fournisseurs-choisis-01M8BXJA
+- [x] /spec-kitty.review --mission adaptateurs-fournisseurs-choisis-01M8BXJA (27/11/2026 ; addendum documentaire post-review appliqué ; batterie complète avant accept : 12 échecs de suites anciennes, règle I1, corrigés)
+- [x] /spec-kitty.accept --mission adaptateurs-fournisseurs-choisis-01M8BXJA (27/11/2026, `f4d8099f` ; matrice 21/21, NFR-002 par décision du porteur)
+- [x] spec-kitty consolidate --mission adaptateurs-fournisseurs-choisis-01M8BXJA (27/11/2026, squash `52876ff5` ; revue post-fusion PASS WITH NOTES `0fb6a4d2` ; dans `main` par la PR #29, `e47fd7d8`, le 27/11/2026)
 
 ---
 
