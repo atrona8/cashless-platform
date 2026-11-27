@@ -91,6 +91,8 @@ Renforcements faits puis consignés : retrait de `UPDATE (status, resolution_tx_
 7. `docs/POINTS_OUVERTS.md` §15 et ADR-235/236 (consignation des écarts).
 L'agent qui a écrit le code ne vaut pas relecture indépendante ; cette revue non plus pour les points 1 à 3.
 
+**Relecture humaine faite par le porteur le 26/11/2026** (fichiers 1 à 7 ci-dessus), après la fusion des PR #26 et #27.
+
 ## Réserve de relance
 La relance de `x-roles-matrix.spec.ts` (1 281 appels) n'était pas terminée à la remise du rapport (plus de 10 min sous charge
 locale, aucun échec affiché) : son résultat n'est PAS établi par cette revue ; on s'appuie sur la preuve de WP10 et de la
