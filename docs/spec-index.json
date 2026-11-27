@@ -1520,7 +1520,7 @@
   {
     "mission": "adaptateurs-fournisseurs-choisis-01M8BXJA",
     "titre_cas_usage": "Adaptateurs conformes aux documentations des fournisseurs choisis",
-    "statut": "relue le 27/11/2026 (13 lots approuvés), non acceptée, non fusionnée (code dans la lane m ; aucun essai réel)",
+    "statut": "mergée sur feat le 27/11/2026 (acceptée, revue post-fusion PASS WITH NOTES), pas encore dans main ; aucun essai réel, aucun service autorisé en production",
     "user_stories": [
       {
         "titre": "Recharger par Wave",
