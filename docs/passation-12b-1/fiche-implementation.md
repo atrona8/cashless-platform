@@ -172,3 +172,7 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   mission. OP-N202 « bloque la production : Non » n'a pas été tranché : l'écrire comme proposition en attente.
   **WP13 cycle 2** : remplacer les propositions par ces décisions (OP, ADR-239/240, PRD §2.8, PROMPTS, `note-equipes.md`
   §3 pour ce qui reste en attente) ; ajouter à OP-N209 la limite « preuve d'injection sur `S3SealCopy` seul ».
+- **Décision du porteur (27/11/2026, après la review)** : OP-N202 (exception Android) **ne bloque pas la production**.
+  À reporter **après la fusion, sur feat** (fichiers de la lane m) : POINTS_OUVERTS (ligne et §16), ADR-239, PRD §2.8,
+  `note-equipes.md` §3, test de `consignation.spec.ts` qui vérifie la mention « proposition » ; et, mineur de la
+  relecture de WP13 cycle 2, marquer « proposé » le durcissement d'OP-N207 dans la section Mission 13 de PROMPTS.
