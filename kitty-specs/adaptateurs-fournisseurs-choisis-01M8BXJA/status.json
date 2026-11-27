@@ -2,10 +2,9 @@
   "event_count": 135,
   "last_event_id": "01M8ECPW79FE4P86SDQFJHMVHP",
   "materialized_at": "2026-11-27T11:37:04.489813+00:00",
-  "mission_number": "10",
+  "mission_number": "",
   "mission_slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -21,448 +20,222 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECNS1W7P58KST4SC24V2GF",
       "last_transition_at": "2026-11-27T11:36:28.476883+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Socle livre (c6544602). Aucune retouche hors carte. Config: SEAL_COPY_BUCKET exige seulement si SEAL_COPY=real pose explicitement (en production, real par defaut sans seau = garde WP10). Mutations: endpoint prod, fake prod, seau, https, http local hors prod, rejeu POST, journal en-tetes, garde reseau (install/connect), redirections: tests rouges. Aucune suite existante n'appelle le reseau (psp, receive, android verts). A relire: no-external-network.ts.",
-        "Review passed. Chaine d'approvisionnement ok (32 paquets ajoutes, registry.npmjs.org + integrity, aucun script d'installation, 8 retraits de dev:true = deps transitives d'axios devenues de production). Non bloquant: garde reseau contournable par http.request({host:'localhost', lookup:custom}) (connect voit un hote local, le lookup renvoie une IP externe) ; durcissement propose: refuser options.lookup dans targetOf ou controler l'adresse resolue."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP01-socle/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP01-socle/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 37566,
-      "shell_pid_created_at": "1795702289.086447",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done"
-      }
+      "shell_pid": 18281,
+      "shell_pid_created_at": "1795699858.192778"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECNVYYG9NE0FNM0YVW4A04",
       "last_transition_at": "2026-11-27T11:36:31.454577+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Port PSP revise. Retouches de compilation hors carte : src/dev/psp-simulation.service.ts, src/topups/poller/psp-topup-poller.worker.ts, src/topups/psp/psp-topups.service.ts, src/webhooks/webhook-intake.service.ts (provider dans PspSecretBinding) ; src/webhooks/webhook-verifier.ts (contentType json, refus provisoire de SIGNAL et de confirmationRequired, a remplacer par WP03) ; tests test/integration/webhooks/{poll-fixtures,rejections.spec,verifier.spec,webhook-fixtures}.ts, test/unit/psp-dev-simulation.spec.ts, nouveau test/unit/psp/fake-signal-psp-adapter.spec.ts. Aucun cas retire. Mutations verifiees (rouge puis remis) : separateur Wave '.', entrees inconnues Wave, second calcul supprime, precedent echu accepte. Aucun ecart de securite. Fichiers a faire relire : hmac-signature.ts.",
-        "Review passed: hmac-signature fidele (separateur, entrees inconnues, t unique, v1 hex, deux secrets sans sortie anticipee), gardes et mutations verifiees par le relecteur"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP02-port-psp/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP02-port-psp/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 36376,
-      "shell_pid_created_at": "1795702223.575227",
-      "subtasks": {
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done"
-      }
+      "shell_pid": 20885,
+      "shell_pid_created_at": "1795699909.536738"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECP4K7BCEFPP00B0GTCXRS",
       "last_transition_at": "2026-11-27T11:36:40.295558+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP03: retouches hors carte: rejections.spec.ts (constructeur WebhookIntake +confirmateur), verifier.spec.ts (contentType). Renforcement: corps brut d'un SIGNAL non conserve (body NULL). Ajout: scheduleConfirmation 3e param facultatif; PspStatusConfirmer.check() (leve) pour l'alarme du travailleur. Mutations rouges: secret precedent signal, borne id, tolerance, form wave, borne par minute, relecture dans la requete. 'Crediter sur SIGNAL' non mutee (aucun montant), couverte par tests sans ecriture.",
-        "Review passed: aucun credit sans getStatus, borne par recharge, formulaire PayDunya seul; mutations rejouees (borne, formulaire, secret precedent) rouges. Mineur: relecture liee a 'finish' (connexion coupee: filet 2 min).",
-        "Cycle 2 : litige Stripe par relecture (decision du porteur), relecture sur close, borne apres relecture aboutie",
-        "Cycle 2 (b4ad8efe). Litige Stripe: la reception garde le litige 'a relire' (UNKNOWN, NO_EFFECT) puis le confirmateur appelle resolvePaymentReference (hors transaction) et passe le litige normalise a PSP_DISPUTE_HANDLER; null/methode absente/repartiteur absent/introuvable: anomalie sans correspondance (journal psp.signal.unmatched). Relecture aussi sur close (runOnceAfterResponse, une fois). Borne par minute liberee apres FAILED. Retouches hors carte: webhook-intake.service.ts et webhooks.controller.ts (dans owned), nouveaux tests hors owned_files: test/integration/topups/dispute-relecture.spec.ts et test/unit/webhooks/after-response.spec.ts (avertissement de garde, sans --force). Mutations verifiees (5): delete FAILED retire, close retire, garde done retiree, merchantReference non rempli, resolution null ignoree. A faire relire par une personne: apps/api/src/topups/psp/psp-status-confirmer.ts. Gardes relancees: test/unit/psp, architecture, production-guard, integration webhooks et topups: vert.",
-        "Cycle 3 : litige Stripe non rattache garde la voie UNMATCHED puis anomalie a 24 h (decision du porteur)",
-        "Cycle 3. Litige Stripe a relire: conserve en entier (kind DISPUTE, RECEIVED), applique apres la reponse par EventDispatcher.apply; la resolution (PspStatusConfirmer.resolveDispute, hors transaction, borne 1/min) est faite dans apply, donc aussi par la reprise. Non rattache (null, methode absente, erreur, introuvable): UNMATCHED, jamais traite, retente, anomalie UNMATCHED_EXPIRED a 24 h par expireUnmatched. Retire du confirmateur: PSP_DISPUTE_HANDLER et scheduleDisputeConfirmation (cycle 2). Retouche hors carte: event-dispatcher.ts (resolution; dans webhooks/**). Tests hors owned_files: dispute-relecture.spec.ts, unit/webhooks/after-response.spec.ts. Mutations: marquage traite remet (6 rouges), resolution desactivee dans apply (3 rouges). A relire par une personne: psp-status-confirmer.ts. Gardes vertes (psp, architecture, production-guard, webhooks, topups, chargebacks).",
-        "Cycles 2 et 3 : litige Stripe rattache par relecture hors transaction (UNMATCHED, retente, anomalie a 24 h), relecture sur close une seule fois, borne liberee apres FAILED. Mutations M1,M3,M4,M5,M7,M8 tuees. Gardes transverses et chargebacks verts."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP03-reception-relecture/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP03-reception-relecture/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 6888,
-      "shell_pid_created_at": "1795708510.128659",
-      "subtasks": {
-        "T011": "done",
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
-      }
+      "shell_pid": 3951,
+      "shell_pid_created_at": "1795708115.259783"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECNYTND387KCTBSD88TE25",
       "last_transition_at": "2026-11-27T11:36:34.390257+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "D9 ajout retrocompatible: contenu formulaire, description par fournisseur, description pspHmac; 3 entrees baseline; types TS+Dart regeneres; apply.mjs relance pour l'ordre x-roles. Mutations: retrait JSON -> 3 tests rouges; autre champ -> empreinte rouge. Aucun ecart securite. A relire par une personne: contract-baseline.json.",
-        "Cycle 2. Retouches hors carte autorisees: tools/contract-stability/check.test.mjs (313, cite D9) et apps/api/test/unit/contracts/contract-additions-9b.spec.ts (3 pointeurs exacts D9 + test 4e changement refuse). pspHmac: Wave signe t+corps sans separateur, Stripe t.corps; PayDunya: aucune ecriture au grand livre (notification conservee). Empreintes et types recalcules; check.mjs 0 refus; node --test 58/58; x-roles 16/16; npm run check ok; jest contracts 23/23.",
-        "Cycle 2 : constats leves, empreintes recalculees, 0 refus, gardes vertes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP04-contrat/review-cycle-2.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP04-contrat/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 64511,
-      "shell_pid_created_at": "1795703232.869835",
-      "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done"
-      }
+      "shell_pid": 46329,
+      "shell_pid_created_at": "1795702664.309826"
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECP7FCMRFXSMXB54BC8BZC",
       "last_transition_at": "2026-11-27T11:36:43.244501+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Wave livré. Aucune retouche hors carte. node_modules de la lane copié depuis la lane a (ignoré par git). Mutations vérifiées: separateur '.', création idempotente (rejeu), montant décimal, succeeded non exigé, devise XOF. A confirmer à l'essai: statuts hors doc, forme exacte de l'erreur {code,message}, type des montants du relevé, signature des requêtes (t+corps seul).",
-        "Cycle 2 : recherche filtrée sur client_reference exact ; reprise exige montant et devise égaux ; id de session contrôlé ; tests 500/429 ; relevé borné à 31 jours ; devise XOF des lignes. 7 mutations vérifiées (filtre, montant/devise, id, 429, 5xx, 31 jours, devise ligne). Aucune retouche hors carte.",
-        "Cycle 2 : 2 bloquants corriges (filtre client_reference, reprise montant+devise, tests 500/429), mutations rejouees (8, toutes rouges), gardes transverses vertes."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP05-wave/review-cycle-2.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP05-wave/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 94641,
-      "shell_pid_created_at": "1795707569.732812",
-      "subtasks": {
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
-      }
+      "shell_pid": 81546,
+      "shell_pid_created_at": "1795706151.839472"
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPAAMA9YZD7RPXDCA5YYM",
       "last_transition_at": "2026-11-27T11:36:46.164748+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Aucune retouche hors carte. Ecart D2 applique (signal, aucun montant). A confirmer a l'essai : TTL 30 min, statuts cancelled/failed, devise XOF, hash IPN. Mutations: timingSafeEqual->!==, NOTIFICATION, JSON accepte, threeDs SUCCEEDED, previous, montant non entier : tests rouges. A relire par une personne : paydunya-adapter.ts (preuve IPN).",
-        "Relecture WP06: comparaison aux SDK officiels conforme (URLs, en-tetes, corps, response_code/token, confirm, IPN sha512 temps constant); SIGNAL sans montant, JSON refuse, previous jamais utilise, carte NOT_PERFORMED; tests 223 verts; mutations json/===/previous/NOTIFICATION/3DS rouges."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP06-paydunya/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP06-paydunya/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 68143,
-      "shell_pid_created_at": "1795703297.125233",
-      "subtasks": {
-        "T024": "done",
-        "T025": "done",
-        "T026": "done",
-        "T027": "done",
-        "T028": "done"
-      }
+      "shell_pid": 44980,
+      "shell_pid_created_at": "1795702638.686605"
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPD7RCHGSE7F3X21C9ENR",
       "last_transition_at": "2026-11-27T11:36:49.144734+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Aucune retouche hors carte. Ecarts: expires_at = +31 min (30 min documentes + 60 s de marge, horloge injectable en 3e parametre facultatif). getStatus: session d'une autre recharge (client_reference_id different) -> UNKNOWN (renforce). cancel: true seulement si status=expired. Releve > 100 pages: erreur, jamais tronque. A confirmer a l'essai: XOF sans decimale, litige correle par payment_intent, eligibilite Senegal (D4). A relire par une personne: stripe-adapter.ts (signature, 3-D Secure). Mutations: 13 verifiees.",
-        "Relecture WP07 : approuve. Tests lot/psp/architecture verts (228). 3 points pour le porteur (a)(b)(c) + reserve idempotence/expires_at.",
-        "Cycle 2 : décisions du porteur du 26/11/2026",
-        "Cycle 2. Retouche hors carte: psp-adapter.port.ts (methode facultative resolvePaymentReference). attempt_acknowledged -> NOT_PERFORMED; litige = NOTIFICATION DISPUTE confirmationRequired true, ref=payment_intent (sans payment_intent: BODY_MALFORMED), resolvePaymentReference via GET sessions?payment_intent&limit=1 (verifie que la session porte ce PI); expires_at memorise par pspTopupId (memoire du processus, borne, perdu au redemarrage). Mutations: 5 verifiees. WP13: mettre a jour contracts/psp-fournisseurs.md (attempt_acknowledged, litige).",
-        "Cycle 2 approuve : attempt_acknowledged NOT_PERFORMED, litige relu (resolvePaymentReference, filtre payment_intent confirme docs), expires_at stable. 232 tests verts. Limite: memoire processus (redemarrage/multi-instance)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP07-stripe/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP07-stripe/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 89922,
-      "shell_pid_created_at": "1795706381.417946",
-      "subtasks": {
-        "T029": "done",
-        "T030": "done",
-        "T031": "done",
-        "T032": "done",
-        "T033": "done"
-      }
+      "shell_pid": 81555,
+      "shell_pid_created_at": "1795706152.573879"
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPGB3GKEN1A2MF4107PFS",
       "last_transition_at": "2026-11-27T11:36:52.324085+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Aucune retouche hors carte. Mutations: appel avant controle detenteur, cache d'erreur, previous apres echeance, L4 PayDunya, TTL cache: tests rouges puis remis. A confirmer a l'essai: forme reelle du JSON du secret, nom d'erreur AccessDenied. A relire par une personne: secrets-manager-store.ts",
-        "Relecture WP08 : approuve. 258 tests verts (psp, architecture, production-guard). Mutations rejouees : prefixe detenteur, segment vide, provider en cache, previous PayDunya = rouges. Mineur : segment '.' sans test (mutation survivante), Content-Type requete non assert par le faux (verifie a la main : application/x-amz-json-1.1 + X-Amz-Target OK, signature SigV4 presente), previous mis en cache jusqu'a 60 s mais neutralise par le controle previousValidUntil des consommateurs."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP08-secrets-manager/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP08-secrets-manager/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 65785,
-      "shell_pid_created_at": "1795703258.934543",
-      "subtasks": {
-        "T034": "done",
-        "T035": "done",
-        "T036": "done",
-        "T037": "done"
-      }
+      "shell_pid": 48903,
+      "shell_pid_created_at": "1795702704.837128"
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPKG46B8Q59ZH8MK07FNJ",
       "last_transition_at": "2026-11-27T11:36:55.556679+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "AwsKms + S3SealCopy + faux KMS/S3 (node:crypto). Aucune retouche hors carte. Mutations verifiees: DIGEST, IfNoneMatch, GOVERNANCE, forCapabilities tout exposer, zeroize, borne 4096, DER, empreinte divergente, message SDK dans l'erreur. A confirmer a l'essai: GetPublicKey sur cle reelle, 412 reel S3 (PreconditionFailed). A relire par une personne: aws-kms.ts, s3-seal-copy.ts.",
-        "Relu : 145 tests verts (kms, sealing, architecture, production-guard). Aucun bloquant. Mineurs : DER verifie seulement en enveloppe (0x30, longueur, <=72), pas les deux INTEGER ; SPKI 91 octets sans test de longueur isole ; S3 : 412 + meme empreinte ne verifie pas le verrou de l objet existant ; Decrypt ne controle pas le KeyId rendu."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP09-kms-s3/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP09-kms-s3/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 69901,
-      "shell_pid_created_at": "1795703341.971999",
-      "subtasks": {
-        "T038": "done",
-        "T039": "done",
-        "T040": "done",
-        "T041": "done",
-        "T042": "done"
-      }
+      "shell_pid": 44976,
+      "shell_pid_created_at": "1795702638.166877"
     },
     "WP10": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPPDVZXDJNQ7JCGZX7S7H",
       "last_transition_at": "2026-11-27T11:36:58.555297+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP10 pret. Hors carte (nommees) : src/kms/aws/aws-kms-client.ts (nouveau, fabrique du client KMS : le test d'architecture (a) interdit client-kms hors src/kms/aws/) ; tests mis a jour pour la regle I1 (reglage absent = real en production => UntriedInProductionError au lieu de FakeInProductionError pour le KMS) : test/unit/processes.spec.ts, test/unit/snapshots-content/crypto-production.spec.ts ; test/integration/end-to-end/psp-production.spec.ts (config de production synthetique : modes real). KMS_PROVIDER deplace dans kms/production-guard.ts (reexporte par kms.module.ts) pour que bootstrap.ts, charge par le processus public, n'atteigne plus kms/aws/. Ecarts : aucun n'affaiblit la securite. Renforcement : FakeInProductionError au niveau des fabriques PSP/coffre si fake pose en production ; test FakeSignalPspAdapter ajoute. Lacunes de WP06/WP09 : PayDunyaPspAdapter, AwsKms, S3SealCopy sans service/isFake (interfaces 6) : la garde ne voit pas ces 3 en production, les fabriques refusent. Mutations verifiees (liste dans le compte rendu). A confirmer a l'essai : rien de nouveau. A relire par une personne : kms/production-guard.ts, kms.module.ts, sealing.module.ts, psp.providers.ts, production-enabled.ts.",
-        "Cycle 2. Hors carte (nommees) : s3-seal-copy.ts (+service seal-copy), paydunya-adapter.ts (+isFake false, service psp.paydunya), aws-kms.ts (+isFake false, service kms) ; Wave, Stripe, Secrets Manager portaient deja les marques. Tests : marques et refus en production d'un adaptateur construit directement (6 services, liste injectee), architecture des sites de construction (new S3SealCopy/AwsKms/adaptateurs PSP/store seulement dans les fabriques, avec mutation), processes.spec.ts avec classe exacte et element fautif par processus (public et tag-keys : FakeInProductionError signataire des jetons d'appareil ; personnalisation, tag-check, key-admin : Untried kms), createSealCopy reglage absent : classe Untried. Mutations : retrait service S3/PayDunya, defaut real->fake : detectees.",
-        "Cycle 2 : marques §6 sur les 6 adaptateurs, garde sur construction directe, sites de construction, causes exactes par processus, defaut seal-copy; mutations rejouees; 36 suites vertes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP10-garde-selection/review-cycle-2.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP10-garde-selection/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 22766,
-      "shell_pid_created_at": "1795710823.642881",
-      "subtasks": {
-        "T043": "done",
-        "T044": "done",
-        "T045": "done",
-        "T046": "done",
-        "T047": "done"
-      }
+      "shell_pid": 20046,
+      "shell_pid_created_at": "1795710621.374999"
     },
     "WP11": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPSAZFNRSF24Q7YRJD51R",
       "last_transition_at": "2026-11-27T11:37:01.535413+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Commit 430d8e93 (lane k). Aucune retouche hors carte. Ecarts : renforcements seulement (essai PayDunya en bac a sable nomme psp.paydunya.sandbox, donc refuse par la borne de WP10 ; sortie refusee si valeur lue/reference/compartiment ou motif de secret). Mutations verifiees (17, toutes rouges) : refus production, fuite valeur lue, garde looksSecret, saut des dependantes, desactivation KMS, cle restee active, etat PENDING, expiration, signature verifiee, ecrasement S3, relecture S3, isolement detenteur, nom sandbox, base explicite, MAC stable, aller-retour cle de donnees, motif ASIA. A confirmer a l'essai : montant minimal 100 XOF par PSP, releves vides, cle KMS utilisable aussitot, cles de test desactivees mais non supprimees, objet S3 de test verrouille (COMPLIANCE) pour la retention choisie, httpStatus absent des etapes AWS. A faire relire : trial/psp-trial.ts, trial/aws-trial.ts, trial/main.ts.",
-        "Review passed: appels via fabriques de production, aucune fuite de secret (motifs fermes, seen + looksSecret), refus NODE_ENV=production, KMS cles desactivees en finally, S3 id aleatoire + If-None-Match. 5 mutations verifiees rouges; gardes transverses vertes (594 tests); tsc/eslint/prettier propres. Mineurs: retention par defaut 3650 j COMPLIANCE sans --retention-days; refs de cles KMS non listees si desactivation echoue."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP11-essais/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP11-essais/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 2802,
-      "shell_pid_created_at": "1795773139.851264",
-      "subtasks": {
-        "T048": "done",
-        "T049": "done",
-        "T050": "done",
-        "T051": "done"
-      }
+      "shell_pid": 24304,
+      "shell_pid_created_at": "1795711041.004656"
     },
     "WP12": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECP1PFD9PJ0MZ5YPA3C1AG",
       "last_transition_at": "2026-11-27T11:36:37.327672+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Aucun code modifie. Comparaison dans docs/passation-12b-1/attestations-comparaison.md. Ecarts soumis au porteur: certificats d'usine expires (Android), etapes 10-11 Apple. A relire par une personne: android-key-attestation.ts, ios-app-attest*.ts.",
-        "Relecture WP12 : echantillon 7 Android + 7 Apple verifie (code et docs officielles), verdicts justes ; 2 points soumis au porteur correctement decrits ; aucun secret ; aucun code modifie. Voir compte rendu.",
-        "Cycle 2 : décisions du porteur du 26/11/2026",
-        "ASSOUPLISSEMENT decide par le porteur (26/11): certificats d'usine expires acceptes sous la seule racine Google f92009e853b6b045 (SPKI SHA-256 fige), hors feuille et hors chaines RKP; a consigner par WP13. Tests de borne + mutations. Apple: mission 12, aucun code. A relire: android-key-attestation.ts.",
-        "Cycle 2 : exception bornee a la racine f92009e853b6b045 (SPKI SHA-256 verifie contre la racine publiee par Google), feuille et notBefore toujours dates, revocation et chaine RKP inchangees ; 3 mutations de borne rouges ; suites et gardes vertes"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/Users/xaamga/Documents/omar_sylla_work/cashless/cashless-platform/.worktrees/adaptateurs-fournisseurs-choisis-01M8BXJA-coord/kitty-specs/adaptateurs-fournisseurs-choisis-01M8BXJA/tasks/WP12-attestations/review-cycle-1.md",
         "reference": "review-cycle://adaptateurs-fournisseurs-choisis-01M8BXJA/WP12-attestations/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 94645,
-      "shell_pid_created_at": "1795707569.787833",
-      "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done"
-      }
+      "shell_pid": 81550,
+      "shell_pid_created_at": "1795706152.379451"
     },
     "WP13": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M8ECPW79FE4P86SDQFJHMVHP",
       "last_transition_at": "2026-11-27T11:37:04.489813+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "OP-N199 a N211, ADR-237 a 240 (D9 ligne decision, PayDunya D2/D7, Android/Apple, limites), reports PRD/PROMPTS, SERVICES-EXTERNES, preuves, note-equipes, consignation.spec etendu (4 mutations). Hors carte: aucune. Manquent: tests RKP, extensions Apple, lookup reseau. A relire: voir POINTS_OUVERTS s16.",
-        "Cycle 2: decisions du porteur 27/11 (N203 non bloquant, N207/N208/N211 mission 13, N205 mesure puis decision), N202 proposition en attente, N209 limite S3SealCopy, note-equipes s3, garde etendue (129 verts).",
-        "Cycle 2 : decisions du porteur du 27/11 ecrites de facon coherente, propositions (OP-N202 Non, forme du durcissement N207) marquees ; OP-N209 complete ; consignation.spec 129/129, gardes 556 verts, 2 mutations. Mineur : PROMPTS ne reprend pas la mention OP-N202.",
-        "Relecture de d7185602 (fix 12b-1 : suites anciennes alignees sur la regle I1) et 7a9e43e6 (style, commentaires a 100 car.) : seuls 3 fichiers de test (device-latency NFR-001 et enrollment : externalModes a real pour psp, pspSecrets, kms, sealCopy dans compile ; process-guard : ancien test du faux conserve via APP_CONFIG construit a la main, plus 2 tests I1 : SEAL_COPY=fake refuse par loadConfig, copie reelle non essayee refusee). Aucun src touche, aucune assertion affaiblie, aucun skip ajoute, PRODUCTION_ENABLED_SERVICES vide. 3 suites 46 verts (4 skip preexistants), mutation sealing.module.ts rouge.",
-        "Relecture de d7185602 (fix 12b-1 : suites anciennes alignees sur la regle I1) et 7a9e43e6 (style, commentaires a 100 car.) : seuls 3 fichiers de test (device-latency NFR-001 et enrollment : externalModes a real pour psp, pspSecrets, kms, sealCopy dans compile ; process-guard : ancien test du faux conserve via APP_CONFIG construit a la main, plus 2 tests I1 : SEAL_COPY=fake refuse par loadConfig, copie reelle non essayee refusee). Aucun src touche, aucune assertion affaiblie, aucun skip ajoute, PRODUCTION_ENABLED_SERVICES vide. 3 suites 46 verts (4 skip preexistants), mutation sealing.module.ts rouge."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "reference": "auto-approval:WP13:20261127",
         "reviewer": "spec-kitty auto-rebase",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 16919,
-      "shell_pid_created_at": "1795774901.346751",
-      "subtasks": {
-        "T055": "done",
-        "T056": "done",
-        "T057": "done",
-        "T058": "done",
-        "T059": "done"
-      }
+      "shell_pid": 14504,
+      "shell_pid_created_at": "1795774768.722603"
     }
   }
 }
