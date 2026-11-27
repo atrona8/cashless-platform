@@ -158,3 +158,10 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   construction (preuve d'injection sur `S3SealCopy` seul). Fichiers à faire relire par une personne :
   `kms/production-guard.ts`, `external-services/production-enabled.ts`, `kms/kms.module.ts`,
   `sealing/sealing.module.ts`, `psp/psp.providers.ts`, `s3-seal-copy.ts`, `aws-kms.ts`, `paydunya-adapter.ts`.
+- **WP13 (relecture de WP11, approuvé le 27/11/2026)** : consigner (OP, « à confirmer à l'essai ») : montant minimal
+  100 XOF par PSP, relevés vides, clé KMS utilisable aussitôt, clés de test désactivées mais jamais supprimées
+  (décision humaine), objet S3 de test verrouillé COMPLIANCE, `httpStatus` absent des étapes AWS. Mineurs : sans
+  `--retention-days`, l'objet de test prend la rétention de la configuration (3650 jours, COMPLIANCE, irrévocable) ;
+  si la désactivation KMS échoue, les références des clés créées ne sont pas affichées (à retrouver dans la console).
+  Le compte rendu `psp.paydunya.sandbox` ne vaut pas preuve du service réel (D3/D6 inchangés). Fichiers à faire
+  relire par une personne : `trial/psp-trial.ts`, `trial/aws-trial.ts`, `trial/main.ts`, `trial/report.ts`.
