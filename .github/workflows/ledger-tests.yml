@@ -26,7 +26,8 @@ concurrency:
 jobs:
   ledger:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # 60 min : la batterie dure de 43 à 45 min depuis la mission 12b-1 (run annulé à 45 min le 27/11/2026).
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:17
