@@ -176,3 +176,10 @@ d'un `getStatus` authentifié. Garde : un service réel ne tourne en production 
   À reporter **après la fusion, sur feat** (fichiers de la lane m) : POINTS_OUVERTS (ligne et §16), ADR-239, PRD §2.8,
   `note-equipes.md` §3, test de `consignation.spec.ts` qui vérifie la mention « proposition » ; et, mineur de la
   relecture de WP13 cycle 2, marquer « proposé » le durcissement d'OP-N207 dans la section Mission 13 de PROMPTS.
+- **Orchestrateur (27/11/2026, batterie complète de la lane m, tête `7a9e43e6`)** : 4930 verts ; 12 échecs de 3 suites
+  anciennes (règle I1) corrigés par `d7185602`/`7a9e43e6`, relus, WP13 réapprouvé. Restent 2 échecs en passe
+  parallèle, verts seuls : `claim-code-order.spec.ts` (instabilité connue) et `vendor-pin-bounds.spec.ts` (faux positif :
+  suite de 6 chiffres dans une empreinte hexadécimale d'un `metadata` JSON). **Décision du porteur** : corriger
+  `vendor-pin-bounds` après la consolidation, sur feat (PIN non entouré de caractères hexadécimaux), relu par un agent
+  distinct. **Matrice d'acceptation** remplie (coordination) : 20 critères `pass`, NFR-002 `pending` (vecteurs publiés
+  Stripe et PayDunya non établis) ; décision du porteur : chercher d'abord dans les sources officielles.
