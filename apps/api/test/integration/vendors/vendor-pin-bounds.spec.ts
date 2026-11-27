@@ -164,19 +164,25 @@ describe('Bornes des écarts de la mission 11a (OP-N151, OP-N158, OP-N159)', () 
 
     /**
      * Occurrences de chacun des PIN dans toute la base : `schema.table.colonne` → PIN.
-     * Une valeur faite seulement de 32 chiffres hexadécimaux ou plus (empreinte ou HMAC, ex.
-     * `api_idempotency.request_hash`) est écartée : elle contient une suite de 6 chiffres par hasard
-     * (faux positif vu en CI le 26/11/2026), jamais un PIN en clair.
+     * Une occurrence ne compte que si le PIN n'est **pas entouré de caractères hexadécimaux**
+     * (regex `(^|[^0-9a-fA-F])PIN([^0-9a-fA-F]|$)`) : une suite de 6 chiffres à l'intérieur d'une
+     * empreinte ou d'un HMAC (ex. `journal_transaction.metadata`, faux positif vu en passe
+     * parallèle le 27/11/2026) en contient par hasard, jamais un PIN en clair. Un PIN entouré de
+     * guillemets, d'espaces ou de ponctuation compte toujours. Une valeur faite seulement de 32
+     * chiffres hexadécimaux ou plus (ex. `api_idempotency.request_hash`) reste écartée
+     * (faux positif vu en CI le 26/11/2026).
      */
     async function findInDatabase(pins: string[]): Promise<string[]> {
       const found: string[] = [];
+      const escaped = pins.map((p) => p.replace(/[\\^$.|?*+()[\]{}]/g, '\\$&'));
+      const pattern = `(^|[^0-9a-fA-F])(${escaped.join('|')})([^0-9a-fA-F]|$)`;
       for (const { schema, tbl, col, type } of await textColumns()) {
         const expr = asText(col, type);
         const hits = await ownerRows<{ n: string }>(
           `SELECT count(*) AS n FROM "${schema}"."${tbl}"
-            WHERE (${pins.map((_, i) => `${expr} LIKE $${i + 1}`).join(' OR ')})
+            WHERE ${expr} ~ $1
               AND ${expr} !~ '^[0-9a-f]{32,}$'`,
-          pins.map((p) => `%${p}%`),
+          [pattern],
         );
         if (Number(hits[0]!.n) > 0) found.push(`${schema}.${tbl}.${col}`);
       }
