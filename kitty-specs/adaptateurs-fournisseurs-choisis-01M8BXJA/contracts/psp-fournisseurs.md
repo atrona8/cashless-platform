@@ -29,3 +29,5 @@ PayDunya valide suivi d'une confirmation « pending » ou d'un montant différen
 
 Litige Stripe (décision du 26/11/2026) : `charge.dispute.created` → `DISPUTE` à relire ; la session est retrouvée par
 `GET /v1/checkout/sessions?payment_intent=<pi>` (`resolvePaymentReference?`, méthode facultative du port).
+Sans résolution par relecture : voie « sans correspondance » (`UNMATCHED`, nouvelles tentatives, anomalie
+`UNMATCHED_EXPIRED` à 24 h), comme les autres litiges (décision du porteur du 26/11/2026, WP03 cycle 3).
