@@ -26,6 +26,7 @@
   "purpose_context": "Les faux des services externes suivent un modèle générique (calqué sur Stripe) qui ne correspond pas au fonctionnement réel de Wave ou de PayDunya. Le porteur veut des adaptateurs conformes aux documentations des fournisseurs déjà choisis (PSP et AWS), refusés en production jusqu'à un essai réel, sans toucher aux fournisseurs pas encore décidés.",
   "purpose_tldr": "Rendre les adaptateurs Wave, PayDunya, Stripe et AWS conformes à leur documentation publique, pour qu'il ne reste qu'identifiants et clés à poser.",
   "slug": "adaptateurs-fournisseurs-choisis-01M8BXJA",
+  "status_phase": "1",
   "target_branch": "feat/adaptateurs-fournisseurs-choisis",
   "topology": "coord",
   "vcs": "git",
