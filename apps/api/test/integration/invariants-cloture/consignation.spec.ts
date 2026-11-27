@@ -227,10 +227,13 @@ describe('consignation de la mission 12b-1', () => {
     }
   });
 
-  it('décisions du porteur du 27/11/2026 et propositions en attente', () => {
+  it('décisions du porteur du 27/11/2026 (OP-N202, OP-N203, mission 13)', () => {
     const row = (op: string) => ops.match(new RegExp(`^\\| ${op} \\|.*$`, 'm'))![0];
     expect(row('OP-N203')).toContain('Décision du porteur : 27/11/2026');
-    expect(row('OP-N202')).toMatch(/proposition de l'Agent, en attente du porteur/);
+    expect(row('OP-N202')).toContain('Décision du porteur : 27/11/2026');
+    expect(row('OP-N202')).not.toMatch(/proposition de l'Agent/);
+    expect(adrSection('ADR-239')).not.toMatch(/proposition de l'Agent/);
+    expect(prompts).toMatch(/proposé, en attente du porteur/);
     for (const op of ['OP-N207', 'OP-N208', 'OP-N211'])
       expect(row(op)).toContain('Mission 13 (décision du porteur du 27/11/2026)');
     expect(row('OP-N205')).toMatch(/puis décision du porteur/);

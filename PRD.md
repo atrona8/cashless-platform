@@ -263,7 +263,7 @@ exacte de l'argent encaissé et dû à chaque intervenant. (§1.1)
   (`attempt_acknowledged` : non crédité, lecture stricte d'ADR-77). Héritages : mission 12 (OP-N202, OP-N203), mission 12b
   (Orange Money, OTP, OIDC, matériel de la passerelle, autorité des terminaux : OP-N73), mission 13 (OP-N207, OP-N208, OP-N211, décision du porteur du 27/11/2026) ; OP-N205 : mesure à la recette avec plusieurs
   instances, puis décision du porteur (aucune mission affectée). OP-N203 ne bloque pas la production (décision du 27/11/2026) ;
-  OP-N202 non bloquant : proposition de l'Agent, en attente du porteur.
+  OP-N202 ne bloque pas la production non plus (décision du porteur du 27/11/2026).
 - Sessions de caisse d'espèces, écarts. (§11.2)
 - Rapprochement ligne à ligne des relevés. (§11.3)
 - Versements manuels en V1, à deux personnes, export CSV. (§11.4)

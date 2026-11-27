@@ -35,10 +35,9 @@ PayDunya envoie sa notification en formulaire (`data[hash]`, `data[status]`, `da
    restent désactivées, jamais supprimées.
 3. Confirmer les points « à confirmer à l'essai » (OP-N206), vérifier pour Stripe l'éligibilité XOF et Sénégal.
 4. PR relue qui ajoute le service à `PRODUCTION_ENABLED_SERVICES` et met à jour `production-enabled.spec.ts`.
-5. **En attente du porteur** : OP-N202 (« bloque la production : Non » est une proposition de l'Agent, non tranchée) ;
-   durcissement de la garde réseau des tests (OP-N207, proposé : refuser `options.lookup` ou contrôler l'adresse résolue ; la
+5. **En attente du porteur** : durcissement de la garde réseau des tests (OP-N207, proposé : refuser `options.lookup` ou contrôler l'adresse résolue ; la
    mission 13 est décidée, pas la forme) ; réexamen des écarts PayDunya (OP-N199 à OP-N201) à l'essai ; décision sur un état
    partagé en base pour OP-N205, après la mesure à la recette avec plusieurs instances (aucune mission affectée).
-   **Décidé le 27/11/2026** : OP-N203 ne bloque pas la production (écart ouvert jusqu'à la mission 12) ; OP-N207, OP-N208 et
+   **Décidé le 27/11/2026** : OP-N202 et OP-N203 ne bloquent pas la production (OP-N203 : écart ouvert jusqu'à la mission 12) ; OP-N207, OP-N208 et
    OP-N211 sont levés par la mission 13.
 6. Faire relire par une personne les fichiers listés au §16 de `docs/POINTS_OUVERTS.md` (clés, cryptographie, garde).

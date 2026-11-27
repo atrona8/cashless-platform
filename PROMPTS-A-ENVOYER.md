@@ -967,7 +967,7 @@ vendeurs et le catalogue : la mission les ajoute.
 > **Hérité de la 12b-1 (27/11/2026, ADR-240 ; mission 13 décidée par le porteur le 27/11/2026 pour OP-N207, OP-N208, OP-N211)** :
 > OP-N205 (mesurer à la recette, avec plusieurs instances, la borne « une relecture par recharge et par minute » ; **la décision
 > sur un état partagé en base revient ensuite au porteur** ; aucune mission affectée), OP-N207 (durcir la garde réseau des tests : refuser
-> `options.lookup` ou contrôler l'adresse résolue ; test `apps/api/test/unit/support/no-external-network.spec.ts`), OP-N208
+> `options.lookup` ou contrôler l'adresse résolue, **proposé, en attente du porteur** ; test `apps/api/test/unit/support/no-external-network.spec.ts`), OP-N208
 > (litige Stripe relu : prouver l'absence de transaction ouverte pendant `resolvePaymentReference`, borne d'une résolution par
 > minute face à la reprise des 24 h, mutation survivante de `expireUnmatchedDispute`), OP-N211 (mineurs des relectures).
 
